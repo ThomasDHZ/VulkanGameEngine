@@ -174,7 +174,12 @@ VkResult Renderer_EndFrame(VkSwapchainKHR swapChain, VkSemaphore* acquireImageSe
     };
 
     VkResult submitResult = vkQueueSubmit(graphicsQueue, 1, &submitInfo, fenceList[commandIndex]);
-    if (submitResult != VK_SUCCESS)
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        submitResult == VK_SUBOPTIMAL_KHR)
+    {
+        *rebuildRendererFlag = true;
+    }
+    else if (submitResult != VK_SUCCESS)
     {
         fprintf(stderr, "Error: vkQueueSubmit failed with error code: %s\n", Renderer_GetError(submitResult));
         return submitResult;
@@ -196,7 +201,8 @@ VkResult Renderer_EndFrame(VkSwapchainKHR swapChain, VkSemaphore* acquireImageSe
     {
         *rebuildRendererFlag = true;
     }
-    else if (result != VK_SUCCESS) {
+    else if (result != VK_SUCCESS) 
+    {
         fprintf(stderr, "Error: vkQueuePresentKHR failed with error code: %s\n", Renderer_GetError(result));
     }
 

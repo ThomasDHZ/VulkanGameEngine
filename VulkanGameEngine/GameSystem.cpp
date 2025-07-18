@@ -55,7 +55,7 @@ void GameSystem::Update(const float& deltaTime)
     levelSystem.Update(deltaTime);
     textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);
-    renderSystem.Update(deltaTime);
+    renderSystem.Update(levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
     meshSystem.Update(deltaTime);
@@ -73,10 +73,10 @@ void GameSystem::DebugUpdate(const float& deltaTime)
 
 void GameSystem::Draw(const float& deltaTime)
 {
-    VULKAN_RESULT(renderSystem.StartFrame());
+    renderSystem.StartFrame();
     levelSystem.Draw(CommandBufferSubmitList, deltaTime);
  //   CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, renderSystem.imGuiRenderer));
-    VULKAN_RESULT(renderSystem.EndFrame(CommandBufferSubmitList));
+    renderSystem.EndFrame(CommandBufferSubmitList);
     CommandBufferSubmitList.clear();
 }
 

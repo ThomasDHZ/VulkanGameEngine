@@ -20,12 +20,11 @@ private:
 
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
-    UnorderedMap<RenderPassGuid, RenderPassLoader>                RenderPassLoaderMap;
-    UnorderedMap<RenderPassGuid, Vector<RenderPipelineLoader>>    RenderPipelineLoaderMap;
+    UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
 
     VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);
-    void RecreateSwapchain();
+    void RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
     const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();
     const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
@@ -33,8 +32,8 @@ private:
     const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(VkGuid& levelLayerId);
     const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(VkGuid& renderPassId, const Texture* renderedTexture);
 
-    void DestroyRenderPass();
-    void DestroyRenderPipeline();
+    void DestroyRenderPasses();
+    void DestroyRenderPipelines();
     void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
     void DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
     void DestroyBuffer(VkBuffer& buffer);
@@ -48,7 +47,7 @@ public:
     ~RenderSystem();
 
     void StartUp(WindowType windowType, void* windowHandle);
-    void Update(const float& deltaTime);
+    void Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
     VkCommandBuffer RenderFrameBuffer(VkGuid& renderPassId);
     VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, SceneDataBuffer& sceneDataBuffer);

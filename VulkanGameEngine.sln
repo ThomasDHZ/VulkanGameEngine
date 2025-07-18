@@ -12,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5
 	ProjectSection(SolutionItems) = preProject
 		Shaders\fragshader.frag = Shaders\fragshader.frag
 		Shaders\FrameBufferPixel.hlsl = Shaders\FrameBufferPixel.hlsl
+		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
 		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
+		Shaders\FrameBufferShaderFrag.spv = Shaders\FrameBufferShaderFrag.spv
 		Shaders\FrameBufferVertex.hlsl = Shaders\FrameBufferVertex.hlsl
 		Shaders\LevelPixelShader.hlsl = Shaders\LevelPixelShader.hlsl
 		Shaders\LevelShader2D.frag = Shaders\LevelShader2D.frag
@@ -75,6 +77,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Texture", "Texture", "{8770
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TileSets", "TileSets", "{12565B15-EF6B-4DAF-8552-844EE28936D7}"
 	ProjectSection(SolutionItems) = preProject

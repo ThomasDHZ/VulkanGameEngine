@@ -28,9 +28,6 @@ class MeshSystem;
 class LevelSystem
 {
 private:
-	RenderPassGuid						levelRenderPass2DId;
-	RenderPassGuid						spriteRenderPass2DId;
-	RenderPassGuid   					frameBufferId;
 
 	VkGuid LoadTileSetVRAM(const String& tileSetPath);
 	void   LoadLevelLayout(const String& levelLayoutPath);
@@ -38,6 +35,9 @@ private:
 	void   DestroyDeadGameObjects();
 
 public:
+	RenderPassGuid						levelRenderPass2DId;
+	RenderPassGuid						spriteRenderPass2DId;
+	RenderPassGuid   					frameBufferId;
 	SceneDataBuffer												  SceneProperties;
 	SharedPtr<OrthographicCamera2D>								  OrthographicCamera;
 
