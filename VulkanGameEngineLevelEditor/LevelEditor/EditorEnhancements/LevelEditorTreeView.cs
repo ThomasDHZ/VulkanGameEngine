@@ -1,227 +1,178 @@
-﻿using System.Windows.Forms;
-using System.Xml.Linq;
-using System;
-using VulkanGameEngineLevelEditor.GameEngine.Structs;
-using VulkanGameEngineLevelEditor.GameEngineAPI;
-using static System.ComponentModel.Design.ObjectSelectorEditor;
-using VulkanGameEngineLevelEditor.GameEngine.Systems;
-using VulkanGameEngineLevelEditor.Models;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Forms;
+using Vulkan;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
-using VulkanGameEngineLevelEditor;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-public class LevelEditorTreeView : System.Windows.Forms.TreeView
+namespace VulkanGameEngineLevelEditor.LevelEditor
 {
-    private object rootObject;
-    private Action<object> onSelectionChanged;
-    private object lockObject = new object();
-    public object selectedObject;
-    public DynamicControlPanelView dynamicControlPanelView;
-
-    public LevelEditorTreeView()
+    public class LevelEditorTreeView : TreeView
     {
-        BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
-        Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-        ForeColor = System.Drawing.Color.White;
-        Margin = new Padding(3, 4, 3, 4);
-        TabIndex = 0;
+        public object rootObject;
+        public DynamicControlPanelView DynamicControlPanel;
 
-        AfterSelect += LevelEditorTreeView_AfterSelect;
-    }
+        private bool isResizing = false;
+        private Point lastMousePosition;
 
-    public object RootObject
-    {
-        get => rootObject;
-        set
+        public LevelEditorTreeView()
         {
-            rootObject = value;
-            PopulateTree();
-        }
-    }
+            Cursor = Cursors.SizeWE; // Horizontal resize cursor
+            MouseDown += LevelEditorTreeView_MouseDown;
+            MouseMove += LevelEditorTreeView_MouseMove;
+            MouseUp += LevelEditorTreeView_MouseUp;
 
-    public event Action<object> SelectionChanged
-    {
-        add { onSelectionChanged += value; }
-        remove { onSelectionChanged -= value; }
-    }
-
-    public void PopulateTree()
-    {
-        //if (this.InvokeRequired)
-        //{
-        //    this.Invoke(new Action(PopulateTree));
-        //    return;
-        //}
-
-        //Nodes.Clear();
-        //if (rootObject is GameObject gameObject)
-        //{
-        //    TreeNode rootNode;
-        //    if (Nodes.Count > 0)
-        //    {
-        //        rootNode = Nodes[0];
-        //    }
-        //    else
-        //    {
-        //        rootNode = Nodes.Add(gameObject.Name);
-        //    }
-
-        //    rootNode.Nodes.Clear();
-        //    foreach (var component in gameObject.GameObjectComponentTypeList)
-        //    {
-        //        switch (component)
-        //        {
-        //            case ComponentTypeEnum.kRenderMesh2DComponent:
-        //                rootNode.Nodes.Add("RenderMesh2DComponent");
-        //                break;
-        //            case ComponentTypeEnum.kTransform2DComponent:
-        //                rootNode.Nodes.Add("Transform2DComponent");
-        //                break;
-        //            case ComponentTypeEnum.kInputComponent:
-        //                rootNode.Nodes.Add("InputComponent");
-        //                break;
-        //            case ComponentTypeEnum.kSpriteComponent:
-        //                rootNode.Nodes.Add("SpriteComponent");
-        //                break;
-        //        }
-        //    }
-        //}
-    }
-
-    public void AddGameObject(GameObject gameObject)
-    {
-        if (this.InvokeRequired)
-        {
-            this.Invoke(new Action(() => AddGameObject(gameObject)));
-            return;
+        InitializeComponents();
         }
 
-        try
+        private void InitializeComponents()
         {
-            //  this.Nodes.Clear();
+            this.Dock = DockStyle.Left; 
+            this.AfterSelect += LevelEditorTreeView_AfterSelect;
+        }
 
-            TreeNode gameObjectNode = Nodes.Add(gameObject.Name);
-            gameObjectNode.Tag = gameObject.GameObjectId;
+        public void PopulateTreeView(object rootObject)
+        {
+            this.Nodes.Clear();
+            if (rootObject == null) return;
 
-            foreach (var component in gameObject.GameObjectComponentTypeList)
+            TreeNode rootNode = new TreeNode(rootObject.GetType().Name)
             {
-                switch (component)
+                Tag = rootObject
+            };
+            PopulateNode(rootNode, rootObject);
+            this.Nodes.Add(rootNode);
+            rootNode.Expand();
+        }
+
+        private void PopulateNode(TreeNode parentNode, object parentObject)
+        {
+            if (parentObject == null) return;
+
+            foreach (var prop in parentObject.GetType().GetProperties())
+            {
+                object value = prop.GetValue(parentObject);
+                if (value == null) continue;
+
+                if (typeof(IList).IsAssignableFrom(prop.PropertyType))
                 {
-                    case ComponentTypeEnum.kRenderMesh2DComponent:
-                        gameObjectNode.Nodes.Add("RenderMesh2DComponent");
-                        break;
-                    case ComponentTypeEnum.kTransform2DComponent:
-                        gameObjectNode.Nodes.Add("Transform2DComponent");
-                        break;
-                    case ComponentTypeEnum.kInputComponent:
-                        gameObjectNode.Nodes.Add("InputComponent");
-                        break;
-                    case ComponentTypeEnum.kSpriteComponent:
-                        gameObjectNode.Nodes.Add("SpriteComponent");
-                        break;
+                    var list = value as IList;
+                    if (list != null &&
+                        list.Count > 0)
+                    {
+                        TreeNode listNode = new TreeNode(prop.Name)
+                        {
+                            Tag = value
+                        };
+                        parentNode.Nodes.Add(listNode);
+
+                        int index = 0;
+                        foreach (var item in list)
+                        {
+                            if (item != null)
+                            {
+                                TreeNode itemNode = new TreeNode($"[{index}] {item.GetType().Name}")
+                                {
+                                    Tag = item
+                                };
+                                PopulateNode(itemNode, item);
+                                listNode.Nodes.Add(itemNode);
+                            }
+                            index++;
+                        }
+                    }
+                }
+                else if(IgnoreTypes(prop.PropertyType) ||
+                        IgnoreProperties(prop))
+                {
+                    continue;
+                }
+                else if (prop.PropertyType.IsClass && prop.PropertyType != typeof(string) ||
+                         (prop.PropertyType.IsValueType && !prop.PropertyType.IsPrimitive))
+                {
+                    TreeNode complexNode = new TreeNode(prop.Name)
+                    {
+                        Tag = value
+                    };
+                    PopulateNode(complexNode, value);
+                    parentNode.Nodes.Add(complexNode);
                 }
             }
+        }
 
-            // parentNode.Expand();
+        private void LevelEditorTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (DynamicControlPanel != null && e.Node.Tag != null)
+            {
+                DynamicControlPanel.SelectedObject = e.Node.Tag;
+            }
+        }
 
-            onSelectionChanged?.Invoke(gameObject);
-        }
-        catch (Exception ex)
+        private void LevelEditorTreeView_MouseDown(object sender, MouseEventArgs e)
         {
-            MessageBox.Show($"Failed to add game object: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            isResizing = true;
+            lastMousePosition = e.Location;
         }
-    }
 
-    public void AddRenderPass(RenderPassLoaderModel renderPass)
-    {
-        if (this.InvokeRequired)
+        private void LevelEditorTreeView_MouseMove(object sender, MouseEventArgs e)
         {
-            this.Invoke(new Action(() => AddRenderPass(renderPass)));
-            return;
-        }
-        try
-        {
-            TreeNode renderPassNode = Nodes.Add("RenderPass");
-            renderPassNode.Tag = renderPass.RenderPassId;
+            if (isResizing)
+            {
+                int deltaX = e.X - lastMousePosition.X;
+                Width += deltaX;
 
-            for (int x = 0; x < renderPass.renderPipelineModelList.Count; x++)
-            {
-                renderPassNode.Nodes.Add($@"RenderPipelineModelList[{x}]").Tag = x;
+                lastMousePosition = e.Location;
             }
-            for (int x = 0; x < renderPass.RenderedTextureInfoModelList.Count; x++)
+        }
+
+        private void LevelEditorTreeView_MouseUp(object sender, MouseEventArgs e)
+        {
+            isResizing = false;
+        }
+
+        private bool IsSimpleType(Type type)
+        {
+            return type == typeof(string)
+                   || type == typeof(decimal)
+                   || type == typeof(int)
+                   || type == typeof(uint)
+                   || type == typeof(float)
+                   || type == typeof(double)
+                   || type == typeof(bool)
+                   || type == typeof(byte)
+                   || type == typeof(sbyte)
+                   || type == typeof(short)
+                   || type == typeof(ushort)
+                   || type == typeof(long)
+                   || type == typeof(ulong)
+                   || type == typeof(char);
+        }
+
+        private bool IgnoreTypes(Type type)
+        {
+            return type == typeof(Guid) ||
+                   type == typeof(IntPtr) ||
+                   type.IsPointer; 
+        }
+
+        private bool IgnoreProperties(PropertyInfo property)
+        {
+            Type propertyType = property.PropertyType;
+
+            if (propertyType.IsEnum)
             {
-                renderPassNode.Nodes.Add($@"RenderedTextureInfoModelList[{x}]").Tag = x;
-            }
-            for (int x = 0; x < renderPass.SubpassDependencyList.Count; x++)
-            {
-                renderPassNode.Nodes.Add($@"SubpassDependencyList[{x}]").Tag = x;
-            }
-            for (int x = 0; x < renderPass.ClearValueList.Count; x++)
-            {
-                renderPassNode.Nodes.Add($@"ClearValue[{x}]").Tag = x;
+                return true;
             }
 
-            onSelectionChanged?.Invoke(renderPass);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Failed to add game object: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
+            if (typeof(IEnumerable<string>).IsAssignableFrom(propertyType))
+            {
+                return true;
+            }
 
-    private void LevelEditorTreeView_AfterSelect(object sender, TreeViewEventArgs e)
-    {
-        if (rootObject is GameObject gameObject)
-        {
-            if (e.Node?.Tag is int gameObjectId)
-            {
-                selectedObject = GameObjectSystem.GameObjectMap[gameObjectId];
-                dynamicControlPanelView.SelectedObject = selectedObject;
-            }
-            else if (e.Node.Tag is ComponentTypeEnum componentType && e.Node.Parent?.Tag is int parentId) // Component under GameObject
-            {
-                var parentGameObject = GameObjectSystem.GameObjectMap[parentId];
-                //if (parentGameObject?.Components.ContainsKey(componentType) == true)
-                //{
-                //    selectedObject = parentGameObject.Components[componentType];
-                //}
-            }
-        }
-        else if (rootObject is RenderPassLoaderModel)
-        {
-            var renderPassModel = (RenderPassLoaderModel)rootObject;
-            if (e.Node?.Tag is Guid renderPassId)
-            {
-                selectedObject = RenderSystem.RenderPassEditor_RenderPass[renderPassId];
-                dynamicControlPanelView.SelectedObject = selectedObject;
-            }
-        }
-        else if (rootObject is RenderPipelineLoaderModel)
-        {
-            if (e.Node.Parent?.Tag is Guid renderPassId)
-            {
-                int tag = (int)e.Node.Tag;
-                selectedObject = RenderSystem.RenderPassEditor_RenderPass[renderPassId].renderPipelineModelList[tag];
-                dynamicControlPanelView.SelectedObject = selectedObject;
-            }
-        }
-        else if (rootObject is RenderedTextureInfoModel)
-        {
-            if (e.Node.Parent?.Tag is Guid renderPassId)
-            {
-                int tag = (int)e.Node.Tag;
-                selectedObject = RenderSystem.RenderPassEditor_RenderPass[renderPassId].RenderedTextureInfoModelList[tag];
-                dynamicControlPanelView.SelectedObject = selectedObject;
-            }
-        }
-        else if (rootObject is VkSubpassDependencyModel)
-        {
-            if (e.Node.Parent?.Tag is Guid renderPassId)
-            {
-                int tag = (int)e.Node.Tag;
-                selectedObject = RenderSystem.RenderPassEditor_RenderPass[renderPassId].SubpassDependencyList[tag];
-                dynamicControlPanelView.SelectedObject = selectedObject;
-            }
+            return false;
         }
     }
 }

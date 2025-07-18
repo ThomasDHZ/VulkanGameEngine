@@ -9,6 +9,7 @@ namespace VulkanGameEngineLevelEditor.Models
     [Serializable]
     public unsafe class VkAttachmentDescriptionModel : RenderPassEditorBaseModel
     {
+        private string Name;
         private VkStructureType _structureType;
         private VkAttachmentDescriptionFlagBits _flags;
         private void* _pNext;
@@ -156,8 +157,9 @@ namespace VulkanGameEngineLevelEditor.Models
             LoadJsonComponent(jsonFilePath);
         }
 
-        public VkAttachmentDescriptionModel(string name, string jsonFilePath) : base(name)
+        public VkAttachmentDescriptionModel(string name, string jsonFilePath) : base()
         {
+            Name = name;
             LoadJsonComponent(ConstConfig.DefaultColorAttachmentDescriptionModel);
         }
 

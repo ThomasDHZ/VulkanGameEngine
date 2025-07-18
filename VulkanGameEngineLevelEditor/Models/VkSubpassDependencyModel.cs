@@ -11,6 +11,7 @@ namespace VulkanGameEngineLevelEditor.Models
     [Serializable]
     public unsafe class VkSubpassDependencyModel : RenderPassEditorBaseModel
     {
+        private string Name;
         private uint _srcSubpass;
         private uint _dstSubpass;
         private VkPipelineStageFlagBits _srcStageMask;
@@ -135,8 +136,9 @@ namespace VulkanGameEngineLevelEditor.Models
             LoadJsonComponent(jsonFilePath);
         }
 
-        public VkSubpassDependencyModel(string name, string jsonFilePath) : base(name)
+        public VkSubpassDependencyModel(string name, string jsonFilePath) : base()
         {
+            Name = name;
             LoadJsonComponent(ConstConfig.DefaultSubpassDependencyModel);
         }
 

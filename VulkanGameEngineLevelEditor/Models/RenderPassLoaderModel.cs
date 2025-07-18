@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 
@@ -10,13 +11,14 @@ namespace VulkanGameEngineLevelEditor.Models
     [Serializable]
     public unsafe class RenderPassLoaderModel : RenderPassEditorBaseModel
     {
+        public string Name { get; set; } = string.Empty;
         public Guid RenderPassId { get; set; } = Guid.NewGuid();
         [IgnoreProperty]
         public List<string> RenderPipelineList { get; set; } = new List<string>();
         [IgnoreProperty]
         public List<RenderPipelineLoaderModel> renderPipelineModelList { get; set; } = new List<RenderPipelineLoaderModel>();
-     
-        public List<RenderedTextureInfoModel> RenderedTextureInfoModelList = new List<RenderedTextureInfoModel>();
+        [IgnoreProperty]
+        public List<RenderedTextureInfoModel> RenderedTextureInfoModelList { get; set; } = new List<RenderedTextureInfoModel>();
         [IgnoreProperty]
         public List<VkSubpassDependencyModel> SubpassDependencyList { get; set; } = new List<VkSubpassDependencyModel>();
         [IgnoreProperty]
@@ -34,8 +36,9 @@ namespace VulkanGameEngineLevelEditor.Models
             LoadJsonComponent(jsonFilePath);
         }
 
-        public RenderPassLoaderModel(string name, string jsonFilePath) : base(name)
+        public RenderPassLoaderModel(string name, string jsonFilePath) : base() 
         {
+            Name = name;
             LoadJsonComponent(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\RenderPass\DefaultSubpassDependency.json");
         }
 

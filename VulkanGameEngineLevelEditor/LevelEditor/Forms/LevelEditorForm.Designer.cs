@@ -1,4 +1,5 @@
-﻿using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
+﻿using VulkanGameEngineLevelEditor.LevelEditor;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 namespace VulkanGameEngineLevelEditor
 {
@@ -34,6 +35,7 @@ namespace VulkanGameEngineLevelEditor
             pictureBox1 = new System.Windows.Forms.PictureBox();
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             panel1 = new System.Windows.Forms.Panel();
             dynamicControlPanelView1 = new DynamicControlPanelView();
             richTextBox2 = new System.Windows.Forms.RichTextBox();
@@ -49,7 +51,6 @@ namespace VulkanGameEngineLevelEditor
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             levelEditorTreeView1 = new LevelEditorTreeView();
-            toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             toolStrip1.SuspendLayout();
             panel1.SuspendLayout();
@@ -63,7 +64,7 @@ namespace VulkanGameEngineLevelEditor
             pictureBox1.Location = new System.Drawing.Point(0, 0);
             pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new System.Drawing.Size(1600, 900);
+            pictureBox1.Size = new System.Drawing.Size(2514, 955);
             pictureBox1.TabIndex = 2;
             pictureBox1.TabStop = false;
             // 
@@ -87,33 +88,53 @@ namespace VulkanGameEngineLevelEditor
             toolStripButton1.Text = "toolStripButton1";
             toolStripButton1.Click += toolStripButton1_Click;
             // 
+            // toolStripButton2
+            // 
+            toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButton2.Image = (System.Drawing.Image)resources.GetObject("toolStripButton2.Image");
+            toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButton2.Name = "toolStripButton2";
+            toolStripButton2.Size = new System.Drawing.Size(34, 28);
+            toolStripButton2.Text = "toolStripButton2";
+            toolStripButton2.Click += toolStripButton2_Click;
+            // 
             // panel1
             // 
+            panel1.Controls.Add(dynamicControlPanelView1);
             panel1.Controls.Add(pictureBox1);
-            panel1.Location = new System.Drawing.Point(300, 74);
+            panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel1.Location = new System.Drawing.Point(0, 66);
             panel1.Margin = new System.Windows.Forms.Padding(4);
             panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(1600, 900);
+            panel1.Size = new System.Drawing.Size(2514, 955);
             panel1.TabIndex = 5;
             // 
             // dynamicControlPanelView1
             // 
-            dynamicControlPanelView1.Location = new System.Drawing.Point(1909, 74);
-            dynamicControlPanelView1.Margin = new System.Windows.Forms.Padding(4);
+            dynamicControlPanelView1.AutoScroll = true;
+            dynamicControlPanelView1.ColumnCount = 1;
+            dynamicControlPanelView1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            dynamicControlPanelView1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            dynamicControlPanelView1.Dock = System.Windows.Forms.DockStyle.Right;
+            dynamicControlPanelView1.Location = new System.Drawing.Point(2104, 0);
             dynamicControlPanelView1.Name = "dynamicControlPanelView1";
+            dynamicControlPanelView1.RowCount = 1;
+            dynamicControlPanelView1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            dynamicControlPanelView1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             dynamicControlPanelView1.SelectedObject = null;
-            dynamicControlPanelView1.Size = new System.Drawing.Size(599, 900);
-            dynamicControlPanelView1.TabIndex = 11;
+            dynamicControlPanelView1.Size = new System.Drawing.Size(410, 955);
+            dynamicControlPanelView1.TabIndex = 13;
             // 
             // richTextBox2
             // 
             richTextBox2.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
+            richTextBox2.Dock = System.Windows.Forms.DockStyle.Bottom;
             richTextBox2.ForeColor = System.Drawing.Color.White;
-            richTextBox2.Location = new System.Drawing.Point(13, 981);
+            richTextBox2.Location = new System.Drawing.Point(0, 1021);
             richTextBox2.Margin = new System.Windows.Forms.Padding(4);
             richTextBox2.Name = "richTextBox2";
             richTextBox2.ReadOnly = true;
-            richTextBox2.Size = new System.Drawing.Size(2495, 213);
+            richTextBox2.Size = new System.Drawing.Size(2514, 180);
             richTextBox2.TabIndex = 9;
             richTextBox2.Text = "";
             // 
@@ -205,24 +226,16 @@ namespace VulkanGameEngineLevelEditor
             // levelEditorTreeView1
             // 
             levelEditorTreeView1.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
+            levelEditorTreeView1.Dock = System.Windows.Forms.DockStyle.Left;
             levelEditorTreeView1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             levelEditorTreeView1.ForeColor = System.Drawing.Color.White;
-            levelEditorTreeView1.Location = new System.Drawing.Point(12, 74);
+            levelEditorTreeView1.LineColor = System.Drawing.Color.White;
+            levelEditorTreeView1.Location = new System.Drawing.Point(0, 66);
             levelEditorTreeView1.Margin = new System.Windows.Forms.Padding(4);
             levelEditorTreeView1.Name = "levelEditorTreeView1";
-            levelEditorTreeView1.RootObject = null;
-            levelEditorTreeView1.Size = new System.Drawing.Size(280, 900);
+            levelEditorTreeView1.Size = new System.Drawing.Size(293, 955);
             levelEditorTreeView1.TabIndex = 10;
-            // 
-            // toolStripButton2
-            // 
-            toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripButton2.Image = (System.Drawing.Image)resources.GetObject("toolStripButton2.Image");
-            toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
-            toolStripButton2.Name = "toolStripButton2";
-            toolStripButton2.Size = new System.Drawing.Size(34, 28);
-            toolStripButton2.Text = "toolStripButton2";
-            toolStripButton2.Click += toolStripButton2_Click;
+            levelEditorTreeView1.AfterSelect += levelEditorTreeView1_AfterSelect_1;
             // 
             // LevelEditorForm
             // 
@@ -230,7 +243,6 @@ namespace VulkanGameEngineLevelEditor
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
             ClientSize = new System.Drawing.Size(2514, 1201);
-            Controls.Add(dynamicControlPanelView1);
             Controls.Add(levelEditorTreeView1);
             Controls.Add(panel1);
             Controls.Add(richTextBox2);
@@ -240,6 +252,7 @@ namespace VulkanGameEngineLevelEditor
             Margin = new System.Windows.Forms.Padding(4);
             Name = "LevelEditorForm";
             Text = "Vulkan Level Editor - LevelEditorView";
+            Load += LevelEditorForm_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
@@ -268,9 +281,9 @@ namespace VulkanGameEngineLevelEditor
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
-        private DynamicControlPanelView dynamicControlPanelView1;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
+        private DynamicControlPanelView dynamicControlPanelView1;
     }
 }
 

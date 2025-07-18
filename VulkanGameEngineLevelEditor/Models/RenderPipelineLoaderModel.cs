@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 
@@ -9,6 +12,7 @@ namespace VulkanGameEngineLevelEditor.Models
 {
     public unsafe class RenderPipelineLoaderModel : RenderPassEditorBaseModel
     {
+        public string Name { get; set; } = string.Empty;
         public int RenderPipelineId = 0;
         public String VertexShader { get; set; }
         public String FragmentShader { get; set; }
@@ -32,8 +36,25 @@ namespace VulkanGameEngineLevelEditor.Models
         {
         }
 
-        public RenderPipelineLoaderModel(string name) : base(name)
+        public RenderPipelineLoaderModel(string name) : base()
         {
+            Name = name;
+        }
+
+        public int UiPropertiesControls(object obj, int xPosition, int yOffset, int width)
+        {
+            foreach (var prop in obj.GetType().GetProperties())
+            {
+                if (prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute != null)
+                {
+                    continue;
+                }
+                var readOnlyAttribute = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
+                bool readOnly = readOnlyAttribute?.IsReadOnly ?? false;
+
+                System.Windows.Forms.Label label = new System.Windows.Forms.Label { Text = prop.Name, Location = new Point(5, yOffset), AutoSize = true, ForeColor = Color.White };
+            }
+            return yOffset;
         }
     }
 }

@@ -8,17 +8,11 @@ namespace VulkanGameEngineLevelEditor.Models
     [Serializable]
     public abstract class RenderPassEditorBaseModel : INotifyPropertyChanged
     {
-        public string Name { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
         public RenderPassEditorBaseModel()
         {
 
-        }
-
-        public RenderPassEditorBaseModel(string name)
-        {
-            Name = name;
         }
 
         protected virtual T LoadJsonComponent<T>(string jsonPath)

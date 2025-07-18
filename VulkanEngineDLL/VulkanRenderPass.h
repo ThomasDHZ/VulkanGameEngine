@@ -25,10 +25,12 @@ struct VulkanRenderPass
 extern "C" {
 #endif
 	DLL_EXPORT VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassLoader, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
-	DLL_EXPORT void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass);
+	DLL_EXPORT VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& oldVulkanRenderPass, RenderPassLoader renderPassLoader, ivec2& newSwapChainSize, Texture& renderedTextureListPtr, size_t renderedTextureCount, Texture& depthTexture);
+	DLL_EXPORT void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass, Texture& renderedTextureList, Texture& depthTexture, size_t renderedTextureCount);
 
 	VkResult RenderPass_CreateCommandBuffers(const GraphicsRenderer& renderer, VkCommandBuffer* commandBufferList, size_t commandBufferCount);
 	VkRenderPass RenderPass_BuildRenderPass(const GraphicsRenderer& renderer, const RenderPassLoader& renderPassJsonLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture);
+	void RenderPass_BuildRenderPassAttachments(const GraphicsRenderer& renderer, const RenderPassLoader& renderPassJsonLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture);
 #ifdef __cplusplus
 }
 #endif

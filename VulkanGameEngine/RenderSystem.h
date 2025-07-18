@@ -20,6 +20,8 @@ private:
 
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
+    UnorderedMap<RenderPassGuid, RenderPassLoader>                RenderPassLoaderMap;
+    UnorderedMap<RenderPassGuid, Vector<RenderPipelineLoader>>    RenderPipelineLoaderMap;
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
 
     VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);

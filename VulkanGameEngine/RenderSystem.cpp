@@ -46,6 +46,7 @@ VkGuid RenderSystem::CreateVulkanRenderPass(const String& jsonPath, ivec2& rende
 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath.c_str(), renderPassResolution, sizeof(SceneDataBuffer), renderedTextureList[0], renderedTextureCount, depthTexture);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
+    RenderPassLoaderMap[vulkanRenderPass.RenderPassId] = JsonLoader_LoadRenderPassLoaderInfo(jsonPath.c_str(), renderPassResolution);
 
     textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
     if (depthTexture.textureView != VK_NULL_HANDLE)
@@ -58,20 +59,59 @@ VkGuid RenderSystem::CreateVulkanRenderPass(const String& jsonPath, ivec2& rende
 
 void RenderSystem::RecreateSwapchain()
 {
-  /*  int width = 0;
-    int height = 0;
+    vkDeviceWaitIdle(renderer.Device);
+    Renderer_RebuildSwapChain(vulkanWindow->WindowType, vulkanWindow->WindowHandle, renderer);
+    for (auto& renderPass : RenderPassMap)
+    {
+        Texture depthTexture = Texture();
+        VkGuid renderPassGuid = renderPass.second.RenderPassId;
+        ivec2 swapChainSize = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
+        RenderPassLoaderMap[renderPassGuid].RenderArea = RenderAreaModel
+        {
+            .RenderArea = VkRect2D
+            {
+                .offset = VkOffset2D(),
+                .extent = VkExtent2D
+                {
+                    .width = renderer.SwapChainResolution.width,
+                    .height = renderer.SwapChainResolution.height
+                }
+            },
+            .UseDefaultRenderArea = false
+        };
 
-    vkDeviceWaitIdle(*Device.get());
+        Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
+        Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
+        Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
+        Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelSystem.levelLayout.LevelLayoutId);
+        //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
+        Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassGuid, nullptr);
+        Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
+        GPUIncludes include =
+        {
+           .VertexProperties = vertexPropertiesList.data(),
+           .IndexProperties = indexPropertiesList.data(),
+           .TransformProperties = transformPropertiesList.data(),
+           .MeshProperties = meshPropertiesList.data(),
+           .TexturePropertiesList = texturePropertiesList.data(),
+           .MaterialProperties = materialPropertiesList.data(),
+           .VertexPropertiesCount = vertexPropertiesList.size(),
+           .IndexPropertiesCount = indexPropertiesList.size(),
+           .TransformPropertiesCount = transformPropertiesList.size(),
+           .MeshPropertiesCount = meshPropertiesList.size(),
+           .TexturePropertiesListCount = texturePropertiesList.size(),
+           .MaterialPropertiesCount = materialPropertiesList.size()
+        };
 
-    vulkanWindow->GetFrameBufferSize(vulkanWindow, &width, &height);
-    renderer.DestroySwapChainImageView();
-    renderer.DestroySwapChain();
-    renderer.SetUpSwapChain();
-
-    RenderPassID id;
-    id.id = 2;
-
-    RenderPassList[id].RecreateSwapchain(width, height);*/
+        renderPass.second = VulkanRenderPass_RebuildSwapChain(renderer, renderPass.second, RenderPassLoaderMap[renderPassGuid], swapChainSize, textureSystem.FindRenderedTextureList(renderPassGuid)[0], textureSystem.FindRenderedTextureList(renderPassGuid).size(), depthTexture);
+        for (auto& pipelinePair : RenderPipelineMap)
+        {
+            for (auto& pipeline : pipelinePair.second)
+            {
+                pipeline = VulkanPipeline_RebuildSwapChain(renderer.Device, renderPassGuid, pipeline.RenderPipelineId, pipeline, RenderPipelineLoaderMap[renderPassGuid][pipeline.RenderPipelineId], renderPass.second.RenderPass, sizeof(SceneDataBuffer), swapChainSize, include);
+            }
+        }
+    }
 }
 
 VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
@@ -211,9 +251,19 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, Tex
         Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
         Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
         Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelId);
-        //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
-        Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId, &inputTexture);
+        //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);       
         Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
+        Vector<VkDescriptorImageInfo> texturePropertiesList;
+        if (!textureSystem.FindRenderedTextureList(renderPassId).empty())
+        {
+            Texture inputTexture = textureSystem.FindRenderedTextureList(renderPassId)[0];
+            texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId, &inputTexture);
+        }
+        else
+        {
+            Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId, &inputTexture);
+        }
+
         GPUIncludes include =
         {
            .VertexProperties = vertexPropertiesList.data(),
@@ -231,6 +281,7 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, Tex
         };
 
         VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipeLineId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
+        RenderPipelineLoaderMap[renderPassId].emplace_back(JsonLoader_LoadRenderPipelineLoaderInfo(jsonPath.c_str(), renderPassResolution));
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }
 
@@ -453,7 +504,7 @@ void RenderSystem::DestroyRenderPass()
 {
     for (auto& renderPass : RenderPassMap)
     {
-        VulkanRenderPass_DestroyRenderPass(renderer, renderPass.second);
+       // VulkanRenderPass_DestroyRenderPass(renderer, renderPass.second, );
     }
     RenderPassMap.clear();
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -275,7 +276,7 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct VkImageCreateInfo
     {
-        public VkStructureType sType;
+        public VkStructureType sType = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         public void* pNext;
         public VkImageCreateFlagBits flags;
         public VkImageType imageType;
@@ -290,6 +291,16 @@ namespace Vulkan
         public uint queueFamilyIndexCount;
         public uint* pQueueFamilyIndices;
         public VkImageLayout initialLayout;
+
+        public VkImageCreateInfo()
+        {
+        }
+
+        public int UiPropertiesControls(object obj, PropertyInfo property, int xPosition, int yOffset, int width)
+        {
+
+            return yOffset;
+        }
     };
 
     [StructLayout(LayoutKind.Sequential)]

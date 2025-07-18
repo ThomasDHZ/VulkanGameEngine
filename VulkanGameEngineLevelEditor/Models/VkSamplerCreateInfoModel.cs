@@ -12,6 +12,7 @@ namespace VulkanGameEngineLevelEditor.Models
     public unsafe class VkSamplerCreateInfoModel : RenderPassEditorBaseModel
     {
         //  IMapper _mapper;
+        public string Name { get; set; } = string.Empty;
         private VkStructureType _sType = VkStructureType.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         private VkSamplerCreateFlagBits _flags = 0;
         private void* _pNext = null;
@@ -294,69 +295,10 @@ namespace VulkanGameEngineLevelEditor.Models
         {
         }
 
-        public VkSamplerCreateInfoModel(string jsonFilePath) : base()
+        public VkSamplerCreateInfoModel(string name) : base()
         {
-            LoadJsonComponent(jsonFilePath);
+            Name = name;
         }
-
-        public VkSamplerCreateInfoModel(string name, string jsonFilePath) : base(name)
-        {
-            // LoadJsonComponent(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\  \DefaultSubpassDependency.json");
-        }
-
-        public VkSamplerCreateInfo Convert()
-        {
-            return new VkSamplerCreateInfo
-            {
-                sType = VkStructureType.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-                addressModeU = addressModeU,
-                addressModeV = addressModeV,
-                addressModeW = addressModeW,
-                anisotropyEnable = anisotropyEnable,
-                maxAnisotropy = maxAnisotropy,
-                compareEnable = compareEnable,
-                minLod = minLod,
-                maxLod = maxLod,
-                borderColor = borderColor,
-                unnormalizedCoordinates = unnormalizedCoordinates,
-                compareOp = compareOp,
-                flags = flags,
-                magFilter = magFilter,
-                minFilter = minFilter,
-                mipLodBias = mipLodBias,
-                mipmapMode = mipmapMode,
-                pNext = null
-            };
-        }
-
-        //public VkSamplerCreateInfoDLL ToDLL()
-        //{
-        //    fixed (byte* namePtr = System.Text.Encoding.UTF8.GetBytes(_name + "\0"))
-        //    {
-        //        return new VkSamplerCreateInfoDLL
-        //        {
-        //            Name = (IntPtr)namePtr,
-        //            _addressModeU = addressModeU,
-        //            _addressModeV = addressModeV,
-        //            _addressModeW = addressModeW,
-        //            _pNext = null,
-        //            _anisotropyEnable = anisotropyEnable,
-        //            _maxAnisotropy = maxAnisotropy,
-        //            _compareEnable = _compareEnable,
-        //            _minFilter = _minFilter,
-        //            _magFilter = _magFilter,
-        //            _borderColor = _borderColor,
-        //            _unnormalizedCoordinates = _unnormalizedCoordinates,
-        //            _compareOp = _compareOp,
-        //            _flags = _flags,
-        //            _maxLod = _maxLod,
-        //            _minLod = _minLod,
-        //            _mipLodBias = _mipLodBias,
-        //            _mipmapMode = _mipmapMode,
-        //            _sType = _sType,
-        //        };
-        //    }
-        //}
 
         public void LoadJsonComponent(string jsonPath)
         {

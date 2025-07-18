@@ -15,6 +15,7 @@ namespace VulkanGameEngineLevelEditor.Models
     [Serializable]
     public unsafe class RenderedTextureInfoModel : RenderPassEditorBaseModel
     {
+        private string Name = String.Empty;
         private string _renderedTextureInfoName = string.Empty;
         private VkImageCreateInfoModel _imageCreateInfo = new VkImageCreateInfoModel();
         private VkSamplerCreateInfoModel _samplerCreateInfo = new VkSamplerCreateInfoModel();
@@ -102,8 +103,9 @@ namespace VulkanGameEngineLevelEditor.Models
             LoadJsonComponent(jsonFilePath);
         }
 
-        public RenderedTextureInfoModel(string name, string jsonFilePath) : base(name)
+        public RenderedTextureInfoModel(string name, string jsonFilePath) : base()
         {
+            Name = name;
             LoadJsonComponent(jsonFilePath);
         }
 

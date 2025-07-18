@@ -13,8 +13,10 @@ using System.Xml.Linq;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using VulkanGameEngineLevelEditor.Models;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor
 {
@@ -74,23 +76,17 @@ namespace VulkanGameEngineLevelEditor
             var renderPass = new RenderPassLoaderModel(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\DefaultRenderPass.json");
             RenderSystem.RenderPassEditor_RenderPass[renderPass.RenderPassId] = renderPass;
 
-            levelEditorTreeView1.RootObject = new RenderPassLoaderModel();
-            levelEditorTreeView1.dynamicControlPanelView = dynamicControlPanelView1;
-            levelEditorTreeView1.dynamicControlPanelView.SelectedObject = renderPass;
-
-            lock (lockObject)
+            var renderPassLoader = new RenderPassLoaderModel
             {
-                sharedData = levelEditorTreeView1;
-            }
-
-            lock (lockObject)
-            {
-                if (sharedData is LevelEditorTreeView levelEditorTree)
+                renderPipelineModelList = new System.Collections.Generic.List<RenderPipelineLoaderModel>
                 {
-                    levelEditorTree.AddRenderPass(renderPass);
-                    levelEditorTree.PopulateTree();
+                    new RenderPipelineLoaderModel(),
+                    new RenderPipelineLoaderModel()
                 }
-            }
+            };
+            dynamicControlPanelView1.SelectedObject = renderPassLoader;
+            levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+            levelEditorTreeView1.PopulateTreeView(renderPassLoader);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -151,7 +147,7 @@ namespace VulkanGameEngineLevelEditor
                 GameSystem.Draw((float)deltaTime);
                 lock (lockObject)
                 {
-                    dynamicControlPanelView1.UpdateOriginalObject();
+                    // dynamicControlPanelView1.UpdateOriginalObject();
                 }
             }
 
@@ -163,16 +159,16 @@ namespace VulkanGameEngineLevelEditor
             LevelEditorMode = LevelEditorModeEnum.kLevelEditorMode;
 
             this.Text = "Vulkan Level Editor - LevelEditorView";
-            levelEditorTreeView1.RootObject = new GameObject();
-            levelEditorTreeView1.dynamicControlPanelView = dynamicControlPanelView1;
+            //levelEditorTreeView1.RootObject = new GameObject();
+            //levelEditorTreeView1.dynamicControlPanelView = dynamicControlPanelView1;
         }
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
             LevelEditorMode = LevelEditorModeEnum.kRenderPassEditorMode;
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
-            levelEditorTreeView1.RootObject = new RenderPassLoaderModel(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\DefaultRenderPass.json");
-            levelEditorTreeView1.dynamicControlPanelView = dynamicControlPanelView1;
+            //levelEditorTreeView1.RootObject = new RenderPassLoaderModel(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\DefaultRenderPass.json");
+            //levelEditorTreeView1.dynamicControlPanelView = dynamicControlPanelView1;
         }
 
         private void SaveRenderPass_Click(object sender, EventArgs e)
@@ -201,5 +197,19 @@ namespace VulkanGameEngineLevelEditor
 
         }
 
+        private void dynamicControlPanelView1_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void levelEditorTreeView1_AfterSelect_1(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void LevelEditorForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

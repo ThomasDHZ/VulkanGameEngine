@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GlmSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,12 +8,8 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using GlmSharp;
-using VulkanGameEngineLevelEditor.GameEngine.GameObjectComponents;
-using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
@@ -22,12 +20,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
     }
 
     [DesignerCategory("")]
-    public unsafe class DynamicControlPanelView : Panel
+    public class DynamicControlPanelView : TableLayoutPanel
     {
-        private object _targetObject;
-        private Panel _contentPanel;
-        private int yOffset = 5;
-        private List<UpdateProperty> UpdatePropertiesList = new List<UpdateProperty>();
+        private static object _targetObject;
+        private static TableLayoutPanel _contentPanel;
+        public static List<UpdateProperty> UpdatePropertiesList = new List<UpdateProperty>();
+
+        private const int MIN_PANEL_HEIGHT = 40;
+        private const int BUFFER_HEIGHT = 10;
 
         public DynamicControlPanelView()
         {
@@ -38,12 +38,19 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             if (DesignMode) return;
 
-            _contentPanel = new Panel
+            this.Dock = DockStyle.Top;
+            this.AutoScroll = true;
+            this.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            _contentPanel = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BackColor = Color.FromArgb(40, 40, 40),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                ColumnCount = 1,
+                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) },
+                RowStyles = { new RowStyle(SizeType.AutoSize) }
             };
             this.Controls.Add(_contentPanel);
         }
@@ -58,183 +65,239 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 {
                     _targetObject = value;
                     _contentPanel.Controls.Clear();
-                    yOffset = 5;
-                    CreateCustomControls(null, _targetObject);
-                }
-            }
-        }
+                    _contentPanel.RowStyles.Clear();
+                    _contentPanel.RowCount = 0;
 
-        public void UpdateOriginalObject()
-        {
-            foreach(var updateProperty in UpdatePropertiesList)
-            {
-                if(updateProperty.ParentObj is GameObject)
-                {
-                    var parentObj = (GameObject)updateProperty.ParentObj;
-                    if(updateProperty.Obj is Transform2DComponent)
+                    if (_targetObject != null)
                     {
-                        var obj  = (Transform2DComponent)updateProperty.Obj;
-                        GameObjectSystem.Transform2DComponentMap[parentObj.GameObjectId] = obj;
-                    }
-                }
-            }
-            UpdatePropertiesList.Clear();
-        }
-
-        private void CreateCustomControls(object parentObject, object obj)
-        {
-            if (DesignMode || obj == null) return;
-
-            foreach (var prop in obj.GetType().GetProperties())
-            {
-                var ignoreAttr = prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true)
-                   .FirstOrDefault() as IgnorePropertyAttribute;
-                if (ignoreAttr != null) continue;
-
-                Label label = new Label { Text = prop.Name, Location = new Point(5, yOffset), AutoSize = true, ForeColor = Color.White };
-                Control control = CreateControlForProperty(parentObject, obj, prop);
-
-                if (control != null)
-                {
-                    _contentPanel.Controls.Add(label);
-                    _contentPanel.Controls.Add(control);
-                    yOffset += 50; 
-                }
-                else if (prop.PropertyType == typeof(vec2))
-                {
-                    _contentPanel.Controls.Add(label); 
-                    yOffset += 50; 
-                }
-            }
-        }
-
-        private Control CreateControlForProperty(object parentObject, object obj, PropertyInfo prop)
-        {
-            var readOnlyAttr = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
-            bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
-
-            int controlWidth = 45;
-            int totalControlWidth = controlWidth * 2 + 10;
-            int rightMargin = 10;
-            int xPosition = _contentPanel.Width - totalControlWidth - rightMargin;
-
-            if (prop.PropertyType == typeof(string))
-            {
-                return TypeOfString(obj, prop, xPosition, totalControlWidth);
-            }
-            else if (prop.PropertyType == typeof(int))
-            {
-                return TypeOfInt(obj, prop, xPosition, totalControlWidth, isReadOnly);
-            }
-            else if (prop.PropertyType == typeof(uint))
-            {
-                return TypeOfUint(obj, prop, xPosition, totalControlWidth, isReadOnly);
-            }
-            else if(prop.PropertyType == typeof(bool))
-            {
-                //return TypeOfBool(obj, prop, xPosition, totalControlWidth, isReadOnly);
-            }
-            if (prop.PropertyType == typeof(Guid))
-            {
-                return TypeOfGuid(obj, prop, xPosition, totalControlWidth);
-            }
-            else if (prop.PropertyType == typeof(List<ComponentTypeEnum>))
-            {
-                return HandleComponentList(obj, prop, xPosition, totalControlWidth);
-            }
-            else if (prop.PropertyType == typeof(vec2))
-            {
-                TypeOfVec2(parentObject, obj, prop, xPosition, controlWidth);
-                return null;
-            }
-            else if (typeof(IList).IsAssignableFrom(obj.GetType()))
-            {
-                var list = (IList)obj;
-                for (int x = 0; x < list.Count; x++)
-                {
-                    if (list[x] is string)
-                    {
-                        var textBox = new TextBox
+                        CreatePropertyControl(null, _targetObject);
+                        var listProp = _targetObject.GetType().GetProperties()
+                            .FirstOrDefault(p => typeof(IList).IsAssignableFrom(p.PropertyType));
+                        if (listProp != null)
                         {
-                            Location = new Point(xPosition, yOffset),
-                            Size = new Size(xPosition, 30),
-                            Text = (string)list[x] ?? "",
-                            TextAlign = HorizontalAlignment.Left,
-                            BackColor = Color.FromArgb(60, 60, 60),
-                            ForeColor = Color.White
-                        };
-
-                        textBox.TextChanged += (s, e) =>
-                        {
-                            list[x] = ((TextBox)s).Text;
-                        };
-                        _contentPanel.Controls.Add(textBox);
-                        yOffset += 50;
-                    }
-                    else
-                    {
-                        foreach (var subObjectProp in list[x].GetType().GetProperties())
-                        {
-                            CreateControlForProperty(obj, list[x], subObjectProp);
-                            yOffset += 50;
+                            var list = listProp.GetValue(_targetObject) as IList;
+                            if (list != null)
+                            {
+                                foreach (var item in list)
+                                {
+                                    if (item != null)
+                                    {
+                                        CreatePropertyControl(_targetObject, item);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-            else
-            {
-                //var childObj = prop.GetValue(obj);
-                //CreateControlForProperty(obj, childObj, prop);
-            }
-            return null;
         }
 
-        private Control TypeOfString(object obj, PropertyInfo property, int xPosition, int width)
+        public static void CreatePropertyControl(object parentObject, object obj)
+        {
+            if (obj == null) return;
+
+            int rowIndex = _contentPanel.RowCount;
+            _contentPanel.RowCount += 1;
+            _contentPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            var objectPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                BackColor = Color.FromArgb(0, 0, 60),
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(5)
+            };
+            _contentPanel.Controls.Add(objectPanel, 0, rowIndex);
+            _contentPanel.SetRowSpan(objectPanel, 1);
+
+            var headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                BackColor = Color.FromArgb(0, 0, 60),
+                Height = 30
+            };
+            objectPanel.Controls.Add(headerPanel);
+
+            Label objLabel = new Label
+            {
+                Text = obj.GetType().Name,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = Color.White,
+                Margin = new Padding(5)
+            };
+            headerPanel.Controls.Add(objLabel);
+
+            var propTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                AutoScroll = true,
+                BackColor = Color.FromArgb(90, 90, 90),
+                ColumnCount = 2,
+                ColumnStyles =
+                {
+                    new ColumnStyle(SizeType.Percent, 30F),
+                    new ColumnStyle(SizeType.Percent, 70F)
+                },
+                Padding = new Padding(0, 35, 0, 0)
+            };
+            objectPanel.Controls.Add(propTable);
+
+            foreach (var prop in obj.GetType().GetProperties())
+            {
+                var ignoreAttr = prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute;
+                if (ignoreAttr != null)
+                {
+                    continue;
+                }
+
+                var readOnlyAttr = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
+                bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
+
+                int propRowIndex = propTable.RowCount;
+                propTable.RowCount += 1;
+                propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, MIN_PANEL_HEIGHT + BUFFER_HEIGHT));
+                var labelPanel = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.FromArgb(70, 70, 70),
+                    Margin = new Padding(2),
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT + BUFFER_HEIGHT)
+                };
+                propTable.Controls.Add(labelPanel, 0, propRowIndex);
+
+                Label label = new Label
+                {
+                    Text = prop.Name,
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    ForeColor = Color.White,
+                    Margin = new Padding(5)
+                };
+                labelPanel.Controls.Add(label);
+
+                var controlPanel = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.FromArgb(70, 70, 70),
+                    Margin = new Padding(2),
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT + BUFFER_HEIGHT)
+                };
+                propTable.Controls.Add(controlPanel, 1, propRowIndex);
+
+                Control control = null;
+                if (typeof(IList).IsAssignableFrom(prop.PropertyType))
+                {
+                    var list = prop.GetValue(obj) as IList;
+                    if (list != null &&
+                        list.Count > 0)
+                    {
+                        if (!typeof(IEnumerable<string>).IsAssignableFrom(prop.PropertyType))
+                        {
+                            foreach (var childObj in list)
+                            {
+                                if (childObj != null)
+                                {
+                                    CreatePropertyControl(obj, childObj);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            control = TypeOfString(obj, prop, isReadOnly);
+                        }
+                    }
+                }
+                else if (prop.PropertyType == typeof(string))
+                {
+                    control = TypeOfString(obj, prop, isReadOnly);
+                }
+                else if (prop.PropertyType == typeof(int))
+                {
+                    control = TypeOfInt(obj, prop, isReadOnly);
+                }
+                else if (prop.PropertyType == typeof(uint))
+                {
+                    control = TypeOfUint(obj, prop, isReadOnly);
+                }
+                else if (prop.PropertyType == typeof(bool))
+                {
+                    control = TypeOfBool(obj, prop, isReadOnly);
+                }
+                else if (prop.PropertyType == typeof(Guid))
+                {
+                    control = TypeOfGuid(obj, prop, isReadOnly);
+                }
+                else if (prop.PropertyType == typeof(List<ComponentTypeEnum>))
+                {
+                    control = TypeOfComponentList(obj, prop, isReadOnly);
+                }
+                else if (prop.PropertyType == typeof(vec2))
+                {
+                    TypeOfVec2(parentObject, obj, prop, controlPanel, isReadOnly);
+                    control = null;
+                }
+
+                if (control != null)
+                {
+                    control.Dock = DockStyle.Fill;
+                    control.Margin = new Padding(5);
+                    controlPanel.Controls.Add(control);
+                }
+            }
+        }
+
+        public static Control TypeOfString(object obj, PropertyInfo property, bool readOnly)
         {
             var textBox = new TextBox
             {
-                Location = new Point(xPosition, yOffset),
-                Size = new Size(width, 30),
+                Dock = DockStyle.Fill,
                 Text = property.GetValue(obj)?.ToString() ?? "",
                 TextAlign = HorizontalAlignment.Left,
                 BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                ReadOnly = readOnly,
+                MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
             };
-            textBox.TextChanged += (s, e) => property.SetValue(obj, ((TextBox)s).Text);
+            if (!readOnly)
+            {
+                textBox.TextChanged += (s, e) => property.SetValue(obj, ((TextBox)s).Text);
+            }
             return textBox;
         }
 
-        private Control TypeOfGuid(object obj, PropertyInfo property, int xPosition, int width)
+        public static Control TypeOfGuid(object obj, PropertyInfo property, bool readOnly)
         {
             string guid = ((Guid)property.GetValue(obj)).ToString();
             var textBox = new TextBox
             {
-                Location = new Point(xPosition, yOffset),
-                Size = new Size(width, 30),
+                Dock = DockStyle.Fill,
                 Text = guid ?? "",
                 TextAlign = HorizontalAlignment.Left,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
-                ReadOnly = true
+                ReadOnly = true,
+                MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
             };
-            textBox.TextChanged += (s, e) => property.SetValue(obj, ((TextBox)s).Text);
             return textBox;
         }
 
-        private Control TypeOfBool(object obj, PropertyInfo property, int xPosition, int width, bool readOnly)
+        public static Control TypeOfBool(object obj, PropertyInfo property, bool readOnly)
         {
-            int value = (int)property.GetValue(obj);
+            bool value = (bool)property.GetValue(obj);
             if (readOnly)
             {
                 var labelDisplay = new Label
                 {
-                    Location = new Point(xPosition, yOffset),
-                    Size = new Size(width, 30),
+                    Dock = DockStyle.Fill,
                     Text = value.ToString() ?? "N/A",
                     TextAlign = ContentAlignment.MiddleRight,
                     BackColor = Color.FromArgb(60, 60, 60),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ForeColor = Color.White
+                    ForeColor = Color.White,
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
                 };
                 return labelDisplay;
             }
@@ -242,15 +305,15 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 var checkBox = new CheckBox
                 {
-                    Location = new Point(xPosition, yOffset),
-                    Size = new Size(width, 30),
+                    Dock = DockStyle.Fill,
+                    Checked = value,
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
                 };
-
                 checkBox.CheckedChanged += (s, e) =>
                 {
                     try
                     {
-                        property.SetValue(obj, (bool)((CheckBox)s).Checked);
+                        property.SetValue(obj, ((CheckBox)s).Checked);
                     }
                     catch (Exception ex)
                     {
@@ -261,20 +324,20 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
         }
 
-        private Control TypeOfInt(object obj, PropertyInfo property, int xPosition, int width, bool readOnly)
+        public static Control TypeOfInt(object obj, PropertyInfo property, bool readOnly)
         {
             int value = (int)property.GetValue(obj);
             if (readOnly)
             {
                 var labelDisplay = new Label
                 {
-                    Location = new Point(xPosition, yOffset),
-                    Size = new Size(width, 30),
+                    Dock = DockStyle.Fill,
                     Text = value.ToString() ?? "N/A",
                     TextAlign = ContentAlignment.MiddleRight,
                     BackColor = Color.FromArgb(60, 60, 60),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ForeColor = Color.White
+                    ForeColor = Color.White,
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
                 };
                 return labelDisplay;
             }
@@ -282,11 +345,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 var numeric = new NumericUpDown
                 {
-                    Location = new Point(xPosition, yOffset),
-                    Size = new Size(width, 30),
+                    Dock = DockStyle.Fill,
                     Minimum = (decimal)int.MinValue,
                     Maximum = (decimal)int.MaxValue,
-                    Value = (decimal)Math.Max(int.MinValue, Math.Min(int.MaxValue, value))
+                    Value = (decimal)Math.Max(int.MinValue, Math.Min(int.MaxValue, value)),
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
                 };
                 numeric.ValueChanged += (s, e) =>
                 {
@@ -303,20 +366,20 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
         }
 
-        private Control TypeOfUint(object obj, PropertyInfo property, int xPosition, int width, bool readOnly)
+        public static Control TypeOfUint(object obj, PropertyInfo property, bool readOnly)
         {
             uint value = (uint)property.GetValue(obj);
             if (readOnly)
             {
                 var labelDisplay = new Label
                 {
-                    Location = new Point(xPosition, yOffset),
-                    Size = new Size(width, 30),
+                    Dock = DockStyle.Fill,
                     Text = value.ToString() ?? "N/A",
                     TextAlign = ContentAlignment.MiddleRight,
                     BackColor = Color.FromArgb(60, 60, 60),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ForeColor = Color.White
+                    ForeColor = Color.White,
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
                 };
                 return labelDisplay;
             }
@@ -324,17 +387,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 var numeric = new NumericUpDown
                 {
-                    Location = new Point(xPosition, yOffset),
-                    Size = new Size(width, 30),
+                    Dock = DockStyle.Fill,
                     Minimum = (decimal)0,
                     Maximum = (decimal)uint.MaxValue,
-                    Value = (decimal)Math.Max(int.MinValue, Math.Min(int.MaxValue, value))
+                    Value = (decimal)value,
+                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
                 };
                 numeric.ValueChanged += (s, e) =>
                 {
                     try
                     {
-                        property.SetValue(obj, (int)((NumericUpDown)s).Value);
+                        property.SetValue(obj, (uint)((NumericUpDown)s).Value);
                     }
                     catch (Exception ex)
                     {
@@ -345,7 +408,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
         }
 
-        private Control HandleComponentList(object parentObj, PropertyInfo prop, int xPosition, int width)
+        public static Control TypeOfComponentList(object parentObj, PropertyInfo prop, bool readOnly)
         {
             var gameObject = parentObj as GameObject;
             if (gameObject != null)
@@ -356,82 +419,112 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     switch (component)
                     {
                         case ComponentTypeEnum.kTransform2DComponent:
-                            if (GameObjectSystem.Transform2DComponentMap.TryGetValue(gameObject.GameObjectId, out var transformComponent))
                             {
-                                CreateCustomControls(parentObj, transformComponent);
+                                if (GameObjectSystem.Transform2DComponentMap.TryGetValue(gameObject.GameObjectId, out var transformComponent))
+                                {
+                                    CreatePropertyControl(parentObj, transformComponent);
+                                }
+                                break;
                             }
-                            break;
                         case ComponentTypeEnum.kInputComponent:
-                            if (GameObjectSystem.InputComponentMap.TryGetValue(gameObject.GameObjectId, out var inputComponent))
                             {
-                                CreateCustomControls(parentObj, inputComponent);
+                                if (GameObjectSystem.InputComponentMap.TryGetValue(gameObject.GameObjectId, out var inputComponent))
+                                {
+                                    CreatePropertyControl(parentObj, inputComponent);
+                                }
+                                break;
                             }
-                            break;
                         case ComponentTypeEnum.kSpriteComponent:
-                            var spriteComponent = SpriteSystem.FindSprite(gameObject.GameObjectId);
                             {
-                                CreateCustomControls(parentObj, spriteComponent);
+                                var spriteComponent = SpriteSystem.FindSprite(gameObject.GameObjectId);
+                                CreatePropertyControl(parentObj, spriteComponent);
+                                break;
                             }
-                            break;
                     }
                 }
             }
             return null;
         }
 
-        private void TypeOfVec2(object parentObject, object obj, PropertyInfo property, int xPosition, int controlWidth)
+        public static void TypeOfVec2(object parentObject, object obj, PropertyInfo property, Panel controlPanel, bool readOnly)
         {
             var vec2Value = (vec2)property.GetValue(obj);
+            int rowIndex = 0;
+
+            var vec2Panel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Color.FromArgb(70, 70, 70),
+                ColumnCount = 2,
+                ColumnStyles =
+                {
+                    new ColumnStyle(SizeType.Percent, 50F),
+                    new ColumnStyle(SizeType.Percent, 50F)
+                },
+                RowStyles = { new RowStyle(SizeType.AutoSize, MIN_PANEL_HEIGHT + BUFFER_HEIGHT) }
+            };
+            controlPanel.Controls.Add(vec2Panel);
+
+            var xLabelPanel = AddPanel();
+            var xLabel = new Label { Text = "X", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
+            xLabelPanel.Controls.Add(xLabel);
+            vec2Panel.Controls.Add(xLabelPanel, 0, rowIndex);
+
+            var xControlPanel = AddPanel();
             var numericX = new NumericUpDown
             {
-                Minimum = 0,
-                Maximum = 1000,
-                Width = 100,
+                Dock = DockStyle.Fill,
+                Minimum = decimal.MinValue,
+                Maximum = decimal.MaxValue,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
-                Location = new Point(xPosition - controlWidth - 100, yOffset),
-                TextAlign = HorizontalAlignment.Left,
                 Value = (decimal)vec2Value.x,
+                MinimumSize = new Size(0, MIN_PANEL_HEIGHT),
+                Margin = new Padding(5)
             };
+            xControlPanel.Controls.Add(numericX);
+            vec2Panel.Controls.Add(xControlPanel, 1, rowIndex);
 
+            rowIndex++;
+            vec2Panel.RowCount += 1;
+            vec2Panel.RowStyles.Add(new RowStyle(SizeType.AutoSize, MIN_PANEL_HEIGHT + BUFFER_HEIGHT));
+
+            var yLabelPanel = AddPanel();
+            var yLabel = new Label { Text = "Y", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
+            yLabelPanel.Controls.Add(yLabel);
+            vec2Panel.Controls.Add(yLabelPanel, 0, rowIndex);
+
+            var yControlPanel = AddPanel();
             var numericY = new NumericUpDown
             {
-                Minimum = 0,
-                Maximum = 1000,
-                Width = 100,
+                Dock = DockStyle.Fill,
+                Minimum = decimal.MinValue,
+                Maximum = decimal.MaxValue,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
-                Location = new Point(xPosition, yOffset),
-                TextAlign = HorizontalAlignment.Left,
                 Value = (decimal)vec2Value.y,
+                MinimumSize = new Size(0, MIN_PANEL_HEIGHT),
+                Margin = new Padding(5)
             };
+            yControlPanel.Controls.Add(numericY);
+            vec2Panel.Controls.Add(yControlPanel, 1, rowIndex);
 
             numericX.ValueChanged += (s, e) =>
             {
-                var newVec2 = new vec2((float)((NumericUpDown)s).Value, vec2Value.y);
+                var newX = (float)((NumericUpDown)s).Value;
+                var newVec2 = new vec2(newX, vec2Value.y);
                 property.SetValue(obj, newVec2);
-                vec2Value = newVec2;
-                UpdatePropertiesList.Add(new UpdateProperty
-                {
-                    ParentObj = parentObject,
-                    Obj = obj
-                });
+                UpdatePropertiesList.Add(new UpdateProperty { ParentObj = parentObject, Obj = obj });
             };
 
             numericY.ValueChanged += (s, e) =>
             {
-                var newVec2 = new vec2(vec2Value.x, (float)((NumericUpDown)s).Value);
+                var newY = (float)((NumericUpDown)s).Value;
+                var newVec2 = new vec2(vec2Value.x, newY);
                 property.SetValue(obj, newVec2);
-                vec2Value = newVec2;
-                UpdatePropertiesList.Add(new UpdateProperty
-                {
-                    ParentObj = parentObject,
-                    Obj = obj
-                });
+                UpdatePropertiesList.Add(new UpdateProperty { ParentObj = parentObject, Obj = obj });
             };
-
-            _contentPanel.Controls.Add(numericX);
-            _contentPanel.Controls.Add(numericY);
         }
 
         protected override void OnResize(EventArgs e)
@@ -440,27 +533,21 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             if (!DesignMode && _targetObject != null)
             {
                 _contentPanel.Controls.Clear();
-                yOffset = 5;
-                CreateCustomControls(null, _targetObject);
+                _contentPanel.RowStyles.Clear();
+                _contentPanel.RowCount = 0;
+                CreatePropertyControl(null, _targetObject);
             }
         }
 
-        private bool IsSimpleType(Type type)
+        private static Panel AddPanel()
         {
-            return type == typeof(string)
-                   || type == typeof(decimal)
-                   || type == typeof(int)
-                   || type == typeof(uint)
-                   || type == typeof(float)
-                   || type == typeof(double)
-                   || type == typeof(bool)
-                   || type == typeof(byte)
-                   || type == typeof(sbyte)
-                   || type == typeof(short)
-                   || type == typeof(ushort)
-                   || type == typeof(long)
-                   || type == typeof(ulong)
-                   || type == typeof(char);
+            return new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(60, 60, 60),
+                Margin = new Padding(2),
+                MinimumSize = new Size(0, MIN_PANEL_HEIGHT + BUFFER_HEIGHT)
+            };
         }
     }
 }

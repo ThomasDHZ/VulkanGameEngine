@@ -57,6 +57,14 @@ GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandl
     return renderer;
 }
 
+GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
+{
+    Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], MAX_FRAMES_IN_FLIGHT);
+    Renderer_DestroySwapChain(renderer.Device, &renderer.Swapchain);
+    Renderer_SetUpSwapChain(windowType, windowHandle, renderer);
+    return renderer;
+}
+
 VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities = SwapChain_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);

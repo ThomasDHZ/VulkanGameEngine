@@ -102,6 +102,7 @@ extern "C" {
 	DLL_EXPORT void SetLogVulkanMessageCallback(LogVulkanMessageCallback callback);
 	DLL_EXPORT void LogVulkanMessage(const char* message, int severity);
 	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle);
+	DLL_EXPORT GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer);
 	DLL_EXPORT VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 	DLL_EXPORT VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
 	DLL_EXPORT void Renderer_DestroyRenderer(GraphicsRenderer& renderer);

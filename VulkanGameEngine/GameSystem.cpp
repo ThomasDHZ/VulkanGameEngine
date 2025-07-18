@@ -75,7 +75,7 @@ void GameSystem::Draw(const float& deltaTime)
 {
     VULKAN_RESULT(renderSystem.StartFrame());
     levelSystem.Draw(CommandBufferSubmitList, deltaTime);
-    CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, renderSystem.imGuiRenderer));
+ //   CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, renderSystem.imGuiRenderer));
     VULKAN_RESULT(renderSystem.EndFrame(CommandBufferSubmitList));
     CommandBufferSubmitList.clear();
 }
