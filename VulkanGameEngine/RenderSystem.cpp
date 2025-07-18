@@ -280,8 +280,9 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, Tex
            .MaterialPropertiesCount = materialPropertiesList.size()
         };
 
+        RenderPipelineLoader pipelineLoader = JsonLoader_LoadRenderPipelineLoaderInfo(pipelineJson.c_str(), renderPassResolution);
         VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipeLineId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
-        RenderPipelineLoaderMap[renderPassId].emplace_back(JsonLoader_LoadRenderPipelineLoaderInfo(jsonPath.c_str(), renderPassResolution));
+        RenderPipelineLoaderMap[renderPassId].emplace_back(pipelineLoader);
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }
 
