@@ -32,12 +32,9 @@ namespace VulkanGameEngineLevelEditor
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
-            pictureBox1 = new System.Windows.Forms.PictureBox();
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             toolStripButton2 = new System.Windows.Forms.ToolStripButton();
-            panel1 = new System.Windows.Forms.Panel();
-            dynamicControlPanelView1 = new DynamicControlPanelView();
             richTextBox2 = new System.Windows.Forms.RichTextBox();
             dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -50,23 +47,17 @@ namespace VulkanGameEngineLevelEditor
             fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            dynamicControlPanelView1 = new DynamicControlPanelView();
+            tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             levelEditorTreeView1 = new LevelEditorTreeView();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            pictureBox1 = new System.Windows.Forms.PictureBox();
             toolStrip1.SuspendLayout();
-            panel1.SuspendLayout();
             menuStrip1.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            pictureBox1.Location = new System.Drawing.Point(0, 0);
-            pictureBox1.Margin = new System.Windows.Forms.Padding(4);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new System.Drawing.Size(2514, 955);
-            pictureBox1.TabIndex = 2;
-            pictureBox1.TabStop = false;
             // 
             // toolStrip1
             // 
@@ -97,33 +88,6 @@ namespace VulkanGameEngineLevelEditor
             toolStripButton2.Size = new System.Drawing.Size(34, 28);
             toolStripButton2.Text = "toolStripButton2";
             toolStripButton2.Click += toolStripButton2_Click;
-            // 
-            // panel1
-            // 
-            panel1.Controls.Add(dynamicControlPanelView1);
-            panel1.Controls.Add(pictureBox1);
-            panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            panel1.Location = new System.Drawing.Point(0, 66);
-            panel1.Margin = new System.Windows.Forms.Padding(4);
-            panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(2514, 955);
-            panel1.TabIndex = 5;
-            // 
-            // dynamicControlPanelView1
-            // 
-            dynamicControlPanelView1.AutoScroll = true;
-            dynamicControlPanelView1.ColumnCount = 1;
-            dynamicControlPanelView1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            dynamicControlPanelView1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            dynamicControlPanelView1.Dock = System.Windows.Forms.DockStyle.Right;
-            dynamicControlPanelView1.Location = new System.Drawing.Point(2104, 0);
-            dynamicControlPanelView1.Name = "dynamicControlPanelView1";
-            dynamicControlPanelView1.RowCount = 1;
-            dynamicControlPanelView1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            dynamicControlPanelView1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            dynamicControlPanelView1.SelectedObject = null;
-            dynamicControlPanelView1.Size = new System.Drawing.Size(410, 955);
-            dynamicControlPanelView1.TabIndex = 13;
             // 
             // richTextBox2
             // 
@@ -223,19 +187,63 @@ namespace VulkanGameEngineLevelEditor
             loadToolStripMenuItem.Size = new System.Drawing.Size(153, 34);
             loadToolStripMenuItem.Text = "Load";
             // 
+            // dynamicControlPanelView1
+            // 
+            dynamicControlPanelView1.AutoScroll = true;
+            dynamicControlPanelView1.AutoSize = true;
+            dynamicControlPanelView1.ColumnCount = 1;
+            dynamicControlPanelView1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            dynamicControlPanelView1.Dock = System.Windows.Forms.DockStyle.Right;
+            dynamicControlPanelView1.Location = new System.Drawing.Point(2308, 66);
+            dynamicControlPanelView1.Name = "dynamicControlPanelView1";
+            dynamicControlPanelView1.RowCount = 1;
+            dynamicControlPanelView1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            dynamicControlPanelView1.SelectedObject = null;
+            dynamicControlPanelView1.Size = new System.Drawing.Size(206, 955);
+            dynamicControlPanelView1.TabIndex = 14;
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.ColumnCount = 1;
+            tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(levelEditorTreeView1, 0, 0);
+            tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
+            tableLayoutPanel1.Location = new System.Drawing.Point(0, 66);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            tableLayoutPanel1.Size = new System.Drawing.Size(300, 955);
+            tableLayoutPanel1.TabIndex = 16;
+            // 
             // levelEditorTreeView1
             // 
-            levelEditorTreeView1.BackColor = System.Drawing.Color.FromArgb(30, 30, 30);
-            levelEditorTreeView1.Dock = System.Windows.Forms.DockStyle.Left;
-            levelEditorTreeView1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            levelEditorTreeView1.ForeColor = System.Drawing.Color.White;
-            levelEditorTreeView1.LineColor = System.Drawing.Color.White;
-            levelEditorTreeView1.Location = new System.Drawing.Point(0, 66);
-            levelEditorTreeView1.Margin = new System.Windows.Forms.Padding(4);
+            levelEditorTreeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            levelEditorTreeView1.Location = new System.Drawing.Point(3, 3);
             levelEditorTreeView1.Name = "levelEditorTreeView1";
-            levelEditorTreeView1.Size = new System.Drawing.Size(293, 955);
-            levelEditorTreeView1.TabIndex = 10;
-            levelEditorTreeView1.AfterSelect += levelEditorTreeView1_AfterSelect_1;
+            levelEditorTreeView1.Size = new System.Drawing.Size(294, 949);
+            levelEditorTreeView1.TabIndex = 0;
+            // 
+            // tableLayoutPanel2
+            // 
+            tableLayoutPanel2.ColumnCount = 1;
+            tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            tableLayoutPanel2.Controls.Add(pictureBox1, 0, 0);
+            tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            tableLayoutPanel2.Location = new System.Drawing.Point(300, 66);
+            tableLayoutPanel2.Name = "tableLayoutPanel2";
+            tableLayoutPanel2.RowCount = 1;
+            tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            tableLayoutPanel2.Size = new System.Drawing.Size(2008, 955);
+            tableLayoutPanel2.TabIndex = 17;
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            pictureBox1.Location = new System.Drawing.Point(3, 3);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new System.Drawing.Size(2002, 949);
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
             // 
             // LevelEditorForm
             // 
@@ -243,8 +251,9 @@ namespace VulkanGameEngineLevelEditor
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
             ClientSize = new System.Drawing.Size(2514, 1201);
-            Controls.Add(levelEditorTreeView1);
-            Controls.Add(panel1);
+            Controls.Add(tableLayoutPanel2);
+            Controls.Add(tableLayoutPanel1);
+            Controls.Add(dynamicControlPanelView1);
             Controls.Add(richTextBox2);
             Controls.Add(toolStrip1);
             Controls.Add(menuStrip1);
@@ -253,21 +262,21 @@ namespace VulkanGameEngineLevelEditor
             Name = "LevelEditorForm";
             Text = "Vulkan Level Editor - LevelEditorView";
             Load += LevelEditorForm_Load;
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            Resize += LevelEditorForm_Resize;
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
-            panel1.ResumeLayout(false);
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
-        private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.RichTextBox richTextBox2;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
@@ -275,7 +284,6 @@ namespace VulkanGameEngineLevelEditor
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
-        private LevelEditorTreeView levelEditorTreeView1;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
@@ -283,7 +291,11 @@ namespace VulkanGameEngineLevelEditor
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
-        private DynamicControlPanelView dynamicControlPanelView1;
+        public DynamicControlPanelView dynamicControlPanelView1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private LevelEditorTreeView levelEditorTreeView1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

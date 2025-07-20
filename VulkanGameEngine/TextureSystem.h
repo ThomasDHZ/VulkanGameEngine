@@ -38,6 +38,12 @@ public:
 	Vector<Texture>& FindRenderedTextureList(const RenderPassGuid& guid);
 	Vector<Texture>& FindInputTextureList(const RenderPassGuid& guid, const UM_RenderPipelineID& pipelineId);
 
+	bool TextureExists(const RenderPassGuid& guid);
+	bool DepthTextureExists(const RenderPassGuid& guid);
+	bool RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid);
+	bool RenderedTextureListExists(const RenderPassGuid& guid);
+	bool InputTextureListExists(const RenderPassGuid& guid, const UM_RenderPipelineID& pipelineId);
+
 	const Vector<Texture> TextureList();
 	const Vector<Texture> DepthTextureList();
 	const Vector<Texture> InputTextureList(const RenderPassGuid& guid, const UM_RenderPipelineID& renderPipelineId);

@@ -14,9 +14,9 @@ RenderPassLoader JsonLoader_LoadRenderPassLoaderInfo(const char* renderPassLoade
         json.at("RenderedTextureInfoModelList").get_to(renderPassLoader.RenderedTextureInfoModelList);
         json.at("SubpassDependencyList").get_to(renderPassLoader.SubpassDependencyModelList);
         json.at("ClearValueList").get_to(renderPassLoader.ClearValueList);
-        json.at("RenderArea").get_to(renderPassLoader.RenderArea);
-        if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+        if (!renderPassLoader.IsRenderedToSwapchain)
         {
+            json.at("RenderArea").get_to(renderPassLoader.RenderArea);
             renderPassLoader.RenderArea.RenderArea.extent.width = defaultRenderPassResoultion.x;
             renderPassLoader.RenderArea.RenderArea.extent.height = defaultRenderPassResoultion.y;
             for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
@@ -68,13 +68,19 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
         {
             renderPipelineLoader.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);
         }
-        for (int x = 0; x < j.at("ViewportList").size(); x++)
+        if (j.contains("ViewportList"))
         {
-            renderPipelineLoader.ViewportList.emplace_back(Json_LoadViewPort(j.at("ViewportList")[x]));
+            for (int x = 0; x < j.at("ViewportList").size(); x++)
+            {
+                renderPipelineLoader.ViewportList.emplace_back(Json_LoadViewPort(j.at("ViewportList")[x]));
+            }
         }
-        for (int x = 0; x < j.at("ScissorList").size(); x++)
+        if (j.contains("ScissorList"))
         {
-            renderPipelineLoader.ScissorList.emplace_back(Json_LoadRect2D(j.at("ScissorList")[x]));
+            for (int x = 0; x < j.at("ScissorList").size(); x++)
+            {
+                renderPipelineLoader.ScissorList.emplace_back(Json_LoadRect2D(j.at("ScissorList")[x]));
+            }
         }
         for (int x = 0; x < j.at("VertexInputBindingDescriptionList").size(); x++)
         {

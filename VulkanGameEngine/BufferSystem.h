@@ -85,6 +85,31 @@ public:
 		VulkanBuffer_UpdateBufferMemory(renderer, VulkanBufferMap[bufferId], bufferData.data(), bufferElementSize, bufferElementCount);
 	}
 
+	template<class T>
+	std::vector<T> CheckBufferMemory(GraphicsRenderer& renderer, int vulkanBufferId)
+	{
+		VulkanBuffer& vulkanBuffer = FindVulkanBuffer(vulkanBufferId);
+
+		Vector<T> DataList;
+		size_t dataListSize = vulkanBuffer.BufferSize / sizeof(T);
+
+		void* data = Buffer_MapBufferMemory(renderSystem.renderer, vulkanBuffer.BufferMemory, vulkanBuffer.BufferSize, &vulkanBuffer.IsMapped);
+		if (data == nullptr) {
+			std::cerr << "Failed to map buffer memory\n";
+			return DataList;
+		}
+
+		char* newPtr = static_cast<char*>(data);
+		for (size_t x = 0; x < dataListSize; ++x)
+		{
+			DataList.emplace_back(*reinterpret_cast<T*>(newPtr));
+			newPtr += sizeof(T);
+		}
+		Buffer_UnmapBufferMemory(renderSystem.renderer, vulkanBuffer.BufferMemory, &vulkanBuffer.IsMapped);
+
+		return DataList;
+	}
+
 	const VulkanBuffer& FindVulkanBuffer(int id);
 	const Vector<VulkanBuffer>& VulkanBufferList();
 

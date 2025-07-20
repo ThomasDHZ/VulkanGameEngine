@@ -50,6 +50,7 @@ namespace VulkanGameEngineLevelEditor
         public LevelEditorForm()
         {
             InitializeComponent();
+            AllocConsole();
 
             this.Load += Form1_Load;
 
@@ -210,6 +211,15 @@ namespace VulkanGameEngineLevelEditor
         private void LevelEditorForm_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void LevelEditorForm_Resize(object sender, EventArgs e)
+        {
+            this.Invoke(new Action(() =>
+            {
+                RenderSystem.RebuildRendererFlag = true;
+                RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f);
+            }));
         }
     }
 }

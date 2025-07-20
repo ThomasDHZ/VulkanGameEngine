@@ -110,14 +110,18 @@ Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& guid)
 
 Texture& TextureSystem::FindRenderedTexture(const RenderPassGuid& guid, const TextureGuid& textureGuid)
 {
-    auto it = RenderedTextureListMap.find(guid);
-    if (it != RenderedTextureListMap.end())
-    {
-        for (auto& texture : it->second)
+    auto findTextureByGuid = [&](const RenderPassGuid& guid, const TextureGuid& textureGuid) -> Texture&
         {
-            return texture;
-        }
-    }
+            auto it = RenderedTextureListMap.find(guid);
+            if (it != RenderedTextureListMap.end())
+            {
+                auto texIt = std::find_if(it->second.begin(), it->second.end(), [&](const Texture& texture) { return texture.textureId == textureGuid; });
+                if (texIt != it->second.end())
+                {
+                    return *texIt;
+                }
+            }
+        };
     throw std::out_of_range("RenderedTexture not found for given GUID");
 }
 
@@ -146,6 +150,65 @@ Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& gu
     }
     throw std::out_of_range("InputTextureList not found for given GUID");
 }
+
+ bool TextureSystem::TextureExists(const RenderPassGuid& guid)
+ {
+     auto it = TextureMap.find(guid);
+     if (it != TextureMap.end())
+     {
+         return true;
+     }
+     return false;
+ }
+
+ bool TextureSystem::DepthTextureExists(const RenderPassGuid& guid)
+ {
+     auto it = DepthTextureMap.find(guid);
+     if (it != DepthTextureMap.end())
+     {
+         return true;
+     }
+     return false;
+ }
+
+ bool TextureSystem::RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid)
+ {
+     auto exists = [&](const RenderPassGuid& g, const TextureGuid& tGuid) -> bool
+         {
+             auto it = RenderedTextureListMap.find(g);
+             if (it != RenderedTextureListMap.end())
+             {
+                 auto texIt = std::find_if(it->second.begin(), it->second.end(),
+                     [&](const Texture& texture) { return texture.textureId == tGuid; });
+                 if (texIt != it->second.end())
+                 {
+                     return true;
+                 }
+             }
+             return false;
+         };
+     return exists(guid, textureGuid);
+ }
+
+ bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& guid)
+ {
+     auto it = RenderedTextureListMap.find(guid);
+     if (it != RenderedTextureListMap.end())
+     {
+         return true;
+     }
+     return false;
+ }
+
+ bool TextureSystem::InputTextureListExists(const RenderPassGuid& guid, const UM_RenderPipelineID& pipelineId)
+ {
+     auto it = InputTextureListMap.find(pipelineId);
+     if (it != InputTextureListMap.end())
+     {
+         return true;
+     }
+     return false;
+ }
 
 const Vector<Texture> TextureSystem::TextureList()
 {

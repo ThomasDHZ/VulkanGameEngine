@@ -1,28 +1,6 @@
 {
   "VertexShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\FrameBufferShaderVert.spv",
   "FragmentShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\FrameBufferShaderFrag.spv",
-  "ViewportList": [
-    {
-      "x": 0,
-      "y": 0,
-      "width": 0,
-      "height": 0,
-      "minDepth": 0.0,
-      "maxDepth": 1
-    }
-  ],
-  "ScissorList": [
-    {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  ],
   "VertexType": 0,
   "DescriptorSetCount": 1,
   "DescriptorSetLayoutCount": 1,

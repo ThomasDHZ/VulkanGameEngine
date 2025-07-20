@@ -61,134 +61,22 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
 {
     vkDeviceWaitIdle(renderer.Device);
     Renderer_RebuildSwapChain(vulkanWindow->WindowType, vulkanWindow->WindowHandle, renderer);
-    DestroyRenderPasses();
-    DestroyRenderPipelines();
+    for (auto& renderPassPair : RenderPassMap)
+    {
+        VulkanRenderPass& renderPass = renderPassPair.second;
+        ivec2 swapChainResolution = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
+        String renderPassJsonLoader = RenderPassLoaderJsonMap[renderPass.RenderPassId];
+        Vector<Texture>& renderedTextureList = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
 
-    VkGuid dummyGuid = VkGuid();
-    LoadRenderPass(levelId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-    LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", textureSystem.FindRenderedTextureList(spriteRenderPass2DId)[0], ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+        Texture depthTexture = Texture();
+        if (textureSystem.DepthTextureExists(renderPass.RenderPassId))
+        {
+            depthTexture = textureSystem.FindDepthTexture(renderPass.RenderPassId);
+        }
 
-
-    //nlohmann::json json = Json::ReadJson(jsonPath);
-    //VkGuid renderPassId = CreateVulkanRenderPass(jsonPath, renderPassResolution);
-    //for (int x = 0; x < json["RenderPipelineList"].size(); x++)
-    //{
-    //    uint pipeLineId = renderSystem.RenderPassMap.size();
-    //    String pipelineJson = json["RenderPipelineList"][x];
-
-    //    Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
-    //    Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
-    //    Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
-    //    Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelId);
-    //    //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
-    //    Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId, &inputTexture);
-    //    Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
-    //    GPUIncludes include =
-    //    {
-    //       .VertexProperties = vertexPropertiesList.data(),
-    //       .IndexProperties = indexPropertiesList.data(),
-    //       .TransformProperties = transformPropertiesList.data(),
-    //       .MeshProperties = meshPropertiesList.data(),
-    //       .TexturePropertiesList = texturePropertiesList.data(),
-    //       .MaterialProperties = materialPropertiesList.data(),
-    //       .VertexPropertiesCount = vertexPropertiesList.size(),
-    //       .IndexPropertiesCount = indexPropertiesList.size(),
-    //       .TransformPropertiesCount = transformPropertiesList.size(),
-    //       .MeshPropertiesCount = meshPropertiesList.size(),
-    //       .TexturePropertiesListCount = texturePropertiesList.size(),
-    //       .MaterialPropertiesCount = materialPropertiesList.size()
-    //    };
-
-    //    VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipeLineId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
-    //    RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
-    //}
-
-    //for (auto& renderPass : RenderPassMap)
-    //{
-    //    Texture depthTexture = Texture();
-    //    VkGuid renderPassGuid = renderPass.second.RenderPassId;
-    //    ivec2 swapChainSize = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
-
-    //    RenderPassLoader renderPassLoader = JsonLoader_LoadRenderPassLoaderInfo(RenderPassLoaderJsonMap[renderPassGuid].c_str(), swapChainSize);
-
-    //    Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
-    //    Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
-    //    Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
-    //    Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelSystem.levelLayout.LevelLayoutId);
-    //    //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
-    //    Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
-    //    Vector<VkDescriptorImageInfo>  texturePropertiesList;
-    //    if (renderPassLoader.IsRenderedToSwapchain)
-    //    {
-    //        swapChainSize = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
-    //        renderPassLoader.RenderArea = RenderAreaModel
-    //        {
-    //            .RenderArea = VkRect2D
-    //            {
-    //                .offset = VkOffset2D(),
-    //                .extent = VkExtent2D
-    //                {
-    //                    .width = renderer.SwapChainResolution.width,
-    //                    .height = renderer.SwapChainResolution.height
-    //                }
-    //            },
-    //            .UseDefaultRenderArea = false
-    //        };
-    //        Texture inputTexture = textureSystem.FindRenderedTextureList(renderPass.second.RenderPassId)[0];
-    //        texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPass.second.RenderPassId, &inputTexture);
-    //    }
-    //    else
-    //    {
-    //        swapChainSize = ivec2(renderPass.second.RenderPassResolution.x, renderPass.second.RenderPassResolution.y);
-    //        renderPassLoader.RenderArea = RenderAreaModel
-    //        {
-    //            .RenderArea = VkRect2D
-    //            {
-    //                .offset = VkOffset2D(),
-    //                .extent = VkExtent2D
-    //                {
-    //                    .width = static_cast<uint32>(renderPass.second.RenderPassResolution.x),
-    //                    .height = static_cast<uint32>(renderPass.second.RenderPassResolution.y)
-    //                }
-    //            },
-    //            .UseDefaultRenderArea = false
-    //        }; 
-    //        texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPass.second.RenderPassId, nullptr);
-    //    }
-
-    //    renderPass.second = VulkanRenderPass_RebuildSwapChain(renderer, renderPass.second, renderPassLoader, swapChainSize, textureSystem.FindRenderedTextureList(renderPassGuid)[0], textureSystem.FindRenderedTextureList(renderPassGuid).size(), depthTexture);
-    //    for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
-    //    {
-    //        if (renderPassLoader.IsRenderedToSwapchain)
-    //        {
-    //            Texture inputTexture = textureSystem.FindRenderedTextureList(renderPass.second.RenderPassId)[0];
-    //            texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPass.second.RenderPassId, &inputTexture);
-    //        }
-    //        else
-    //        {
-    //            texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPass.second.RenderPassId, nullptr);
-    //        }
-
-    //        GPUIncludes include =
-    //        {
-    //           .VertexProperties = vertexPropertiesList.data(),
-    //           .IndexProperties = indexPropertiesList.data(),
-    //           .TransformProperties = transformPropertiesList.data(),
-    //           .MeshProperties = meshPropertiesList.data(),
-    //           .TexturePropertiesList = texturePropertiesList.data(),
-    //           .MaterialProperties = materialPropertiesList.data(),
-    //           .VertexPropertiesCount = vertexPropertiesList.size(),
-    //           .IndexPropertiesCount = indexPropertiesList.size(),
-    //           .TransformPropertiesCount = transformPropertiesList.size(),
-    //           .MeshPropertiesCount = meshPropertiesList.size(),
-    //           .TexturePropertiesListCount = texturePropertiesList.size(),
-    //           .MaterialPropertiesCount = materialPropertiesList.size()
-    //        };
-
-    //        VulkanPipeline pipeline = RenderPipelineMap[renderPass.second.RenderPassId][x];
-    //        RenderPipelineMap[renderPass.second.RenderPassId][x] = VulkanPipeline_RebuildSwapChain(renderer.Device, renderPassGuid, pipeline.RenderPipelineId, pipeline, renderPassLoader.RenderPipelineList[x].c_str(), renderPass.second.RenderPass, sizeof(SceneDataBuffer), swapChainSize, include);
-    //    }
-    //}
+        size_t size = renderedTextureList.size();
+        renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), renderedTextureList[0], size, depthTexture);
+    }
 }
 
 VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
@@ -197,12 +85,35 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
     const VulkanPipeline& pipeline = FindRenderPipelineList(renderPassId)[0];
     const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
 
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(renderer.SwapChainResolution.width);
+    viewport.height = static_cast<float>(renderer.SwapChainResolution.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+
+    VkRect2D scissor = VkRect2D
+    {
+        .offset = VkOffset2D
+        {
+            .x = 0,
+            .y = 0
+        },
+        .extent = VkExtent2D
+        {
+            .width = static_cast<uint32>(renderer.SwapChainResolution.width),
+            .height = static_cast<uint32>(renderer.SwapChainResolution.height)
+        }
+    };
+
+
     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = renderPass.RenderPass,
         .framebuffer = renderPass.FrameBufferList[renderer.ImageIndex],
-        .renderArea = renderPass.RenderArea,
+        .renderArea = scissor,
         .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
         .pClearValues = renderPass.ClearValueList
     };
@@ -210,6 +121,8 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
     VULKAN_RESULT(vkResetCommandBuffer(commandBuffer, 0));
     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetCount, pipeline.DescriptorSetList, 0, nullptr);
     vkCmdDraw(commandBuffer, 6, 1, 0, 0);

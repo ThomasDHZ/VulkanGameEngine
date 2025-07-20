@@ -59,8 +59,10 @@ GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandl
 
 GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
 {
+    vkDeviceWaitIdle(renderer.Device);
     Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], MAX_FRAMES_IN_FLIGHT);
     Renderer_DestroySwapChain(renderer.Device, &renderer.Swapchain);
+
     Renderer_SetUpSwapChain(windowType, windowHandle, renderer);
     return renderer;
 }
@@ -88,7 +90,7 @@ VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, Grap
         renderer.SwapChainResolution.height = surfaceCapabilities.currentExtent.height;
     }
 
-    renderer.Swapchain = SwapChain_SetUpSwapChain(renderer.Device, renderer.PhysicalDevice, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily, renderer.SwapChainImageCount);
+    SwapChain_SetUpSwapChain(renderer);
     renderer.SwapChainImages = SwapChain_SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(MAX_FRAMES_IN_FLIGHT));
     renderer.SwapChainImageViews = SwapChain_SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
 
@@ -902,28 +904,27 @@ Vector<VkPresentModeKHR> SwapChain_GetPhysicalDevicePresentModes(VkPhysicalDevic
     return compatiblePresentModesList;
 }
 
-VkSwapchainKHR SwapChain_SetUpSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32 graphicsFamily, uint32 presentFamily, size_t& swapChainImageCount)
+void SwapChain_SetUpSwapChain(GraphicsRenderer& renderer)
 {
-    VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = SwapChain_GetPhysicalDeviceFormats(physicalDevice, surface);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = SwapChain_GetPhysicalDevicePresentModes(physicalDevice, surface);
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = SwapChain_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
+    Vector<VkPresentModeKHR> compatiblePresentModesList = SwapChain_GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
 
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = SwapChain_GetSurfaceCapabilities(physicalDevice, surface);
+    VkSurfaceCapabilitiesKHR surfaceCapabilities = SwapChain_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = SwapChain_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = SwapChain_FindSwapPresentMode(compatiblePresentModesList);
 
-    swapChainImageCount = surfaceCapabilities.minImageCount + 1;
+    renderer.SwapChainImageCount = surfaceCapabilities.minImageCount + 1;
     if (surfaceCapabilities.maxImageCount > 0 &&
-        swapChainImageCount > surfaceCapabilities.maxImageCount)
+        renderer.SwapChainImageCount > surfaceCapabilities.maxImageCount)
     {
-        swapChainImageCount = surfaceCapabilities.maxImageCount;
+        renderer.SwapChainImageCount = surfaceCapabilities.maxImageCount;
     }
 
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = surface,
-        .minImageCount = static_cast<uint32>(swapChainImageCount),
+        .surface = renderer.Surface,
+        .minImageCount = static_cast<uint32>(renderer.SwapChainImageCount),
         .imageFormat = swapChainImageFormat.format,
         .imageColorSpace = swapChainImageFormat.colorSpace,
         .imageExtent = surfaceCapabilities.maxImageExtent,
@@ -932,12 +933,17 @@ VkSwapchainKHR SwapChain_SetUpSwapChain(VkDevice device, VkPhysicalDevice physic
         .preTransform = surfaceCapabilities.currentTransform,
         .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         .presentMode = swapChainPresentMode,
-        .clipped = VK_TRUE
+        .clipped = VK_TRUE,
+        .oldSwapchain = renderer.Swapchain
     };
 
-    if (graphicsFamily != presentFamily)
+    if (renderer.GraphicsFamily != renderer.PresentFamily)
     {
-        Vector<uint32> queueFamilyIndices = { graphicsFamily, presentFamily };
+        Vector<uint32> queueFamilyIndices = 
+        { 
+            renderer.GraphicsFamily, 
+            renderer.PresentFamily 
+        };
 
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         SwapChainCreateInfo.queueFamilyIndexCount = static_cast<uint32>(queueFamilyIndices.size());
@@ -947,8 +953,7 @@ VkSwapchainKHR SwapChain_SetUpSwapChain(VkDevice device, VkPhysicalDevice physic
     {
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
-    VULKAN_RESULT(vkCreateSwapchainKHR(device, &SwapChainCreateInfo, nullptr, &swapChain));
-    return swapChain;
+    VULKAN_RESULT(vkCreateSwapchainKHR(renderer.Device, &SwapChainCreateInfo, nullptr, &renderer.Swapchain));
 }
 
 VkImage* SwapChain_SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount)

@@ -85,19 +85,6 @@
       }
     }
   ],
-  "RenderArea": {
-    "RenderArea": {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    },
-    "UseDefaultRenderArea": true
-  },
   "_name": "BasicRenderPass",
   "IsRenderedToSwapchain": true,
   "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856"

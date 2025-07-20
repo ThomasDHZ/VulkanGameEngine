@@ -23,6 +23,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
     public unsafe static class RenderSystem
     {
+        public static readonly WindowType windowType = WindowType.Win32;
+        public static void* RenderAreaHandle = null;
         public static GraphicsRenderer renderer { get; set; }
         public static Dictionary<Guid, VulkanRenderPass> RenderPassList { get; set; } = new Dictionary<Guid, VulkanRenderPass>();
         public static Dictionary<Guid, ListPtr<VulkanPipeline>> RenderPipelineMap { get; set; } = new Dictionary<Guid, ListPtr<VulkanPipeline>>();
@@ -32,36 +34,34 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void CreateVulkanRenderer(WindowType windowType, void* renderAreaHandle, void* debuggerHandle)
         {
+            RenderAreaHandle = renderAreaHandle;
             renderer = Renderer_RendererSetUp(windowType, renderAreaHandle, debuggerHandle);
         }
 
-        public static void Update(float deltaTime)
+        public static void Update(Guid spriteRenderPass2DId, Guid levelId, float deltaTime)
         {
             if (RebuildRendererFlag)
             {
                 uint width = renderer.SwapChainResolution.width;
                 uint height = renderer.SwapChainResolution.height;
-                RecreateSwapchain();
+                RecreateSwapchain(spriteRenderPass2DId, levelId, deltaTime);
                 RebuildRendererFlag = false;
             }
         }
 
-        public static void RecreateSwapchain()
+        public static void RecreateSwapchain(Guid spriteRenderPass2DId, Guid levelId, float deltaTime)
         {
-            /*  int width = 0;
-              int height = 0;
+            VkFunc.vkDeviceWaitIdle(renderer.Device);
 
-              vkDeviceWaitIdle(*Device.get());
+            GraphicsRenderer rendererPtr = renderer;
+            Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
+            renderer = rendererPtr;
 
-              vulkanWindow->GetFrameBufferSize(vulkanWindow, &width, &height);
-              renderer.DestroySwapChainImageView();
-              renderer.DestroySwapChain();
-              renderer.SetUpSwapChain();
+            DestroyRenderPasses();
+            DestroyRenderPipelines();
 
-              RenderPassID id;
-              id.id = 2;
-
-              RenderPassList[id].RecreateSwapchain(width, height);*/
+            LoadRenderPass(levelId, "../RenderPass/LevelShader2DRenderPass.json", new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
+            LoadRenderPass(new Guid(), "../RenderPass/FrameBufferRenderPass.json", TextureSystem.RenderedTextureList[spriteRenderPass2DId][0], new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
         }
 
         public static VkCommandBuffer RenderFrameBuffer(Guid renderPassId)
@@ -549,7 +549,29 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return Renderer_EndSingleTimeCommands(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
         }
 
+        public static void DestroyRenderPasses()
+        {
+            foreach (var renderPass in RenderPassList)
+            {
+               // VulkanRenderPass_DestroyRenderPass(renderer, renderPass.Value);
+            }
+            RenderPassList.Clear();
+        }
+
+        public static void DestroyRenderPipelines()
+        {
+            foreach (var renderPipelineList in RenderPipelineMap)
+            {
+                foreach (var renderPipeline in renderPipelineList.Value)
+                {
+                    VulkanPipeline_Destroy(renderer.Device, renderPipeline);
+                }
+            }
+            RenderPipelineMap.Clear();
+        }
+
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle, void* debuggerHandle);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer* renderer);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_StartFrame(VkDevice device, VkSwapchainKHR swapChain, VkFence* fenceList, VkSemaphore* acquireImageSemaphoreList, size_t* pImageIndex, size_t* pCommandIndex, bool* pRebuildRendererFlag);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_EndFrame(VkSwapchainKHR swapChain, VkSemaphore* acquireImageSemaphoreList, VkSemaphore* presentImageSemaphoreList, VkFence* fenceList, VkQueue graphicsQueue, VkQueue presentQueue, size_t commandIndex, size_t imageIndex, VkCommandBuffer* pCommandBufferSubmitList, size_t commandBufferCount, bool* rebuildRendererFlag);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
