@@ -31,6 +31,7 @@ namespace VulkanGameEngineLevelEditor
         LevelEditorModeEnum LevelEditorMode = LevelEditorModeEnum.kLevelEditorMode;
         private volatile bool running;
         private volatile bool levelEditorRunning;
+        private volatile bool isResizing;
         private Stopwatch stopwatch = new Stopwatch();
         public RichTextBoxWriter textBoxWriter;
         private Thread renderThread { get; set; }
@@ -114,25 +115,9 @@ namespace VulkanGameEngineLevelEditor
         {
             this.Invoke(new Action(() =>
             {
+                void* afds = this.pictureBox1.Handle.ToPointer();
                 GameSystem.StartUp(this.pictureBox1.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
             }));
-
-            //lock (lockObject)
-            //{
-            //    sharedData = levelEditorTreeView1;
-            //}
-
-            //lock (lockObject)
-            //{
-            //    if (sharedData is LevelEditorTreeView levelEditorTree)
-            //    {
-            //        foreach (var gameObject in GameObjectSystem.GameObjectMap.Values)
-            //        {
-            //            levelEditorTree.AddGameObject(gameObject);
-            //        }
-            //        levelEditorTree.PopulateTree();
-            //    }
-            //}
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -140,15 +125,20 @@ namespace VulkanGameEngineLevelEditor
 
             while (running)
             {
+                if (isResizing) // Wait if resizing
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
+
                 double currentTime = stopwatch.Elapsed.TotalSeconds;
                 double deltaTime = currentTime - lastTime;
                 lastTime = currentTime;
 
                 GameSystem.Update((float)deltaTime);
-                GameSystem.Draw((float)deltaTime);
-                lock (lockObject)
+                lock (lockObject) // Ensure no resize during draw
                 {
-                    // dynamicControlPanelView1.UpdateOriginalObject();
+                    GameSystem.Draw((float)deltaTime);
                 }
             }
 
@@ -215,11 +205,19 @@ namespace VulkanGameEngineLevelEditor
 
         private void LevelEditorForm_Resize(object sender, EventArgs e)
         {
-            this.Invoke(new Action(() =>
+            if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
             {
-                RenderSystem.RebuildRendererFlag = true;
-                RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f);
-            }));
+                lock (lockObject)
+                {
+                    void* currentHandle = pictureBox1.Handle.ToPointer();
+                    isResizing = true; 
+                    RenderSystem.RebuildRendererFlag = true;
+                    RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(pictureBox1.Width, pictureBox1.Height));
+                    isResizing = false;
+                    void* currentHandle2 = pictureBox1.Handle.ToPointer();
+                    var a = 324;
+                }
+            }
         }
     }
 }

@@ -12,15 +12,17 @@ using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor
 {
-    public partial class GameWindow : Form
+    public unsafe partial class GameWindow : Form
     {
         private Vk vk = Vk.GetApi();
         private volatile bool running;
         private volatile bool levelEditorRunning;
+        private volatile bool isResizing;
         private Stopwatch stopwatch = new Stopwatch();
         private Extent2D VulkanSwapChainResolution { get; set; }
         private Thread renderThread { get; set; }
         public MessengerModel RenderPassMessager { get; set; }
+        private object lockObject = new object();
 
 
         [DllImport("kernel32.dll")]
@@ -68,33 +70,49 @@ namespace VulkanGameEngineLevelEditor
 
         private void RenderLoop()
         {
-            RenderPassMessager = new MessengerModel()
-            {
-                IsActive = true,
-                ThreadId = Thread.CurrentThread.ManagedThreadId,
-            };
-            GlobalMessenger.AddMessenger(RenderPassMessager);
-
             this.Invoke(new Action(() =>
             {
-              //  GameSystem.StartUp(this.Handle, this.pictureBox1.Handle);
+                void* afds = this.pictureBox1.Handle.ToPointer();
+                GameSystem.StartUp(this.pictureBox1.Handle.ToPointer(), null);
             }));
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-
             double lastTime = 0.0;
+
             while (running)
             {
+                if (isResizing)
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
+
                 double currentTime = stopwatch.Elapsed.TotalSeconds;
                 double deltaTime = currentTime - lastTime;
                 lastTime = currentTime;
 
                 GameSystem.Update((float)deltaTime);
-                GameSystem.Draw((float)deltaTime);
+                lock (lockObject)
+                {
+                    GameSystem.Draw((float)deltaTime);
+                }
             }
 
             GameSystem.Destroy();
+        }
+
+        private void LevelEditorForm_Resize(object sender, EventArgs e)
+        {
+            if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
+            {
+                
+                    isResizing = true;
+                    RenderSystem.RebuildRendererFlag = true;
+                    RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(pictureBox1.Width, pictureBox1.Height));
+                    isResizing = false;
+                
+            }
         }
     }
 }
