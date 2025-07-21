@@ -53,6 +53,7 @@ VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, V
     
     if(vulkanRenderPass.IsRenderedToSwapchain)
     { 
+        vulkanRenderPass.RenderPassResolution = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
         renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
 
         VulkanRenderPass_DestoryRenderPassSwapChainTextures(renderer, renderedTextureListPtr, renderedTextureCount, depthTexture);

@@ -14,7 +14,7 @@ RenderPassLoader JsonLoader_LoadRenderPassLoaderInfo(const char* renderPassLoade
         json.at("RenderedTextureInfoModelList").get_to(renderPassLoader.RenderedTextureInfoModelList);
         json.at("SubpassDependencyList").get_to(renderPassLoader.SubpassDependencyModelList);
         json.at("ClearValueList").get_to(renderPassLoader.ClearValueList);
-        if (!renderPassLoader.IsRenderedToSwapchain)
+        if (json.contains("RenderArea"))
         {
             json.at("RenderArea").get_to(renderPassLoader.RenderArea);
             renderPassLoader.RenderArea.RenderArea.extent.width = defaultRenderPassResoultion.x;

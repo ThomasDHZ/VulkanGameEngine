@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
@@ -26,9 +27,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static readonly WindowType windowType = WindowType.Win32;
         public static void* RenderAreaHandle = null;
         public static GraphicsRenderer renderer { get; set; }
-        public static Dictionary<Guid, VulkanRenderPass> RenderPassList { get; set; } = new Dictionary<Guid, VulkanRenderPass>();
+        public static Dictionary<Guid, VulkanRenderPass> RenderPassMap { get; set; } = new Dictionary<Guid, VulkanRenderPass>();
         public static Dictionary<Guid, ListPtr<VulkanPipeline>> RenderPipelineMap { get; set; } = new Dictionary<Guid, ListPtr<VulkanPipeline>>();
         public static Dictionary<Guid, RenderPassLoaderModel> RenderPassEditor_RenderPass = new Dictionary<Guid, RenderPassLoaderModel>();
+        public static Dictionary<Guid, string> RenderPassLoaderJsonMap = new Dictionary<Guid, string>();
         public static VkCommandBufferBeginInfo CommandBufferBeginInfo { get; set; } = new VkCommandBufferBeginInfo();
         public static bool RebuildRendererFlag { get; set; }
 
@@ -52,30 +54,63 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void RecreateSwapchain(Guid spriteRenderPass2DId, Guid levelId, float deltaTime)
         {
             VkFunc.vkDeviceWaitIdle(renderer.Device);
-
             GraphicsRenderer rendererPtr = renderer;
             Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
             renderer = rendererPtr;
 
-            DestroyRenderPasses();
-            DestroyRenderPipelines();
+            foreach (var renderPass in RenderPassMap)
+            {
+                ivec2 swapChainResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
+                String renderPassJsonLoader = RenderPassLoaderJsonMap[renderPass.Value.RenderPassId];
+                ListPtr<Texture> renderedTextureList = TextureSystem.RenderedTextureList[renderPass.Value.RenderPassId];
 
-            LoadRenderPass(levelId, "../RenderPass/LevelShader2DRenderPass.json", new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
-            LoadRenderPass(new Guid(), "../RenderPass/FrameBufferRenderPass.json", TextureSystem.RenderedTextureList[spriteRenderPass2DId][0], new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
+                Texture depthTexture = new Texture();
+                if (TextureSystem.DepthTextureExists(renderPass.Value.RenderPassId))
+                {
+                    depthTexture = TextureSystem.DepthTextureList[renderPass.Value.RenderPassId];
+                }
+
+                size_t size = renderedTextureList.Count();
+                RenderPassMap[renderPass.Key] = VulkanRenderPass_RebuildSwapChain(renderer, renderPass.Value, RenderPassLoaderJsonMap[renderPass.Value.RenderPassId], renderedTextureList.Ptr, &size, ref depthTexture);
+            }
         }
 
         public static VkCommandBuffer RenderFrameBuffer(Guid renderPassId)
         {
-            VulkanRenderPass renderPass = RenderPassList[renderPassId];
+            VulkanRenderPass renderPass = RenderPassMap[renderPassId];
             VulkanPipeline pipeline = RenderPipelineMap[renderPassId][0];
             VkCommandBuffer commandBuffer = renderPass.CommandBuffer;
+
+            VkViewport viewport = new VkViewport
+            {
+                x = 0.0f,
+                y = 0.0f,
+                width = renderer.SwapChainResolution.width,
+                height = renderer.SwapChainResolution.height,
+                minDepth = 0.0f,
+                maxDepth = 1.0f
+            };
+
+            VkRect2D scissor = new VkRect2D
+            {
+                offset = new VkOffset2D
+                {
+                    x = 0,
+                    y = 0
+                },
+                extent = new VkExtent2D
+                {
+                    width = renderer.SwapChainResolution.width,
+                    height = renderer.SwapChainResolution.height
+                }
+            };
 
             VkRenderPassBeginInfo renderPassBeginInfo = new VkRenderPassBeginInfo
             {
                 sType = VkStructureType.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                 renderPass = renderPass.RenderPass,
                 framebuffer = renderPass.FrameBufferList[(uint)renderer.ImageIndex],
-                renderArea = renderPass.RenderArea,
+                renderArea = scissor,
                 clearValueCount = renderPass.ClearValueCount,
                 pClearValues = renderPass.ClearValueList
             };
@@ -83,6 +118,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             var beginCommandbufferindo = CommandBufferBeginInfo;
             VkFunc.vkResetCommandBuffer(commandBuffer, 0);
             VkFunc.vkBeginCommandBuffer(commandBuffer, &beginCommandbufferindo);
+            VkFunc.vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+            VkFunc.vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
             VkFunc.vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VkSubpassContents.VK_SUBPASS_CONTENTS_INLINE);
             VkFunc.vkCmdBindPipeline(commandBuffer, VkPipelineBindPoint.VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
             VkFunc.vkCmdBindDescriptorSets(commandBuffer, VkPipelineBindPoint.VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, (uint)pipeline.DescriptorSetCount, pipeline.DescriptorSetList, 0, null);
@@ -94,7 +131,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static VkCommandBuffer RenderLevel(Guid renderPassId, Guid levelId, float deltaTime, SceneDataBuffer sceneDataBuffer)
         {
-            VulkanRenderPass renderPass = RenderPassList[renderPassId];
+            VulkanRenderPass renderPass = RenderPassMap[renderPassId];
             VulkanPipeline spritePipeline = RenderPipelineMap[renderPassId][0];
             VulkanPipeline levelPipeline = RenderPipelineMap[renderPassId][1];
             ListPtr<SpriteBatchLayer> spriteLayerList = SpriteSystem.FindSpriteBatchLayer(renderPassId);
@@ -170,7 +207,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             size_t renderedTextureCount = model.RenderedTextureInfoModelList.Where(x => x.TextureType == RenderedTextureType.ColorRenderedTexture).Count();
             ListPtr<Texture> renderedTextureListPtr = new ListPtr<Texture>(renderedTextureCount);
             VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath, ref extent2D, sizeof(SceneDataBuffer), renderedTextureListPtr.Ptr, ref renderedTextureCount, out Texture depthTexture);
-            RenderPassList[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
+            RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
 
             TextureSystem.RenderedTextureList[vulkanRenderPass.RenderPassId] = new ListPtr<Texture>();
             for (int x = 0; x < renderedTextureCount; x++)
@@ -213,7 +250,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
                 var pipeLineId = (uint)RenderPipelineMap.Count;
                 var renderPassId = vulkanRenderPass.RenderPassId;
-                VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipeLineId, fulRenderPassPath, RenderPassList[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, include);
+                VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipeLineId, fulRenderPassPath, RenderPassMap[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, include);
                 vulkanPipelineList.Add(vulkanPipelineDLL);
             }
             RenderPipelineMap[vulkanRenderPass.RenderPassId] = vulkanPipelineList;
@@ -235,7 +272,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             size_t renderedTextureCount = model.RenderedTextureInfoModelList.Where(x => x.TextureType == RenderedTextureType.ColorRenderedTexture).Count();
             ListPtr<Texture> renderedTextureListPtr = new ListPtr<Texture>(renderedTextureCount);
             VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath, ref extent2D, sizeof(SceneDataBuffer), renderedTextureListPtr.Ptr, ref renderedTextureCount, out Texture depthTexture);
-            RenderPassList[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
+            RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
 
             TextureSystem.RenderedTextureList[vulkanRenderPass.RenderPassId] = new ListPtr<Texture>();
             for (int x = 0; x < renderedTextureCount; x++)
@@ -278,7 +315,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
                 var pipeLineId = (uint)RenderPipelineMap.Count;
                 var renderPassId = vulkanRenderPass.RenderPassId;
-                VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipeLineId, fulRenderPassPath, RenderPassList[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, include);
+                VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipeLineId, fulRenderPassPath, RenderPassMap[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, include);
                 vulkanPipelineList.Add(vulkanPipelineDLL);
             }
             RenderPipelineMap[vulkanRenderPass.RenderPassId] = vulkanPipelineList;
@@ -551,11 +588,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void DestroyRenderPasses()
         {
-            foreach (var renderPass in RenderPassList)
+            foreach (var renderPass in RenderPassMap)
             {
                // VulkanRenderPass_DestroyRenderPass(renderer, renderPass.Value);
             }
-            RenderPassList.Clear();
+            RenderPassMap.Clear();
         }
 
         public static void DestroyRenderPipelines()
@@ -566,7 +603,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 {
                     VulkanPipeline_Destroy(renderer.Device, renderPipeline);
                 }
-            }
+            }   
             RenderPipelineMap.Clear();
         }
 
@@ -577,6 +614,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer renderer, [MarshalAs(UnmanagedType.LPStr)] string renderPassLoader, ref VkExtent2D renderPassResolution, int ConstBuffer, Texture* renderedTextureListPtr, ref size_t renderedTextureCount, out Texture depthTexture);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer renderer, VulkanRenderPass vulkanRenderPass, [MarshalAs(UnmanagedType.LPStr)] string renderPassJsonLoader, Texture* renderedTextureListPtr, size_t* renderedTextureCount, ref Texture depthTexture);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer renderer, VulkanRenderPass renderPass);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkQueue device, ref Guid renderPassId, uint renderPipelineId, [MarshalAs(UnmanagedType.LPStr)] string pipelineJson, VkQueue renderPass, uint constBufferSize, ref ivec2 renderPassResolution, GPUIncludes includes);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline vulkanPipelineDLL);

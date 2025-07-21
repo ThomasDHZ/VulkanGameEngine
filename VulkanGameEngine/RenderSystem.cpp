@@ -31,8 +31,6 @@ void RenderSystem::Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const f
 {
     if (renderer.RebuildRendererFlag)
     {
-        int width = renderer.SwapChainResolution.width;
-        int height = renderer.SwapChainResolution.height;
         RecreateSwapchain(spriteRenderPass2DId, levelId, deltaTime);
         renderer.RebuildRendererFlag = false;
     }
@@ -85,13 +83,15 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
     const VulkanPipeline& pipeline = FindRenderPipelineList(renderPassId)[0];
     const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(renderer.SwapChainResolution.width);
-    viewport.height = static_cast<float>(renderer.SwapChainResolution.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
+    VkViewport viewport
+    {
+        .x = 0.0f,
+        .y = 0.0f,
+        .width = static_cast<float>(renderer.SwapChainResolution.width),
+        .height = static_cast<float>(renderer.SwapChainResolution.height),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
 
     VkRect2D scissor = VkRect2D
     {
@@ -106,7 +106,6 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
             .height = static_cast<uint32>(renderer.SwapChainResolution.height)
         }
     };
-
 
     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
     {
@@ -153,8 +152,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
     VULKAN_RESULT(vkResetCommandBuffer(commandBuffer, 0));
     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    for (auto levelLayer : levelLayerList)
+    for (auto& levelLayer : levelLayerList)
     {
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
@@ -167,7 +165,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, levelLayer.IndexCount, 1, 0, 0, 0);
     }
-    for (auto spriteLayer : spriteLayerList)
+    for (auto& spriteLayer : spriteLayerList)
     {
         const Vector<SpriteInstanceStruct>& spriteInstanceList = spriteSystem.FindSpriteInstanceList(spriteLayer.SpriteBatchLayerID);
         const Mesh& spriteMesh = meshSystem.FindSpriteMesh(spriteLayer.SpriteLayerMeshId);
