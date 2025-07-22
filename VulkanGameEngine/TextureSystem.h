@@ -32,7 +32,7 @@ public:
 
 	Texture& FindTexture(const RenderPassGuid& guid);
 	Texture& FindDepthTexture(const RenderPassGuid& guid);
-	Texture& FindRenderedTexture(const RenderPassGuid& guid, const TextureGuid& textureGuid);
+	Texture& FindRenderedTexture(const TextureGuid& textureGuid);
 	Vector<Texture>& FindRenderedTextureList(const RenderPassGuid& guid);
 
 	bool TextureExists(const RenderPassGuid& guid);

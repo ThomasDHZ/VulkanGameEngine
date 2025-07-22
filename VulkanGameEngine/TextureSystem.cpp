@@ -103,21 +103,22 @@ Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& guid)
     throw std::out_of_range("DepthTextureMap not found for given GUID");
 }
 
-Texture& TextureSystem::FindRenderedTexture(const RenderPassGuid& guid, const TextureGuid& textureGuid)
+Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 {
-    auto findTextureByGuid = [&](const RenderPassGuid& guid, const TextureGuid& textureGuid) -> Texture&
-        {
-            auto it = RenderedTextureListMap.find(guid);
-            if (it != RenderedTextureListMap.end())
+    for (auto& pair : RenderedTextureListMap)
+    {
+        auto& textureVec = pair.second;
+        auto it = std::find_if(textureVec.begin(), textureVec.end(),
+            [&textureGuid](const Texture& texture)
             {
-                auto texIt = std::find_if(it->second.begin(), it->second.end(), [&](const Texture& texture) { return texture.textureId == textureGuid; });
-                if (texIt != it->second.end())
-                {
-                    return *texIt;
-                }
-            }
-        };
-    throw std::out_of_range("RenderedTexture not found for given GUID");
+                return texture.textureId == textureGuid;
+            });
+        if (it != textureVec.end())
+        {
+            return *it;
+        }
+    }
+    throw std::out_of_range("Texture with given ID not found");
 }
 
 Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& guid)

@@ -13,7 +13,7 @@ struct VulkanRenderPass
 	VkSampleCountFlagBits SampleCount;
 	VkRect2D RenderArea;
 	VkRenderPass RenderPass = VK_NULL_HANDLE;
-	String* InputTextureIdList;
+	VkGuid* InputTextureIdList;
 	VkFramebuffer* FrameBufferList;
 	VkClearValue* ClearValueList;
 	size_t InputTextureIdListCount;

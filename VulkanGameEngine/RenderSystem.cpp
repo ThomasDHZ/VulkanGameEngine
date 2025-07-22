@@ -390,11 +390,13 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(VkGui
 const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(VkGuid& renderPassId)
 {
     Vector<Texture> textureList;
-    if (textureSystem.RenderedTextureListExists(renderPassId))
+    const VulkanRenderPass& renderPass = RenderPassMap[renderPassId];
+    if (renderPass.InputTextureIdListCount > 0)
     {
-        for (auto& inputTexture : textureSystem.FindRenderedTextureList(renderPassId))
+        Vector<VkGuid> inputTextureList = Vector<VkGuid>(renderPass.InputTextureIdList, renderPass.InputTextureIdList + renderPass.InputTextureIdListCount);
+        for (auto& inputTexture : inputTextureList)
         {
-            textureList.emplace_back(inputTexture);
+            textureList.emplace_back(textureSystem.FindRenderedTexture(inputTexture));
         }
     }
     else
