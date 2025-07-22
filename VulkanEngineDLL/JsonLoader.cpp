@@ -6,17 +6,21 @@ RenderPassLoader JsonLoader_LoadRenderPassLoaderInfo(const char* renderPassLoade
     RenderPassLoader renderPassLoader = {};
     try 
     {
-        nlohmann::json json = Json::ReadJson(renderPassLoaderJson);
+        nlohmann::json j = Json::ReadJson(renderPassLoaderJson);
 
-        json.at("RenderPassId").get_to(renderPassLoader.RenderPassId);
-        json.at("IsRenderedToSwapchain").get_to(renderPassLoader.IsRenderedToSwapchain);
-        json.at("RenderPipelineList").get_to(renderPassLoader.RenderPipelineList);
-        json.at("RenderedTextureInfoModelList").get_to(renderPassLoader.RenderedTextureInfoModelList);
-        json.at("SubpassDependencyList").get_to(renderPassLoader.SubpassDependencyModelList);
-        json.at("ClearValueList").get_to(renderPassLoader.ClearValueList);
-        if (json.contains("RenderArea"))
+        j.at("RenderPassId").get_to(renderPassLoader.RenderPassId);
+        j.at("IsRenderedToSwapchain").get_to(renderPassLoader.IsRenderedToSwapchain);
+        j.at("RenderPipelineList").get_to(renderPassLoader.RenderPipelineList);
+        j.at("RenderedTextureInfoModelList").get_to(renderPassLoader.RenderedTextureInfoModelList);
+        j.at("SubpassDependencyList").get_to(renderPassLoader.SubpassDependencyModelList);
+        j.at("ClearValueList").get_to(renderPassLoader.ClearValueList);
+        for (int x = 0; x < j.at("InputTextureList").size(); x++)
         {
-            json.at("RenderArea").get_to(renderPassLoader.RenderArea);
+            renderPassLoader.InputTextureList.emplace_back(VkGuid(j["InputTextureList"][x].get<String>().c_str()));
+        }
+        if (j.contains("RenderArea"))
+        {
+            j.at("RenderArea").get_to(renderPassLoader.RenderArea);
             renderPassLoader.RenderArea.RenderArea.extent.width = defaultRenderPassResoultion.x;
             renderPassLoader.RenderArea.RenderArea.extent.height = defaultRenderPassResoultion.y;
             for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
@@ -42,6 +46,7 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
     {
         nlohmann::json j = Json::ReadJson(renderPassLoaderJson);
 
+        j.at("PipelineId").get_to(renderPipelineLoader.PipelineId);
         j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderPath);
         j.at("FragmentShader").get_to(renderPipelineLoader.FragmentShaderPath);
         j.at("VertexType").get_to(renderPipelineLoader.DescriptorSetCount);

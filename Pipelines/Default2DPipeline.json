@@ -199,6 +199,6 @@
       "offset": 120
     }
   ],
-  "IsRenderedToSwapchain": false,
+  "PipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
   "_name": "DefaultPipeline"
 }

@@ -45,6 +45,7 @@
         "_name": "DefaultColorAttachment"
       },
       "TextureType": 0,
+      "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
       "_name": null
     }
   ],
@@ -52,6 +53,7 @@
     "../Pipelines/Default2DPipeline.json",
     "../Pipelines/LevelShader2DPipeline.json"
   ],
+  "InputTextureList": [],
   "SubpassDependencyList": [
     {
       "srcSubpass": 4294967295,

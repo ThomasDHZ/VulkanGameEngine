@@ -1,7 +1,7 @@
 #pragma once
 #include <VulkanRenderer.h>
 #include <VulkanRenderPass.h>
-#include <ImGuiFunc.h>
+#include <ImGuiRenderer.h>
 #include "SceneDataBuffer.h"
 #include <nlohmann/json.hpp>
 
@@ -30,7 +30,7 @@ private:
     const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
     const Vector<VkDescriptorBufferInfo> GetGameObjectTransformBuffer();
     const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(VkGuid& levelLayerId);
-    const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(VkGuid& renderPassId, const Texture* renderedTexture);
+    const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(VkGuid& renderPassId);
 
     void DestroyRenderPasses();
     void DestroyRenderPipelines();
@@ -39,8 +39,6 @@ private:
     void DestroyBuffer(VkBuffer& buffer);
 
 public:
-
-    ImGuiRenderer                                                 imGuiRenderer;
     GraphicsRenderer                                              renderer;
 
     RenderSystem();
@@ -53,7 +51,6 @@ public:
     VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, SceneDataBuffer& sceneDataBuffer);
  
     VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
-    VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, Texture& inputTexture, ivec2 renderPassResolution);
 
     const VulkanRenderPass& FindRenderPass(const RenderPassGuid& guid);
     const Vector<VulkanPipeline>& FindRenderPipelineList(const RenderPassGuid& guid);

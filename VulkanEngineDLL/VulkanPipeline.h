@@ -3,7 +3,7 @@
 
 struct VulkanPipeline
 {
-    uint RenderPipelineId;
+    VkGuid RenderPipelineId;
     size_t DescriptorSetLayoutCount;
     size_t DescriptorSetCount;
     VkDescriptorPool DescriptorPool = VK_NULL_HANDLE;
@@ -16,6 +16,7 @@ struct VulkanPipeline
 
 struct RenderPipelineLoader
 {
+    VkGuid PipelineId; 
     String VertexShaderPath;
     String FragmentShaderPath;
     Vector<VkViewport> ViewportList;
@@ -38,8 +39,8 @@ struct RenderPipelineLoader
 #ifdef __cplusplus
 extern "C" {
 #endif
-DLL_EXPORT VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, uint renderPipelineId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes);
-DLL_EXPORT VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, uint renderPipelineId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes);
+DLL_EXPORT VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes);
+DLL_EXPORT VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes);
 DLL_EXPORT void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipelineDLL);
 #ifdef __cplusplus
 }

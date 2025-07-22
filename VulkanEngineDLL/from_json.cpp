@@ -102,6 +102,7 @@ namespace nlohmann
     }
 
     void from_json(const nlohmann::json& j, RenderedTextureLoader& model) {
+        j.at("TextureId").get_to(model.RenderedTextureId);
         j.at("RenderedTextureInfoName").get_to(model.RenderedTextureInfoName);
         j.at("TextureType").get_to(model.TextureType);
         j.at("ImageCreateInfo").get_to(model.ImageCreateInfo);

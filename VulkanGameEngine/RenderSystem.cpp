@@ -75,6 +75,7 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
         size_t size = renderedTextureList.size();
         renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), renderedTextureList[0], size, depthTexture);
     }
+    ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
 
 VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
@@ -193,7 +194,6 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
     VkGuid renderPassId = CreateVulkanRenderPass(jsonPath, renderPassResolution);
     for (int x = 0; x < json["RenderPipelineList"].size(); x++)
     {
-        uint pipeLineId = renderSystem.RenderPassMap.size();
         String pipelineJson = json["RenderPipelineList"][x];
 
         Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
@@ -201,7 +201,7 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
         Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelId);
         //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
-        Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId, nullptr);
+        Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId);
         Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
         GPUIncludes include =
         {
@@ -219,47 +219,18 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
            .MaterialPropertiesCount = materialPropertiesList.size()
         };
 
-        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipeLineId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
+        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }
 
-    return renderPassId;
-}
-
-VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, Texture& inputTexture, ivec2 renderPassResolution)
-{
-    nlohmann::json json = Json::ReadJson(jsonPath);
-    VkGuid renderPassId = CreateVulkanRenderPass(jsonPath, renderPassResolution);
-    for (int x = 0; x < json["RenderPipelineList"].size(); x++)
+    if (!textureSystem.RenderedTextureListExists(renderPassId))
     {
-        uint pipeLineId = renderSystem.RenderPassMap.size();
-        String pipelineJson = json["RenderPipelineList"][x];
-
-        Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
-        Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
-        Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
-        Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelId);
-        //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
-        Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId, &inputTexture);
-        Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
-        GPUIncludes include =
+        Vector<Texture> inputTextureList;
+        for (auto& inputTexture : json["InputTexture"])
         {
-           .VertexProperties = vertexPropertiesList.data(),
-           .IndexProperties = indexPropertiesList.data(),
-           .TransformProperties = transformPropertiesList.data(),
-           .MeshProperties = meshPropertiesList.data(),
-           .TexturePropertiesList = texturePropertiesList.data(),
-           .MaterialProperties = materialPropertiesList.data(),
-           .VertexPropertiesCount = vertexPropertiesList.size(),
-           .IndexPropertiesCount = indexPropertiesList.size(),
-           .TransformPropertiesCount = transformPropertiesList.size(),
-           .MeshPropertiesCount = meshPropertiesList.size(),
-           .TexturePropertiesListCount = texturePropertiesList.size(),
-           .MaterialPropertiesCount = materialPropertiesList.size()
-        };
-
-        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipeLineId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
-        RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
+            inputTextureList.emplace_back(inputTexture);
+        }
+        textureSystem.AddRenderedTexture(renderPassId, inputTextureList);
     }
 
     return renderPassId;
@@ -417,12 +388,17 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(VkGui
 }
 
 
-const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(VkGuid& renderPassId, const Texture* renderedTexture)
+const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(VkGuid& renderPassId)
 {
     Vector<Texture> textureList;
-    if (renderedTexture != nullptr)
+    const VulkanRenderPass& renderPass = RenderPassMap[renderPassId];
+    if (renderPass.InputTextureIdListCount > 0)
     {
-        textureList.emplace_back(*renderedTexture);
+        Vector<VkGuid> inputTextureList = Vector<VkGuid>(renderPass.InputTextureIdList, renderPass.InputTextureIdList + renderPass.InputTextureIdListCount);
+        for (auto& inputTexture : inputTextureList)
+        {
+            textureList.emplace_back(textureSystem.FindRenderedTexture(inputTexture));
+        }
     }
     else
     {
@@ -540,7 +516,6 @@ void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
     Renderer_DestroyBuffer(renderSystem.renderer.Device, &buffer);
 }
-
 
 VkCommandBuffer  RenderSystem::BeginSingleTimeCommands() 
 {

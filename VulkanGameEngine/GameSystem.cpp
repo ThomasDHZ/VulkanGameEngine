@@ -2,7 +2,7 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include "json.h"
 #include "TextureSystem.h"
-#include "ImGuiFunc.h"
+#include <ImGuiRenderer.h>
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
@@ -75,15 +75,13 @@ void GameSystem::Draw(const float& deltaTime)
 {
     renderSystem.StartFrame();
     levelSystem.Draw(CommandBufferSubmitList, deltaTime);
- //   CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, renderSystem.imGuiRenderer));
+    CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, imGuiRenderer));
     renderSystem.EndFrame(CommandBufferSubmitList);
     CommandBufferSubmitList.clear();
 }
 
 void GameSystem::Destroy()
 {
-    //gameObjectSystem.DestroyGameObjects();
-    //meshSystem.DestroyAllGameObjects();
     textureSystem.DestroyAllTextures();
     materialSystem.DestroyAllMaterials();
     levelSystem.DestoryLevel();
