@@ -21,6 +21,13 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
     Vector<VkFramebuffer> frameBufferList = RenderPass_BuildFrameBuffer(renderer, *vulkanRenderPassPtr, renderedTextureList, depthTexture);
     RenderPass_CreateCommandBuffers(renderer, &vulkanRenderPassPtr->CommandBuffer, 1);
 
+    vulkanRenderPassPtr->InputTextureIdList = nullptr;
+    if (renderPassLoader.InputTextureList.size() > 0)
+    {
+        vulkanRenderPassPtr->InputTextureIdList = memorySystem.AddPtrBuffer<String>(renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(vulkanRenderPassPtr->InputTextureIdList, renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size() * sizeof(String));
+    }
+
     vulkanRenderPassPtr->FrameBufferList = nullptr;
     if (frameBufferList.size() > 0)
     {
@@ -101,6 +108,7 @@ void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRender
     Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &renderPass.CommandBuffer, 1);
     Renderer_DestroyFrameBuffers(renderer.Device, &renderPass.FrameBufferList[0], renderer.SwapChainImageCount);
 
+    memorySystem.RemovePtrBuffer<String>(renderPass.InputTextureIdList);
     memorySystem.RemovePtrBuffer<VkFramebuffer>(renderPass.FrameBufferList);
     memorySystem.RemovePtrBuffer<VkClearValue>(renderPass.ClearValueList);
 
@@ -236,14 +244,15 @@ void RenderPass_BuildRenderPassAttachments(const GraphicsRenderer& renderer, con
 {
     for (auto& texture : renderPassJsonLoader.RenderedTextureInfoModelList)
     {
+        VkGuid renderedTextureId = texture.RenderedTextureId;
         VkImageCreateInfo imageCreateInfo = texture.ImageCreateInfo;
         VkSamplerCreateInfo samplerCreateInfo = texture.SamplerCreateInfo;
         switch (texture.TextureType)
         {
-            case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
-            case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
-            case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
-            case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderer, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo); break;
+            case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
+            case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
+            case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
+            case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo); break;
         };
     }
 }

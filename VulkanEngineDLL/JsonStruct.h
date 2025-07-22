@@ -4,6 +4,7 @@
 
 struct  RenderedTextureLoader
 {
+    VkGuid RenderedTextureId;
     String RenderedTextureInfoName;
     VkImageCreateInfo ImageCreateInfo;
     VkSamplerCreateInfo SamplerCreateInfo;
@@ -16,6 +17,7 @@ struct RenderPassLoader
     VkGuid RenderPassId;
     bool IsRenderedToSwapchain;
     Vector<String> RenderPipelineList;
+    Vector<VkGuid> InputTextureList;
     Vector<RenderedTextureLoader> RenderedTextureInfoModelList;
     Vector<VkSubpassDependency> SubpassDependencyModelList;
     Vector<VkClearValue> ClearValueList;

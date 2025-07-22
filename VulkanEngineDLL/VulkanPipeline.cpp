@@ -4,7 +4,7 @@
 #include "ShaderCompiler.h"
 #include "JsonLoader.h"
 
- VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, uint renderPipelineId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
+ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      RenderPipelineLoader model = JsonLoader_LoadRenderPipelineLoaderInfo(pipelineJson, renderPassResolution);
      Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
@@ -23,7 +23,7 @@
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
      {
-         .RenderPipelineId = renderPipelineId,
+         .RenderPipelineId = model.PipelineId,
          .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
          .DescriptorSetCount = descriptorSetList.size(),
          .DescriptorPool = descriptorPool,
@@ -51,10 +51,10 @@
      return vulkanPipeline;
  }
 
- VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, uint renderPipelineId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
+ VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      VulkanPipeline_Destroy(device, oldVulkanPipeline);
-     return VulkanPipeline_CreateRenderPipeline(device, renderPassId, renderPipelineId, pipelineJson, renderPass, constBufferSize, renderPassResolution, includes);
+     return VulkanPipeline_CreateRenderPipeline(device, renderPassId, pipelineJson, renderPass, constBufferSize, renderPassResolution, includes);
  }
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)

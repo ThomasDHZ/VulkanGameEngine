@@ -45,9 +45,11 @@
         "_name": "DefaultColorAttachment"
       },
       "TextureType": 0,
+      "TextureId": "6492ef85-2573-4b76-9510-d8550ca5315d",
       "_name": null
     }
   ],
+  "InputTextureList": [ "1e0878ca-0650-4b58-b290-ca07c169ec54" ],
   "RenderPipelineList": [
     "../Pipelines/FrameBufferPipeline.json"
   ],

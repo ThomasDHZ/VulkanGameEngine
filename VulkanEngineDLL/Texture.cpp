@@ -24,16 +24,19 @@ Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonSt
 	return texture;
 }
 
-Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo)
+Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo)
 {
-	Texture texture;
-	texture.width = static_cast<int>(createImageInfo.extent.width);
-	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = static_cast<int>(createImageInfo.extent.depth);
-	texture.textureByteFormat = createImageInfo.format;
-	texture.textureImageLayout = createImageInfo.initialLayout;
-	texture.sampleCount = createImageInfo.samples;
-	texture.mipMapLevels = 1;
+	Texture texture
+	{
+		.textureId = textureId,
+		.width = static_cast<int>(createImageInfo.extent.width),
+		.height = static_cast<int>(createImageInfo.extent.height),
+		.depth = static_cast<int>(createImageInfo.extent.depth),
+		.mipMapLevels = 1,
+		.textureByteFormat = createImageInfo.format,
+		.textureImageLayout = createImageInfo.initialLayout,
+		.sampleCount = createImageInfo.samples,
+	};
 
 	Texture_CreateTextureImage(renderer, texture, createImageInfo);
 	Texture_CreateTextureView(renderer, texture, imageType);

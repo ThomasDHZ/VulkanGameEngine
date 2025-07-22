@@ -105,6 +105,6 @@
   ],
   "VertexInputBindingDescriptionList": [],
   "VertexInputAttributeDescriptionList": [],
-  "IsRenderedToSwapchain": true,
+  "PipelineId": "6eee6e25-9bf7-49b4-b8b6-05434ce300f6",
   "_name": "DefaultPipeline"
 }

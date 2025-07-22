@@ -33,9 +33,9 @@ void TextureSystem::Update(const float& deltaTime)
     }
 }
 
-Texture TextureSystem::CreateTexture(VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo)
+Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo)
 {
-	return Texture_CreateTexture(renderSystem.renderer, imageType, createImageInfo, samplerCreateInfo);
+	return Texture_CreateTexture(renderSystem.renderer, textureId, imageType, createImageInfo, samplerCreateInfo);
 }
 
 Texture TextureSystem::CreateTexture(const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
@@ -83,11 +83,6 @@ void TextureSystem::AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTextur
     DepthTextureMap[vkGuid] = depthTexture;
 }
 
-void TextureSystem::AddInputTexture(UM_RenderPipelineID& pipelineId, TextureGuid& inputTexture)
-{
-    InputTextureListMap[pipelineId].emplace_back(inputTexture);
-}
-
 Texture& TextureSystem::FindTexture(const RenderPassGuid& guid)
 {
     auto it = TextureMap.find(guid);
@@ -133,22 +128,6 @@ Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& gu
         return it->second;
     }
     throw std::out_of_range("RenderedTextureList not found for given GUID");
-}
-
- Vector<Texture>& TextureSystem::FindInputTextureList(const RenderPassGuid& guid, const UM_RenderPipelineID& pipelineId)
-{
-    auto it = InputTextureListMap.find(pipelineId);
-    if (it != InputTextureListMap.end())
-    {
-        Vector<TextureGuid> textureGuidList = it->second;
-        Vector<Texture> textureList;
-        for (auto& textureGuid : textureGuidList)
-        {
-            textureList.emplace_back(FindRenderedTexture(guid, textureGuid));
-        }
-        return textureList;
-    }
-    throw std::out_of_range("InputTextureList not found for given GUID");
 }
 
  bool TextureSystem::TextureExists(const RenderPassGuid& guid)
@@ -200,16 +179,6 @@ Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& gu
      return false;
  }
 
- bool TextureSystem::InputTextureListExists(const RenderPassGuid& guid, const UM_RenderPipelineID& pipelineId)
- {
-     auto it = InputTextureListMap.find(pipelineId);
-     if (it != InputTextureListMap.end())
-     {
-         return true;
-     }
-     return false;
- }
-
 const Vector<Texture> TextureSystem::TextureList()
 {
     Vector<Texture> textureList;
@@ -228,27 +197,6 @@ const Vector<Texture> TextureSystem::DepthTextureList()
         depthTextureList.emplace_back(depthTextureMesh.second);
     }
     return depthTextureList;
-}
-
-const Vector<Texture> TextureSystem::InputTextureList(const RenderPassGuid& guid, const UM_RenderPipelineID& renderPipelineId)
-{
-    Vector<Texture> textureList;
-    const Vector<TextureGuid> inputTextures = InputTextureListMap[renderPipelineId];
-    if (!InputTextureListMap[renderPipelineId].empty())
-    {
-        return textureList;
-    }
-
-    auto it = RenderedTextureListMap.find(guid);
-    if (it != RenderedTextureListMap.end())
-    {
-        for (auto& texture : it->second)
-        {
-            textureList.emplace_back(texture);
-        }
-    }
-
-    return textureList;
 }
 
 void TextureSystem::DestroyAllTextures()
