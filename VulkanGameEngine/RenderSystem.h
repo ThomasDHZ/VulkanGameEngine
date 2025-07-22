@@ -1,7 +1,7 @@
 #pragma once
 #include <VulkanRenderer.h>
 #include <VulkanRenderPass.h>
-#include <ImGuiFunc.h>
+#include <ImGuiRenderer.h>
 #include "SceneDataBuffer.h"
 #include <nlohmann/json.hpp>
 
@@ -39,8 +39,6 @@ private:
     void DestroyBuffer(VkBuffer& buffer);
 
 public:
-
-    ImGuiRenderer                                                 imGuiRenderer;
     GraphicsRenderer                                              renderer;
 
     RenderSystem();

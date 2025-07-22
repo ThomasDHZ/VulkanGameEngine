@@ -75,6 +75,7 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
         size_t size = renderedTextureList.size();
         renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), renderedTextureList[0], size, depthTexture);
     }
+    ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
 
 VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)

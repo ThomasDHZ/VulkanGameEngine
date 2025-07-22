@@ -1,5 +1,7 @@
-#include "ImGuiFunc.h"
+#include "ImGuiRenderer.h"
 #include "VulkanError.h"
+
+ImGuiRenderer imGuiRenderer = ImGuiRenderer();
 
 ImGuiRenderer ImGui_StartUp(const GraphicsRenderer& renderer)
 {
@@ -129,7 +131,7 @@ VkCommandBuffer ImGui_Draw(const GraphicsRenderer& renderer, ImGuiRenderer& imGu
     return imGuiRenderer.ImGuiCommandBuffer;
 }
 
-void RebuildSwapChain(const GraphicsRenderer& renderer, ImGuiRenderer& imGuiRenderer)
+void ImGui_RebuildSwapChain(const GraphicsRenderer& renderer, ImGuiRenderer& imGuiRenderer)
 {
     Renderer_DestroyRenderPass(renderer.Device, &imGuiRenderer.RenderPass);
     Renderer_DestroyFrameBuffers(renderer.Device, &imGuiRenderer.SwapChainFramebuffers[0], renderer.SwapChainImageCount);

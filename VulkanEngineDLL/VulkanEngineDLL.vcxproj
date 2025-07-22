@@ -146,7 +146,7 @@
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GLFWWindow.h" />
-    <ClInclude Include="ImGuiFunc.h" />
+    <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="JsonFunc.h" />
@@ -196,7 +196,7 @@
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GLFWWindow.c" />
-    <ClCompile Include="ImGuidFunc.cpp" />
+    <ClCompile Include="ImGuiRenderer.cpp" />
     <ClCompile Include="JsonFunc.cpp" />
     <ClCompile Include="JsonLoader.cpp" />
     <ClCompile Include="Keyboard.c" />
