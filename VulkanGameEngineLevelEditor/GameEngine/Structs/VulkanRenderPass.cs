@@ -21,7 +21,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
         public size_t FrameBufferCount { get; set; } = 0;
         public size_t ClearValueCount { get; set; } = 0;
         public VkCommandBuffer CommandBuffer { get; set; }
-        public bool UseFrameBufferResolution { get; set; }
+        public bool IsRenderedToSwapchain { get; set; }
         public VulkanRenderPass()
         {
         }
