@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
@@ -209,29 +210,30 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         }
                         else
                         {
-                            control = TypeOfString(obj, prop, isReadOnly);
+
+                            control = new TypeOfStringForm(obj, prop, RowHeight, isReadOnly).CreateControl();
                         }
                     }
                 }
                 else if (prop.PropertyType == typeof(string))
                 {
-                    control = TypeOfString(obj, prop, isReadOnly);
+                    control = new TypeOfStringForm(obj, prop, RowHeight, isReadOnly).CreateControl();
                 }
                 else if (prop.PropertyType == typeof(int))
                 {
-                    control = TypeOfInt(obj, prop, isReadOnly);
+                    control = new TypeOfIntForm(obj, prop, RowHeight, isReadOnly).CreateControl();
                 }
                 else if (prop.PropertyType == typeof(uint))
                 {
-                    control = TypeOfUint(obj, prop, isReadOnly);
+                    control = new TypeOfUintForm(obj, prop, RowHeight, isReadOnly).CreateControl();
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    control = TypeOfBool(obj, prop, isReadOnly);
+                    control = new TypeOfBool(obj, prop, RowHeight, isReadOnly).CreateControl();
                 }
                 else if (prop.PropertyType == typeof(Guid))
                 {
-                    control = TypeOfGuid(obj, prop, isReadOnly);
+                    control = new TypeOfGuidForm(obj, prop, RowHeight, isReadOnly).CreateControl();
                 }
                 else if (prop.PropertyType == typeof(List<ComponentTypeEnum>))
                 {
@@ -239,7 +241,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 }
                 else if (prop.PropertyType == typeof(vec2))
                 {
-                    TypeOfVec2(parentObject, obj, prop, controlPanel, isReadOnly);
+                    new TypeOfVec2Form(obj, prop, RowHeight, isReadOnly).CreateControl();
                     control = null;
                 }
 
@@ -249,165 +251,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     control.Margin = new Padding(5);
                     controlPanel.Controls.Add(control);
                 }
-            }
-        }
-
-        public static Control TypeOfString(object obj, PropertyInfo property, bool readOnly)
-        {
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Text = property.GetValue(obj)?.ToString() ?? "",
-                TextAlign = HorizontalAlignment.Left,
-                BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White,
-                ReadOnly = readOnly,
-                MinimumSize = new Size(0, MinimumPanelSize)
-            };
-            if (!readOnly)
-            {
-                textBox.TextChanged += (s, e) => property.SetValue(obj, ((TextBox)s).Text);
-            }
-            return textBox;
-        }
-
-        public static Control TypeOfGuid(object obj, PropertyInfo property, bool readOnly)
-        {
-            string guid = ((Guid)property.GetValue(obj)).ToString();
-            var textBox = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Text = guid ?? "",
-                TextAlign = HorizontalAlignment.Left,
-                BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White,
-                ReadOnly = true,
-                MinimumSize = new Size(0, MinimumPanelSize)
-            };
-            return textBox;
-        }
-
-        public static Control TypeOfBool(object obj, PropertyInfo property, bool readOnly)
-        {
-            bool value = (bool)property.GetValue(obj);
-            if (readOnly)
-            {
-                var labelDisplay = new Label
-                {
-                    Dock = DockStyle.Fill,
-                    Text = value.ToString() ?? "N/A",
-                    TextAlign = ContentAlignment.MiddleRight,
-                    BackColor = Color.FromArgb(60, 60, 60),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    ForeColor = Color.White,
-                    MinimumSize = new Size(0, MinimumPanelSize)
-                };
-                return labelDisplay;
-            }
-            else
-            {
-                var checkBox = new CheckBox
-                {
-                    Dock = DockStyle.Fill,
-                    Checked = value,
-                    MinimumSize = new Size(0, MinimumPanelSize)
-                };
-                checkBox.CheckedChanged += (s, e) =>
-                {
-                    try
-                    {
-                        property.SetValue(obj, ((CheckBox)s).Checked);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error setting {property.Name}: {ex.Message}");
-                    }
-                };
-                return checkBox;
-            }
-        }
-
-        public static Control TypeOfInt(object obj, PropertyInfo property, bool readOnly)
-        {
-            int value = (int)property.GetValue(obj);
-            if (readOnly)
-            {
-                var labelDisplay = new Label
-                {
-                    Dock = DockStyle.Fill,
-                    Text = value.ToString() ?? "N/A",
-                    TextAlign = ContentAlignment.MiddleRight,
-                    BackColor = Color.FromArgb(60, 60, 60),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    ForeColor = Color.White,
-                    MinimumSize = new Size(0, MinimumPanelSize)
-                };
-                return labelDisplay;
-            }
-            else
-            {
-                var numeric = new NumericUpDown
-                {
-                    Dock = DockStyle.Fill,
-                    Minimum = (decimal)int.MinValue,
-                    Maximum = (decimal)int.MaxValue,
-                    Value = (decimal)Math.Max(int.MinValue, Math.Min(int.MaxValue, value)),
-                    MinimumSize = new Size(0, MinimumPanelSize)
-                };
-                numeric.ValueChanged += (s, e) =>
-                {
-                    try
-                    {
-                        property.SetValue(obj, (int)((NumericUpDown)s).Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error setting {property.Name}: {ex.Message}");
-                    }
-                };
-                return numeric;
-            }
-        }
-
-        public static Control TypeOfUint(object obj, PropertyInfo property, bool readOnly)
-        {
-            uint value = (uint)property.GetValue(obj);
-            if (readOnly)
-            {
-                var labelDisplay = new Label
-                {
-                    Dock = DockStyle.Fill,
-                    Text = value.ToString() ?? "N/A",
-                    TextAlign = ContentAlignment.MiddleRight,
-                    BackColor = Color.FromArgb(60, 60, 60),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    ForeColor = Color.White,
-                    MinimumSize = new Size(0, MinimumPanelSize)
-                };
-                return labelDisplay;
-            }
-            else
-            {
-                var numeric = new NumericUpDown
-                {
-                    Dock = DockStyle.Fill,
-                    Minimum = (decimal)0,
-                    Maximum = (decimal)uint.MaxValue,
-                    Value = (decimal)value,
-                    MinimumSize = new Size(0, MinimumPanelSize)
-                };
-                numeric.ValueChanged += (s, e) =>
-                {
-                    try
-                    {
-                        property.SetValue(obj, (uint)((NumericUpDown)s).Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error setting {property.Name}: {ex.Message}");
-                    }
-                };
-                return numeric;
             }
         }
 
@@ -449,86 +292,18 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             return null;
         }
 
-        public static void TypeOfVec2(object parentObject, object obj, PropertyInfo property, Panel controlPanel, bool readOnly)
-        {
-            var vec2Value = (vec2)property.GetValue(obj);
-            int rowIndex = 0;
+        //public static Control TypeOfFileLoader(object obj, PropertyInfo property, bool readOnly)
+        //{
+        //    //var textBox = TypeOfString(obj, property, readOnly);
+        //    //numericY.ValueChanged += (s, e) =>
+        //    //{
+        //    //    string filePath = openFileDialog.FileName;
+        //    //    MessageBox.Show(fileContent, "File Content");
+        //    //};
 
-            var vec2Panel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true,
-                BackColor = Color.FromArgb(70, 70, 70),
-                ColumnCount = 2,
-                ColumnStyles =
-                {
-                    new ColumnStyle(SizeType.Percent, 50F),
-                    new ColumnStyle(SizeType.Percent, 50F)
-                },
-                RowStyles = { new RowStyle(SizeType.AutoSize, MinimumPanelSize + BufferHeight) }
-            };
-            controlPanel.Controls.Add(vec2Panel);
-
-            var xLabelPanel = AddPanel();
-            var xLabel = new Label { Text = "X", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
-            xLabelPanel.Controls.Add(xLabel);
-            vec2Panel.Controls.Add(xLabelPanel, 0, rowIndex);
-
-            var xControlPanel = AddPanel();
-            var numericX = new NumericUpDown
-            {
-                Dock = DockStyle.Fill,
-                Minimum = decimal.MinValue,
-                Maximum = decimal.MaxValue,
-                BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White,
-                Value = (decimal)vec2Value.x,
-                MinimumSize = new Size(0, MinimumPanelSize),
-                Margin = new Padding(5)
-            };
-            xControlPanel.Controls.Add(numericX);
-            vec2Panel.Controls.Add(xControlPanel, 1, rowIndex);
-
-            rowIndex++;
-            vec2Panel.RowCount += 1;
-            vec2Panel.RowStyles.Add(new RowStyle(SizeType.AutoSize, MinimumPanelSize + BufferHeight));
-
-            var yLabelPanel = AddPanel();
-            var yLabel = new Label { Text = "Y", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
-            yLabelPanel.Controls.Add(yLabel);
-            vec2Panel.Controls.Add(yLabelPanel, 0, rowIndex);
-
-            var yControlPanel = AddPanel();
-            var numericY = new NumericUpDown
-            {
-                Dock = DockStyle.Fill,
-                Minimum = decimal.MinValue,
-                Maximum = decimal.MaxValue,
-                BackColor = Color.FromArgb(60, 60, 60),
-                ForeColor = Color.White,
-                Value = (decimal)vec2Value.y,
-                MinimumSize = new Size(0, MinimumPanelSize),
-                Margin = new Padding(5)
-            };
-            yControlPanel.Controls.Add(numericY);
-            vec2Panel.Controls.Add(yControlPanel, 1, rowIndex);
-
-            numericX.ValueChanged += (s, e) =>
-            {
-                var newX = (float)((NumericUpDown)s).Value;
-                var newVec2 = new vec2(newX, vec2Value.y);
-                property.SetValue(obj, newVec2);
-                UpdatePropertiesList.Add(new UpdateProperty { ParentObj = parentObject, Obj = obj });
-            };
-
-            numericY.ValueChanged += (s, e) =>
-            {
-                var newY = (float)((NumericUpDown)s).Value;
-                var newVec2 = new vec2(vec2Value.x, newY);
-                property.SetValue(obj, newVec2);
-                UpdatePropertiesList.Add(new UpdateProperty { ParentObj = parentObject, Obj = obj });
-            };
-        }
+        //    //           yControlPanel.Controls.Add(numericY);
+        //    //vec2Panel.Controls.Add(yControlPanel, 1, rowIndex);
+        //}
 
         private void AdjustContentHeight()
         {
