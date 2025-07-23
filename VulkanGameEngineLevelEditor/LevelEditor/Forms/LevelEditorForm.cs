@@ -115,8 +115,8 @@ namespace VulkanGameEngineLevelEditor
         {
             this.Invoke(new Action(() =>
             {
-                void* afds = this.pictureBox1.Handle.ToPointer();
-                GameSystem.StartUp(this.pictureBox1.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
+                void* afds = this.RendererBox.Handle.ToPointer();
+                GameSystem.StartUp(this.RendererBox.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
             }));
 
             Stopwatch stopwatch = new Stopwatch();
@@ -205,19 +205,26 @@ namespace VulkanGameEngineLevelEditor
 
         private void LevelEditorForm_Resize(object sender, EventArgs e)
         {
+            ResizeRenderer();
+        }
+
+        private void ResizeRenderer()
+        {
             if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
             {
                 lock (lockObject)
                 {
-                    void* currentHandle = pictureBox1.Handle.ToPointer();
-                    isResizing = true; 
+                    isResizing = true;
                     RenderSystem.RebuildRendererFlag = true;
-                    RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(pictureBox1.Width, pictureBox1.Height));
+                    RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(RendererBox.Width, RendererBox.Height));
                     isResizing = false;
-                    void* currentHandle2 = pictureBox1.Handle.ToPointer();
-                    var a = 324;
                 }
             }
+        }
+
+        private void RendererBox_Resize(object sender, EventArgs e)
+        {
+            ResizeRenderer();
         }
     }
 }

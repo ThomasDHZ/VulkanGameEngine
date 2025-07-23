@@ -15,22 +15,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
         public object rootObject;
         public DynamicControlPanelView DynamicControlPanel;
 
-        private bool isResizing = false;
-        private Point lastMousePosition;
-
         public LevelEditorTreeView()
         {
-            Cursor = Cursors.SizeWE; // Horizontal resize cursor
-            MouseDown += LevelEditorTreeView_MouseDown;
-            MouseMove += LevelEditorTreeView_MouseMove;
-            MouseUp += LevelEditorTreeView_MouseUp;
-
-        InitializeComponents();
+            InitializeComponents();
         }
 
         private void InitializeComponents()
         {
-            this.Dock = DockStyle.Left; 
             this.AfterSelect += LevelEditorTreeView_AfterSelect;
         }
 
@@ -109,28 +100,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
             {
                 DynamicControlPanel.SelectedObject = e.Node.Tag;
             }
-        }
-
-        private void LevelEditorTreeView_MouseDown(object sender, MouseEventArgs e)
-        {
-            isResizing = true;
-            lastMousePosition = e.Location;
-        }
-
-        private void LevelEditorTreeView_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (isResizing)
-            {
-                int deltaX = e.X - lastMousePosition.X;
-                Width += deltaX;
-
-                lastMousePosition = e.Location;
-            }
-        }
-
-        private void LevelEditorTreeView_MouseUp(object sender, MouseEventArgs e)
-        {
-            isResizing = false;
         }
 
         private bool IsSimpleType(Type type)

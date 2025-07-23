@@ -1,5 +1,4 @@
 ﻿using GlmSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,8 +25,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private static TableLayoutPanel _contentPanel;
         public static List<UpdateProperty> UpdatePropertiesList = new List<UpdateProperty>();
 
-        private const int MIN_PANEL_HEIGHT = 40;
-        private const int BUFFER_HEIGHT = 10;
+        private const int BufferHeight = 32;
+        private const int MinimumPanelSize = 100;
+        private const int RowHeight = 70; 
 
         public DynamicControlPanelView()
         {
@@ -38,9 +38,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             if (DesignMode) return;
 
-            this.Dock = DockStyle.Top;
+            this.Dock = DockStyle.Right;
             this.AutoScroll = true;
-            this.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            this.AutoSize = false; 
+            this.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+            this.MinimumSize = new Size(100, 0);
 
             _contentPanel = new TableLayoutPanel
             {
@@ -50,7 +52,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 ForeColor = Color.White,
                 ColumnCount = 1,
                 ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) },
-                RowStyles = { new RowStyle(SizeType.AutoSize) }
+                AutoSize = false
             };
             this.Controls.Add(_contentPanel);
         }
@@ -88,6 +90,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                             }
                         }
                     }
+                    AdjustContentHeight(); 
                 }
             }
         }
@@ -98,7 +101,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
             int rowIndex = _contentPanel.RowCount;
             _contentPanel.RowCount += 1;
-            _contentPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            _contentPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight)); 
 
             var objectPanel = new Panel
             {
@@ -132,7 +135,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             var propTable = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                AutoSize = true,
+                AutoSize = true, 
                 AutoScroll = true,
                 BackColor = Color.FromArgb(90, 90, 90),
                 ColumnCount = 2,
@@ -148,23 +151,21 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             foreach (var prop in obj.GetType().GetProperties())
             {
                 var ignoreAttr = prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute;
-                if (ignoreAttr != null)
-                {
-                    continue;
-                }
+                if (ignoreAttr != null) continue;
 
                 var readOnlyAttr = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
                 bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
 
                 int propRowIndex = propTable.RowCount;
                 propTable.RowCount += 1;
-                propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, MIN_PANEL_HEIGHT + BUFFER_HEIGHT));
+                propTable.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
+
                 var labelPanel = new Panel
                 {
                     Dock = DockStyle.Fill,
                     BackColor = Color.FromArgb(70, 70, 70),
                     Margin = new Padding(2),
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT + BUFFER_HEIGHT)
+                    Height = RowHeight
                 };
                 propTable.Controls.Add(labelPanel, 0, propRowIndex);
 
@@ -183,7 +184,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     Dock = DockStyle.Fill,
                     BackColor = Color.FromArgb(70, 70, 70),
                     Margin = new Padding(2),
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT + BUFFER_HEIGHT)
+                    Height = RowHeight
                 };
                 propTable.Controls.Add(controlPanel, 1, propRowIndex);
 
@@ -191,17 +192,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 if (typeof(IList).IsAssignableFrom(prop.PropertyType))
                 {
                     var list = prop.GetValue(obj) as IList;
-                    if (list != null &&
-                        list.Count > 0)
+                    if (list != null && list.Count > 0)
                     {
                         if (!typeof(IEnumerable<string>).IsAssignableFrom(prop.PropertyType))
                         {
                             foreach (var childObj in list)
                             {
-                                if (childObj != null)
-                                {
-                                    CreatePropertyControl(obj, childObj);
-                                }
+                                if (childObj != null) CreatePropertyControl(obj, childObj);
                             }
                         }
                         else
@@ -259,7 +256,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 ReadOnly = readOnly,
-                MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                MinimumSize = new Size(0, MinimumPanelSize)
             };
             if (!readOnly)
             {
@@ -279,7 +276,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 ReadOnly = true,
-                MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                MinimumSize = new Size(0, MinimumPanelSize)
             };
             return textBox;
         }
@@ -297,7 +294,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     BackColor = Color.FromArgb(60, 60, 60),
                     BorderStyle = BorderStyle.FixedSingle,
                     ForeColor = Color.White,
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                    MinimumSize = new Size(0, MinimumPanelSize)
                 };
                 return labelDisplay;
             }
@@ -307,7 +304,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 {
                     Dock = DockStyle.Fill,
                     Checked = value,
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                    MinimumSize = new Size(0, MinimumPanelSize)
                 };
                 checkBox.CheckedChanged += (s, e) =>
                 {
@@ -337,7 +334,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     BackColor = Color.FromArgb(60, 60, 60),
                     BorderStyle = BorderStyle.FixedSingle,
                     ForeColor = Color.White,
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                    MinimumSize = new Size(0, MinimumPanelSize)
                 };
                 return labelDisplay;
             }
@@ -349,7 +346,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     Minimum = (decimal)int.MinValue,
                     Maximum = (decimal)int.MaxValue,
                     Value = (decimal)Math.Max(int.MinValue, Math.Min(int.MaxValue, value)),
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                    MinimumSize = new Size(0, MinimumPanelSize)
                 };
                 numeric.ValueChanged += (s, e) =>
                 {
@@ -379,7 +376,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     BackColor = Color.FromArgb(60, 60, 60),
                     BorderStyle = BorderStyle.FixedSingle,
                     ForeColor = Color.White,
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                    MinimumSize = new Size(0, MinimumPanelSize)
                 };
                 return labelDisplay;
             }
@@ -391,7 +388,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     Minimum = (decimal)0,
                     Maximum = (decimal)uint.MaxValue,
                     Value = (decimal)value,
-                    MinimumSize = new Size(0, MIN_PANEL_HEIGHT)
+                    MinimumSize = new Size(0, MinimumPanelSize)
                 };
                 numeric.ValueChanged += (s, e) =>
                 {
@@ -462,7 +459,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     new ColumnStyle(SizeType.Percent, 50F),
                     new ColumnStyle(SizeType.Percent, 50F)
                 },
-                RowStyles = { new RowStyle(SizeType.AutoSize, MIN_PANEL_HEIGHT + BUFFER_HEIGHT) }
+                RowStyles = { new RowStyle(SizeType.AutoSize, MinimumPanelSize + BufferHeight) }
             };
             controlPanel.Controls.Add(vec2Panel);
 
@@ -480,7 +477,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 Value = (decimal)vec2Value.x,
-                MinimumSize = new Size(0, MIN_PANEL_HEIGHT),
+                MinimumSize = new Size(0, MinimumPanelSize),
                 Margin = new Padding(5)
             };
             xControlPanel.Controls.Add(numericX);
@@ -488,7 +485,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
             rowIndex++;
             vec2Panel.RowCount += 1;
-            vec2Panel.RowStyles.Add(new RowStyle(SizeType.AutoSize, MIN_PANEL_HEIGHT + BUFFER_HEIGHT));
+            vec2Panel.RowStyles.Add(new RowStyle(SizeType.AutoSize, MinimumPanelSize + BufferHeight));
 
             var yLabelPanel = AddPanel();
             var yLabel = new Label { Text = "Y", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
@@ -504,7 +501,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
                 Value = (decimal)vec2Value.y,
-                MinimumSize = new Size(0, MIN_PANEL_HEIGHT),
+                MinimumSize = new Size(0, MinimumPanelSize),
                 Margin = new Padding(5)
             };
             yControlPanel.Controls.Add(numericY);
@@ -527,15 +524,26 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             };
         }
 
+        private void AdjustContentHeight()
+        {
+            if (_contentPanel.Controls.Count > 0)
+            {
+                int totalHeight = _contentPanel.Controls.Cast<Control>().Sum(c => c.Height + c.Margin.Vertical);
+                _contentPanel.Height = totalHeight;
+            }
+            else
+            {
+                _contentPanel.Height = 0; 
+            }
+        }
+
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            if (!DesignMode && _targetObject != null)
+            if (!DesignMode && _contentPanel != null)
             {
-                _contentPanel.Controls.Clear();
-                _contentPanel.RowStyles.Clear();
-                _contentPanel.RowCount = 0;
-                CreatePropertyControl(null, _targetObject);
+                _contentPanel.Width = this.ClientSize.Width; 
+                AdjustContentHeight();
             }
         }
 
@@ -546,7 +554,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
                 Margin = new Padding(2),
-                MinimumSize = new Size(0, MIN_PANEL_HEIGHT + BUFFER_HEIGHT)
+                Height = RowHeight
             };
         }
     }
