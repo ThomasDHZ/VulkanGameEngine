@@ -266,7 +266,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             if (!MeshMap.TryGetValue(meshId, out Mesh mesh))
                 return;
 
-            // Use int keys directly, as Mesh stores buffer IDs as int
             Mesh_DestroyMesh(RenderSystem.renderer, mesh,
                 BufferSystem.VulkanBufferMap[(uint)mesh.MeshVertexBufferId],
                 BufferSystem.VulkanBufferMap[(uint)mesh.MeshIndexBufferId],

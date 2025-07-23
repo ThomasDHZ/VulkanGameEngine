@@ -8,6 +8,7 @@ namespace VulkanGameEngineLevelEditor.Models
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public unsafe struct VkPipelineRasterizationStateCreateInfoModel
     {
+        [IgnoreProperty]
         public VkStructureType sType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         public VkBool32 depthClampEnable { get; set; }
         public VkBool32 rasterizerDiscardEnable { get; set; }
@@ -19,8 +20,10 @@ namespace VulkanGameEngineLevelEditor.Models
         public float depthBiasClamp { get; set; }
         public float depthBiasSlopeFactor { get; set; }
         public float lineWidth { get; set; }
+        [IgnoreProperty]
         public uint flags { get; set; } = 0;
         [JsonIgnore]
+        [IgnoreProperty]
         public void* pNext { get; set; } = null;
 
         public VkPipelineRasterizationStateCreateInfoModel() { }

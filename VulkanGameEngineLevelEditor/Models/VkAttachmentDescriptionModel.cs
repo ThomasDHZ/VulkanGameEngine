@@ -154,13 +154,13 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public VkAttachmentDescriptionModel(string jsonFilePath) : base()
         {
-            LoadJsonComponent(jsonFilePath);
+           // LoadJsonComponent(jsonFilePath);
         }
 
         public VkAttachmentDescriptionModel(string name, string jsonFilePath) : base()
         {
             Name = name;
-            LoadJsonComponent(ConstConfig.DefaultColorAttachmentDescriptionModel);
+           // LoadJsonComponent(@$"{ConstConfig.BaseDirectoryPath} DefaultColorAttachmentDescriptionModel);
         }
 
         public VkAttachmentDescription Convert()
@@ -193,7 +193,7 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public void SaveJsonComponent()
         {
-            base.SaveJsonComponent($@"{ConstConfig.AttachmentDescriptionModelPath}{this.Name}.json", this);
+           // base.SaveJsonComponent($@"{ConstConfig.AttachmentDescriptionModelPath}{this.Name}.json", this);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public Guid RenderPassId { get; set; } = Guid.NewGuid();
         [IgnoreProperty]
         public List<string> RenderPipelineList { get; set; } = new List<string>();
+        [IgnoreProperty]
         public List<Guid> InputTextureList { get; set; } = new List<Guid>();
         [IgnoreProperty]
         public List<RenderPipelineLoaderModel> renderPipelineModelList { get; set; } = new List<RenderPipelineLoaderModel>();

@@ -12,11 +12,12 @@ using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using VulkanGameEngineLevelEditor;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using VulkanGameEngineLevelEditor.Models;
-using VulkanGameEngineLevelEditor;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
@@ -81,7 +82,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
             {
                 Guid dummyGuid = new Guid();
-                string fullRenderPassPath = Path.GetFullPath(Path.Combine(levelDirectory, "../RenderPass/LevelShader2DRenderPass.json"));
+                string fullRenderPassPath = @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json";
                 string gameObjectPath = Path.GetFullPath(Path.Combine(levelDirectory, fullRenderPassPath));
 
                 string jsonContent2 = File.ReadAllText(gameObjectPath);
@@ -90,8 +91,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
                 SpriteSystem.AddSpriteBatchLayer(spriteRenderPass2DId);
 
-                string fulRenderPassPath = Path.GetFullPath(Path.Combine(levelDirectory, "../RenderPass/LevelShader2DRenderPass.json"));
-                string fulRenderPassPath2 = Path.GetFullPath(Path.Combine(levelDirectory, "../RenderPass/FrameBufferRenderPass.json"));
+                string fulRenderPassPath = @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json";
+                string fulRenderPassPath2 = @$"{ConstConfig.BaseDirectoryPath}RenderPass/FrameBufferRenderPass.json";
                 spriteRenderPass2DId = RenderSystem.LoadRenderPass(levelLayout.LevelLayoutId, fulRenderPassPath, new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
                 frameBufferId = RenderSystem.LoadRenderPass(dummyGuid, fulRenderPassPath2, new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
             }

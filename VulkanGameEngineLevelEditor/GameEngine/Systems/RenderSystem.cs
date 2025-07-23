@@ -17,6 +17,7 @@ using System.Xml.Linq;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.Models;
 
 
@@ -223,8 +224,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             RenderPipelineLoaderJsonMap[vulkanRenderPass.RenderPassId] = new List<string>();
             foreach (var pipelineId in model.RenderPipelineList)
             {
-                string fulRenderPassPath = Path.GetFullPath("C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\pipelines\\" + pipelineId);
-                RenderPipelineLoaderJsonMap[vulkanRenderPass.RenderPassId].Add(fulRenderPassPath);
+                string pipelinePath = @$"{ConstConfig.BaseDirectoryPath}pipelines\{pipelineId}";
+                RenderPipelineLoaderJsonMap[vulkanRenderPass.RenderPassId].Add(pipelinePath);
 
                 ListPtr<VkDescriptorBufferInfo> vertexPropertiesList = GetVertexPropertiesBuffer();
                 ListPtr<VkDescriptorBufferInfo> indexPropertiesList = GetIndexPropertiesBuffer();
@@ -252,7 +253,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
                 var pipeLineId = (uint)RenderPipelineMap.Count;
                 var renderPassId = vulkanRenderPass.RenderPassId;
-                VulkanPipeline vulkanPipeline = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, fulRenderPassPath, RenderPassMap[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, include);
+                VulkanPipeline vulkanPipeline = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipelinePath, RenderPassMap[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, include);
                 vulkanPipelineList.Add(vulkanPipeline);
             }
             RenderPipelineMap[vulkanRenderPass.RenderPassId] = vulkanPipelineList;
@@ -442,7 +443,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
             return meshPropertiesBuffer;
         }
-
 
         public unsafe static ListPtr<VkDescriptorImageInfo> GetTexturePropertiesBuffer(Guid renderPassId)
         {

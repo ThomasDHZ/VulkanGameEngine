@@ -10,14 +10,19 @@ namespace VulkanGameEngineLevelEditor.Models
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public unsafe struct VkPipelineColorBlendStateCreateInfoModel
     {
-        public VkStructureType sType { get; set; }
+        [IgnoreProperty]
+        public VkStructureType sType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         [JsonIgnore]
+        [IgnoreProperty]
         public IntPtr pNext { get; set; }
+        [IgnoreProperty]
         public VkPipelineColorBlendStateCreateFlagBits flags { get; set; }
         public VkBool32 logicOpEnable { get; set; }
         public VkLogicOp logicOp { get; set; }
+        [IgnoreProperty]
         public uint attachmentCount { get; set; }
         [JsonIgnore]
+        [IgnoreProperty]
         public VkPipelineColorBlendAttachmentState* pAttachments { get; set; }
         public fixed float blendConstants[4];
 

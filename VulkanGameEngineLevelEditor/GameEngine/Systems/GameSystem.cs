@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.Models;
 
 
@@ -30,7 +31,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static unsafe void StartUp(void* renderAreaHandle, void* debuggerHandle)
         {
             RenderSystem.CreateVulkanRenderer(WindowType.Win32, renderAreaHandle, debuggerHandle);
-            LevelSystem.LoadLevel("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/Levels/TestLevel.json");
+            LevelSystem.LoadLevel(@$"{ConstConfig.BaseDirectoryPath}Levels/TestLevel.json");
         }
 
         public static void Update(float deltaTime)

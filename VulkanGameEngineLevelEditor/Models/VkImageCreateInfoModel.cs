@@ -48,7 +48,7 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public void SaveJsonComponent()
         {
-            base.SaveJsonComponent($@"{ConstConfig.CreateImageInfoPath}{this.Name}.json", this);
+          //  base.SaveJsonComponent($@"{ConstConfig.CreateImageInfoPath}{this.Name}.json", this);
         }
     }
 }

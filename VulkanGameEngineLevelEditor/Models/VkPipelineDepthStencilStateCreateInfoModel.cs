@@ -7,6 +7,7 @@ namespace VulkanGameEngineLevelEditor.Models
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public unsafe struct VkPipelineDepthStencilStateCreateInfoModel
     {
+        [IgnoreProperty]
         public VkStructureType sType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         public VkBool32 depthTestEnable { get; set; }
         public VkBool32 depthWriteEnable { get; set; }
@@ -17,8 +18,10 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkStencilOpStateModel back { get; set; } = new VkStencilOpStateModel();
         public float minDepthBounds { get; set; }
         public float maxDepthBounds { get; set; }
+        [IgnoreProperty]
         public uint flags { get; set; } = 0;
         [JsonIgnore]
+        [IgnoreProperty]
         public void* pNext { get; set; } = null;
         public VkPipelineDepthStencilStateCreateInfoModel() { }
 

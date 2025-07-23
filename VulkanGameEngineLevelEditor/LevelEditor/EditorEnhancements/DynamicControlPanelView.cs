@@ -27,7 +27,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         private const int BufferHeight = 32;
         private const int MinimumPanelSize = 100;
-        private const int RowHeight = 70; 
+        private const int RowHeight = 70;
 
         public DynamicControlPanelView()
         {
@@ -40,7 +40,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
             this.Dock = DockStyle.Right;
             this.AutoScroll = true;
-            this.AutoSize = false; 
+            this.AutoSize = false;
             this.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
             this.MinimumSize = new Size(100, 0);
 
@@ -90,7 +90,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                             }
                         }
                     }
-                    AdjustContentHeight(); 
+                    AdjustContentHeight();
                 }
             }
         }
@@ -101,7 +101,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
             int rowIndex = _contentPanel.RowCount;
             _contentPanel.RowCount += 1;
-            _contentPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight)); 
+            _contentPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
+
+            var panelDisplayNameAttr = obj.GetType().GetCustomAttribute<DisplayNameAttribute>();
+            string panelDisplayName = panelDisplayNameAttr?.DisplayName ?? obj.GetType().Name;
 
             var objectPanel = new Panel
             {
@@ -124,7 +127,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
             Label objLabel = new Label
             {
-                Text = obj.GetType().Name,
+                Text = panelDisplayName,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 ForeColor = Color.White,
@@ -135,7 +138,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             var propTable = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                AutoSize = true, 
+                AutoSize = true,
                 AutoScroll = true,
                 BackColor = Color.FromArgb(90, 90, 90),
                 ColumnCount = 2,
@@ -152,6 +155,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 var ignoreAttr = prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute;
                 if (ignoreAttr != null) continue;
+
+                var propertyDisplayNameAttr = prop.GetCustomAttribute<DisplayNameAttribute>();
+                string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? prop.Name;
 
                 var readOnlyAttr = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
                 bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
@@ -171,7 +177,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
                 Label label = new Label
                 {
-                    Text = prop.Name,
+                    Text = propertyDisplayName,
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleLeft,
                     ForeColor = Color.White,
@@ -533,7 +539,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
             else
             {
-                _contentPanel.Height = 0; 
+                _contentPanel.Height = 0;
             }
         }
 
@@ -542,7 +548,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             base.OnResize(e);
             if (!DesignMode && _contentPanel != null)
             {
-                _contentPanel.Width = this.ClientSize.Width; 
+                _contentPanel.Width = this.ClientSize.Width;
                 AdjustContentHeight();
             }
         }

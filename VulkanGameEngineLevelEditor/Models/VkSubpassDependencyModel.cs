@@ -139,7 +139,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkSubpassDependencyModel(string name, string jsonFilePath) : base()
         {
             Name = name;
-            LoadJsonComponent(ConstConfig.DefaultSubpassDependencyModel);
+          //  LoadJsonComponent(ConstConfig.DefaultSubpassDependencyModel);
         }
 
         public VkSubpassDependencyModel(uint? srcSubpass = null, uint? dstSubpass = null, VkPipelineStageFlagBits? srcStageMask = null, VkPipelineStageFlagBits? dstStageMask = null, VkAccessFlagBits? srcAccessMask = null, VkAccessFlagBits? dstAccessMask = null, VkDependencyFlagBits? dependencyFlags = null)
@@ -208,7 +208,7 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public void SaveJsonComponent()
         {
-            base.SaveJsonComponent($@"{ConstConfig.SubpassDependencyModelPath}{this.Name}.json", this);
+          //  base.SaveJsonComponent($@"{ConstConfig.SubpassDependencyModelPath}{this.Name}.json", this);
         }
     }
 }

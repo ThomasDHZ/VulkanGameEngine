@@ -75,7 +75,7 @@ namespace VulkanGameEngineLevelEditor
             SetLogVulkanMessageCallback(callback);
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
-            var renderPass = new RenderPassLoaderModel(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\DefaultRenderPass.json");
+            var renderPass = new RenderPassLoaderModel(@$"{ConstConfig.BaseDirectoryPath}RenderPass\DefaultRenderPass.json");
             RenderSystem.RenderPassEditor_RenderPass[renderPass.RenderPassId] = renderPass;
 
             var renderPassLoader = new RenderPassLoaderModel
@@ -125,7 +125,7 @@ namespace VulkanGameEngineLevelEditor
 
             while (running)
             {
-                if (isResizing) // Wait if resizing
+                if (isResizing)
                 {
                     Thread.Sleep(10);
                     continue;
@@ -136,7 +136,7 @@ namespace VulkanGameEngineLevelEditor
                 lastTime = currentTime;
 
                 GameSystem.Update((float)deltaTime);
-                lock (lockObject) // Ensure no resize during draw
+                lock (lockObject)
                 {
                     GameSystem.Draw((float)deltaTime);
                 }
