@@ -16,7 +16,6 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
     };
 
-
     Vector<Texture> renderedTextureList;
     vulkanRenderPassPtr->RenderPass = RenderPass_BuildRenderPass(renderer, renderPassLoader, renderedTextureList, depthTexture);
     RenderPass_BuildRenderPassAttachments(renderer, renderPassLoader, renderedTextureList, depthTexture);
@@ -40,6 +39,7 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
     vulkanRenderPassPtr->FrameBufferList = nullptr;
     if (frameBufferList.size() > 0)
     {
+        vulkanRenderPassPtr->FrameBufferCount = frameBufferList.size();
         vulkanRenderPassPtr->FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.size(), __FILE__, __LINE__, __func__);
         std::memcpy(vulkanRenderPassPtr->FrameBufferList, frameBufferList.data(), frameBufferList.size() * sizeof(VkFramebuffer));
     }

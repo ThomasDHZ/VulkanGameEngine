@@ -222,17 +222,6 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }
-
-    if (!textureSystem.RenderedTextureListExists(renderPassId))
-    {
-        Vector<Texture> inputTextureList;
-        for (auto& inputTexture : json["InputTexture"])
-        {
-            inputTextureList.emplace_back(inputTexture);
-        }
-        textureSystem.AddRenderedTexture(renderPassId, inputTextureList);
-    }
-
     return renderPassId;
 }
 

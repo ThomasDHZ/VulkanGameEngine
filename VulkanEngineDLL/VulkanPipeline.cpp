@@ -59,7 +59,7 @@
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)
 {
-    vulkanPipeline.RenderPipelineId = 0;
+    vulkanPipeline.RenderPipelineId = VkGuid();
     Renderer_DestroyPipeline(device, &vulkanPipeline.Pipeline);
     Renderer_DestroyPipelineLayout(device, &vulkanPipeline.PipelineLayout);
     Renderer_DestroyPipelineCache(device, &vulkanPipeline.PipelineCache);

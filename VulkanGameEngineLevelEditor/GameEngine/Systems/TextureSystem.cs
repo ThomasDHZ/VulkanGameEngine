@@ -23,8 +23,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
     {
         public static Dictionary<Guid, Texture> TextureList { get; set; } = new Dictionary<Guid, Texture>();
         public static Dictionary<Guid, Texture> DepthTextureList { get; set; } = new Dictionary<Guid, Texture>();
-        public static Dictionary<Guid, ListPtr<Texture>> RenderedTextureList { get; set; } = new Dictionary<Guid, ListPtr<Texture>>();
-        public static Dictionary<uint, ListPtr<Texture>> InputTextureList { get; set; } = new Dictionary<uint, ListPtr<Texture>>();
+        public static Dictionary<Guid, ListPtr<Texture>> RenderedTextureListMap { get; set; } = new Dictionary<Guid, ListPtr<Texture>>();
 
         public static Guid LoadTexture(string texturePath)
         {
@@ -77,17 +76,21 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static bool RenderedTextureExists(Guid guid, Guid textureGuid)
         {
-            return RenderedTextureList[guid].Where(x => x.textureId == textureGuid).Any();
+            return RenderedTextureListMap[guid].Where(x => x.textureId == textureGuid).Any();
         }
 
         public static bool RenderedTextureListExists(Guid guid)
         {
-            return RenderedTextureList[guid].Any();
+            return RenderedTextureListMap[guid].Any();
         }
 
-        public static bool InputTextureListExists(int pipelineId)
+        public static Texture FindRenderedTexture(Guid textureGuid)
         {
-            return InputTextureList[(uint)pipelineId].Any();
+            foreach (var pair in RenderedTextureListMap)
+            {
+                return pair.Value.Where(x => x.textureId == textureGuid).First();
+            }
+            return new Texture();
         }
 
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Texture Texture_LoadTexture(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString);

@@ -11,7 +11,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct VulkanPipeline
     {
-        public uint RenderPipelineId { get; set; } = 0;
+        public Guid PipelineId = Guid.Empty;
         public size_t DescriptorSetLayoutCount { get; set; } = 0;
         public size_t DescriptorSetCount { get; set; } = 0;
         public VkDescriptorPool DescriptorPool { get; set; } = VulkanCSConst.VK_NULL_HANDLE;

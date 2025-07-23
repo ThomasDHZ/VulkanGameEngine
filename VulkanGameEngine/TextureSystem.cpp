@@ -107,13 +107,13 @@ Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 {
     for (auto& pair : RenderedTextureListMap)
     {
-        auto& textureVec = pair.second;
-        auto it = std::find_if(textureVec.begin(), textureVec.end(),
+        auto& textureList = pair.second;
+        auto it = std::find_if(textureList.begin(), textureList.end(),
             [&textureGuid](const Texture& texture)
             {
                 return texture.textureId == textureGuid;
             });
-        if (it != textureVec.end())
+        if (it != textureList.end())
         {
             return *it;
         }
