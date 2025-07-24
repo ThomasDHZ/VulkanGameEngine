@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
 public class SpriteModel : INotifyPropertyChanged
 {

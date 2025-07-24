@@ -1,6 +1,7 @@
 ﻿using GlmSharp;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.GameObjectComponents
 {

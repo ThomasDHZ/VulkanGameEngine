@@ -14,8 +14,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfVec2Form : PropertyEditorForm
     {
-        private const int BufferHeight = 32;
-        private const int RowHeight = 70;
         public TypeOfVec2Form(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {

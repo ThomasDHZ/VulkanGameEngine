@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
@@ -163,9 +164,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 var readOnlyAttr = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
                 bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
 
+                var controlTypeAttr = prop.GetCustomAttributes(typeof(ControlTypeAttribute), true).FirstOrDefault() as ControlTypeAttribute;
+                
                 int propRowIndex = propTable.RowCount;
                 propTable.RowCount += 1;
-                propTable.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
+                propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
 
                 var labelPanel = new Panel
                 {
@@ -196,7 +199,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 propTable.Controls.Add(controlPanel, 1, propRowIndex);
 
                 Control control = null;
-                if (typeof(IList).IsAssignableFrom(prop.PropertyType))
+                if (controlTypeAttr != null)
+                {
+                    if (controlTypeAttr.ControlType == typeof(TypeOfFileLoader))
+                    {
+                        control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
+                    }
+                }
+                else if (typeof(IList).IsAssignableFrom(prop.PropertyType))
                 {
                     var list = prop.GetValue(obj) as IList;
                     if (list != null && list.Count > 0)
@@ -291,19 +301,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
             return null;
         }
-
-        //public static Control TypeOfFileLoader(object obj, PropertyInfo property, bool readOnly)
-        //{
-        //    //var textBox = TypeOfString(obj, property, readOnly);
-        //    //numericY.ValueChanged += (s, e) =>
-        //    //{
-        //    //    string filePath = openFileDialog.FileName;
-        //    //    MessageBox.Show(fileContent, "File Content");
-        //    //};
-
-        //    //           yControlPanel.Controls.Add(numericY);
-        //    //vec2Panel.Controls.Add(yControlPanel, 1, rowIndex);
-        //}
 
         private void AdjustContentHeight()
         {

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 
 namespace VulkanGameEngineLevelEditor.Models
@@ -14,7 +16,9 @@ namespace VulkanGameEngineLevelEditor.Models
     {
         public string Name { get; set; } = string.Empty;
         public int RenderPipelineId = 0;
+        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
         public String VertexShader { get; set; }
+        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
         public String FragmentShader { get; set; }
         public size_t DescriptorSetCount { get; set; }
         public size_t DescriptorSetLayoutCount { get; set; }

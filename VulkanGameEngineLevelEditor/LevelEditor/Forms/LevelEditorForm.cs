@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using VulkanGameEngineLevelEditor.Compilers;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
@@ -33,13 +34,14 @@ namespace VulkanGameEngineLevelEditor
         private volatile bool levelEditorRunning;
         private volatile bool isResizing;
         private Stopwatch stopwatch = new Stopwatch();
-        public RichTextBoxWriter textBoxWriter;
+        public SystemMessenger textBoxWriter;
         private Thread renderThread { get; set; }
         private MessengerModel _messenger;
         private GCHandle _callbackHandle;
 
         private object lockObject = new object();
         private object sharedData;
+        public List<String> ShaderList = new List<string>();
 
         BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
         [DllImport("kernel32.dll")] static extern bool AllocConsole();
@@ -57,8 +59,8 @@ namespace VulkanGameEngineLevelEditor
 
             Thread.CurrentThread.Name = "LevelEditor";
 
-            textBoxWriter = new RichTextBoxWriter(richTextBox2);
-
+            textBoxWriter = new SystemMessenger(richTextBox2);
+            ShaderCompiler.systemMessenger = textBoxWriter;
 
             _messenger = new MessengerModel
             {
@@ -95,6 +97,7 @@ namespace VulkanGameEngineLevelEditor
         {
             StartRenderer();
         }
+
         public static void LogVulkanMessage(string message, int severity)
         {
             GlobalMessenger.LogMessage(message, (DebugUtilsMessageSeverityFlagsEXT)severity);
@@ -225,6 +228,11 @@ namespace VulkanGameEngineLevelEditor
         private void RendererBox_Resize(object sender, EventArgs e)
         {
             ResizeRenderer();
+        }
+
+        private void buildShadersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShaderCompiler.CompileAllShaders($@"{ConstConfig.BaseDirectoryPath}Shaders");
         }
     }
 }

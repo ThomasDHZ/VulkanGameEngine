@@ -12,6 +12,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
         protected int _minimumPanelSize;
         protected bool _readOnly;
 
+        protected const int BufferHeight = 32;
+        protected const int RowHeight = 70;
+
         protected PropertyEditorForm(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly)
         {
             _obj = obj;
@@ -26,6 +29,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
             control.Dock = DockStyle.Fill;
             control.BackColor = Color.FromArgb(60, 60, 60);
             control.ForeColor = Color.White;
+            control.Size = new Size(0, 32);
             control.MinimumSize = new Size(0, _minimumPanelSize);
             return control;
         }
