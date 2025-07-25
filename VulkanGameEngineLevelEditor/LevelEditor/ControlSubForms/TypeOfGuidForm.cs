@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog

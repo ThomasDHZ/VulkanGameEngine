@@ -14,26 +14,45 @@ namespace VulkanGameEngineLevelEditor.Models
 {
     public unsafe class RenderPipelineLoaderModel : RenderPassEditorBaseModel
     {
+
         public string Name { get; set; } = string.Empty;
-        public int RenderPipelineId = 0;
-        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
+        [IgnoreProperty()]
+        public int RenderPipelineId { get; set; } = 0;
+        [DisplayName("Vertex Shader")]
+        [ControlTypeAttribute(typeof(FileLoaderForm))]
         public String VertexShader { get; set; }
-        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
+        [DisplayName("Pixel Shader")]
+        [ControlTypeAttribute(typeof(FileLoaderForm))]
         public String FragmentShader { get; set; }
+        [DisplayName("Descriptor Set Count")]
         public size_t DescriptorSetCount { get; set; }
+        [DisplayName("Descriptor Set Layout Count")]
         public size_t DescriptorSetLayoutCount { get; set; }
+        [DisplayName("Vertex Type")]
         public VertexTypeEnum VertexType { get; set; }
+        [DisplayName("Viewports")]
         public List<VkViewport> ViewportList { get; set; } = new List<VkViewport>();
+        [DisplayName("Scissors")]
         public List<VkRect2D> ScissorList { get; set; } = new List<VkRect2D>();
+        [DisplayName("Color Blend Attachments")]
         public List<VkPipelineColorBlendAttachmentState> PipelineColorBlendAttachmentStateList { get; set; } = new List<VkPipelineColorBlendAttachmentState>();
+        [DisplayName("Color State Attachment")]
         public VkPipelineColorBlendStateCreateInfoModel PipelineColorBlendStateCreateInfoModel { get; set; } = new VkPipelineColorBlendStateCreateInfoModel();
+        [DisplayName("Rasterization State")]
         public VkPipelineRasterizationStateCreateInfoModel PipelineRasterizationStateCreateInfo { get; set; } = new VkPipelineRasterizationStateCreateInfoModel();
+        [DisplayName("Multisample State")]
         public VkPipelineMultisampleStateCreateInfoModel PipelineMultisampleStateCreateInfo { get; set; } = new VkPipelineMultisampleStateCreateInfoModel();
+        [DisplayName("Depth Stencil State")]
         public VkPipelineDepthStencilStateCreateInfoModel PipelineDepthStencilStateCreateInfo { get; set; }
+        [DisplayName("Input Assembly State")]
         public VkPipelineInputAssemblyStateCreateInfoModel PipelineInputAssemblyStateCreateInfo { get; set; } = new VkPipelineInputAssemblyStateCreateInfoModel();
+        [DisplayName("Layout Bindings")]
         public List<VkDescriptorSetLayoutBindingModel> LayoutBindingList { get; set; } = new List<VkDescriptorSetLayoutBindingModel>();
+        [DisplayName("Pipeline Descriptors")]
         public List<PipelineDescriptorModel> PipelineDescriptorModelsList { get; set; } = new List<PipelineDescriptorModel>();
+        [DisplayName("Vertex Bindings")]
         public List<VkVertexInputBindingDescription> VertexInputBindingDescriptionList { get; set; } = new List<VkVertexInputBindingDescription>();
+        [DisplayName("Vertex Attributes")]
         public List<VkVertexInputAttributeDescription> VertexInputAttributeDescriptionList { get; set; } = new List<VkVertexInputAttributeDescription>();
 
         public RenderPipelineLoaderModel()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -54,7 +55,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
                     if (list != null &&
                         list.Count > 0)
                     {
-                        TreeNode listNode = new TreeNode(prop.Name)
+                        var propertyDisplayNameAttr = prop.GetCustomAttribute<DisplayNameAttribute>();
+                        string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? prop.Name;
+
+                        TreeNode listNode = new TreeNode(propertyDisplayName)
                         {
                             Tag = value
                         };
@@ -84,7 +88,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
                 else if (prop.PropertyType.IsClass && prop.PropertyType != typeof(string) ||
                          (prop.PropertyType.IsValueType && !prop.PropertyType.IsPrimitive))
                 {
-                    TreeNode complexNode = new TreeNode(prop.Name)
+                    var propertyDisplayNameAttr = prop.GetCustomAttribute<DisplayNameAttribute>();
+                    string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? prop.Name;
+
+                    TreeNode complexNode = new TreeNode(propertyDisplayName)
                     {
                         Tag = value
                     };

@@ -33,43 +33,5 @@ namespace VulkanGameEngineLevelEditor.Models
                 height = other.Extent.Height
             };
         }
-
-        public Rect2D Convert()
-        {
-            return new Rect2D
-            {
-                Offset = new Offset2D()
-                {
-                    X = offset.x,
-                    Y = offset.y
-                },
-                Extent = new Extent2D()
-                {
-                    Width = extent.width,
-                    Height = extent.height
-                }
-            };
-        }
-
-        public Rect2D* ConvertPtr()
-        {
-            Rect2D* rect = (Rect2D*)Marshal.AllocHGlobal(sizeof(Rect2D));
-            rect->Offset = new Offset2D()
-            {
-                X = offset.x,
-                Y = offset.y
-            };
-            rect->Extent = new Extent2D()
-            {
-                Width = extent.width,
-                Height = extent.height
-            };
-            return rect;
-        }
-
-        public void Dispose()
-        {
-            // Implement disposal logic if necessary
-        }
     }
 }

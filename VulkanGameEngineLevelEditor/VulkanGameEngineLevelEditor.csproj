@@ -113,4 +113,17 @@
       <HintPath>..\..\VulkanCS\VulkanCS\bin\Release\net8.0\VulkanCS.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="LevelEditor\EditorEnhancements\FileLoaderForm.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>FileLoaderForm.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="LevelEditor\EditorEnhancements\FileLoaderForm.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>FileLoaderForm.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

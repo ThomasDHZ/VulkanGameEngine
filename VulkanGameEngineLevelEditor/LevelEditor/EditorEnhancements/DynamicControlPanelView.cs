@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
+using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
@@ -28,8 +29,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         public static List<UpdateProperty> UpdatePropertiesList = new List<UpdateProperty>();
 
         private const int BufferHeight = 32;
-        private const int MinimumPanelSize = 100;
-        private const int RowHeight = 70;
+        private const int MinimumPanelSize = 32;
+        private const int RowHeight = 32;
 
         public DynamicControlPanelView()
         {
@@ -201,9 +202,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Control control = null;
                 if (controlTypeAttr != null)
                 {
-                    if (controlTypeAttr.ControlType == typeof(TypeOfFileLoader))
+                    if (controlTypeAttr.ControlType == typeof(FileLoaderForm))
                     {
-                        control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
+                        control = new FileLoaderForm("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
                     }
                 }
                 else if (typeof(IList).IsAssignableFrom(prop.PropertyType))
@@ -225,9 +226,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         }
                     }
                 }
+                else if (prop.PropertyType.BaseType == typeof(Enum))
+                {
+                    control = new TypeOfEnum(obj, prop, RowHeight, isReadOnly).CreateControl();  
+                }
                 else if (prop.PropertyType == typeof(string))
                 {
                     control = new TypeOfStringForm(obj, prop, RowHeight, isReadOnly).CreateControl();
+                }
+                else if(prop.PropertyType == typeof(float))
+                {
+                    control = new TypeOfFloat(obj, prop, RowHeight, isReadOnly).CreateControl();
                 }
                 else if (prop.PropertyType == typeof(int))
                 {

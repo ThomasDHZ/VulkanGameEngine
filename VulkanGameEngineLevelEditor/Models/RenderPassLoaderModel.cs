@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Vulkan;
@@ -12,21 +13,25 @@ namespace VulkanGameEngineLevelEditor.Models
     public unsafe class RenderPassLoaderModel : RenderPassEditorBaseModel
     {
         public string Name { get; set; } = string.Empty;
+        [IgnoreProperty]
         public Guid RenderPassId { get; set; } = Guid.NewGuid();
         [IgnoreProperty]
+        [DisplayName("Pipeline List")]
         public List<string> RenderPipelineList { get; set; } = new List<string>();
         [IgnoreProperty]
+        [DisplayName("Input Texture List")]
         public List<Guid> InputTextureList { get; set; } = new List<Guid>();
-        [IgnoreProperty]
+        [DisplayName("Pipeline List")]
         public List<RenderPipelineLoaderModel> renderPipelineModelList { get; set; } = new List<RenderPipelineLoaderModel>();
-        [IgnoreProperty]
+        [DisplayName("Render Pass Output Images")]
         public List<RenderedTextureInfoModel> RenderedTextureInfoModelList { get; set; } = new List<RenderedTextureInfoModel>();
-        [IgnoreProperty]
+        [DisplayName("Subpass Dependencies")]
         public List<VkSubpassDependencyModel> SubpassDependencyList { get; set; } = new List<VkSubpassDependencyModel>();
-        [IgnoreProperty]
+        [DisplayName("Clear Value List")]
         public List<VkClearValue> ClearValueList { get; set; } = new List<VkClearValue>();
-        [IgnoreProperty]
+        [DisplayName("Render Area Size")]
         public RenderAreaModel RenderArea { get; set; } = new RenderAreaModel();
+        [DisplayName("Render to SwapChain")]
         public bool IsRenderedToSwapchain { get; set; } = false;
 
         public RenderPassLoaderModel()

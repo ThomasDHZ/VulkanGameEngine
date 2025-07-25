@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
+namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
 {
     public abstract class PropertyEditorForm
     {
@@ -29,7 +29,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
             control.Dock = DockStyle.Fill;
             control.BackColor = Color.FromArgb(60, 60, 60);
             control.ForeColor = Color.White;
-            control.Size = new Size(0, 32);
             control.MinimumSize = new Size(0, _minimumPanelSize);
             return control;
         }

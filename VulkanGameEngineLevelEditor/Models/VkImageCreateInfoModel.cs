@@ -33,22 +33,5 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkImageCreateInfoModel() : base()
         {
         }
-
-        public void LoadJsonComponent(string jsonPath)
-        {
-            var obj = base.LoadJsonComponent<VkImageCreateInfoModel>(jsonPath);
-            foreach (PropertyInfo property in typeof(VkImageCreateInfoModel).GetProperties())
-            {
-                if (property.CanWrite)
-                {
-                    property.SetValue(this, property.GetValue(obj));
-                }
-            }
-        }
-
-        public void SaveJsonComponent()
-        {
-          //  base.SaveJsonComponent($@"{ConstConfig.CreateImageInfoPath}{this.Name}.json", this);
-        }
     }
 }

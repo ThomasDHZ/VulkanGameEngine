@@ -13,19 +13,5 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public VkViewportModel()
         { }
-
-        public VkViewportModel(Viewport other)
-        {
-            x = other.X;
-            y = other.Y;
-            width = other.Width;
-            height = other.Height;
-            minDepth = other.MinDepth;
-            maxDepth = other.MaxDepth;
-        }
-
-        public void Dispose()
-        {
-        }
     }
 }

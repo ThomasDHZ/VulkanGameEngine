@@ -294,28 +294,6 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkSamplerCreateInfoModel() : base()
         {
         }
-
-        public VkSamplerCreateInfoModel(string name) : base()
-        {
-            Name = name;
-        }
-
-        public void LoadJsonComponent(string jsonPath)
-        {
-            var obj = base.LoadJsonComponent<VkSamplerCreateInfoModel>(jsonPath);
-            foreach (PropertyInfo property in typeof(VkSamplerCreateInfoModel).GetProperties())
-            {
-                if (property.CanWrite)
-                {
-                    property.SetValue(this, property.GetValue(obj));
-                }
-            }
-        }
-
-        public void SaveJsonComponent()
-        {
-          //  base.SaveJsonComponent($@"{ConstConfig.SamplerCreateInfoPath}{this.Name}.json", this);
-        }
     }
 }
 

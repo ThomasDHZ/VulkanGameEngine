@@ -109,23 +109,6 @@ namespace VulkanGameEngineLevelEditor.Models
             LoadJsonComponent(jsonFilePath);
         }
 
-        //public RenderedTextureInfoDLL ToDLL()
-        //{
-        //    fixed (byte* namePtr = System.Text.Encoding.UTF8.GetBytes(_name + "\0"))
-        //    fixed (byte* textureInfoPtr = System.Text.Encoding.UTF8.GetBytes(_renderedTextureInfoName + "\0"))
-        //    {
-        //        return new RenderedTextureInfoDLL
-        //        {
-        //            //  Name = (IntPtr)namePtr,
-        //            _attachmentDescription = _attachmentDescription.Convert(),
-        //            _textureType = _textureType,
-        //            _imageCreateInfo = _imageCreateInfo.Convert(),
-        //            //_renderedTextureInfoName = (IntPtr)textureInfoPtr,
-        //            _samplerCreateInfo = _samplerCreateInfo.Convert()
-        //        };
-        //    }
-        //}
-
         public void LoadJsonComponent(string jsonPath)
         {
             var obj = base.LoadJsonComponent<RenderedTextureInfoModel>(jsonPath);

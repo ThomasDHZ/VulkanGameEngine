@@ -27,25 +27,5 @@ namespace VulkanGameEngineLevelEditor.Models
         public void* pNext { get; set; } = null;
 
         public VkPipelineRasterizationStateCreateInfoModel() { }
-
-        public VkPipelineRasterizationStateCreateInfo Convert()
-        {
-            return new VkPipelineRasterizationStateCreateInfo()
-            {
-                sType = sType,
-                depthClampEnable = depthClampEnable,
-                rasterizerDiscardEnable = depthClampEnable,
-                polygonMode = polygonMode,
-                cullMode = cullMode,
-                frontFace = frontFace,
-                depthBiasEnable = depthBiasEnable,
-                depthBiasConstantFactor = depthBiasConstantFactor,
-                depthBiasClamp = depthBiasClamp,
-                depthBiasSlopeFactor = depthBiasSlopeFactor,
-                lineWidth = lineWidth,
-                flags = 0,
-                pNext = null,
-            };
-        }
     }
 }

@@ -15,14 +15,10 @@ namespace VulkanGameEngineLevelEditor.Models
         [JsonIgnore]
         [IgnoreProperty]
         public IntPtr pNext { get; set; }
-        [IgnoreProperty]
         public VkPipelineColorBlendStateCreateFlagBits flags { get; set; }
         public VkBool32 logicOpEnable { get; set; }
         public VkLogicOp logicOp { get; set; }
-        [IgnoreProperty]
         public uint attachmentCount { get; set; }
-        [JsonIgnore]
-        [IgnoreProperty]
         public VkPipelineColorBlendAttachmentState* pAttachments { get; set; }
         public fixed float blendConstants[4];
 
@@ -41,23 +37,5 @@ namespace VulkanGameEngineLevelEditor.Models
             blendConstants[3] = 0.0f;
         }
 
-        public VkPipelineColorBlendStateCreateInfo Convert()
-        {
-            return new VkPipelineColorBlendStateCreateInfo
-            {
-                sType = sType,
-                pNext = null,
-                attachmentCount = attachmentCount,
-                pAttachments = pAttachments,
-                // blendConstants = blendConstants,
-                flags = flags,
-                logicOpEnable = logicOpEnable,
-                logicOp = logicOp
-            };
-        }
-
-        public void Dispose()
-        {
-        }
     }
 }

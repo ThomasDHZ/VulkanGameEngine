@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
+using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog

@@ -39,8 +39,8 @@ namespace VulkanGameEngineLevelEditor.Models
                 stencilTestEnable = stencilTestEnable,
                 minDepthBounds = minDepthBounds,
                 maxDepthBounds = maxDepthBounds,
-                front = front.Convert(),
-                back = back.Convert(),
+                //front = front.Convert(),
+                //back = back.Convert(),
                 flags = 0,
                 pNext = null
             };

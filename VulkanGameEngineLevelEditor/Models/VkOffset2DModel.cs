@@ -16,33 +16,5 @@ namespace VulkanGameEngineLevelEditor.Models
             this.x = x;
             this.y = y;
         }
-
-        public VkOffset2DModel(Offset2D other)
-        {
-            x = other.X;
-            y = other.Y;
-        }
-
-        public VkOffset2D Convert()
-        {
-            return new VkOffset2D
-            {
-                x = x,
-                y = y
-            };
-        }
-
-        public VkOffset2D* ConvertPtr()
-        {
-            VkOffset2D* nativeOffset = (VkOffset2D*)Marshal.AllocHGlobal(sizeof(VkOffset2D));
-            nativeOffset->x = x;
-            nativeOffset->y = y;
-            return nativeOffset;
-        }
-
-        public void Dispose()
-        {
-            // Implement disposal logic if necessary
-        }
     }
 }

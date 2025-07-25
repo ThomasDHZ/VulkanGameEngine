@@ -17,23 +17,5 @@ namespace VulkanGameEngineLevelEditor.Models
             this.attachment = attachment;
             this.layout = layout;
         }
-
-        public VkAttachmentReference Convert()
-        {
-            return new VkAttachmentReference
-            {
-                attachment = attachment,
-                layout = layout
-            };
-        }
-
-        public VkAttachmentReference* ConvertPtr()
-        {
-            VkAttachmentReference* attachmentReference = (VkAttachmentReference*)Marshal.AllocHGlobal(sizeof(VkAttachmentReference));
-            attachmentReference->attachment = attachment;
-            attachmentReference->layout = layout;
-            return attachmentReference;
-        }
-
     }
 }

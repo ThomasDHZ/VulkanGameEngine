@@ -19,17 +19,5 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkPipelineInputAssemblyStateCreateInfoModel()
         {
         }
-
-        public VkPipelineInputAssemblyStateCreateInfo Convert()
-        {
-            return new VkPipelineInputAssemblyStateCreateInfo
-            {
-                sType = sType,
-                topology = topology,
-                primitiveRestartEnable = primitiveRestartEnable,
-                flags = 0,
-                pNext = null
-            };
-        }
     }
 }
