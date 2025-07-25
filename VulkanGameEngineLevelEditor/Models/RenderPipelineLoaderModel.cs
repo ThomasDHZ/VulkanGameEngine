@@ -19,10 +19,10 @@ namespace VulkanGameEngineLevelEditor.Models
         [IgnoreProperty()]
         public int RenderPipelineId { get; set; } = 0;
         [DisplayName("Vertex Shader")]
-        [ControlTypeAttribute(typeof(FileLoaderForm))]
+        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
         public String VertexShader { get; set; }
         [DisplayName("Pixel Shader")]
-        [ControlTypeAttribute(typeof(FileLoaderForm))]
+        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
         public String FragmentShader { get; set; }
         [DisplayName("Descriptor Set Count")]
         public size_t DescriptorSetCount { get; set; }

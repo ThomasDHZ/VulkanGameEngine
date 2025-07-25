@@ -42,6 +42,7 @@ namespace VulkanGameEngineLevelEditor
         private object lockObject = new object();
         private object sharedData;
         public List<String> ShaderList = new List<string>();
+      
 
         BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
         [DllImport("kernel32.dll")] static extern bool AllocConsole();
@@ -77,20 +78,6 @@ namespace VulkanGameEngineLevelEditor
             SetLogVulkanMessageCallback(callback);
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
-            var renderPass = new RenderPassLoaderModel(@$"{ConstConfig.BaseDirectoryPath}RenderPass\DefaultRenderPass.json");
-            RenderSystem.RenderPassEditor_RenderPass[renderPass.RenderPassId] = renderPass;
-
-            var renderPassLoader = new RenderPassLoaderModel
-            {
-                renderPipelineModelList = new System.Collections.Generic.List<RenderPipelineLoaderModel>
-                {
-                    new RenderPipelineLoaderModel(),
-                    new RenderPipelineLoaderModel()
-                }
-            };
-            dynamicControlPanelView1.SelectedObject = renderPassLoader;
-            levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
-            levelEditorTreeView1.PopulateTreeView(renderPassLoader);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -120,6 +107,16 @@ namespace VulkanGameEngineLevelEditor
             {
                 void* afds = this.RendererBox.Handle.ToPointer();
                 GameSystem.StartUp(this.RendererBox.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
+
+                List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
+                foreach(var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
+                {
+                    renderPassLoaderList.Add(renderPassPair.Value);
+                }
+
+                dynamicControlPanelView1.SelectedObject = renderPassLoaderList; 
+                levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+                levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
             }));
 
             Stopwatch stopwatch = new Stopwatch();
@@ -133,6 +130,8 @@ namespace VulkanGameEngineLevelEditor
                     Thread.Sleep(10);
                     continue;
                 }
+
+
 
                 double currentTime = stopwatch.Elapsed.TotalSeconds;
                 double deltaTime = currentTime - lastTime;

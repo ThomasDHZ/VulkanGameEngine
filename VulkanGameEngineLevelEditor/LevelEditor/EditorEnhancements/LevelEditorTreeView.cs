@@ -29,15 +29,41 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
         public void PopulateTreeView(object rootObject)
         {
             this.Nodes.Clear();
-            if (rootObject == null) return;
-
-            TreeNode rootNode = new TreeNode(rootObject.GetType().Name)
+            if (rootObject == null)
             {
-                Tag = rootObject
-            };
-            PopulateNode(rootNode, rootObject);
-            this.Nodes.Add(rootNode);
-            rootNode.Expand();
+                return;
+            }
+
+            if (rootObject is IList list)
+            {
+                if (list.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (var item in list)
+                {
+                    if (item != null)
+                    {
+                        TreeNode listNode = new TreeNode(item.GetType().Name)
+                        {
+                            Tag = item
+                        };
+                        this.Nodes.Add(listNode);
+                        PopulateNode(listNode, item);
+                    }
+                }
+            }
+            else
+            {
+                TreeNode rootNode = new TreeNode(rootObject.GetType().Name)
+                {
+                    Tag = rootObject
+                };
+                PopulateNode(rootNode, rootObject);
+                this.Nodes.Add(rootNode);
+                rootNode.Expand();
+            }
         }
 
         private void PopulateNode(TreeNode parentNode, object parentObject)
@@ -51,6 +77,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
 
                 if (typeof(IList).IsAssignableFrom(prop.PropertyType))
                 {
+                    if (IgnoreTypes(prop.PropertyType) ||
+                        IgnoreProperties(prop))
+                    {
+                        continue;
+                    }
+
                     var list = value as IList;
                     if (list != null &&
                         list.Count > 0)
@@ -69,7 +101,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
                         {
                             if (item != null)
                             {
-                                TreeNode itemNode = new TreeNode($"[{index}] {item.GetType().Name}")
+                                TreeNode itemNode = new TreeNode($"{item.GetType().Name}[{index}]")
                                 {
                                     Tag = item
                                 };

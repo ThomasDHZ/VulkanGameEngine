@@ -13,89 +13,17 @@ namespace VulkanGameEngineLevelEditor.Models
     };
 
     [Serializable]
-    public unsafe class RenderedTextureInfoModel : RenderPassEditorBaseModel
+    public unsafe class RenderedTextureInfoModel
     {
-        private string Name = String.Empty;
-        private string _renderedTextureInfoName = string.Empty;
-        private VkImageCreateInfoModel _imageCreateInfo = new VkImageCreateInfoModel();
-        private VkSamplerCreateInfoModel _samplerCreateInfo = new VkSamplerCreateInfoModel();
-        private VkAttachmentDescriptionModel _attachmentDescription = new VkAttachmentDescriptionModel();
-        private RenderedTextureType _textureType;
-
-        public string RenderedTextureInfoName
-        {
-            get => _renderedTextureInfoName;
-            set
-            {
-                if (_renderedTextureInfoName != value)
-                {
-                    _renderedTextureInfoName = value;
-                    OnPropertyChanged(nameof(RenderedTextureInfoName));
-                }
-            }
-        }
-
-        [Category("Image")]
-        public VkImageCreateInfoModel ImageCreateInfo
-        {
-            get => _imageCreateInfo;
-            set
-            {
-                if (_imageCreateInfo != value)
-                {
-                    _imageCreateInfo = value;
-                    OnPropertyChanged(nameof(ImageCreateInfo));
-                }
-            }
-        }
-
-        [Category("Sampler")]
-        public VkSamplerCreateInfoModel SamplerCreateInfo
-        {
-            get => _samplerCreateInfo;
-            set
-            {
-                if (_samplerCreateInfo != value)
-                {
-                    _samplerCreateInfo = value;
-                    OnPropertyChanged(nameof(SamplerCreateInfo));
-                }
-            }
-        }
-
-        [Category("Attachment")]
-        public VkAttachmentDescriptionModel AttachmentDescription
-        {
-            get => _attachmentDescription;
-            set
-            {
-                if (_attachmentDescription != value)
-                {
-                    _attachmentDescription = value;
-                    OnPropertyChanged(nameof(AttachmentDescription));
-                }
-            }
-        }
-
-        [Category("Texture")]
-        public RenderedTextureType TextureType
-        {
-            get => _textureType;
-            set
-            {
-                if (_textureType != value)
-                {
-                    _textureType = value;
-                    OnPropertyChanged(nameof(TextureType));
-                }
-            }
-        }
+        public string Name { get; set; } = String.Empty;
+        public string RenderedTextureInfoName { get; set; } = string.Empty;
+        public VkImageCreateInfoModel ImageCreateInfo { get; set; } = new VkImageCreateInfoModel();
+        public VkSamplerCreateInfoModel _samplerCreateInfo { get; set; } = new VkSamplerCreateInfoModel();
+        public VkAttachmentDescriptionModel AttachmentDescription { get; set; } = new VkAttachmentDescriptionModel();
+        public RenderedTextureType TextureType;
 
         public RenderedTextureInfoModel() : base()
         {
-            _imageCreateInfo = new VkImageCreateInfoModel();
-            _samplerCreateInfo = new VkSamplerCreateInfoModel();
-            _attachmentDescription = new VkAttachmentDescriptionModel();
         }
 
         public RenderedTextureInfoModel(string jsonFilePath) : base()
@@ -111,14 +39,14 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public void LoadJsonComponent(string jsonPath)
         {
-            var obj = base.LoadJsonComponent<RenderedTextureInfoModel>(jsonPath);
-            foreach (PropertyInfo property in typeof(RenderedTextureInfoModel).GetProperties())
-            {
-                if (property.CanWrite)
-                {
-                    property.SetValue(this, property.GetValue(obj));
-                }
-            }
+            //var obj = base.LoadJsonComponent<RenderedTextureInfoModel>(jsonPath);
+            //foreach (PropertyInfo property in typeof(RenderedTextureInfoModel).GetProperties())
+            //{
+            //    if (property.CanWrite)
+            //    {
+            //        property.SetValue(this, property.GetValue(obj));
+            //    }
+            //}
         }
 
     }

@@ -4,31 +4,62 @@ using System.ComponentModel;
 using System.Reflection;
 using Vulkan;
 using VulkanGameEngineLevelEditor.LevelEditor;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 
 namespace VulkanGameEngineLevelEditor.Models
 {
     [Serializable]
-    public unsafe class VkImageCreateInfoModel : RenderPassEditorBaseModel
+    public unsafe class VkImageCreateInfoModel
     {
-        public string Name { get; set; }
-        [ReadOnly(true)]
-        public VkStructureType _sType = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        public VkImageCreateFlagBits _flags = 0;
-        public void* _pNext;
-        public VkImageType _imageType;
-        public VkFormat _format;
-        public VkExtent3DModel _extent = new VkExtent3DModel();
-        public uint _mipLevels;
-        public uint _arrayLayers;
-        public VkSampleCountFlagBits _samples;
-        public VkImageTiling _tiling;
-        public VkImageUsageFlagBits _usage;
-        public VkSharingMode _sharingMode;
-        public uint _queueFamilyIndexCount;
-        public unsafe uint* _pQueueFamilyIndices;
-        public VkImageLayout _initialLayout;
+        [IgnoreProperty]
+        [TooltipAttribute("Specifies the Vulkan structure type. Must be set to the image creation type.")]
+        public VkStructureType SType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+
+        [IgnoreProperty]
+        [TooltipAttribute("Specifies flags for image creation, such as sparse binding or mutable format.")]
+        public VkImageCreateFlagBits Flags { get; set; } = 0;
+
+        [IgnoreProperty]
+        [TooltipAttribute("Pointer to an extension structure for additional image parameters. Typically null unless using extensions.")]
+        public void* PNext { get; set; }
+
+        [TooltipAttribute("Defines the type of image, such as 1D, 2D, or 3D.")]
+        public VkImageType ImageType { get; set; }
+
+        [TooltipAttribute("Specifies the format and data type of the image's texels.")]
+        public VkFormat Format { get; set; }
+
+        [TooltipAttribute("Sets the dimensions of the image (width, height, depth).")]
+        public VkExtent3DModel Extent { get; set; } = new VkExtent3DModel();
+
+        [TooltipAttribute("Specifies the number of mipmap levels for the image.")]
+        public uint MipLevels { get; set; }
+
+        [TooltipAttribute("Specifies the number of array layers for the image, used for array textures.")]
+        public uint ArrayLayers { get; set; }
+
+        [TooltipAttribute("Defines the number of samples per texel for multisampling.")]
+        public VkSampleCountFlagBits Samples { get; set; }
+
+        [TooltipAttribute("Specifies the tiling arrangement of image data, affecting memory layout.")]
+        public VkImageTiling Tiling { get; set; }
+
+        [TooltipAttribute("Defines the intended usage of the image, such as rendering or sampling.")]
+        public VkImageUsageFlagBits Usage { get; set; }
+
+        [TooltipAttribute("Specifies how the image is shared between queue families.")]
+        public VkSharingMode SharingMode { get; set; }
+
+        [TooltipAttribute("Sets the number of queue family indices for sharing the image.")]
+        public uint QueueFamilyIndexCount { get; set; }
+
+        [TooltipAttribute("Pointer to an array of queue family indices for image sharing.")]
+        public unsafe uint* PQueueFamilyIndices { get; set; }
+
+        [TooltipAttribute("Specifies the initial layout of the image after creation.")]
+        public VkImageLayout InitialLayout { get; set; }
 
         public VkImageCreateInfoModel() : base()
         {

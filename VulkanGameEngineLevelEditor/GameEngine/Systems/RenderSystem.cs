@@ -195,6 +195,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             string jsonContent = File.ReadAllText(jsonPath);
             RenderPassLoaderModel model = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
+            RenderPassEditor_RenderPass[model.RenderPassId] = model;
 
             VkExtent2D extent2D = new VkExtent2D
             {

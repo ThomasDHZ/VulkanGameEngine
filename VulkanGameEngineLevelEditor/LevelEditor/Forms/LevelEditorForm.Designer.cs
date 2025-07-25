@@ -33,6 +33,7 @@ namespace VulkanGameEngineLevelEditor
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             toolStrip1 = new ToolStrip();
             toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
@@ -49,6 +50,7 @@ namespace VulkanGameEngineLevelEditor
             fileToolStripMenuItem1 = new ToolStripMenuItem();
             buildToolStripMenuItem = new ToolStripMenuItem();
             buildShadersToolStripMenuItem = new ToolStripMenuItem();
+            buildRenderPassShadersToolStripMenuItem = new ToolStripMenuItem();
             buildRenderPassToolStripMenuItem = new ToolStripMenuItem();
             saveToolStripMenuItem = new ToolStripMenuItem();
             loadToolStripMenuItem = new ToolStripMenuItem();
@@ -60,7 +62,7 @@ namespace VulkanGameEngineLevelEditor
             leftSplitter = new Splitter();
             rightSplitter = new Splitter();
             bottomSplitter = new Splitter();
-            buildRenderPassShadersToolStripMenuItem = new ToolStripMenuItem();
+            toolTip1 = new ToolTip(components);
             toolStrip1.SuspendLayout();
             menuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
@@ -175,14 +177,20 @@ namespace VulkanGameEngineLevelEditor
             // 
             buildShadersToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { buildRenderPassShadersToolStripMenuItem });
             buildShadersToolStripMenuItem.Name = "buildShadersToolStripMenuItem";
-            buildShadersToolStripMenuItem.Size = new Size(270, 34);
+            buildShadersToolStripMenuItem.Size = new Size(247, 34);
             buildShadersToolStripMenuItem.Text = "Build Shaders";
             buildShadersToolStripMenuItem.Click += buildShadersToolStripMenuItem_Click;
+            // 
+            // buildRenderPassShadersToolStripMenuItem
+            // 
+            buildRenderPassShadersToolStripMenuItem.Name = "buildRenderPassShadersToolStripMenuItem";
+            buildRenderPassShadersToolStripMenuItem.Size = new Size(315, 34);
+            buildRenderPassShadersToolStripMenuItem.Text = "Build RenderPass Shaders";
             // 
             // buildRenderPassToolStripMenuItem
             // 
             buildRenderPassToolStripMenuItem.Name = "buildRenderPassToolStripMenuItem";
-            buildRenderPassToolStripMenuItem.Size = new Size(270, 34);
+            buildRenderPassToolStripMenuItem.Size = new Size(247, 34);
             buildRenderPassToolStripMenuItem.Text = "Build RenderPass";
             // 
             // saveToolStripMenuItem
@@ -290,12 +298,6 @@ namespace VulkanGameEngineLevelEditor
             bottomSplitter.TabIndex = 20;
             bottomSplitter.TabStop = false;
             // 
-            // buildRenderPassShadersToolStripMenuItem
-            // 
-            buildRenderPassShadersToolStripMenuItem.Name = "buildRenderPassShadersToolStripMenuItem";
-            buildRenderPassShadersToolStripMenuItem.Size = new Size(315, 34);
-            buildRenderPassShadersToolStripMenuItem.Text = "Build RenderPass Shaders";
-            // 
             // LevelEditorForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -358,6 +360,7 @@ namespace VulkanGameEngineLevelEditor
         private ToolStripMenuItem buildShadersToolStripMenuItem;
         private ToolStripMenuItem buildRenderPassToolStripMenuItem;
         private ToolStripMenuItem buildRenderPassShadersToolStripMenuItem;
+        private ToolTip toolTip1;
     }
 }
 

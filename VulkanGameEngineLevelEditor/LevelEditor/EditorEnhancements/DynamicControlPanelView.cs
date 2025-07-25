@@ -166,7 +166,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
 
                 var controlTypeAttr = prop.GetCustomAttributes(typeof(ControlTypeAttribute), true).FirstOrDefault() as ControlTypeAttribute;
-                
+
+                var toolTipAttr = prop.GetCustomAttributes(typeof(TooltipAttribute), true).FirstOrDefault() as TooltipAttribute;
+
                 int propRowIndex = propTable.RowCount;
                 propTable.RowCount += 1;
                 propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
@@ -202,9 +204,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Control control = null;
                 if (controlTypeAttr != null)
                 {
-                    if (controlTypeAttr.ControlType == typeof(FileLoaderForm))
+                    if (controlTypeAttr.ControlType == typeof(TypeOfFileLoader))
                     {
-                        control = new FileLoaderForm("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
+                        control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
                     }
                 }
                 else if (typeof(IList).IsAssignableFrom(prop.PropertyType))
