@@ -1,6 +1,7 @@
 ﻿using AutoMapper.Features;
 using GlmSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Silk.NET.SDL;
 using Silk.NET.Vulkan;
 using System;
@@ -53,7 +54,22 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
-        public static void RecreateSwapchain(Guid spriteRenderPass2DId, Guid levelId, float deltaTime, ivec2 swapChanResolution)
+        public static void UpdateRenderPasses(List<string> renderPassLoaderListJson)
+        {
+            VkFunc.vkDeviceWaitIdle(renderer.Device);
+            GraphicsRenderer rendererPtr = renderer;
+            Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
+            renderer = rendererPtr;
+        
+            //DestroyRenderPasses();
+            ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
+            foreach (var renderPassJson in renderPassLoaderListJson)
+            {
+                LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
+            }
+        }
+
+        public static void RecreateSwapchain(Guid spriteRenderPass2DId, Guid levelId, float deltaTime, ivec2 swapChainResolution)
         {
             VkFunc.vkDeviceWaitIdle(renderer.Device);
             GraphicsRenderer rendererPtr = renderer;
@@ -227,6 +243,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             {
                 string pipelinePath = @$"{ConstConfig.BaseDirectoryPath}pipelines\{pipelineId}";
                 RenderPipelineLoaderJsonMap[vulkanRenderPass.RenderPassId].Add(pipelinePath);
+                RenderPassEditor_RenderPass[model.RenderPassId].renderPipelineModelList.Add(JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(File.ReadAllText(pipelinePath)));
 
                 ListPtr<VkDescriptorBufferInfo> vertexPropertiesList = GetVertexPropertiesBuffer();
                 ListPtr<VkDescriptorBufferInfo> indexPropertiesList = GetIndexPropertiesBuffer();
@@ -532,7 +549,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             foreach (var renderPass in RenderPassMap)
             {
-               // VulkanRenderPass_DestroyRenderPass(renderer, renderPass.Value);
+               VulkanRenderPass_DestroyRenderPass(renderer, renderPass.Value);
             }
             RenderPassMap.Clear();
         }

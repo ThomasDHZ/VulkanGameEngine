@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -21,6 +22,7 @@ namespace VulkanGameEngineLevelEditor.Models
         [IgnoreProperty]
         [DisplayName("Input Texture List")]
         public List<Guid> InputTextureList { get; set; } = new List<Guid>();
+        [JsonIgnore]
         [DisplayName("Pipeline List")]
         public List<RenderPipelineLoaderModel> renderPipelineModelList { get; set; } = new List<RenderPipelineLoaderModel>();
         [DisplayName("Render Pass Output Images")]

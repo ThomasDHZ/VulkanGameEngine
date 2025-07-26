@@ -5,11 +5,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Vulkan;
 using VulkanGameEngineLevelEditor.Compilers;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
@@ -42,7 +45,7 @@ namespace VulkanGameEngineLevelEditor
         private object lockObject = new object();
         private object sharedData;
         public List<String> ShaderList = new List<string>();
-      
+
 
         BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
         [DllImport("kernel32.dll")] static extern bool AllocConsole();
@@ -109,12 +112,13 @@ namespace VulkanGameEngineLevelEditor
                 GameSystem.StartUp(this.RendererBox.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
 
                 List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
-                foreach(var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
+                foreach (var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
                 {
                     renderPassLoaderList.Add(renderPassPair.Value);
                 }
 
-                dynamicControlPanelView1.SelectedObject = renderPassLoaderList; 
+                DynamicControlPanelView.toolTip = toolTip1;
+                dynamicControlPanelView1.SelectedObject = renderPassLoaderList;
                 levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
                 levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
             }));
@@ -232,6 +236,40 @@ namespace VulkanGameEngineLevelEditor
         private void buildShadersToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ShaderCompiler.CompileAllShaders($@"{ConstConfig.BaseDirectoryPath}Shaders");
+        }
+
+        private void buildRenderPassToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var a = levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>;
+            var ds = RenderSystem.RenderPassLoaderJsonMap[a[0].RenderPassId];
+            string jsonContent = File.ReadAllText(ds);
+            var renderPass = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
+
+            renderPass.ClearValueList[0] = new VkClearValue
+            {
+                Color = new VkClearColorValue
+                {
+                    Float32_0 = 1.0f,
+                    Float32_1 = 0.0f,
+                    Float32_2 = 9.0f,
+                    Float32_3 = 1.0f,
+                },
+                DepthStencil = new VkClearDepthStencilValue()
+            };
+       
+            var renderPassJson = JsonConvert.SerializeObject(renderPass);
+            File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", renderPassJson);
+
+            if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
+            {
+                lock (lockObject)
+                {
+                    isResizing = true;
+                    RenderSystem.RebuildRendererFlag = true;
+                    RenderSystem.UpdateRenderPasses(new List<string> { $@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", RenderSystem.RenderPassLoaderJsonMap[a[1].RenderPassId] });
+                    isResizing = false;
+                }
+            }
         }
     }
 }

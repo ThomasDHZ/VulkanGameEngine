@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Runtime.InteropServices;
 using Vulkan;
 
@@ -24,7 +25,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public uint flags { get; set; } = 0;
         [JsonIgnore]
         [IgnoreProperty]
-        public void* pNext { get; set; } = null;
+        public IntPtr pNext { get; set; }
 
         public VkPipelineRasterizationStateCreateInfoModel() { }
     }

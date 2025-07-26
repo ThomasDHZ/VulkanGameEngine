@@ -26,6 +26,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
     {
         private static object _targetObject;
         private static TableLayoutPanel _contentPanel;
+        public static ToolTip toolTip { get; set; }
         public static List<UpdateProperty> UpdatePropertiesList = new List<UpdateProperty>();
 
         private const int BufferHeight = 32;
@@ -190,6 +191,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     ForeColor = Color.White,
                     Margin = new Padding(5)
                 };
+                if (toolTipAttr != null)
+                {
+                    toolTip.SetToolTip(label, toolTipAttr.Tooltip);
+                }
                 labelPanel.Controls.Add(label);
 
                 var controlPanel = new Panel

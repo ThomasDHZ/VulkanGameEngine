@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.ComponentModel;
 using System.Reflection;
 using Vulkan;
@@ -16,13 +17,15 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Specifies the Vulkan structure type. Must be set to the sampler creation type.")]
         public VkStructureType SType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 
+        [JsonIgnore]
         [IgnoreProperty]
         [TooltipAttribute("Reserved for future use. Currently set to 0, as no flags are defined.")]
         public VkSamplerCreateFlagBits Flags { get; set; } = 0;
 
+        [JsonIgnore]
         [IgnoreProperty]
         [TooltipAttribute("Pointer to an extension structure for additional sampler parameters. Typically null unless using extensions.")]
-        public void* PNext { get; set; } = null;
+        public IntPtr pNext { get; set; }
 
         [TooltipAttribute("Defines the filter for texture magnification (when scaled up).")]
         public VkFilter MagFilter { get; set; }

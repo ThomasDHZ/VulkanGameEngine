@@ -1,68 +1,65 @@
 {
+  "_name": "BasicRenderPass",
+  "RenderPassId": "aa18e942-497b-4981-b917-d93a5b1de6eb",
+  "RenderPipelineList": [ "../Pipelines/Default2DPipeline.json", "../Pipelines/LevelShader2DPipeline.json"],
+  "InputTextureList": [],
   "RenderedTextureInfoModelList": [
     {
-      "RenderedTextureInfoName": "ColorRenderTexture",
+      "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
+      "TextureType": 0,
       "ImageCreateInfo": {
-        "imageType": 1,
-        "format": 37,
-        "mipLevels": 1,
-        "arrayLayers": 1,
-        "samples": 1,
-        "tiling": 0,
-        "usage": 23,
-        "sharingMode": 0,
-        "initialLayout": 0,
-        "_name": "DefaultColorTextureCreateInfo"
+        "SType": 14,
+        "ImageType": 1,
+        "Format": 37,
+        "MipLevels": 1,
+        "ArrayLayers": 1,
+        "Samples": 1,
+        "Tiling": 0,
+        "Usage": 23,
+        "SharingMode": 0,
+        "InitialLayout": 0
       },
       "SamplerCreateInfo": {
-        "magFilter": 0,
-        "minFilter": 0,
-        "mipmapMode": 1,
-        "addressModeU": 0,
-        "addressModeV": 0,
-        "addressModeW": 0,
-        "mipLodBias": 0.0,
-        "anisotropyEnable": true,
-        "maxAnisotropy": 16.0,
-        "compareEnable": false,
-        "compareOp": 7,
-        "minLod": 0.0,
-        "maxLod": 1.0,
-        "borderColor": 2,
-        "unnormalizedCoordinates": false,
-        "_name": "DefaultColorSampleCreateInfo"
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 0,
+        "AddressModeV": 0,
+        "AddressModeW": 0,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
       },
       "AttachmentDescription": {
-        "flags": 0,
-        "format": 37,
-        "samples": 1,
-        "loadOp": 1,
-        "storeOp": 0,
-        "stencilLoadOp": 2,
-        "stencilStoreOp": 1,
-        "initialLayout": 0,
-        "finalLayout": 1000001002,
-        "_name": "DefaultColorAttachment"
-      },
-      "TextureType": 0,
-      "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
-      "_name": null
+        "StructureType": 0,
+        "Flags": 0,
+        "Format": 37,
+        "Samples": 1,
+        "LoadOp": 1,
+        "StoreOp": 0,
+        "StencilLoadOp": 2,
+        "StencilStoreOp": 1,
+        "InitialLayout": 0,
+        "FinalLayout": 1000001002
+      }
     }
   ],
-  "RenderPipelineList": [
-    "../Pipelines/Default2DPipeline.json",
-    "../Pipelines/LevelShader2DPipeline.json"
-  ],
-  "InputTextureList": [],
   "SubpassDependencyList": [
     {
-      "srcSubpass": 4294967295,
-      "dstSubpass": 0,
-      "srcStageMask": 1024,
-      "dstStageMask": 1024,
-      "srcAccessMask": 0,
-      "dstAccessMask": 256,
-      "dependencyFlags": 0,
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 0,
       "_name": "DefaultSubpassDependency"
     }
   ],
@@ -101,7 +98,5 @@
     },
     "UseDefaultRenderArea": true
   },
-  "_name": "BasicRenderPass",
-  "IsRenderedToSwapchain": false,
-  "RenderPassId": "aa18e942-497b-4981-b917-d93a5b1de6eb"
+  "IsRenderedToSwapchain": false
 }

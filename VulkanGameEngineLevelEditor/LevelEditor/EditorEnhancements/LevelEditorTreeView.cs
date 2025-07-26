@@ -13,7 +13,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
 {
     public class LevelEditorTreeView : TreeView
     {
-        public object rootObject;
+        public object _rootObject;
         public DynamicControlPanelView DynamicControlPanel;
 
         public LevelEditorTreeView()
@@ -28,6 +28,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
 
         public void PopulateTreeView(object rootObject)
         {
+            _rootObject = rootObject;
+
             this.Nodes.Clear();
             if (rootObject == null)
             {

@@ -1,4 +1,5 @@
 ﻿using GlmSharp;
+using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -17,13 +18,15 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Specifies the Vulkan structure type. Must be set to the image creation type.")]
         public VkStructureType SType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 
+        [JsonIgnore]
         [IgnoreProperty]
         [TooltipAttribute("Specifies flags for image creation, such as sparse binding or mutable format.")]
         public VkImageCreateFlagBits Flags { get; set; } = 0;
 
+        [JsonIgnore]
         [IgnoreProperty]
         [TooltipAttribute("Pointer to an extension structure for additional image parameters. Typically null unless using extensions.")]
-        public void* PNext { get; set; }
+        public IntPtr pNext { get; set; }
 
         [TooltipAttribute("Defines the type of image, such as 1D, 2D, or 3D.")]
         public VkImageType ImageType { get; set; }
@@ -31,6 +34,8 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Specifies the format and data type of the image's texels.")]
         public VkFormat Format { get; set; }
 
+        [JsonIgnore]
+        [IgnoreProperty]
         [TooltipAttribute("Sets the dimensions of the image (width, height, depth).")]
         public VkExtent3DModel Extent { get; set; } = new VkExtent3DModel();
 
@@ -52,9 +57,13 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Specifies how the image is shared between queue families.")]
         public VkSharingMode SharingMode { get; set; }
 
+        [JsonIgnore]
+        [IgnoreProperty]
         [TooltipAttribute("Sets the number of queue family indices for sharing the image.")]
         public uint QueueFamilyIndexCount { get; set; }
 
+        [JsonIgnore]
+        [IgnoreProperty]
         [TooltipAttribute("Pointer to an array of queue family indices for image sharing.")]
         public unsafe uint* PQueueFamilyIndices { get; set; }
 
