@@ -1,8 +1,12 @@
-﻿using GlmSharp;
+﻿using AutoMapper.Execution;
+using GlmSharp;
+using Microsoft.VisualBasic.FileIO;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -155,20 +159,23 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             };
             objectPanel.Controls.Add(propTable);
 
-            foreach (var prop in obj.GetType().GetProperties())
+            var properties = obj.GetType().GetProperties();
+            var fields = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var members = properties.Cast<MemberInfo>().Concat(fields).ToList();
+            foreach (var member in members)
             {
-                var ignoreAttr = prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute;
+                var ignoreAttr = member.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute;
                 if (ignoreAttr != null) continue;
 
-                var propertyDisplayNameAttr = prop.GetCustomAttribute<DisplayNameAttribute>();
-                string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? prop.Name;
+                var propertyDisplayNameAttr = member.GetCustomAttribute<DisplayNameAttribute>();
+                string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? member.Name;
 
-                var readOnlyAttr = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
+                var readOnlyAttr = member.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
                 bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
 
-                var controlTypeAttr = prop.GetCustomAttributes(typeof(ControlTypeAttribute), true).FirstOrDefault() as ControlTypeAttribute;
+                var controlTypeAttr = member.GetCustomAttributes(typeof(ControlTypeAttribute), true).FirstOrDefault() as ControlTypeAttribute;
 
-                var toolTipAttr = prop.GetCustomAttributes(typeof(TooltipAttribute), true).FirstOrDefault() as TooltipAttribute;
+                var toolTipAttr = member.GetCustomAttributes(typeof(TooltipAttribute), true).FirstOrDefault() as TooltipAttribute;
 
                 int propRowIndex = propTable.RowCount;
                 propTable.RowCount += 1;
@@ -206,6 +213,16 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 };
                 propTable.Controls.Add(controlPanel, 1, propRowIndex);
 
+                Type type = member.GetType();
+                if(member is PropertyInfo)
+                {
+                    type = ((PropertyInfo)member).PropertyType;
+                }
+                if (member is FieldInfo)
+                {
+                    type = ((FieldInfo)member).FieldType;
+                }
+
                 Control control = null;
                 if (controlTypeAttr != null)
                 {
@@ -214,8 +231,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
                     }
                 }
-                else if (typeof(IList).IsAssignableFrom(prop.PropertyType))
+                else if (member is PropertyInfo &&
+                         typeof(IList).IsAssignableFrom(type))
                 {
+                    PropertyInfo prop = (PropertyInfo)member;
                     var list = prop.GetValue(obj) as IList;
                     if (list != null && list.Count > 0)
                     {
@@ -223,51 +242,76 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         {
                             foreach (var childObj in list)
                             {
-                                if (childObj != null) CreatePropertyControl(obj, childObj);
+                                if (childObj != null)
+                                {
+                                    CreatePropertyControl(obj, childObj);
+                                }
                             }
                         }
                         else
                         {
-
-                            control = new TypeOfStringForm(obj, prop, RowHeight, isReadOnly).CreateControl();
+                            control = new TypeOfStringForm(obj, member, RowHeight, isReadOnly).CreateControl();
                         }
                     }
                 }
-                else if (prop.PropertyType.BaseType == typeof(Enum))
+                else if (member is FieldInfo &&
+                         typeof(IList).IsAssignableFrom(type))
                 {
-                    control = new TypeOfEnum(obj, prop, RowHeight, isReadOnly).CreateControl();  
+                    FieldInfo fieldInfo = (FieldInfo)member;
+                    var list = fieldInfo.GetValue(obj) as IList;
+                    if (list != null && list.Count > 0)
+                    {
+                        if (!typeof(IEnumerable<string>).IsAssignableFrom(fieldInfo.FieldType))
+                        {
+                            foreach (var childObj in list)
+                            {
+                                if (childObj != null)
+                                {
+                                    CreatePropertyControl(obj, childObj);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            control = new TypeOfStringForm(obj, member, RowHeight, isReadOnly).CreateControl();
+                        }
+                    }
                 }
-                else if (prop.PropertyType == typeof(string))
+                else if (type.BaseType == typeof(Enum))
                 {
-                    control = new TypeOfStringForm(obj, prop, RowHeight, isReadOnly).CreateControl();
+                    control = new TypeOfEnum(obj, member, RowHeight, isReadOnly).CreateControl();  
                 }
-                else if(prop.PropertyType == typeof(float))
+                else if (type == typeof(string))
                 {
-                    control = new TypeOfFloat(obj, prop, RowHeight, isReadOnly).CreateControl();
+                    control = new TypeOfStringForm(obj, member, RowHeight, isReadOnly).CreateControl();
                 }
-                else if (prop.PropertyType == typeof(int))
+                else if(type == typeof(float))
                 {
-                    control = new TypeOfIntForm(obj, prop, RowHeight, isReadOnly).CreateControl();
+                    control = new TypeOfFloat(obj, member, RowHeight, isReadOnly).CreateControl();
                 }
-                else if (prop.PropertyType == typeof(uint))
+                else if (type == typeof(int))
                 {
-                    control = new TypeOfUintForm(obj, prop, RowHeight, isReadOnly).CreateControl();
+                    control = new TypeOfIntForm(obj, member, RowHeight, isReadOnly).CreateControl();
                 }
-                else if (prop.PropertyType == typeof(bool))
+                else if (type == typeof(uint))
                 {
-                    control = new TypeOfBool(obj, prop, RowHeight, isReadOnly).CreateControl();
+                    control = new TypeOfUintForm(obj, member, RowHeight, isReadOnly).CreateControl();
                 }
-                else if (prop.PropertyType == typeof(Guid))
+                else if (type == typeof(bool))
                 {
-                    control = new TypeOfGuidForm(obj, prop, RowHeight, isReadOnly).CreateControl();
+                    control = new TypeOfBool(obj, member, RowHeight, isReadOnly).CreateControl();
                 }
-                else if (prop.PropertyType == typeof(List<ComponentTypeEnum>))
+                else if (type == typeof(Guid))
                 {
-                    control = TypeOfComponentList(obj, prop, isReadOnly);
+                    control = new TypeOfGuidForm(obj, member, RowHeight, isReadOnly).CreateControl();
                 }
-                else if (prop.PropertyType == typeof(vec2))
+                else if (type == typeof(List<ComponentTypeEnum>))
                 {
-                    new TypeOfVec2Form(obj, prop, RowHeight, isReadOnly).CreateControl();
+                   // control = TypeOfComponentList(obj, member, isReadOnly);
+                }
+                else if (type == typeof(vec2))
+                {
+                    new TypeOfVec2Form(obj, member, RowHeight, isReadOnly).CreateControl();
                     control = null;
                 }
 

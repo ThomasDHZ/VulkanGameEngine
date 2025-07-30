@@ -12,7 +12,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
     public class TypeOfPictureBox : PropertyEditorForm
     {
         public Image renderPassImage { get; set; } = null;
-        public TypeOfPictureBox(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfPictureBox(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
 
         public override Control CreateControl()
         {

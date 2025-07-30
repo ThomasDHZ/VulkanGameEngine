@@ -13,10 +13,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfGuidForm : PropertyEditorForm
     {
-        public TypeOfGuidForm(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfGuidForm(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
-            string guid = ((Guid)_property.GetValue(_obj)).ToString();
+            string guid = ((Guid)GetValue()).ToString();
             var textBox = new TextBox
             {
                 Dock = DockStyle.Fill,

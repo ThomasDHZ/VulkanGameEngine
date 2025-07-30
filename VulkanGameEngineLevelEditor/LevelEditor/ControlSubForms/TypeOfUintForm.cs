@@ -13,11 +13,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfUintForm : PropertyEditorForm
     {
-        public TypeOfUintForm(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfUintForm(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
 
         public override Control CreateControl()
         {
-            uint value = (uint)_property.GetValue(_obj);
+            uint value = (uint)GetValue();
             if (_readOnly)
             {
                 var labelDisplay = new Label
@@ -47,11 +47,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
                 {
                     try
                     {
-                        _property.SetValue(_obj, (int)((NumericUpDown)s).Value);
+                        SetValue((int)((NumericUpDown)s).Value);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error setting {_property.Name}: {ex.Message}");
+                        Console.WriteLine($"Error setting : {ex.Message}");
+                        // Console.WriteLine($"Error setting {_property.Name}: {ex.Message}");
                     }
                 };
                 CreateBaseControl(numeric);

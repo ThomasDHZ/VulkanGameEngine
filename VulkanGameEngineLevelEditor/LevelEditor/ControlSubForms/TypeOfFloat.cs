@@ -11,11 +11,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
 {
     public class TypeOfFloat : PropertyEditorForm
     {
-        public TypeOfFloat(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfFloat(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
 
         public override Control CreateControl()
         {
-            float value = (float)_property.GetValue(_obj);
+            float value = (float)GetValue();
             if (_readOnly)
             {
                 var labelDisplay = new Label
@@ -35,12 +35,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
             {
                 var textBox = new TextBox
                 {
-                    Text = _property.GetValue(_obj)?.ToString() ?? "",
+                    Text = GetValue()?.ToString() ?? "",
                     TextAlign = HorizontalAlignment.Left
                 };
                 if (!_readOnly)
                 {
-                    textBox.TextChanged += (s, e) => _property.SetValue(_obj, ((TextBox)s).Text);
+                    textBox.TextChanged += (s, e) => SetValue(((TextBox)s).Text);
                 }
                 textBox.ReadOnly = _readOnly;
                

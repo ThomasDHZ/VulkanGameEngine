@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -13,11 +14,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfIntForm : PropertyEditorForm
     {
-        public TypeOfIntForm(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfIntForm(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
 
         public override Control CreateControl()
         {
-            int value = (int)_property.GetValue(_obj);
+            int value = (int)GetValue();
             if (_readOnly)
             {
                 var labelDisplay = new Label
@@ -47,11 +48,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
                 {
                     try
                     {
-                        _property.SetValue(_obj, (int)((NumericUpDown)s).Value);
+                        SetValue((int)((NumericUpDown)s).Value);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error setting {_property.Name}: {ex.Message}");
+                        Console.WriteLine($"Error setting : {ex.Message}");
+//                        Console.WriteLine($"Error setting {_property.Name}: {ex.Message}");
                     }
                 };
                 CreateBaseControl(numeric);

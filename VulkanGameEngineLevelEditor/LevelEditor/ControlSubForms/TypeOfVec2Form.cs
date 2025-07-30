@@ -14,10 +14,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfVec2Form : PropertyEditorForm
     {
-        public TypeOfVec2Form(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfVec2Form(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
-            var vec2Value = (vec2)_property.GetValue(_obj);
+            var vec2Value = (vec2)GetValue();
             int rowIndex = 0;
 
             var vec2Panel = new TableLayoutPanel
@@ -83,7 +83,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
             {
                 var newX = (float)((NumericUpDown)s).Value;
                 var newVec2 = new vec2(newX, vec2Value.y);
-                _property.SetValue(_obj, newVec2);
+                SetValue(newVec2);
           //      UpdatePropertiesList.Add(new UpdateProperty { ParentObj = _parentObject, Obj = _obj });
             };
 
@@ -91,7 +91,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
             {
                 var newY = (float)((NumericUpDown)s).Value;
                 var newVec2 = new vec2(vec2Value.x, newY);
-                _property.SetValue(_obj, newVec2);
+                SetValue(newVec2);
             //    UpdatePropertiesList.Add(new UpdateProperty { ParentObj = _parentObject, Obj = _obj });
             };
 

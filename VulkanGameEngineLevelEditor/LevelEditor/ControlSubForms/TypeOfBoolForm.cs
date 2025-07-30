@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoMapper.Execution;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -12,10 +13,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfBool : PropertyEditorForm
     {
-        public TypeOfBool(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfBool(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
-            bool value = (bool)_property.GetValue(_obj);
+            bool value = (bool)GetValue();
             var checkBox = new CheckBox
             {
                 Dock = DockStyle.Fill,
@@ -26,11 +27,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
             {
                 try
                 {
-                    _property.SetValue(_obj, ((CheckBox)s).Checked);
+                    SetValue(((CheckBox)s).Checked);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error setting {_property.Name}: {ex.Message}");
+                    Console.WriteLine($"Error setting value: {ex.Message}");
                 }
             };
             CreateBaseControl(checkBox);

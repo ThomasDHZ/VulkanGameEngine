@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,7 +14,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
     {
         private System.Windows.Forms.ComboBox comboBox1;
 
-        public TypeOfEnum(object obj, PropertyInfo property, int minimumPanelSize, bool readOnly) : base(obj, property, minimumPanelSize, readOnly) { }
+        public TypeOfEnum(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
             comboBox1 = new System.Windows.Forms.ComboBox();
@@ -29,13 +30,27 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
             comboBox1.TabIndex = 0;
 
             Type enumType = null;
-            if (_property.PropertyType.BaseType is Type)
+            if (_member is PropertyInfo propType)
             {
-                enumType = _property.PropertyType;
+                if (propType.PropertyType.BaseType is Type)
+                {
+                    enumType = propType.PropertyType;
+                }
+                else
+                {
+                    enumType = propType.PropertyType.BaseType.GetType();
+                }
             }
-            else
+            else if (_member is FieldInfo fieldType)
             {
-                enumType = _property.PropertyType.BaseType.GetType();
+                if (fieldType.FieldType.BaseType is Type)
+                {
+                    enumType = fieldType.FieldType;
+                }
+                else
+                {
+                    enumType = fieldType.FieldType.BaseType.GetType();
+                }
             }
 
             if (enumType.IsEnum)
