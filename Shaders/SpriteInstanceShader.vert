@@ -5,12 +5,25 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 0)  in vec2  VS_SpritePosition;
+
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 1)  in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
+
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 2)  in vec2  VS_SpriteSize;
+
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 3)  in ivec2 VS_FlipSprite;
+
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 4)  in vec4  VS_Color;
+
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 5)  in mat4  VS_InstanceTransform;
+
+//InputParams(binding = 1, VertexType = Instance)
 layout (location = 9)  in uint  VS_MaterialID;
 
 layout (location = 0) out vec3  PS_Position;
@@ -62,9 +75,12 @@ struct Vertex2D
 	vec2 UV;
 };
 
+//InputParams(DescriptorBindingPropertiesEnum = kMeshPropertiesDescriptor)
 layout(binding = 0) readonly buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+//InputParams(DescriptorBindingPropertiesEnum = kTextureDescriptor)
 layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+//InputParams(DescriptorBindingPropertiesEnum = kMaterialDescriptor)
+layout(binding = 2) uniform MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main() 
 {

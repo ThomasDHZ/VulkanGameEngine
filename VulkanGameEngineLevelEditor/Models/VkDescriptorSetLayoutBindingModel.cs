@@ -9,11 +9,6 @@ namespace VulkanGameEngineLevelEditor.Models
     {
         public uint binding { get; set; }
         public VkDescriptorType descriptorType { get; set; }
-        public uint descriptorCount { get; set; }
-        public VkShaderStageFlagBits stageFlags { get; set; }
-        [JsonIgnore]
-        public VkSampler* pImmutableSamplers { get; set; }
-
         public VkDescriptorSetLayoutBindingModel() { }
     }
 }

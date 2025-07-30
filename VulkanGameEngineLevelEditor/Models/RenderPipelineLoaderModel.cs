@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
@@ -17,17 +19,20 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public string Name { get; set; } = string.Empty;
         [IgnoreProperty()]
-        public int RenderPipelineId { get; set; } = 0;
+        public Guid RenderPipelineId { get; set; } = Guid.Empty;
         [DisplayName("Vertex Shader")]
         [ControlTypeAttribute(typeof(TypeOfFileLoader))]
         public String VertexShader { get; set; }
         [DisplayName("Pixel Shader")]
         [ControlTypeAttribute(typeof(TypeOfFileLoader))]
         public String FragmentShader { get; set; }
-        [DisplayName("Descriptor Set Count")]
-        public size_t DescriptorSetCount { get; set; }
-        [DisplayName("Descriptor Set Layout Count")]
-        public size_t DescriptorSetLayoutCount { get; set; }
+ 
+        [DisplayName("Vertex Shader Source")]
+        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
+        public String VertexShaderSrc { get; set; }
+        [DisplayName("Pixel Shader Source")]
+        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
+        public String FragmentShaderSrc { get; set; }
         [DisplayName("Vertex Type")]
         public VertexTypeEnum VertexType { get; set; }
         [DisplayName("Viewports")]
@@ -53,31 +58,62 @@ namespace VulkanGameEngineLevelEditor.Models
         [DisplayName("Vertex Bindings")]
         public List<VkVertexInputBindingDescription> VertexInputBindingDescriptionList { get; set; } = new List<VkVertexInputBindingDescription>();
         [DisplayName("Vertex Attributes")]
-        public List<VkVertexInputAttributeDescription> VertexInputAttributeDescriptionList { get; set; } = new List<VkVertexInputAttributeDescription>();
+        public List<VkVertexInputAttributeDescriptionModel> VertexInputAttributeDescriptionList { get; set; } = new List<VkVertexInputAttributeDescriptionModel>();
 
         public RenderPipelineLoaderModel()
         {
         }
 
-        public RenderPipelineLoaderModel(string name) : base()
+        public RenderPipelineLoaderModel(string name, string vertexShader, string pixelShader) : base()
         {
             Name = name;
         }
 
-        public int UiPropertiesControls(object obj, int xPosition, int yOffset, int width)
+        private void VertexAttrbutes(string vertexShader)
         {
-            foreach (var prop in obj.GetType().GetProperties())
-            {
-                if (prop.GetCustomAttributes(typeof(IgnorePropertyAttribute), true).FirstOrDefault() as IgnorePropertyAttribute != null)
-                {
-                    continue;
-                }
-                var readOnlyAttribute = prop.GetCustomAttributes(typeof(ReadOnlyAttribute), true).FirstOrDefault() as ReadOnlyAttribute;
-                bool readOnly = readOnlyAttribute?.IsReadOnly ?? false;
+        //    var attributes = new List<VkVertexInputAttributeDescriptionModel>();
+        //    var regex = new Regex(@"layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*in\s+([^\s]+)\s+([^\s;]+)\s*;", RegexOptions.Compiled);
 
-                System.Windows.Forms.Label label = new System.Windows.Forms.Label { Text = prop.Name, Location = new Point(5, yOffset), AutoSize = true, ForeColor = Color.White };
-            }
-            return yOffset;
+        //    try
+        //    {
+        //        var vertexShaderTextLines = File.ReadLines(vertexShaderFile);
+        //        foreach (var line in vertexShaderTextLines)
+        //        {
+        //            var trimmedLine = line.Trim();
+        //            if (string.IsNullOrEmpty(trimmedLine) ||
+        //                trimmedLine.StartsWith("//") ||
+        //                trimmedLine.StartsWith("/*"))
+        //            {
+        //                continue;
+        //            }
+
+        //            var match = regex.Match(trimmedLine);
+        //            if (match.Success)
+        //            {
+        //                uint location = uint.Parse(match.Groups[1].Value);
+        //                string shaderType = match.Groups[2].Value;
+        //                string varName = match.Groups[3].Value;
+
+        //                var (format, size, locationCount) = MapShaderTypeToVulkanFormat(shaderType);
+        //                for (uint x = 0; x < locationCount; x++)
+        //                {
+        //                    attributes.Add(new VkVertexInputAttributeDescriptionModel
+        //                    {
+        //                        Location = location + x,
+        //                        Type = shaderType,
+        //                        Name = varName,
+        //                        Format = format,
+        //                        Size = size / locationCount
+        //                    });
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error loading vertex layout from {vertexShaderFile}: {ex.Message}");
+        //        throw;
+        //    }
         }
     }
 }

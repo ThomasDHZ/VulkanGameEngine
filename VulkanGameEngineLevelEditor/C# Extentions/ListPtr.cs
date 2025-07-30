@@ -96,7 +96,7 @@ namespace VulkanGameEngineLevelEditor
             if (!_disposed)
             {
                 Console.WriteLine($"Warning: ListPtr<{typeof(T).Name}> was not disposed properly.");
-                Dispose();
+                Dispose();     
             }
         }
 

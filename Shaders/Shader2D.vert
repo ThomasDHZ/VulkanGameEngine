@@ -59,7 +59,7 @@ struct Vertex2D
 
 layout(binding = 0) readonly buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 2) uniform MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main() 
 {

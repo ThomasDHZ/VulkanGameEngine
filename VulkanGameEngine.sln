@@ -37,6 +37,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		Pipelines\DefaultPipeline.json = Pipelines\DefaultPipeline.json
 		Pipelines\FrameBufferPipeline.json = Pipelines\FrameBufferPipeline.json
 		Pipelines\LevelShader2DPipeline.json = Pipelines\LevelShader2DPipeline.json
+		Pipelines\SpriteInstancePipeline.json = Pipelines\SpriteInstancePipeline.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"

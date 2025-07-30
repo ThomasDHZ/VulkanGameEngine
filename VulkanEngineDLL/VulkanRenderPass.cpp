@@ -79,6 +79,20 @@ VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, V
         frameBufferList = RenderPass_BuildFrameBuffer(renderer, vulkanRenderPass, renderedTextureList, depthTexture);
     }
 
+    vulkanRenderPass.InputTextureIdList = nullptr;
+    if (renderPassLoader.InputTextureList.size() > 0)
+    {
+        vulkanRenderPass.InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(vulkanRenderPass.InputTextureIdList, renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size() * sizeof(VkGuid));
+    }
+
+    vulkanRenderPass.ClearValueList = nullptr;
+    if (renderPassLoader.ClearValueList.size() > 0)
+    {
+        vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(vulkanRenderPass.ClearValueList, renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size() * sizeof(VkClearValue));
+    }
+
     vulkanRenderPass.FrameBufferList = nullptr;
     if (frameBufferList.size() > 0)
     {

@@ -1,7 +1,8 @@
 {
   "VertexShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\LevelShader2DVert.spv",
   "FragmentShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\LevelShader2DFrag.spv",
-
+  "VertexShaderSrc": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\LevelShader2D.vert",
+  "FragmentShaderSrc": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\LevelShader2D.frag",
   "ViewportList": [
     {
       "x": 0,

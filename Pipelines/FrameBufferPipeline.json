@@ -1,6 +1,8 @@
 {
   "VertexShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\FrameBufferShaderVert.spv",
   "FragmentShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\FrameBufferShaderFrag.spv",
+  "VertexShaderSrc": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\FrameBufferShader.vert",
+  "FragmentShaderSrc": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\FrameBufferShader.frag",
   "VertexType": 0,
   "DescriptorSetCount": 1,
   "DescriptorSetLayoutCount": 1,

@@ -18,13 +18,18 @@ layout(push_constant) uniform SceneDataBuffer {
     vec3 CameraPosition;
 } sceneData;
 
+//InputParams(DescriptorBindingPropertiesEnum = kMeshPropertiesDescriptor)
 layout(binding = 0) buffer meshPropertiesBuffer
 {
 	int	   MaterialIndex;
 	mat4   MeshTransform;
 } meshProperties[];
+
+//InputParams(DescriptorBindingPropertiesEnum = kTextureDescriptor)
 layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialPropertiesBuffer {
+
+//InputParams(DescriptorBindingPropertiesEnum = kMaterialDescriptor)
+layout(binding = 2) uniform MaterialPropertiesBuffer {
     vec3 Albedo;
     float Metallic;
     float Roughness;

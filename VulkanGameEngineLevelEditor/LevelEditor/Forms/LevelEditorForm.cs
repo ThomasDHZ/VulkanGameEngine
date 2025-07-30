@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Concurrent;
@@ -20,6 +21,8 @@ using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using VulkanGameEngineLevelEditor.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.LinkLabel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor
@@ -44,7 +47,7 @@ namespace VulkanGameEngineLevelEditor
 
         private object lockObject = new object();
         private object sharedData;
-        public List<String> ShaderList = new List<string>();
+        public List<System.String> ShaderList = new List<string>();
 
 
         BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
@@ -116,6 +119,19 @@ namespace VulkanGameEngineLevelEditor
                 {
                     renderPassLoaderList.Add(renderPassPair.Value);
                 }
+                renderPassLoaderList[0].renderPipelineModelList[0].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc).ToList();
+                renderPassLoaderList[0].renderPipelineModelList[1].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc).ToList();
+                renderPassLoaderList[1].renderPipelineModelList[0].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc).ToList();
+                renderPassLoaderList[0].renderPipelineModelList[0].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
+                renderPassLoaderList[0].renderPipelineModelList[1].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
+                renderPassLoaderList[1].renderPipelineModelList[0].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
+
+                renderPassLoaderList[0].renderPipelineModelList[0].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
+                renderPassLoaderList[0].renderPipelineModelList[1].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
+                renderPassLoaderList[1].renderPipelineModelList[0].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
+                renderPassLoaderList[0].renderPipelineModelList[0].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
+                renderPassLoaderList[0].renderPipelineModelList[1].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
+                renderPassLoaderList[1].renderPipelineModelList[0].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
 
                 DynamicControlPanelView.toolTip = toolTip1;
                 dynamicControlPanelView1.SelectedObject = renderPassLoaderList;
@@ -251,7 +267,7 @@ namespace VulkanGameEngineLevelEditor
                 {
                     Float32_0 = 1.0f,
                     Float32_1 = 0.0f,
-                    Float32_2 = 9.0f,
+                    Float32_2 = 1.0f,
                     Float32_3 = 1.0f,
                 },
                 DepthStencil = new VkClearDepthStencilValue()
@@ -266,7 +282,7 @@ namespace VulkanGameEngineLevelEditor
                 {
                     isResizing = true;
                     RenderSystem.RebuildRendererFlag = true;
-                    RenderSystem.UpdateRenderPasses(new List<string> { $@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", RenderSystem.RenderPassLoaderJsonMap[a[1].RenderPassId] });
+                    RenderSystem.UpdateRenderPasses(new List<RenderPassLoaderModel> { renderPass }, new List<RenderPipelineLoaderModel>());
                     isResizing = false;
                 }
             }

@@ -1,6 +1,8 @@
 {
   "VertexShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\SpriteInstanceShaderVert.spv",
   "FragmentShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\SpriteInstanceShaderFrag.spv",
+  "VertexShaderSrc": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\SpriteInstanceShader.vert",
+  "FragmentShaderSrc": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\SpriteInstanceShader.frag",
   "ViewportList": [
     {
       "x": 0,
@@ -140,7 +142,7 @@
   "VertexInputAttributeDescriptionList": [
     {
       "location": 0,
-      "binding": 1,
+      "binding": 0,
       "format": 103,
       "offset": 0
     },
