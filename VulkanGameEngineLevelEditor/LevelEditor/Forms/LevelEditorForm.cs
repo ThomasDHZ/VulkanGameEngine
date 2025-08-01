@@ -133,7 +133,7 @@ namespace VulkanGameEngineLevelEditor
                 renderPassLoaderList[0].renderPipelineModelList[1].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
                 renderPassLoaderList[1].renderPipelineModelList[0].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
 
-                DynamicControlPanelView.toolTip = toolTip1;
+               // DynamicControlPanelView.toolTip = toolTip1;
           //      dynamicControlPanelView1.SelectedObject = renderPassLoaderList;
                 levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
                 levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);

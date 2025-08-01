@@ -165,8 +165,6 @@ VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPo
       surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
       surfaceCreateInfo.hwnd = (HWND)windowHandle;
 
-      fprintf(stderr, "Creating surface with hwnd=%p, hinstance=%p\n", windowHandle, surfaceCreateInfo.hinstance);
-
       VkSurfaceKHR surface;
       VkResult result = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
       if (result != VK_SUCCESS) {

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Threading;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Vulkan
@@ -166,19 +168,33 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkViewport
     {
-        public float x;
-        public float y;
-        public float width;
-        public float height;
-        public float minDepth;
-        public float maxDepth;
+        [Tooltip("Specifies the x-coordinate of the viewport’s upper-left corner in pixels.")]
+        public float x { get; set; }
+
+        [Tooltip("Specifies the y-coordinate of the viewport’s upper-left corner in pixels.")]
+        public float y { get; set; }
+
+        [Tooltip("Defines the width of the viewport in pixels.")]
+        public float width { get; set; }
+
+        [Tooltip("Defines the height of the viewport in pixels.")]
+        public float height { get; set; }
+
+        [Tooltip("Sets the minimum depth value for the viewport, typically between 0.0 and 1.0.")]
+        public float minDepth { get; set; }
+
+        [Tooltip("Sets the maximum depth value for the viewport, typically between 0.0 and 1.0.")]
+        public float maxDepth { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct VkOffset2D
     {
-        public int x;
-        public int y;
+        [Tooltip("Specifies the x-coordinate offset in pixels.")]
+        public int x { get; set; }
+
+        [Tooltip("Specifies the y-coordinate offset in pixels.")]
+        public int y { get; set; }
 
         public VkOffset2D(int x, int y) : this()
         {
@@ -231,14 +247,37 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct VkPipelineColorBlendAttachmentState
     {
-        public bool blendEnable;
-        public VkBlendFactor srcColorBlendFactor;
-        public VkBlendFactor dstColorBlendFactor;
-        public VkBlendOp colorBlendOp;
-        public VkBlendFactor srcAlphaBlendFactor;
-        public VkBlendFactor dstAlphaBlendFactor;
-        public VkBlendOp alphaBlendOp;
-        public VkColorComponentFlagBits colorWriteMask;
+        [DisplayName("Blend enable")]
+        [Tooltip("Enables or disables blending for this attachment.")]
+        public bool blendEnable { get; set; }
+        [DisplayName("Source Color Blend Factor")]
+
+        [Tooltip("Specifies the source color blend factor for blending calculations.")]
+        public VkBlendFactor srcColorBlendFactor { get; set; }
+        [DisplayName("Distanation Color Blend Factor")]
+
+        [Tooltip("Specifies the destination color blend factor for blending calculations.")]
+        public VkBlendFactor dstColorBlendFactor { get; set; }
+
+        [DisplayName("Color Blend Op")]
+        [Tooltip("Defines the blend operation for combining source and destination colors.")]
+        public VkBlendOp colorBlendOp { get; set; }
+        [DisplayName("Source Alpha Blend Factor")]
+
+        [Tooltip("Specifies the source alpha blend factor for blending calculations.")]
+        public VkBlendFactor srcAlphaBlendFactor { get; set; }
+        [DisplayName("Distanation Alpha Blend Factor")]
+
+        [Tooltip("Specifies the destination alpha blend factor for blending calculations.")]
+        public VkBlendFactor dstAlphaBlendFactor { get; set; }
+        [DisplayName("Alpha Blend Op")]
+
+        [Tooltip("Defines the blend operation for combining source and destination alpha values.")]
+        public VkBlendOp alphaBlendOp { get; set; }
+        [DisplayName("Color Write Mask")]
+
+        [Tooltip("Specifies which color components are written to the framebuffer.")]
+        public VkColorComponentFlagBits colorWriteMask { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -254,8 +293,11 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkExtent2D
     {
-        public uint width;
-        public uint height;
+        [Tooltip("Defines the width of the 2D extent in pixels.")]
+        public uint width { get; set; }
+
+        [Tooltip("Defines the height of the 2D extent in pixels.")]
+        public uint height { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -744,9 +786,14 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkVertexInputBindingDescription
     {
-        public uint binding;
-        public uint stride;
-        public VkVertexInputRate inputRate;
+        [Tooltip("Specifies the binding number for the vertex input.")]
+        public uint binding { get; set; }
+
+        [Tooltip("Defines the stride in bytes between consecutive vertex data entries.")]
+        public uint stride { get; set; }
+
+        [Tooltip("Specifies the rate at which vertex data is advanced, such as per-vertex or per-instance.")]
+        public VkVertexInputRate inputRate { get; set; }
     };
 
     [StructLayout(LayoutKind.Sequential)]

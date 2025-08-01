@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
 
 namespace VulkanGameEngineLevelEditor.Models
@@ -35,9 +36,14 @@ namespace VulkanGameEngineLevelEditor.Models
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct PipelineDescriptorModel
     {
-        public uint BindingNumber;
-        public DescriptorBindingPropertiesEnum BindingPropertiesList;
-        public VkDescriptorType DescriptorType;
+        [Tooltip("Specifies the binding number for the pipeline descriptor.")]
+        public uint BindingNumber { get; set; }
+
+        [Tooltip("Defines the binding properties for the descriptor.")]
+        public DescriptorBindingPropertiesEnum BindingPropertiesList { get; set; }
+
+        [Tooltip("Specifies the Vulkan descriptor type for this binding.")]
+        public VkDescriptorType DescriptorType { get; set; }
 
         public PipelineDescriptorModel(uint bindingNumber, DescriptorBindingPropertiesEnum properties, VkDescriptorType type)
         {
