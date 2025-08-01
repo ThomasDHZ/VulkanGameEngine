@@ -34,6 +34,7 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Sets the number of color blend attachment states in the attachments array.")]
         public uint attachmentCount { get; set; }
 
+        [IgnoreProperty]
         [Tooltip("Pointer to an array of color blend attachment states defining per-attachment blending.")]
         public VkPipelineColorBlendAttachmentState* pAttachments { get; set; }
 

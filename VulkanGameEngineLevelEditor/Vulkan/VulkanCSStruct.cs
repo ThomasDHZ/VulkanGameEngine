@@ -180,9 +180,11 @@ namespace Vulkan
         [Tooltip("Defines the height of the viewport in pixels.")]
         public float height { get; set; }
 
+        [DisplayName("Max Depth")]
         [Tooltip("Sets the minimum depth value for the viewport, typically between 0.0 and 1.0.")]
         public float minDepth { get; set; }
 
+        [DisplayName("Min Depth")]
         [Tooltip("Sets the maximum depth value for the viewport, typically between 0.0 and 1.0.")]
         public float maxDepth { get; set; }
     }
@@ -206,8 +208,11 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct VkRect2D
     {
-        public VkOffset2D offset;
-        public VkExtent2D extent;
+        [Tooltip("Specifies the 2D offset of the rectangle’s top-left corner in pixels.")]
+        public VkOffset2D offset { get; set; }
+
+        [Tooltip("Defines the 2D extent (width and height) of the rectangle in pixels.")]
+        public VkExtent2D extent { get; set; }
 
         public VkRect2D(VkOffset2D vkOffset2D, VkExtent2D swapChainResolution) : this()
         {
@@ -428,121 +433,33 @@ namespace Vulkan
         public VkClearValue* pClearValues { get; set; }
     }
 
-    [StructLayout(LayoutKind.Explicit)]
-    public unsafe partial struct VkClearColorValue
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct VkClearColorValue
     {
-        public VkClearColorValue
-        (
-            float? float32_0 = null,
-            float? float32_1 = null,
-            float? float32_2 = null,
-            float? float32_3 = null,
-            int? int32_0 = null,
-            int? int32_1 = null,
-            int? int32_2 = null,
-            int? int32_3 = null,
-            uint? uint32_0 = null,
-            uint? uint32_1 = null,
-            uint? uint32_2 = null,
-            uint? uint32_3 = null
-        ) : this()
+
+        public float Float32_0 { get; set; } = 0.0f;
+        public float Float32_1 { get; set; } = 0.0f;
+        public float Float32_2 { get; set; } = 0.0f;
+        public float Float32_3 { get; set; } = 0.0f;
+        [IgnoreProperty]
+        public int Int32_0 { get; set; } = 0;
+        [IgnoreProperty]
+        public int Int32_1 { get; set; } = 0;
+        [IgnoreProperty]
+        public int Int32_2 { get; set; } = 0;
+        [IgnoreProperty]
+        public int Int32_3 { get; set; } = 0;
+        [IgnoreProperty]
+        public uint Uint32_0 { get; set; } = 0;
+        [IgnoreProperty]
+        public uint Uint32_1 { get; set; } = 0;
+        [IgnoreProperty]
+        public uint Uint32_2 { get; set; } = 0;
+        [IgnoreProperty]
+        public uint Uint32_3 { get; set; } = 0;
+        public VkClearColorValue()
         {
-            if (float32_0 is not null)
-            {
-                Float32_0 = float32_0.Value;
-            }
-
-            if (float32_1 is not null)
-            {
-                Float32_1 = float32_1.Value;
-            }
-
-            if (float32_2 is not null)
-            {
-                Float32_2 = float32_2.Value;
-            }
-
-            if (float32_3 is not null)
-            {
-                Float32_3 = float32_3.Value;
-            }
-
-            if (int32_0 is not null)
-            {
-                Int32_0 = int32_0.Value;
-            }
-
-            if (int32_1 is not null)
-            {
-                Int32_1 = int32_1.Value;
-            }
-
-            if (int32_2 is not null)
-            {
-                Int32_2 = int32_2.Value;
-            }
-
-            if (int32_3 is not null)
-            {
-                Int32_3 = int32_3.Value;
-            }
-
-            if (uint32_0 is not null)
-            {
-                Uint32_0 = uint32_0.Value;
-            }
-
-            if (uint32_1 is not null)
-            {
-                Uint32_1 = uint32_1.Value;
-            }
-
-            if (uint32_2 is not null)
-            {
-                Uint32_2 = uint32_2.Value;
-            }
-
-            if (uint32_3 is not null)
-            {
-                Uint32_3 = uint32_3.Value;
-            }
         }
-
-        [FieldOffset(0)]
-        public float Float32_0;
-
-        [FieldOffset(4)]
-        public float Float32_1;
-
-        [FieldOffset(8)]
-        public float Float32_2;
-
-        [FieldOffset(12)]
-        public float Float32_3;
-
-        [FieldOffset(0)]
-        public int Int32_0;
-
-        [FieldOffset(4)]
-        public int Int32_1;
-
-        [FieldOffset(8)]
-        public int Int32_2;
-
-        [FieldOffset(12)]
-        public int Int32_3;
-
-        [FieldOffset(0)]
-        public uint Uint32_0;
-
-        [FieldOffset(4)]
-        public uint Uint32_1;
-
-        [FieldOffset(8)]
-        public uint Uint32_2;
-
-        [FieldOffset(12)]
-        public uint Uint32_3;
     }
 
     [StructLayout(LayoutKind.Explicit)]

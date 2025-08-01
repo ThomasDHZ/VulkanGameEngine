@@ -45,27 +45,33 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             this.AutoSize = true;
             this.ColumnCount = 1;
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            this.RowCount = 1;
+            this.RowCount = 2; 
+            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             this.BackColor = Color.FromArgb(30, 30, 30);
+            this.Visible = true;
 
             var objectPanel = new Panel
             {
-                Dock = DockStyle.Top,
+                Dock = DockStyle.Fill,
                 AutoSize = true,
                 BackColor = Color.FromArgb(30, 30, 30),
                 BorderStyle = BorderStyle.FixedSingle,
                 Padding = new Padding(5)
             };
             this.Controls.Add(objectPanel, 0, 0);
+            this.SetRowSpan(objectPanel, 2);
 
             _headerPanel = new Panel
             {
                 Dock = DockStyle.Top,
                 BackColor = Color.FromArgb(30, 30, 30),
-                Height = RowHeight
+                Height = RowHeight,
+                Visible = true
             };
             objectPanel.Controls.Add(_headerPanel);
+
+            AddFoldoutButton(_headerPanel);
 
             var panelDisplayNameAttr = PanelObject.GetType().GetCustomAttribute<DisplayNameAttribute>();
             string panelDisplayName = panelDisplayNameAttr?.DisplayName ?? PanelObject.GetType().Name;
@@ -73,10 +79,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 Text = panelDisplayName,
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(30, 30, 30),
-                Margin = new Padding(5)
+                Margin = new Padding(25, 5, 5, 5)
             };
             _headerPanel.Controls.Add(objLabel);
 
@@ -88,7 +94,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 BackColor = Color.FromArgb(30, 30, 30),
                 ColumnCount = 2,
                 ColumnStyles = { new ColumnStyle(SizeType.Percent, 30F), new ColumnStyle(SizeType.Percent, 70F) },
-                Padding = new Padding(0, RowHeight + 10, 0, 0)
+                Padding = new Padding(0, RowHeight + 10, 0, 0),
+                Visible = false
             };
             objectPanel.Controls.Add(_propTable);
 
@@ -96,6 +103,29 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 AddComponentButton(objectPanel);
             }
+        }
+
+        private void AddFoldoutButton(Panel headerPanel)
+        {
+            var foldoutButton = new Button
+            {
+                Text = _isExpanded ? "▼" : "▶",
+                Dock = DockStyle.Left,
+                Width = 20,
+                BackColor = Color.FromArgb(40, 40, 40),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Visible = true
+            };
+            foldoutButton.FlatAppearance.BorderSize = 0;
+            foldoutButton.Click += (s, e) =>
+            {
+                _isExpanded = !_isExpanded;
+                foldoutButton.Text = _isExpanded ? "▼" : "▶";
+                _propTable.Visible = _isExpanded;
+                AdjustPanelHeight();
+            };
+            headerPanel.Controls.Add(foldoutButton);
         }
 
         private void AddComponentButton(Panel objectPanel)
@@ -279,7 +309,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     elementType = field.FieldType;
                 }
 
-                if (list != null && list.Count > 0)
+                if (list != null)
                 {
                     if (typeof(IEnumerable<string>).IsAssignableFrom(elementType))
                     {
@@ -293,7 +323,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     }
                     else
                     {
-                        // Create a TableLayoutPanel to stack all elements vertically
                         var listPanel = new TableLayoutPanel
                         {
                             Dock = DockStyle.Fill,
@@ -304,19 +333,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         };
                         controlPanel.Controls.Add(listPanel);
 
-                        // Add each element as an ObjectPanelView
-                        foreach (var element in list)
-                        {
-                            if (element == null) continue;
-
-                            int rowIndex = listPanel.RowCount;
-                            listPanel.RowCount += 1;
-                            listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                            var childPanelView = new ObjectPanelView(element, ToolTip);
-                            ChildObjectPanels.Add(childPanelView);
-                            listPanel.Controls.Add(childPanelView, 0, rowIndex);
-                        }
+                        UpdateListPanel(listPanel, list, member, obj, elementType);
                     }
                 }
             }
@@ -324,6 +341,165 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 Console.WriteLine($"Error handling list for {member.Name}: {ex.Message}");
             }
+        }
+
+        private void UpdateListPanel(TableLayoutPanel listPanel, IList list, MemberInfo member, object obj, Type elementType)
+        {
+            try
+            {
+                listPanel.Controls.Clear();
+                listPanel.RowCount = 0;
+                listPanel.RowStyles.Clear();
+                ChildObjectPanels.Clear();
+
+                if (list != null && list.Count > 0)
+                {
+                    foreach (var element in list)
+                    {
+                        if (element == null) continue;
+
+                        int rowIndex = listPanel.RowCount;
+                        listPanel.RowCount += 1;
+                        listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                        var childPanelView = new ObjectPanelView(element, ToolTip);
+                        ChildObjectPanels.Add(childPanelView);
+                        listPanel.Controls.Add(childPanelView, 0, rowIndex);
+
+                        childPanelView.PropertyChanged += (s, e) => NotifyPropertyChanged();
+                    }
+                }
+
+                int buttonRowIndex = listPanel.RowCount;
+                listPanel.RowCount += 1;
+                listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                var buttonPanel = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    AutoSize = true,
+                    BackColor = Color.FromArgb(30, 30, 30)
+                };
+                listPanel.Controls.Add(buttonPanel, 0, buttonRowIndex);
+
+                var buttonLayout = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    AutoSize = true,
+                    FlowDirection = FlowDirection.LeftToRight,
+                    BackColor = Color.FromArgb(30, 30, 30)
+                };
+                buttonPanel.Controls.Add(buttonLayout);
+
+                var addButton = new Button
+                {
+                    Text = "+",
+                    Width = 30,
+                    Height = RowHeight,
+                    BackColor = Color.FromArgb(40, 40, 40),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+                addButton.FlatAppearance.BorderSize = 0;
+                addButton.Click += (s, e) =>
+                {
+                    try
+                    {
+                        Type listElementType = elementType.IsGenericType ? elementType.GetGenericArguments()[0] : typeof(object);
+                        object newElement;
+                        if (list is ListPtr<vec3> listPtr)
+                        {
+                            newElement = default(vec3);
+                        }
+                        else
+                        {
+                            newElement = Activator.CreateInstance(listElementType);
+                        }
+                        list.Add(newElement);
+                        UpdateListPanel(listPanel, list, member, obj, elementType);
+                        NotifyPropertyChanged();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error adding list element: {ex.Message}");
+                    }
+                };
+                buttonLayout.Controls.Add(addButton);
+
+                var removeButton = new Button
+                {
+                    Text = "–",
+                    Width = 30,
+                    Height = RowHeight,
+                    BackColor = Color.FromArgb(40, 40, 40),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat
+                };
+                removeButton.FlatAppearance.BorderSize = 0;
+                removeButton.Click += (s, e) =>
+                {
+                    try
+                    {
+                        if (list.Count > 0)
+                        {
+                            if (list is ListPtr<vec3> listPtr)
+                            {
+                                listPtr.Remove((uint)(list.Count - 1));
+                            }
+                            else
+                            {
+                                list.RemoveAt(list.Count - 1);
+                            }
+                            UpdateListPanel(listPanel, list, member, obj, elementType);
+                            NotifyPropertyChanged();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error removing list element: {ex.Message}");
+                    }
+                };
+                buttonLayout.Controls.Add(removeButton);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating list panel: {ex.Message}");
+            }
+        }
+
+        private void AdjustPanelHeight()
+        {
+            try
+            {
+                if (Parent is TableLayoutPanel parentTable)
+                {
+                    this.Visible = true;
+                    _headerPanel.Visible = true;
+                    if (!_isExpanded)
+                    {
+                        _propTable.Visible = false;
+                        this.Height = _headerPanel.Height + this.Margin.Top + this.Margin.Bottom + this.Padding.Top + this.Padding.Bottom;
+                    }
+                    else
+                    {
+                        _propTable.Visible = true;
+                        this.AutoSize = true;
+                    }
+                    parentTable.AutoSize = true;
+                    parentTable.PerformLayout();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adjusting panel height: {ex.Message}");
+            }
+        }
+
+        public event EventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged()
+        {
+            PropertyChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

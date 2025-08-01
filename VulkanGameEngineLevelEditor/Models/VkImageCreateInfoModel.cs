@@ -28,6 +28,8 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Pointer to an extension structure for additional image parameters. Typically null unless using extensions.")]
         public IntPtr pNext { get; set; }
 
+
+        [DisplayName("Image Type")]
         [TooltipAttribute("Defines the type of image, such as 1D, 2D, or 3D.")]
         public VkImageType ImageType { get; set; }
 
@@ -36,15 +38,19 @@ namespace VulkanGameEngineLevelEditor.Models
 
         [JsonIgnore]
         [IgnoreProperty]
+        [DisplayName("Texture Size")]
         [TooltipAttribute("Sets the dimensions of the image (width, height, depth).")]
         public VkExtent3DModel Extent { get; set; } = new VkExtent3DModel();
 
+        [DisplayName("MipMap Levels")]
         [TooltipAttribute("Specifies the number of mipmap levels for the image.")]
         public uint MipLevels { get; set; }
 
+        [DisplayName("Array Layers")]
         [TooltipAttribute("Specifies the number of array layers for the image, used for array textures.")]
         public uint ArrayLayers { get; set; }
 
+        [DisplayName("Sample Count")]
         [TooltipAttribute("Defines the number of samples per texel for multisampling.")]
         public VkSampleCountFlagBits Samples { get; set; }
 
@@ -54,6 +60,7 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Defines the intended usage of the image, such as rendering or sampling.")]
         public VkImageUsageFlagBits Usage { get; set; }
 
+        [DisplayName("Sharing Mode")]
         [TooltipAttribute("Specifies how the image is shared between queue families.")]
         public VkSharingMode SharingMode { get; set; }
 
@@ -67,6 +74,7 @@ namespace VulkanGameEngineLevelEditor.Models
         [TooltipAttribute("Pointer to an array of queue family indices for image sharing.")]
         public unsafe uint* PQueueFamilyIndices { get; set; }
 
+        [DisplayName("Start Layout")]
         [TooltipAttribute("Specifies the initial layout of the image after creation.")]
         public VkImageLayout InitialLayout { get; set; }
 
