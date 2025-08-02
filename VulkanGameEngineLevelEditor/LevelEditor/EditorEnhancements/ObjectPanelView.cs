@@ -1,4 +1,5 @@
-﻿using GlmSharp;
+﻿using AutoMapper.Execution;
+using GlmSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         public List<ObjectPanelView> ChildObjectPanels { get; } = new List<ObjectPanelView>();
         private TableLayoutPanel _propTable;
         private Panel _headerPanel;
+        private Panel _contentPanel;
         private bool _isExpanded = true;
 
         public ObjectPanelView(object obj, ToolTip toolTip)
@@ -45,8 +47,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             this.AutoSize = true;
             this.ColumnCount = 1;
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            this.RowCount = 2; 
-            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            this.RowCount = 1;
             this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.Visible = true;
@@ -60,7 +61,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Padding = new Padding(5)
             };
             this.Controls.Add(objectPanel, 0, 0);
-            this.SetRowSpan(objectPanel, 2);
 
             _headerPanel = new Panel
             {
@@ -86,6 +86,15 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             };
             _headerPanel.Controls.Add(objLabel);
 
+            _contentPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                BackColor = Color.FromArgb(30, 30, 30),
+                Visible = _isExpanded
+            };
+            objectPanel.Controls.Add(_contentPanel);
+
             _propTable = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -94,14 +103,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 BackColor = Color.FromArgb(30, 30, 30),
                 ColumnCount = 2,
                 ColumnStyles = { new ColumnStyle(SizeType.Percent, 30F), new ColumnStyle(SizeType.Percent, 70F) },
-                Padding = new Padding(0, RowHeight + 10, 0, 0),
-                Visible = false
+                Padding = new Padding(0, RowHeight + 10, 0, 0)
             };
-            objectPanel.Controls.Add(_propTable);
+            _contentPanel.Controls.Add(_propTable);
 
             if (PanelObject is GameObject)
             {
-                AddComponentButton(objectPanel);
+                AddComponentButton(_contentPanel);
             }
         }
 
@@ -114,8 +122,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Width = 20,
                 BackColor = Color.FromArgb(40, 40, 40),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Visible = true
+                FlatStyle = FlatStyle.Flat
             };
             foldoutButton.FlatAppearance.BorderSize = 0;
             foldoutButton.Click += (s, e) =>
@@ -128,7 +135,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             headerPanel.Controls.Add(foldoutButton);
         }
 
-        private void AddComponentButton(Panel objectPanel)
+        private void AddComponentButton(Panel contentPanel)
         {
             var addComponentButton = new Button
             {
@@ -144,7 +151,32 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 MessageBox.Show("Add Component functionality not implemented yet.");
             };
-            objectPanel.Controls.Add(addComponentButton);
+            contentPanel.Controls.Add(addComponentButton);
+        }
+
+        private void AddPropertyPanel(MemberInfo member, Panel controlPanel)
+        {
+            object instance = member is PropertyInfo p ? p.GetValue(PanelObject) : ((FieldInfo)member).GetValue(PanelObject);
+            if (instance != null)
+            {
+                var structPanel = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    AutoSize = true,
+                    BackColor = Color.FromArgb(30, 30, 30),
+                    ColumnCount = 1,
+                    ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
+                };
+                controlPanel.Controls.Add(structPanel);
+
+                int rowIndex = structPanel.RowCount;
+                structPanel.RowCount += 1;
+                structPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                var childPanelView = new ObjectPanelView(instance, ToolTip);
+                ChildObjectPanels.Add(childPanelView);
+                structPanel.Controls.Add(childPanelView, 0, rowIndex);
+            }
         }
 
         private void PopulateProperties()
@@ -154,7 +186,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 var properties = PanelObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
                 var fields = PanelObject.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
                 var members = properties.Cast<MemberInfo>().Concat(fields).ToList();
-
                 foreach (var member in members)
                 {
                     if (member.GetCustomAttribute<IgnorePropertyAttribute>() != null) continue;
@@ -205,10 +236,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     };
                     _propTable.Controls.Add(controlPanel, 1, propRowIndex);
 
-                    Type type = member is PropertyInfo prop ? prop.PropertyType : ((FieldInfo)member).FieldType;
-
                     Control control = null;
-
+                    Type type = member is PropertyInfo prop ? prop.PropertyType : ((FieldInfo)member).FieldType;
                     if (controlTypeAttr != null && controlTypeAttr.ControlType == typeof(TypeOfFileLoader))
                     {
                         control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
@@ -222,54 +251,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     {
                         control = DynamicControlPanelView.TypeOfComponentList(PanelObject, member as PropertyInfo, isReadOnly);
                     }
-                    else if (type.IsClass && type != typeof(string))
+                    else if (type.IsClass && 
+                             type != typeof(string))
                     {
-                        object instance = member is PropertyInfo p ? p.GetValue(PanelObject) : ((FieldInfo)member).GetValue(PanelObject);
-                        if (instance != null)
-                        {
-                            var classPanel = new TableLayoutPanel
-                            {
-                                Dock = DockStyle.Fill,
-                                AutoSize = true,
-                                BackColor = Color.FromArgb(30, 30, 30),
-                                ColumnCount = 1,
-                                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
-                            };
-                            controlPanel.Controls.Add(classPanel);
-
-                            int rowIndex = classPanel.RowCount;
-                            classPanel.RowCount += 1;
-                            classPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                            var childPanelView = new ObjectPanelView(instance, ToolTip);
-                            ChildObjectPanels.Add(childPanelView);
-                            classPanel.Controls.Add(childPanelView, 0, rowIndex);
-                        }
+                        AddPropertyPanel(member, controlPanel);
                         continue;
                     }
-                    else if (type.IsValueType && !type.IsPrimitive && !type.IsEnum)
+                    else if (type.IsValueType && 
+                            !type.IsPrimitive && 
+                            !type.IsEnum)
                     {
-                        object instance = member is PropertyInfo p ? p.GetValue(PanelObject) : ((FieldInfo)member).GetValue(PanelObject);
-                        if (instance != null)
-                        {
-                            var structPanel = new TableLayoutPanel
-                            {
-                                Dock = DockStyle.Fill,
-                                AutoSize = true,
-                                BackColor = Color.FromArgb(30, 30, 30),
-                                ColumnCount = 1,
-                                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
-                            };
-                            controlPanel.Controls.Add(structPanel);
-
-                            int rowIndex = structPanel.RowCount;
-                            structPanel.RowCount += 1;
-                            structPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                            var childPanelView = new ObjectPanelView(instance, ToolTip);
-                            ChildObjectPanels.Add(childPanelView);
-                            structPanel.Controls.Add(childPanelView, 0, rowIndex);
-                        }
+                        AddPropertyPanel(member, controlPanel);
                         continue;
                     }
                     else
@@ -297,7 +289,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 IList list = null;
                 Type elementType = null;
-
                 if (member is PropertyInfo prop)
                 {
                     list = prop.GetValue(obj) as IList;
@@ -398,7 +389,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     Height = RowHeight,
                     BackColor = Color.FromArgb(40, 40, 40),
                     ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat
+                    FlatStyle = FlatStyle.Flat,
                 };
                 addButton.FlatAppearance.BorderSize = 0;
                 addButton.Click += (s, e) =>
@@ -473,18 +464,18 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 if (Parent is TableLayoutPanel parentTable)
                 {
-                    this.Visible = true;
                     _headerPanel.Visible = true;
                     if (!_isExpanded)
                     {
-                        _propTable.Visible = false;
-                        this.Height = _headerPanel.Height + this.Margin.Top + this.Margin.Bottom + this.Padding.Top + this.Padding.Bottom;
+                        int headerHeight = _headerPanel.Height;
+                        int totalMarginPadding = this.Margin.Top + this.Margin.Bottom + this.Padding.Top + this.Padding.Bottom;
+                        this.Height = headerHeight + totalMarginPadding;
                     }
                     else
                     {
-                        _propTable.Visible = true;
                         this.AutoSize = true;
                     }
+
                     parentTable.AutoSize = true;
                     parentTable.PerformLayout();
                 }

@@ -80,10 +80,6 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Configures the input assembly state for vertex data in the pipeline.")]
         public VkPipelineInputAssemblyStateCreateInfoModel PipelineInputAssemblyStateCreateInfo { get; set; } = new VkPipelineInputAssemblyStateCreateInfoModel();
 
-        [DisplayName("Layout Bindings")]
-        [Tooltip("List of descriptor set layout bindings for the pipeline.")]
-        public List<VkDescriptorSetLayoutBindingModel> LayoutBindingList { get; set; } = new List<VkDescriptorSetLayoutBindingModel>();
-
         [DisplayName("Pipeline Descriptors")]
         [Tooltip("List of descriptor configurations for the pipeline.")]
         public List<PipelineDescriptorModel> PipelineDescriptorModelsList { get; set; } = new List<PipelineDescriptorModel>();
