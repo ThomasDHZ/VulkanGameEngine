@@ -29,7 +29,6 @@ struct RenderPipelineLoader
     VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo;
     VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo;
     VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo;
-    Vector<VkDescriptorSetLayoutBinding> LayoutBindingList;
     Vector<PipelineDescriptorModel> PipelineDescriptorModelsList;
     Vector<VkPipelineColorBlendAttachmentState> PipelineColorBlendAttachmentStateList;
     Vector<VkVertexInputBindingDescription> VertexInputBindingDescriptionList;

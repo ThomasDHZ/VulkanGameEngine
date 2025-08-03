@@ -66,8 +66,12 @@ struct RenderAreaModel
 struct PipelineDescriptorModel
 {
     uint BindingNumber;
+    uint DstArrayElement;
     DescriptorBindingPropertiesEnum BindingPropertiesList;
-    VkDescriptorType descriptorType;
+    VkDescriptorType DescriptorType;
+    VkShaderStageFlags StageFlags;
+    VkSampler* pImmutableSamplers;
+    VkBufferView* pTexelBufferView;
 };
 
 struct RenderPassBuildInfoModel

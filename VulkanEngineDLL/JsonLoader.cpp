@@ -65,10 +65,6 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
         }
         renderPipelineLoader.PipelineColorBlendStateCreateInfoModel = j.at("PipelineColorBlendStateCreateInfoModel");
 
-        for (int x = 0; x < j.at("LayoutBindingList").size(); x++)
-        {
-            renderPipelineLoader.LayoutBindingList.emplace_back(j.at("LayoutBindingList")[x]);
-        }
         for (int x = 0; x < j.at("PipelineDescriptorModelsList").size(); x++)
         {
             renderPipelineLoader.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);

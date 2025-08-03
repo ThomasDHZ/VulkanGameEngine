@@ -95,41 +95,34 @@
     "primitiveRestartEnable": false,
     "flags": 0
   },
-  "LayoutBindingList": [
-    {
-      "binding": 0,
-      "descriptorType": 7,
-      "descriptorCount": 1,
-      "stageFlags": 17
-    },
-    {
-      "binding": 1,
-      "descriptorType": 1,
-      "descriptorCount": 1,
-      "stageFlags": 16
-    },
-    {
-      "binding": 2,
-      "descriptorType": 7,
-      "descriptorCount": 1,
-      "stageFlags": 17
-    }
-  ],
+
   "PipelineDescriptorModelsList": [
     {
       "BindingNumber": 0,
+      "DstArrayElement": 0,
       "BindingPropertiesList": 0,
-      "DescriptorType": 7
+      "DescriptorType": 7,
+      "StageFlags": 2147483647,
+      "pImmutableSamplers": null,
+      "pTexelBufferView": null
     },
     {
       "BindingNumber": 1,
+      "DstArrayElement": 0,
       "BindingPropertiesList": 1,
-      "DescriptorType": 1
+      "DescriptorType": 1,
+      "StageFlags": 2147483647,
+      "pImmutableSamplers": null,
+      "pTexelBufferView": null
     },
     {
       "BindingNumber": 2,
+      "DstArrayElement": 0,
       "BindingPropertiesList": 2,
-      "DescriptorType": 7
+      "DescriptorType": 7,
+      "StageFlags": 2147483647,
+      "pImmutableSamplers": null,
+      "pTexelBufferView": null
     }
   ],
   "VertexInputBindingDescriptionList": [

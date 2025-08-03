@@ -165,10 +165,6 @@ namespace nlohmann
         }
         model.PipelineColorBlendStateCreateInfoModel = j.at("PipelineColorBlendStateCreateInfoModel");
 
-        for (int x = 0; x < j.at("LayoutBindingList").size(); x++)
-        {
-            model.LayoutBindingList.emplace_back(j.at("LayoutBindingList")[x]);
-        }
         for (int x = 0; x < j.at("PipelineDescriptorModelsList").size(); x++)
         {
             model.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);
@@ -203,8 +199,10 @@ namespace nlohmann
     void from_json(const json& j, PipelineDescriptorModel& model)
     {
         model.BindingNumber = j.at("BindingNumber");
+        model.DstArrayElement = j.at("DstArrayElement");
         model.BindingPropertiesList = j.at("BindingPropertiesList");
-        model.descriptorType = j.at("DescriptorType");
+        model.DescriptorType = j.at("DescriptorType");
+        model.StageFlags = j.at("StageFlags");
     }
 
     void from_json(const json& j, RenderPassBuildInfoModel& model)

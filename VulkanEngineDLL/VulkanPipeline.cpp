@@ -167,7 +167,6 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, const Re
 
 Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevice device, const RenderPipelineLoader& model, const GPUIncludes& includes)
 {
-    Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
     const Vector<VkDescriptorBufferInfo> vertexPropertiesList = Vector<VkDescriptorBufferInfo>(includes.VertexProperties, includes.VertexProperties + includes.VertexPropertiesCount);
     const Vector<VkDescriptorBufferInfo> indexPropertiesList = Vector<VkDescriptorBufferInfo>(includes.IndexProperties, includes.IndexProperties + includes.IndexPropertiesCount);
     const Vector<VkDescriptorBufferInfo> transformPropertiesList = Vector<VkDescriptorBufferInfo>(includes.TransformProperties, includes.TransformProperties + includes.TransformPropertiesCount);
@@ -175,86 +174,31 @@ Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevic
     const Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
     const Vector<VkDescriptorImageInfo>  texturePropertiesList = Vector<VkDescriptorImageInfo>(includes.TexturePropertiesList, includes.TexturePropertiesList + includes.TexturePropertiesListCount);
     const Vector<VkDescriptorBufferInfo> materialPropertiesList = Vector<VkDescriptorBufferInfo>(includes.MaterialProperties, includes.MaterialProperties + includes.MaterialPropertiesCount);
+
+    
+    Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
     for (auto binding : model.PipelineDescriptorModelsList)
     {
+        descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
+            {
+                .binding = binding.BindingNumber,
+                .descriptorType = binding.DescriptorType,
+                .stageFlags = binding.StageFlags,
+                .pImmutableSamplers = binding.pImmutableSamplers
+            });
+
         switch (binding.BindingPropertiesList)
         {
-        case kVertexDescsriptor:
-        {
-            descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
-                {
-                    .binding = binding.BindingNumber,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                    .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                    .pImmutableSamplers = nullptr
-                });
-            break;
-        }
-        case kIndexDescriptor:
-        {
-            descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
-                {
-                    .binding = binding.BindingNumber,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                    .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                    .pImmutableSamplers = nullptr
-                });
-            break;
-        }
-        case kTransformDescriptor:
-        {
-            descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
-                {
-                    .binding = binding.BindingNumber,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                    .descriptorCount = static_cast<uint32>(transformPropertiesList.size()),
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                    .pImmutableSamplers = nullptr
-                });
-            break;
-        }
-        case kMeshPropertiesDescriptor:
-        {
-            descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
-                {
-                    .binding = binding.BindingNumber,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                    .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                    .pImmutableSamplers = nullptr
-                });
-            break;
-        }
-        case kTextureDescriptor:
-        {
-            descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
-                {
-                    .binding = binding.BindingNumber,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                    .descriptorCount = static_cast<uint32>(texturePropertiesList.size()),
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                    .pImmutableSamplers = nullptr
-                });
-            break;
-        }
-        case kMaterialDescriptor:
-        {
-            descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
-                {
-                    .binding = binding.BindingNumber,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                    .descriptorCount = static_cast<uint32>(materialPropertiesList.size()),
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                    .pImmutableSamplers = nullptr
-                });
-            break;
-        }
-        default:
-        {
-            throw std::runtime_error("Binding case hasn't been handled yet");
-        }
+            case kVertexDescsriptor: descriptorSetLayoutBindingList.back().descriptorCount = static_cast<uint32>(meshPropertiesList.size()); break;
+            case kIndexDescriptor: descriptorSetLayoutBindingList.back().descriptorCount = static_cast<uint32>(meshPropertiesList.size()); break;
+            case kTransformDescriptor: descriptorSetLayoutBindingList.back().descriptorCount = static_cast<uint32>(transformPropertiesList.size()); break;
+            case kMeshPropertiesDescriptor: descriptorSetLayoutBindingList.back().descriptorCount = static_cast<uint32>(meshPropertiesList.size()); break;
+            case kTextureDescriptor: descriptorSetLayoutBindingList.back().descriptorCount = static_cast<uint32>(texturePropertiesList.size()); break;
+            case kMaterialDescriptor: descriptorSetLayoutBindingList.back().descriptorCount = static_cast<uint32>(materialPropertiesList.size()); break;
+            default:
+            {
+                throw std::runtime_error("Binding case hasn't been handled yet");
+            }
         }
     }
 
@@ -303,121 +247,68 @@ void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, const Vector<VkDescr
     const Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
     const Vector<VkDescriptorImageInfo>  texturePropertiesList = Vector<VkDescriptorImageInfo>(includes.TexturePropertiesList, includes.TexturePropertiesList + includes.TexturePropertiesListCount);
     const Vector<VkDescriptorBufferInfo> materialPropertiesList = Vector<VkDescriptorBufferInfo>(includes.MaterialProperties, includes.MaterialProperties + includes.MaterialPropertiesCount);
+
     for (auto& descriptorSet : descriptorSetList)
     {
         Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
         for (auto binding : model.PipelineDescriptorModelsList)
         {
+            writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+                {
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .pNext = nullptr,
+                    .dstSet = descriptorSet,
+                    .dstBinding = binding.BindingNumber,
+                    .dstArrayElement = binding.DstArrayElement,
+                    .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
+                    .descriptorType = binding.DescriptorType,
+                    .pImageInfo = nullptr,
+                    .pBufferInfo = nullptr,
+                    .pTexelBufferView = binding.pTexelBufferView
+                });
+
             switch (binding.BindingPropertiesList)
             {
-            case kVertexDescsriptor:
-            {
-                writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                    {
-                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .pNext = nullptr,
-                        .dstSet = descriptorSet,
-                        .dstBinding = binding.BindingNumber,
-                        .dstArrayElement = 0,
-                        .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
-                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                        .pImageInfo = nullptr,
-                        .pBufferInfo = meshPropertiesList.data(),
-                        .pTexelBufferView = nullptr
-                    });
-                break;
-            }
-            case kIndexDescriptor:
-            {
-                writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                    {
-                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .pNext = nullptr,
-                        .dstSet = descriptorSet,
-                        .dstBinding = binding.BindingNumber,
-                        .dstArrayElement = 0,
-                        .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
-                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                        .pImageInfo = nullptr,
-                        .pBufferInfo = meshPropertiesList.data(),
-                        .pTexelBufferView = nullptr
-                    });
-                break;
-            }
-            case kTransformDescriptor:
-            {
-                writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                    {
-                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .pNext = nullptr,
-                        .dstSet = descriptorSet,
-                        .dstBinding = binding.BindingNumber,
-                        .dstArrayElement = 0,
-                        .descriptorCount = static_cast<uint32>(transformPropertiesList.size()),
-                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                        .pImageInfo = nullptr,
-                        .pBufferInfo = transformPropertiesList.data(),
-                        .pTexelBufferView = nullptr
-                    });
-                break;
-            }
-            case kMeshPropertiesDescriptor:
-            {
-                writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                    {
-                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .pNext = nullptr,
-                        .dstSet = descriptorSet,
-                        .dstBinding = binding.BindingNumber,
-                        .dstArrayElement = 0,
-                        .descriptorCount = static_cast<uint32>(meshPropertiesList.size()),
-                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                        .pImageInfo = nullptr,
-                        .pBufferInfo = meshPropertiesList.data(),
-                        .pTexelBufferView = nullptr
-                    });
-                break;
-            }
-            case kTextureDescriptor:
-            {
-                writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                    {
-                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .pNext = nullptr,
-                        .dstSet = descriptorSet,
-                        .dstBinding = binding.BindingNumber,
-                        .dstArrayElement = 0,
-                        .descriptorCount = static_cast<uint32>(texturePropertiesList.size()),
-                        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        .pImageInfo = texturePropertiesList.data(),
-                        .pBufferInfo = nullptr,
-                        .pTexelBufferView = nullptr
-                    });
-
-                break;
-            }
-            case kMaterialDescriptor:
-            {
-                writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                    {
-                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                        .pNext = nullptr,
-                        .dstSet = descriptorSet,
-                        .dstBinding = binding.BindingNumber,
-                        .dstArrayElement = 0,
-                        .descriptorCount = static_cast<uint32>(materialPropertiesList.size()),
-                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                        .pImageInfo = nullptr,
-                        .pBufferInfo = materialPropertiesList.data(),
-                        .pTexelBufferView = nullptr
-                    });
-
-                break;
-            }
-            default:
-            {
-                throw std::runtime_error("Binding case hasn't been handled yet");
-            }
+                case kVertexDescsriptor:
+                {
+                    writeDescriptorSet.back().descriptorCount = static_cast<uint32>(meshPropertiesList.size());
+                    writeDescriptorSet.back().pBufferInfo = meshPropertiesList.data();
+                    break;
+                }
+                case kIndexDescriptor:
+                {
+                    writeDescriptorSet.back().descriptorCount = static_cast<uint32>(meshPropertiesList.size());
+                    writeDescriptorSet.back().pBufferInfo = meshPropertiesList.data();
+                    break;
+                }
+                case kTransformDescriptor:
+                {
+                    writeDescriptorSet.back().descriptorCount = static_cast<uint32>(transformPropertiesList.size());
+                    writeDescriptorSet.back().pBufferInfo = transformPropertiesList.data();
+                    break;
+                }
+                case kMeshPropertiesDescriptor:
+                {
+                    writeDescriptorSet.back().descriptorCount = static_cast<uint32>(meshPropertiesList.size());
+                    writeDescriptorSet.back().pBufferInfo = meshPropertiesList.data();
+                    break;
+                }
+                case kTextureDescriptor:
+                {
+                    writeDescriptorSet.back().descriptorCount = static_cast<uint32>(texturePropertiesList.size());
+                    writeDescriptorSet.back().pImageInfo = texturePropertiesList.data();
+                    break;
+                }
+                case kMaterialDescriptor:
+                {
+                    writeDescriptorSet.back().descriptorCount = static_cast<uint32>(materialPropertiesList.size());
+                    writeDescriptorSet.back().pBufferInfo = materialPropertiesList.data();
+                    break;
+                }
+                default:
+                {
+                    throw std::runtime_error("Binding case hasn't been handled yet");
+                }
             }
         }
         vkUpdateDescriptorSets(device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
