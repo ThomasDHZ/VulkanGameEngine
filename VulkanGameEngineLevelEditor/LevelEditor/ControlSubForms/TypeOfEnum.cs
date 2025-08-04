@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
@@ -15,7 +16,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
     {
         private System.Windows.Forms.ComboBox comboBox1;
 
-        public TypeOfEnum(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
+        public TypeOfEnum(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
             comboBox1 = new System.Windows.Forms.ComboBox

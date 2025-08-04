@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Vulkan;
@@ -12,7 +13,7 @@ using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 namespace VulkanGameEngineLevelEditor.Models
 {
     [Serializable]
-    public unsafe class RenderPassLoaderModel : RenderPassEditorBaseModel
+    public unsafe class RenderPassLoaderModel : RenderPassEditorBaseModel, INotifyPropertyChanged
     {
         [Tooltip("Specifies the name of the render pass for identification.")]
         public string Name { get; set; } = string.Empty;
@@ -20,6 +21,8 @@ namespace VulkanGameEngineLevelEditor.Models
         [IgnoreProperty]
         [Tooltip("Unique identifier for the render pass.")]
         public Guid RenderPassId { get; set; } = Guid.NewGuid();
+
+        public size_t RenderTextureCount { get; set; } = 0;
 
         [IgnoreProperty]
         [DisplayName("Pipeline List")]
@@ -61,24 +64,16 @@ namespace VulkanGameEngineLevelEditor.Models
         {
         }
 
-        public RenderPassLoaderModel(string jsonFilePath) : base()
+        public void GuiUpdate()
         {
-            LoadJsonComponent(jsonFilePath);
-        }
-
-        public RenderPassLoaderModel(string name, string jsonFilePath) : base()
-        {
-            Name = name;
-            LoadJsonComponent(@"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\RenderPass\RenderPass\DefaultSubpassDependency.json");
-        }
-
-        public void LoadJsonComponent(string jsonPath)
-        {
-            var obj = base.LoadJsonComponent<RenderPassLoaderModel>(jsonPath);
-            RenderPipelineList = obj.RenderPipelineList;
-            RenderedTextureInfoModelList = obj.RenderedTextureInfoModelList;
-            SubpassDependencyList = obj.SubpassDependencyList;
-            IsRenderedToSwapchain = obj.IsRenderedToSwapchain;
+            if(RenderTextureCount > RenderedTextureInfoModelList.Count)
+            {
+                RenderedTextureInfoModelList.Remove(RenderedTextureInfoModelList.Last());
+            }
+            else
+            {
+                RenderedTextureInfoModelList.Remove(new RenderedTextureInfoModel());
+            }
         }
     }
 }

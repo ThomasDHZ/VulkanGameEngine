@@ -7,13 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfGuidForm : PropertyEditorForm
     {
-        public TypeOfGuidForm(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
+        public TypeOfGuidForm(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
             string guid = ((Guid)GetValue()).ToString();

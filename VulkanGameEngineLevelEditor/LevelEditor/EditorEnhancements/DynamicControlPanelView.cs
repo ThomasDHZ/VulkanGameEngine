@@ -22,7 +22,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private ToolTip _toolTip;
         private List<ObjectPanelView> _objectPanelViewList = new List<ObjectPanelView>();
         private List<UpdateProperty> _updatePropertiesList = new List<UpdateProperty>();
-
+        public static Dictionary<object, ObjectPanelView> ObjectPanelViewMap = new Dictionary<object, ObjectPanelView>();
+        public static Dictionary<MemberInfo, List<Attribute>> _dynamicAttributes = new Dictionary<MemberInfo, List<Attribute>>();
         public DynamicControlPanelView()
         {
             _toolTip = new ToolTip();
@@ -67,7 +68,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
         }
 
-        private void UpdatePanels()
+        public  void UpdatePanels()
         {
             try
             {
@@ -171,8 +172,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 if (_contentPanel.Controls.Count > 0)
                 {
-                    int totalHeight = _contentPanel.Controls.Cast<Control>()
-                        .Sum(c => c.Height + c.Margin.Top + c.Margin.Bottom);
+                    int totalHeight = _contentPanel.Controls.Cast<Control>().Sum(c => c.Height + c.Margin.Top + c.Margin.Bottom);
                     _contentPanel.Height = totalHeight + _contentPanel.Padding.Vertical;
                 }
                 else

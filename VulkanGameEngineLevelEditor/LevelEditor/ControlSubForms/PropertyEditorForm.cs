@@ -3,19 +3,21 @@ using System;
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
 {
     public abstract class PropertyEditorForm
     {
+        protected const int BufferHeight = 32;
+        protected const int RowHeight = 70;
+
         protected object _obj;
         protected MemberInfo _member;
         protected FieldInfo _field;
         protected int _minimumPanelSize;
         protected bool _readOnly;
-
-        protected const int BufferHeight = 32;
-        protected const int RowHeight = 70;
+        protected ObjectPanelView _rootPanel;
 
         protected object GetValue()
         {
@@ -37,12 +39,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
                 throw new InvalidOperationException("Member is not PropertyInfo or FieldInfo");
         }
 
-        protected PropertyEditorForm(object obj, MemberInfo member, int minimumPanelSize, bool readOnly)
+        protected PropertyEditorForm(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly)
         {
             _obj = obj;
             _member = member;
             _minimumPanelSize = minimumPanelSize;
             _readOnly = readOnly;
+            _rootPanel = rootPanel;
         }
 
         public abstract Control CreateControl();

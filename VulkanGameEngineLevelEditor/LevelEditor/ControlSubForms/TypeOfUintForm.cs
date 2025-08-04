@@ -8,13 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
 {
     public class TypeOfUintForm : PropertyEditorForm
     {
-        public TypeOfUintForm(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
-
+        public TypeOfUintForm(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
             uint value = (uint)GetValue();

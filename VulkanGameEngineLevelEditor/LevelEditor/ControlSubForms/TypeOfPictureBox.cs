@@ -6,13 +6,14 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
 {
     public class TypeOfPictureBox : PropertyEditorForm
     {
         public Image renderPassImage { get; set; } = null;
-        public TypeOfPictureBox(object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(obj, member, minimumPanelSize, readOnly) { }
+        public TypeOfPictureBox(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
 
         public override Control CreateControl()
         {

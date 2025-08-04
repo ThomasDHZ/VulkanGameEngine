@@ -119,16 +119,16 @@ namespace VulkanGameEngineLevelEditor
                 {
                     renderPassLoaderList.Add(renderPassPair.Value);
                 }
-                renderPassLoaderList[0].renderPipelineModelList[0].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc).ToList();
-                renderPassLoaderList[0].renderPipelineModelList[1].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc).ToList();
-                renderPassLoaderList[1].renderPipelineModelList[0].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc).ToList();
-                renderPassLoaderList[0].renderPipelineModelList[0].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
-                renderPassLoaderList[0].renderPipelineModelList[1].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
-                renderPassLoaderList[1].renderPipelineModelList[0].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
+                //renderPassLoaderList[0].renderPipelineModelList[0].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc).ToList();
+                //renderPassLoaderList[0].renderPipelineModelList[1].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc).ToList();
+                //renderPassLoaderList[1].renderPipelineModelList[0].VertexInputBindingDescriptionList = ShaderSystem.LoadVertexBindingLayout(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc).ToList();
+                //renderPassLoaderList[0].renderPipelineModelList[0].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
+                //renderPassLoaderList[0].renderPipelineModelList[1].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
+                //renderPassLoaderList[1].renderPipelineModelList[0].VertexInputAttributeDescriptionList = ShaderSystem.LoadVertexAttributesLayout(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
 
-                renderPassLoaderList[0].renderPipelineModelList[0].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
-                renderPassLoaderList[0].renderPipelineModelList[1].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
-                renderPassLoaderList[1].renderPipelineModelList[0].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
+                //renderPassLoaderList[0].renderPipelineModelList[0].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
+                //renderPassLoaderList[0].renderPipelineModelList[1].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
+                //renderPassLoaderList[1].renderPipelineModelList[0].PipelineDescriptorModelsList = ShaderSystem.LoadDescriptorSetBindings(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);
             //    renderPassLoaderList[0].renderPipelineModelList[0].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[0].renderPipelineModelList[0].VertexShaderSrc);
               //  renderPassLoaderList[0].renderPipelineModelList[1].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[0].renderPipelineModelList[1].VertexShaderSrc);
                 //renderPassLoaderList[1].renderPipelineModelList[0].LayoutBindingList = ShaderSystem.LoadDescriptorSetLayoutBindings(renderPassLoaderList[1].renderPipelineModelList[0].VertexShaderSrc);

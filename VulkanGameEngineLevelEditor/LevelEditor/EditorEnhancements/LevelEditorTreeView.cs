@@ -68,7 +68,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
             }
         }
 
-        private void PopulateNode(TreeNode parentNode, object parentObject)
+        public static void PopulateNode(TreeNode parentNode, object parentObject)
         {
             if (parentObject == null) return;
 
@@ -161,14 +161,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
                    || type == typeof(char);
         }
 
-        private bool IgnoreTypes(Type type)
+        private static bool IgnoreTypes(Type type)
         {
             return type == typeof(Guid) ||
                    type == typeof(IntPtr) ||
                    type.IsPointer; 
         }
 
-        private bool IgnoreProperties(PropertyInfo property)
+        private static bool IgnoreProperties(PropertyInfo property)
         {
             Type propertyType = property.PropertyType;
 

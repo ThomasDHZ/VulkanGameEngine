@@ -39,5 +39,6 @@ namespace VulkanGameEngineLevelEditor.Models
         public RenderedTextureInfoModel() : base()
         {
         }
+
     }
 }

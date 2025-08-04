@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Vulkan;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
@@ -7,26 +8,26 @@ using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 namespace VulkanGameEngineLevelEditor.Models
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public unsafe struct VkPipelineDepthStencilStateCreateInfoModel
+    public unsafe struct VkPipelineDepthStencilStateCreateInfoModel : INotifyPropertyChanged
     {
         [IgnoreProperty]
         [Tooltip("Specifies the Vulkan structure type. Must be set to the pipeline depth-stencil state creation type.")]
         public VkStructureType sType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
         [Tooltip("Enables or disables depth testing for fragments.")]
-        public VkBool32 depthTestEnable { get; set; }
+        public bool depthTestEnable { get; set; }
 
         [Tooltip("Enables or disables writing depth values to the depth buffer.")]
-        public VkBool32 depthWriteEnable { get; set; }
+        public bool depthWriteEnable { get; set; }
 
         [Tooltip("Specifies the comparison operation for depth testing.")]
         public VkCompareOp depthCompareOp { get; set; }
 
         [Tooltip("Enables or disables depth bounds testing to restrict fragment depth values.")]
-        public VkBool32 depthBoundsTestEnable { get; set; }
+        public bool depthBoundsTestEnable { get; set; }
 
         [Tooltip("Enables or disables stencil testing for fragments.")]
-        public VkBool32 stencilTestEnable { get; set; }
+        public bool stencilTestEnable { get; set; }
 
         [Tooltip("Defines stencil operations and parameters for front-facing polygons.")]
         public VkStencilOpStateModel front { get; set; } = new VkStencilOpStateModel();
@@ -50,5 +51,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public IntPtr pNext { get; set; }
 
         public VkPipelineDepthStencilStateCreateInfoModel() { }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Execution;
 using GlmSharp;
+using Silk.NET.Vulkan;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,11 +8,14 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
+using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
@@ -20,18 +24,24 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private const int RowHeight = 32;
         private const int MinimumPanelSize = 320;
 
+        public object orgPanelObject { get; private set; }
         public object PanelObject { get; private set; }
         public ToolTip ToolTip { get; private set; }
+        private ObjectPanelView _rootPanel;
         public List<ObjectPanelView> ChildObjectPanels { get; } = new List<ObjectPanelView>();
         private TableLayoutPanel _propTable;
         private Panel _headerPanel;
         private Panel _contentPanel;
-        private bool _isExpanded = true;
+        private bool _isExpanded = true; 
+       // private readonly Dictionary<MemberInfo, List<Attribute>> _dynamicAttributes = new Dictionary<MemberInfo, List<Attribute>>();
 
-        public ObjectPanelView(object obj, ToolTip toolTip)
+        public ObjectPanelView(object obj, ToolTip toolTip, ObjectPanelView rootPanel = null)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
+            DynamicControlPanelView.ObjectPanelViewMap[obj] = this;
+            _rootPanel = rootPanel;
             PanelObject = obj;
+            orgPanelObject = obj; // Store original object reference
             ToolTip = toolTip ?? new ToolTip
             {
                 BackColor = Color.FromArgb(50, 50, 50),
@@ -173,9 +183,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 structPanel.RowCount += 1;
                 structPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                var childPanelView = new ObjectPanelView(instance, ToolTip);
+                var childPanelView = new ObjectPanelView(instance, ToolTip, this);
                 ChildObjectPanels.Add(childPanelView);
                 structPanel.Controls.Add(childPanelView, 0, rowIndex);
+                childPanelView.PropertyChanged += (s, e) => NotifyPropertyChanged();
             }
         }
 
@@ -188,16 +199,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 var members = properties.Cast<MemberInfo>().Concat(fields).ToList();
                 foreach (var member in members)
                 {
-                    if (member.GetCustomAttribute<IgnorePropertyAttribute>() != null) continue;
+                    if (GetCustomAttribute<IgnorePropertyAttribute>(member) != null) continue;
 
-                    var propertyDisplayNameAttr = member.GetCustomAttribute<DisplayNameAttribute>();
+                    var propertyDisplayNameAttr = GetCustomAttribute<DisplayNameAttribute>(member);
                     string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? member.Name;
 
-                    var readOnlyAttr = member.GetCustomAttribute<ReadOnlyAttribute>();
+                    var readOnlyAttr = GetCustomAttribute<ReadOnlyAttribute>(member);
                     bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
 
-                    var controlTypeAttr = member.GetCustomAttribute<ControlTypeAttribute>();
-                    var toolTipAttr = member.GetCustomAttribute<TooltipAttribute>();
+                    var controlTypeAttr = GetCustomAttribute<ControlTypeAttribute>(member);
+                    var toolTipAttr = GetCustomAttribute<TooltipAttribute>(member);
+
 
                     int propRowIndex = _propTable.RowCount;
                     _propTable.RowCount += 1;
@@ -266,7 +278,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     }
                     else
                     {
-                        control = ControlRegistry.CreateControl(type, PanelObject, member, RowHeight, isReadOnly);
+                        control = ControlRegistry.CreateControl(this, type, PanelObject, member, RowHeight, isReadOnly);
                     }
 
                     if (control != null)
@@ -304,7 +316,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 {
                     if (typeof(IEnumerable<string>).IsAssignableFrom(elementType))
                     {
-                        var control = new TypeOfStringForm(obj, member, RowHeight, false).CreateControl();
+                        var control = new TypeOfStringForm(this, obj, member, RowHeight, false).CreateControl();
                         if (control != null)
                         {
                             control.Dock = DockStyle.Fill;
@@ -353,7 +365,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         listPanel.RowCount += 1;
                         listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                        var childPanelView = new ObjectPanelView(element, ToolTip);
+                        var childPanelView = new ObjectPanelView(element, ToolTip, _rootPanel);
                         ChildObjectPanels.Add(childPanelView);
                         listPanel.Controls.Add(childPanelView, 0, rowIndex);
 
@@ -361,100 +373,112 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     }
                 }
 
-                int buttonRowIndex = listPanel.RowCount;
-                listPanel.RowCount += 1;
-                listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                var buttonPanel = new Panel
-                {
-                    Dock = DockStyle.Fill,
-                    AutoSize = true,
-                    BackColor = Color.FromArgb(30, 30, 30)
-                };
-                listPanel.Controls.Add(buttonPanel, 0, buttonRowIndex);
-
-                var buttonLayout = new FlowLayoutPanel
-                {
-                    Dock = DockStyle.Fill,
-                    AutoSize = true,
-                    FlowDirection = FlowDirection.LeftToRight,
-                    BackColor = Color.FromArgb(30, 30, 30)
-                };
-                buttonPanel.Controls.Add(buttonLayout);
-
-                var addButton = new Button
-                {
-                    Text = "+",
-                    Width = 30,
-                    Height = RowHeight,
-                    BackColor = Color.FromArgb(40, 40, 40),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                };
-                addButton.FlatAppearance.BorderSize = 0;
-                addButton.Click += (s, e) =>
-                {
-                    try
-                    {
-                        Type listElementType = elementType.IsGenericType ? elementType.GetGenericArguments()[0] : typeof(object);
-                        object newElement;
-                        if (list is ListPtr<vec3> listPtr)
-                        {
-                            newElement = default(vec3);
-                        }
-                        else
-                        {
-                            newElement = Activator.CreateInstance(listElementType);
-                        }
-                        list.Add(newElement);
-                        UpdateListPanel(listPanel, list, member, obj, elementType);
-                        NotifyPropertyChanged();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error adding list element: {ex.Message}");
-                    }
-                };
-                buttonLayout.Controls.Add(addButton);
-
-                var removeButton = new Button
-                {
-                    Text = "–",
-                    Width = 30,
-                    Height = RowHeight,
-                    BackColor = Color.FromArgb(40, 40, 40),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat
-                };
-                removeButton.FlatAppearance.BorderSize = 0;
-                removeButton.Click += (s, e) =>
-                {
-                    try
-                    {
-                        if (list.Count > 0)
-                        {
-                            if (list is ListPtr<vec3> listPtr)
-                            {
-                                listPtr.Remove((uint)(list.Count - 1));
-                            }
-                            else
-                            {
-                                list.RemoveAt(list.Count - 1);
-                            }
-                            UpdateListPanel(listPanel, list, member, obj, elementType);
-                            NotifyPropertyChanged();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error removing list element: {ex.Message}");
-                    }
-                };
-                buttonLayout.Controls.Add(removeButton);
+                ListModifier(listPanel, list, member, obj, elementType);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error updating list panel: {ex.Message}");
+            }
+        }
+
+        private void ListModifier(TableLayoutPanel listPanel, IList list, MemberInfo member, object obj, Type elementType)
+        {
+            int buttonRowIndex = listPanel.RowCount;
+            listPanel.RowCount += 1;
+            listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            var buttonPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                BackColor = Color.FromArgb(30, 30, 30)
+            };
+            listPanel.Controls.Add(buttonPanel, 0, buttonRowIndex);
+
+            var buttonLayout = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                FlowDirection = FlowDirection.LeftToRight,
+                BackColor = Color.FromArgb(30, 30, 30)
+            };
+            buttonPanel.Controls.Add(buttonLayout);
+
+            var addButton = new Button
+            {
+                Text = "+",
+                Width = 30,
+                Height = RowHeight,
+                BackColor = Color.FromArgb(40, 40, 40),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+            };
+            addButton.FlatAppearance.BorderSize = 0;
+            addButton.Click += (s, e) =>
+            {
+                try
+                {
+                    Type listElementType = elementType.IsGenericType ? elementType.GetGenericArguments()[0] : typeof(object);
+                    object newElement;
+                    if (list is ListPtr<vec3> listPtr)
+                    {
+                        newElement = default(vec3);
+                    }
+                    else
+                    {
+                        newElement = Activator.CreateInstance(listElementType);
+                    }
+                    list.Add(newElement);
+                    UpdateListPanel(listPanel, list, member, obj, elementType);
+                    NotifyPropertyChanged();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error adding list element: {ex.Message}");
+                }
+            };
+            buttonLayout.Controls.Add(addButton);
+
+            var removeButton = new Button
+            {
+                Text = "–",
+                Width = 30,
+                Height = RowHeight,
+                BackColor = Color.FromArgb(40, 40, 40),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            removeButton.FlatAppearance.BorderSize = 0;
+            removeButton.Click += (s, e) =>
+            {
+                try
+                {
+                    if (list.Count > 0)
+                    {
+                        if (list is ListPtr<vec3> listPtr)
+                        {
+                            listPtr.Remove((uint)(list.Count - 1));
+                        }
+                        else
+                        {
+                            list.RemoveAt(list.Count - 1);
+                        }
+                        UpdateListPanel(listPanel, list, member, obj, elementType);
+                        NotifyPropertyChanged();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error removing list element: {ex.Message}");
+                }
+            };
+            buttonLayout.Controls.Add(removeButton);
+
+            if (list == (PanelObject as RenderPassLoaderModel)?.ClearValueList)
+            {
+                var renderPass = (RenderPassLoaderModel)PanelObject;
+                int requiredClearValues = renderPass.RenderedTextureInfoModelList?.Count(x => x.AttachmentDescription?.LoadOp == VkAttachmentLoadOp.VK_ATTACHMENT_LOAD_OP_CLEAR) ?? 0;
+                removeButton.Enabled = list.Count > requiredClearValues;
             }
         }
 
@@ -488,9 +512,145 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         public event EventHandler PropertyChanged;
 
-        private void NotifyPropertyChanged()
+        public void NotifyPropertyChanged()
         {
-            PropertyChanged?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                PropertyChanged?.Invoke(this, EventArgs.Empty);
+
+                if (PanelObject is RenderAreaModel renderArea)
+                {
+                    var extentPanel = DynamicControlPanelView.ObjectPanelViewMap[renderArea.RenderArea];
+                    extentPanel.Visible = !extentPanel.Visible;
+                }
+
+                AdjustPanelHeight();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error notifying property changed for {PanelObject?.GetType().Name ?? "null"}: {ex.Message}");
+            }
+        }
+
+
+        private T GetCustomAttribute<T>(MemberInfo member) where T : Attribute
+        {
+            if (DynamicControlPanelView._dynamicAttributes.TryGetValue(member, out var attributes))
+            {
+                return attributes.OfType<T>().FirstOrDefault();
+            }
+            return member.GetCustomAttribute<T>();
+        }
+
+        public void AddDynamicAttribute(MemberInfo member, Attribute attribute)
+        {
+            if (!DynamicControlPanelView._dynamicAttributes.ContainsKey(member))
+            {
+                DynamicControlPanelView._dynamicAttributes[member] = new List<Attribute>();
+            }
+            if (!DynamicControlPanelView._dynamicAttributes[member].Any(a => a.GetType() == attribute.GetType()))
+            {
+                DynamicControlPanelView._dynamicAttributes[member].Add(attribute);
+            }
+        }
+
+        public void RemoveDynamicAttribute(MemberInfo member, Type attributeType)
+        {
+            if (DynamicControlPanelView._dynamicAttributes.ContainsKey(member))
+            {
+                DynamicControlPanelView._dynamicAttributes[member].RemoveAll(a => a.GetType() == attributeType);
+                if (DynamicControlPanelView._dynamicAttributes[member].Count == 0)
+                {
+                    DynamicControlPanelView._dynamicAttributes.Remove(member);
+                }
+            }
+        }
+
+        private void RefreshProperties()
+        {
+            PopulateProperties();
+            AdjustPanelHeight();
+        }
+
+        private void UpdateDepthStencilDependencies(VkPipelineDepthStencilStateCreateInfoModel depthStencil)
+        {
+            var depthWriteProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.depthWriteEnable));
+            var depthCompareProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.depthCompareOp));
+            var stencilTestProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.stencilTestEnable));
+            var frontProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.front));
+            var backProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.back));
+
+            if (!depthStencil.depthTestEnable)
+            {
+                if (depthWriteProp != null) AddDynamicAttribute(depthWriteProp, new IgnorePropertyAttribute());
+                if (depthCompareProp != null) AddDynamicAttribute(depthCompareProp, new IgnorePropertyAttribute());
+            }
+            else
+            {
+                if (depthWriteProp != null) RemoveDynamicAttribute(depthWriteProp, typeof(IgnorePropertyAttribute));
+                if (depthCompareProp != null) RemoveDynamicAttribute(depthCompareProp, typeof(IgnorePropertyAttribute));
+            }
+
+            if (!depthStencil.stencilTestEnable)
+            {
+                if (frontProp != null) AddDynamicAttribute(frontProp, new IgnorePropertyAttribute());
+                if (backProp != null) AddDynamicAttribute(backProp, new IgnorePropertyAttribute());
+            }
+            else
+            {
+                if (frontProp != null) RemoveDynamicAttribute(frontProp, typeof(IgnorePropertyAttribute));
+                if (backProp != null) RemoveDynamicAttribute(backProp, typeof(IgnorePropertyAttribute));
+            }
+        }
+
+        private void UpdateBlendStateDependencies(VkPipelineColorBlendAttachmentState blendState)
+        {
+            var srcColorProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.srcColorBlendFactor));
+            var dstColorProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.dstColorBlendFactor));
+            var colorBlendOpProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.colorBlendOp));
+            var srcAlphaProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.srcAlphaBlendFactor));
+            var dstAlphaProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.dstAlphaBlendFactor));
+            var alphaBlendOpProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.alphaBlendOp));
+
+            if (!blendState.blendEnable)
+            {
+                if (srcColorProp != null) AddDynamicAttribute(srcColorProp, new IgnorePropertyAttribute());
+                if (dstColorProp != null) AddDynamicAttribute(dstColorProp, new IgnorePropertyAttribute());
+                if (colorBlendOpProp != null) AddDynamicAttribute(colorBlendOpProp, new IgnorePropertyAttribute());
+                if (srcAlphaProp != null) AddDynamicAttribute(srcAlphaProp, new IgnorePropertyAttribute());
+                if (dstAlphaProp != null) AddDynamicAttribute(dstAlphaProp, new IgnorePropertyAttribute());
+                if (alphaBlendOpProp != null) AddDynamicAttribute(alphaBlendOpProp, new IgnorePropertyAttribute());
+            }
+            else
+            {
+                if (srcColorProp != null) RemoveDynamicAttribute(srcColorProp, typeof(IgnorePropertyAttribute));
+                if (dstColorProp != null) RemoveDynamicAttribute(dstColorProp, typeof(IgnorePropertyAttribute));
+                if (colorBlendOpProp != null) RemoveDynamicAttribute(colorBlendOpProp, typeof(IgnorePropertyAttribute));
+                if (srcAlphaProp != null) RemoveDynamicAttribute(srcAlphaProp, typeof(IgnorePropertyAttribute));
+                if (dstAlphaProp != null) RemoveDynamicAttribute(dstAlphaProp, typeof(IgnorePropertyAttribute));
+                if (alphaBlendOpProp != null) RemoveDynamicAttribute(alphaBlendOpProp, typeof(IgnorePropertyAttribute));
+            }
+        }
+
+        private void UpdateRenderAreaDependencies(RenderAreaModel renderArea)
+        {
+            var extentPanel = DynamicControlPanelView.ObjectPanelViewMap[renderArea];
+            if (extentPanel != null)
+            {
+                var widthProp = typeof(Extent2D).GetProperty(nameof(Extent2D.Width));
+                var heightProp = typeof(Extent2D).GetProperty(nameof(Extent2D.Height));
+
+                if (renderArea.UseDefaultRenderArea)
+                {
+                    if (widthProp != null) extentPanel.AddDynamicAttribute(widthProp, new IgnorePropertyAttribute());
+                    if (heightProp != null) extentPanel.AddDynamicAttribute(heightProp, new IgnorePropertyAttribute());
+                }
+                else
+                {
+                    if (widthProp != null) extentPanel.RemoveDynamicAttribute(widthProp, typeof(IgnorePropertyAttribute));
+                    if (heightProp != null) extentPanel.RemoveDynamicAttribute(heightProp, typeof(IgnorePropertyAttribute));
+                }
+            }
         }
     }
 }

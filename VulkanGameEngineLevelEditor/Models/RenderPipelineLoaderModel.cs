@@ -34,16 +34,6 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Path to the pixel (fragment) shader file.")]
         public string FragmentShader { get; set; }
 
-        [DisplayName("Vertex Shader Source")]
-        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
-        [Tooltip("Source code or path for the vertex shader.")]
-        public string VertexShaderSrc { get; set; }
-
-        [DisplayName("Pixel Shader Source")]
-        [ControlTypeAttribute(typeof(TypeOfFileLoader))]
-        [Tooltip("Source code or path for the pixel (fragment) shader.")]
-        public string FragmentShaderSrc { get; set; }
-
         [DisplayName("Vertex Type")]
         [Tooltip("Defines the type of vertex data used by the pipeline.")]
         public VertexTypeEnum VertexType { get; set; }
@@ -90,7 +80,7 @@ namespace VulkanGameEngineLevelEditor.Models
 
         [DisplayName("Vertex Attributes")]
         [Tooltip("List of vertex input attribute descriptions for the pipeline.")]
-        public List<VkVertexInputAttributeDescriptionModel> VertexInputAttributeDescriptionList { get; set; } = new List<VkVertexInputAttributeDescriptionModel>();
+        public List<VkVertexInputAttributeDescription> VertexInputAttributeDescriptionList { get; set; } = new List<VkVertexInputAttributeDescription>();
 
         public RenderPipelineLoaderModel()
         {

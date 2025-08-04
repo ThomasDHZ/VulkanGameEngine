@@ -250,7 +250,7 @@ namespace Vulkan
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct VkPipelineColorBlendAttachmentState
+    public struct VkPipelineColorBlendAttachmentState : INotifyPropertyChanged
     {
         [DisplayName("Blend enable")]
         [Tooltip("Enables or disables blending for this attachment.")]
@@ -283,6 +283,8 @@ namespace Vulkan
 
         [Tooltip("Specifies which color components are written to the framebuffer.")]
         public VkColorComponentFlagBits colorWriteMask { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
