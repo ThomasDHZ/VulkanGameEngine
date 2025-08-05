@@ -14,7 +14,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
     public class DynamicControlPanelView : TableLayoutPanel
     {
-        private const int RowHeight = 32;
         private const int MinimumPanelSize = 320;
 
         private object _targetObject;

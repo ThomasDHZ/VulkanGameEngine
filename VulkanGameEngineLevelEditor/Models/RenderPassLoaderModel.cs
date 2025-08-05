@@ -22,8 +22,6 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Unique identifier for the render pass.")]
         public Guid RenderPassId { get; set; } = Guid.NewGuid();
 
-        public size_t RenderTextureCount { get; set; } = 0;
-
         [IgnoreProperty]
         [DisplayName("Pipeline List")]
         [Tooltip("List of pipeline names associated with the render pass.")]
@@ -62,18 +60,6 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public RenderPassLoaderModel()
         {
-        }
-
-        public void GuiUpdate()
-        {
-            if(RenderTextureCount > RenderedTextureInfoModelList.Count)
-            {
-                RenderedTextureInfoModelList.Remove(RenderedTextureInfoModelList.Last());
-            }
-            else
-            {
-                RenderedTextureInfoModelList.Remove(new RenderedTextureInfoModel());
-            }
         }
     }
 }

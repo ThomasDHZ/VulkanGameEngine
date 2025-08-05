@@ -19,12 +19,19 @@ using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
+    //This area has been painful to work with.
+    //Basically panels that iterate through the object to display it's settings.
+    //then if there's a subobject it creates another panel.
+    //Then keeps going to fill the panel tree.
+    //About to attempt to conditional editing where one panel will effect other settings.
+    //Haven't found a good way to do that yet...
+    //Think I'm starting to get a decent idea on how I want to do it.
+    //but it's not all of the way there yet.
     public class ObjectPanelView : TableLayoutPanel
     {
         private const int RowHeight = 32;
         private const int MinimumPanelSize = 320;
 
-        public object orgPanelObject { get; private set; }
         public object PanelObject { get; private set; }
         public ToolTip ToolTip { get; private set; }
         private ObjectPanelView _rootPanel;
@@ -33,7 +40,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private Panel _headerPanel;
         private Panel _contentPanel;
         private bool _isExpanded = true; 
-       // private readonly Dictionary<MemberInfo, List<Attribute>> _dynamicAttributes = new Dictionary<MemberInfo, List<Attribute>>();
 
         public ObjectPanelView(object obj, ToolTip toolTip, ObjectPanelView rootPanel = null)
         {
@@ -41,12 +47,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             DynamicControlPanelView.ObjectPanelViewMap[obj] = this;
             _rootPanel = rootPanel;
             PanelObject = obj;
-            orgPanelObject = obj; // Store original object reference
+
             ToolTip = toolTip ?? new ToolTip
             {
                 BackColor = Color.FromArgb(50, 50, 50),
                 ForeColor = Color.FromArgb(200, 200, 200)
             };
+
 
             InitializeComponents();
             PopulateProperties();

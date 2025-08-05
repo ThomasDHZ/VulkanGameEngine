@@ -17,6 +17,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Dialog
         public TypeOfBool(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
         public override Control CreateControl()
         {
+            //This area is for making the controls for each property type.
             try
             {
                 bool value = (bool)GetValue();

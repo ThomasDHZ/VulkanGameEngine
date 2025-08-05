@@ -257,6 +257,7 @@ namespace VulkanGameEngineLevelEditor
         private void buildRenderPassToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var a = levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>;
+            var b = JsonConvert.SerializeObject(a);
             var ds = RenderSystem.RenderPassLoaderJsonMap[a[0].RenderPassId];
             string jsonContent = File.ReadAllText(ds);
             var renderPass = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
