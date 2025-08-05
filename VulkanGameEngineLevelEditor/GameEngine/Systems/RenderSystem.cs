@@ -71,22 +71,27 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 TextureSystem.DepthTextureList[vulkanRenderPass.RenderPassId] = depthTexture;
             }
 
+            RenderPipelineMap[vulkanRenderPass.RenderPassId] = LoadVulkanPipeline(levelId, vulkanRenderPass.RenderPassId, model.RenderPipelineList, renderPassResolution);
+            return vulkanRenderPass.RenderPassId;
+        }
+
+        private static ListPtr<VulkanPipeline> LoadVulkanPipeline(Guid levelId, Guid renderPassId, List<string> vulkanPipelineJsonList, ivec2 renderPassResolution)
+        {
             ListPtr<VulkanPipeline> vulkanPipelineList = new ListPtr<VulkanPipeline>();
-            RenderPipelineLoaderJsonMap[vulkanRenderPass.RenderPassId] = new List<string>();
-            foreach (var pipelineId in model.RenderPipelineList)
+            RenderPipelineLoaderJsonMap[renderPassId] = new List<string>();
+            foreach (var pipelineId in vulkanPipelineJsonList)
             {
                 string pipelinePath = @$"{ConstConfig.BaseDirectoryPath}pipelines\{pipelineId}";
-                RenderPipelineLoaderJsonMap[vulkanRenderPass.RenderPassId].Add(pipelinePath);
-                RenderPassEditor_RenderPass[model.RenderPassId].renderPipelineModelList.Add(JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(File.ReadAllText(pipelinePath)));
+                RenderPipelineLoaderJsonMap[renderPassId].Add(pipelinePath);
+                RenderPassEditor_RenderPass[renderPassId].renderPipelineModelList.Add(JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(File.ReadAllText(pipelinePath)));
 
                 var pipeLineId = (uint)RenderPipelineMap.Count;
-                var renderPassId = vulkanRenderPass.RenderPassId;
-                var renderPipelineIncludes = GetGPUIncludes(vulkanRenderPass.RenderPassId, levelId);
-                VulkanPipeline vulkanPipeline = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipelinePath, RenderPassMap[vulkanRenderPass.RenderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, renderPipelineIncludes);
+                var renderPipelineIncludes = GetGPUIncludes(renderPassId, levelId);
+                VulkanPipeline vulkanPipeline = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipelinePath, RenderPassMap[renderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, renderPipelineIncludes);
                 vulkanPipelineList.Add(vulkanPipeline);
             }
-            RenderPipelineMap[vulkanRenderPass.RenderPassId] = vulkanPipelineList;
-            return vulkanRenderPass.RenderPassId;
+
+            return vulkanPipelineList;
         }
 
         public static void Update(Guid spriteRenderPass2DId, Guid levelId, float deltaTime)
@@ -100,83 +105,100 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
-        public static void UpdateRenderPasses(List<string> renderPassLoaderListJson)
-        {
-            VkFunc.vkDeviceWaitIdle(renderer.Device);
-            GraphicsRenderer rendererPtr = renderer;
-            Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
-            renderer = rendererPtr;
-
-            //DestroyRenderPasses();
-            ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
-            foreach (var renderPassJson in renderPassLoaderListJson)
-            {
-                LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
-            }
-        }
-        //public static void UpdateRenderPasses(List<RenderPassLoaderModel> renderPassLoaderList, List<RenderPipelineLoaderModel> renderPipelineLoaderList)
+        //public static void UpdateRenderPasses(List<string> renderPassLoaderListJson)
         //{
         //    VkFunc.vkDeviceWaitIdle(renderer.Device);
         //    GraphicsRenderer rendererPtr = renderer;
         //    Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
         //    renderer = rendererPtr;
 
-        //    int x = 0;
-        //    foreach (var renderPass in RenderPassMap)
+        //    //DestroyRenderPasses();
+        //    ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
+        //    foreach (var renderPassJson in renderPassLoaderListJson)
         //    {
-        //        if (renderPass.Value.RenderPassId == renderPassLoaderList[x].RenderPassId)
-        //        {
-        //            Texture depthTexture = new Texture();
-        //            size_t size = TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId].Count();
-        //            ListPtr<Texture> renderedTextureList = TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId];
-        //            if (TextureSystem.DepthTextureExists(renderPass.Value.RenderPassId))
-        //            {
-        //                depthTexture = TextureSystem.DepthTextureList[renderPass.Value.RenderPassId];
-        //            }
-
-        //            var renderPassJson = JsonConvert.SerializeObject(renderPass.Value);
-        //            RenderPassMap[renderPass.Value.RenderPassId] = VulkanRenderPass_RebuildSwapChain(renderer, renderPass.Value, renderPassJson, renderedTextureList.Ptr, &size, ref depthTexture);
-
-        //            TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId] = new ListPtr<Texture>();
-        //            for (int y = 0; y < size; y++)
-        //            {
-        //                TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId].Add(renderedTextureList[y]);
-        //            }
-        //            if (depthTexture.textureView != VulkanCSConst.VK_NULL_HANDLE)
-        //            {
-        //                TextureSystem.DepthTextureList[renderPass.Value.RenderPassId] = depthTexture;
-        //            }
-
-        //            UpdateRenderPipelines(renderPass.Value.RenderPassId, renderPipelineLoaderList);
-        //        }
-        //        else
-        //        {
-        //            var renderPassJson = JsonConvert.SerializeObject(renderPass.Value);
-        //            ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
-        //            LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
-        //        }
-        //        x++;
+        //        LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
         //    }
         //}
+        public unsafe static void UpdateRenderPasses(List<string> renderPassLoaderList)
+        {
+            try
+            {
+                VkFunc.vkDeviceWaitIdle(renderer.Device);
+                GraphicsRenderer rendererPtr = renderer;
+                Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
+                renderer = rendererPtr;
 
-        public static void UpdateRenderPipelines(Guid renderPassId, List<RenderPipelineLoaderModel> renderPipelineLoaderJson)
+                int x = 0;
+                foreach (var renderPassJsonFile in renderPassLoaderList)
+                {
+                    string renderPassJsonContent = File.ReadAllText(renderPassJsonFile);
+                    var renderPassJson = JsonConvert.DeserializeObject<RenderPassLoaderModel>(renderPassJsonContent);
+
+                    Texture depthTexture = new Texture();
+                    size_t size = TextureSystem.RenderedTextureListMap[renderPassJson.RenderPassId].Count();
+                    ListPtr<Texture> renderedTextureList = TextureSystem.RenderedTextureListMap[renderPassJson.RenderPassId];
+                    if (TextureSystem.DepthTextureExists(renderPassJson.RenderPassId))
+                    {
+                        depthTexture = TextureSystem.DepthTextureList[renderPassJson.RenderPassId];
+                    }
+
+                    if (RenderPassMap.ContainsKey(renderPassJson.RenderPassId))
+                    {
+                        var renderPass = RenderPassMap[renderPassJson.RenderPassId];
+                        RenderPassMap[renderPassJson.RenderPassId] = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, renderPassJsonFile, renderedTextureList.Ptr, &size, ref depthTexture);
+                        UpdateRenderPipelines(renderPassJson.RenderPassId, renderPassJson.RenderPipelineList);
+                    }
+                    else
+                    {
+                        ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
+                        LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassLoaderList[x], renderPassResolution);
+                    }
+
+                    TextureSystem.RenderedTextureListMap[renderPassJson.RenderPassId] = new ListPtr<Texture>();
+                    for (int y = 0; y < size; y++)
+                    {
+                        TextureSystem.RenderedTextureListMap[renderPassJson.RenderPassId].Add(renderedTextureList[y]);
+                    }
+                    if (depthTexture.textureView != VulkanCSConst.VK_NULL_HANDLE)
+                    {
+                        TextureSystem.DepthTextureList[renderPassJson.RenderPassId] = depthTexture;
+                    }
+
+                    x++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
+        }
+
+        public static void UpdateRenderPipelines(Guid renderPassId, List<string> renderPipelineLoaderJsonFileList)
         {
             int x = 0;
             var renderPassList = RenderPipelineMap[renderPassId];
+
+
+            List<RenderPipelineLoaderModel> pipelineList = new List<RenderPipelineLoaderModel>();
+            foreach (var pipelineJson in renderPipelineLoaderJsonFileList)
+            {
+                string pipelineJsonContent = File.ReadAllText(@$"../../../{pipelineJson}");
+                var renderPipelineJson = JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(pipelineJsonContent);
+                pipelineList.Add(renderPipelineJson);
+            }
+
             foreach (var pipeline in renderPassList)
             {
-                if (pipeline.PipelineId == renderPipelineLoaderJson[x].RenderPipelineId)
+                if (pipeline.PipelineId == pipelineList[x].RenderPipelineId)
                 {
-                    var pipelineJson = JsonConvert.SerializeObject(pipeline);
                     GPUIncludes gpuIncludes = GetGPUIncludes(renderPassId, LevelSystem.levelLayout.LevelLayoutId);
                     ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
-                    VulkanPipeline_RebuildSwapChain(renderer.Device, renderPassId, pipeline, pipelineJson, RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), ref renderPassResolution, gpuIncludes);
+                    VulkanPipeline_RebuildSwapChain(renderer.Device, renderPassId, pipeline, @$"../../../{renderPipelineLoaderJsonFileList[x]}", RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), ref renderPassResolution, gpuIncludes);
                 }
                 else
                 {
-                    var renderPassJson = JsonConvert.SerializeObject(pipeline);
                     ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
-                    LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
+                    RenderPipelineMap[renderPassId] = LoadVulkanPipeline(LevelSystem.levelLayout.LevelLayoutId, renderPassId, new List<string> { renderPipelineLoaderJsonFileList[x] }, renderPassResolution);
                 }
                 x++;
             }

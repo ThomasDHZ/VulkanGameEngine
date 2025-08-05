@@ -27,10 +27,11 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("List of pipeline names associated with the render pass.")]
         public List<string> RenderPipelineList { get; set; } = new List<string>();
 
-        [IgnoreProperty]
-        [DisplayName("Input Texture List")]
-        [Tooltip("List of unique identifiers for input textures used by the render pass.")]
-        public List<Guid> InputTextureList { get; set; } = new List<Guid>();
+        //[JsonIgnore]
+        //[IgnoreProperty]
+        //[DisplayName("Input Texture List")]
+        //[Tooltip("List of unique identifiers for input textures used by the render pass.")]
+        //public List<Guid> InputTextureList { get; set; } = new List<Guid>();
 
         [JsonIgnore]
         [DisplayName("Pipeline List")]
