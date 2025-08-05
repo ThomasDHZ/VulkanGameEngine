@@ -100,50 +100,64 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
-        public static void UpdateRenderPasses(List<RenderPassLoaderModel> renderPassLoaderList, List<RenderPipelineLoaderModel> renderPipelineLoaderList)
+        public static void UpdateRenderPasses(List<string> renderPassLoaderListJson)
         {
             VkFunc.vkDeviceWaitIdle(renderer.Device);
             GraphicsRenderer rendererPtr = renderer;
             Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
             renderer = rendererPtr;
 
-            int x = 0;
-            foreach (var renderPass in RenderPassMap)
+            //DestroyRenderPasses();
+            ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
+            foreach (var renderPassJson in renderPassLoaderListJson)
             {
-                if (renderPass.Value.RenderPassId == renderPassLoaderList[x].RenderPassId)
-                {
-                    Texture depthTexture = new Texture();
-                    size_t size = TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId].Count();
-                    ListPtr<Texture> renderedTextureList = TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId];
-                    if (TextureSystem.DepthTextureExists(renderPass.Value.RenderPassId))
-                    {
-                        depthTexture = TextureSystem.DepthTextureList[renderPass.Value.RenderPassId];
-                    }
-
-                    var renderPassJson = JsonConvert.SerializeObject(renderPass.Value);
-                    RenderPassMap[renderPass.Value.RenderPassId] = VulkanRenderPass_RebuildSwapChain(renderer, renderPass.Value, renderPassJson, renderedTextureList.Ptr, &size, ref depthTexture);
-
-                    TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId] = new ListPtr<Texture>();
-                    for (int y = 0; y < size; y++)
-                    {
-                        TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId].Add(renderedTextureList[y]);
-                    }
-                    if (depthTexture.textureView != VulkanCSConst.VK_NULL_HANDLE)
-                    {
-                        TextureSystem.DepthTextureList[renderPass.Value.RenderPassId] = depthTexture;
-                    }
-
-                    UpdateRenderPipelines(renderPass.Value.RenderPassId, renderPipelineLoaderList);
-                }
-                else
-                {
-                    var renderPassJson = JsonConvert.SerializeObject(renderPass.Value);
-                    ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
-                    LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
-                }
-                x++;
+                LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
             }
         }
+        //public static void UpdateRenderPasses(List<RenderPassLoaderModel> renderPassLoaderList, List<RenderPipelineLoaderModel> renderPipelineLoaderList)
+        //{
+        //    VkFunc.vkDeviceWaitIdle(renderer.Device);
+        //    GraphicsRenderer rendererPtr = renderer;
+        //    Renderer_RebuildSwapChain(windowType, RenderAreaHandle, &rendererPtr);
+        //    renderer = rendererPtr;
+
+        //    int x = 0;
+        //    foreach (var renderPass in RenderPassMap)
+        //    {
+        //        if (renderPass.Value.RenderPassId == renderPassLoaderList[x].RenderPassId)
+        //        {
+        //            Texture depthTexture = new Texture();
+        //            size_t size = TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId].Count();
+        //            ListPtr<Texture> renderedTextureList = TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId];
+        //            if (TextureSystem.DepthTextureExists(renderPass.Value.RenderPassId))
+        //            {
+        //                depthTexture = TextureSystem.DepthTextureList[renderPass.Value.RenderPassId];
+        //            }
+
+        //            var renderPassJson = JsonConvert.SerializeObject(renderPass.Value);
+        //            RenderPassMap[renderPass.Value.RenderPassId] = VulkanRenderPass_RebuildSwapChain(renderer, renderPass.Value, renderPassJson, renderedTextureList.Ptr, &size, ref depthTexture);
+
+        //            TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId] = new ListPtr<Texture>();
+        //            for (int y = 0; y < size; y++)
+        //            {
+        //                TextureSystem.RenderedTextureListMap[renderPass.Value.RenderPassId].Add(renderedTextureList[y]);
+        //            }
+        //            if (depthTexture.textureView != VulkanCSConst.VK_NULL_HANDLE)
+        //            {
+        //                TextureSystem.DepthTextureList[renderPass.Value.RenderPassId] = depthTexture;
+        //            }
+
+        //            UpdateRenderPipelines(renderPass.Value.RenderPassId, renderPipelineLoaderList);
+        //        }
+        //        else
+        //        {
+        //            var renderPassJson = JsonConvert.SerializeObject(renderPass.Value);
+        //            ivec2 renderPassResolution = new ivec2((int)renderer.SwapChainResolution.width, (int)renderer.SwapChainResolution.height);
+        //            LoadRenderPass(LevelSystem.levelLayout.LevelLayoutId, renderPassJson, renderPassResolution);
+        //        }
+        //        x++;
+        //    }
+        //}
 
         public static void UpdateRenderPipelines(Guid renderPassId, List<RenderPipelineLoaderModel> renderPipelineLoaderJson)
         {

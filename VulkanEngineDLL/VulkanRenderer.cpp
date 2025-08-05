@@ -967,7 +967,7 @@ VkImage* SwapChain_SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChai
 VkImageView* SwapChain_SetUpSwapChainImageViews(VkDevice device, VkImage* swapChainImageList, size_t swapChainImageCount, VkSurfaceFormatKHR swapChainImageFormat)
 {
     VkImageView* imageViews = memorySystem.AddPtrBuffer<VkImageView>(swapChainImageCount, __FILE__, __LINE__, __func__);
-    for (uint32_t x = 0; x < swapChainImageCount; x++)
+    for (size_t x = 0; x < swapChainImageCount; x++)
     {
         VkImageViewCreateInfo swapChainViewInfo =
         {

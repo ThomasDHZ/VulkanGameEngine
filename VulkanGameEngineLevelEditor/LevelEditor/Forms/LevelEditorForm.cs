@@ -283,7 +283,7 @@ namespace VulkanGameEngineLevelEditor
                 {
                     isResizing = true;
                     RenderSystem.RebuildRendererFlag = true;
-                    RenderSystem.UpdateRenderPasses(new List<RenderPassLoaderModel> { renderPass }, new List<RenderPipelineLoaderModel>());
+                    RenderSystem.UpdateRenderPasses(new List<string> { $@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json" });
                     isResizing = false;
                 }
             }
