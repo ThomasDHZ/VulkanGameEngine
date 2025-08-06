@@ -22,7 +22,7 @@ namespace VulkanGameEngineLevelEditor.Models
 
         [IgnoreProperty]
         [Tooltip("Unique identifier for the render pipeline.")]
-        public Guid RenderPipelineId { get; set; } = Guid.Empty;
+        public Guid PipelineId { get; set; } = Guid.Empty;
 
         [DisplayName("Vertex Shader")]
         [ControlTypeAttribute(typeof(TypeOfFileLoader))]

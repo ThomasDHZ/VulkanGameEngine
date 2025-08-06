@@ -14,9 +14,12 @@ RenderPassLoader JsonLoader_LoadRenderPassLoaderInfo(const char* renderPassLoade
         j.at("RenderedTextureInfoModelList").get_to(renderPassLoader.RenderedTextureInfoModelList);
         j.at("SubpassDependencyList").get_to(renderPassLoader.SubpassDependencyModelList);
         j.at("ClearValueList").get_to(renderPassLoader.ClearValueList);
-        for (int x = 0; x < j.at("InputTextureList").size(); x++)
+        if (j.contains("InputTextureList"))
         {
-            renderPassLoader.InputTextureList.emplace_back(VkGuid(j["InputTextureList"][x].get<String>().c_str()));
+            for (int x = 0; x < j.at("InputTextureList").size(); x++)
+            {
+                renderPassLoader.InputTextureList.emplace_back(VkGuid(j["InputTextureList"][x].get<String>().c_str()));
+            }
         }
         if (j.contains("RenderArea"))
         {
