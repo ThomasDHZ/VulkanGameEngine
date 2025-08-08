@@ -15,7 +15,7 @@ using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 namespace VulkanGameEngineLevelEditor.Models
 {
     [Serializable]
-    public unsafe class RenderPipelineLoaderModel : RenderPassEditorBaseModel
+    public unsafe class RenderPipelineLoaderModel
     {
         [Tooltip("Specifies the name of the render pipeline for identification.")]
         public string Name { get; set; } = string.Empty;

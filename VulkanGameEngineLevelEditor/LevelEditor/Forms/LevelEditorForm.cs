@@ -303,7 +303,7 @@ namespace VulkanGameEngineLevelEditor
                         foreach(var pipelineModel in renderPassJsonModel.renderPipelineModelList)
                         {
                             var pipelineJson = JsonConvert.SerializeObject(pipelineModel);
-                            File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", renderPassJson);
+                            File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", pipelineJson);
                         }
 
                     }
@@ -318,7 +318,6 @@ namespace VulkanGameEngineLevelEditor
                             isResizing = false;
                         }
                     }
-                    levelEditorTreeView1.PopulateTreeView(levelEditorTreeView1._rootObject);
                 }
             }
             catch (Exception ex)
