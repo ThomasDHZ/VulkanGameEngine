@@ -45,7 +45,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
 		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
-		RenderPass\testJson.json = RenderPass\testJson.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"

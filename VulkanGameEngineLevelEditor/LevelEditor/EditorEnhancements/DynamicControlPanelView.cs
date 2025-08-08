@@ -1,28 +1,38 @@
-﻿using GlmSharp;
+﻿using AutoMapper.Execution;
+using GlmSharp;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using VulkanGameEngineLevelEditor.GameEngineAPI;
+using VulkanGameEngineLevelEditor.GameEngine.GameObjectComponents;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
+using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
+
+    public class PropertyUpdate
+    {
+        public string PropertyName { get; set; }
+        public object Value { get; set; }
+    }
+
     public class DynamicControlPanelView : TableLayoutPanel
     {
         private const int MinimumPanelSize = 320;
 
-        private object _targetObject;
+        public static object rootObject;
         private TableLayoutPanel _contentPanel;
         private ToolTip _toolTip;
         private List<ObjectPanelView> _objectPanelViewList = new List<ObjectPanelView>();
-        private List<UpdateProperty> _updatePropertiesList = new List<UpdateProperty>();
         public static Dictionary<object, ObjectPanelView> ObjectPanelViewMap = new Dictionary<object, ObjectPanelView>();
         public static Dictionary<MemberInfo, List<Attribute>> _dynamicAttributes = new Dictionary<MemberInfo, List<Attribute>>();
+        private static List<PropertyUpdate> _updatePropertiesList = new List<PropertyUpdate>();
         public DynamicControlPanelView()
         {
             _toolTip = new ToolTip();
@@ -55,29 +65,28 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         public object SelectedObject
         {
-            get => _targetObject;
+            get => rootObject;
             set
             {
                 if (DesignMode) return;
-                if (_targetObject != value)
+                if (rootObject != value)
                 {
-                    _targetObject = value;
+                    rootObject = value;
                     UpdatePanels();
                 }
             }
         }
-
-        public  void UpdatePanels()
+        public void UpdatePanels()
         {
             try
             {
                 _contentPanel.Controls.Clear();
-                if (_targetObject != null)
+                if (rootObject != null)
                 {
-                    var existingPanel = _objectPanelViewList.FirstOrDefault(panel => panel.PanelObject == _targetObject);
+                    var existingPanel = _objectPanelViewList.FirstOrDefault(panel => panel.PanelObject == rootObject);
                     if (existingPanel == null)
                     {
-                        existingPanel = new ObjectPanelView(_targetObject, _toolTip);
+                        existingPanel = new ObjectPanelView(rootObject, _toolTip);
                         _objectPanelViewList.Add(existingPanel);
                     }
                     _contentPanel.Controls.Add(existingPanel);
@@ -195,11 +204,5 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 AdjustContentHeight();
             }
         }
-    }
-
-    public struct UpdateProperty
-    {
-        public object ParentObj;
-        public object Obj;
     }
 }

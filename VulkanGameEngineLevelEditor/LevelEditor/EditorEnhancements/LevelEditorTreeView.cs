@@ -11,9 +11,6 @@ using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor
 {
-    //As for the editor tree
-    //It bascially takes to main selected object and iterates through it
-    // then selecting the object sets the object for the dynamic control panel to view all the options of the child objects and each property
     public class LevelEditorTreeView : TreeView
     {
         public object _rootObject;
@@ -189,20 +186,3 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
         }
     }
 }
-
-//Soo yea, been working on the renderpass editor.
-//Mostly working now, It goes through each class/struct of the selected object.
-//Then goes through each property and creates a interactible interface for it.
-//Also added other properties to the structs to ignore properties and do other stuff.
-
-//ummm.... I think there's a fairly major memory leak...
-//Think I've dealt with something like that before.
-//Pretty sure it had to do with something not being full deleted after a renderpass.
-//I'll have to look into it later.
-//Thinking about it, vertex offset should probably be readonly or ignored.
-//It has settings for all the little details, with tool types.
-//Still need to work on the depenencies, but I'm done with the area for now.
-
-//A also have quick build start that will take all of the render pass data from here, build it, then load the new renderpass on screen.
-//though right, It just does a quick change to the clear color of the render pass already predefined but it works as a quick test
-//of rebuilding and reloading the render pass.

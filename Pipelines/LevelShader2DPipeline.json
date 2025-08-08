@@ -147,5 +147,5 @@
     }
   ],
   "PipelineId": "a183b621-a8c3-46f1-bdbb-7f4a234f210e",
-  "_name": "DefaultPipeline"
+  "_name": "LevelShader2DPipeline"
 }

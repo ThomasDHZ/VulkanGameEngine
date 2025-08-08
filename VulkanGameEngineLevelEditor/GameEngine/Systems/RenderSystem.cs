@@ -83,9 +83,19 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             {
                 string pipelinePath = @$"{ConstConfig.BaseDirectoryPath}pipelines\{pipelineId}";
                 RenderPipelineLoaderJsonMap[renderPassId].Add(pipelinePath);
-                RenderPassEditor_RenderPass[renderPassId].renderPipelineModelList.Add(JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(File.ReadAllText(pipelinePath)));
 
-                var pipeLineId = (uint)RenderPipelineMap.Count;
+                var newPipeline = JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(File.ReadAllText(pipelinePath));
+                var pipeline = RenderPassEditor_RenderPass[renderPassId].renderPipelineModelList.Where(x => x.PipelineId == newPipeline.PipelineId).FirstOrDefault();
+                if (pipeline == null)
+                {
+                    RenderPassEditor_RenderPass[renderPassId].renderPipelineModelList.Add(newPipeline);
+                }
+                else
+                {
+                    pipeline = newPipeline;
+                }
+
+                    var pipeLineId = (uint)RenderPipelineMap.Count;
                 var renderPipelineIncludes = GetGPUIncludes(renderPassId, levelId);
                 VulkanPipeline vulkanPipeline = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipelinePath, RenderPassMap[renderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, renderPipelineIncludes);
                 vulkanPipelineList.Add(vulkanPipeline);

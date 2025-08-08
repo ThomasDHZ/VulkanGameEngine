@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.DirectoryServices.ActiveDirectory;
-using System.Drawing;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
 {
@@ -16,7 +10,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
     {
         private System.Windows.Forms.ComboBox comboBox1;
 
-        public TypeOfEnum(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
+        public TypeOfEnum(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly)
+            : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
+
         public override Control CreateControl()
         {
             comboBox1 = new System.Windows.Forms.ComboBox
@@ -33,8 +29,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
                 FlatStyle = FlatStyle.Flat
             };
 
+            comboBox1.SelectedIndexChanged += ComboBox1_SelectedIndexChanged;
+
             Type enumType = null;
             object currentValue = GetValue();
+
             if (_member is PropertyInfo propType)
             {
                 if (propType.PropertyType.IsEnum)
@@ -69,6 +68,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
 
                 comboBox1.Items.Clear();
                 comboBox1.Items.AddRange(filteredValues.ToArray());
+
                 comboBox1.SelectedIndex = -1;
                 if (currentValue != null && !_readOnly)
                 {
@@ -85,7 +85,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
                             comboBox1.SelectedIndex = -1;
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         comboBox1.SelectedIndex = -1;
                     }
@@ -103,6 +103,37 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
             CreateBaseControl(comboBox1);
             comboBox1.Parent?.Focus();
             return comboBox1;
+        }
+
+        private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_readOnly)
+                return;
+
+            var comboBox = sender as ComboBox;
+            if (comboBox == null || comboBox.SelectedItem == null)
+                return;
+
+            object selectedValue = comboBox.SelectedItem;
+
+            try
+            {
+                if (_member is PropertyInfo prop)
+                {
+                    object enumValue = Enum.ToObject(prop.PropertyType, selectedValue);
+                    prop.SetValue(_obj, enumValue);
+                }
+                else if (_member is FieldInfo field)
+                {
+                    object enumValue = Enum.ToObject(field.FieldType, selectedValue);
+                    field.SetValue(_obj, enumValue);
+                }
+                _rootPanel?.NotifyPropertyChanged();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error setting value: {ex.Message}");
+            }
         }
     }
 }

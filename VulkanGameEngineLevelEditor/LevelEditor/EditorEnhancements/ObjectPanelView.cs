@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Execution;
 using GlmSharp;
+using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections;
@@ -19,14 +20,6 @@ using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
-    //This area has been painful to work with.
-    //Basically panels that iterate through the object to display it's settings.
-    //then if there's a subobject it creates another panel.
-    //Then keeps going to fill the panel tree.
-    //About to attempt to conditional editing where one panel will effect other settings.
-    //Haven't found a good way to do that yet...
-    //Think I'm starting to get a decent idea on how I want to do it.
-    //but it's not all of the way there yet.
     public class ObjectPanelView : TableLayoutPanel
     {
         private const int RowHeight = 32;
@@ -34,18 +27,18 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         public object PanelObject { get; private set; }
         public ToolTip ToolTip { get; private set; }
-        private ObjectPanelView _rootPanel;
+        private ObjectPanelView _parentPanel;
         public List<ObjectPanelView> ChildObjectPanels { get; } = new List<ObjectPanelView>();
         private TableLayoutPanel _propTable;
         private Panel _headerPanel;
         private Panel _contentPanel;
         private bool _isExpanded = true; 
 
-        public ObjectPanelView(object obj, ToolTip toolTip, ObjectPanelView rootPanel = null)
+        public ObjectPanelView(object obj, ToolTip toolTip, ObjectPanelView parentPanel = null)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             DynamicControlPanelView.ObjectPanelViewMap[obj] = this;
-            _rootPanel = rootPanel;
+            _parentPanel = parentPanel;
             PanelObject = obj;
 
             ToolTip = toolTip ?? new ToolTip
@@ -372,7 +365,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         listPanel.RowCount += 1;
                         listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                        var childPanelView = new ObjectPanelView(element, ToolTip, _rootPanel);
+                        var childPanelView = new ObjectPanelView(element, ToolTip, this);
                         ChildObjectPanels.Add(childPanelView);
                         listPanel.Controls.Add(childPanelView, 0, rowIndex);
 
@@ -523,14 +516,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             try
             {
-                PropertyChanged?.Invoke(this, EventArgs.Empty);
+                UpdateObjectHierarchy(this);
 
                 if (PanelObject is RenderAreaModel renderArea)
                 {
                     var extentPanel = DynamicControlPanelView.ObjectPanelViewMap[renderArea.RenderArea];
                     extentPanel.Visible = !extentPanel.Visible;
                 }
-
                 AdjustPanelHeight();
             }
             catch (Exception ex)
@@ -538,8 +530,69 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Console.WriteLine($"Error notifying property changed for {PanelObject?.GetType().Name ?? "null"}: {ex.Message}");
             }
         }
+        private void UpdateObjectHierarchy(ObjectPanelView objPanel)
+        {
+            if (objPanel._parentPanel == null)
+            {
+                return;
+            }
 
+            var objTypeName = objPanel.PanelObject.GetType().Name;
+            var parentObjType = objPanel._parentPanel.PanelObject.GetType();
 
+            var valueChanged = false;
+            var properties = parentObjType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var fields = parentObjType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var memberInfoList = properties.Cast<MemberInfo>().Concat(fields);
+            foreach (var member in memberInfoList)
+            {
+                if(valueChanged)
+                {
+                    break;
+                }
+
+                object memberValue = null;
+                if (member is PropertyInfo propInfo)
+                {
+                    memberValue = propInfo.GetValue(objPanel._parentPanel.PanelObject);
+                }
+                else if (member is FieldInfo fieldInfo)
+                {
+                    memberValue = fieldInfo.GetValue(objPanel._parentPanel.PanelObject);
+                }
+
+                if (memberValue != null)
+                {
+                    if (memberValue is string)
+                    {
+                        continue;
+                    }
+
+                    if (memberValue is IList && !(memberValue is string))
+                    {
+                        var listType = (IList)memberValue;
+                        for (int x = 0; x < listType.Count; x++)
+                        {
+                            if (listType[x] != null)
+                            {
+                                if (listType[x].GetType().Name == objPanel.PanelObject?.GetType().Name &&
+                                    listType[x].GetHashCode() == objPanel.PanelObject?.GetHashCode())
+
+                                {
+                                    valueChanged = true;
+                                    listType[x] = objPanel.PanelObject;
+                                    if (objPanel._parentPanel != objPanel)
+                                    {
+                                        UpdateObjectHierarchy(objPanel._parentPanel);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         private T GetCustomAttribute<T>(MemberInfo member) where T : Attribute
         {
             if (DynamicControlPanelView._dynamicAttributes.TryGetValue(member, out var attributes))

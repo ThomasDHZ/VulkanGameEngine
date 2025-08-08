@@ -151,8 +151,6 @@ namespace VulkanGameEngineLevelEditor
                     continue;
                 }
 
-
-
                 double currentTime = stopwatch.Elapsed.TotalSeconds;
                 double deltaTime = currentTime - lastTime;
                 lastTime = currentTime;
@@ -290,22 +288,42 @@ namespace VulkanGameEngineLevelEditor
 
         private void buildRenderPassToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var renderPassLoaderModelList = levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>;
-            foreach(var renderPassLoader in levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>)
-            { 
-            }
-
-            var renderPassJson = JsonConvert.SerializeObject(renderPassLoaderModelList[0]);
-            File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", renderPassJson);
-            if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
+            try
             {
-                lock (lockObject)
+                if (levelEditorTreeView1._rootObject is RenderPassLoaderModel ||
+                    levelEditorTreeView1._rootObject is List<RenderPassLoaderModel>)
                 {
-                    isResizing = true;
-                    RenderSystem.RebuildRendererFlag = true;
-                    RenderSystem.UpdateRenderPasses(new List<string> { $@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", $@"{ConstConfig.BaseDirectoryPath}RenderPass\FrameBufferRenderPass.json" });
-                    isResizing = false;
+                    var renderPassPathList = new List<string>();
+                    var renderPassLoaderModelList = levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>;
+                    foreach (var renderPassJsonModel in levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>)
+                    {
+                        var renderPassJson = JsonConvert.SerializeObject(renderPassJsonModel);
+                        File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}RenderPass\{renderPassJsonModel.Name}.json", renderPassJson);
+                        renderPassPathList.Add($@"{ConstConfig.BaseDirectoryPath}RenderPass\{renderPassJsonModel.Name}.json");
+                        foreach(var pipelineModel in renderPassJsonModel.renderPipelineModelList)
+                        {
+                            var pipelineJson = JsonConvert.SerializeObject(pipelineModel);
+                            File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", renderPassJson);
+                        }
+
+                    }
+
+                    if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
+                    {
+                        lock (lockObject)
+                        {
+                            isResizing = true;
+                            RenderSystem.RebuildRendererFlag = true;
+                            RenderSystem.UpdateRenderPasses(renderPassPathList);
+                            isResizing = false;
+                        }
+                    }
+                    levelEditorTreeView1.PopulateTreeView(levelEditorTreeView1._rootObject);
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(@$"Failed to build renderpass {ex.Message}.");
             }
         }
     }

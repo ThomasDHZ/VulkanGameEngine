@@ -85,10 +85,5 @@ namespace VulkanGameEngineLevelEditor.Models
         public RenderPipelineLoaderModel()
         {
         }
-
-        public RenderPipelineLoaderModel(string name, string vertexShader, string pixelShader) : base()
-        {
-            Name = name;
-        }
     }
 }
