@@ -34,10 +34,9 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Sets the number of color blend attachment states in the attachments array.")]
         public uint attachmentCount { get; set; }
 
-        [JsonIgnore]
         [IgnoreProperty]
         [Tooltip("Pointer to an array of color blend attachment states defining per-attachment blending.")]
-        public VkPipelineColorBlendAttachmentState* pAttachments { get; set; }
+        public IntPtr pAttachments { get; set; } = IntPtr.Zero;
 
         //   [Tooltip("Specifies the four blend constants used for certain blending operations.")]
         public fixed float blendConstants[4];
@@ -50,7 +49,7 @@ namespace VulkanGameEngineLevelEditor.Models
             logicOpEnable = Vk.False;
             logicOp = VkLogicOp.VK_LOGIC_OP_CLEAR;
             attachmentCount = 0;
-            pAttachments = null;
+            pAttachments = pAttachments;
             blendConstants[0] = 0.0f;
             blendConstants[1] = 0.0f;
             blendConstants[2] = 0.0f;

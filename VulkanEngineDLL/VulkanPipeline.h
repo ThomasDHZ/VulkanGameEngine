@@ -22,8 +22,6 @@ struct RenderPipelineLoader
     Vector<VkViewport> ViewportList;
     Vector<VkRect2D> ScissorList;
     VertexTypeEnum VertexType;
-    uint DescriptorSetCount;
-    uint DescriptorSetLayoutCount;
     VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel;
     VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo;
     VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo;

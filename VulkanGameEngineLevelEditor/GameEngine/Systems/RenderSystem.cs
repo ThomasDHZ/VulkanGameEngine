@@ -95,7 +95,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                     pipeline = newPipeline;
                 }
 
-                    var pipeLineId = (uint)RenderPipelineMap.Count;
+                var pipeLineId = (uint)RenderPipelineMap.Count;
                 var renderPipelineIncludes = GetGPUIncludes(renderPassId, levelId);
                 VulkanPipeline vulkanPipeline = VulkanPipeline_CreateRenderPipeline(renderer.Device, ref renderPassId, pipelinePath, RenderPassMap[renderPassId].RenderPass, (uint)sizeof(SceneDataBuffer), ref renderPassResolution, renderPipelineIncludes);
                 vulkanPipelineList.Add(vulkanPipeline);

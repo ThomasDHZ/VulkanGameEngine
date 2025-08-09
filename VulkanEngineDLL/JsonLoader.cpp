@@ -52,11 +52,7 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
         j.at("PipelineId").get_to(renderPipelineLoader.PipelineId);
         j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderPath);
         j.at("FragmentShader").get_to(renderPipelineLoader.FragmentShaderPath);
-        j.at("VertexType").get_to(renderPipelineLoader.DescriptorSetCount);
-        j.at("DescriptorSetCount").get_to(renderPipelineLoader.DescriptorSetCount);
-        j.at("DescriptorSetLayoutCount").get_to(renderPipelineLoader.DescriptorSetLayoutCount);
-        j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderPath);
-        j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderPath);
+        j.at("VertexType").get_to(renderPipelineLoader.VertexType);
         renderPipelineLoader.PipelineRasterizationStateCreateInfo = j.at("PipelineRasterizationStateCreateInfo");
         renderPipelineLoader.PipelineMultisampleStateCreateInfo = j.at("PipelineMultisampleStateCreateInfo");
         renderPipelineLoader.PipelineDepthStencilStateCreateInfo = j.at("PipelineDepthStencilStateCreateInfo");

@@ -149,9 +149,7 @@ namespace nlohmann
     {
         j.at("VertexShader").get_to(model.VertexShaderPath);
         j.at("FragmentShader").get_to(model.FragmentShaderPath);
-        j.at("VertexType").get_to(model.DescriptorSetCount);
-        j.at("DescriptorSetCount").get_to(model.DescriptorSetCount);
-        j.at("DescriptorSetLayoutCount").get_to(model.DescriptorSetLayoutCount);
+        j.at("VertexType").get_to(model.VertexType);
         j.at("VertexShader").get_to(model.VertexShaderPath);
         j.at("VertexShader").get_to(model.VertexShaderPath);
         model.PipelineRasterizationStateCreateInfo = j.at("PipelineRasterizationStateCreateInfo");

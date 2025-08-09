@@ -19,6 +19,7 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Enables or disables primitive restart for indexed draws.")]
         public VkBool32 primitiveRestartEnable { get; set; }
 
+        [JsonIgnore]
         [IgnoreProperty]
         [Tooltip("Reserved for future use. Currently set to 0, as no flags are defined.")]
         public uint flags { get; set; } = 0;

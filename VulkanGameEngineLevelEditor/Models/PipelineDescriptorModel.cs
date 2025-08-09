@@ -37,6 +37,10 @@ namespace VulkanGameEngineLevelEditor.Models
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct PipelineDescriptorModel
     {
+        public PipelineDescriptorModel()
+        {
+        }
+
         [Tooltip("Specifies the binding number for the pipeline descriptor.")]
         public uint BindingNumber { get; set; }
         public uint DstArrayElement { get; set; }
@@ -45,15 +49,8 @@ namespace VulkanGameEngineLevelEditor.Models
 
         [Tooltip("Specifies the Vulkan descriptor type for this binding.")]
         public VkDescriptorType DescriptorType { get; set; }
-        VkShaderStageFlagBits StageFlags { get; set; }
-        VkSampler* pTextureSampler { get; set; }
-        VkBufferView* pTexelBufferView { get; set; }
-
-        public PipelineDescriptorModel(uint bindingNumber, DescriptorBindingPropertiesEnum properties, VkDescriptorType type)
-        {
-            BindingNumber = bindingNumber;
-            BindingPropertiesList = properties;
-            DescriptorType = type;
-        }
+        public VkShaderStageFlagBits StageFlags { get; set; }
+         IntPtr pTextureSampler { get; set; } = IntPtr.Zero;
+         IntPtr pTexelBufferView { get; set; } = IntPtr.Zero;
     }
 }

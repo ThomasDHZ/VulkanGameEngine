@@ -27,10 +27,9 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Sets the minimum fraction of samples to shade when sample shading is enabled.")]
         public float minSampleShading { get; set; }
 
-        [JsonIgnore]
         [IgnoreProperty]
         [Tooltip("Pointer to a sample mask array controlling which samples are active. Typically null for default behavior.")]
-        public uint* pSampleMask { get; set; } = null;
+        public IntPtr pSampleMask { get; set; } = IntPtr.Zero;
 
         [Tooltip("Enables or disables alpha-to-coverage for multisampled rendering.")]
         public bool alphaToCoverageEnable { get; set; }

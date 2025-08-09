@@ -211,7 +211,7 @@ Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevic
         .pBindings = descriptorSetLayoutBindingList.data()
     };
 
-    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(model.DescriptorSetLayoutCount);
+    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(1);
     for (auto& descriptorSetLayout : descriptorSetLayoutList)
     {
         VULKAN_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
@@ -230,7 +230,7 @@ Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device,
         .pSetLayouts = descriptorSetLayoutList.data()
     };
 
-    Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(model.DescriptorSetCount);
+    Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(1);
     for (auto& descriptorSet : descriptorSetList)
     {
         VULKAN_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
