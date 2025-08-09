@@ -65,8 +65,6 @@ To build and run the Vulkan Game Engine:
 - *WinForms level editor*  
 <img width="1920" height="1052" alt="GameWindow" src="https://github.com/user-attachments/assets/3fca9c2b-61e8-4254-b0e0-7614e214fece" />
 
-[Alternatively, link to a demo video: [Watch Demo](https://example.com/vulkan-demo.mp4)]
-
 ## Future Plans
 
 The Vulkan Game Engine is a functional 2D game engine with integrated C# editors. Future enhancements include merging with the [Eclipse Game Engine](https://github.com/ThomasDHZ/EclipseEngine) to create a unified engine supporting both 2D and 3D graphics, combining Vulkan’s performance with advanced ray tracing and PBR lighting.
