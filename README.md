@@ -15,7 +15,7 @@ Clone external libraries (SDL, GLFW, nlohmann JSON) via .gitmodules.
 Build the C++ project (VulkanGameEngine.sln) with Visual Studio 2022 (v143 toolset).
 Build the C# project with .NET 8.0 SDK.
 
-Future Plans: Plaining on merging with Eclipse Game Engine to show long-term vision, but clarify that the current project is functional and focused.
+Future Plans: Plaining on merging with Eclipse Game Engine.
 
 Render Pass Editor View:
 <img width="1920" height="1049" alt="LevelEdtior" src="https://github.com/user-attachments/assets/636e0026-a185-4eab-891f-42a8c0eccc06" />
