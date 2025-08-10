@@ -87,7 +87,7 @@
       }
     }
   ],
-  "_name": "BasicRenderPass",
+  "Name": "BasicRenderPass",
   "IsRenderedToSwapchain": true,
   "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856"
 }
