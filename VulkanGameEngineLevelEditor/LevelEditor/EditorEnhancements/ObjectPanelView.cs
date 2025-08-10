@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Execution;
 using GlmSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using System;
@@ -530,6 +531,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Console.WriteLine($"Error notifying property changed for {PanelObject?.GetType().Name ?? "null"}: {ex.Message}");
             }
         }
+
         private void UpdateObjectHierarchy(ObjectPanelView objPanel)
         {
             if (objPanel._parentPanel == null)
@@ -538,6 +540,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
 
             var objTypeName = objPanel.PanelObject.GetType().Name;
+            var objectType = objPanel.PanelObject.GetType();
             var parentObjType = objPanel._parentPanel.PanelObject.GetType();
 
             var valueChanged = false;
@@ -546,7 +549,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             var memberInfoList = properties.Cast<MemberInfo>().Concat(fields);
             foreach (var member in memberInfoList)
             {
-                if(valueChanged)
+                if (valueChanged)
                 {
                     break;
                 }
@@ -590,9 +593,30 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                             }
                         }
                     }
+                    else
+                    {
+                        if (memberValue.GetType().Name == objPanel.PanelObject?.GetType().Name &&
+                            memberValue.GetHashCode() == objPanel.PanelObject?.GetHashCode())
+
+                        {
+                            if (member is PropertyInfo memberProp)
+                            {
+                                memberProp.SetValue(objPanel._parentPanel.PanelObject, objPanel.PanelObject);
+                                UpdateObjectHierarchy(objPanel._parentPanel);
+                            }
+                            else if (member is FieldInfo memberField)
+                            {
+                                memberField.SetValue(objPanel._parentPanel.PanelObject, objPanel.PanelObject);
+                                UpdateObjectHierarchy(objPanel._parentPanel);
+                            }
+                            break;
+                        }
+
+                    }
                 }
             }
         }
+
         private T GetCustomAttribute<T>(MemberInfo member) where T : Attribute
         {
             if (DynamicControlPanelView._dynamicAttributes.TryGetValue(member, out var attributes))

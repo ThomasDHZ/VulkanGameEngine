@@ -29,11 +29,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
                 FlatStyle = FlatStyle.Flat
             };
 
-            comboBox1.SelectedIndexChanged += ComboBox1_SelectedIndexChanged;
-
             Type enumType = null;
             object currentValue = GetValue();
-
             if (_member is PropertyInfo propType)
             {
                 if (propType.PropertyType.IsEnum)
@@ -100,6 +97,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms
                 throw new InvalidOperationException("Object is not an enum type");
             }
 
+            comboBox1.SelectedIndexChanged += ComboBox1_SelectedIndexChanged;
             CreateBaseControl(comboBox1);
             comboBox1.Parent?.Focus();
             return comboBox1;
