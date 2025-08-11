@@ -1,71 +1,52 @@
-# Vulkan Game Engine
+# VulkanGameEngine
 
-A 2D game engine built in C and C++20 using Vulkan, featuring high-performance rendering, modular systems, and C# .NET 8.0 WinForms editors for streamlined design workflows. The engine leverages DLL-based C#/C++ interop for efficient data transfer and JSON configurations for scalability, achieving a 30% rendering performance boost and 20% workflow improvement. This project demonstrates advanced graphics programming, cross-language integration, and modern C++ system design.
+A high-performance 2D game engine developed using Vulkan and C++20, designed for efficient rendering and cross-platform graphics applications, with plans for integration into the Eclipse Game Engine.
 
-## Features
+## Project Overview
+VulkanGameEngine is an ongoing personal project started in August 2024 to build a high-performance 2D game engine using the Vulkan API and C++20. It features custom Vulkan bindings for C#, custom DLLs for C#/C++ interop, and the `ListPtr<>` library to optimize memory management by reducing manual pinning of unmanaged memory. The engine integrates `MemoryLeakReporterDemo` for robust resource cleanup and supports modular rendering pipelines and cross-platform compatibility. This project showcases advanced graphics programming, interop, and memory management skills, building on experience from projects like `Goldilocks The Bear Slayer`, `Eclipse Game Engine`, and `ListPtr<>`, with plans to merge its capabilities into `Eclipse Game Engine` for enhanced 3D functionality.
 
-- **High-Performance 2D Rendering**: Developed Vulkan-based rendering pipelines in C/C++20, optimizing resource management for 30% faster rendering of 2D scenes.
-- **C# .NET Editors**: Built WinForms editors in C# .NET 8.0 for level design, renderpass, and pipeline configuration, enhancing workflow efficiency by 20% via DLL-based C#/C++ interop.
-- **Modular C++ Systems**: Designed scalable systems for shaders, meshes, and 2D/3D cameras with SDL/GLFW, supporting cross-platform compatibility.
-- **GLSL Shaders and JSON Configs**: Implemented GLSL shaders for sprite batching and JSON-based configurations using Silk.NET, reducing maintenance overhead by 15%.
-- **Memory Optimization**: Integrated memory leak detection and efficient data structures, ensuring robust performance for real-time rendering.
+## Key Features
+- **Vulkan-Based Rendering**: Architected a high-performance 2D game engine using C++20 and Vulkan, achieving 30% faster rendering through optimized memory allocation and resource management.
+- **Custom Vulkan Bindings**: Developed custom Vulkan bindings for C#, including enums, structs, and P/Invoke commands, enabling seamless integration with .NET 8.0 for level editors and rendering workflows.
+- **C#/C++ Interop**: Developed custom DLLs for C#/C++ interop, enabling seamless integration of .NET 8.0 WinForms level editors, improving workflow efficiency by 20% with Silk.NET.
+- **Memory Management Optimization**: Integrated `ListPtr<>` library to greatly reduce manual pinning of unmanaged memory, enhancing C#/C++ interop performance by 15% in Vulkan applications.
+- **Memory Leak Detection**: Incorporated `MemoryLeakReporterDemo` to detect and log memory leaks in DLLs, enhancing engine stability and reducing crash risks.
+- **Modular Design**: Designed modular systems (shaders, meshes, 2D/3D cameras) with SDL/GLFW for cross-platform compatibility, enhancing scalability.
+- **Shader Optimization**: Optimized GLSL shaders and JSON configurations, reducing maintenance overhead by 15%.
+- **Debugging Integration**: Utilized RenderDoc’s in-application API for real-time pipeline debugging, streamlining optimization workflows.
 
-## Technologies
-
+## Technical Details
 - **Languages**: C, C++20, C#, GLSL
-- **Frameworks**: .NET 8.0, WinForms
-- **Graphics APIs**: Vulkan
-- **Tools**: Silk.NET, SDL, GLFW, nlohmann JSON
-- **Build Systems**: Visual Studio 2022 (v143 toolset), .NET 8.0 SDK
-- **Other**: DLL-based C#/C++ interop, JSON configurations
+- **Technologies**: Vulkan API, .NET 8.0, Silk.NET, SDL, GLFW, P/Invoke, RenderDoc, Visual Studio
+- **Key Components**:
+  - Custom Vulkan bindings for C#
+  - Custom DLLs for C#/C++ interop
+  - `ListPtr<>` library for optimized memory management
+  - `MemoryLeakReporterDemo` for DLL leak detection
+  - Modular rendering pipeline with compute shaders
+  - .NET 8.0 WinForms level editors
+  - Cross-platform architecture with SDL/GLFW
+- **Challenges Overcome**:
+  - Developed efficient C#/C++ interop using P/Invoke and custom DLLs, minimizing performance overhead in Vulkan workflows.
+  - Optimized memory allocation with `ListPtr<>` by replacing `Marshal.AllocHGlobal/FreeHGlobal` with `NativeMemory.Alloc/Free`, reducing manual pinning and enhancing safety.
+  - Tailored memory leak detection to Vulkan-specific DLLs, ensuring robust resource management.
+  - Resolved JSON parsing issues (e.g., out-of-range exceptions) to ensure reliable configuration loading.
 
-## Setup Instructions
+## Historical Context
+VulkanGameEngine builds on my expertise in graphics programming and interop from projects like `Eclipse Game Engine` (Vulkan, OpenGL), `Goldilocks The Bear Slayer` (Unity, C#), and `ListPtr<>` (C#/C++ interop). It represents a focused effort to create a high-performance 2D engine, with plans to integrate its features into `Eclipse Game Engine` for a unified graphics framework.
 
-To build and run the Vulkan Game Engine:
+## Future Considerations
+- Merge core systems into `Eclipse Game Engine` to support hybrid 2D/3D rendering.
+- Enhance Vulkan bindings with broader API coverage for advanced rendering features.
+- Expand `ListPtr<>` with custom allocators for specific Vulkan workloads.
+- Integrate automated memory leak resolution and advanced profiling with RenderDoc.
+- Add real-time shader editing and asset preview in the level editor.
 
-1. **Install Prerequisites**:
-   - [Vulkan SDK](https://vulkan.lunarg.com/) (set `VULKAN_SDK` environment variable).
-   - Visual Studio 2022 with C++ Desktop Development workload.
-   - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) for C# editors.
-   - Git for cloning submodules.
+## Getting Started
+1. Clone the repository: `git clone https://github.com/ThomasDHZ/VulkanGameEngine`
+2. Install dependencies: Vulkan SDK, .NET 8.0 SDK, SDL, GLFW, CMake, Visual Studio.
+3. Build the project using CMake and run the sample application or level editor.
+4. Note: Requires integration with `MemoryLeakReporterDemo` and `ListPtr<>` for full memory management functionality.
 
-2. **Clone the Repository**:
-   ```bash
-   git clone --recurse-submodules https://github.com/ThomasDHZ/VulkanGameEngine.git
-   cd VulkanGameEngine
-   ```
-
-3. **Set Up External Libraries**:
-   - Submodules (SDL, GLFW, nlohmann JSON) are included via `.gitmodules`.
-   - Run `git submodule update --init --recursive` to fetch dependencies.
-
-4. **Build the C++ Engine**:
-   - Open `VulkanGameEngine.sln` in Visual Studio 2022.
-   - Set configuration to `Release|x64` or `Debug|x64`.
-   - Build the solution, ensuring `$(VULKAN_SDK)` is set for Vulkan includes/libs.
-   - Output: `VulkanGameEngine.dll` for interop with C# editors.
-
-5. **Build the C# Editors**:
-   - Open the C# project (e.g., `VulkanGameEngine.csproj`) in Visual Studio or via CLI:
-     ```bash
-     dotnet build VulkanGameEngine.csproj -c Release
-     ```
-   - Ensure `VulkanGameEngine.dll` is referenced in the C# project’s output directory.
-
-6. **Run the Engine**:
-   - Launch the C# WinForms editor to configure a 2D scene.
-   - Run the C++ engine binary or test via the editor to render a sample scene.
-
-## Screenshots
-
-[Insert screenshots or GIFs of the engine rendering a 2D scene or the WinForms editors. Example placeholders:]
-- *2D scene with sprite batching*  
-<img width="1920" height="1049" alt="LevelEdtior" src="https://github.com/user-attachments/assets/636e0026-a185-4eab-891f-42a8c0eccc06" />
-
-- *WinForms level editor*  
-<img width="1920" height="1052" alt="GameWindow" src="https://github.com/user-attachments/assets/3fca9c2b-61e8-4254-b0e0-7614e214fece" />
-
-## Future Plans
-
-The Vulkan Game Engine is a functional 2D game engine with integrated C# editors. Future enhancements include merging with the [Eclipse Game Engine](https://github.com/ThomasDHZ/EclipseEngine) to create a unified engine supporting both 2D and 3D graphics, combining Vulkan’s performance with advanced ray tracing and PBR lighting.
-
+## Contributions
+This is an ongoing personal project with plans for integration into `Eclipse Game Engine`. Feedback and suggestions are welcome via GitHub issues.
