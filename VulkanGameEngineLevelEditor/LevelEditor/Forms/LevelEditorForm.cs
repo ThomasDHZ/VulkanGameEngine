@@ -114,14 +114,22 @@ namespace VulkanGameEngineLevelEditor
                 void* afds = this.RendererBox.Handle.ToPointer();
                 GameSystem.StartUp(this.RendererBox.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
 
-                List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
-                foreach (var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
-                {
-                    renderPassLoaderList.Add(renderPassPair.Value);
-                }
+                //List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
+                //foreach (var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
+                //{
+                //    renderPassLoaderList.Add(renderPassPair.Value);
+                //}
 
-                levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
-                levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
+                //levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+                //levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
+
+                List<GameObject> gameObjectList = new List<GameObject>();
+                foreach (var gameObject in GameObjectSystem.GameObjectMap)
+                {
+                    gameObjectList.Add(gameObject.Value);
+                }
+                    levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+                    levelEditorTreeView1.PopulateTreeView(gameObjectList);
             }));
 
             Stopwatch stopwatch = new Stopwatch();
@@ -236,40 +244,6 @@ namespace VulkanGameEngineLevelEditor
         {
             ShaderCompiler.CompileAllShaders($@"{ConstConfig.BaseDirectoryPath}Shaders");
         }
-
-        //private void buildRenderPassToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    var a = levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>;
-        //    var ds = RenderSystem.RenderPassLoaderJsonMap[a[0].RenderPassId];
-        //    string jsonContent = File.ReadAllText(ds);
-        //    var renderPass = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
-
-        //    renderPass.ClearValueList[0] = new VkClearValue
-        //    {
-        //        Color = new VkClearColorValue
-        //        {
-        //            Float32_0 = 1.0f,
-        //            Float32_1 = 0.0f,
-        //            Float32_2 = 9.0f,
-        //            Float32_3 = 1.0f,
-        //        },
-        //        DepthStencil = new VkClearDepthStencilValue()
-        //    };
-
-        //    var renderPassJson = JsonConvert.SerializeObject(renderPass);
-        //    File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", renderPassJson);
-
-        //    if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
-        //    {
-        //        lock (lockObject)
-        //        {
-        //            isResizing = true;
-        //            RenderSystem.RebuildRendererFlag = true;
-        //            RenderSystem.UpdateRenderPasses(new List<string> { $@"{ConstConfig.BaseDirectoryPath}RenderPass\testJson.json", RenderSystem.RenderPassLoaderJsonMap[a[1].RenderPassId] });
-        //            isResizing = false;
-        //        }
-        //    }
-        //}
 
         public void QuickUpdateRenderPass()
         {

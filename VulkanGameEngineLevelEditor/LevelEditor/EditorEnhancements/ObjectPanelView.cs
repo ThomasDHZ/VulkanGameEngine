@@ -13,10 +13,14 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using Vulkan;
+using VulkanGameEngineLevelEditor;
+using VulkanGameEngineLevelEditor.GameEngine.Structs;
+using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
@@ -165,11 +169,20 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             contentPanel.Controls.Add(addComponentButton);
         }
 
-        private void AddPropertyPanel(MemberInfo member, Panel controlPanel)
+        private void AddPropertyPanel(MemberInfo member, object targetObject, Panel controlPanel)
         {
-            object instance = member is PropertyInfo p ? p.GetValue(PanelObject) : ((FieldInfo)member).GetValue(PanelObject);
-            if (instance != null)
+            try
             {
+                object instance = member is PropertyInfo p ? p.GetValue(targetObject) : ((FieldInfo)member).GetValue(targetObject);
+                if (instance == null)
+                {
+                    Console.WriteLine($"Null instance for member {member.Name} in {targetObject.GetType().Name}");
+                    return;
+                }
+
+                var instanceType = instance.GetType();
+                Console.WriteLine($"Creating property panel for {member.Name} of type {instanceType.Name} in {targetObject.GetType().Name}");
+
                 var structPanel = new TableLayoutPanel
                 {
                     Dock = DockStyle.Fill,
@@ -189,15 +202,37 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 structPanel.Controls.Add(childPanelView, 0, rowIndex);
                 childPanelView.PropertyChanged += (s, e) => NotifyPropertyChanged();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding property panel for {member.Name} in {targetObject.GetType().Name}: {ex.Message}");
+            }
         }
 
         private void PopulateProperties()
         {
             try
             {
-                var properties = PanelObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                var fields = PanelObject.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
+                _propTable.Controls.Clear();
+                _propTable.RowCount = 0;
+                _propTable.RowStyles.Clear();
+                ChildObjectPanels.Clear();
+
+                AddPropertyControls(PanelObject, _propTable, ChildObjectPanels);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error populating properties for {PanelObject.GetType().Name}: {ex.Message}");
+            }
+        }
+
+        private void AddPropertyControls(object targetObject, TableLayoutPanel targetTable, List<ObjectPanelView> childPanels)
+        {
+            try
+            {
+                var properties = targetObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var fields = targetObject.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
                 var members = properties.Cast<MemberInfo>().Concat(fields).ToList();
+
                 foreach (var member in members)
                 {
                     if (GetCustomAttribute<IgnorePropertyAttribute>(member) != null) continue;
@@ -211,10 +246,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     var controlTypeAttr = GetCustomAttribute<ControlTypeAttribute>(member);
                     var toolTipAttr = GetCustomAttribute<TooltipAttribute>(member);
 
-
-                    int propRowIndex = _propTable.RowCount;
-                    _propTable.RowCount += 1;
-                    _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
+                    int propRowIndex = targetTable.RowCount;
+                    targetTable.RowCount += 1;
+                    targetTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
 
                     var labelPanel = new Panel
                     {
@@ -223,7 +257,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         Margin = new Padding(2),
                         Height = RowHeight
                     };
-                    _propTable.Controls.Add(labelPanel, 0, propRowIndex);
+                    targetTable.Controls.Add(labelPanel, 0, propRowIndex);
 
                     var label = new Label
                     {
@@ -247,39 +281,37 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         Margin = new Padding(2),
                         AutoSize = true
                     };
-                    _propTable.Controls.Add(controlPanel, 1, propRowIndex);
+                    targetTable.Controls.Add(controlPanel, 1, propRowIndex);
 
                     Control control = null;
                     Type type = member is PropertyInfo prop ? prop.PropertyType : ((FieldInfo)member).FieldType;
+
                     if (controlTypeAttr != null && controlTypeAttr.ControlType == typeof(TypeOfFileLoader))
                     {
                         control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
                     }
                     else if (typeof(IList).IsAssignableFrom(type))
                     {
-                        HandleList(member, PanelObject, controlPanel, propertyDisplayName);
+                        HandleList(member, targetObject, controlPanel, propertyDisplayName);
                         continue;
                     }
-                    else if (type == typeof(List<ComponentTypeEnum>))
+                    else if (type == typeof(GlmSharp.vec2))
                     {
-                        control = DynamicControlPanelView.TypeOfComponentList(PanelObject, member as PropertyInfo, isReadOnly);
+                        control = ControlRegistry.CreateControl(this, type, targetObject, member, RowHeight, isReadOnly);
                     }
-                    else if (type.IsClass && 
-                             type != typeof(string))
+                    else if (type.IsClass && type != typeof(string))
                     {
-                        AddPropertyPanel(member, controlPanel);
+                        AddPropertyPanel(member, targetObject, controlPanel);
                         continue;
                     }
-                    else if (type.IsValueType && 
-                            !type.IsPrimitive && 
-                            !type.IsEnum)
+                    else if (type.IsValueType && !type.IsPrimitive && !type.IsEnum)
                     {
-                        AddPropertyPanel(member, controlPanel);
+                        AddPropertyPanel(member, targetObject, controlPanel);
                         continue;
                     }
                     else
                     {
-                        control = ControlRegistry.CreateControl(this, type, PanelObject, member, RowHeight, isReadOnly);
+                        control = ControlRegistry.CreateControl(this, type, targetObject, member, RowHeight, isReadOnly);
                     }
 
                     if (control != null)
@@ -288,11 +320,15 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         control.Margin = new Padding(5);
                         controlPanel.Controls.Add(control);
                     }
+                    else
+                    {
+                        Console.WriteLine($"No control created for member {member.Name} of type {type.Name} in {targetObject.GetType().Name}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error populating properties for {PanelObject.GetType().Name}: {ex.Message}");
+                Console.WriteLine($"Error adding property controls for {targetObject.GetType().Name}: {ex.Message}");
             }
         }
 
@@ -312,7 +348,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     list = field.GetValue(obj) as IList;
                     elementType = field.FieldType;
                 }
-
+                
                 if (list != null)
                 {
                     if (typeof(IEnumerable<string>).IsAssignableFrom(elementType))
@@ -356,7 +392,45 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 listPanel.RowStyles.Clear();
                 ChildObjectPanels.Clear();
 
-                if (list != null && list.Count > 0)
+                if (obj is GameObject gameObject && list is IEnumerable<ComponentTypeEnum> listType)
+                {
+                    foreach (ComponentTypeEnum component in listType)
+                    {
+                        int rowIndex = listPanel.RowCount;
+                        listPanel.RowCount += 1;
+                        listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                        var componentPanel = new TableLayoutPanel
+                        {
+                            Dock = DockStyle.Fill,
+                            AutoSize = true,
+                            BackColor = Color.FromArgb(30, 30, 30),
+                            ColumnCount = 2,
+                            ColumnStyles = { new ColumnStyle(SizeType.Percent, 30F), new ColumnStyle(SizeType.Percent, 70F) }
+                        };
+                        listPanel.Controls.Add(componentPanel, 0, rowIndex);
+
+                        switch (component)
+                        {
+                            case ComponentTypeEnum.kTransform2DComponent:
+                                object transformComponent = GameObjectSystem.Transform2DComponentMap[gameObject.GameObjectId];
+                                AddPropertyControls(transformComponent, componentPanel, ChildObjectPanels);
+                                break;
+                            case ComponentTypeEnum.kInputComponent:
+                                object inputComponent = GameObjectSystem.InputComponentMap[gameObject.GameObjectId];
+                                AddPropertyControls(inputComponent, componentPanel, ChildObjectPanels);
+                                break;
+                            case ComponentTypeEnum.kSpriteComponent:
+                                Sprite componentObject = SpriteSystem.FindSprite(gameObject.GameObjectId);
+                                AddPropertyControls(componentObject, componentPanel, ChildObjectPanels);
+                                break;
+                            default:
+                                MessageBox.Show(@$"Component type not implemented: {component}");
+                                continue;
+                        }
+                    }
+                }
+                else if (list != null && list.Count > 0)
                 {
                     foreach (var element in list)
                     {
@@ -366,7 +440,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         listPanel.RowCount += 1;
                         listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                        var childPanelView = new ObjectPanelView(levelEditorForm,element, ToolTip, this);
+                        var childPanelView = new ObjectPanelView(levelEditorForm, element, ToolTip, this);
                         ChildObjectPanels.Add(childPanelView);
                         listPanel.Controls.Add(childPanelView, 0, rowIndex);
 
