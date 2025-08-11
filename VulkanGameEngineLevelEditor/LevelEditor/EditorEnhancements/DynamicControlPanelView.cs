@@ -25,7 +25,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
     public class DynamicControlPanelView : TableLayoutPanel
     {
         private const int MinimumPanelSize = 320;
-
+        LevelEditorForm levelEditorForm { get; set; }
         public static object rootObject;
         private TableLayoutPanel _contentPanel;
         private ToolTip _toolTip;
@@ -33,8 +33,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         public static Dictionary<object, ObjectPanelView> ObjectPanelViewMap = new Dictionary<object, ObjectPanelView>();
         public static Dictionary<MemberInfo, List<Attribute>> _dynamicAttributes = new Dictionary<MemberInfo, List<Attribute>>();
         private static List<PropertyUpdate> _updatePropertiesList = new List<PropertyUpdate>();
-        public DynamicControlPanelView()
+        public DynamicControlPanelView(LevelEditorForm form)
         {
+            levelEditorForm = form;
             _toolTip = new ToolTip();
             InitializeComponents();
         }
@@ -86,7 +87,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     var existingPanel = _objectPanelViewList.FirstOrDefault(panel => panel.PanelObject == rootObject);
                     if (existingPanel == null)
                     {
-                        existingPanel = new ObjectPanelView(rootObject, _toolTip);
+                        existingPanel = new ObjectPanelView(levelEditorForm, rootObject, _toolTip);
                         _objectPanelViewList.Add(existingPanel);
                     }
                     _contentPanel.Controls.Add(existingPanel);
@@ -108,7 +109,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 var existingPanel = _objectPanelViewList.FirstOrDefault(panel => panel.PanelObject == obj);
                 if (existingPanel == null)
                 {
-                    existingPanel = new ObjectPanelView(obj, _toolTip);
+                    existingPanel = new ObjectPanelView(levelEditorForm, obj, _toolTip);
                     _objectPanelViewList.Add(existingPanel);
                     _contentPanel.Controls.Add(existingPanel);
                     AdjustContentHeight();

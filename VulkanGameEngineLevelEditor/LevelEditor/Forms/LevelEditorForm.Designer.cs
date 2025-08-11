@@ -54,7 +54,7 @@ namespace VulkanGameEngineLevelEditor
             buildRenderPassToolStripMenuItem = new ToolStripMenuItem();
             saveToolStripMenuItem = new ToolStripMenuItem();
             loadToolStripMenuItem = new ToolStripMenuItem();
-            dynamicControlPanelView1 = new DynamicControlPanelView();
+            dynamicControlPanelView1 = new DynamicControlPanelView(this);
             tableLayoutPanel1 = new TableLayoutPanel();
             levelEditorTreeView1 = new LevelEditorTreeView();
             tableLayoutPanel2 = new TableLayoutPanel();

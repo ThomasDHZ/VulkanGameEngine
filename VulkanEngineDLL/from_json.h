@@ -22,7 +22,6 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, VkGuid& guid);
     DLL_EXPORT void from_json(const json& j, VkViewport& viewPort);
     DLL_EXPORT void from_json(const json& j, RenderedTextureLoader& model);
-    DLL_EXPORT void from_json(const json& j, RenderPipelineLoader& model);
     DLL_EXPORT void from_json(const json& j, RenderedTextureInfoModel& model);
     DLL_EXPORT void from_json(const json& j, PipelineDescriptorModel& model);
     DLL_EXPORT void from_json(const json& j, RenderPassBuildInfoModel& model);
@@ -35,4 +34,6 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, VkPipelineDepthStencilStateCreateInfo& model);
     DLL_EXPORT void from_json(const json& j, VkPipelineInputAssemblyStateCreateInfo& model);
     DLL_EXPORT void from_json(const json& j, VkDescriptorSetLayoutBinding& model);
+    DLL_EXPORT void from_json(const json& j, RenderPassLoader& model);
+    DLL_EXPORT void from_json(const json& j, RenderPipelineLoader& model);
 }

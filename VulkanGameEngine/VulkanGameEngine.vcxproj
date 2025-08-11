@@ -75,8 +75,8 @@
     <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.304.0\Lib;$(SolutionDir)External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\Coral\Include;$(SolutionDir)External\sdl\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\;C:\VulkanSDK\1.4.313.0\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.313.0\Lib;$(SolutionDir)External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\Coral\Include;$(SolutionDir)External\sdl\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\;C:\VulkanSDK\1.4.321.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.321.1\Lib;$(SolutionDir)External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

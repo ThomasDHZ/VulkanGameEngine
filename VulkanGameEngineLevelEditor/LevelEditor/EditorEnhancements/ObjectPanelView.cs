@@ -25,7 +25,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
     {
         private const int RowHeight = 32;
         private const int MinimumPanelSize = 320;
-
+        LevelEditorForm levelEditorForm { get; set; }
         public object PanelObject { get; private set; }
         public ToolTip ToolTip { get; private set; }
         private ObjectPanelView _parentPanel;
@@ -35,13 +35,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private Panel _contentPanel;
         private bool _isExpanded = true; 
 
-        public ObjectPanelView(object obj, ToolTip toolTip, ObjectPanelView parentPanel = null)
+        public ObjectPanelView(LevelEditorForm form, object obj, ToolTip toolTip, ObjectPanelView parentPanel = null)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             DynamicControlPanelView.ObjectPanelViewMap[obj] = this;
             _parentPanel = parentPanel;
             PanelObject = obj;
-
+            levelEditorForm = form;
             ToolTip = toolTip ?? new ToolTip
             {
                 BackColor = Color.FromArgb(50, 50, 50),
@@ -184,7 +184,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 structPanel.RowCount += 1;
                 structPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                var childPanelView = new ObjectPanelView(instance, ToolTip, this);
+                var childPanelView = new ObjectPanelView(levelEditorForm, instance, ToolTip, this);
                 ChildObjectPanels.Add(childPanelView);
                 structPanel.Controls.Add(childPanelView, 0, rowIndex);
                 childPanelView.PropertyChanged += (s, e) => NotifyPropertyChanged();
@@ -366,7 +366,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         listPanel.RowCount += 1;
                         listPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-                        var childPanelView = new ObjectPanelView(element, ToolTip, this);
+                        var childPanelView = new ObjectPanelView(levelEditorForm,element, ToolTip, this);
                         ChildObjectPanels.Add(childPanelView);
                         listPanel.Controls.Add(childPanelView, 0, rowIndex);
 
@@ -525,6 +525,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     extentPanel.Visible = !extentPanel.Visible;
                 }
                 AdjustPanelHeight();
+
+                levelEditorForm.QuickUpdateRenderPass();
             }
             catch (Exception ex)
             {

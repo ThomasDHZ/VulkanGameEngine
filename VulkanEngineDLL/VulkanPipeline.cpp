@@ -4,26 +4,27 @@
 #include "ShaderCompiler.h"
 #include "JsonLoader.h"
 
- VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
+ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, const char* pipelineJsonPath, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
-     RenderPipelineLoader model = JsonLoader_LoadRenderPipelineLoaderInfo(pipelineJson, renderPassResolution);
+     const char* jsonDataString = File_Read(pipelineJsonPath).Data;
+     RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
      Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
      {
-         Shader_CreateShader(device, model.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
-         Shader_CreateShader(device, model.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
+         Shader_CreateShader(device, renderPassLoader.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
+         Shader_CreateShader(device, renderPassLoader.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
      };
 
      VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-     VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, model, includes);
-     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, model, includes);
-     Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, model, descriptorSetLayoutList);
-     Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, model, includes);
+     VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPassLoader, includes);
+     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPassLoader, includes);
+     Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, renderPassLoader, descriptorSetLayoutList);
+     Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, renderPassLoader, includes);
      VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, constBufferSize);
-     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, model, renderPassResolution, pipelineShaderStageCreateInfoList);
+     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution, pipelineShaderStageCreateInfoList);
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
      {
-         .RenderPipelineId = model.PipelineId,
+         .RenderPipelineId = renderPassLoader.PipelineId,
          .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
          .DescriptorSetCount = descriptorSetList.size(),
          .DescriptorPool = descriptorPool,
@@ -54,7 +55,50 @@
  VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      VulkanPipeline_Destroy(device, oldVulkanPipeline);
-     return VulkanPipeline_CreateRenderPipeline(device, renderPassId, pipelineJson, renderPass, constBufferSize, renderPassResolution, includes);
+
+     RenderPipelineLoader renderPassLoader = nlohmann::json::parse(pipelineJson).get<RenderPipelineLoader>();
+     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
+     {
+         Shader_CreateShader(device, renderPassLoader.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
+         Shader_CreateShader(device, renderPassLoader.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
+     };
+
+     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+     VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPassLoader, includes);
+     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPassLoader, includes);
+     Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, renderPassLoader, descriptorSetLayoutList);
+     Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, renderPassLoader, includes);
+     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, constBufferSize);
+     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution, pipelineShaderStageCreateInfoList);
+
+     VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
+     {
+         .RenderPipelineId = renderPassLoader.PipelineId,
+         .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
+         .DescriptorSetCount = descriptorSetList.size(),
+         .DescriptorPool = descriptorPool,
+         .Pipeline = pipeline,
+         .PipelineLayout = pipelineLayout,
+         .PipelineCache = pipelineCache
+     };
+
+     vulkanRenderPipelinePtr->DescriptorSetLayoutList = nullptr;
+     if (vulkanRenderPipelinePtr->DescriptorSetLayoutCount > 0)
+     {
+         vulkanRenderPipelinePtr->DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__);
+         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetLayoutList, descriptorSetLayoutList.data(), vulkanRenderPipelinePtr->DescriptorSetLayoutCount * sizeof(VkFramebuffer));
+     }
+
+     vulkanRenderPipelinePtr->DescriptorSetList = nullptr;
+     if (vulkanRenderPipelinePtr->DescriptorSetCount > 0)
+     {
+         vulkanRenderPipelinePtr->DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.size(), __FILE__, __LINE__, __func__);
+         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetList, descriptorSetList.data(), vulkanRenderPipelinePtr->DescriptorSetCount * sizeof(VkClearValue));
+     }
+
+     VulkanPipeline vulkanPipeline = *vulkanRenderPipelinePtr;
+     delete vulkanRenderPipelinePtr;
+     return vulkanPipeline;
  }
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)

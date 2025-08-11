@@ -271,7 +271,45 @@ namespace VulkanGameEngineLevelEditor
         //    }
         //}
 
-        private void buildRenderPassToolStripMenuItem_Click(object sender, EventArgs e)
+        public void QuickUpdateRenderPass()
+        {
+            try
+            {
+                if (levelEditorTreeView1._rootObject is RenderPassLoaderModel ||
+                    levelEditorTreeView1._rootObject is List<RenderPassLoaderModel>)
+                {
+                    var renderPassJsonMap = new Dictionary<Guid, string>();
+                    var pipelineJsonMap = new Dictionary<Guid, List<string>>(); 
+                    foreach (var renderPassJsonModel in levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>)
+                    {
+                        var pipelineJsonList = new List<string>();
+                        renderPassJsonMap[renderPassJsonModel.RenderPassId] = JsonConvert.SerializeObject(renderPassJsonModel);
+                        foreach (var pipelineModel in renderPassJsonModel.renderPipelineModelList)
+                        {
+                            pipelineJsonList.Add(JsonConvert.SerializeObject(pipelineModel));
+                        }
+                        pipelineJsonMap[renderPassJsonModel.RenderPassId] = pipelineJsonList;
+                    }
+
+                    if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
+                    {
+                        lock (lockObject)
+                        {
+                            isResizing = true;
+                            RenderSystem.RebuildRendererFlag = true;
+                            RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap);
+                            isResizing = false;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(@$"Failed to build renderpass {ex.Message}.");
+            }
+        }
+
+        public void buildRenderPassToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -289,18 +327,6 @@ namespace VulkanGameEngineLevelEditor
                         {
                             var pipelineJson = JsonConvert.SerializeObject(pipelineModel);
                             File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", pipelineJson);
-                        }
-
-                    }
-
-                    if (running && !this.WindowState.HasFlag(FormWindowState.Minimized))
-                    {
-                        lock (lockObject)
-                        {
-                            isResizing = true;
-                            RenderSystem.RebuildRendererFlag = true;
-                            RenderSystem.UpdateRenderPasses(renderPassPathList);
-                            isResizing = false;
                         }
                     }
                 }

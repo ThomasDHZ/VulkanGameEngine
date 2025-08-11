@@ -1,9 +1,21 @@
 #include "VulkanRenderPass.h"
 #include "../VulkanGameEngine/SceneDataBuffer.h"
 
-VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassLoaderJson, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
-    const RenderPassLoader renderPassLoader = JsonLoader_LoadRenderPassLoaderInfo(renderPassLoaderJson, renderPassResolution);
+    const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
+    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
+    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    {
+        renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+        renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+        for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+        {
+            renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+            renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+        }
+    }
+
     VulkanRenderPass* vulkanRenderPassPtr = new VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
@@ -52,12 +64,19 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
     return vulkanRenderPass;
 }
 
-VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonLoader, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, const char* renderPassJson, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
     Vector<Texture> renderedTextureList;
     Vector<VkFramebuffer> frameBufferList;
-    ivec2 swapChainSize = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
-    RenderPassLoader renderPassLoader = JsonLoader_LoadRenderPassLoaderInfo(renderPassJsonLoader, swapChainSize);
+    RenderPassLoader renderPassLoader = nlohmann::json::parse(renderPassJson).get<RenderPassLoader>();
+    renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+    renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+    for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+    {
+        renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+        renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+    }
+
     Renderer_DestroyFrameBuffers(renderer.Device, vulkanRenderPass.FrameBufferList, renderer.SwapChainImageCount);
     
     if(vulkanRenderPass.IsRenderedToSwapchain)
