@@ -63,9 +63,24 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 	Texture_GetTexturePropertiesBuffer(texture, textureDescriptorList);
 }
 
+void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout)
+{
+    Texture_UpdateTextureLayout(renderSystem.renderer, texture, texture.textureImageLayout, newImageLayout);
+}
+
+void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+{
+    Texture_UpdateTextureLayout(renderSystem.renderer, texture, oldImageLayout, newImageLayout);
+}
+
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout)
 {
-	Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, newImageLayout);
+	Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout);
+}
+
+void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+{
+    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout);
 }
 
 void TextureSystem::DestroyTexture(Texture& texture)

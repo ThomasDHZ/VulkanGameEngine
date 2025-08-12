@@ -84,7 +84,7 @@ void LevelSystem::Update(const float& deltaTime)
 void LevelSystem::Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime)
 {
     commandBufferList.emplace_back(renderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime, SceneProperties));
-    commandBufferList.emplace_back(renderSystem.RenderFrameBuffer(frameBufferId));
+    commandBufferList.emplace_back(renderSystem.RenderFrameBuffer(frameBufferId, spriteRenderPass2DId));
 }
 
 void LevelSystem::DestroyDeadGameObjects()

@@ -77,5 +77,5 @@ void main()
 	}
   
     float gamma = 2.2f;
-    OutputColor = vec4(pow(material.Albedo.rgb, vec3(1.0f/gamma)), material.Alpha);
+    OutputColor = vec4(pow(material.Albedo.rgb, vec3(1.0f/gamma)), 0.5f);
 }

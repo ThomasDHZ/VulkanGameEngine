@@ -73,16 +73,17 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
         }
 
         size_t size = renderedTextureList.size();
-        renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), renderedTextureList[0], size, depthTexture);
+        renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, renderedTextureList[0], size, depthTexture);
     }
     ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
 
-VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
+VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId, VkGuid& inputTextureRenderPassId)
 {
     const VulkanRenderPass renderPass = FindRenderPass(renderPassId);
     const VulkanPipeline& pipeline = FindRenderPipelineList(renderPassId)[0];
-    const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
+     VkCommandBuffer commandBuffer = renderPass.CommandBuffer;
+    Vector renderPassTexture = textureSystem.FindRenderedTextureList(levelSystem.spriteRenderPass2DId);
 
     VkViewport viewport
     {
@@ -108,6 +109,7 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
         }
     };
 
+
     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -118,8 +120,8 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
         .pClearValues = renderPass.ClearValueList
     };
 
-    VULKAN_RESULT(vkResetCommandBuffer(commandBuffer, 0));
     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
+    textureSystem.UpdateTextureLayout(renderPassTexture[0], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -150,7 +152,6 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         .pClearValues = renderPass.ClearValueList
     };
 
-    VULKAN_RESULT(vkResetCommandBuffer(commandBuffer, 0));
     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     for (auto& levelLayer : levelLayerList)

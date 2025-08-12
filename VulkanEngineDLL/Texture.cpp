@@ -415,7 +415,7 @@ VkResult Texture_CommandBufferTransitionImageLayout(const GraphicsRenderer& rend
 	return Texture_TransitionImageLayout(renderer, commandBuffer, texture, newLayout);
 }
 
-void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& newImageLayout)
+void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& oldImageLayout, VkImageLayout& newImageLayout)
 {
 	VkImageMemoryBarrier imageMemoryBarrier =
 	{
@@ -428,7 +428,7 @@ void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandB
 		.subresourceRange =
 		{
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = texture.mipMapLevels,
+			.baseMipLevel = texture.mipMapLevels - 1,
 			.levelCount = VK_REMAINING_MIP_LEVELS,
 			.layerCount = 1
 		}
@@ -438,20 +438,20 @@ void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandB
 	texture.textureImageLayout = newImageLayout;
 }
 
-void Texture_UpdateTextureLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout newImageLayout)
+void Texture_UpdateTextureLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
 {
 	VkImageMemoryBarrier imageMemoryBarrier =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		.srcAccessMask = 0,
 		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-		.oldLayout = texture.textureImageLayout,
+		.oldLayout = oldImageLayout,
 		.newLayout = newImageLayout,
 		.image = texture.textureImage,
 		.subresourceRange =
 		{
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = texture.mipMapLevels,
+		.baseMipLevel = texture.mipMapLevels - 1,
 			.levelCount = VK_REMAINING_MIP_LEVELS,
 			.layerCount = 1
 		}
