@@ -193,7 +193,8 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
     for (int x = 0; x < json["RenderPipelineList"].size(); x++)
     {
         uint pipeLineId = renderSystem.RenderPassMap.size();
-        nlohmann::json json = Json::ReadJson(json["RenderPipelineList"][x]);
+        String jsonfile = json["RenderPipelineList"][x];
+        nlohmann::json json = Json::ReadJson(jsonfile);
         RenderPipelineModel renderPipelineModel = RenderPipelineModel::from_json(json);
         GPUIncludes include =
         {
@@ -224,7 +225,8 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, Tex
     for (int x = 0; x < json["RenderPipelineList"].size(); x++)
     {
         uint pipeLineId = renderSystem.RenderPipelineMap.size();
-        nlohmann::json json = Json::ReadJson(json["RenderPipelineList"][x]);
+        String jsonfile = json["RenderPipelineList"][x];
+        nlohmann::json json = Json::ReadJson(jsonfile);
         RenderPipelineModel renderPipelineModel = RenderPipelineModel::from_json(json);
 
         GPUIncludes include =
