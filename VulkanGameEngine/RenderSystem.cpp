@@ -71,20 +71,20 @@ VkGuid RenderSystem::CreateVulkanRenderPass(const String& jsonPath, ivec2& rende
 
 void RenderSystem::RecreateSwapchain()
 {
-    /*  int width = 0;
-      int height = 0;
+  /*  int width = 0;
+    int height = 0;
 
-      vkDeviceWaitIdle(*Device.get());
+    vkDeviceWaitIdle(*Device.get());
 
-      vulkanWindow->GetFrameBufferSize(vulkanWindow, &width, &height);
-      renderer.DestroySwapChainImageView();
-      renderer.DestroySwapChain();
-      renderer.SetUpSwapChain();
+    vulkanWindow->GetFrameBufferSize(vulkanWindow, &width, &height);
+    renderer.DestroySwapChainImageView();
+    renderer.DestroySwapChain();
+    renderer.SetUpSwapChain();
 
-      RenderPassID id;
-      id.id = 2;
+    RenderPassID id;
+    id.id = 2;
 
-      RenderPassList[id].RecreateSwapchain(width, height);*/
+    RenderPassList[id].RecreateSwapchain(width, height);*/
 }
 
 VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
@@ -472,7 +472,7 @@ void RenderSystem::DestroyRenderPipeline()
 const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& guid)
 {
     auto it = RenderPassMap.find(guid);
-    if (it != RenderPassMap.end())
+    if (it != RenderPassMap.end()) 
     {
         return it->second;
     }

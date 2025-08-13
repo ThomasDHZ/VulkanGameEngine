@@ -1,81 +1,81 @@
 #include "VulkanRenderPass.h"
 
-VulkanRenderPassDLL* VulkanRenderPass_ConvertToVulkanRenderPassDLL(VulkanRenderPass& renderPass)
-{
-    VulkanRenderPassDLL* vulkanRenderPassDLL = new VulkanRenderPassDLL();
+ VulkanRenderPassDLL* VulkanRenderPass_ConvertToVulkanRenderPassDLL(VulkanRenderPass& renderPass)
+ {
+     VulkanRenderPassDLL* vulkanRenderPassDLL = new VulkanRenderPassDLL();
 
-    vulkanRenderPassDLL->RenderPassId = renderPass.RenderPassId;
-    vulkanRenderPassDLL->SampleCount = renderPass.SampleCount;
-    vulkanRenderPassDLL->RenderArea = renderPass.RenderArea;
-    vulkanRenderPassDLL->RenderPass = renderPass.RenderPass;
-    vulkanRenderPassDLL->CommandBuffer = renderPass.CommandBuffer;
-    vulkanRenderPassDLL->UseFrameBufferResolution = renderPass.UseFrameBufferResolution;
+     vulkanRenderPassDLL->RenderPassId = renderPass.RenderPassId;
+     vulkanRenderPassDLL->SampleCount = renderPass.SampleCount;
+     vulkanRenderPassDLL->RenderArea = renderPass.RenderArea;
+     vulkanRenderPassDLL->RenderPass = renderPass.RenderPass;
+     vulkanRenderPassDLL->CommandBuffer = renderPass.CommandBuffer;
+     vulkanRenderPassDLL->UseFrameBufferResolution = renderPass.UseFrameBufferResolution;
 
-    vulkanRenderPassDLL->FrameBufferCount = renderPass.FrameBufferList.size();
-    if (vulkanRenderPassDLL->FrameBufferCount > 0)
-    {
-        vulkanRenderPassDLL->FrameBufferList = new VkFramebuffer[vulkanRenderPassDLL->FrameBufferCount];
-        std::memcpy(vulkanRenderPassDLL->FrameBufferList, renderPass.FrameBufferList.data(), vulkanRenderPassDLL->FrameBufferCount * sizeof(VkFramebuffer));
-    }
-    else
-    {
-        vulkanRenderPassDLL->FrameBufferList = nullptr;
-    }
+     vulkanRenderPassDLL->FrameBufferCount = renderPass.FrameBufferList.size();
+     if (vulkanRenderPassDLL->FrameBufferCount > 0)
+     {
+         vulkanRenderPassDLL->FrameBufferList = new VkFramebuffer[vulkanRenderPassDLL->FrameBufferCount];
+         std::memcpy(vulkanRenderPassDLL->FrameBufferList, renderPass.FrameBufferList.data(), vulkanRenderPassDLL->FrameBufferCount * sizeof(VkFramebuffer));
+     }
+     else
+     {
+         vulkanRenderPassDLL->FrameBufferList = nullptr;
+     }
 
-    vulkanRenderPassDLL->ClearValueCount = renderPass.ClearValueList.size();
-    if (vulkanRenderPassDLL->ClearValueCount > 0)
-    {
-        vulkanRenderPassDLL->ClearValueList = new VkClearValue[vulkanRenderPassDLL->ClearValueCount];
-        std::memcpy(vulkanRenderPassDLL->ClearValueList, renderPass.ClearValueList.data(), vulkanRenderPassDLL->ClearValueCount * sizeof(VkClearValue));
-    }
-    else
-    {
-        vulkanRenderPassDLL->ClearValueList = nullptr;
-    }
+     vulkanRenderPassDLL->ClearValueCount = renderPass.ClearValueList.size();
+     if (vulkanRenderPassDLL->ClearValueCount > 0)
+     {
+         vulkanRenderPassDLL->ClearValueList = new VkClearValue[vulkanRenderPassDLL->ClearValueCount];
+         std::memcpy(vulkanRenderPassDLL->ClearValueList, renderPass.ClearValueList.data(), vulkanRenderPassDLL->ClearValueCount * sizeof(VkClearValue));
+     }
+     else
+     {
+         vulkanRenderPassDLL->ClearValueList = nullptr;
+     }
 
-    return vulkanRenderPassDLL;
-}
+     return vulkanRenderPassDLL;
+ }
 
-void VulkanRenderPass_DeleteVulkanRenderPassDLL(VulkanRenderPassDLL* vulkanRenderPassDLL)
-{
-    if (vulkanRenderPassDLL)
-    {
-        delete[] vulkanRenderPassDLL->FrameBufferList;
-        vulkanRenderPassDLL->FrameBufferList = nullptr;
-        delete[] vulkanRenderPassDLL->ClearValueList;
-        vulkanRenderPassDLL->ClearValueList = nullptr;
-        delete vulkanRenderPassDLL;
-    }
-}
+ void VulkanRenderPass_DeleteVulkanRenderPassDLL(VulkanRenderPassDLL* vulkanRenderPassDLL)
+ {
+     if (vulkanRenderPassDLL)
+     {
+         delete[] vulkanRenderPassDLL->FrameBufferList;
+         vulkanRenderPassDLL->FrameBufferList = nullptr;
+         delete[] vulkanRenderPassDLL->ClearValueList;
+         vulkanRenderPassDLL->ClearValueList = nullptr;
+         delete vulkanRenderPassDLL;
+     }
+ }
 
-VulkanRenderPass VulkanRenderPass_ConvertToVulkanRenderPass(VulkanRenderPassDLL* renderPassDLL)
-{
-    if (!renderPassDLL)
-    {
-        throw std::invalid_argument("Null VulkanRenderPassDLL pointer");
-    }
+ VulkanRenderPass VulkanRenderPass_ConvertToVulkanRenderPass(VulkanRenderPassDLL* renderPassDLL)
+ {
+     if (!renderPassDLL)
+     {
+         throw std::invalid_argument("Null VulkanRenderPassDLL pointer");
+     }
 
-    VulkanRenderPass vulkanRenderPass;
-    vulkanRenderPass.RenderPassId = renderPassDLL->RenderPassId;
-    vulkanRenderPass.SampleCount = renderPassDLL->SampleCount;
-    vulkanRenderPass.RenderArea = renderPassDLL->RenderArea;
-    vulkanRenderPass.RenderPass = renderPassDLL->RenderPass;
-    vulkanRenderPass.FrameBufferList = Vector<VkFramebuffer>(renderPassDLL->FrameBufferList, renderPassDLL->FrameBufferList + renderPassDLL->FrameBufferCount);
-    vulkanRenderPass.ClearValueList = Vector<VkClearValue>(renderPassDLL->ClearValueList, renderPassDLL->ClearValueList + renderPassDLL->ClearValueCount);
-    vulkanRenderPass.CommandBuffer = renderPassDLL->CommandBuffer;
-    vulkanRenderPass.UseFrameBufferResolution = renderPassDLL->UseFrameBufferResolution;
+     VulkanRenderPass vulkanRenderPass;
+     vulkanRenderPass.RenderPassId = renderPassDLL->RenderPassId;
+     vulkanRenderPass.SampleCount = renderPassDLL->SampleCount;
+     vulkanRenderPass.RenderArea = renderPassDLL->RenderArea;
+     vulkanRenderPass.RenderPass = renderPassDLL->RenderPass;
+     vulkanRenderPass.FrameBufferList = Vector<VkFramebuffer>(renderPassDLL->FrameBufferList, renderPassDLL->FrameBufferList + renderPassDLL->FrameBufferCount);
+     vulkanRenderPass.ClearValueList = Vector<VkClearValue>(renderPassDLL->ClearValueList, renderPassDLL->ClearValueList + renderPassDLL->ClearValueCount);
+     vulkanRenderPass.CommandBuffer = renderPassDLL->CommandBuffer;
+     vulkanRenderPass.UseFrameBufferResolution = renderPassDLL->UseFrameBufferResolution;
 
-    VulkanRenderPass_DeleteVulkanRenderPassDLL(renderPassDLL);
-    return vulkanRenderPass;
-}
+     VulkanRenderPass_DeleteVulkanRenderPassDLL(renderPassDLL);
+     return vulkanRenderPass;
+ }
 
-VulkanRenderPassDLL* VulkanRenderPass_CreateVulkanRenderPassCS(const RendererStateCS& renderStateCS, const char* renderPassLoader, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
-{
-    RendererState renderState = Renderer_RendererStateCStoCPP(renderStateCS);
-    return VulkanRenderPass_CreateVulkanRenderPass(renderState, renderPassLoader, renderPassResolution, ConstBuffer, renderedTextureListPtr, renderedTextureCount, depthTexture);
-}
+ VulkanRenderPassDLL* VulkanRenderPass_CreateVulkanRenderPassCS(const RendererStateCS& renderStateCS, const char* renderPassLoader, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+ {
+     RendererState renderState = Renderer_RendererStateCStoCPP(renderStateCS);
+     return VulkanRenderPass_CreateVulkanRenderPass(renderState, renderPassLoader, renderPassResolution,  ConstBuffer, renderedTextureListPtr, renderedTextureCount, depthTexture);
+ }
 
-VulkanRenderPassDLL* VulkanRenderPass_CreateVulkanRenderPass(const RendererState& renderState, const char* renderPassLoaderJson, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+ VulkanRenderPassDLL* VulkanRenderPass_CreateVulkanRenderPass(const RendererState& renderState, const char* renderPassLoaderJson, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr,  size_t& renderedTextureCount, Texture& depthTexture)
 {
     Vector<Texture> renderedTextureList;
     RenderPassLoader renderPassLoader = JsonLoader_LoadRenderPassLoaderInfo(renderPassLoaderJson, renderPassResolution);
@@ -137,10 +137,10 @@ VkRenderPass RenderPass_BuildRenderPass(const RendererState& renderState, Vulkan
         VkSamplerCreateInfo samplerCreateInfo = texture.SamplerCreateInfo;
         switch (texture.TextureType)
         {
-        case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
-        case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
-        case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
-        case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo); break;
+            case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
+            case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
+            case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo)); break;
+            case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderState, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo); break;
         };
     }
 

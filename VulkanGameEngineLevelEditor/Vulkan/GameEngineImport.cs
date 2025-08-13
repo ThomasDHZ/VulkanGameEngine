@@ -40,7 +40,18 @@ namespace VulkanGameEngineLevelEditor.Vulkan
         [DllImport(DLLPath, CallingConvention = CallingConvention.StdCall)]
         public static extern void Texture_GetTexturePropertiesBuffer_DLL(TextureStruct texture, List<VkDescriptorImageInfo> textureDescriptorList);
 
+        [DllImport(DLLPath, CallingConvention = CallingConvention.Cdecl)]
+        public static extern VulkanRenderPassDLL* VulkanRenderPass_CreateVulkanRenderPassCS(
+            ref RendererStateCS renderStateCS,
+            [MarshalAs(UnmanagedType.LPStr)] string renderPassLoader,
+            ref VkExtent2D renderPassResolution,
+             int ConstBuffer,
+                 ref        TextureStruct renderedTextureListPtr,
+            ref ulong renderedTextureCount,
+            ref TextureStruct depthTexture  );
 
+        [DllImport(DLLPath, CallingConvention = CallingConvention.StdCall)]
+        public static extern void VulkanRenderPass_DestroyRenderPass(RendererStateCS renderState, VulkanRenderPassDLL renderPass);
 
 
         [DllImport(DLLPath, CallingConvention = CallingConvention.StdCall)]

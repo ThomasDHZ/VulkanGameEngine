@@ -16,6 +16,20 @@ namespace VulkanGameEngineLevelEditor.Vulkan
         public List<string> TextureList;
     }
 
+    public unsafe struct VulkanRenderPassDLL
+    {
+        public Guid RenderPassId;
+        public VkSampleCountFlagBits SampleCount;
+        public VkRect2D RenderArea;
+        public VkRenderPass RenderPass;
+        public VkFramebuffer* FrameBufferList;
+        public VkClearValue* ClearValueList;
+        public size_t FrameBufferCount;
+        public size_t ClearValueCount;
+        public VkCommandBuffer CommandBuffer;
+        public bool UseFrameBufferResolution;
+    };
+
     public static class GameSystem
     {
         public static OrthographicCamera2D OrthographicCamera { get; set; }
@@ -24,11 +38,31 @@ namespace VulkanGameEngineLevelEditor.Vulkan
         public static Guid SpriteRenderPass2DId { get; set; }
         public static Guid FrameBufferId { get; set; }
 
+        /*   public static extern IntPtr VulkanRenderPass_CreateVulkanRenderPassCS(
+        ref RendererStateCS renderStateCS,
 
-        public static void StartUp(IntPtr window, IntPtr renderAreaHandle)
+        [MarshalAs(UnmanagedType.LPStr)] string renderPassLoader,
+        VkExtent2D renderPassResolution,
+            int ConstBuffer,
+            TextureStruct* renderedTextureListPtr,
+            ulong* renderedTextureCount,
+            TextureStruct* depthTexture
+        );*/
+
+        public static unsafe void StartUp(IntPtr window, IntPtr renderAreaHandle)
         {
             RenderSystem.CreateVulkanRenderer(window, renderAreaHandle);
-            LoadLevel("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/Levels/TestLevel.json");
+
+            ivec2 renderResolution = new ivec2((int)RenderSystem.SwapChainResolution.width, (int)RenderSystem.SwapChainResolution.height);
+            ListPtr<TextureStruct> textureList = new ListPtr<TextureStruct>(32);
+            TextureStruct depthTexture = new TextureStruct();
+            var count = (ulong)textureList.Count;
+            var renderSystemStruct = RenderSystem.ToStruct();
+            var jsonText = "C:/Users/dotha/Documents/GitHub/VulkanGameEngine/RenderPass/LevelShader2DRenderPass.json";
+            var asdf = RenderSystem.SwapChainResolution;
+            var sf = textureList[0];
+            VulkanRenderPassDLL* a = GameEngineImport.VulkanRenderPass_CreateVulkanRenderPassCS(ref renderSystemStruct, jsonText, ref asdf, sizeof(SceneDataBuffer), ref sf, ref count, ref depthTexture);
+            LoadLevel("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/Levels/TestLevel.json");                                                                                                  
         }
         public static void LoadLevel(String levelPath)
         {
