@@ -29,12 +29,12 @@
   "PipelineColorBlendAttachmentStateList": [
     {
       "BlendEnable": true,
-      "SrcColorBlendFactor": 1,
+      "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 9,
-      "AlphaBlendOp": 1000148010,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
       "ColorWriteMask": 15
     }
   ],
