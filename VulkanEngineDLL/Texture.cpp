@@ -31,7 +31,7 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 		.textureId = textureId,
 		.width = static_cast<int>(createImageInfo.extent.width),
 		.height = static_cast<int>(createImageInfo.extent.height),
-		.depth = static_cast<int>(createImageInfo.extent.depth),
+		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
 		.mipMapLevels = 1,
 		.textureByteFormat = createImageInfo.format,
 		.textureImageLayout = createImageInfo.initialLayout,
@@ -49,7 +49,7 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& te
 	Texture texture;
 	texture.width = static_cast<int>(createImageInfo.extent.width);
 	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = static_cast<int>(createImageInfo.extent.depth);
+	texture.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth);
 	texture.textureByteFormat = createImageInfo.format;
 	texture.textureImageLayout = createImageInfo.initialLayout;
 	texture.sampleCount = createImageInfo.samples;
@@ -66,7 +66,7 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, Pixel& clearColo
 	Texture texture;
 	texture.width = static_cast<int>(createImageInfo.extent.width);
 	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = static_cast<int>(createImageInfo.extent.depth);
+	texture.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth);
 	texture.textureByteFormat = createImageInfo.format;
 	texture.textureImageLayout = createImageInfo.initialLayout;
 	texture.sampleCount = createImageInfo.samples;

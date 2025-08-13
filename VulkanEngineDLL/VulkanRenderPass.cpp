@@ -13,6 +13,7 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
         {
             renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
             renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+            renderTexture.ImageCreateInfo.extent.depth = 1;
         }
     }
 
