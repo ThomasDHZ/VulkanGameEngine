@@ -1,8 +1,8 @@
 {
   "Name": "SpriteInstancePipeline",
   "PipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
-  "VertexShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\SpriteInstanceShaderVert.spv",
-  "FragmentShader": "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Shaders\\SpriteInstanceShaderFrag.spv",
+  "VertexShader": "..\\Shaders\\SpriteInstanceShaderVert.spv",
+  "FragmentShader": "..\\Shaders\\SpriteInstanceShaderFrag.spv",
   "VertexType": 1,
   "ViewportList": [
     {
@@ -28,22 +28,22 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "blendEnable": true,
-      "srcColorBlendFactor": 1,
-      "dstColorBlendFactor": 7,
-      "colorBlendOp": 0,
-      "srcAlphaBlendFactor": 1,
-      "dstAlphaBlendFactor": 9,
-      "alphaBlendOp": 1000148010,
-      "colorWriteMask": 15
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 7,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 9,
+      "AlphaBlendOp": 1000148010,
+      "ColorWriteMask": 15
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
-    "blendConstants": { "FixedElementField": 0.0 },
+    "BlendConstants": { "FixedElementField": 0.0 },
     "sType": 26,
-    "logicOpEnable": 0,
-    "logicOp": 0,
-    "attachmentCount": 0,
+    "LogicOpEnable": false,
+    "LogicOp": 0,
+    "AttachmentCount": 0,
     "pAttachments": { "value": 0 }
   },
   "PipelineRasterizationStateCreateInfo": {

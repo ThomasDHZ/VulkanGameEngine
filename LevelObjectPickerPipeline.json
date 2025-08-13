@@ -1,6 +1,6 @@
 {
-  "Name": "LevelShader2DPipeline",
-  "PipelineId": "a183b621-a8c3-46f1-bdbb-7f4a234f210e",
+  "Name": "LevelObjectPickerPipeline",
+  "PipelineId": "241a46da-4621-4574-9eb4-7c3509f18710",
   "VertexShader": "..\\Shaders\\LevelShader2DVert.spv",
   "FragmentShader": "..\\Shaders\\LevelShader2DFrag.spv",
   "VertexType": 1,

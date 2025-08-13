@@ -203,14 +203,14 @@ namespace nlohmann
 
     void from_json(const nlohmann::json& j, VkPipelineColorBlendAttachmentState& model)
     {
-        j.at("blendEnable").get_to(model.blendEnable);
-        j.at("srcColorBlendFactor").get_to(model.srcColorBlendFactor);
-        j.at("dstColorBlendFactor").get_to(model.dstColorBlendFactor);
-        j.at("colorBlendOp").get_to(model.colorBlendOp);
-        j.at("srcAlphaBlendFactor").get_to(model.srcAlphaBlendFactor);
-        j.at("dstAlphaBlendFactor").get_to(model.dstAlphaBlendFactor);
-        j.at("alphaBlendOp").get_to(model.alphaBlendOp);
-        j.at("colorWriteMask").get_to(model.colorWriteMask);
+        j.at("BlendEnable").get_to(model.blendEnable);
+        j.at("SrcColorBlendFactor").get_to(model.srcColorBlendFactor);
+        j.at("DstColorBlendFactor").get_to(model.dstColorBlendFactor);
+        j.at("ColorBlendOp").get_to(model.colorBlendOp);
+        j.at("SrcAlphaBlendFactor").get_to(model.srcAlphaBlendFactor);
+        j.at("DstAlphaBlendFactor").get_to(model.dstAlphaBlendFactor);
+        j.at("AlphaBlendOp").get_to(model.alphaBlendOp);
+        j.at("ColorWriteMask").get_to(model.colorWriteMask);
     }
 
     void from_json(const nlohmann::json& j, VkPipelineColorBlendStateCreateInfo& model)

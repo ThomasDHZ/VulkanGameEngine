@@ -37,13 +37,13 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkPipelineColorBlendStateCreateFlagBits flags { get; set; }
 
         [Tooltip("Enables or disables logical operations for color blending.")]
-        public VkBool32 logicOpEnable { get; set; }
+        public VkBool32 LogicOpEnable { get; set; }
 
         [Tooltip("Specifies the logical operation to apply when logical operations are enabled.")]
-        public VkLogicOp logicOp { get; set; }
+        public VkLogicOp LogicOp { get; set; }
 
         [Tooltip("Sets the number of color blend attachment states in the attachments array.")]
-        public uint attachmentCount { get; set; }
+        public uint AttachmentCount { get; set; }
 
         [IgnoreProperty]
         [Tooltip("Pointer to an array of color blend attachment states defining per-attachment blending.")]
@@ -57,9 +57,9 @@ namespace VulkanGameEngineLevelEditor.Models
             sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
             pNext = IntPtr.Zero;
             flags = 0;
-            logicOpEnable = Vk.False;
-            logicOp = VkLogicOp.VK_LOGIC_OP_CLEAR;
-            attachmentCount = 0;
+            LogicOpEnable = Vk.False;
+            LogicOp = VkLogicOp.VK_LOGIC_OP_CLEAR;
+            AttachmentCount = 0;
             pAttachments = pAttachments;
         }
 

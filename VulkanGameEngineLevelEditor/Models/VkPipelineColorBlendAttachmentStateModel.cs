@@ -7,14 +7,14 @@ namespace VulkanGameEngineLevelEditor.Models
 {
     public unsafe class VkPipelineColorBlendAttachmentStateModel
     {
-        public Bool32 blendEnable { get; set; }
-        public VkBlendFactor srcColorBlendFactor { get; set; }
-        public VkBlendFactor dstColorBlendFactor { get; set; }
-        public VkBlendOp colorBlendOp { get; set; }
-        public VkBlendFactor srcAlphaBlendFactor { get; set; }
-        public VkBlendFactor dstAlphaBlendFactor { get; set; }
-        public VkBlendOp alphaBlendOp { get; set; }
-        public VkColorComponentFlagBits colorWriteMask { get; set; }
+        public Bool32 BlendEnable { get; set; }
+        public VkBlendFactor SrcColorBlendFactor { get; set; }
+        public VkBlendFactor DstColorBlendFactor { get; set; }
+        public VkBlendOp ColorBlendOp { get; set; }
+        public VkBlendFactor SrcAlphaBlendFactor { get; set; }
+        public VkBlendFactor DstAlphaBlendFactor { get; set; }
+        public VkBlendOp AlphaBlendOp { get; set; }
+        public VkColorComponentFlagBits ColorWriteMask { get; set; }
 
         public VkPipelineColorBlendAttachmentStateModel() { }
     }
