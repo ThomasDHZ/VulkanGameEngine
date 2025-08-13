@@ -51,7 +51,7 @@
       },
       "ColorBlendState": {
         "SType": 19, 
-        "LogicOpEnable": false,
+        "LogicOpEnable": true,
         "LogicOp": 0, 
         "Attachments": [
           {
@@ -65,7 +65,12 @@
             "ColorWriteMask": 15
           }
         ],
-        "BlendConstants": [ 0.0, 0.0, 0.0, 0.0 ]
+        "BlendConstants": {
+          "Red": 1.0,
+          "Green": 1.0,
+          "Blue": 1.0,
+          "Alpha": 1.0
+        }
       }
     }
   ],

@@ -36,4 +36,5 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, VkDescriptorSetLayoutBinding& model);
     DLL_EXPORT void from_json(const json& j, RenderPassLoader& model);
     DLL_EXPORT void from_json(const json& j, RenderPipelineLoader& model);
+    DLL_EXPORT void from_json(const json& j, BlendConstantsModel& model);
 }

@@ -84,7 +84,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 string pipelinePath = @$"{ConstConfig.BaseDirectoryPath}pipelines\{pipelineId}";
                 RenderPipelineLoaderJsonMap[renderPassId].Add(pipelinePath);
 
-                var newPipeline = JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(File.ReadAllText(pipelinePath));
+                var asdf = File.ReadAllText(pipelinePath);
+                var newPipeline = JsonConvert.DeserializeObject<RenderPipelineLoaderModel>(asdf);
                 var pipeline = RenderPassEditor_RenderPass[renderPassId].renderPipelineModelList.Where(x => x.PipelineId == newPipeline.PipelineId).FirstOrDefault();
                 if (pipeline == null)
                 {

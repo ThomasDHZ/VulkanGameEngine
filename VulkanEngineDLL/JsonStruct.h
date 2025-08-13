@@ -2,6 +2,14 @@
 #include "Typedef.h"
 #include "JsonStructs.h"
 
+struct BlendConstantsModel
+{
+    float Red;
+    float Green;
+    float Blue;
+    float Alpha;
+};
+
 struct  RenderedTextureLoader
 {
     VkGuid RenderedTextureId;

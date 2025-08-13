@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Silk.NET.Vulkan;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Vulkan;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
@@ -8,6 +9,16 @@ using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
 namespace VulkanGameEngineLevelEditor.Models
 {
+    public struct BlendConstantsModel
+    {
+        public float Red { get; set; } = 0.0f;
+        public float Green { get; set; } = 0.0f;
+        public float Blue { get; set; } = 0.0f;
+        public float Alpha { get; set; } = 0.0f;
+
+        public BlendConstantsModel() { }
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public unsafe struct VkPipelineColorBlendStateCreateInfoModel
     {
@@ -38,8 +49,8 @@ namespace VulkanGameEngineLevelEditor.Models
         [Tooltip("Pointer to an array of color blend attachment states defining per-attachment blending.")]
         public IntPtr pAttachments { get; set; } = IntPtr.Zero;
 
-        //   [Tooltip("Specifies the four blend constants used for certain blending operations.")]
-        public fixed float blendConstants[4];
+        [Tooltip("Specifies the four blend constants used for certain blending operations.")]
+        public BlendConstantsModel BlendConstants { get; set; } = new BlendConstantsModel();
 
         public VkPipelineColorBlendStateCreateInfoModel()
         {
@@ -50,10 +61,6 @@ namespace VulkanGameEngineLevelEditor.Models
             logicOp = VkLogicOp.VK_LOGIC_OP_CLEAR;
             attachmentCount = 0;
             pAttachments = pAttachments;
-            blendConstants[0] = 0.0f;
-            blendConstants[1] = 0.0f;
-            blendConstants[2] = 0.0f;
-            blendConstants[3] = 0.0f;
         }
 
     }

@@ -218,17 +218,17 @@ namespace nlohmann
         model.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         model.pNext = nullptr;
         model.flags = 0;
-        j.at("logicOpEnable").get_to(model.logicOpEnable);
+        j.at("LogicOpEnable").get_to(model.logicOpEnable);
         if (model.logicOpEnable)
         {
-            j.at("logicOp").get_to(model.logicOp);
-            if (j.contains("blendConstants"))
+            j.at("LogicOp").get_to(model.logicOp);
+            if (j.contains("BlendConstants"))
             {
-                auto bc = j["blendConstants"];
-                j.at("blendConstants").at("R").get_to(model.blendConstants[0]);
-                j.at("blendConstants").at("G").get_to(model.blendConstants[1]);
-                j.at("blendConstants").at("B").get_to(model.blendConstants[2]);
-                j.at("blendConstants").at("A").get_to(model.blendConstants[3]);
+                auto bc = j["BlendConstants"];
+                j.at("BlendConstants").at("Red").get_to(model.blendConstants[0]);
+                j.at("BlendConstants").at("Green").get_to(model.blendConstants[1]);
+                j.at("BlendConstants").at("Blue").get_to(model.blendConstants[2]);
+                j.at("BlendConstants").at("Alpha").get_to(model.blendConstants[3]);
             }
         }
     }
@@ -307,6 +307,14 @@ namespace nlohmann
         model.flags = 0;
         j.at("topology").get_to(model.topology);
         j.at("primitiveRestartEnable").get_to(model.primitiveRestartEnable);
+    }
+
+    void from_json(const nlohmann::json& j, BlendConstantsModel& model)
+    {
+        j.at("Red").get_to(model.Red);
+        j.at("Green").get_to(model.Green);
+        j.at("Blue").get_to(model.Blue);
+        j.at("Alpha").get_to(model.Alpha);
     }
 
     void from_json(const nlohmann::json& j, VkDescriptorSetLayoutBinding& model)
