@@ -51,7 +51,7 @@
       },
       "ColorBlendState": {
         "SType": 19, 
-        "LogicOpEnable": true,
+        "LogicOpEnable": false,
         "LogicOp": 0, 
         "Attachments": [
           {
