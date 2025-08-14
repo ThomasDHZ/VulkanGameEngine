@@ -56,12 +56,12 @@
         "Attachments": [
           {
             "BlendEnable": true,
-            "SrcColorBlendFactor": 1,
+            "SrcColorBlendFactor": 3,
             "DstColorBlendFactor": 1,
-            "ColorBlendOp": 25,
-            "SrcAlphaBlendFactor": 1,
+            "ColorBlendOp": 1,
+            "SrcAlphaBlendFactor": 3,
             "DstAlphaBlendFactor": 1,
-            "AlphaBlendOp": 25,
+            "AlphaBlendOp": 1,
             "ColorWriteMask": 15
           }
         ],

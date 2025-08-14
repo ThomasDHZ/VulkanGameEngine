@@ -1,8 +1,8 @@
 {
-  "Name": "SpriteObjectPickerPipeline",
-  "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
-  "VertexShader": "..\\Shaders\\SpriteInstanceShaderVert.spv",
-  "FragmentShader": "..\\Shaders\\SpriteInstanceShaderFrag.spv",
+  "Name": "LevelObjectPickerPipeline",
+  "PipelineId": "241a46da-4621-4574-9eb4-7c3509f18710",
+  "VertexShader": "..\\Shaders\\LevelObjectPickerShader2DVert.spv",
+  "FragmentShader": "..\\Shaders\\LevelObjectPickerShader2DFrag.spv",
   "VertexType": 1,
   "ViewportList": [
     {
@@ -28,13 +28,13 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 1,
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
       "DstAlphaBlendFactor": 9,
-      "AlphaBlendOp": 1000148010,
+      "AlphaBlendOp": 0,
       "ColorWriteMask": 15
     }
   ],
@@ -113,71 +113,29 @@
   ],
   "VertexInputBindingDescriptionList": [
     {
-      "binding": 1,
-      "stride": 124,
-      "inputRate": 1
+      "binding": 0,
+      "stride": 16,
+      "inputRate": 0
     }
   ],
   "VertexInputAttributeDescriptionList": [
     {
       "location": 0,
-      "binding": 1,
+      "binding": 0,
       "format": 103,
       "offset": 0
     },
     {
       "location": 1,
-      "binding": 1,
-      "format": 109,
+      "binding": 0,
+      "format": 103,
       "offset": 8
     },
     {
-      "location": 2,
+      "location": 10,
       "binding": 1,
-      "format": 103,
+      "format": 109,
       "offset": 24
-    },
-    {
-      "location": 3,
-      "binding": 1,
-      "format": 102,
-      "offset": 32
-    },
-    {
-      "location": 4,
-      "binding": 1,
-      "format": 109,
-      "offset": 40
-    },
-    {
-      "location": 5,
-      "binding": 1,
-      "format": 109,
-      "offset": 56
-    },
-    {
-      "location": 6,
-      "binding": 1,
-      "format": 109,
-      "offset": 72
-    },
-    {
-      "location": 7,
-      "binding": 1,
-      "format": 109,
-      "offset": 88
-    },
-    {
-      "location": 8,
-      "binding": 1,
-      "format": 109,
-      "offset": 104
-    },
-    {
-      "location": 9,
-      "binding": 1,
-      "format": 98,
-      "offset": 120
     }
   ]
 }
