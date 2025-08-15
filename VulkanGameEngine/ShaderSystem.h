@@ -25,6 +25,7 @@ public:
 	~ShaderSystem();
 
 	void StartUp();
+	void VertexDataFromSpirv(const String& path);
 	VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 };
 extern ShaderSystem shaderSystem;

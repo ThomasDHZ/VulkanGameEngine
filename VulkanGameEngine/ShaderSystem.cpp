@@ -17,7 +17,14 @@ void ShaderSystem::StartUp()
     Shader_StartUp();
 }
 
-VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, const String& filename, VkShaderStageFlagBits shaderStages)
+void ShaderSystem::VertexDataFromSpirv(const String& path)
 {
-    return Shader_CreateShader(device, filename, shaderStages);
+    FileState file = File_Read(path.c_str());
+    Vector<byte> shaderCode = Vector<byte>(file.Data, file.Data + file.Size);
+    Shader_VertexDataFromSpirv(shaderCode);
+}
+
+VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages)
+{
+    return Shader_CreateShader(device, path, shaderStages);
 }

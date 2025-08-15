@@ -13,8 +13,10 @@ extern "C"
 #include <vulkan/vulkan.h>
 #include <fstream>
 #include "TypeDef.h"
+#include <SPIRV-Reflect/spirv_reflect.h>
 
 DLL_EXPORT void Shader_StartUp();
+DLL_EXPORT void Shader_VertexDataFromSpirv(const Vector<byte>& spirvCode);
 DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);

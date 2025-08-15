@@ -220,6 +220,12 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
            .MaterialPropertiesCount = materialPropertiesList.size()
         };
 
+        const char* jsonDataString = File_Read(pipelineJson.c_str()).Data;
+        RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
+        shaderSystem.VertexDataFromSpirv(renderPassLoader.VertexShaderPath);
+        shaderSystem.VertexDataFromSpirv(renderPassLoader.FragmentShaderPath);
+
+
         VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }

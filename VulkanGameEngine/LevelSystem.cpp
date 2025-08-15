@@ -5,6 +5,7 @@
 #include "MeshSystem.h"
 #include "VRAM.h"
 #include "SpriteSystem.h"
+#include "ShaderSystem.h"
 
 LevelSystem levelSystem = LevelSystem();
 

@@ -21,6 +21,29 @@ VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const Strin
     return Shader_CreateShader(shaderModule, shaderStages);
 }
 
+void Shader_VertexDataFromSpirv(const Vector<byte>& spirvCode)
+{
+    SpvReflectShaderModule module;
+    SpvReflectResult result = spvReflectCreateShaderModule(spirvCode.size() * sizeof(byte), spirvCode.data(), &module);
+    Vector<SpvReflectDescriptorBinding> descriptorBindings = Vector<SpvReflectDescriptorBinding>(module.descriptor_bindings, module.descriptor_bindings + module.descriptor_binding_count);
+    Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
+    //Vector<SpvReflectInterfaceVariable> inputVariables = Vector<SpvReflectInterfaceVariable>(module.input_variables, module.input_variables + module.input_variable_count);
+ //   Vector<SpvReflectInterfaceVariable> outputVariables = Vector<SpvReflectInterfaceVariable>(module.output_variables, module.output_variables + module.output_variable_count);
+    for (uint32_t i = 0; i < module.input_variable_count; ++i) {
+        SpvReflectInterfaceVariable* var = module.input_variables[i];
+
+        // Access variable properties, for example:
+        printf("Input Variable %u:\n", i);
+        printf("  Name: %s\n", var->name);
+        printf("  Type: %u\n", var->type_description->type_flags); // example
+        // Add other properties as needed
+    }
+    //Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
+    //Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
+    //Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
+}
+        
+
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)
 {
     int strLength = WideCharToMultiByte(CP_UTF8, 0, lpcwszStr, -1, nullptr, 0, nullptr, nullptr);

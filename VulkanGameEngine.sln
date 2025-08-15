@@ -26,6 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5
 		Shaders\SpriteInstanceShader.vert = Shaders\SpriteInstanceShader.vert
 		Shaders\SpritePixelShader.hlsl = Shaders\SpritePixelShader.hlsl
 		Shaders\SpriteVertexShader.hlsl = Shaders\SpriteVertexShader.hlsl
+		Shaders\VertexUpdater.comp = Shaders\VertexUpdater.comp
 		Shaders\vertshader.vert = Shaders\vertshader.vert
 	EndProjectSection
 EndProject
@@ -37,9 +38,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		Pipelines\DefaultPipeline.json = Pipelines\DefaultPipeline.json
 		Pipelines\FrameBufferPipeline.json = Pipelines\FrameBufferPipeline.json
 		LevelObjectPickerPipeline.json = LevelObjectPickerPipeline.json
+		Pipelines\LevelObjectPickerPipeline.json = Pipelines\LevelObjectPickerPipeline.json
 		Pipelines\LevelShader2DPipeline.json = Pipelines\LevelShader2DPipeline.json
 		Pipelines\SpriteInstancePipeline.json = Pipelines\SpriteInstancePipeline.json
-		SpriteObjectPickerPipeline.json = SpriteObjectPickerPipeline.json
+		Pipelines\SpriteObjectPickerPipeline.json = Pipelines\SpriteObjectPickerPipeline.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"
@@ -47,7 +49,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
 		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
-		ObjectPickerRenderPass.json = ObjectPickerRenderPass.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"
