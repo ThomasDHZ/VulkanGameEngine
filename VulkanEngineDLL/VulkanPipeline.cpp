@@ -52,6 +52,19 @@
      return vulkanPipeline;
  }
 
+ VulkanPipeline VulkanPipeline_CreateRenderPipelineReflect(VkDevice device, VkGuid& renderPassId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
+ {
+     const char* jsonDataString = File_Read(pipelineJson).Data;
+     RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
+     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
+     {
+         Shader_CreateShader(device, renderPassLoader.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
+         Shader_CreateShader(device, renderPassLoader.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
+     };
+     return VulkanPipeline();
+     
+ }
+
  VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      VulkanPipeline_Destroy(device, oldVulkanPipeline);

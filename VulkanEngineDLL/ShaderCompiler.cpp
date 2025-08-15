@@ -1,4 +1,5 @@
 #include "ShaderCompiler.h"
+#include "MemorySystem.h"
 
 void Shader_StartUp()
 {
@@ -25,22 +26,16 @@ void Shader_VertexDataFromSpirv(const Vector<byte>& spirvCode)
 {
     SpvReflectShaderModule module;
     SpvReflectResult result = spvReflectCreateShaderModule(spirvCode.size() * sizeof(byte), spirvCode.data(), &module);
-    Vector<SpvReflectDescriptorBinding> descriptorBindings = Vector<SpvReflectDescriptorBinding>(module.descriptor_bindings, module.descriptor_bindings + module.descriptor_binding_count);
     Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
-    //Vector<SpvReflectInterfaceVariable> inputVariables = Vector<SpvReflectInterfaceVariable>(module.input_variables, module.input_variables + module.input_variable_count);
- //   Vector<SpvReflectInterfaceVariable> outputVariables = Vector<SpvReflectInterfaceVariable>(module.output_variables, module.output_variables + module.output_variable_count);
-    for (uint32_t i = 0; i < module.input_variable_count; ++i) {
-        SpvReflectInterfaceVariable* var = module.input_variables[i];
 
-        // Access variable properties, for example:
-        printf("Input Variable %u:\n", i);
-        printf("  Name: %s\n", var->name);
-        printf("  Type: %u\n", var->type_description->type_flags); // example
-        // Add other properties as needed
-    }
-    //Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
-    //Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
-    //Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
+    Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
+    Vector<ShaderVertexVariable> outputVertexVariables = Shader_GetShaderOutputVertexVariables(module);
+    Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(module);
+    Vector<ShaderPushConstant> constBufferList = Shader_GetShaderConstBuffer(module);
+
+    Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
+    Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
+    Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
 }
         
 
@@ -130,4 +125,141 @@ Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const
     }
 
     return shader_obj;
+}
+
+Vector<ShaderVertexVariable> Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module)
+{
+    uint32_t inputCount = 0;
+    SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, nullptr));
+    Vector<SpvReflectInterfaceVariable*> inputs(inputCount);
+    SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, inputs.data()));
+
+    Vector<ShaderVertexVariable> vertexAttributeList;
+    for (int x = 0; x < inputs.size(); x++)
+    {
+        vertexAttributeList.emplace_back(ShaderVertexVariable
+        {
+                .Name = inputs[x]->name,
+                .Location = inputs[x]->location,
+                .Format = static_cast<VkFormat>(inputs[x]->format)
+        });
+    }
+    return vertexAttributeList;
+}
+
+Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module)
+{
+    uint32_t outputCount = 0;
+    SPV_VULKAN_RESULT(spvReflectEnumerateOutputVariables(&module, &outputCount, nullptr));
+    Vector<SpvReflectInterfaceVariable*> outputs(outputCount);
+    SPV_VULKAN_RESULT(spvReflectEnumerateOutputVariables(&module, &outputCount, outputs.data()));
+   
+    Vector<ShaderVertexVariable> vertexAttributeList;
+    for (int x = 0; x < outputs.size(); x++)
+    {
+        vertexAttributeList.emplace_back(ShaderVertexVariable
+            {
+                    .Name = outputs[x]->name,
+                    .Location = outputs[x]->location,
+                    .Format = static_cast<VkFormat>(outputs[x]->format)
+            });
+    }
+    return vertexAttributeList;
+}
+
+Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module)
+{
+    uint32_t descriptorBindingsCount = 0;
+    SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorBindings(&module, &descriptorBindingsCount, nullptr));
+    Vector<SpvReflectDescriptorBinding*> descriptorSetBindings(descriptorBindingsCount);
+    SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorBindings(&module, &descriptorBindingsCount, descriptorSetBindings.data()));
+
+    Vector<ShaderDescriptorBinding> ShaderDescriptorBindingList;
+    for (auto& shaderBuffer : descriptorSetBindings)
+    {
+        Vector<ShaderStruct> shaderStructList;
+        SpvReflectTypeDescription shaderBufferMembers = *shaderBuffer->type_description;
+        Vector<SpvReflectTypeDescription> shaderBufferMembersList = Vector<SpvReflectTypeDescription>(shaderBufferMembers.members, shaderBufferMembers.members + shaderBufferMembers.member_count);
+        if (shaderBufferMembersList.size())
+        {
+            for (auto& members : shaderBufferMembersList)
+            {
+                Vector<ShaderVariable> shaderVariables;
+                Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(members.members, members.members + members.member_count);
+                for (auto& variable : shaderVariableList)
+                {
+                    shaderVariables.emplace_back(ShaderVariable
+                        {
+                            .Name = variable.struct_member_name,
+                            .ShaderVarOp = variable.op,
+                            .VectorCount = variable.traits.numeric.vector.component_count > 0 ? 1 : variable.traits.numeric.vector.component_count,
+                            .ColumnCount = variable.traits.numeric.matrix.column_count,
+                            .RowCount = variable.traits.numeric.matrix.row_count,
+                            .MatrixStride = variable.traits.numeric.matrix.stride,
+                            .IsSigned = static_cast<bool>(variable.traits.numeric.scalar.signedness)
+                        });
+                }
+
+                ShaderStruct shaderStruct;
+                shaderStruct.Name = members.type_name;
+                shaderStruct.ShaderBufferMemberName = members.struct_member_name;
+                shaderStruct.ShaderStructOp = members.op;
+                shaderStruct.ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
+                shaderStruct.ShaderBufferVariableListCount = members.member_count;
+                std::memcpy(shaderStruct.ShaderBufferVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
+                shaderStructList.emplace_back(shaderStruct);
+            }
+        }
+        ShaderDescriptorBinding shaderDescriptorBinding;
+        shaderDescriptorBinding.Name = shaderBuffer->name;
+        shaderDescriptorBinding.Binding = shaderBuffer->binding;
+        shaderDescriptorBinding.DescripterType = static_cast<VkDescriptorType>(shaderBuffer->descriptor_type);
+        if (shaderBuffer->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+        {
+            shaderDescriptorBinding.ShaderStructListCount = shaderBuffer->count;
+            shaderDescriptorBinding.ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructList.size(), __FILE__, __LINE__, __func__);
+            std::memcpy(shaderDescriptorBinding.ShaderStructList, shaderStructList.data(), shaderStructList.size() * sizeof(ShaderStruct));
+        }
+        ShaderDescriptorBindingList.emplace_back(shaderDescriptorBinding);
+    }
+    return ShaderDescriptorBindingList;
+}
+
+Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module)
+{
+    uint32_t pushConstCount = 0;
+    SPV_VULKAN_RESULT(spvReflectEnumeratePushConstantBlocks(&module, &pushConstCount, nullptr));
+    Vector<SpvReflectBlockVariable*> pushConstants(pushConstCount);
+    SPV_VULKAN_RESULT(spvReflectEnumeratePushConstantBlocks(&module, &pushConstCount, pushConstants.data()));
+
+    Vector<ShaderPushConstant> pushConstantList;
+    for (auto pushConstant : pushConstants)
+    {
+        Vector<ShaderVariable> shaderVariables;
+        SpvReflectTypeDescription shaderBufferMembers = *pushConstant->type_description;
+        Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(shaderBufferMembers.members, shaderBufferMembers.members + shaderBufferMembers.member_count);
+        for (auto& variable : shaderVariableList)
+        {
+            shaderVariables.emplace_back(ShaderVariable
+                {
+                    .Name = variable.struct_member_name,
+                    .ShaderVarOp = variable.op,
+                    .VectorCount = variable.traits.numeric.vector.component_count > 0 ? 1 : variable.traits.numeric.vector.component_count,
+                    .ColumnCount = variable.traits.numeric.matrix.column_count,
+                    .RowCount = variable.traits.numeric.matrix.row_count,
+                    .MatrixStride = variable.traits.numeric.matrix.stride,
+                    .IsSigned = static_cast<bool>(variable.traits.numeric.scalar.signedness)
+                });
+        }
+
+        ShaderPushConstant shaderStruct;
+        shaderStruct.Name = pushConstant->name;
+        shaderStruct.BufferSize = static_cast<size_t>(pushConstant->size);
+        shaderStruct.ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
+        shaderStruct.ShaderBufferVariableListCount = pushConstant->member_count;
+        std::memcpy(shaderStruct.ShaderBufferVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
+        pushConstantList.emplace_back(shaderStruct);
+    }
+
+    return pushConstantList;
 }
