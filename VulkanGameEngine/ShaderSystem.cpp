@@ -21,7 +21,7 @@ void ShaderSystem::VertexDataFromSpirv(const String& path)
 {
     FileState file = File_Read(path.c_str());
     Vector<byte> shaderCode = Vector<byte>(file.Data, file.Data + file.Size);
-    Shader_VertexDataFromSpirv(shaderCode);
+    //Shader_VertexDataFromSpirv(shaderCode);
 }
 
 VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages)

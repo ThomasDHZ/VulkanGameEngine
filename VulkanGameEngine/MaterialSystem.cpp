@@ -29,6 +29,140 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
         return materialId;
     }
 
+    //ShaderStruct shaderStruct;
+    //Vector<ShaderVariable> shaderVariableList = Vector<ShaderVariable>
+    //{
+    //    ShaderVariable
+    //    {
+    //        .Name = "Albedo",
+    //        .VarSize = 16,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeFloat,
+    //        .VectorCount = 3,
+    //        .IsSigned = 1
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "Metallic",
+    //        .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeFloat,
+    //        .VectorCount = 1,
+    //        .IsSigned = 1
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "Roughness",
+    //                 .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeFloat,
+    //        .VectorCount = 1,
+    //        .IsSigned = 1
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "AmbientOcclusion",
+    //                 .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeFloat,
+    //        .VectorCount = 1,
+    //        .IsSigned = 1
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "Emission",
+    //                 .VarSize = 16,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeFloat,
+    //        .VectorCount = 3,
+    //        .IsSigned = 1
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "Alpha",
+    //                 .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeFloat,
+    //        .VectorCount = 1,
+    //        .IsSigned = 1
+    //    },
+    //   ShaderVariable
+    //    {
+    //        .Name = "AlbedoMap",
+    //                 .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //     ShaderVariable
+    //    {
+    //        .Name = "MetallicRoughnessMap",
+    //                 .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "MetallicMap",
+    //                 .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "RoughnessMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "AmbientOcclusionMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "NormalMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "DepthMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "AlphaMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "EmissionMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //    ShaderVariable
+    //    {
+    //        .Name = "HeightMap",         .VarSize = 4,
+    //        .ShaderVarOp = SpvOp::SpvOpTypeInt,
+    //        .VectorCount = 1,
+    //        .IsSigned = 0
+    //    },
+    //};
+
+    //byte offset = 0x00;
+    //byte* aadsf = new byte [900];
+    //for (auto shaderVarible : shaderVariableList)
+    //{
+    //    aadsf[offset] = shaderVarible.Value;
+    //}
+   
+
     int bufferIndex = ++bufferSystem.NextBufferId;
     MaterialMap[materialId] = Material_CreateMaterial(renderSystem.renderer, bufferIndex, bufferSystem.VulkanBufferMap[bufferIndex], materialPath.c_str());
     return materialId;

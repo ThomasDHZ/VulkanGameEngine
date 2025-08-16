@@ -62,14 +62,11 @@ struct Vertex2D
 	vec2 UV;
 };
 
-//InputParams(DescriptorBindingPropertiesEnum = kMeshPropertiesDescriptor)
 layout(binding = 0) readonly buffer MeshProperities 
 { 
 	MeshProperitiesBuffer meshProperties; 
 } meshBuffer[];
-//InputParams(DescriptorBindingPropertiesEnum = kTextureDescriptor)
 layout(binding = 1) uniform sampler2D TextureMap[];
-//InputParams(DescriptorBindingPropertiesEnum = kMaterialDescriptor)
 layout(binding = 2) uniform MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main() 

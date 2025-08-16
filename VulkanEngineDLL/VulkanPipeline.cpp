@@ -8,11 +8,6 @@
  {
      const char* jsonDataString = File_Read(pipelineJsonPath).Data;
      RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
-     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
-     {
-         Shader_CreateShader(device, renderPassLoader.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
-         Shader_CreateShader(device, renderPassLoader.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
-     };
 
      VkPipelineCache pipelineCache = VK_NULL_HANDLE;
      VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPassLoader, includes);
@@ -20,7 +15,7 @@
      Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, renderPassLoader, descriptorSetLayoutList);
      Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, renderPassLoader, includes);
      VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, constBufferSize);
-     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution, pipelineShaderStageCreateInfoList);
+     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution);
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
      {
@@ -52,29 +47,11 @@
      return vulkanPipeline;
  }
 
- VulkanPipeline VulkanPipeline_CreateRenderPipelineReflect(VkDevice device, VkGuid& renderPassId, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
- {
-     const char* jsonDataString = File_Read(pipelineJson).Data;
-     RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
-     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
-     {
-         Shader_CreateShader(device, renderPassLoader.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
-         Shader_CreateShader(device, renderPassLoader.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
-     };
-     return VulkanPipeline();
-     
- }
-
  VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      VulkanPipeline_Destroy(device, oldVulkanPipeline);
 
      RenderPipelineLoader renderPassLoader = nlohmann::json::parse(pipelineJson).get<RenderPipelineLoader>();
-     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
-     {
-         Shader_CreateShader(device, renderPassLoader.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
-         Shader_CreateShader(device, renderPassLoader.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
-     };
 
      VkPipelineCache pipelineCache = VK_NULL_HANDLE;
      VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPassLoader, includes);
@@ -82,7 +59,7 @@
      Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, renderPassLoader, descriptorSetLayoutList);
      Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, renderPassLoader, includes);
      VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, constBufferSize);
-     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution, pipelineShaderStageCreateInfoList);
+     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution);
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
      {
@@ -400,8 +377,12 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, const Vector<VkD
     return pipelineLayout;
 }
 
-VkPipeline Pipeline_CreatePipeline(VkDevice device, VkRenderPass renderpass, VkPipelineLayout pipelineLayout, VkPipelineCache pipelineCache, const RenderPipelineLoader& model, ivec2& extent, Vector<VkPipelineShaderStageCreateInfo>& pipelineShaders)
+VkPipeline Pipeline_CreatePipeline(VkDevice device, VkRenderPass renderpass, VkPipelineLayout pipelineLayout, VkPipelineCache pipelineCache, const RenderPipelineLoader& model, ivec2& extent)
 {
+    Vector<VkVertexInputBindingDescription> vertexInputBindingList;
+    Vector<VkVertexInputAttributeDescription> vertexInputAttributeList;
+    SpvReflectShaderModule module = Shader_ShaderDataFromSpirv(model.VertexShaderPath);
+    Shader_GetShaderInputVertexVariables(module, vertexInputBindingList, vertexInputAttributeList);
 
     VkPipeline pipeline = VK_NULL_HANDLE;
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo
@@ -409,10 +390,10 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, VkRenderPass renderpass, VkP
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .vertexBindingDescriptionCount = static_cast<uint>(model.VertexInputBindingDescriptionList.size()),
-        .pVertexBindingDescriptions = model.VertexInputBindingDescriptionList.data(),
-        .vertexAttributeDescriptionCount = static_cast<uint>(model.VertexInputAttributeDescriptionList.size()),
-        .pVertexAttributeDescriptions = model.VertexInputAttributeDescriptionList.data()
+        .vertexBindingDescriptionCount = static_cast<uint>(vertexInputBindingList.size()),
+        .pVertexBindingDescriptions = vertexInputBindingList.data(),
+        .vertexAttributeDescriptionCount = static_cast<uint>(vertexInputAttributeList.size()),
+        .pVertexAttributeDescriptions = vertexInputAttributeList.data()
     };
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = model.PipelineColorBlendStateCreateInfoModel;
@@ -482,7 +463,11 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, VkRenderPass renderpass, VkP
         .pDynamicStates = dynamicStateList.data()
     };
 
-    Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = pipelineShaders;
+    Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
+    {
+        Shader_CreateShader(device, model.VertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
+        Shader_CreateShader(device, model.FragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
 
     VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = model.PipelineMultisampleStateCreateInfo;
     pipelineMultisampleStateCreateInfo.pSampleMask = nullptr;

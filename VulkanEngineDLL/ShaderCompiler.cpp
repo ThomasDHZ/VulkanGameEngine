@@ -1,6 +1,7 @@
 #include "ShaderCompiler.h"
 #include "MemorySystem.h"
 
+
 void Shader_StartUp()
 {
     //DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(dxc_utils.ReleaseAndGetAddressOf()));
@@ -22,20 +23,23 @@ VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const Strin
     return Shader_CreateShader(shaderModule, shaderStages);
 }
 
-void Shader_VertexDataFromSpirv(const Vector<byte>& spirvCode)
+SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
 {
     SpvReflectShaderModule module;
-    SpvReflectResult result = spvReflectCreateShaderModule(spirvCode.size() * sizeof(byte), spirvCode.data(), &module);
-    Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
+    FileState file = File_Read(path.c_str());
+    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
 
-    Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
+    return module;
+   
+   // Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
+   /* Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
     Vector<ShaderVertexVariable> outputVertexVariables = Shader_GetShaderOutputVertexVariables(module);
     Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(module);
     Vector<ShaderPushConstant> constBufferList = Shader_GetShaderConstBuffer(module);
 
     Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
     Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
-    Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
+    Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);*/
 }
         
 
@@ -127,24 +131,34 @@ Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const
     return shader_obj;
 }
 
-Vector<ShaderVertexVariable> Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module)
+void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList)
 {
     uint32_t inputCount = 0;
+    vertexInputBindingList.clear();
+    vertexInputAttributeList.clear();
     SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, nullptr));
     Vector<SpvReflectInterfaceVariable*> inputs(inputCount);
     SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, inputs.data()));
 
-    Vector<ShaderVertexVariable> vertexAttributeList;
+    Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
+
     for (int x = 0; x < inputs.size(); x++)
     {
-        vertexAttributeList.emplace_back(ShaderVertexVariable
+  /*      vertexInputBindingList.emplace_back(VkVertexInputBindingDescription
         {
                 .Name = inputs[x]->name,
                 .Location = inputs[x]->location,
                 .Format = static_cast<VkFormat>(inputs[x]->format)
-        });
+        });*/
+
+        vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+            {
+                .location = inputs[x]->location,
+                //.binding = inputs[x]->bin,
+                .format = static_cast<VkFormat>(inputs[x]->format),
+
+            });
     }
-    return vertexAttributeList;
 }
 
 Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module)
@@ -188,15 +202,62 @@ Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvRefl
                 Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(members.members, members.members + members.member_count);
                 for (auto& variable : shaderVariableList)
                 {
+                    ShaderMemberType memberType;
+                    uint memberSize = 0;
+                    switch (variable.op)
+                    {
+                        case SpvOpTypeInt:
+                        {
+                            memberSize = variable.traits.numeric.scalar.width / 8;
+                            memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                            break;
+                        }
+                        case SpvOpTypeFloat:
+                        {
+                            memberSize = variable.traits.numeric.scalar.width / 8;
+                            memberType = shaderFloat;
+                            break;
+                        }
+                        case SpvOpTypeVector:
+                        {
+                            memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
+                            switch (variable.traits.numeric.vector.component_count)
+                            {
+                                case 2: memberType = shaderVec2; break;
+                                case 3: memberType = shaderVec3; break;
+                                case 4: memberType = shaderVec4; break;
+                            }
+                            break;
+                        }
+                        case SpvOpTypeMatrix:
+                        {
+                            uint32_t rowCount = variable.traits.numeric.matrix.row_count;
+                            uint32_t colCount = variable.traits.numeric.matrix.column_count;
+                            if (rowCount == 2 && colCount == 2)
+                            {
+                                memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                                memberType = shaderMat2;
+                            }
+                            if (rowCount == 3 && colCount == 3)
+                            {
+                                memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                                memberType = shaderMat3;
+                            }
+                            if (rowCount == 4 && colCount == 4)
+                            {
+                                memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                                memberType = shaderMat4;
+                            }
+                            break;
+                        }
+                    }
+                   
                     shaderVariables.emplace_back(ShaderVariable
                         {
                             .Name = variable.struct_member_name,
-                            .ShaderVarOp = variable.op,
-                            .VectorCount = variable.traits.numeric.vector.component_count > 0 ? 1 : variable.traits.numeric.vector.component_count,
-                            .ColumnCount = variable.traits.numeric.matrix.column_count,
-                            .RowCount = variable.traits.numeric.matrix.row_count,
-                            .MatrixStride = variable.traits.numeric.matrix.stride,
-                            .IsSigned = static_cast<bool>(variable.traits.numeric.scalar.signedness)
+                            .VarSize = memberSize,
+                            .Value = nullptr,
+                            .MemberTypeEnum = memberType,
                         });
                 }
 
@@ -243,12 +304,12 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
             shaderVariables.emplace_back(ShaderVariable
                 {
                     .Name = variable.struct_member_name,
-                    .ShaderVarOp = variable.op,
+      /*              .ShaderVarOp = variable.op,
                     .VectorCount = variable.traits.numeric.vector.component_count > 0 ? 1 : variable.traits.numeric.vector.component_count,
                     .ColumnCount = variable.traits.numeric.matrix.column_count,
-                    .RowCount = variable.traits.numeric.matrix.row_count,
-                    .MatrixStride = variable.traits.numeric.matrix.stride,
-                    .IsSigned = static_cast<bool>(variable.traits.numeric.scalar.signedness)
+                    .RowCount = variable.traits.numeric.matrix.row_count,*/
+         /*           .MatrixStride = variable.traits.numeric.matrix.stride,
+                    .IsSigned = static_cast<bool>(variable.traits.numeric.scalar.signedness)*/
                 });
         }
 
