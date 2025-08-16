@@ -154,9 +154,9 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
         vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
             {
                 .location = inputs[x]->location,
-                //.binding = inputs[x]->bin,
+                .binding = 0,
                 .format = static_cast<VkFormat>(inputs[x]->format),
-
+                .offset = 
             });
     }
 }

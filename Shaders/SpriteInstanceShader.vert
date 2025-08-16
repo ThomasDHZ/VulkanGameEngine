@@ -5,6 +5,8 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
+layout (location = 0, binding = 0) in vec2 position;
+layout (location = 1, binding = 1) in vec4 color;
 layout (location = 0)  in vec2  VS_SpritePosition;
 layout (location = 1)  in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
 layout (location = 2)  in vec2  VS_SpriteSize;
