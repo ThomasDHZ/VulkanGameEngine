@@ -5,8 +5,13 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-layout (location = 0, binding = 0) in vec2 position;
-layout (location = 1, binding = 1) in vec4 color;
+layout(constant_id = 0) const ivec2 InputRateMode = vec2(0, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+layout(constant_id = 1) const ivec2 InputRateMode1 = vec2(1, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+layout(constant_id = 2) const ivec2 InputRateMode2 = vec2(2, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+layout(constant_id = 3) const ivec2 InputRateMode3 = vec2(3, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+layout(constant_id = 4) const ivec2 InputRateMode4 = vec2(4, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+layout(constant_id = 5) const ivec2 InputRateMode5 =  vec2(5, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+
 layout (location = 0)  in vec2  VS_SpritePosition;
 layout (location = 1)  in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
 layout (location = 2)  in vec2  VS_SpriteSize;

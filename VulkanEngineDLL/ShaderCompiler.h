@@ -43,7 +43,7 @@ struct ShaderVertexVariable
 struct ShaderVariable
 {
 	String Name;
-	size_t VarSize;
+	uint32 VarSize;
 	void*  Value;
 	ShaderMemberType  MemberTypeEnum;
 };
@@ -95,3 +95,4 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
 Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module);
 Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module);
 Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
+void Shader_GetVariableSize(const SpvReflectTypeDescription& variable, uint32& memberSize, ShaderMemberType& memberType);
