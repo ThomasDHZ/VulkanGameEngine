@@ -5,25 +5,25 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-layout(constant_id = 0) const uint VertexAttributeLocation0 = 1;
+layout(constant_id = 0) const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;
 
-layout(constant_id = 2) const uint VertexAttributeLocation1 = 1;
+layout(constant_id = 2) const uint VertexAttributeLocation1 = 0;
 layout(constant_id = 3) const uint VertexInputRateLocation1 = 1;
 
-layout(constant_id = 4) const uint VertexAttributeLocation2 = 1;
+layout(constant_id = 4) const uint VertexAttributeLocation2 = 0;
 layout(constant_id = 5) const uint VertexInputRateLocation2 = 1;
 
-layout(constant_id = 6) const uint VertexAttributeLocation3 = 1;
+layout(constant_id = 6) const uint VertexAttributeLocation3 = 0;
 layout(constant_id = 7) const uint VertexInputRateLocation3 = 1;
 
-layout(constant_id = 8) const uint VertexAttributeLocation4 = 1;
+layout(constant_id = 8) const uint VertexAttributeLocation4 = 0;
 layout(constant_id = 9) const uint VertexInputRateLocation4 = 1;
 
-layout(constant_id = 10) const uint VertexAttributeLocation5 = 1;
+layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
 layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 
-layout(constant_id = 12) const uint VertexAttributeLocation9 = 1;
+layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 
 layout (location = 0)  in vec2  VS_SpritePosition;

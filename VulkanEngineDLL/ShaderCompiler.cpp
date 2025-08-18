@@ -190,7 +190,6 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
     }
 
     uint32 offset = 0;
-    bool firstofBinding = true;
     for (int x = 0; x < inputs.size(); x++)
     {
 
@@ -214,81 +213,78 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
             }
         }
 
-        if (x > 0)
+
+        switch (inputs[x]->type_description->op)
         {
-            if (!firstofBinding &&
-                vertexInputAttributeList[x - 1].binding != binding)
+            case SpvOpTypeInt:
             {
-                vertexInputBindingList.emplace_back(VkVertexInputBindingDescription
+                vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
                     {
-                        .binding = vertexInputAttributeList[x - 1].binding,
-                        .stride = offset,
-                        .inputRate = static_cast<VkVertexInputRate>(inputRate),
+                        .location = inputs[x]->location,
+                        .binding = binding,
+                        .format = static_cast<VkFormat>(inputs[x]->format),
+                        .offset = offset
                     });
-                offset = 0;
-                firstofBinding = true;
+                offset += inputs[x]->type_description->traits.numeric.scalar.width / 8; 
+                break;
             }
-            else
+            case SpvOpTypeFloat:
             {
-                switch (inputs[x]->type_description->op)
+                vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                    {
+                        .location = inputs[x]->location,
+                        .binding = binding,
+                        .format = static_cast<VkFormat>(inputs[x]->format),
+                        .offset = offset
+                    });
+                offset +=inputs[x]->type_description->traits.numeric.scalar.width / 8;
+                break;
+            }
+            case SpvOpTypeVector:
+            {
+                vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                    {
+                        .location = inputs[x]->location,
+                        .binding = binding,
+                        .format = static_cast<VkFormat>(inputs[x]->format),
+                        .offset = offset
+                    });
+                offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
+                break;
+            }
+            case SpvOpTypeMatrix:
+            {
+                uint32_t rowCount = inputs[x]->type_description->traits.numeric.matrix.row_count;
+                uint32_t colCount = inputs[x]->type_description->traits.numeric.matrix.column_count;
+                for (int y = 0; y < rowCount; y++)
                 {
-                    case SpvOpTypeInt:
-                    {
-                        offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
-                    }
-                    case SpvOpTypeFloat:
-                    {
-                        offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
-                        break;
-                    }
-                    case SpvOpTypeVector:
-                    {
-                        offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
-                        break;
-                    }
-                    case SpvOpTypeMatrix:
-                    {
-                        uint32_t rowCount = inputs[x]->type_description->traits.numeric.matrix.row_count;
-                        uint32_t colCount = inputs[x]->type_description->traits.numeric.matrix.column_count;
-                        if (rowCount == 2 && colCount == 2)
+                    vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
                         {
-                            offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * rowCount * colCount;
-                        }
-                        if (rowCount == 3 && colCount == 3)
-                        {
-                            offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * rowCount * colCount;
-                        }
-                        if (rowCount == 4 && colCount == 4)
-                        {
-                            offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * rowCount * colCount;
-                        }
-                        break;
-                    }
+                            .location = inputs[x]->location += 1,
+                            .binding = binding,
+                            .format = static_cast<VkFormat>(inputs[x]->format),
+                            .offset = offset
+                        });
+                    offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
                 }
-                firstofBinding = false;
+                break;
             }
         }
-        vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-            {
-                .location = inputs[x]->location,
-                .binding = binding,
-                .format = static_cast<VkFormat>(inputs[x]->format),
-                .offset = offset
-            });
 
-        if (x + 1 == inputs.size())
+        if (x + 1 == inputs.size() ||
+            (x + 1 < inputs.size() &&
+                vertexInputAttributeList.back().binding != binding))
         {
-            vertexInputBindingList.emplace_back(VkVertexInputBindingDescription
-                {
-                    .binding = binding,
-                    .stride = offset,
-                    .inputRate = static_cast<VkVertexInputRate>(inputRate),
+            vertexInputBindingList.emplace_back(VkVertexInputBindingDescription{
+                .binding = binding,
+                .stride = offset,
+                .inputRate = static_cast<VkVertexInputRate>(inputRate)
                 });
+            offset = 0;
         }
     }
     int a = 234;
 }
-
 
 Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module)
 {
