@@ -136,64 +136,15 @@ Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const
 
 void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList)
 {
-    uint32_t inputCount = 0;
-    vertexInputBindingList.clear();
-    vertexInputAttributeList.clear();
-    SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, nullptr));
-    Vector<SpvReflectInterfaceVariable*> inputs(inputCount);
-    SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, inputs.data()));
-
-    inputs.erase(
-        std::remove_if(
-            inputs.begin(),
-            inputs.end(),
-            [](SpvReflectInterfaceVariable* input) {
-                return input->built_in != -1;
-            }
-        ),
-        inputs.end()
-    );
-    inputs.shrink_to_fit();
-
-    std::sort(inputs.begin(), inputs.end(), [](SpvReflectInterfaceVariable* a, SpvReflectInterfaceVariable* b)
-        {
-            return a->location < b->location;
-        });
-
-    Vector<SpvReflectSpecializationConstant*> vertexAttributeLocationpecializationConstantResult;
-    Vector<SpvReflectSpecializationConstant*> specializationConstantList = Shader_GetShaderSpecializationConstant(module);
-    for (auto* constant : specializationConstantList)
-    {
-        if (constant &&
-            constant->name)
-        {
-            String nameStr(constant->name);
-            if (nameStr.find("VertexAttributeLocation") != String::npos)
-            {
-                vertexAttributeLocationpecializationConstantResult.push_back(constant);
-            }
-        }
-    }
-
-    Vector<SpvReflectSpecializationConstant*> vertexInputRateLocationConstantResult;
-    for (auto* constant : specializationConstantList)
-    {
-        if (constant &&
-            constant->name)
-        {
-            String nameStr(constant->name);
-            if (nameStr.find("VertexInputRateLocation") != String::npos)
-            {
-                vertexInputRateLocationConstantResult.push_back(constant);
-            }
-        }
-    }
-
     uint32 offset = 0;
+    Vector<SpvReflectInterfaceVariable*> inputs = Shader_GetShaderVertexInputVariables(module);
+    Vector<SpvReflectSpecializationConstant*> specializationConstantList = Shader_GetShaderSpecializationConstant(module);
+    Vector<SpvReflectSpecializationConstant*> vertexInputRateLocationConstantResult = Shader_SearchShaderSpecializationConstant(specializationConstantList, "VertexInputRateLocation");
+    Vector<SpvReflectSpecializationConstant*> vertexAttributeLocationpecializationConstantResult = Shader_SearchShaderSpecializationConstant(specializationConstantList, "VertexAttributeLocation");
     for (int x = 0; x < inputs.size(); x++)
     {
-
         uint32 binding = 0;
+        uint32 inputRate = 0;
         if (vertexAttributeLocationpecializationConstantResult.size())
         {
             String vertexAttributeLocationString(vertexAttributeLocationpecializationConstantResult[x]->name);
@@ -203,7 +154,6 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
             }
         }
 
-        uint32 inputRate = 0;
         if (vertexAttributeLocationpecializationConstantResult.size())
         {
             String vertexInputRateLocationString(vertexInputRateLocationConstantResult[x]->name);
@@ -212,7 +162,6 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
                 inputRate = *vertexInputRateLocationConstantResult[x]->default_literals;
             }
         }
-
 
         switch (inputs[x]->type_description->op)
         {
@@ -225,7 +174,7 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
                         .format = static_cast<VkFormat>(inputs[x]->format),
                         .offset = offset
                     });
-                offset += inputs[x]->type_description->traits.numeric.scalar.width / 8; 
+                offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
                 break;
             }
             case SpvOpTypeFloat:
@@ -237,7 +186,7 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
                         .format = static_cast<VkFormat>(inputs[x]->format),
                         .offset = offset
                     });
-                offset +=inputs[x]->type_description->traits.numeric.scalar.width / 8;
+                offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
                 break;
             }
             case SpvOpTypeVector:
@@ -254,17 +203,16 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
             }
             case SpvOpTypeMatrix:
             {
-                uint32_t rowCount = inputs[x]->type_description->traits.numeric.matrix.row_count;
-                uint32_t colCount = inputs[x]->type_description->traits.numeric.matrix.column_count;
-                for (int y = 0; y < rowCount; y++)
+                for (int y = 0; y < inputs[x]->type_description->traits.numeric.vector.component_count; y++)
                 {
                     vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
                         {
-                            .location = inputs[x]->location += 1,
+                            .location = inputs[x]->location,
                             .binding = binding,
                             .format = static_cast<VkFormat>(inputs[x]->format),
                             .offset = offset
                         });
+                    inputs[x]->location += 1;
                     offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
                 }
                 break;
@@ -272,18 +220,17 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
         }
 
         if (x + 1 == inputs.size() ||
-            (x + 1 < inputs.size() &&
-                vertexInputAttributeList.back().binding != binding))
+           (x > 0 &&
+            vertexInputAttributeList[x - 1].binding != binding))
         {
             vertexInputBindingList.emplace_back(VkVertexInputBindingDescription{
-                .binding = binding,
+                .binding = vertexInputAttributeList[x - 1].binding,
                 .stride = offset,
                 .inputRate = static_cast<VkVertexInputRate>(inputRate)
                 });
             offset = 0;
         }
     }
-    int a = 234;
 }
 
 Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module)
@@ -450,12 +397,62 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
     return pushConstantList;
 }
 
+Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexInputVariables(const SpvReflectShaderModule& module)
+{
+    uint32 inputCount = 0;
+    SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, nullptr));
+    Vector<SpvReflectInterfaceVariable*> inputs(inputCount);
+    SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, inputs.data()));
+
+    inputs.erase(std::remove_if(inputs.begin(), inputs.end(), [](SpvReflectInterfaceVariable* input) { return input->built_in != -1; }),
+        inputs.end()
+    );
+    inputs.shrink_to_fit();
+
+    std::sort(inputs.begin(), inputs.end(), [](SpvReflectInterfaceVariable* a, SpvReflectInterfaceVariable* b)
+        {
+            return a->location < b->location;
+        });
+
+    return inputs;
+}
+
+Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const SpvReflectShaderModule& module)
+{
+    uint32 outputCount = 0;
+    SPV_VULKAN_RESULT(spvReflectEnumerateOutputVariables(&module, &outputCount, nullptr));
+    Vector<SpvReflectInterfaceVariable*> outputs(outputCount);
+    SPV_VULKAN_RESULT(spvReflectEnumerateOutputVariables(&module, &outputCount, outputs.data()));
+
+    return outputs;
+}
+
+
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module)
 {
-    uint32_t specializationConstantCount = 0;
+    uint32 specializationConstantCount = 0;
     spvReflectEnumerateSpecializationConstants(&module, &specializationConstantCount, nullptr);
     std::vector<SpvReflectSpecializationConstant*> specializationConstantList(specializationConstantCount);
     spvReflectEnumerateSpecializationConstants(&module, &specializationConstantCount, specializationConstantList.data());
 
     return specializationConstantList;
+}
+
+Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString)
+{
+    Vector<SpvReflectSpecializationConstant*> results;
+    for (auto* constant : specializationConstantList)
+    {
+        if (constant &&
+            constant->name)
+        {
+            String nameStr(constant->name);
+            if (nameStr.find(searchString) != String::npos)
+            {
+                results.push_back(constant);
+            }
+        }
+    }
+
+    return results;
 }

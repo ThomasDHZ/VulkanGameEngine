@@ -396,7 +396,7 @@ namespace nlohmann
 
         for (int x = 0; x < j.at("VertexInputBindingDescriptionList").size(); x++)
         {
-            model.VertexInputBindingDescriptionList.emplace_back(model.VertexInputBindingDescriptionList.emplace_back(j.at("VertexInputBindingDescriptionList")[x]));
+            model.VertexInputBindingDescriptionList.emplace_back(j.at("VertexInputBindingDescriptionList")[x]);
         }
 
         for (int x = 0; x < j.at("VertexInputAttributeDescriptionList").size(); x++)
