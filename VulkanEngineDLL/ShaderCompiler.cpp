@@ -1,4 +1,5 @@
 #include "ShaderCompiler.h"
+#include <regex>
 #include "MemorySystem.h"
 
 
@@ -28,10 +29,12 @@ SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
     SpvReflectShaderModule module;
     FileState file = File_Read(path.c_str());
     SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
-
+    return module;
    
+        Vector<SpvReflectTypeDescription> interfaceVariables3 = Vector<SpvReflectTypeDescription>(module._internal->type_descriptions, module._internal->type_descriptions + module._internal->type_description_count);
+
     Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
-   // Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
+  //  Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
     Vector<ShaderVertexVariable> outputVertexVariables = Shader_GetShaderOutputVertexVariables(module);
     Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(module);
     Vector<ShaderPushConstant> constBufferList = Shader_GetShaderConstBuffer(module);
@@ -40,95 +43,6 @@ SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
     Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
     Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
 
-    uint32_t inputCount = 0;
-    spvReflectEnumerateSpecializationConstants(&module, &inputCount, nullptr);
-    std::vector<SpvReflectSpecializationConstant*> inputs(inputCount);
-    spvReflectEnumerateSpecializationConstants(&module, &inputCount, inputs.data());
-
-    // New code to extract and print default ivec2 values (assuming ivec2 type):
-    const uint32_t* spirv_code = spvReflectGetCode(&module);
-    uint32_t spirv_word_count = spvReflectGetCodeSize(&module) / sizeof(uint32_t);
-
-    for (const auto* spec : inputs) {
-        if (!spec) continue;
-
-        // Skip type check or hardcode for ivec2 (vector of 2 int32)
-
-        // Search for OpSpecConstantComposite matching spec->spirv_id.
-        bool found = false;
-        std::vector<uint32_t> constituent_ids(2);
-        size_t pos = 0;
-        while (pos < spirv_word_count) {
-            uint32_t word0 = spirv_code[pos];
-            uint32_t opcode = word0 & 0xFFFF;
-            uint32_t word_count = word0 >> 16;
-            if (word_count == 0 || pos + word_count > spirv_word_count) {
-                break;  // Invalid module.
-            }
-
-            if (opcode == 44 && word_count == 5) {  // OpSpecConstantComposite for vec2: header(1) + type(1) + result(1) + 2 constituents.
-                uint32_t result_id = spirv_code[pos + 2];
-                if (result_id == spec->spirv_id) {
-                    constituent_ids[0] = spirv_code[pos + 3];
-                    constituent_ids[1] = spirv_code[pos + 4];
-                    found = true;
-                    break;
-                }
-            }
-            pos += word_count;
-        }
-
-        if (!found) {
-            std::cerr << "OpSpecConstantComposite not found for spirv_id " << spec->spirv_id << std::endl;
-            continue;
-        }
-
-        // Now extract values for each constituent (expected to be OpConstant int32).
-        int32_t values[2] = { 0, 0 };
-        for (int i = 0; i < 2; ++i) {
-            uint32_t const_id = constituent_ids[i];
-            pos = 0;  // Reset search for each.
-            bool const_found = false;
-            while (pos < spirv_word_count) {
-                uint32_t word0 = spirv_code[pos];
-                uint32_t opcode = word0 & 0xFFFF;
-                uint32_t word_count = word0 >> 16;
-                if (word_count == 0 || pos + word_count > spirv_word_count) {
-                    break;
-                }
-
-                if (opcode == 43 && word_count == 4) {  // OpSpecConstant for 32-bit scalar: header(1) + type(1) + result(1) + default_value(1). Note: opcode 43 for OpSpecConstant.
-                    uint32_t result_id = spirv_code[pos + 2];
-                    if (result_id == const_id) {
-                        uint32_t raw_value = spirv_code[pos + 3];
-                        values[i] = *reinterpret_cast<int32_t*>(&raw_value);  // Signed int32.
-                        const_found = true;
-                        break;
-                    }
-                }
-                else if (opcode == 32 && word_count == 4) {  // Fallback to OpConstant if not specialized.
-                    uint32_t result_id = spirv_code[pos + 2];
-                    if (result_id == const_id) {
-                        uint32_t raw_value = spirv_code[pos + 3];
-                        values[i] = *reinterpret_cast<int32_t*>(&raw_value);  // Signed int32.
-                        const_found = true;
-                        break;
-                    }
-                }
-                pos += word_count;
-            }
-
-            if (!const_found) {
-                std::cerr << "Op(Spec)Constant not found for constituent_id " << const_id << std::endl;
-                continue;
-            }
-        }
-
-        // Output the vec2 value (replace with your storage/usage).
-        std::cout << "Constant ID " << spec->constant_id << " (" << spec->name << "): ivec2("
-            << values[0] << ", " << values[1] << ")" << std::endl;
-    }
-    return module;
 }
         
 
@@ -229,52 +143,152 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
     Vector<SpvReflectInterfaceVariable*> inputs(inputCount);
     SPV_VULKAN_RESULT(spvReflectEnumerateInputVariables(&module, &inputCount, inputs.data()));
 
-    Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
+    inputs.erase(
+        std::remove_if(
+            inputs.begin(),
+            inputs.end(),
+            [](SpvReflectInterfaceVariable* input) {
+                return input->built_in != -1;
+            }
+        ),
+        inputs.end()
+    );
+    inputs.shrink_to_fit();
+
+    std::sort(inputs.begin(), inputs.end(), [](SpvReflectInterfaceVariable* a, SpvReflectInterfaceVariable* b)
+        {
+            return a->location < b->location;
+        });
+
+    Vector<SpvReflectSpecializationConstant*> vertexAttributeLocationpecializationConstantResult;
+    Vector<SpvReflectSpecializationConstant*> specializationConstantList = Shader_GetShaderSpecializationConstant(module);
+    for (auto* constant : specializationConstantList)
+    {
+        if (constant &&
+            constant->name)
+        {
+            String nameStr(constant->name);
+            if (nameStr.find("VertexAttributeLocation") != String::npos)
+            {
+                vertexAttributeLocationpecializationConstantResult.push_back(constant);
+            }
+        }
+    }
+
+    Vector<SpvReflectSpecializationConstant*> vertexInputRateLocationConstantResult;
+    for (auto* constant : specializationConstantList)
+    {
+        if (constant &&
+            constant->name)
+        {
+            String nameStr(constant->name);
+            if (nameStr.find("VertexInputRateLocation") != String::npos)
+            {
+                vertexInputRateLocationConstantResult.push_back(constant);
+            }
+        }
+    }
 
     uint32 offset = 0;
+    bool firstofBinding = true;
     for (int x = 0; x < inputs.size(); x++)
     {
-        if (inputs[x]->built_in != -1) {
-            continue;
-        }
 
-     /*   if (inputs[x]->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) {
-            std::cerr << "Skipping built-in variable at location " << var->location << std::endl;
-            continue;
-        }*/
-
-        VkVertexInputRate inputRate = (inputs[x]->decoration_flags & SPV_REFLECT_DECORATION_PER_VERTEX)
-            ? VK_VERTEX_INPUT_RATE_VERTEX
-            : (inputs[x]->decoration_flags & SPV_REFLECT_DECORATION_PER_TASK)
-            ? VK_VERTEX_INPUT_RATE_INSTANCE
-            : VK_VERTEX_INPUT_RATE_VERTEX; // Default to vertex if unspecified
-
-        switch (inputs[x]->format)
+        uint32 binding = 0;
+        if (vertexAttributeLocationpecializationConstantResult.size())
         {
-            case SPV_REFLECT_FORMAT_R32_UINT: offset += 4; break;
-            case SPV_REFLECT_FORMAT_R32G32_UINT: offset += 8; break;
-            case SPV_REFLECT_FORMAT_R32G32B32_UINT: offset += 12; break;
-            case SPV_REFLECT_FORMAT_R32G32B32A32_UINT: offset += 16;  break;
-            case SPV_REFLECT_FORMAT_R32_SINT: offset += 4; break;
-            case SPV_REFLECT_FORMAT_R32G32_SINT: offset += 8; break;
-            case SPV_REFLECT_FORMAT_R32G32B32_SINT: offset += 12; break;
-            case SPV_REFLECT_FORMAT_R32G32B32A32_SINT: offset += 16; break;
-            case SPV_REFLECT_FORMAT_R32_SFLOAT: offset += 4; break;
-            case SPV_REFLECT_FORMAT_R32G32_SFLOAT: offset += 8; break;
-            case SPV_REFLECT_FORMAT_R32G32B32_SFLOAT: offset += 12; break;
-            case SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT: offset += 16; break;
+            String vertexAttributeLocationString(vertexAttributeLocationpecializationConstantResult[x]->name);
+            if (vertexAttributeLocationString.find("VertexAttributeLocation" + std::to_string(inputs[x]->location)) != String::npos)
+            {
+                binding = *vertexAttributeLocationpecializationConstantResult[x]->default_literals;
+            }
         }
 
+        uint32 inputRate = 0;
+        if (vertexAttributeLocationpecializationConstantResult.size())
+        {
+            String vertexInputRateLocationString(vertexInputRateLocationConstantResult[x]->name);
+            if (vertexInputRateLocationString.find("VertexInputRateLocation" + std::to_string(inputs[x]->location)) != String::npos)
+            {
+                inputRate = *vertexInputRateLocationConstantResult[x]->default_literals;
+            }
+        }
+
+        if (x > 0)
+        {
+            if (!firstofBinding &&
+                vertexInputAttributeList[x - 1].binding != binding)
+            {
+                vertexInputBindingList.emplace_back(VkVertexInputBindingDescription
+                    {
+                        .binding = vertexInputAttributeList[x - 1].binding,
+                        .stride = offset,
+                        .inputRate = static_cast<VkVertexInputRate>(inputRate),
+                    });
+                offset = 0;
+                firstofBinding = true;
+            }
+            else
+            {
+                switch (inputs[x]->type_description->op)
+                {
+                    case SpvOpTypeInt:
+                    {
+                        offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
+                    }
+                    case SpvOpTypeFloat:
+                    {
+                        offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
+                        break;
+                    }
+                    case SpvOpTypeVector:
+                    {
+                        offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
+                        break;
+                    }
+                    case SpvOpTypeMatrix:
+                    {
+                        uint32_t rowCount = inputs[x]->type_description->traits.numeric.matrix.row_count;
+                        uint32_t colCount = inputs[x]->type_description->traits.numeric.matrix.column_count;
+                        if (rowCount == 2 && colCount == 2)
+                        {
+                            offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * rowCount * colCount;
+                        }
+                        if (rowCount == 3 && colCount == 3)
+                        {
+                            offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * rowCount * colCount;
+                        }
+                        if (rowCount == 4 && colCount == 4)
+                        {
+                            offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * rowCount * colCount;
+                        }
+                        break;
+                    }
+                }
+                firstofBinding = false;
+            }
+        }
         vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
             {
                 .location = inputs[x]->location,
-                .binding = 0,
+                .binding = binding,
                 .format = static_cast<VkFormat>(inputs[x]->format),
                 .offset = offset
             });
+
+        if (x + 1 == inputs.size())
+        {
+            vertexInputBindingList.emplace_back(VkVertexInputBindingDescription
+                {
+                    .binding = binding,
+                    .stride = offset,
+                    .inputRate = static_cast<VkVertexInputRate>(inputRate),
+                });
+        }
     }
     int a = 234;
 }
+
 
 Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module)
 {
@@ -438,4 +452,14 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
     }
 
     return pushConstantList;
+}
+
+Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module)
+{
+    uint32_t specializationConstantCount = 0;
+    spvReflectEnumerateSpecializationConstants(&module, &specializationConstantCount, nullptr);
+    std::vector<SpvReflectSpecializationConstant*> specializationConstantList(specializationConstantCount);
+    spvReflectEnumerateSpecializationConstants(&module, &specializationConstantCount, specializationConstantList.data());
+
+    return specializationConstantList;
 }

@@ -5,12 +5,26 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-layout(constant_id = 0) const ivec2 InputRateMode = vec2(0, 1); //x = binding, y = 0 - Vertex, 1 - Instance
-layout(constant_id = 1) const ivec2 InputRateMode1 = vec2(1, 1); //x = binding, y = 0 - Vertex, 1 - Instance
-layout(constant_id = 2) const ivec2 InputRateMode2 = vec2(2, 1); //x = binding, y = 0 - Vertex, 1 - Instance
-layout(constant_id = 3) const ivec2 InputRateMode3 = vec2(3, 1); //x = binding, y = 0 - Vertex, 1 - Instance
-layout(constant_id = 4) const ivec2 InputRateMode4 = vec2(4, 1); //x = binding, y = 0 - Vertex, 1 - Instance
-layout(constant_id = 5) const ivec2 InputRateMode5 =  vec2(5, 1); //x = binding, y = 0 - Vertex, 1 - Instance
+layout(constant_id = 0) const uint VertexAttributeLocation0 = 1;
+layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;
+
+layout(constant_id = 2) const uint VertexAttributeLocation1 = 1;
+layout(constant_id = 3) const uint VertexInputRateLocation1 = 1;
+
+layout(constant_id = 4) const uint VertexAttributeLocation2 = 1;
+layout(constant_id = 5) const uint VertexInputRateLocation2 = 1;
+
+layout(constant_id = 6) const uint VertexAttributeLocation3 = 1;
+layout(constant_id = 7) const uint VertexInputRateLocation3 = 1;
+
+layout(constant_id = 8) const uint VertexAttributeLocation4 = 1;
+layout(constant_id = 9) const uint VertexInputRateLocation4 = 1;
+
+layout(constant_id = 10) const uint VertexAttributeLocation5 = 1;
+layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
+
+layout(constant_id = 12) const uint VertexAttributeLocation9 = 1;
+layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 
 layout (location = 0)  in vec2  VS_SpritePosition;
 layout (location = 1)  in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))

@@ -96,3 +96,4 @@ Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvRefl
 Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module);
 Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
 void Shader_GetVariableSize(const SpvReflectTypeDescription& variable, uint32& memberSize, ShaderMemberType& memberType);
+Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
