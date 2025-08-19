@@ -99,3 +99,6 @@ Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexInputVariables(const 
 Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
+
+void printSpecializationConstants(SpvReflectShaderModule& module);
+SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t spirv_id);

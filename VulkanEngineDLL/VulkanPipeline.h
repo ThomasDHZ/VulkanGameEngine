@@ -6,7 +6,6 @@ struct VulkanPipeline
     VkGuid RenderPipelineId;
     size_t DescriptorSetLayoutCount;
     size_t DescriptorSetCount;
-    size_t ShaderStructListCount;
     VkDescriptorPool DescriptorPool = VK_NULL_HANDLE;
     VkDescriptorSetLayout* DescriptorSetLayoutList = nullptr;
     VkDescriptorSet* DescriptorSetList = nullptr;

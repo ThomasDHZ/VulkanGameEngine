@@ -29,6 +29,7 @@ SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
     SpvReflectShaderModule module;
     FileState file = File_Read(path.c_str());
     SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
+
     return module;
    
         Vector<SpvReflectTypeDescription> interfaceVariables3 = Vector<SpvReflectTypeDescription>(module._internal->type_descriptions, module._internal->type_descriptions + module._internal->type_description_count);
@@ -455,4 +456,158 @@ Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConst
     }
 
     return results;
+}
+
+void printSpecializationConstants(SpvReflectShaderModule& module) {
+    // Step 1: Get the count of specialization constants
+    uint32_t count = 0;
+    SpvReflectResult result = spvReflectEnumerateSpecializationConstants(&module, &count, nullptr);
+    if (result != SPV_REFLECT_RESULT_SUCCESS) {
+        std::cerr << "Failed to get specialization constant count: " << result << std::endl;
+        return;
+    }
+
+    // Step 2: Allocate vector for constant pointers
+    std::vector<SpvReflectSpecializationConstant*> constants(count);
+
+    // Step 3: Enumerate specialization constants
+    result = spvReflectEnumerateSpecializationConstants(&module, &count, constants.data());
+    if (result != SPV_REFLECT_RESULT_SUCCESS) {
+        std::cerr << "Failed to enumerate specialization constants: " << result << std::endl;
+        return;
+    }
+
+    // Step 4: Process each constant
+    for (uint32_t i = 0; i < count; ++i) {
+        const SpvReflectSpecializationConstant* constant = constants[i];
+        std::cout << "Constant #" << i << ":\n";
+        std::cout << "  Name: " << (constant->name ? constant->name : "Unnamed") << "\n";
+        std::cout << "  SPIR-V ID: " << constant->spirv_id << "\n";
+        std::cout << "  Constant ID: " << constant->constant_id << "\n";
+
+        // Step 5: Get type details
+        const SpvReflectTypeDescription* type = constant->type;
+        if (!type) {
+            std::cout << "  No type description available\n";
+            continue;
+        }
+
+       auto afs = getSpecializationConstantOp(module, constant->spirv_id);
+        std::cout << "  Type Opcode: " << afs << " (e.g., OpTypeInt, OpTypeFloat, etc.)\n";
+        std::cout << "  Type: ";
+
+        SpvReflectTypeFlags type_flags = type->type_flags;
+        if (type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
+            std::cout << "Bool";
+        }
+        else if (type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
+            uint32_t width = type->traits.numeric.scalar.width;
+            std::cout << "Float (" << width << "-bit)";
+        }
+        else if (type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
+            uint32_t width = type->traits.numeric.scalar.width;
+            uint32_t signedness = type->traits.numeric.scalar.signedness;
+            std::cout << (signedness ? "Signed Int" : "Unsigned Int") << " (" << width << "-bit)";
+        }
+        else {
+            std::cout << "Unsupported type (flags: " << type_flags << ")";
+            continue;
+        }
+
+        // Handle vector components if applicable
+        if (type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR) {
+            std::cout << " Vector (" << type->traits.numeric.vector.component_count << " components)";
+        }
+
+        std::cout << "\n";
+
+        // Step 6: Print default value if present
+        if (constant->has_default_value) {
+            std::cout << "  Default Value (as " << constant->default_literal_count << " literals): ";
+            for (uint32_t lit = 0; lit < constant->default_literal_count; ++lit) {
+                std::cout << "0x" << std::hex << constant->default_literals[lit] << " ";
+            }
+            std::cout << "\n";
+
+            // Interpret based on type (example for common cases)
+            if (type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
+                bool value = (constant->default_literals[0] != 0);
+                std::cout << "    Interpreted: " << (value ? "true" : "false") << "\n";
+            }
+            else if (type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
+                uint32_t width = type->traits.numeric.scalar.width;
+                uint32_t signedness = type->traits.numeric.scalar.signedness;
+                if (width == 32) {
+                    if (signedness) {
+                        int32_t value = static_cast<int32_t>(constant->default_literals[0]);
+                        std::cout << "    Interpreted: " << value << "\n";
+                    }
+                    else {
+                        uint32_t value = constant->default_literals[0];
+                        std::cout << "    Interpreted: " << value << "\n";
+                    }
+                }
+                else if (width == 64) {
+                    // For 64-bit, assume 2 literals (low/high word)
+                    if (constant->default_literal_count >= 2) {
+                        uint64_t value = (static_cast<uint64_t>(constant->default_literals[1]) << 32) |
+                            constant->default_literals[0];
+                        if (signedness) {
+                            std::cout << "    Interpreted: " << static_cast<int64_t>(value) << "\n";
+                        }
+                        else {
+                            std::cout << "    Interpreted: " << value << "\n";
+                        }
+                    }
+                }
+            }
+            else if (type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
+                uint32_t width = type->traits.numeric.scalar.width;
+                if (width == 32) {
+                    float value = *reinterpret_cast<const float*>(&constant->default_literals[0]);
+                    std::cout << "    Interpreted: " << value << "\n";
+                }
+                else if (width == 64) {
+                    // For 64-bit float, assume 2 literals
+                    if (constant->default_literal_count >= 2) {
+                        uint64_t raw = (static_cast<uint64_t>(constant->default_literals[1]) << 32) |
+                            constant->default_literals[0];
+                        double value = *reinterpret_cast<const double*>(&raw);
+                        std::cout << "    Interpreted: " << value << "\n";
+                    }
+                }
+            }
+            // Add handling for vectors/composites as needed
+        }
+        else {
+            std::cout << "  No default value\n";
+        }
+    }
+}
+
+SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t spirv_id) {
+    const uint32_t* code = spvReflectGetCode(&module);
+    uint32_t size = spvReflectGetCodeSize(&module) / sizeof(uint32_t);
+    uint32_t index = 5;  // Skip header (magic, version, generator, bound, schema)
+
+    while (index < size) {
+        uint32_t word = code[index];
+        SpvOp op = static_cast<SpvOp>(word & 0xFFFF);
+        uint32_t word_count = (word >> 16) & 0xFFFF;
+
+        if (word_count == 0 || index + word_count > size) {
+            return SpvOpNop;  // Invalid
+        }
+
+        // Check if this instruction defines the spirv_id
+        bool has_result_id = (op == SpvOpSpecConstantTrue || op == SpvOpSpecConstantFalse ||
+            op == SpvOpSpecConstant || op == SpvOpSpecConstantComposite ||
+            op == SpvOpSpecConstantOp);
+        if (has_result_id && word_count > 2 && code[index + 2] == spirv_id) {
+            return op;
+        }
+
+        index += word_count;
+    }
+    return SpvOpNop;  // Not found
 }
