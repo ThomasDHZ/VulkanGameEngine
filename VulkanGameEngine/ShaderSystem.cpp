@@ -127,7 +127,7 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
             std::cerr << "Warning: Value pointer for variable '" << pushConstantVar.Name << "' is null!" << std::endl;
             continue;
         }
-        
+
         auto pushConstant2 = pushConstant.PushConstantBuffer;
 
         offset = (offset + 3) & ~3;
@@ -138,8 +138,15 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
             << " from " << pushConstantVar.Value
             << " to " << dest << std::endl;
 
-        memcpy(dest, pushConstantVar.Value, pushConstantVar.VarSize);
-
+        if ("MeshBufferIndex" == pushConstantVar.Name)
+        {
+            int afs = 0;
+            memcpy(dest, &afs, sizeof(int));
+        }
+        else
+        {
+            memcpy(dest, pushConstantVar.Value, pushConstantVar.VarSize);
+        }
         // Debug: Print copied data
    /*     std::cout << "Copied data: ";
         for (size_t i = 0; i < std::min(pushConstantVar.VarSize, size_t(8)); ++i)
