@@ -4,6 +4,7 @@
 #include <ImGuiRenderer.h>
 #include "SceneDataBuffer.h"
 #include <nlohmann/json.hpp>
+#include "ShaderSystem.h"
 
 typedef uint UM_SpriteID;
 typedef uint UM_SpriteBatchID;
@@ -48,7 +49,7 @@ public:
     void Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
     VkCommandBuffer RenderFrameBuffer(VkGuid& renderPassId, VkGuid& inputTextureRenderPassId);
-    VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, SceneDataBuffer& sceneDataBuffer);
+    VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, ShaderPushConstant& sceneDataBuffer);
  
     VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
 

@@ -137,6 +137,7 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="CFile.h" />
+    <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="CShaderCompiler.h" />
     <ClInclude Include="CTypedef.h" />
@@ -174,7 +175,6 @@
     <ClInclude Include="VkGuid.h" />
     <ClInclude Include="VRAM.h" />
     <ClInclude Include="VulkanBuffer.h" />
-    <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanPipeline.h" />
     <ClInclude Include="VulkanRenderPass.h" />
     <ClInclude Include="VulkanWindow.h" />
@@ -193,6 +193,7 @@
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.c" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="CFile.c" />
+    <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="CShaderCompiler.c" />
     <ClCompile Include="CVulkanRenderer.c" />
@@ -216,7 +217,6 @@
     <ClCompile Include="Vector.cpp" />
     <ClCompile Include="VRAM.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
-    <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />
     <ClCompile Include="VulkanWindow.c" />

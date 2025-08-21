@@ -382,7 +382,7 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, VkRenderPass renderpass, VkP
     VkPipeline pipeline = VK_NULL_HANDLE;
     Vector<VkVertexInputBindingDescription> vertexInputBindingList;
     Vector<VkVertexInputAttributeDescription> vertexInputAttributeList;
-    SpvReflectShaderModule module = Shader_ShaderDataFromSpirv(model.VertexShaderPath);
+    SpvReflectShaderModule module = Shader_GetShaderData(model.VertexShaderPath);
     Shader_GetShaderInputVertexVariables(module, vertexInputBindingList, vertexInputAttributeList);
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo
     {

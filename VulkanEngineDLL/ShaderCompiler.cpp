@@ -9,6 +9,14 @@ void Shader_StartUp()
     //DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc_compiler));
     //dxc_utils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
 }
+SpvReflectShaderModule Shader_GetShaderData(const String& spvPath)
+{
+    SpvReflectShaderModule module;
+    FileState file = File_Read(spvPath.c_str());
+    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
+
+    return module;
+}
 
 VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& filename, VkShaderStageFlagBits shaderStages)
 {
@@ -24,27 +32,28 @@ VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const Strin
     return Shader_CreateShader(shaderModule, shaderStages);
 }
 
-SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
-{
-    SpvReflectShaderModule module;
-    FileState file = File_Read(path.c_str());
-    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
-
-    return module;
-   
-        Vector<SpvReflectTypeDescription> interfaceVariables3 = Vector<SpvReflectTypeDescription>(module._internal->type_descriptions, module._internal->type_descriptions + module._internal->type_description_count);
-
-    Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
-  //  Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
-    Vector<ShaderVertexVariable> outputVertexVariables = Shader_GetShaderOutputVertexVariables(module);
-    Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(module);
-    Vector<ShaderPushConstant> constBufferList = Shader_GetShaderConstBuffer(module);
-
-    Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
-    Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
-    Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
-
-}
+//SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
+//{
+//    SpvReflectShaderModule module;
+//    FileState file = File_Read(path.c_str());
+//    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
+//
+//   auto asdf =  Shader_GetShaderConstBuffer(module);
+//    return module;
+//   
+//        Vector<SpvReflectTypeDescription> interfaceVariables3 = Vector<SpvReflectTypeDescription>(module._internal->type_descriptions, module._internal->type_descriptions + module._internal->type_description_count);
+//    Vector<ShaderPushConstant> constBufferList = Shader_GetShaderConstBuffer(module);
+//
+//    Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
+//  //  Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
+//    Vector<ShaderVertexVariable> outputVertexVariables = Shader_GetShaderOutputVertexVariables(module);
+//    Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(module);
+//
+//    Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
+//    Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
+//    Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
+//
+//}
         
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)
@@ -374,24 +383,71 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
         Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(shaderBufferMembers.members, shaderBufferMembers.members + shaderBufferMembers.member_count);
         for (auto& variable : shaderVariableList)
         {
+            ShaderMemberType memberType;
+            uint memberSize = 0;
+            switch (variable.op)
+            {
+            case SpvOpTypeInt:
+            {
+                memberSize = variable.traits.numeric.scalar.width / 8;
+                memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                break;
+            }
+            case SpvOpTypeFloat:
+            {
+                memberSize = variable.traits.numeric.scalar.width / 8;
+                memberType = shaderFloat;
+                break;
+            }
+            case SpvOpTypeVector:
+            {
+                memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
+                switch (variable.traits.numeric.vector.component_count)
+                {
+                case 2: memberType = shaderVec2; break;
+                case 3: memberType = shaderVec3; break;
+                case 4: memberType = shaderVec4; break;
+                }
+                break;
+            }
+            case SpvOpTypeMatrix:
+            {
+                uint32_t rowCount = variable.traits.numeric.matrix.row_count;
+                uint32_t colCount = variable.traits.numeric.matrix.column_count;
+                if (rowCount == 2 && colCount == 2)
+                {
+                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                    memberType = shaderMat2;
+                }
+                if (rowCount == 3 && colCount == 3)
+                {
+                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                    memberType = shaderMat3;
+                }
+                if (rowCount == 4 && colCount == 4)
+                {
+                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                    memberType = shaderMat4;
+                }
+                break;
+            }
+            }
+
             shaderVariables.emplace_back(ShaderVariable
                 {
                     .Name = variable.struct_member_name,
-      /*              .ShaderVarOp = variable.op,
-                    .VectorCount = variable.traits.numeric.vector.component_count > 0 ? 1 : variable.traits.numeric.vector.component_count,
-                    .ColumnCount = variable.traits.numeric.matrix.column_count,
-                    .RowCount = variable.traits.numeric.matrix.row_count,*/
-         /*           .MatrixStride = variable.traits.numeric.matrix.stride,
-                    .IsSigned = static_cast<bool>(variable.traits.numeric.scalar.signedness)*/
+                    .VarSize = memberSize,
+                    .Value = nullptr,
+                    .MemberTypeEnum = memberType,
                 });
         }
 
         ShaderPushConstant shaderStruct;
-        shaderStruct.Name = pushConstant->name;
-        shaderStruct.BufferSize = static_cast<size_t>(pushConstant->size);
-        shaderStruct.ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
-        shaderStruct.ShaderBufferVariableListCount = pushConstant->member_count;
-        std::memcpy(shaderStruct.ShaderBufferVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
+        shaderStruct.PushConstantName = pushConstant->name;
+        shaderStruct.PushConstantSize = static_cast<size_t>(pushConstant->size);
+        shaderStruct.PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
+        shaderStruct.PushConstantVariableListCount = pushConstant->member_count;
+        std::memcpy(shaderStruct.PushConstantVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
         pushConstantList.emplace_back(shaderStruct);
     }
 
@@ -610,4 +666,35 @@ SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t
         index += word_count;
     }
     return SpvOpNop;  // Not found
+}
+
+
+const char* Renderer_GetShaderReflectError(SpvReflectResult result)
+{
+    switch (result)
+    {
+    case SPV_REFLECT_RESULT_SUCCESS: return "SPV_REFLECT_RESULT_SUCCESS";
+    case SPV_REFLECT_RESULT_NOT_READY: return "SPV_REFLECT_RESULT_NOT_READY";
+    case SPV_REFLECT_RESULT_ERROR_PARSE_FAILED: return "SPV_REFLECT_RESULT_ERROR_PARSE_FAILED";
+    case SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED: return "SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED";
+    case SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED: return "SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED";
+    case SPV_REFLECT_RESULT_ERROR_NULL_POINTER: return "SPV_REFLECT_RESULT_ERROR_NULL_POINTER";
+    case SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR: return "SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR";
+    case SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH: return "SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH";
+    case SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND: return "SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF: return "SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW: return "SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION: return "SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA: return "SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE";
+    case SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED: return "SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED";
+    default: return "Unknown Result";
+    }
 }

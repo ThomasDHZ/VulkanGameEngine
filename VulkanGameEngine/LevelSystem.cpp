@@ -74,8 +74,10 @@ void LevelSystem::DestoryLevel()
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    OrthographicCamera->Update(SceneProperties);
+    OrthographicCamera->Update(*shaderSystem.GetGlobalShaderPushConstant("sceneData"));
+    shaderSystem.GetPushConstantData(*shaderSystem.GetGlobalShaderPushConstant("sceneData"));
     spriteSystem.Update(deltaTime);
+    shaderSystem.UpdateGlobalShaderBuffer("sceneData");
     for (auto& levelLayer : LevelLayerList)
     {
        // levelLayer.Update(deltaTime);
@@ -84,7 +86,7 @@ void LevelSystem::Update(const float& deltaTime)
 
 void LevelSystem::Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime)
 {
-    commandBufferList.emplace_back(renderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime, SceneProperties));
+    commandBufferList.emplace_back(renderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime, *shaderSystem.GetGlobalShaderPushConstant("sceneData")));
     commandBufferList.emplace_back(renderSystem.RenderFrameBuffer(frameBufferId, spriteRenderPass2DId));
 }
 

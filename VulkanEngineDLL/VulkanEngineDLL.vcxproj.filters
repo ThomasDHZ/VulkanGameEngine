@@ -39,9 +39,6 @@
     <ClInclude Include="Macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,11 +159,11 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="VulkanError.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanWindow.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -283,6 +280,9 @@
     </ClCompile>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.c">
       <Filter>Source Files\spirv</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanError.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

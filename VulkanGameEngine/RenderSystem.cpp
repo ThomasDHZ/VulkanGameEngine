@@ -42,7 +42,7 @@ VkGuid RenderSystem::CreateVulkanRenderPass(const String& jsonPath, ivec2& rende
     size_t renderedTextureCount = 1;
     Vector<Texture> renderedTextureList = Vector<Texture>(renderedTextureCount);
 
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath.c_str(), renderPassResolution, sizeof(SceneDataBuffer), renderedTextureList[0], renderedTextureCount, depthTexture);
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath.c_str(), renderPassResolution, renderedTextureList[0], renderedTextureCount, depthTexture);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
     RenderPassLoaderJsonMap[vulkanRenderPass.RenderPassId] = jsonPath;
 
@@ -133,7 +133,7 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId, VkGuid& in
     return commandBuffer;
 }
 
-VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, SceneDataBuffer& sceneDataBuffer)
+VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, ShaderPushConstant& sceneDataBuffer)
 {
     const VulkanRenderPass& renderPass = FindRenderPass(renderPassId);
     const VulkanPipeline& spritePipeline = FindRenderPipelineList(renderPassId)[0];
@@ -160,7 +160,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
         VkDeviceSize offsets[] = { 0 };
-        vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SceneDataBuffer), &sceneDataBuffer);
+        vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataBuffer.PushConstantSize, &sceneDataBuffer.PushConstantBuffer);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetCount, levelPipeline.DescriptorSetList, 0, nullptr);
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
@@ -175,8 +175,9 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
         const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteSystem.FindSpriteInstanceBufferId(spriteLayer.SpriteBatchLayerID)).Buffer;
 
+        auto pushConstantBuffer = sceneDataBuffer.PushConstantBuffer;
         VkDeviceSize offsets[] = { 0 };
-        vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SceneDataBuffer), &sceneDataBuffer);
+        vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataBuffer.PushConstantSize, &sceneDataBuffer.PushConstantBuffer);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetCount, spritePipeline.DescriptorSetList, 0, nullptr);
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, offsets);
@@ -221,11 +222,9 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
 
         const char* jsonDataString = File_Read(pipelineJson.c_str()).Data;
         RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
-        shaderSystem.VertexDataFromSpirv(renderPassLoader.VertexShaderPath);
-        shaderSystem.VertexDataFromSpirv(renderPassLoader.FragmentShaderPath);
+        shaderSystem.AddShaderModule(renderPassLoader.VertexShaderPath);
 
-
-        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, sizeof(SceneDataBuffer), renderPassResolution, include);
+        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, (*shaderSystem.GetGlobalShaderPushConstant("sceneData")).PushConstantSize, renderPassResolution, include);
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }
     return renderPassId;

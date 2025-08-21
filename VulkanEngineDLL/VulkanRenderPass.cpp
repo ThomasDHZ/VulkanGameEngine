@@ -1,7 +1,7 @@
 #include "VulkanRenderPass.h"
 #include "../VulkanGameEngine/SceneDataBuffer.h"
 
-VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
     const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
     RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();

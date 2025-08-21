@@ -1,5 +1,6 @@
 #pragma once
 #include "Camera.h"
+#include "ShaderSystem.h"
 
 class OrthographicCamera2D : public Camera
 {
@@ -10,7 +11,7 @@ public:
 	OrthographicCamera2D(const vec2& viewScreenSize, const vec2& position);
 	virtual ~OrthographicCamera2D();
 
-	virtual void Update(SceneDataBuffer& sceneDataBuffer);
+	virtual void Update(ShaderPushConstant& sceneDataBuffer);
 	virtual void UpdateKeyboard(float deltaTime) override;
 	virtual void UpdateMouse() override;
 };
