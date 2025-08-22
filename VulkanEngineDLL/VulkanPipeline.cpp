@@ -4,7 +4,7 @@
 #include "ShaderCompiler.h"
 #include "JsonLoader.h"
 
- VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, const char* pipelineJsonPath, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
+ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VkGuid& renderPassId, const char* pipelineJsonPath, VkRenderPass renderPass, ShaderPushConstant& pushConstant, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      const char* jsonDataString = File_Read(pipelineJsonPath).Data;
      RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
@@ -14,7 +14,7 @@
      Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPassLoader, includes);
      Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, renderPassLoader, descriptorSetLayoutList);
      Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, renderPassLoader, includes);
-     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, constBufferSize);
+     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, pushConstant);
      VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution);
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
@@ -47,7 +47,7 @@
      return vulkanPipeline;
  }
 
- VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ivec2& renderPassResolution, const GPUIncludes& includes)
+ VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VkGuid& renderPassId, VulkanPipeline& oldVulkanPipeline, const char* pipelineJson, VkRenderPass renderPass, ShaderPushConstant& pushConstant, ivec2& renderPassResolution, const GPUIncludes& includes)
  {
      VulkanPipeline_Destroy(device, oldVulkanPipeline);
 
@@ -58,7 +58,7 @@
      Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPassLoader, includes);
      Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, descriptorPool, renderPassLoader, descriptorSetLayoutList);
      Pipeline_UpdatePipelineDescriptorSets(device, descriptorSetList, renderPassLoader, includes);
-     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, constBufferSize);
+     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, descriptorSetLayoutList, pushConstant);
      VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPass, pipelineLayout, pipelineCache, renderPassLoader, renderPassResolution);
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
@@ -349,17 +349,17 @@ void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, const Vector<VkDescr
     }
 }
 
-VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, const Vector<VkDescriptorSetLayout>& descriptorSetLayoutList, uint constBufferSize)
+VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, const Vector<VkDescriptorSetLayout>& descriptorSetLayoutList, ShaderPushConstant& pushConstant)
 {
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     Vector<VkPushConstantRange> pushConstantRangeList = Vector<VkPushConstantRange>();
-    if (constBufferSize > 0)
+    if (pushConstant.PushConstantSize > 0)
     {
         pushConstantRangeList.emplace_back(VkPushConstantRange
             {
                 .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 .offset = 0,
-                .size = constBufferSize
+                .size = static_cast<uint>(pushConstant.PushConstantSize)
             });
     }
 

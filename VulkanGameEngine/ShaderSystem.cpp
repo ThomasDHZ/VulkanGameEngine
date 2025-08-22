@@ -104,13 +104,22 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
     }
 
     size_t offset = 0;
+    void* a = pushConstant.PushConstantBuffer;
     Vector<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
     for (const auto& pushConstantVar : pushConstantVarList)
     {
         size_t paddingSize = pushConstantVar.Size > pushConstantVar.ByteAlignment ? pushConstantVar.Size : pushConstantVar.ByteAlignment;
         void* dest = static_cast<byte*>(pushConstant.PushConstantBuffer) + offset;
         memset(dest, 0, paddingSize);
-        memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
+        if (pushConstantVar.Name == "MeshBufferIndex")
+        {
+            uint sdf = 0;
+            memcpy(dest, &sdf, sizeof(uint));
+        }
+        else
+        {
+            memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
+        }
         offset += paddingSize;
     }
 }

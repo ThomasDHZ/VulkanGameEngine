@@ -469,7 +469,7 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
 
         ShaderPushConstant shaderStruct;
         shaderStruct.PushConstantName = pushConstant->name;
-        shaderStruct.PushConstantSize = static_cast<size_t>(bufferSize);
+        shaderStruct.PushConstantSize = static_cast<size_t>(pushConstant->size);
         shaderStruct.PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
         shaderStruct.PushConstantVariableListCount = pushConstant->member_count;
         std::memcpy(shaderStruct.PushConstantVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));

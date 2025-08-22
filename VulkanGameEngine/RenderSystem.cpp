@@ -224,7 +224,8 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
         shaderSystem.AddShaderModule(renderPassLoader.VertexShaderPath);
 
-        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, (*shaderSystem.GetGlobalShaderPushConstant("sceneData")).PushConstantSize, renderPassResolution, include);
+        auto pushConstant = shaderSystem.GetGlobalShaderPushConstant("sceneData");
+        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, *pushConstant, renderPassResolution, include);
         RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
     }
     return renderPassId;
