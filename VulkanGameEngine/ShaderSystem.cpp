@@ -54,7 +54,7 @@ void ShaderSystem::AddShaderModule(const String& modulePath)
                     Vector<ShaderVariable> variableList = Vector<ShaderVariable>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList, GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList + GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount);
                     for (int x = 0; x < GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
                     {
-                        GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].VarSize, __FILE__, __LINE__, __func__);
+                        GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__);
                     }
                 }
                 else
@@ -65,7 +65,7 @@ void ShaderSystem::AddShaderModule(const String& modulePath)
 
                     for (int x = 0; x < GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
                     {
-                        GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].VarSize, __FILE__, __LINE__, __func__);
+                        GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__);
                     }
                 }
             }
@@ -103,60 +103,15 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
         return;
     }
 
-    std::vector<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList,
-        pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
-
-    size_t totalSize = 0;
-    for (auto& var : pushConstantVarList)
-    {
-        totalSize += var.VarSize;
-    }
-
-    if (pushConstant.PushConstantSize < totalSize)
-    {
-        std::cerr << "Error: PushConstantBuffer too small! Required: " << totalSize
-            << ", Allocated: " << pushConstant.PushConstantSize << std::endl;
-        return;
-    }
-
     size_t offset = 0;
-    for (auto& pushConstantVar : pushConstantVarList)
+    Vector<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
+    for (const auto& pushConstantVar : pushConstantVarList)
     {
-        if (pushConstantVar.Value == nullptr)
-        {
-            std::cerr << "Warning: Value pointer for variable '" << pushConstantVar.Name << "' is null!" << std::endl;
-            continue;
-        }
-
-        auto pushConstant2 = pushConstant.PushConstantBuffer;
-
-        offset = (offset + 3) & ~3;
+        size_t paddingSize = pushConstantVar.Size > pushConstantVar.ByteAlignment ? pushConstantVar.Size : pushConstantVar.ByteAlignment;
         void* dest = static_cast<byte*>(pushConstant.PushConstantBuffer) + offset;
-
-        std::cout << "Copying variable '" << pushConstantVar.Name
-            << "' of size " << pushConstantVar.VarSize
-            << " from " << pushConstantVar.Value
-            << " to " << dest << std::endl;
-
-        if ("MeshBufferIndex" == pushConstantVar.Name)
-        {
-            int afs = 0;
-            memcpy(dest, &afs, sizeof(int));
-        }
-        else
-        {
-            memcpy(dest, pushConstantVar.Value, pushConstantVar.VarSize);
-        }
-        // Debug: Print copied data
-   /*     std::cout << "Copied data: ";
-        for (size_t i = 0; i < std::min(pushConstantVar.VarSize, size_t(8)); ++i)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0')
-                << (int)(static_cast<byte*>(dest)[i]) << " ";
-        }
-        std::cout << std::dec << std::endl;*/
-
-        offset += pushConstantVar.VarSize;
+        memset(dest, 0, paddingSize);
+        memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
+        offset += paddingSize;
     }
 }
 
@@ -215,7 +170,7 @@ void ShaderSystem::GetPushConstantData(const ShaderPushConstant& pushConstant)
         pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
     for (const auto& shaderVar : shaderVarList)
     {
-        std::cout << shaderVar.Value << ": Size: " << shaderVar.VarSize << " Type: " << shaderVar.MemberTypeEnum;
+        std::cout << shaderVar.Value << ": Size: " << shaderVar.Size << " Type: " << shaderVar.MemberTypeEnum;
         std::cout << " Value at " << shaderVar.Value << ": ";
 
         switch (shaderVar.MemberTypeEnum)

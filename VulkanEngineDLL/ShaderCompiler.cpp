@@ -337,7 +337,7 @@ Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvRefl
                     shaderVariables.emplace_back(ShaderVariable
                         {
                             .Name = variable.struct_member_name,
-                            .VarSize = memberSize,
+                            .Size = memberSize,
                             .Value = nullptr,
                             .MemberTypeEnum = memberType,
                         });
@@ -378,25 +378,29 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
     Vector<ShaderPushConstant> pushConstantList;
     for (auto pushConstant : pushConstants)
     {
+        size_t bufferSize = 0;
         Vector<ShaderVariable> shaderVariables;
         SpvReflectTypeDescription shaderBufferMembers = *pushConstant->type_description;
         Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(shaderBufferMembers.members, shaderBufferMembers.members + shaderBufferMembers.member_count);
         for (auto& variable : shaderVariableList)
         {
-            ShaderMemberType memberType;
-            uint memberSize = 0;
+            size_t memberSize = 0;
+            size_t byteAlignment = 0;
+            ShaderMemberType memberType = shaderUnkown;
             switch (variable.op)
             {
             case SpvOpTypeInt:
             {
                 memberSize = variable.traits.numeric.scalar.width / 8;
                 memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                byteAlignment = 4;
                 break;
             }
             case SpvOpTypeFloat:
             {
                 memberSize = variable.traits.numeric.scalar.width / 8;
                 memberType = shaderFloat;
+                byteAlignment = 4;
                 break;
             }
             case SpvOpTypeVector:
@@ -404,9 +408,24 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
                 memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
                 switch (variable.traits.numeric.vector.component_count)
                 {
-                case 2: memberType = shaderVec2; break;
-                case 3: memberType = shaderVec3; break;
-                case 4: memberType = shaderVec4; break;
+                    case 2:
+                    {
+                        memberType = shaderVec2;
+                        byteAlignment = 8;
+                        break;
+                    }
+                    case 3:
+                    {
+                        memberType = shaderVec3;
+                        byteAlignment = 16;
+                        break;
+                    }
+                    case 4:
+                    {
+                        memberType = shaderVec4;
+                        byteAlignment = 16;
+                        break;
+                    }
                 }
                 break;
             }
@@ -418,16 +437,19 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
                 {
                     memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                     memberType = shaderMat2;
+                    byteAlignment = 8;
                 }
                 if (rowCount == 3 && colCount == 3)
                 {
                     memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                     memberType = shaderMat3;
+                    byteAlignment = 16;
                 }
                 if (rowCount == 4 && colCount == 4)
                 {
                     memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                     memberType = shaderMat4;
+                    byteAlignment = 16;
                 }
                 break;
             }
@@ -436,15 +458,18 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
             shaderVariables.emplace_back(ShaderVariable
                 {
                     .Name = variable.struct_member_name,
-                    .VarSize = memberSize,
+                    .Size = memberSize,
+                    .ByteAlignment = byteAlignment,
                     .Value = nullptr,
                     .MemberTypeEnum = memberType,
                 });
+            size_t bytePadding = shaderVariables.back().Size > shaderVariables.back().ByteAlignment ? shaderVariables.back().Size : shaderVariables.back().ByteAlignment;
+            bufferSize += bytePadding;
         }
 
         ShaderPushConstant shaderStruct;
         shaderStruct.PushConstantName = pushConstant->name;
-        shaderStruct.PushConstantSize = static_cast<size_t>(pushConstant->size);
+        shaderStruct.PushConstantSize = static_cast<size_t>(bufferSize);
         shaderStruct.PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
         shaderStruct.PushConstantVariableListCount = pushConstant->member_count;
         std::memcpy(shaderStruct.PushConstantVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
@@ -514,137 +539,10 @@ Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConst
     return results;
 }
 
-void printSpecializationConstants(SpvReflectShaderModule& module) {
-    // Step 1: Get the count of specialization constants
-    uint32_t count = 0;
-    SpvReflectResult result = spvReflectEnumerateSpecializationConstants(&module, &count, nullptr);
-    if (result != SPV_REFLECT_RESULT_SUCCESS) {
-        std::cerr << "Failed to get specialization constant count: " << result << std::endl;
-        return;
-    }
-
-    // Step 2: Allocate vector for constant pointers
-    std::vector<SpvReflectSpecializationConstant*> constants(count);
-
-    // Step 3: Enumerate specialization constants
-    result = spvReflectEnumerateSpecializationConstants(&module, &count, constants.data());
-    if (result != SPV_REFLECT_RESULT_SUCCESS) {
-        std::cerr << "Failed to enumerate specialization constants: " << result << std::endl;
-        return;
-    }
-
-    // Step 4: Process each constant
-    for (uint32_t i = 0; i < count; ++i) {
-        const SpvReflectSpecializationConstant* constant = constants[i];
-        std::cout << "Constant #" << i << ":\n";
-        std::cout << "  Name: " << (constant->name ? constant->name : "Unnamed") << "\n";
-        std::cout << "  SPIR-V ID: " << constant->spirv_id << "\n";
-        std::cout << "  Constant ID: " << constant->constant_id << "\n";
-
-        // Step 5: Get type details
-        const SpvReflectTypeDescription* type = constant->type;
-        if (!type) {
-            std::cout << "  No type description available\n";
-            continue;
-        }
-
-       auto afs = getSpecializationConstantOp(module, constant->spirv_id);
-        std::cout << "  Type Opcode: " << afs << " (e.g., OpTypeInt, OpTypeFloat, etc.)\n";
-        std::cout << "  Type: ";
-
-        SpvReflectTypeFlags type_flags = type->type_flags;
-        if (type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
-            std::cout << "Bool";
-        }
-        else if (type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
-            uint32_t width = type->traits.numeric.scalar.width;
-            std::cout << "Float (" << width << "-bit)";
-        }
-        else if (type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
-            uint32_t width = type->traits.numeric.scalar.width;
-            uint32_t signedness = type->traits.numeric.scalar.signedness;
-            std::cout << (signedness ? "Signed Int" : "Unsigned Int") << " (" << width << "-bit)";
-        }
-        else {
-            std::cout << "Unsupported type (flags: " << type_flags << ")";
-            continue;
-        }
-
-        // Handle vector components if applicable
-        if (type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR) {
-            std::cout << " Vector (" << type->traits.numeric.vector.component_count << " components)";
-        }
-
-        std::cout << "\n";
-
-        // Step 6: Print default value if present
-        if (constant->has_default_value) {
-            std::cout << "  Default Value (as " << constant->default_literal_count << " literals): ";
-            for (uint32_t lit = 0; lit < constant->default_literal_count; ++lit) {
-                std::cout << "0x" << std::hex << constant->default_literals[lit] << " ";
-            }
-            std::cout << "\n";
-
-            // Interpret based on type (example for common cases)
-            if (type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
-                bool value = (constant->default_literals[0] != 0);
-                std::cout << "    Interpreted: " << (value ? "true" : "false") << "\n";
-            }
-            else if (type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
-                uint32_t width = type->traits.numeric.scalar.width;
-                uint32_t signedness = type->traits.numeric.scalar.signedness;
-                if (width == 32) {
-                    if (signedness) {
-                        int32_t value = static_cast<int32_t>(constant->default_literals[0]);
-                        std::cout << "    Interpreted: " << value << "\n";
-                    }
-                    else {
-                        uint32_t value = constant->default_literals[0];
-                        std::cout << "    Interpreted: " << value << "\n";
-                    }
-                }
-                else if (width == 64) {
-                    // For 64-bit, assume 2 literals (low/high word)
-                    if (constant->default_literal_count >= 2) {
-                        uint64_t value = (static_cast<uint64_t>(constant->default_literals[1]) << 32) |
-                            constant->default_literals[0];
-                        if (signedness) {
-                            std::cout << "    Interpreted: " << static_cast<int64_t>(value) << "\n";
-                        }
-                        else {
-                            std::cout << "    Interpreted: " << value << "\n";
-                        }
-                    }
-                }
-            }
-            else if (type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
-                uint32_t width = type->traits.numeric.scalar.width;
-                if (width == 32) {
-                    float value = *reinterpret_cast<const float*>(&constant->default_literals[0]);
-                    std::cout << "    Interpreted: " << value << "\n";
-                }
-                else if (width == 64) {
-                    // For 64-bit float, assume 2 literals
-                    if (constant->default_literal_count >= 2) {
-                        uint64_t raw = (static_cast<uint64_t>(constant->default_literals[1]) << 32) |
-                            constant->default_literals[0];
-                        double value = *reinterpret_cast<const double*>(&raw);
-                        std::cout << "    Interpreted: " << value << "\n";
-                    }
-                }
-            }
-            // Add handling for vectors/composites as needed
-        }
-        else {
-            std::cout << "  No default value\n";
-        }
-    }
-}
-
 SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t spirv_id) {
     const uint32_t* code = spvReflectGetCode(&module);
     uint32_t size = spvReflectGetCodeSize(&module) / sizeof(uint32_t);
-    uint32_t index = 5;  // Skip header (magic, version, generator, bound, schema)
+    uint32_t index = 5; 
 
     while (index < size) {
         uint32_t word = code[index];
@@ -652,20 +550,21 @@ SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t
         uint32_t word_count = (word >> 16) & 0xFFFF;
 
         if (word_count == 0 || index + word_count > size) {
-            return SpvOpNop;  // Invalid
+            return SpvOpNop;  
         }
 
-        // Check if this instruction defines the spirv_id
-        bool has_result_id = (op == SpvOpSpecConstantTrue || op == SpvOpSpecConstantFalse ||
-            op == SpvOpSpecConstant || op == SpvOpSpecConstantComposite ||
-            op == SpvOpSpecConstantOp);
+        bool has_result_id = (op == SpvOpSpecConstantTrue || 
+                              op == SpvOpSpecConstantFalse ||
+                              op == SpvOpSpecConstant || 
+                              op == SpvOpSpecConstantComposite ||
+                              op == SpvOpSpecConstantOp);
         if (has_result_id && word_count > 2 && code[index + 2] == spirv_id) {
             return op;
         }
 
         index += word_count;
     }
-    return SpvOpNop;  // Not found
+    return SpvOpNop; 
 }
 
 
@@ -673,28 +572,28 @@ const char* Renderer_GetShaderReflectError(SpvReflectResult result)
 {
     switch (result)
     {
-    case SPV_REFLECT_RESULT_SUCCESS: return "SPV_REFLECT_RESULT_SUCCESS";
-    case SPV_REFLECT_RESULT_NOT_READY: return "SPV_REFLECT_RESULT_NOT_READY";
-    case SPV_REFLECT_RESULT_ERROR_PARSE_FAILED: return "SPV_REFLECT_RESULT_ERROR_PARSE_FAILED";
-    case SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED: return "SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED";
-    case SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED: return "SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED";
-    case SPV_REFLECT_RESULT_ERROR_NULL_POINTER: return "SPV_REFLECT_RESULT_ERROR_NULL_POINTER";
-    case SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR: return "SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR";
-    case SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH: return "SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH";
-    case SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND: return "SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF: return "SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW: return "SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION: return "SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA: return "SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE";
-    case SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED: return "SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED";
-    default: return "Unknown Result";
+        case SPV_REFLECT_RESULT_SUCCESS: return "SPV_REFLECT_RESULT_SUCCESS";
+        case SPV_REFLECT_RESULT_NOT_READY: return "SPV_REFLECT_RESULT_NOT_READY";
+        case SPV_REFLECT_RESULT_ERROR_PARSE_FAILED: return "SPV_REFLECT_RESULT_ERROR_PARSE_FAILED";
+        case SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED: return "SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED";
+        case SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED: return "SPV_REFLECT_RESULT_ERROR_RANGE_EXCEEDED";
+        case SPV_REFLECT_RESULT_ERROR_NULL_POINTER: return "SPV_REFLECT_RESULT_ERROR_NULL_POINTER";
+        case SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR: return "SPV_REFLECT_RESULT_ERROR_INTERNAL_ERROR";
+        case SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH: return "SPV_REFLECT_RESULT_ERROR_COUNT_MISMATCH";
+        case SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND: return "SPV_REFLECT_RESULT_ERROR_ELEMENT_NOT_FOUND";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_CODE_SIZE";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_MAGIC_NUMBER";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF: return "SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_EOF";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ID_REFERENCE";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW: return "SPV_REFLECT_RESULT_ERROR_SPIRV_SET_NUMBER_OVERFLOW";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_STORAGE_CLASS";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION: return "SPV_REFLECT_RESULT_ERROR_SPIRV_RECURSION";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_INSTRUCTION";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA: return "SPV_REFLECT_RESULT_ERROR_SPIRV_UNEXPECTED_BLOCK_DATA";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_BLOCK_MEMBER_REFERENCE";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE: return "SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_EXECUTION_MODE";
+        case SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED: return "SPV_REFLECT_RESULT_ERROR_SPIRV_MAX_RECURSIVE_EXCEEDED";
+        default: return "Unknown Result";
     }
 }

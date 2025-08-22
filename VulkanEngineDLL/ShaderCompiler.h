@@ -19,6 +19,7 @@ extern "C"
 
 enum ShaderMemberType
 {
+	shaderUnkown,
 	shaderInt,
 	shaderUint,
 	shaderFloat,
@@ -44,9 +45,10 @@ struct ShaderVertexVariable
 struct ShaderVariable
 {
 	String Name;
-	uint32 VarSize;
-	void*  Value;
-	ShaderMemberType  MemberTypeEnum;
+	size_t Size = 0;
+	size_t ByteAlignment = 0;
+	void*  Value = nullptr;
+	ShaderMemberType  MemberTypeEnum = shaderUnkown;
 };
 
 struct ShaderStruct
