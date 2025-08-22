@@ -193,42 +193,49 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
 
 VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution)
 {
+
     nlohmann::json json = Json::ReadJson(jsonPath);
     VkGuid renderPassId = CreateVulkanRenderPass(jsonPath, renderPassResolution);
+
+    Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
+    Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
+    Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
+    Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelId);
+    //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
+    Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId);
+    Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
+
+    GPUIncludes include =
+    {
+       .VertexPropertiesCount = vertexPropertiesList.size(),
+       .IndexPropertiesCount = indexPropertiesList.size(),
+       .TransformPropertiesCount = transformPropertiesList.size(),
+       .MeshPropertiesCount = meshPropertiesList.size(),
+       .TexturePropertiesListCount = texturePropertiesList.size(),
+       .MaterialPropertiesCount = materialPropertiesList.size(),
+       .VertexProperties = vertexPropertiesList.data(),
+       .IndexProperties = indexPropertiesList.data(),
+       .TransformProperties = transformPropertiesList.data(),
+       .MeshProperties = meshPropertiesList.data(),
+       .TexturePropertiesList = texturePropertiesList.data(),
+       .MaterialProperties = materialPropertiesList.data()
+    };
+
     for (int x = 0; x < json["RenderPipelineList"].size(); x++)
     {
-        String pipelineJson = json["RenderPipelineList"][x];
+        nlohmann::json json = Json::ReadJson(json["RenderPipelineList"][x]);
+        RenderPipelineLoader renderPipelineLoader = nlohmann::json::parse(json).get<RenderPipelineLoader>();
 
-        Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
-        Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
-        Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
-        Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelId);
-        //  Vector<VkDescriptorBufferInfo> levelLayerMeshPropertiesList = Vector<VkDescriptorBufferInfo>(includes.LevelLayerMeshProperties, includes.LevelLayerMeshProperties + includes.LevelLayerMeshPropertiesCount);
-        Vector<VkDescriptorImageInfo>  texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassId);
-        Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
-        GPUIncludes include =
-        {
-           .VertexProperties = vertexPropertiesList.data(),
-           .IndexProperties = indexPropertiesList.data(),
-           .TransformProperties = transformPropertiesList.data(),
-           .MeshProperties = meshPropertiesList.data(),
-           .TexturePropertiesList = texturePropertiesList.data(),
-           .MaterialProperties = materialPropertiesList.data(),
-           .VertexPropertiesCount = vertexPropertiesList.size(),
-           .IndexPropertiesCount = indexPropertiesList.size(),
-           .TransformPropertiesCount = transformPropertiesList.size(),
-           .MeshPropertiesCount = meshPropertiesList.size(),
-           .TexturePropertiesListCount = texturePropertiesList.size(),
-           .MaterialPropertiesCount = materialPropertiesList.size()
-        };
+        renderPipelineLoader.RenderPassId;
+        renderPipelineLoader.VertexShaderModule = shaderSystem.AddShaderModule(renderPipelineLoader.VertexShaderPath);
+        renderPipelineLoader.FragmentShaderModule = shaderSystem.AddShaderModule(renderPipelineLoader.FragmentShaderPath);
+        renderPipelineLoader.gpuIncludes = include;
+//        renderPipelineLoader.PushConstant = 
+        renderPipelineLoader.RenderPassResolution;
 
-        const char* jsonDataString = File_Read(pipelineJson.c_str()).Data;
-        RenderPipelineLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPipelineLoader>();
-        shaderSystem.AddShaderModule(renderPassLoader.VertexShaderPath);
 
         auto pushConstant = shaderSystem.GetGlobalShaderPushConstant("sceneData");
-        VulkanPipeline vulkanPipelineDLL = VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPassId, pipelineJson.c_str(), RenderPassMap[renderPassId].RenderPass, *pushConstant, renderPassResolution, include);
-        RenderPipelineMap[renderPassId].emplace_back(vulkanPipelineDLL);
+        RenderPipelineMap[renderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
     }
     return renderPassId;
 }

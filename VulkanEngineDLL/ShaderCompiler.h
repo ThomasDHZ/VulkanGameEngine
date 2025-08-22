@@ -14,79 +14,8 @@ extern "C"
 #include <fstream>
 #include "TypeDef.h"
 #include "JsonStructs.h"
-#include <SPIRV-Reflect/spirv_reflect.h>
 #include "MemorySystem.h"
-
-enum ShaderMemberType
-{
-	shaderUnkown,
-	shaderInt,
-	shaderUint,
-	shaderFloat,
-	shaderIvec2,
-	shaderIvec3,
-	shaderIvec4,
-	shaderVec2,
-	shaderVec3,
-	shaderVec4,
-	shaderMat2,
-	shaderMat3,
-	shaderMat4,
-	shaderbool
-};
-
-struct ShaderVertexVariable
-{
-	String Name;
-	uint32 Location;
-	VkFormat Format;
-};
-
-struct ShaderVariable
-{
-	String Name;
-	size_t Size = 0;
-	size_t ByteAlignment = 0;
-	void*  Value = nullptr;
-	ShaderMemberType  MemberTypeEnum = shaderUnkown;
-};
-
-struct ShaderStruct
-{
-	String Name;
-	String ShaderBufferMemberName;
-	SpvOp ShaderStructOp;
-	size_t ShaderBufferVariableListCount;
-	ShaderVariable* ShaderBufferVariableList;
-};
-
-//struct ShaderBuffer
-//{
-//	String Name;
-//	SpvOp  ShaderBufferOp;
-//	size_t ShaderStructListCount;
-//	ShaderVariable* ShaderStructList;
-//};
-
-struct ShaderDescriptorBinding
-{
-	String Name;
-	uint32 Binding;
-	VkDescriptorType DescripterType;
-	size_t ShaderStructListCount;
-	ShaderStruct* ShaderStructList;
-};
-
-struct ShaderPushConstant
-{
-	String			StructName;
-	String			PushConstantName;
-	size_t			PushConstantSize = 0;
-	size_t			PushConstantVariableListCount = 0;
-	ShaderVariable* PushConstantVariableList = nullptr;
-	void*			PushConstantBuffer = nullptr;
-	bool			GlobalPushContant = false;
-};
+#include "JsonStruct.h"
 
 DLL_EXPORT void Shader_StartUp();
 DLL_EXPORT SpvReflectShaderModule Shader_GetShaderData(const String& spvPath);

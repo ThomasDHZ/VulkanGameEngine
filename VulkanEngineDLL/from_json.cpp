@@ -360,48 +360,37 @@ namespace nlohmann
         j.at("PipelineId").get_to(model.PipelineId);
         j.at("VertexShader").get_to(model.VertexShaderPath);
         j.at("FragmentShader").get_to(model.FragmentShaderPath);
-        j.at("VertexType").get_to(model.VertexType);
         j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
         j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
         j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
         j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
 
-        for (int x = 0; x < j.at("PipelineColorBlendAttachmentStateList").size(); x++)
-        {
-            model.PipelineColorBlendAttachmentStateList.emplace_back(j.at("PipelineColorBlendAttachmentStateList")[x]);
-        }
+        //for (int x = 0; x < j.at("PipelineColorBlendAttachmentStateList").size(); x++)
+        //{
+        //    model.PipelineColorBlendAttachmentStateList.emplace_back(j.at("PipelineColorBlendAttachmentStateList")[x]);
+        //}
 
-        for (int x = 0; x < j.at("PipelineDescriptorModelsList").size(); x++)
-        {
-            model.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);
+        //for (int x = 0; x < j.at("PipelineDescriptorModelsList").size(); x++)
+        //{
+        //    model.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);
 
-        }
+        //}
 
-        if (j.contains("ViewportList"))
-        {
-            for (int x = 0; x < j.at("ViewportList").size(); x++)
-            {
-                model.ViewportList.emplace_back(j.at("ViewportList")[x]);
-            }
-        }
+        //if (j.contains("ViewportList"))
+        //{
+        //    for (int x = 0; x < j.at("ViewportList").size(); x++)
+        //    {
+        //        model.ViewportList.emplace_back(j.at("ViewportList")[x]);
+        //    }
+        //}
 
-        if (j.contains("ScissorList"))
-        {
-            for (int x = 0; x < j.at("ScissorList").size(); x++)
-            {
-                model.ScissorList.emplace_back(j.at("ScissorList")[x]);
-            }
-        }
-
-        for (int x = 0; x < j.at("VertexInputBindingDescriptionList").size(); x++)
-        {
-            model.VertexInputBindingDescriptionList.emplace_back(j.at("VertexInputBindingDescriptionList")[x]);
-        }
-
-        for (int x = 0; x < j.at("VertexInputAttributeDescriptionList").size(); x++)
-        {
-            model.VertexInputAttributeDescriptionList.emplace_back(j.at("VertexInputAttributeDescriptionList")[x]);
-        }
+        //if (j.contains("ScissorList"))
+        //{
+        //    for (int x = 0; x < j.at("ScissorList").size(); x++)
+        //    {
+        //        model.ScissorList.emplace_back(j.at("ScissorList")[x]);
+        //    }
+        //}
     }
 }

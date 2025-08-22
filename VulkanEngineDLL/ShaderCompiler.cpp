@@ -414,11 +414,11 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
                     break;
                 case 3:
                     memberType = shaderVec3;
-                    byteAlignment = 16; // std140
+                    byteAlignment = 16;
                     break;
                 case 4:
                     memberType = shaderVec4;
-                    byteAlignment = 16; // std140
+                    byteAlignment = 16; 
                     break;
                 }
                 break;

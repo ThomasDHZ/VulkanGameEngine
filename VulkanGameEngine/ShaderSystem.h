@@ -31,7 +31,7 @@ public:
 
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	void AddShaderModule(const String& modulePath);
+	SpvReflectShaderModule AddShaderModule(const String& modulePath);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);

@@ -32,13 +32,12 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-void ShaderSystem::AddShaderModule(const String& modulePath)
+SpvReflectShaderModule ShaderSystem::AddShaderModule(const String& modulePath)
 {
     const char* fileName = File_GetFileNameFromPath(modulePath.c_str());
     if (!ShaderModuleExists(fileName))
     {
         ShaderModuleMap[fileName] = Shader_GetShaderData(modulePath);
-
         Vector<ShaderPushConstant> pushConstantList = Shader_GetShaderConstBuffer(ShaderModuleMap[fileName]);
         for(auto& pushConstant : pushConstantList)
         {
@@ -70,7 +69,9 @@ void ShaderSystem::AddShaderModule(const String& modulePath)
                 }
             }
         }
+        return ShaderModuleMap[fileName];
     }
+    return ShaderModuleMap[fileName];
 }
 
 ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName)

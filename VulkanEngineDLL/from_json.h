@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 #include "JsonStructs.h"
 #include "JsonStruct.h"
-#include "VulkanPipeline.h"
+#include "json.h"
 
 namespace nlohmann
 {
