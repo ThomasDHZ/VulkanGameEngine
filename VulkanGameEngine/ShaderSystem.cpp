@@ -104,23 +104,29 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
     }
 
     size_t offset = 0;
-    void* a = pushConstant.PushConstantBuffer;
-    Vector<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
+    Vector<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList,
+        pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
     for (const auto& pushConstantVar : pushConstantVarList)
     {
-        size_t paddingSize = pushConstantVar.Size > pushConstantVar.ByteAlignment ? pushConstantVar.Size : pushConstantVar.ByteAlignment;
+        if (pushConstantVar.Value == nullptr)
+        {
+            std::cerr << "Warning: Value pointer for variable '" << pushConstantVar.Name << "' is null!" << std::endl;
+            continue;
+        }
+
+        offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
         void* dest = static_cast<byte*>(pushConstant.PushConstantBuffer) + offset;
-        memset(dest, 0, paddingSize);
+
         if (pushConstantVar.Name == "MeshBufferIndex")
         {
-            uint sdf = 0;
-            memcpy(dest, &sdf, sizeof(uint));
+            uint32_t sdf = 0;
+            memcpy(dest, &sdf, sizeof(uint32_t));
         }
         else
         {
             memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
         }
-        offset += paddingSize;
+        offset += pushConstantVar.Size;
     }
 }
 
@@ -173,112 +179,112 @@ bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
     return false;
 }
 
-void ShaderSystem::GetPushConstantData(const ShaderPushConstant& pushConstant)
-{
-    std::vector<ShaderVariable> shaderVarList(pushConstant.PushConstantVariableList,
-        pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
-    for (const auto& shaderVar : shaderVarList)
-    {
-        std::cout << shaderVar.Value << ": Size: " << shaderVar.Size << " Type: " << shaderVar.MemberTypeEnum;
-        std::cout << " Value at " << shaderVar.Value << ": ";
-
-        switch (shaderVar.MemberTypeEnum)
-        {
-        case shaderInt:
-        {
-            int val = *static_cast<int*>(shaderVar.Value);
-            std::cout << val;
-            break;
-        }
-        case shaderUint:
-        {
-            unsigned int val = *static_cast<unsigned int*>(shaderVar.Value);
-            std::cout << val;
-            break;
-        }
-        case shaderFloat:
-        {
-            float val = *static_cast<float*>(shaderVar.Value);
-            std::cout << val;
-            break;
-        }
-        case shaderIvec2:
-        {
-            int* vec = static_cast<int*>(shaderVar.Value);
-            std::cout << "Ivec2(" << vec[0] << ", " << vec[1] << ")";
-            break;
-        }
-        case shaderIvec3:
-        {
-            int* vec = static_cast<int*>(shaderVar.Value);
-            std::cout << "Ivec3(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
-            break;
-        }
-        case shaderIvec4:
-        {
-            int* vec = static_cast<int*>(shaderVar.Value);
-            std::cout << "Ivec4(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3] << ")";
-            break;
-        }
-        case shaderVec2:
-        {
-            float* vec = static_cast<float*>(shaderVar.Value);
-            std::cout << "Vec2(" << vec[0] << ", " << vec[1] << ")";
-            break;
-        }
-        case shaderVec3:
-        {
-            float* vec = static_cast<float*>(shaderVar.Value);
-            std::cout << "Vec3(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
-            break;
-        }
-        case shaderVec4:
-        {
-            float* vec = static_cast<float*>(shaderVar.Value);
-            std::cout << "Vec4(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3] << ")";
-            break;
-        }
-        case shaderMat2:
-        {
-            float* mat = static_cast<float*>(shaderVar.Value);
-            std::cout << "Mat2:\n";
-            for (int i = 0; i < 4; ++i)
-            {
-                std::cout << mat[i] << (i % 2 == 1 ? "\n" : " ");
-            }
-            break;
-        }
-        case shaderMat3:
-        {
-            float* mat = static_cast<float*>(shaderVar.Value);
-            std::cout << "Mat3:\n";
-            for (int i = 0; i < 9; ++i)
-            {
-                std::cout << mat[i] << (i % 3 == 2 ? "\n" : " ");
-            }
-            break;
-        }
-        case shaderMat4:
-        {
-            float* mat = static_cast<float*>(shaderVar.Value);
-            std::cout << "Mat4:\n";
-            for (int i = 0; i < 16; ++i)
-            {
-                std::cout << mat[i] << (i % 4 == 3 ? "\n" : " ");
-            }
-            break;
-        }
-        case shaderbool:
-        {
-            bool val = *static_cast<bool*>(shaderVar.Value);
-            std::cout << (val ? "true" : "false");
-            break;
-        }
-        default:
-            std::cout << "Unknown type";
-        }
-
-        std::cout << "\n";
-    }
-    std::cout << std::endl << std::endl;
-}
+//void ShaderSystem::GetPushConstantData(const ShaderPushConstant& pushConstant)
+//{
+//    std::vector<ShaderVariable> shaderVarList(pushConstant.PushConstantVariableList,
+//        pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
+//    for (const auto& shaderVar : shaderVarList)
+//    {
+//        std::cout << shaderVar.Value << ": Size: " << shaderVar.Size << " Type: " << shaderVar.MemberTypeEnum;
+//        std::cout << " Value at " << shaderVar.Value << ": ";
+//
+//        switch (shaderVar.MemberTypeEnum)
+//        {
+//        case shaderInt:
+//        {
+//            int val = *static_cast<int*>(shaderVar.Value);
+//            std::cout << val;
+//            break;
+//        }
+//        case shaderUint:
+//        {
+//            unsigned int val = *static_cast<unsigned int*>(shaderVar.Value);
+//            std::cout << val;
+//            break;
+//        }
+//        case shaderFloat:
+//        {
+//            float val = *static_cast<float*>(shaderVar.Value);
+//            std::cout << val;
+//            break;
+//        }
+//        case shaderIvec2:
+//        {
+//            int* vec = static_cast<int*>(shaderVar.Value);
+//            std::cout << "Ivec2(" << vec[0] << ", " << vec[1] << ")";
+//            break;
+//        }
+//        case shaderIvec3:
+//        {
+//            int* vec = static_cast<int*>(shaderVar.Value);
+//            std::cout << "Ivec3(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
+//            break;
+//        }
+//        case shaderIvec4:
+//        {
+//            int* vec = static_cast<int*>(shaderVar.Value);
+//            std::cout << "Ivec4(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3] << ")";
+//            break;
+//        }
+//        case shaderVec2:
+//        {
+//            float* vec = static_cast<float*>(shaderVar.Value);
+//            std::cout << "Vec2(" << vec[0] << ", " << vec[1] << ")";
+//            break;
+//        }
+//        case shaderVec3:
+//        {
+//            float* vec = static_cast<float*>(shaderVar.Value);
+//            std::cout << "Vec3(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
+//            break;
+//        }
+//        case shaderVec4:
+//        {
+//            float* vec = static_cast<float*>(shaderVar.Value);
+//            std::cout << "Vec4(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3] << ")";
+//            break;
+//        }
+//        case shaderMat2:
+//        {
+//            float* mat = static_cast<float*>(shaderVar.Value);
+//            std::cout << "Mat2:\n";
+//            for (int i = 0; i < 4; ++i)
+//            {
+//                std::cout << mat[i] << (i % 2 == 1 ? "\n" : " ");
+//            }
+//            break;
+//        }
+//        case shaderMat3:
+//        {
+//            float* mat = static_cast<float*>(shaderVar.Value);
+//            std::cout << "Mat3:\n";
+//            for (int i = 0; i < 9; ++i)
+//            {
+//                std::cout << mat[i] << (i % 3 == 2 ? "\n" : " ");
+//            }
+//            break;
+//        }
+//        case shaderMat4:
+//        {
+//            float* mat = static_cast<float*>(shaderVar.Value);
+//            std::cout << "Mat4:\n";
+//            for (int i = 0; i < 16; ++i)
+//            {
+//                std::cout << mat[i] << (i % 4 == 3 ? "\n" : " ");
+//            }
+//            break;
+//        }
+//        case shaderbool:
+//        {
+//            bool val = *static_cast<bool*>(shaderVar.Value);
+//            std::cout << (val ? "true" : "false");
+//            break;
+//        }
+//        default:
+//            std::cout << "Unknown type";
+//        }
+//
+//        std::cout << "\n";
+//    }
+//    std::cout << std::endl << std::endl;
+//}

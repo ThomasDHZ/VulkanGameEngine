@@ -75,7 +75,6 @@ void LevelSystem::DestoryLevel()
 void LevelSystem::Update(const float& deltaTime)
 {
     OrthographicCamera->Update(*shaderSystem.GetGlobalShaderPushConstant("sceneData"));
-    shaderSystem.GetPushConstantData(*shaderSystem.GetGlobalShaderPushConstant("sceneData"));
     spriteSystem.Update(deltaTime);
     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
     for (auto& levelLayer : LevelLayerList)

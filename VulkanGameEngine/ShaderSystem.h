@@ -46,6 +46,6 @@ public:
 	bool ShaderModuleExists(const String& shaderFile);
 	bool ShaderPushConstantExists(const String& pushConstantName);
 
-	void GetPushConstantData(const ShaderPushConstant& pushConstant);
+	//void GetPushConstantData(const ShaderPushConstant& pushConstant);
 };
 extern ShaderSystem shaderSystem;

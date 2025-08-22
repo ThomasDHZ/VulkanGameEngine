@@ -408,24 +408,18 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
                 memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
                 switch (variable.traits.numeric.vector.component_count)
                 {
-                    case 2:
-                    {
-                        memberType = shaderVec2;
-                        byteAlignment = 8;
-                        break;
-                    }
-                    case 3:
-                    {
-                        memberType = shaderVec3;
-                        byteAlignment = 16;
-                        break;
-                    }
-                    case 4:
-                    {
-                        memberType = shaderVec4;
-                        byteAlignment = 16;
-                        break;
-                    }
+                case 2:
+                    memberType = shaderVec2;
+                    byteAlignment = 8;
+                    break;
+                case 3:
+                    memberType = shaderVec3;
+                    byteAlignment = 16; // std140
+                    break;
+                case 4:
+                    memberType = shaderVec4;
+                    byteAlignment = 16; // std140
+                    break;
                 }
                 break;
             }
@@ -433,23 +427,26 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
             {
                 uint32_t rowCount = variable.traits.numeric.matrix.row_count;
                 uint32_t colCount = variable.traits.numeric.matrix.column_count;
+                memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                 if (rowCount == 2 && colCount == 2)
                 {
-                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                     memberType = shaderMat2;
                     byteAlignment = 8;
                 }
-                if (rowCount == 3 && colCount == 3)
+                else if (rowCount == 3 && colCount == 3)
                 {
-                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                     memberType = shaderMat3;
                     byteAlignment = 16;
                 }
-                if (rowCount == 4 && colCount == 4)
+                else if (rowCount == 4 && colCount == 4)
                 {
-                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                     memberType = shaderMat4;
                     byteAlignment = 16;
+                }
+                else
+                {
+                    std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
+                    byteAlignment = 4;
                 }
                 break;
             }
@@ -463,15 +460,16 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
                     .Value = nullptr,
                     .MemberTypeEnum = memberType,
                 });
-            size_t bytePadding = shaderVariables.back().Size > shaderVariables.back().ByteAlignment ? shaderVariables.back().Size : shaderVariables.back().ByteAlignment;
-            bufferSize += bytePadding;
+            size_t alignment = byteAlignment;
+            bufferSize = (bufferSize + alignment - 1) & ~(alignment - 1);
+            bufferSize += memberSize;
         }
 
         ShaderPushConstant shaderStruct;
         shaderStruct.PushConstantName = pushConstant->name;
-        shaderStruct.PushConstantSize = static_cast<size_t>(pushConstant->size);
+        shaderStruct.PushConstantSize = bufferSize;
         shaderStruct.PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
-        shaderStruct.PushConstantVariableListCount = pushConstant->member_count;
+        shaderStruct.PushConstantVariableListCount = shaderVariables.size();
         std::memcpy(shaderStruct.PushConstantVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
         pushConstantList.emplace_back(shaderStruct);
     }
