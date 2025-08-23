@@ -20,7 +20,7 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxc_compiler;
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> DefaultIncludeHandler;
 
-	UnorderedMap<String, SpvReflectShaderModule> ShaderModuleMap;
+	UnorderedMap<String, ShaderModule> ShaderModuleMap;
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantSourceMap;
 	UnorderedMap<String, ShaderPushConstant> GlobalPushContantShaderPushConstantMap;
 
@@ -31,7 +31,7 @@ public:
 
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	SpvReflectShaderModule AddShaderModule(const String& modulePath);
+	ShaderModule AddShaderModule(const String& modulePath);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);
@@ -40,7 +40,7 @@ public:
 
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
 
-	SpvReflectShaderModule& FindShaderModule(const String& shaderFile);
+	ShaderModule& FindShaderModule(const String& shaderFile);
 	ShaderPushConstant& FindShaderPushConstant(const String& shaderFile);
 
 	bool ShaderModuleExists(const String& shaderFile);

@@ -9,11 +9,72 @@ void Shader_StartUp()
     //DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc_compiler));
     //dxc_utils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
 }
-SpvReflectShaderModule Shader_GetShaderData(const String& spvPath)
-{
-    SpvReflectShaderModule module;
+ShaderModule Shader_GetShaderData(const String& spvPath)
+{ 
+    SpvReflectShaderModule spvModule;
+    Vector<VkVertexInputBindingDescription> vertexInputBindingList;
+    Vector<VkVertexInputAttributeDescription> vertexInputAttributeList;
     FileState file = File_Read(spvPath.c_str());
-    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
+    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule);
+    Vector<ShaderPushConstant> constBuffers = Shader_GetShaderConstBuffer(spvModule);
+    Vector<SpvReflectDescriptorSet> descriptorSets;
+    //Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(spvModule);
+    Vector<ShaderVertexVariable> outputVariables = Shader_GetShaderOutputVertexVariables(spvModule);
+    Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
+
+    ShaderModule module = ShaderModule
+    {
+        .ShaderPath = spvPath,
+        .ShaderStage = spvModule.shader_stage,
+        //.DescriptorBindingCount = descriptorBindings.size(),
+        .DescriptorSetCount = 0,
+        .VertexInputBindingCount = vertexInputBindingList.size(),
+        .VertexInputAttributeListCount = vertexInputAttributeList.size(),
+        .ShaderOutputCount = outputVariables.size(),
+        .PushConstantCount = constBuffers.size(),
+        .DescriptorBindingsList = nullptr,
+        .DescriptorSetList = nullptr,
+        .VertexInputBindingList = nullptr,
+        .VertexInputAttributeList = nullptr,
+        .ShaderOutputList = nullptr,
+        .PushConstantList = nullptr
+    };
+
+    //if (descriptorBindings.size() > 0)
+    //{
+    //    module.DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.size(), __FILE__, __LINE__, __func__);
+    //    std::memcpy(module.DescriptorBindingsList, descriptorBindings.data(), descriptorBindings.size() * sizeof(ShaderDescriptorBinding));
+    //}
+
+    if (descriptorSets.size() > 0)
+    {
+        module.DescriptorSetList = memorySystem.AddPtrBuffer<SpvReflectDescriptorSet>(descriptorSets.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(module.DescriptorSetList, descriptorSets.data(), descriptorSets.size() * sizeof(SpvReflectDescriptorSet));
+    }
+
+    if (vertexInputBindingList.size() > 0)
+    {
+        module.VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(module.VertexInputBindingList, vertexInputBindingList.data(), vertexInputBindingList.size() * sizeof(VkVertexInputBindingDescription));
+    }
+
+    if (vertexInputAttributeList.size() > 0)
+    {
+        module.VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(module.VertexInputAttributeList, vertexInputAttributeList.data(), vertexInputAttributeList.size() * sizeof(VkVertexInputAttributeDescription));
+    }
+
+    if (outputVariables.size() > 0)
+    {
+        module.ShaderOutputList = memorySystem.AddPtrBuffer<ShaderVariable>(outputVariables.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(module.ShaderOutputList, outputVariables.data(), outputVariables.size() * sizeof(ShaderVertexVariable));
+    }
+
+    if (constBuffers.size() > 0)
+    {
+        module.PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.size(), __FILE__, __LINE__, __func__);
+        std::memcpy(module.PushConstantList, constBuffers.data(), constBuffers.size() * sizeof(ShaderPushConstant));
+    }
 
     return module;
 }
@@ -229,16 +290,28 @@ void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, 
             }
         }
 
-        if (x + 1 == inputs.size() ||
-           (x > 0 &&
-            vertexInputAttributeList[x - 1].binding != binding))
+        if (inputs.size() == 0 ||
+            inputs.size() == 1)
         {
             vertexInputBindingList.emplace_back(VkVertexInputBindingDescription{
-                .binding = vertexInputAttributeList[x - 1].binding,
-                .stride = offset,
-                .inputRate = static_cast<VkVertexInputRate>(inputRate)
+                   .binding = vertexInputAttributeList[x].binding,
+                   .stride = offset,
+                   .inputRate = static_cast<VkVertexInputRate>(inputRate)
                 });
-            offset = 0;
+        }
+        else
+        {
+            if (x + 1 == inputs.size() ||
+               (x > 0 &&
+                vertexInputAttributeList[x - 1].binding != binding))
+            {
+                vertexInputBindingList.emplace_back(VkVertexInputBindingDescription{
+                    .binding = vertexInputAttributeList[x - 1].binding,
+                    .stride = offset,
+                    .inputRate = static_cast<VkVertexInputRate>(inputRate)
+                    });
+                offset = 0;
+            }
         }
     }
 }

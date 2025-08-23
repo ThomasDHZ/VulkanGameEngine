@@ -11,8 +11,8 @@
      Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPipelineLoader);
      Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
      Pipeline_UpdatePipelineDescriptorSets(device, renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
-     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader);
-     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
      {
@@ -29,14 +29,14 @@
      if (vulkanRenderPipelinePtr->DescriptorSetLayoutCount > 0)
      {
          vulkanRenderPipelinePtr->DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__);
-         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetLayoutList, descriptorSetLayoutList.data(), vulkanRenderPipelinePtr->DescriptorSetLayoutCount * sizeof(VkFramebuffer));
+         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetLayoutList, descriptorSetLayoutList.data(), vulkanRenderPipelinePtr->DescriptorSetLayoutCount * sizeof(VkDescriptorSetLayout));
      }
 
      vulkanRenderPipelinePtr->DescriptorSetList = nullptr;
      if (vulkanRenderPipelinePtr->DescriptorSetCount > 0)
      {
          vulkanRenderPipelinePtr->DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.size(), __FILE__, __LINE__, __func__);
-         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetList, descriptorSetList.data(), vulkanRenderPipelinePtr->DescriptorSetCount * sizeof(VkClearValue));
+         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetList, descriptorSetList.data(), vulkanRenderPipelinePtr->DescriptorSetCount * sizeof(VkDescriptorSet));
      }
 
      VulkanPipeline vulkanPipeline = *vulkanRenderPipelinePtr;
@@ -55,8 +55,8 @@
      Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPipelineLoader);
      Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
      Pipeline_UpdatePipelineDescriptorSets(device, renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
-     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader);
-     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
      VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
      {
@@ -234,7 +234,7 @@ Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevic
     return descriptorSetLayoutList;
 }
 
-Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkPipelineLayout pipelineLayout, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
+Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader& renderPipelineLoader,  const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {
     VkDescriptorSetAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -254,7 +254,7 @@ Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device,
 
 void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
-    Vector<VkDescriptorSet> descriptorSetLayouts = Vector<VkDescriptorSet>(&descriptorSetList, &descriptorSetList + descriptorSetCount);
+    Vector<VkDescriptorSet> descriptorSetLayouts = Vector<VkDescriptorSet>(descriptorSetList, descriptorSetList + descriptorSetCount);
     for (auto& descriptorSet : descriptorSetLayouts)
     {
         Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
@@ -350,7 +350,7 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLo
     return pipelineLayout;
 }
 
-VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
+VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
     VkPipeline pipeline = VK_NULL_HANDLE;
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo
@@ -391,7 +391,7 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
                 });
         }
 
-        Vector<VkOffset2D> scissorList = Vector<VkOffset2D>(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
+        Vector<VkRect2D> scissorList = Vector<VkRect2D>(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
         for (auto& scissor : scissorList)
         {
             scissorList.emplace_back(VkRect2D
@@ -403,8 +403,8 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
                     },
                     .extent = VkExtent2D
                     {
-                        .width = static_cast<uint32>(scissor.x),
-                        .height = static_cast<uint32>(scissor.y)
+                        .width = static_cast<uint32>(scissor.extent.width),
+                        .height = static_cast<uint32>(scissor.extent.height)
                     }
                 });
         }

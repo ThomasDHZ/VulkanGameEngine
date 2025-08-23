@@ -3,6 +3,24 @@
 #include "JsonStructs.h"
 #include <SPIRV-Reflect/spirv_reflect.h>
 
+enum ShaderMemberType
+{
+    shaderUnkown,
+    shaderInt,
+    shaderUint,
+    shaderFloat,
+    shaderIvec2,
+    shaderIvec3,
+    shaderIvec4,
+    shaderVec2,
+    shaderVec3,
+    shaderVec4,
+    shaderMat2,
+    shaderMat3,
+    shaderMat4,
+    shaderbool
+};
+
 struct BlendConstantsModel
 {
     float Red;
@@ -31,23 +49,6 @@ struct RenderPassLoader
     Vector<VkSubpassDependency> SubpassDependencyModelList;
     Vector<VkClearValue> ClearValueList;
     RenderAreaModel RenderArea;
-};
-enum ShaderMemberType
-{
-    shaderUnkown,
-    shaderInt,
-    shaderUint,
-    shaderFloat,
-    shaderIvec2,
-    shaderIvec3,
-    shaderIvec4,
-    shaderVec2,
-    shaderVec3,
-    shaderVec4,
-    shaderMat2,
-    shaderMat3,
-    shaderMat4,
-    shaderbool
 };
 
 struct ShaderVertexVariable

@@ -358,39 +358,42 @@ namespace nlohmann
     void from_json(const json& j, RenderPipelineLoader& model)
     {
         j.at("PipelineId").get_to(model.PipelineId);
-        j.at("VertexShader").get_to(model.VertexShaderPath);
-        j.at("FragmentShader").get_to(model.FragmentShaderPath);
+        j.at("VertexShader").get_to(model.VertexShaderModule.ShaderPath);
+        j.at("FragmentShader").get_to(model.FragmentShaderModule.ShaderPath);
         j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
         j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
         j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
         j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
 
-        //for (int x = 0; x < j.at("PipelineColorBlendAttachmentStateList").size(); x++)
-        //{
-        //    model.PipelineColorBlendAttachmentStateList.emplace_back(j.at("PipelineColorBlendAttachmentStateList")[x]);
-        //}
+        model.PipelineColorBlendAttachmentStateCount = j.at("PipelineColorBlendAttachmentStateList").size();
+        model.PipelineColorBlendAttachmentStateList = memorySystem.AddPtrBuffer<VkPipelineColorBlendAttachmentState>(model.PipelineColorBlendAttachmentStateCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.PipelineColorBlendAttachmentStateCount; x++)
+        {
+            model.PipelineColorBlendAttachmentStateList[x] = j.at("PipelineColorBlendAttachmentStateList")[x];
+        }
 
-        //for (int x = 0; x < j.at("PipelineDescriptorModelsList").size(); x++)
-        //{
-        //    model.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);
+        model.PipelineDescriptorModelsCount = j.at("PipelineDescriptorModelsList").size();
+        model.PipelineDescriptorModelsList = memorySystem.AddPtrBuffer<PipelineDescriptorModel>(model.PipelineDescriptorModelsCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.PipelineDescriptorModelsCount; x++)
+        {
+            model.PipelineDescriptorModelsList[x] = j.at("PipelineDescriptorModelsList")[x];
+        }
 
-        //}
+        model.ViewportCount = j.at("ViewportList").size();
+        model.ViewportList = memorySystem.AddPtrBuffer<VkViewport>(model.ViewportCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.ViewportCount; x++)
+        {
+            model.ViewportList[x] = j.at("ViewportList")[x];
+        }
 
-        //if (j.contains("ViewportList"))
-        //{
-        //    for (int x = 0; x < j.at("ViewportList").size(); x++)
-        //    {
-        //        model.ViewportList.emplace_back(j.at("ViewportList")[x]);
-        //    }
-        //}
-
-        //if (j.contains("ScissorList"))
-        //{
-        //    for (int x = 0; x < j.at("ScissorList").size(); x++)
-        //    {
-        //        model.ScissorList.emplace_back(j.at("ScissorList")[x]);
-        //    }
-        //}
+        model.ScissorCount = j.at("ScissorList").size();
+        model.ScissorList = memorySystem.AddPtrBuffer<VkRect2D>(model.ScissorCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.ScissorCount; x++)
+        {
+            model.ScissorList[x] = j.at("ScissorList")[x];
+        }
     }
+
 }
+
