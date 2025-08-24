@@ -20,6 +20,10 @@ layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 
+layout(constant_id = 14) const uint DescriptorBindingType0 = 0;
+layout(constant_id = 15) const uint DescriptorBindingType1 = 1;
+layout(constant_id = 16) const uint DescriptorBindingType2 = 2;
+
 layout (location = 0)  in vec2  VS_SpritePosition;
 layout (location = 1)  in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
 layout (location = 2)  in vec2  VS_SpriteSize;

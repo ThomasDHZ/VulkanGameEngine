@@ -343,13 +343,19 @@ Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvRefl
     Vector<SpvReflectDescriptorBinding*> descriptorSetBindings(descriptorBindingsCount);
     SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorBindings(&module, &descriptorBindingsCount, descriptorSetBindings.data()));
 
+    Vector<SpvReflectSpecializationConstant*> specializationConstantList = Shader_GetShaderSpecializationConstant(module);
+
     Vector<ShaderDescriptorBinding> descriptorBindingList;
     for (auto& descriptorBinding : descriptorSetBindings)
     {
+        String searchString(String("DescriptorBindingType" + std::to_string(descriptorBinding->binding)));
+        Vector<SpvReflectSpecializationConstant*> DescriptorBindingAttributeTypeResult = Shader_SearchShaderSpecializationConstant(specializationConstantList, searchString.c_str());
+        
         descriptorBindingList.emplace_back(ShaderDescriptorBinding
             {
                 .Name = descriptorBinding->name,
                 .Binding = descriptorBinding->binding,
+                .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->default_literals),
                 .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
             });
     }

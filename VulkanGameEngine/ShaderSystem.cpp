@@ -35,15 +35,21 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, GPUIncludes& includes)
+ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, VkGuid levelId, VkGuid renderPassId)
 {
+    Vector<VkDescriptorBufferInfo> vertexPropertiesList = shaderSystem.GetVertexPropertiesBuffer();
+    Vector<VkDescriptorBufferInfo> indexPropertiesList = shaderSystem.GetIndexPropertiesBuffer();
+    Vector<VkDescriptorBufferInfo> transformPropertiesList = shaderSystem.GetGameObjectTransformBuffer();
+    Vector<VkDescriptorBufferInfo> meshPropertiesList = shaderSystem.GetMeshPropertiesBuffer(levelId);
+    Vector<VkDescriptorImageInfo> texturePropertiesList = shaderSystem.GetTexturePropertiesBuffer(renderPassId);
+    Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
+
     const char* fileName = File_GetFileNameFromPath(modulePath.c_str());
     if (!ShaderModuleExists(fileName))
     {
-        ShaderModule module = Shader_GetShaderData(modulePath);
-        ShaderModuleMap[fileName] = module;
-        Vector<ShaderPushConstant> pushConstantList = Vector<ShaderPushConstant>(module.PushConstantList, module.PushConstantList + module.PushConstantCount);
-        for(auto& pushConstant : pushConstantList)
+        ShaderModuleMap[fileName] = Shader_GetShaderData(modulePath);
+        Vector<ShaderPushConstant> pushConstantList = Vector<ShaderPushConstant>(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantList + ShaderModuleMap[fileName].PushConstantCount);
+        for (auto& pushConstant : pushConstantList)
         {
             if (!ShaderPushConstantExists(pushConstant.StructName) &&
                 !ShaderPushConstantExists(pushConstant.PushConstantName))
@@ -72,12 +78,63 @@ ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, GPUIncludes
                     }
                 }
             }
+
+            if (ShaderModuleMap[fileName].DescriptorBindingCount)
+            {
+                Vector<ShaderDescriptorBinding> bindingList;
+                for (int x = 0; x < ShaderModuleMap[fileName].DescriptorBindingCount; x++)
+                {
+                    switch (ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBindingType)
+                    {
+                        case kVertexDescsriptor:
+                        {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(vertexPropertiesList.size(), __FILE__, __LINE__, __func__);
+                            std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, vertexPropertiesList.data(), vertexPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
+                            break;
+                        }
+                        case kIndexDescriptor:
+                        {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(indexPropertiesList.size(), __FILE__, __LINE__, __func__);
+                            std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, indexPropertiesList.data(), indexPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
+                            break;
+                        }
+                        case kTransformDescriptor:
+                        {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(transformPropertiesList.size(), __FILE__, __LINE__, __func__);
+                            std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, transformPropertiesList.data(), transformPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
+                            break;
+                        }
+                        case kMeshPropertiesDescriptor:
+                        {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(meshPropertiesList.size(), __FILE__, __LINE__, __func__);
+                            std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, meshPropertiesList.data(), meshPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
+                            break;
+                        }
+                        case kTextureDescriptor:
+                        {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(texturePropertiesList.size(), __FILE__, __LINE__, __func__);
+                            std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorImageInfo, texturePropertiesList.data(), texturePropertiesList.size() * sizeof(VkDescriptorImageInfo));
+                            break;
+                        }
+                        case kMaterialDescriptor:
+                        {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(materialPropertiesList.size(), __FILE__, __LINE__, __func__);
+                            std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, materialPropertiesList.data(), materialPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
+                            break;
+                        }
+                        default:
+                        {
+                            throw std::runtime_error("Binding case hasn't been handled yet");
+                        }
+                    }
+                }
+            }
+            return ShaderModuleMap[fileName];
         }
-        return ShaderModuleMap[fileName];
     }
     return ShaderModuleMap[fileName];
 }
-
+    
 ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName)
 {
     auto it = std::find_if(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount,

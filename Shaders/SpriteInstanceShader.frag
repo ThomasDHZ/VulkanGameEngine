@@ -4,6 +4,10 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
+layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
+layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
+layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
+
 layout (location = 0) in vec3  PS_Position;
 layout (location = 1) in vec2  PS_UV;
 layout (location = 2) in vec2  PS_SpriteSize;

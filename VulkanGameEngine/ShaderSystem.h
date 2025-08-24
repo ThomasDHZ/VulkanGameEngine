@@ -38,7 +38,7 @@ public:
 
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	ShaderModule AddShaderModule(const String& modulePath, GPUIncludes& includes);
+	ShaderModule AddShaderModule(const String& modulePath, VkGuid levelId, VkGuid renderPassId);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);

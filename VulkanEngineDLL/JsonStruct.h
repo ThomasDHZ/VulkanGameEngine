@@ -90,9 +90,10 @@ struct ShaderDescriptorBinding
     String Name;
     uint32 Binding;
     size_t DescriptorCount;
+    DescriptorBindingPropertiesEnum DescriptorBindingType;
     VkDescriptorType DescripterType;
-    VkDescriptorImageInfo DescriptorImageInfo;
-    VkDescriptorBufferInfo DescriptorBufferInfo;
+    VkDescriptorImageInfo* DescriptorImageInfo;
+    VkDescriptorBufferInfo* DescriptorBufferInfo;
 };
 
 struct ShaderPushConstant
@@ -116,12 +117,12 @@ struct ShaderModule
     size_t                             VertexInputAttributeListCount = 0;
     size_t							   ShaderOutputCount = 0;
     size_t                             PushConstantCount = 0;
-    ShaderDescriptorBinding* DescriptorBindingsList = nullptr;
-    SpvReflectDescriptorSet* DescriptorSetList = nullptr;
-    VkVertexInputBindingDescription* VertexInputBindingList = nullptr;
+    ShaderDescriptorBinding*           DescriptorBindingsList = nullptr;
+    SpvReflectDescriptorSet*           DescriptorSetList = nullptr;
+    VkVertexInputBindingDescription*   VertexInputBindingList = nullptr;
     VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
-    ShaderVariable* ShaderOutputList = nullptr;
-    ShaderPushConstant* PushConstantList = nullptr;
+    ShaderVariable*                    ShaderOutputList = nullptr;
+    ShaderPushConstant*                PushConstantList = nullptr;
 };
 
 struct GPUIncludes
