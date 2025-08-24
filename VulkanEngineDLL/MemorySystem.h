@@ -9,6 +9,10 @@ struct MemoryLeakPtr
     size_t PtrElements;      
     bool isArray;           
     String DanglingPtrMessage;
+    String File;
+    String Line;
+    String Function;
+    String Notes;
 };
 
 extern "C" 

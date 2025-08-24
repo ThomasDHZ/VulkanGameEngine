@@ -9,7 +9,7 @@ void Shader_StartUp()
     //DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc_compiler));
     //dxc_utils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
 }
-ShaderModule Shader_GetShaderData(const String& spvPath)
+ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& includes)
 { 
     SpvReflectShaderModule spvModule;
     Vector<VkVertexInputBindingDescription> vertexInputBindingList;
@@ -18,8 +18,9 @@ ShaderModule Shader_GetShaderData(const String& spvPath)
     SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule);
     Vector<ShaderPushConstant> constBuffers = Shader_GetShaderConstBuffer(spvModule);
     Vector<ShaderDescriptorSet> descriptorSets = Shader_GetShaderDescriptorSet(spvModule);
-    Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(spvModule);
     Vector<ShaderVertexVariable> outputVariables = Shader_GetShaderOutputVertexVariables(spvModule);
+    Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(spvModule);
+    Shader_ShaderBindingData(descriptorBindings, includes);
     Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
 
     ShaderModule module = ShaderModule
@@ -79,6 +80,26 @@ ShaderModule Shader_GetShaderData(const String& spvPath)
     return module;
 }
 
+void Shader_ShaderDestroy(ShaderModule& shader)
+{
+    Shader_DestroyShaderBindingData(shader);
+    memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
+    memorySystem.RemovePtrBuffer<SpvReflectDescriptorSet>(shader.DescriptorSetList);
+    memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
+    memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
+    memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
+    memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
+}
+
+void Shader_DestroyShaderBindingData(ShaderModule& shader)
+{
+    for (int x = 0; x < shader.DescriptorBindingCount; x++)
+    {
+        memorySystem.RemovePtrBuffer<VkDescriptorBufferInfo>(shader.DescriptorBindingsList[x].DescriptorBufferInfo);
+        memorySystem.RemovePtrBuffer<VkDescriptorImageInfo>(shader.DescriptorBindingsList[x].DescriptorImageInfo);
+    }
+}
+
 VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& filename, VkShaderStageFlagBits shaderStages)
 {
     VkShaderModule shaderModule = VK_NULL_HANDLE;
@@ -92,30 +113,6 @@ VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const Strin
     }
     return Shader_CreateShader(shaderModule, shaderStages);
 }
-
-//SpvReflectShaderModule Shader_ShaderDataFromSpirv(const String& path)
-//{
-//    SpvReflectShaderModule module;
-//    FileState file = File_Read(path.c_str());
-//    SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &module);
-//
-//   auto asdf =  Shader_GetShaderConstBuffer(module);
-//    return module;
-//   
-//        Vector<SpvReflectTypeDescription> interfaceVariables3 = Vector<SpvReflectTypeDescription>(module._internal->type_descriptions, module._internal->type_descriptions + module._internal->type_description_count);
-//    Vector<ShaderPushConstant> constBufferList = Shader_GetShaderConstBuffer(module);
-//
-//    Vector<SpvReflectDescriptorSet> descriptorSets = Vector<SpvReflectDescriptorSet>(module.descriptor_sets, module.descriptor_sets + module.descriptor_set_count);
-//  //  Vector<ShaderVertexVariable> inputVertexVariables = Shader_GetShaderInputVertexVariables(module);
-//    Vector<ShaderVertexVariable> outputVertexVariables = Shader_GetShaderOutputVertexVariables(module);
-//    Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(module);
-//
-//    Vector<SpvReflectInterfaceVariable> interfaceVariables = Vector<SpvReflectInterfaceVariable>(module.interface_variables, module.interface_variables + module.interface_variable_count);
-//    Vector<SpvReflectBlockVariable> pushConstantBlocks = Vector<SpvReflectBlockVariable>(module.push_constant_blocks, module.push_constant_blocks + module.push_constant_block_count);
-//    Vector<SpvReflectSpecializationConstant> specConstants = Vector<SpvReflectSpecializationConstant>(module.spec_constants, module.spec_constants + module.spec_constant_count);
-//
-//}
-        
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)
 {
@@ -664,6 +661,62 @@ SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t
     return SpvOpNop; 
 }
 
+void Shader_ShaderBindingData(Vector<ShaderDescriptorBinding>& descriptorBindingList, const GPUIncludes& includes)
+{
+    Vector<ShaderDescriptorBinding> bindingList;
+    for (auto& descriptorBinding : descriptorBindingList)
+    {
+        switch (descriptorBinding.DescriptorBindingType)
+        {
+            case kVertexDescsriptor:
+            {
+                descriptorBinding.DescriptorCount = includes.VertexPropertiesCount;
+                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.VertexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
+                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.VertexProperties, includes.VertexPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kIndexDescriptor:
+            {
+                descriptorBinding.DescriptorCount = includes.IndexPropertiesCount;
+                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.IndexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
+                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.IndexProperties, includes.IndexPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kTransformDescriptor:
+            {
+                descriptorBinding.DescriptorCount = includes.TransformPropertiesCount;
+                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.TransformPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
+                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.TransformProperties, includes.TransformPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kMeshPropertiesDescriptor:
+            {
+                descriptorBinding.DescriptorCount = includes.MeshPropertiesCount;
+                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.MeshPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
+                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.MeshProperties, includes.MeshPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kTextureDescriptor:
+            {
+                descriptorBinding.DescriptorCount = includes.TexturePropertiesListCount;
+                descriptorBinding.DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(includes.TexturePropertiesListCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
+                std::memcpy(descriptorBinding.DescriptorImageInfo, includes.TexturePropertiesList, includes.TexturePropertiesListCount * sizeof(VkDescriptorImageInfo));
+                break;
+            }
+            case kMaterialDescriptor:
+            {
+                descriptorBinding.DescriptorCount = includes.MaterialPropertiesCount;
+                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.MaterialPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
+                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.MaterialProperties, includes.MaterialPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("Binding case hasn't been handled yet");
+            }
+        }
+    }
+}
 
 const char* Renderer_GetShaderReflectError(SpvReflectResult result)
 {

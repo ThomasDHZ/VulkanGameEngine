@@ -18,10 +18,11 @@ extern "C"
 #include "JsonStruct.h"
 
 DLL_EXPORT void Shader_StartUp();
-DLL_EXPORT ShaderModule Shader_GetShaderData(const String& spvPath);
+DLL_EXPORT ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& includes);
 DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 DLL_EXPORT Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
 DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
+DLL_EXPORT void Shader_ShaderDestroy(ShaderModule& shader);
 
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);
@@ -36,6 +37,9 @@ Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexInputVariables(const 
 Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
+void Shader_ShaderBindingData(Vector<ShaderDescriptorBinding>& descriptorBindingList, const GPUIncludes& includes);
+
+void Shader_DestroyShaderBindingData(ShaderModule& shader);
 
 void printSpecializationConstants(SpvReflectShaderModule& module);
 SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t spirv_id);

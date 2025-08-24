@@ -40,6 +40,7 @@ public:
 	void VertexDataFromSpirv(const String& path);
 	ShaderModule AddShaderModule(const String& modulePath, VkGuid levelId, VkGuid renderPassId);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
+	void Destroy();
 
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);
 
