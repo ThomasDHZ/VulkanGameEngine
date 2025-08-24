@@ -24,14 +24,21 @@ private:
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantSourceMap;
 	UnorderedMap<String, ShaderPushConstant> GlobalPushContantShaderPushConstantMap;
 
+
 public:
 
 	ShaderSystem();
 	~ShaderSystem();
 
+	const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();
+	const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
+	const Vector<VkDescriptorBufferInfo> GetGameObjectTransformBuffer();
+	const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(VkGuid& levelLayerId);
+	const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(VkGuid& renderPassId);
+
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	ShaderModule AddShaderModule(const String& modulePath);
+	ShaderModule AddShaderModule(const String& modulePath, GPUIncludes& includes);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);

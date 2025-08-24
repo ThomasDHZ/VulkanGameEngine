@@ -27,23 +27,20 @@ private:
     VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);
     void RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
-    const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();
-    const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
-    const Vector<VkDescriptorBufferInfo> GetGameObjectTransformBuffer();
-    const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(VkGuid& levelLayerId);
-    const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(VkGuid& renderPassId);
 
-    void DestroyRenderPasses();
-    void DestroyRenderPipelines();
-    void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
-    void DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
-    void DestroyBuffer(VkBuffer& buffer);
+
 
 public:
     GraphicsRenderer                                              renderer;
 
     RenderSystem();
     ~RenderSystem();
+
+    void DestroyRenderPasses();
+    void DestroyRenderPipelines();
+    void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
+    void DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
+    void DestroyBuffer(VkBuffer& buffer);
 
     void StartUp(WindowType windowType, void* windowHandle);
     void Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);

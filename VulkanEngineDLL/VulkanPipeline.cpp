@@ -117,7 +117,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         {
             descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
                 {
-                    .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                    .type = renderPipelineLoader.FragmentShaderModule.DescriptorBindingsList[x].DescripterType,
                     .descriptorCount = static_cast<uint32>(renderPipelineLoader.gpuIncludes.VertexPropertiesCount)
                 });
             break;
@@ -126,7 +126,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         {
             descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
                 {
-                    .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                     .type = renderPipelineLoader.FragmentShaderModule.DescriptorBindingsList[x].DescripterType,
                     .descriptorCount = static_cast<uint32>(renderPipelineLoader.gpuIncludes.IndexPropertiesCount)
                 });
             break;
@@ -135,7 +135,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         {
             descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
                 {
-                    .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                              .type = renderPipelineLoader.FragmentShaderModule.DescriptorBindingsList[x].DescripterType,
                     .descriptorCount = static_cast<uint32>(renderPipelineLoader.gpuIncludes.TransformPropertiesCount)
                 });
             break;
@@ -144,7 +144,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         {
             descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
                 {
-                    .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                            .type = renderPipelineLoader.FragmentShaderModule.DescriptorBindingsList[x].DescripterType,
                     .descriptorCount = static_cast<uint32>(renderPipelineLoader.gpuIncludes.MeshPropertiesCount)
                 });
             break;
@@ -153,7 +153,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         {
             descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
                 {
-                    .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                               .type = renderPipelineLoader.FragmentShaderModule.DescriptorBindingsList[x].DescripterType,
                     .descriptorCount = static_cast<uint32>(renderPipelineLoader.gpuIncludes.TexturePropertiesListCount)
                 });
             break;
@@ -162,7 +162,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         {
             descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
                 {
-                    .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                .type = renderPipelineLoader.FragmentShaderModule.DescriptorBindingsList[x].DescripterType,
                     .descriptorCount = static_cast<uint32>(renderPipelineLoader.gpuIncludes.MaterialPropertiesCount)
                 });
             break;
@@ -180,7 +180,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .maxSets = 500,
+        .maxSets = static_cast<uint32>(descriptorPoolSizeList.size()) * 100,
         .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
         .pPoolSizes = descriptorPoolSizeList.data()
     };

@@ -76,21 +76,23 @@ struct ShaderStruct
     ShaderVariable* ShaderBufferVariableList;
 };
 
-//struct ShaderBuffer
-//{
-//	String Name;
-//	SpvOp  ShaderBufferOp;
-//	size_t ShaderStructListCount;
-//	ShaderVariable* ShaderStructList;
-//};
-
-struct ShaderDescriptorBinding
+struct ShaderDescriptorSet
 {
     String Name;
     uint32 Binding;
     VkDescriptorType DescripterType;
     size_t ShaderStructListCount;
     ShaderStruct* ShaderStructList;
+};
+
+struct ShaderDescriptorBinding
+{
+    String Name;
+    uint32 Binding;
+    size_t DescriptorCount;
+    VkDescriptorType DescripterType;
+    VkDescriptorImageInfo DescriptorImageInfo;
+    VkDescriptorBufferInfo DescriptorBufferInfo;
 };
 
 struct ShaderPushConstant
