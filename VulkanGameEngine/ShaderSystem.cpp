@@ -78,7 +78,7 @@ ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, VkGuid leve
                     }
                 }
             }
-
+        }
             if (ShaderModuleMap[fileName].DescriptorBindingCount)
             {
                 Vector<ShaderDescriptorBinding> bindingList;
@@ -88,36 +88,42 @@ ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, VkGuid leve
                     {
                         case kVertexDescsriptor:
                         {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorCount = vertexPropertiesList.size();
                             ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(vertexPropertiesList.size(), __FILE__, __LINE__, __func__);
                             std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, vertexPropertiesList.data(), vertexPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
                             break;
                         }
                         case kIndexDescriptor:
                         {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorCount = indexPropertiesList.size();
                             ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(indexPropertiesList.size(), __FILE__, __LINE__, __func__);
                             std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, indexPropertiesList.data(), indexPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
                             break;
                         }
                         case kTransformDescriptor:
                         {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorCount = transformPropertiesList.size();
                             ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(transformPropertiesList.size(), __FILE__, __LINE__, __func__);
                             std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, transformPropertiesList.data(), transformPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
                             break;
                         }
                         case kMeshPropertiesDescriptor:
                         {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorCount = meshPropertiesList.size();
                             ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(meshPropertiesList.size(), __FILE__, __LINE__, __func__);
                             std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, meshPropertiesList.data(), meshPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
                             break;
                         }
                         case kTextureDescriptor:
                         {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorCount = texturePropertiesList.size();
                             ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(texturePropertiesList.size(), __FILE__, __LINE__, __func__);
                             std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorImageInfo, texturePropertiesList.data(), texturePropertiesList.size() * sizeof(VkDescriptorImageInfo));
                             break;
                         }
                         case kMaterialDescriptor:
                         {
+                            ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorCount = materialPropertiesList.size();
                             ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(materialPropertiesList.size(), __FILE__, __LINE__, __func__);
                             std::memcpy(ShaderModuleMap[fileName].DescriptorBindingsList[x].DescriptorBufferInfo, materialPropertiesList.data(), materialPropertiesList.size() * sizeof(VkDescriptorBufferInfo));
                             break;
@@ -129,8 +135,8 @@ ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, VkGuid leve
                     }
                 }
             }
+
             return ShaderModuleMap[fileName];
-        }
     }
     return ShaderModuleMap[fileName];
 }
