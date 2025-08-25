@@ -70,10 +70,9 @@ struct ShaderVariable
 struct ShaderStruct
 {
     String Name;
-    String ShaderBufferMemberName;
-    SpvOp ShaderStructOp;
     size_t ShaderBufferVariableListCount;
     ShaderVariable* ShaderBufferVariableList;
+    void* ShaderStructBuffer = nullptr;
 };
 
 struct ShaderDescriptorSet
@@ -98,12 +97,11 @@ struct ShaderDescriptorBinding
 
 struct ShaderPushConstant
 {
-    String			StructName;
     String			PushConstantName;
     size_t			PushConstantSize = 0;
     size_t			PushConstantVariableListCount = 0;
     ShaderVariable* PushConstantVariableList = nullptr;
-    void* PushConstantBuffer = nullptr;
+    void*           PushConstantBuffer = nullptr;
     bool			GlobalPushContant = false;
 };
 
@@ -112,13 +110,13 @@ struct ShaderModule
     String							   ShaderPath;
     SpvReflectShaderStageFlagBits      ShaderStage;
     size_t                             DescriptorBindingCount = 0;
-    size_t                             DescriptorSetCount = 0;
+    size_t                             ShaderStructCount = 0;
     size_t                             VertexInputBindingCount = 0;
     size_t                             VertexInputAttributeListCount = 0;
     size_t							   ShaderOutputCount = 0;
     size_t                             PushConstantCount = 0;
     ShaderDescriptorBinding*           DescriptorBindingsList = nullptr;
-    SpvReflectDescriptorSet*           DescriptorSetList = nullptr;
+    ShaderStruct*                      ShaderStructList = nullptr;
     VkVertexInputBindingDescription*   VertexInputBindingList = nullptr;
     VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
     ShaderVariable*                    ShaderOutputList = nullptr;

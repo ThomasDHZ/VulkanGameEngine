@@ -139,9 +139,8 @@ void VulkanRenderPass_DestoryRenderPassSwapChainTextures(GraphicsRenderer& rende
     renderedTextureList.clear();
 }
 
-void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass)
 {
-    VulkanRenderPass_DestoryRenderPassSwapChainTextures(renderer, renderedTextureListPtr, renderedTextureCount, depthTexture);
     Renderer_DestroyRenderPass(renderer.Device, &renderPass.RenderPass);
     Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &renderPass.CommandBuffer, 1);
     Renderer_DestroyFrameBuffers(renderer.Device, &renderPass.FrameBufferList[0], renderer.SwapChainImageCount);

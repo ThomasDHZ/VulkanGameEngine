@@ -1,7 +1,7 @@
 #include "VulkanPipeline.h"
 #include "MemorySystem.h"
 #include "json.h"
-#include "ShaderCompiler.h"
+#include "VulkanShader.h"
 #include "JsonLoader.h"
 
  VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, RenderPipelineLoader& renderPipelineLoader)
@@ -185,7 +185,7 @@ Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device,
 
 void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
-    Vector<VkDescriptorSet> descriptorSetLayouts = Vector<VkDescriptorSet>(descriptorSetList, descriptorSetList + descriptorSetCount);
+    Span<VkDescriptorSet> descriptorSetLayouts(descriptorSetList, descriptorSetCount);
     for (auto& descriptorSet : descriptorSetLayouts)
     {
         Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();

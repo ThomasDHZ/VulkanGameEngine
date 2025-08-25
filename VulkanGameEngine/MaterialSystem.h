@@ -2,7 +2,7 @@
 #include <Typedef.h>
 #include <Material.h>
 #include <Vector.h>
-#include <ShaderCompiler.h>
+#include <VulkanShader.h>
 
 class MeshSystem;
 class MaterialSystem

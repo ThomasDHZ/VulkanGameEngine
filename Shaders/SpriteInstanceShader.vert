@@ -1,9 +1,12 @@
+
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_KHR_Vulkan_GLSL : enable 
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
+
+#include "Structs.glsl"
 
 layout(constant_id = 0) const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;
@@ -47,33 +50,6 @@ layout(push_constant) uniform SceneDataBuffer
 	mat4 View;
 	vec3 CameraPosition;
 }sceneData;
-
-struct MeshProperitiesBuffer
-{
-	int	   MaterialIndex;
-	mat4   MeshTransform;
-};
-
-struct MaterialProperitiesBuffer
-{
-	vec3 Albedo;
-	float Metallic;
-	float Roughness;
-	float AmbientOcclusion;
-	vec3 Emission;
-	float Alpha;
-
-	uint AlbedoMap;
-	uint MetallicRoughnessMap;
-	uint MetallicMap;
-	uint RoughnessMap;
-	uint AmbientOcclusionMap;
-	uint NormalMap;
-	uint DepthMap;
-	uint AlphaMap;
-	uint EmissionMap;
-	uint HeightMap;
-};
 
 struct Vertex2D
 {

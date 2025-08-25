@@ -94,6 +94,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Include", "Include", "{16D06342-80A9-4368-B5A9-860273C3CE12}"
 	ProjectSection(SolutionItems) = preProject
 		Shaders\SceneDataBuffer.hlsli = Shaders\SceneDataBuffer.hlsli
+		Shaders\Structs.glsl = Shaders\Structs.glsl
 		Shaders\Vertex.hlsli = Shaders\Vertex.hlsli
 	EndProjectSection
 EndProject

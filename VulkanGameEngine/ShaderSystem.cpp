@@ -35,7 +35,7 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, VkGuid levelId, VkGuid renderPassId)
+ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, const VkGuid& renderPassId, const VkGuid& pipelineId, const VkGuid& levelId)
 {
     Vector<VkDescriptorBufferInfo> vertexPropertiesList = shaderSystem.GetVertexPropertiesBuffer();
     Vector<VkDescriptorBufferInfo> indexPropertiesList = shaderSystem.GetIndexPropertiesBuffer();
@@ -63,37 +63,29 @@ ShaderModule ShaderSystem::AddShaderModule(const String& modulePath, VkGuid leve
     if (!ShaderModuleExists(fileName))
     {
         ShaderModuleMap[fileName] = Shader_GetShaderData(modulePath, gpuIncludes);
-        Vector<ShaderPushConstant> pushConstantList = Vector<ShaderPushConstant>(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantList + ShaderModuleMap[fileName].PushConstantCount);
+        Span<ShaderPushConstant> pushConstantList(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantCount);
         for (auto& pushConstant : pushConstantList)
         {
-            if (!ShaderPushConstantExists(pushConstant.StructName) &&
-                !ShaderPushConstantExists(pushConstant.PushConstantName))
+            pushConstant.PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str());
+            for (int x = 0; x < pushConstant.PushConstantVariableListCount; x++)
             {
-                if (!pushConstant.StructName.empty())
-                {
-                    ShaderPushConstantSourceMap[pushConstant.StructName] = pushConstant;
-                    GlobalPushContantShaderPushConstantMap[pushConstant.StructName] = pushConstant;
-                    GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__);
-
-                    Vector<ShaderVariable> variableList = Vector<ShaderVariable>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList, GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList + GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount);
-                    for (int x = 0; x < GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
-                    {
-                        GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__);
-                    }
-                }
-                else
-                {
-                    ShaderPushConstantSourceMap[pushConstant.PushConstantName] = pushConstant;
-                    GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
-                    GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__);
-
-                    for (int x = 0; x < GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
-                    {
-                        GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(GlobalPushContantShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__);
-                    }
-                }
+                pushConstant.PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, pushConstant.PushConstantVariableList[x].Name.c_str());
             }
+            ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
         }
+
+        UnorderedMap<String, ShaderStruct> shaderStructMap;
+        Span<ShaderStruct> structList(ShaderModuleMap[fileName].ShaderStructList, ShaderModuleMap[fileName].ShaderStructCount);
+        for (auto& structVar : structList)
+        {
+            structVar.ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
+            for (int x = 0; x < structVar.ShaderBufferVariableListCount; x++)
+            {
+                structVar.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
+            }
+            shaderStructMap[structVar.Name] = structVar;
+        }
+        PipelineShaderStructMap[pipelineId] = shaderStructMap;
         return ShaderModuleMap[fileName];
     }
     return ShaderModuleMap[fileName];
@@ -122,7 +114,7 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
         return;
     }
 
-    const ShaderPushConstant& pushConstant = GlobalPushContantShaderPushConstantMap[pushConstantName];
+    const ShaderPushConstant& pushConstant = ShaderPushConstantMap[pushConstantName];
     if (pushConstant.PushConstantBuffer == nullptr)
     {
         std::cerr << "Error: PushConstantBuffer is null for push constant '" << pushConstantName << "'!" << std::endl;
@@ -130,8 +122,7 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
     }
 
     size_t offset = 0;
-    Vector<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList,
-        pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
+    Span<ShaderVariable> pushConstantVarList(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount);
     for (const auto& pushConstantVar : pushConstantVarList)
     {
         if (pushConstantVar.Value == nullptr)
@@ -142,7 +133,6 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
 
         offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
         void* dest = static_cast<byte*>(pushConstant.PushConstantBuffer) + offset;
-
         if (pushConstantVar.Name == "MeshBufferIndex")
         {
             uint32_t sdf = 0;
@@ -160,7 +150,7 @@ ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& push
 {
     if (ShaderPushConstantExists(pushConstantName))
     {
-        return &GlobalPushContantShaderPushConstantMap[pushConstantName];
+        return &ShaderPushConstantMap[pushConstantName];
     }
     return nullptr;
 }
@@ -177,8 +167,8 @@ ShaderModule& ShaderSystem::FindShaderModule(const String& shaderFile)
 
 ShaderPushConstant& ShaderSystem::FindShaderPushConstant(const String& shaderFile)
 {
-    auto it = ShaderPushConstantSourceMap.find(shaderFile);
-    if (it != ShaderPushConstantSourceMap.end())
+    auto it = ShaderPushConstantMap.find(shaderFile);
+    if (it != ShaderPushConstantMap.end())
     {
         return it->second;
     }
@@ -197,123 +187,13 @@ bool ShaderSystem::ShaderModuleExists(const String& shaderFile)
 
 bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
 {
-    auto it = ShaderPushConstantSourceMap.find(pushConstantName);
-    if (it != ShaderPushConstantSourceMap.end())
+    auto it = ShaderPushConstantMap.find(pushConstantName);
+    if (it != ShaderPushConstantMap.end())
     {
         return true;
     }
     return false;
 }
-
-//void ShaderSystem::GetPushConstantData(const ShaderPushConstant& pushConstant)
-//{
-//    std::vector<ShaderVariable> shaderVarList(pushConstant.PushConstantVariableList,
-//        pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount);
-//    for (const auto& shaderVar : shaderVarList)
-//    {
-//        std::cout << shaderVar.Value << ": Size: " << shaderVar.Size << " Type: " << shaderVar.MemberTypeEnum;
-//        std::cout << " Value at " << shaderVar.Value << ": ";
-//
-//        switch (shaderVar.MemberTypeEnum)
-//        {
-//        case shaderInt:
-//        {
-//            int val = *static_cast<int*>(shaderVar.Value);
-//            std::cout << val;
-//            break;
-//        }
-//        case shaderUint:
-//        {
-//            unsigned int val = *static_cast<unsigned int*>(shaderVar.Value);
-//            std::cout << val;
-//            break;
-//        }
-//        case shaderFloat:
-//        {
-//            float val = *static_cast<float*>(shaderVar.Value);
-//            std::cout << val;
-//            break;
-//        }
-//        case shaderIvec2:
-//        {
-//            int* vec = static_cast<int*>(shaderVar.Value);
-//            std::cout << "Ivec2(" << vec[0] << ", " << vec[1] << ")";
-//            break;
-//        }
-//        case shaderIvec3:
-//        {
-//            int* vec = static_cast<int*>(shaderVar.Value);
-//            std::cout << "Ivec3(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
-//            break;
-//        }
-//        case shaderIvec4:
-//        {
-//            int* vec = static_cast<int*>(shaderVar.Value);
-//            std::cout << "Ivec4(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3] << ")";
-//            break;
-//        }
-//        case shaderVec2:
-//        {
-//            float* vec = static_cast<float*>(shaderVar.Value);
-//            std::cout << "Vec2(" << vec[0] << ", " << vec[1] << ")";
-//            break;
-//        }
-//        case shaderVec3:
-//        {
-//            float* vec = static_cast<float*>(shaderVar.Value);
-//            std::cout << "Vec3(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ")";
-//            break;
-//        }
-//        case shaderVec4:
-//        {
-//            float* vec = static_cast<float*>(shaderVar.Value);
-//            std::cout << "Vec4(" << vec[0] << ", " << vec[1] << ", " << vec[2] << ", " << vec[3] << ")";
-//            break;
-//        }
-//        case shaderMat2:
-//        {
-//            float* mat = static_cast<float*>(shaderVar.Value);
-//            std::cout << "Mat2:\n";
-//            for (int i = 0; i < 4; ++i)
-//            {
-//                std::cout << mat[i] << (i % 2 == 1 ? "\n" : " ");
-//            }
-//            break;
-//        }
-//        case shaderMat3:
-//        {
-//            float* mat = static_cast<float*>(shaderVar.Value);
-//            std::cout << "Mat3:\n";
-//            for (int i = 0; i < 9; ++i)
-//            {
-//                std::cout << mat[i] << (i % 3 == 2 ? "\n" : " ");
-//            }
-//            break;
-//        }
-//        case shaderMat4:
-//        {
-//            float* mat = static_cast<float*>(shaderVar.Value);
-//            std::cout << "Mat4:\n";
-//            for (int i = 0; i < 16; ++i)
-//            {
-//                std::cout << mat[i] << (i % 4 == 3 ? "\n" : " ");
-//            }
-//            break;
-//        }
-//        case shaderbool:
-//        {
-//            bool val = *static_cast<bool*>(shaderVar.Value);
-//            std::cout << (val ? "true" : "false");
-//            break;
-//        }
-//        default:
-//            std::cout << "Unknown type";
-//        }
-//
-//        std::cout << "\n";
-//    }
-//    std::cout << std::endl << std::endl;
-//}
 
 const Vector<VkDescriptorBufferInfo> ShaderSystem::GetVertexPropertiesBuffer()
 {
@@ -420,7 +300,7 @@ const Vector<VkDescriptorBufferInfo> ShaderSystem::GetGameObjectTransformBuffer(
     return transformPropertiesBuffer;
 }
 
-const Vector<VkDescriptorBufferInfo> ShaderSystem::GetMeshPropertiesBuffer(VkGuid& levelLayerId)
+const Vector<VkDescriptorBufferInfo> ShaderSystem::GetMeshPropertiesBuffer(const VkGuid& levelLayerId)
 {
     Vector<Mesh> meshList;
     if (levelLayerId == VkGuid())
@@ -467,7 +347,7 @@ const Vector<VkDescriptorBufferInfo> ShaderSystem::GetMeshPropertiesBuffer(VkGui
 }
 
 
-const Vector<VkDescriptorImageInfo> ShaderSystem::GetTexturePropertiesBuffer(VkGuid& renderPassId)
+const Vector<VkDescriptorImageInfo> ShaderSystem::GetTexturePropertiesBuffer(const VkGuid& renderPassId)
 {
     Vector<Texture> textureList;
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
@@ -534,6 +414,14 @@ const Vector<VkDescriptorImageInfo> ShaderSystem::GetTexturePropertiesBuffer(VkG
 
 void ShaderSystem::Destroy()
 {
+    for (auto& pushConstant : ShaderPushConstantMap)
+    {
+        Shader_DestroyConstantBufferVariableData(&pushConstant.second, pushConstant.second.PushConstantVariableListCount);
+    }
+    for (auto& pushConstant : ShaderPushConstantMap)
+    {
+        memorySystem.RemovePtrBuffer<ShaderPushConstant>(&pushConstant.second);
+    }
     for (auto& shaderModule : ShaderModuleMap)
     {
         Shader_ShaderDestroy(shaderModule.second);

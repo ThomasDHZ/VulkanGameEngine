@@ -23,7 +23,7 @@ DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, 
 DLL_EXPORT Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
 DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 DLL_EXPORT void Shader_ShaderDestroy(ShaderModule& shader);
-
+DLL_EXPORT void Shader_DestroyConstantBufferVariableData(ShaderPushConstant* pushConstant, size_t pushConstantCount);
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);
 void Shader_uint32ToUnsignedCharString(uint32 value, String& string);
@@ -32,11 +32,12 @@ VkShaderModule Shader_BuildGLSLShader(VkDevice device, const char* path, VkShade
 void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
 Vector<ShaderVertexVariable> Shader_GetShaderOutputVertexVariables(const SpvReflectShaderModule& module);
 Vector<ShaderDescriptorBinding> Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module);
-Vector<ShaderDescriptorSet> Shader_GetShaderDescriptorSet(const SpvReflectShaderModule& module);
+Vector<ShaderStruct> Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderModule& module);
 Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexInputVariables(const SpvReflectShaderModule& module);
 Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
+ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo);
 void Shader_ShaderBindingData(Vector<ShaderDescriptorBinding>& descriptorBindingList, const GPUIncludes& includes);
 
 void Shader_DestroyShaderBindingData(ShaderModule& shader);

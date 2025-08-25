@@ -165,7 +165,7 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Pixel.h" />
     <ClInclude Include="SDLWindow.h" />
-    <ClInclude Include="ShaderCompiler.h" />
+    <ClInclude Include="VulkanShader.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform2DComponent.h" />
@@ -211,7 +211,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mouse.c" />
     <ClCompile Include="SDLWindow.cpp" />
-    <ClCompile Include="ShaderCompiler.cpp" />
+    <ClCompile Include="VulkanShader.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Vector.cpp" />

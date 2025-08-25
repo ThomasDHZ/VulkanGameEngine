@@ -1,5 +1,5 @@
 #pragma once
-#include <ShaderCompiler.h>
+#include <VulkanShader.h>
 #include <Windows.h>
 #include <dxcapi.h>
 #include <wrl/client.h>
@@ -21,24 +21,22 @@ private:
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> DefaultIncludeHandler;
 
 	UnorderedMap<String, ShaderModule> ShaderModuleMap;
-	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantSourceMap;
-	UnorderedMap<String, ShaderPushConstant> GlobalPushContantShaderPushConstantMap;
-
+	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
+	UnorderedMap<VkGuid, UnorderedMap<String, ShaderStruct>> PipelineShaderStructMap;
 
 public:
-
 	ShaderSystem();
 	~ShaderSystem();
 
 	const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();
 	const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
 	const Vector<VkDescriptorBufferInfo> GetGameObjectTransformBuffer();
-	const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(VkGuid& levelLayerId);
-	const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(VkGuid& renderPassId);
+	const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(const VkGuid& levelLayerId);
+	const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(const VkGuid& renderPassId);
 
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	ShaderModule AddShaderModule(const String& modulePath, VkGuid levelId, VkGuid renderPassId);
+	ShaderModule AddShaderModule(const String& modulePath, const VkGuid& renderPassId, const VkGuid& pipelineId, const VkGuid& levelId);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void Destroy();
 

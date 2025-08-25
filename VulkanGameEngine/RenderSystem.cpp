@@ -1,7 +1,7 @@
 #include "renderSystem.h"
 #include "json.h"
 #include "TextureSystem.h"
-#include <ShaderCompiler.h>
+#include <VulkanShader.h>
 #include "BufferSystem.h"
 #include "MeshSystem.h"
 #include "GameObjectSystem.h"
@@ -73,7 +73,7 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
         }
 
         size_t size = renderedTextureList.size();
-        renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, renderedTextureList[0], size, depthTexture);
+        renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, *renderedTextureList.data(), size, depthTexture);
     }
     ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
@@ -225,10 +225,15 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         };
         renderPipelineLoader.RenderPassId = renderPassId;
         renderPipelineLoader.RenderPass = RenderPassMap[renderPassId].RenderPass;
-        renderPipelineLoader.VertexShaderModule = shaderSystem.AddShaderModule(pipelineJson["VertexShader"], levelId, renderPassId);
-        renderPipelineLoader.FragmentShaderModule = shaderSystem.AddShaderModule(pipelineJson["FragmentShader"], levelId, renderPassId);
+        renderPipelineLoader.VertexShaderModule = shaderSystem.AddShaderModule(pipelineJson["VertexShader"], renderPassId, renderPipelineLoader.PipelineId, levelId);
+        renderPipelineLoader.FragmentShaderModule = shaderSystem.AddShaderModule(pipelineJson["FragmentShader"], renderPassId, renderPipelineLoader.PipelineId, levelId);
         renderPipelineLoader.RenderPassResolution = renderPassResolution;
         RenderPipelineMap[renderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
+
+        memorySystem.RemovePtrBuffer<VkPipelineColorBlendAttachmentState>(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
+        memorySystem.RemovePtrBuffer<PipelineDescriptorModel>(renderPipelineLoader.PipelineDescriptorModelsList);
+        memorySystem.RemovePtrBuffer<VkViewport>(renderPipelineLoader.ViewportList);
+        memorySystem.RemovePtrBuffer<VkRect2D>(renderPipelineLoader.ScissorList);
     }
     return renderPassId;
 }
@@ -237,7 +242,7 @@ void RenderSystem::DestroyRenderPasses()
 {
     for (auto& renderPass : RenderPassMap)
     {
-       // VulkanRenderPass_DestroyRenderPass(renderer, renderPass.second, );
+        VulkanRenderPass_DestroyRenderPass(renderer, renderPass.second);
     }
     RenderPassMap.clear();
 }
