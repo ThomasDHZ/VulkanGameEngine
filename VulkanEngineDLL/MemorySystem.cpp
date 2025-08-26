@@ -10,13 +10,7 @@ extern "C"
         void* memory = nullptr;
         try
         {
-            memory = 
-                
-                
-                
-                
-                
-                byte[memorySize * elementCount];
+            memory = new byte[memorySize * elementCount];
         }
         catch (const std::bad_alloc&)
         {
