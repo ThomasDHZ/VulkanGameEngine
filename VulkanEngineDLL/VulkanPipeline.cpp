@@ -14,41 +14,23 @@
      VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
      VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
-     VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
+     return VulkanPipeline
      {
          .RenderPipelineId = renderPipelineLoader.PipelineId,
          .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
          .DescriptorSetCount = descriptorSetList.size(),
          .DescriptorPool = descriptorPool,
+         .DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.data(), descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__),
+         .DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.data(), descriptorSetList.size(), __FILE__, __LINE__, __func__),
          .Pipeline = pipeline,
          .PipelineLayout = pipelineLayout,
          .PipelineCache = pipelineCache
      };
-
-     vulkanRenderPipelinePtr->DescriptorSetLayoutList = nullptr;
-     if (vulkanRenderPipelinePtr->DescriptorSetLayoutCount > 0)
-     {
-         vulkanRenderPipelinePtr->DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__);
-         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetLayoutList, descriptorSetLayoutList.data(), vulkanRenderPipelinePtr->DescriptorSetLayoutCount * sizeof(VkDescriptorSetLayout));
-     }
-
-     vulkanRenderPipelinePtr->DescriptorSetList = nullptr;
-     if (vulkanRenderPipelinePtr->DescriptorSetCount > 0)
-     {
-         vulkanRenderPipelinePtr->DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.size(), __FILE__, __LINE__, __func__);
-         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetList, descriptorSetList.data(), vulkanRenderPipelinePtr->DescriptorSetCount * sizeof(VkDescriptorSet));
-     }
-
-     VulkanPipeline vulkanPipeline = *vulkanRenderPipelinePtr;
-     delete vulkanRenderPipelinePtr;
-     return vulkanPipeline;
  }
 
  VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VulkanPipeline& oldPipeline)
  {
      VulkanPipeline_Destroy(device, oldPipeline);
-
-//     RenderPipelineLoader renderPassLoader = nlohmann::json::parse(pipelineJson).get<RenderPipelineLoader>();
 
      VkPipelineCache pipelineCache = VK_NULL_HANDLE;
      VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPipelineLoader);
@@ -58,34 +40,18 @@
      VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
      VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
-     VulkanPipeline* vulkanRenderPipelinePtr = new VulkanPipeline
+     return VulkanPipeline
      {
          .RenderPipelineId = renderPipelineLoader.PipelineId,
          .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
          .DescriptorSetCount = descriptorSetList.size(),
          .DescriptorPool = descriptorPool,
+         .DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.data(), descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__),
+         .DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.data(), descriptorSetList.size(), __FILE__, __LINE__, __func__),
          .Pipeline = pipeline,
          .PipelineLayout = pipelineLayout,
          .PipelineCache = pipelineCache
      };
-
-     vulkanRenderPipelinePtr->DescriptorSetLayoutList = nullptr;
-     if (vulkanRenderPipelinePtr->DescriptorSetLayoutCount > 0)
-     {
-         vulkanRenderPipelinePtr->DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__);
-         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetLayoutList, descriptorSetLayoutList.data(), vulkanRenderPipelinePtr->DescriptorSetLayoutCount * sizeof(VkFramebuffer));
-     }
-
-     vulkanRenderPipelinePtr->DescriptorSetList = nullptr;
-     if (vulkanRenderPipelinePtr->DescriptorSetCount > 0)
-     {
-         vulkanRenderPipelinePtr->DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.size(), __FILE__, __LINE__, __func__);
-         std::memcpy(vulkanRenderPipelinePtr->DescriptorSetList, descriptorSetList.data(), vulkanRenderPipelinePtr->DescriptorSetCount * sizeof(VkClearValue));
-     }
-
-     VulkanPipeline vulkanPipeline = *vulkanRenderPipelinePtr;
-     delete vulkanRenderPipelinePtr;
-     return vulkanPipeline;
  }
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)

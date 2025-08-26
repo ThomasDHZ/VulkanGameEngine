@@ -23,7 +23,7 @@ ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& incl
     Shader_ShaderBindingData(descriptorBindings, includes);
     Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
    
-    ShaderModule module = ShaderModule
+    ShaderModule modulea = ShaderModule
     {
         .ShaderPath = spvPath,
         .ShaderStage = spvModule.shader_stage,
@@ -31,54 +31,16 @@ ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& incl
         .ShaderStructCount = shaderStructs.size(),
         .VertexInputBindingCount = vertexInputBindingList.size(),
         .VertexInputAttributeListCount = vertexInputAttributeList.size(),
-        .ShaderOutputCount = outputVariables.size(),
+        .ShaderOutputCount = 0,
         .PushConstantCount = constBuffers.size(),
-        .DescriptorBindingsList = nullptr,
-        .ShaderStructList = nullptr,
-        .VertexInputBindingList = nullptr,
-        .VertexInputAttributeList = nullptr,
-        .ShaderOutputList = nullptr,
-        .PushConstantList = nullptr
+        .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
+        .ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__),
+        .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
+        .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
+      //  .ShaderOutputList = memorySystem.AddPtrBuffer<ShaderVariable>(outputVariables.data(), outputVariables.size(), __FILE__, __LINE__, __func__),
+        .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__)
     };
-
-    if (descriptorBindings.size() > 0)
-    {
-        module.DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(module.DescriptorBindingsList, descriptorBindings.data(), descriptorBindings.size() * sizeof(ShaderDescriptorBinding));
-    }
-    
-    if (shaderStructs.size() > 0)
-    {
-        module.ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(module.ShaderStructList, shaderStructs.data(), shaderStructs.size() * sizeof(ShaderStruct));
-    }
-    Span<ShaderStruct> shaderStructList(module.ShaderStructList, module.ShaderStructCount);
-
-    if (vertexInputBindingList.size() > 0)
-    {
-        module.VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(module.VertexInputBindingList, vertexInputBindingList.data(), vertexInputBindingList.size() * sizeof(VkVertexInputBindingDescription));
-    }
-
-    if (vertexInputAttributeList.size() > 0)
-    {
-        module.VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(module.VertexInputAttributeList, vertexInputAttributeList.data(), vertexInputAttributeList.size() * sizeof(VkVertexInputAttributeDescription));
-    }
-
-    if (outputVariables.size() > 0)
-    {
-        module.ShaderOutputList = memorySystem.AddPtrBuffer<ShaderVariable>(outputVariables.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(module.ShaderOutputList, outputVariables.data(), outputVariables.size() * sizeof(ShaderVertexVariable));
-    }
-
-    if (constBuffers.size() > 0)
-    {
-        module.PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(module.PushConstantList, constBuffers.data(), constBuffers.size() * sizeof(ShaderPushConstant));
-    }
-
-    return module;
+    return modulea;
 }
 
 void Shader_ShaderDestroy(ShaderModule& shader)
@@ -394,6 +356,7 @@ Vector<ShaderStruct> Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderMod
     }
     return ShaderStructList;
 }
+
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
 {
     size_t bufferSize = 0;
@@ -474,7 +437,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
 
             shaderVariables.emplace_back(ShaderVariable
                 {
-                    .Name = variable.struct_member_name,
+                    .Name = variable.struct_member_name ? std::string(variable.struct_member_name) : "",
                     .Size = memberSize,
                     .ByteAlignment = byteAlignment,
                     .Value = nullptr,
@@ -487,15 +450,12 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         }
     }
 
-    ShaderStruct shaderStruct = ShaderStruct
+    return ShaderStruct
     {
-        .Name = shaderInfo.type_name == nullptr ? "NULL" : shaderInfo.type_name,
+        .Name = shaderInfo.type_name ? std::string(shaderInfo.type_name) : "",
         .ShaderBufferVariableListCount = shaderVariables.size(),
-        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + shaderStruct.Name).c_str()),
+        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
     };
-    std::memcpy(shaderStruct.ShaderBufferVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
-
-    return shaderStruct;
 }
 
 Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module)
@@ -520,67 +480,67 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
             ShaderMemberType memberType = shaderUnkown;
             switch (variable.op)
             {
-                case SpvOpTypeInt:
+            case SpvOpTypeInt:
+            {
+                memberSize = variable.traits.numeric.scalar.width / 8;
+                memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                byteAlignment = 4;
+                break;
+            }
+            case SpvOpTypeFloat:
+            {
+                memberSize = variable.traits.numeric.scalar.width / 8;
+                memberType = shaderFloat;
+                byteAlignment = 4;
+                break;
+            }
+            case SpvOpTypeVector:
+            {
+                memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
+                switch (variable.traits.numeric.vector.component_count)
                 {
-                    memberSize = variable.traits.numeric.scalar.width / 8;
-                    memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                case 2:
+                    memberType = shaderVec2;
+                    byteAlignment = 8;
+                    break;
+                case 3:
+                    memberType = shaderVec3;
+                    byteAlignment = 16;
+                    break;
+                case 4:
+                    memberType = shaderVec4;
+                    byteAlignment = 16;
+                    break;
+                }
+                break;
+            }
+            case SpvOpTypeMatrix:
+            {
+                uint32_t rowCount = variable.traits.numeric.matrix.row_count;
+                uint32_t colCount = variable.traits.numeric.matrix.column_count;
+                memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                if (rowCount == 2 && colCount == 2)
+                {
+                    memberType = shaderMat2;
+                    byteAlignment = 8;
+                }
+                else if (rowCount == 3 && colCount == 3)
+                {
+                    memberType = shaderMat3;
+                    byteAlignment = 16;
+                }
+                else if (rowCount == 4 && colCount == 4)
+                {
+                    memberType = shaderMat4;
+                    byteAlignment = 16;
+                }
+                else
+                {
+                    std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
                     byteAlignment = 4;
-                    break;
                 }
-                case SpvOpTypeFloat:
-                {
-                    memberSize = variable.traits.numeric.scalar.width / 8;
-                    memberType = shaderFloat;
-                    byteAlignment = 4;
-                    break;
-                }
-                case SpvOpTypeVector:
-                {
-                    memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
-                    switch (variable.traits.numeric.vector.component_count)
-                    {
-                    case 2:
-                        memberType = shaderVec2;
-                        byteAlignment = 8;
-                        break;
-                    case 3:
-                        memberType = shaderVec3;
-                        byteAlignment = 16;
-                        break;
-                    case 4:
-                        memberType = shaderVec4;
-                        byteAlignment = 16; 
-                        break;
-                    }
-                    break;
-                }
-                case SpvOpTypeMatrix:
-                {
-                    uint32_t rowCount = variable.traits.numeric.matrix.row_count;
-                    uint32_t colCount = variable.traits.numeric.matrix.column_count;
-                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
-                    if (rowCount == 2 && colCount == 2)
-                    {
-                        memberType = shaderMat2;
-                        byteAlignment = 8;
-                    }
-                    else if (rowCount == 3 && colCount == 3)
-                    {
-                        memberType = shaderMat3;
-                        byteAlignment = 16;
-                    }
-                    else if (rowCount == 4 && colCount == 4)
-                    {
-                        memberType = shaderMat4;
-                        byteAlignment = 16;
-                    }
-                    else
-                    {
-                        std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
-                        byteAlignment = 4;
-                    }
-                    break;
-                }
+                break;
+            }
             }
 
             shaderVariables.emplace_back(ShaderVariable
@@ -596,15 +556,14 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
             bufferSize += memberSize;
         }
 
-        ShaderPushConstant shaderStruct;
-        shaderStruct.PushConstantName = pushConstant->name;
-        shaderStruct.PushConstantSize = bufferSize;
-        shaderStruct.PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.size(), __FILE__, __LINE__, __func__);
-        shaderStruct.PushConstantVariableListCount = shaderVariables.size();
-        std::memcpy(shaderStruct.PushConstantVariableList, shaderVariables.data(), shaderVariables.size() * sizeof(ShaderVariable));
-        pushConstantList.emplace_back(shaderStruct);
+        pushConstantList.emplace_back(ShaderPushConstant
+            {
+                .PushConstantName = String(pushConstant->name),
+                .PushConstantSize = bufferSize,
+                .PushConstantVariableListCount = shaderVariables.size(),
+                .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__),
+            });
     }
-
     return pushConstantList;
 }
 

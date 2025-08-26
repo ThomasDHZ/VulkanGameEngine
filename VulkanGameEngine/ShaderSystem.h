@@ -36,7 +36,7 @@ public:
 
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	ShaderModule AddShaderModule(const String& modulePath, const VkGuid& renderPassId, const VkGuid& pipelineId, const VkGuid& levelId);
+	std::array<ShaderModule, 2> AddShaderModule(std::array<String, 2> shaderPaths, const VkGuid& renderPassId, const VkGuid& pipelineId, const VkGuid& levelId);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void Destroy();
 
@@ -48,9 +48,13 @@ public:
 
 	ShaderModule& FindShaderModule(const String& shaderFile);
 	ShaderPushConstant& FindShaderPushConstant(const String& shaderFile);
+	UnorderedMap<String, ShaderStruct>& FindShaderStructByPipelineList(const VkGuid& pipelineId);
+	ShaderStruct& FindShaderStruct(const VkGuid& pipelineId, const String& structKey);
 
 	bool ShaderModuleExists(const String& shaderFile);
 	bool ShaderPushConstantExists(const String& pushConstantName);
+	bool ShaderStructByPipelinExists(const VkGuid& pipelineId);
+	bool ShaderStructExists(const VkGuid& pipelineId, const String& structKey);
 
 	//void GetPushConstantData(const ShaderPushConstant& pushConstant);
 };

@@ -1,4 +1,5 @@
 #include "VulkanBuffer.h"
+#include "MemorySystem.h"
 
 VulkanBuffer VulkanBuffer_CreateVulkanBuffer(const GraphicsRenderer& renderer, uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
 {
@@ -13,7 +14,7 @@ VulkanBuffer VulkanBuffer_CreateVulkanBuffer(const GraphicsRenderer& renderer, u
         .UsingStagingBuffer = usingStagingBuffer,
     };
 
-    void* bufferData = new void*[bufferSize];
+    void* bufferData = memorySystem.AddPtrBuffer<void*>(bufferSize, __FILE__, __LINE__, __func__);
     memset(bufferData, 0, bufferSize);
 
     VkResult result;
@@ -31,7 +32,7 @@ VulkanBuffer VulkanBuffer_CreateVulkanBuffer(const GraphicsRenderer& renderer, u
         RENDERER_ERROR("Failed to create Vulkan buffer");
     }
 
-    delete bufferData;
+    memorySystem.RemovePtrBuffer(bufferData);
     return vulkanBuffer;
 }
 
@@ -298,7 +299,10 @@ VkResult Buffer_UpdateBufferSize(const GraphicsRenderer& renderState, VkBuffer* 
 {
     if (newBufferSize < oldBufferSize) 
     {
-        RENDERER_ERROR("New buffer size can't be less than the old buffer size.");
+        RENDERER_ERROR("
+            
+            
+            buffer size can't be less than the old buffer size.");
         return VK_ERROR_MEMORY_MAP_FAILED;
     }
 
