@@ -25,6 +25,6 @@
 [submodule "external/VulkanCS"]
 	path = External/VulkanCS
 	url = https://github.com/ThomasDHZ/VulkanCS.git
-[submodule "external/SPIRV-Reflect"]
+[submodule "External/SPIRV-Reflect"]
 	path = External/SPIRV-Reflect
-	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+	url = https://github.com/ThomasDHZ/SPIRV-Reflect.git
