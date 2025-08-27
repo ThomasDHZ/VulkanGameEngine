@@ -1,11 +1,12 @@
 #pragma once
 #include "Typedef.h"
 #include "JsonStructs.h"
+#include "VulkanBuffer.h"
 #include <SPIRV-Reflect/spirv_reflect.h>
 
 enum ShaderMemberType
 {
-    shaderUnkown,
+    shaderUnknown,
     shaderInt,
     shaderUint,
     shaderFloat,
@@ -64,15 +65,16 @@ struct ShaderVariable
     size_t Size = 0;
     size_t ByteAlignment = 0;
     void* Value = nullptr;
-    ShaderMemberType  MemberTypeEnum = shaderUnkown;
+    ShaderMemberType  MemberTypeEnum = shaderUnknown;
 };
 
 struct ShaderStruct
 {
-    String Name;
-    size_t ShaderBufferVariableListCount;
-    ShaderVariable* ShaderBufferVariableList;
-    void* ShaderStructBuffer = nullptr;
+    String          Name;
+    size_t			ShaderBufferSize = 0;
+    size_t          ShaderBufferVariableListCount = 0;
+    ShaderVariable* ShaderBufferVariableList = nullptr;
+    VulkanBuffer    ShaderStructBuffer;
 };
 
 struct ShaderDescriptorSet

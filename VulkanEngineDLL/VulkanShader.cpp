@@ -453,6 +453,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
     return ShaderStruct
     {
         .Name = shaderInfo.type_name ? std::string(shaderInfo.type_name) : "",
+        .ShaderBufferSize = bufferSize,
         .ShaderBufferVariableListCount = shaderVariables.size(),
         .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
     };
@@ -477,7 +478,7 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
         {
             size_t memberSize = 0;
             size_t byteAlignment = 0;
-            ShaderMemberType memberType = shaderUnkown;
+            ShaderMemberType memberType = shaderUnknown;
             switch (variable.op)
             {
             case SpvOpTypeInt:

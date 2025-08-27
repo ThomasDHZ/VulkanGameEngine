@@ -57,9 +57,9 @@ int MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint3
 	};
 
 	Mesh mesh = Mesh_CreateMesh(renderSystem.renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
-		bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
-		bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
-		bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
+																   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+																   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+																   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
 	SpriteMeshMap[meshId] = mesh;
 	return meshId;
 }
@@ -109,9 +109,9 @@ int MeshSystem::CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& ve
 	Vector<Mesh> meshList = Vector<Mesh>
 	{
 		Mesh_CreateMesh(renderSystem.renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
-											   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
-											   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
-											   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId])
+														   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+														   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+														   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId])
 	};
 	LevelLayerMeshListMap[levelId] = meshList;
 	return meshId;

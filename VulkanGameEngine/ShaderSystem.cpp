@@ -23,19 +23,12 @@ void ShaderSystem::StartUp()
     Shader_StartUp();
 }
 
-void ShaderSystem::VertexDataFromSpirv(const String& path)
-{
-    FileState file = File_Read(path.c_str());
-    Vector<byte> shaderCode = Vector<byte>(file.Data, file.Data + file.Size);
-    //Shader_VertexDataFromSpirv(shaderCode);
-}
-
 VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages)
 {
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-std::array<ShaderModule, 2> ShaderSystem::AddShaderModule(std::array<String, 2> shaderPaths, const VkGuid& renderPassId, const VkGuid& pipelineId, const VkGuid& levelId)
+ShaderModule ShaderSystem::AddShaderModule(const String& shaderPath, const VkGuid& renderPassId, const VkGuid& levelId)
 {
     Vector<VkDescriptorBufferInfo> vertexPropertiesList = shaderSystem.GetVertexPropertiesBuffer();
     Vector<VkDescriptorBufferInfo> indexPropertiesList = shaderSystem.GetIndexPropertiesBuffer();
@@ -59,16 +52,15 @@ std::array<ShaderModule, 2> ShaderSystem::AddShaderModule(std::array<String, 2> 
         .MaterialProperties = materialPropertiesList.data()
     };
 
-    std::array<String, 2> shaderKeys;
-    for (int x = 0; x < shaderPaths.size(); x++)
+
+    const char* fileName = File_GetFileNameFromPath(shaderPath.c_str());
+    if (!ShaderModuleExists(fileName))
     {
-        const char* fileName = File_GetFileNameFromPath(shaderPaths[x].c_str());
-        if (!ShaderModuleExists(fileName))
+        ShaderModuleMap[fileName] = Shader_GetShaderData(shaderPath, gpuIncludes);
+        Span<ShaderPushConstant> pushConstantList(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantCount);
+        for (auto& pushConstant : pushConstantList)
         {
-            shaderKeys[x] = fileName;
-            ShaderModuleMap[fileName] = Shader_GetShaderData(shaderPaths[x], gpuIncludes);
-            Span<ShaderPushConstant> pushConstantList(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantCount);
-            for (auto& pushConstant : pushConstantList)
+            if (!ShaderStructPrototypeExists(pushConstant.PushConstantName))
             {
                 pushConstant.PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str());
                 for (int x = 0; x < pushConstant.PushConstantVariableListCount; x++)
@@ -77,27 +69,24 @@ std::array<ShaderModule, 2> ShaderSystem::AddShaderModule(std::array<String, 2> 
                 }
                 ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
             }
+        }
 
-            UnorderedMap<String, ShaderStruct> shaderStructMap;
-            Span<ShaderStruct> structList(ShaderModuleMap[fileName].ShaderStructList, ShaderModuleMap[fileName].ShaderStructCount);
-            for (auto& structVar : structList)
+        Span<ShaderStruct> structList(ShaderModuleMap[fileName].ShaderStructList, ShaderModuleMap[fileName].ShaderStructCount);
+        for (auto& structVar : structList)
+        {
+            if (!ShaderStructPrototypeExists(structVar.Name))
             {
-                if (!ShaderStructExists(pipelineId, structVar.Name))
+                for (int x = 0; x < structVar.ShaderBufferVariableListCount; x++)
                 {
-                    structVar.ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
-                    for (int x = 0; x < structVar.ShaderBufferVariableListCount; x++)
-                    {
-                        structVar.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
-                    }
-                    shaderStructMap[structVar.Name] = structVar;
+                    structVar.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
                 }
+                PipelineShaderStructPrototypeMap[structVar.Name] = structVar;
             }
-            PipelineShaderStructMap[pipelineId] = shaderStructMap;
         }
     }
-    return std::array<ShaderModule, 2>{ShaderModuleMap[shaderKeys[0]], ShaderModuleMap[shaderKeys[1]]};
+    return ShaderModuleMap[fileName];
 }
-    
+
 ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName)
 {
     auto it = std::find_if(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount,
@@ -153,6 +142,28 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
     }
 }
 
+void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
+{
+    if (!ShaderStructExists(vulkanBufferId))
+    {
+        return;
+    }
+
+    size_t offset = 0;
+    ShaderStruct shaderStruct = PipelineShaderStructMap[vulkanBufferId];
+    void* structStagingBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str());
+    Span<ShaderVariable> shaderStructVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+    for (const auto& shaderStrucVar : shaderStructVarList)
+    {
+        offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
+        void* dest = static_cast<byte*>(structStagingBuffer) + offset;
+        memcpy(dest, shaderStrucVar.Value, shaderStrucVar.Size);
+        offset += shaderStrucVar.Size;
+    }
+
+    VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, shaderStruct.ShaderStructBuffer, structStagingBuffer, shaderStruct.ShaderBufferSize, 1);
+}
+
 ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& pushConstantName)
 {
     if (ShaderPushConstantExists(pushConstantName))
@@ -182,35 +193,24 @@ ShaderPushConstant& ShaderSystem::FindShaderPushConstant(const String& shaderFil
     throw std::out_of_range("ShaderPushConstantSourceMap not found for given shader push constant");
 }
 
-UnorderedMap<String, ShaderStruct>& ShaderSystem::FindShaderStructByPipelineList(const VkGuid& pipelineId)
+ShaderStruct ShaderSystem::FindShaderProtoTypeStruct(const String& shaderKey)
 {
-    auto it = PipelineShaderStructMap.find(pipelineId);
+    auto it = PipelineShaderStructPrototypeMap.find(shaderKey);
+    if (it != PipelineShaderStructPrototypeMap.end())
+    {
+        return it->second;
+    }
+    throw std::out_of_range("PipelineShaderStructPrototypeMap not found");
+}
+
+ShaderStruct& ShaderSystem::FindShaderStruct(uint vulkanBufferId)
+{
+    auto it = PipelineShaderStructMap.find(vulkanBufferId);
     if (it != PipelineShaderStructMap.end())
     {
         return it->second;
     }
-    throw std::out_of_range("FindShaderStructByPipelineList not found for given shader push constant");
-}
-
-ShaderStruct& ShaderSystem::FindShaderStruct(const VkGuid& pipelineId, const String& structKey)
-{
-    UnorderedMap<String, ShaderStruct> structMap = FindShaderStructByPipelineList(pipelineId);
-    auto it = structMap.find(structKey);
-    if (it != structMap.end())
-    {
-        return it->second;
-    }
-    throw std::out_of_range("structMap not found for given shader push constant");
-}
-
-bool ShaderSystem::ShaderModuleExists(const String& shaderFile)
-{
-    auto it = ShaderModuleMap.find(shaderFile);
-    if (it != ShaderModuleMap.end())
-    {
-        return true;
-    }
-    return false;
+    throw std::out_of_range("PipelineShaderStructMap not found");
 }
 
 bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
@@ -223,27 +223,32 @@ bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
     return false;
 }
 
-bool ShaderSystem::ShaderStructByPipelinExists(const VkGuid& pipelineId)
+bool ShaderSystem::ShaderModuleExists(const String& shaderFile)
 {
-    auto it = PipelineShaderStructMap.find(pipelineId);
-    if (it != PipelineShaderStructMap.end())
+    auto it = ShaderModuleMap.find(shaderFile);
+    if (it != ShaderModuleMap.end())
     {
         return true;
     }
     return false;
 }
 
-bool ShaderSystem::ShaderStructExists(const VkGuid& pipelineId, const String& structKey)
+bool ShaderSystem::ShaderStructPrototypeExists(const String& structKey)
 {
-    auto it = PipelineShaderStructMap.find(pipelineId);
+    auto it = PipelineShaderStructPrototypeMap.find(structKey);
+    if (it != PipelineShaderStructPrototypeMap.end())
+    {
+        return true;
+    }
+    return false;
+}
+
+bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey)
+{
+    auto it = PipelineShaderStructMap.find(vulkanBufferKey);
     if (it != PipelineShaderStructMap.end())
     {
-        auto it2 = it->second.find(structKey);
-        if (it2 != it->second.end())
-        {
-            return true;
-        }
-        return false;
+        return true;
     }
     return false;
 }
