@@ -28,35 +28,12 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-ShaderModule ShaderSystem::AddShaderModule(const String& shaderPath, const VkGuid& renderPassId, const VkGuid& levelId)
+ShaderModule ShaderSystem::AddShaderModule(const String& shaderPath)
 {
-    Vector<VkDescriptorBufferInfo> vertexPropertiesList = shaderSystem.GetVertexPropertiesBuffer();
-    Vector<VkDescriptorBufferInfo> indexPropertiesList = shaderSystem.GetIndexPropertiesBuffer();
-    Vector<VkDescriptorBufferInfo> transformPropertiesList = shaderSystem.GetGameObjectTransformBuffer();
-    Vector<VkDescriptorBufferInfo> meshPropertiesList = shaderSystem.GetMeshPropertiesBuffer(levelId);
-    Vector<VkDescriptorImageInfo> texturePropertiesList = shaderSystem.GetTexturePropertiesBuffer(renderPassId);
-    Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
-    GPUIncludes gpuIncludes =
-    {
-        .VertexPropertiesCount = vertexPropertiesList.size(),
-        .IndexPropertiesCount = indexPropertiesList.size(),
-        .TransformPropertiesCount = transformPropertiesList.size(),
-        .MeshPropertiesCount = meshPropertiesList.size(),
-        .TexturePropertiesListCount = texturePropertiesList.size(),
-        .MaterialPropertiesCount = materialPropertiesList.size(),
-        .VertexProperties = vertexPropertiesList.data(),
-        .IndexProperties = indexPropertiesList.data(),
-        .TransformProperties = transformPropertiesList.data(),
-        .MeshProperties = meshPropertiesList.data(),
-        .TexturePropertiesList = texturePropertiesList.data(),
-        .MaterialProperties = materialPropertiesList.data()
-    };
-
-
     const char* fileName = File_GetFileNameFromPath(shaderPath.c_str());
     if (!ShaderModuleExists(fileName))
     {
-        ShaderModuleMap[fileName] = Shader_GetShaderData(shaderPath, gpuIncludes);
+        ShaderModuleMap[fileName] = Shader_GetShaderData(shaderPath);
         Span<ShaderPushConstant> pushConstantList(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantCount);
         for (auto& pushConstant : pushConstantList)
         {
@@ -100,6 +77,11 @@ ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant& 
     }
 
     return it;  
+}
+
+ShaderVariable* ShaderSystem::SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName)
+{
+    return Shader_SearchShaderStructhVar(shaderStruct, varName);
 }
 
 void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
@@ -162,6 +144,7 @@ void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
     }
 
     VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, shaderStruct.ShaderStructBuffer, structStagingBuffer, shaderStruct.ShaderBufferSize, 1);
+    memorySystem.RemovePtrBuffer(structStagingBuffer);
 }
 
 ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& pushConstantName)
@@ -203,7 +186,7 @@ ShaderStruct ShaderSystem::FindShaderProtoTypeStruct(const String& shaderKey)
     throw std::out_of_range("PipelineShaderStructPrototypeMap not found");
 }
 
-ShaderStruct& ShaderSystem::FindShaderStruct(uint vulkanBufferId)
+ShaderStruct& ShaderSystem::FindShaderStruct(int vulkanBufferId)
 {
     auto it = PipelineShaderStructMap.find(vulkanBufferId);
     if (it != PipelineShaderStructMap.end())
@@ -251,223 +234,6 @@ bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey)
         return true;
     }
     return false;
-}
-
-const Vector<VkDescriptorBufferInfo> ShaderSystem::GetVertexPropertiesBuffer()
-{
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-
-    Vector<VkDescriptorBufferInfo> vertexPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& vertexProperties = bufferSystem.VulkanBuffer[mesh.MeshVertexBufferId];
-    //        vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = vertexProperties.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-
-    return vertexPropertiesBuffer;
-}
-
-const Vector<VkDescriptorBufferInfo> ShaderSystem::GetIndexPropertiesBuffer()
-{
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-    std::vector<VkDescriptorBufferInfo>	indexPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& indexProperties = bufferSystem.VulkanBuffer[mesh.MeshIndexBufferId];
-    //        indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = indexProperties.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-    return indexPropertiesBuffer;
-}
-
-const Vector<VkDescriptorBufferInfo> ShaderSystem::GetGameObjectTransformBuffer()
-{
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-    std::vector<VkDescriptorBufferInfo>	transformPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& transformBuffer = bufferSystem.VulkanBuffer[mesh.MeshTransformBufferId];
-    //        transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = transformBuffer.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-
-    return transformPropertiesBuffer;
-}
-
-const Vector<VkDescriptorBufferInfo> ShaderSystem::GetMeshPropertiesBuffer(const VkGuid& levelLayerId)
-{
-    Vector<Mesh> meshList;
-    if (levelLayerId == VkGuid())
-    {
-        for (auto& sprite : meshSystem.SpriteMeshList())
-        {
-            meshList.emplace_back(sprite);
-
-        }
-    }
-    else
-    {
-        for (auto& layer : meshSystem.FindLevelLayerMeshList(levelLayerId))
-        {
-            meshList.emplace_back(layer);
-        }
-    }
-
-    Vector<VkDescriptorBufferInfo> meshPropertiesBuffer;
-    if (meshList.empty())
-    {
-        meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-            {
-                .buffer = VK_NULL_HANDLE,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            });
-    }
-    else
-    {
-        for (auto& mesh : meshList)
-        {
-            const VulkanBuffer& meshProperties = bufferSystem.FindVulkanBuffer(mesh.PropertiesBufferId);
-            meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-                {
-                    .buffer = meshProperties.Buffer,
-                    .offset = 0,
-                    .range = VK_WHOLE_SIZE
-                });
-        }
-    }
-
-    return meshPropertiesBuffer;
-}
-
-
-const Vector<VkDescriptorImageInfo> ShaderSystem::GetTexturePropertiesBuffer(const VkGuid& renderPassId)
-{
-    Vector<Texture> textureList;
-    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-    if (renderPass.InputTextureIdListCount > 0)
-    {
-        Vector<VkGuid> inputTextureList = Vector<VkGuid>(renderPass.InputTextureIdList, renderPass.InputTextureIdList + renderPass.InputTextureIdListCount);
-        for (auto& inputTexture : inputTextureList)
-        {
-            textureList.emplace_back(textureSystem.FindRenderedTexture(inputTexture));
-        }
-    }
-    else
-    {
-        textureList = textureSystem.TextureList();
-    }
-
-    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
-    if (textureList.empty())
-    {
-        VkSamplerCreateInfo NullSamplerInfo =
-        {
-            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-            .magFilter = VK_FILTER_NEAREST,
-            .minFilter = VK_FILTER_NEAREST,
-            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-            .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .mipLodBias = 0,
-            .anisotropyEnable = VK_TRUE,
-            .maxAnisotropy = 16.0f,
-            .compareEnable = VK_FALSE,
-            .compareOp = VK_COMPARE_OP_ALWAYS,
-            .minLod = 0,
-            .maxLod = 0,
-            .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-            .unnormalizedCoordinates = VK_FALSE,
-        };
-
-        VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(renderSystem.renderer.Device, &NullSamplerInfo, nullptr, &nullSampler))
-        {
-            throw std::runtime_error("Failed to create Sampler.");
-        }
-
-        VkDescriptorImageInfo nullBuffer =
-        {
-            .sampler = nullSampler,
-            .imageView = VK_NULL_HANDLE,
-            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        };
-        texturePropertiesBuffer.emplace_back(nullBuffer);
-    }
-    else
-    {
-        for (auto& texture : textureList)
-        {
-            textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
-        }
-    }
-
-    return texturePropertiesBuffer;
 }
 
 void ShaderSystem::Destroy()

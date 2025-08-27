@@ -299,7 +299,7 @@ VkResult Buffer_UpdateBufferSize(const GraphicsRenderer& renderState, VkBuffer* 
 {
     if (newBufferSize < oldBufferSize) 
     {
-        RENDERER_ERROR("buffer size can't be less than the old buffer size.");
+        RENDERER_ERROR("Buffer size can't be less than the old buffer size. OldSize: " + std::to_string(static_cast<uint>(oldBufferSize)) + " NewSize: " + std::to_string(static_cast<uint>(newBufferSize)));
         return VK_ERROR_MEMORY_MAP_FAILED;
     }
 

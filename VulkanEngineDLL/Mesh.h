@@ -4,6 +4,7 @@
 #include "Typedef.h"
 #include "VkGuid.h"
 #include "VulkanBuffer.h"
+#include "VulkanShader.h"
 
 struct MeshPropertiesStruct
 {
@@ -14,6 +15,7 @@ struct MeshPropertiesStruct
 const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
 VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT|
 VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
 VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 

@@ -22,35 +22,41 @@ layout(push_constant) uniform SceneDataBuffer {
     vec3 CameraPosition;
 } sceneData;
 
-layout(binding = 0) buffer meshPropertiesBuffer
+struct MeshProperitiesBuffer
 {
 	int	   MaterialIndex;
 	mat4   MeshTransform;
-} meshProperties[];
+};
+
+struct MaterialProperitiesBuffer
+{
+	vec3 Albedo;
+	float Metallic;
+	float Roughness;
+	float AmbientOcclusion;
+	vec3 Emission;
+	float Alpha;
+
+	uint AlbedoMap;
+	uint MetallicRoughnessMap;
+	uint MetallicMap;
+	uint RoughnessMap;
+	uint AmbientOcclusionMap;
+	uint NormalMap;
+	uint DepthMap;
+	uint AlphaMap;
+	uint EmissionMap;
+	uint HeightMap;
+};
+
+layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) uniform MaterialPropertiesBuffer {
-    vec3 Albedo;
-    float Metallic;
-    float Roughness;
-    float AmbientOcclusion;
-    vec3 Emission;
-    float Alpha;
-    uint AlbedoMap;
-    uint MetallicRoughnessMap;
-    uint MetallicMap;
-    uint RoughnessMap;
-    uint AmbientOcclusionMap;
-    uint NormalMap;
-    uint DepthMap;
-    uint AlphaMap;
-    uint EmissionMap;
-    uint HeightMap;
-} materialBuffer[];
+layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main()
 {
     int meshIndex = sceneData.MeshBufferIndex;
-    mat4 meshTransform = meshProperties[meshIndex].MeshTransform;
+    mat4 meshTransform = meshBuffer[meshIndex].meshProperties.MeshTransform;
 
     PS_Position = vec3(meshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
 	PS_UV = VS_UV.xy;

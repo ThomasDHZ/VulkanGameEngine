@@ -23,29 +23,23 @@ private:
 	UnorderedMap<String, ShaderModule> ShaderModuleMap;
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
 
-	UnorderedMap<uint,   ShaderStruct>  PipelineShaderStructMap;
 	UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
 
-	const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();
-	const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
-	const Vector<VkDescriptorBufferInfo> GetGameObjectTransformBuffer();
-	const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(const VkGuid& levelLayerId);
-	const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(const VkGuid& renderPassId);
-
 public:
+	UnorderedMap<int,   ShaderStruct>  PipelineShaderStructMap;
 	ShaderSystem();
 	~ShaderSystem();
 
 
 	void StartUp();
 	void VertexDataFromSpirv(const String& path);
-	ShaderModule AddShaderModule(const String& shaderPath, const VkGuid& renderPassId, const VkGuid& levelId);
+	ShaderModule AddShaderModule(const String& shaderPath);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);
 	void Destroy();
 
+	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);
-
 	VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
@@ -53,7 +47,7 @@ public:
 	ShaderModule& FindShaderModule(const String& shaderFile);
 	ShaderPushConstant& FindShaderPushConstant(const String& shaderFile);
 	ShaderStruct FindShaderProtoTypeStruct(const String& structKey);
-	ShaderStruct& FindShaderStruct(uint vulkanBufferId);
+	ShaderStruct& FindShaderStruct(int vulkanBufferId);
 
 	bool ShaderModuleExists(const String& shaderFile);
 	bool ShaderPushConstantExists(const String& pushConstantName);

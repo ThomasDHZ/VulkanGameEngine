@@ -19,6 +19,16 @@ LevelSystem::~LevelSystem()
 
 void LevelSystem::LoadLevel(const String& levelPath)
 {
+    VkGuid dummyGuid = VkGuid();
+    nlohmann::json shaderJson = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
+    spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
+    for (int x = 0; x < shaderJson["RenderPipelineList"].size(); x++)
+    {
+        nlohmann::json pipelineJson = Json::ReadJson(shaderJson["RenderPipelineList"][x]);
+        shaderSystem.AddShaderModule(pipelineJson["VertexShader"]);
+        shaderSystem.AddShaderModule(pipelineJson["FragmentShader"]);
+    }
+
     OrthographicCamera = std::make_shared<OrthographicCamera2D>(OrthographicCamera2D(vec2((float)renderSystem.renderer.SwapChainResolution.width, (float)renderSystem.renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
     VkGuid tileSetId = VkGuid();
@@ -28,36 +38,39 @@ void LevelSystem::LoadLevel(const String& levelPath)
     {
         textureSystem.LoadTexture(json["LoadTextures"][x]);
     }
+    bufferSystem;
     for (int x = 0; x < json["LoadMaterials"].size(); x++)
     {
         materialSystem.LoadMaterial(json["LoadMaterials"][x]);
     }
+    bufferSystem;
     for (int x = 0; x < json["LoadSpriteVRAM"].size(); x++)
     {
         spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
     }
+    bufferSystem;
     for (int x = 0; x < json["LoadTileSetVRAM"].size(); x++)
     {
         tileSetId = LoadTileSetVRAM(json["LoadTileSetVRAM"][x]);
     }
+    bufferSystem;
     for (int x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
         vec2   positionOverride = vec2(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
         gameObjectSystem.CreateGameObject(objectJson, positionOverride);
     }
+    bufferSystem;
     {
         LoadLevelLayout(json["LoadLevelLayout"]);
         LoadLevelMesh(tileSetId);
     }
-
-    VkGuid dummyGuid = VkGuid();
-    nlohmann::json json2 = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
-    spriteRenderPass2DId = VkGuid(json2["RenderPassId"].get<String>().c_str());
-
+    bufferSystem;
+ 
     spriteSystem.AddSpriteBatchLayer(spriteRenderPass2DId);
     spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+
 }
 
 void LevelSystem::DestoryLevel()

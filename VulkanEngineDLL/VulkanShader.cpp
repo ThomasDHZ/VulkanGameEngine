@@ -9,7 +9,7 @@ void Shader_StartUp()
     //DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxc_compiler));
     //dxc_utils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
 }
-ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& includes)
+ShaderModule Shader_GetShaderData(const String& spvPath)
 { 
     SpvReflectShaderModule spvModule;
     Vector<VkVertexInputBindingDescription> vertexInputBindingList;
@@ -20,7 +20,6 @@ ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& incl
     Vector<ShaderStruct> shaderStructs = Shader_GetShaderDescriptorSetInfo(spvModule);
     Vector<ShaderVertexVariable> outputVariables = Shader_GetShaderOutputVertexVariables(spvModule);
     Vector<ShaderDescriptorBinding> descriptorBindings = Shader_GetShaderDescriptorBindings(spvModule);
-    Shader_ShaderBindingData(descriptorBindings, includes);
     Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
    
     ShaderModule modulea = ShaderModule
@@ -628,89 +627,19 @@ Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConst
     return results;
 }
 
-SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t spirv_id) {
-    const uint32_t* code = spvReflectGetCode(&module);
-    uint32_t size = spvReflectGetCodeSize(&module) / sizeof(uint32_t);
-    uint32_t index = 5; 
-
-    while (index < size) {
-        uint32_t word = code[index];
-        SpvOp op = static_cast<SpvOp>(word & 0xFFFF);
-        uint32_t word_count = (word >> 16) & 0xFFFF;
-
-        if (word_count == 0 || index + word_count > size) {
-            return SpvOpNop;  
-        }
-
-        bool has_result_id = (op == SpvOpSpecConstantTrue || 
-                              op == SpvOpSpecConstantFalse ||
-                              op == SpvOpSpecConstant || 
-                              op == SpvOpSpecConstantComposite ||
-                              op == SpvOpSpecConstantOp);
-        if (has_result_id && word_count > 2 && code[index + 2] == spirv_id) {
-            return op;
-        }
-
-        index += word_count;
-    }
-    return SpvOpNop; 
-}
-
-void Shader_ShaderBindingData(Vector<ShaderDescriptorBinding>& descriptorBindingList, const GPUIncludes& includes)
+ShaderVariable* Shader_SearchShaderStructhVar(const ShaderStruct& shaderStruct, const String& varName)
 {
-    Vector<ShaderDescriptorBinding> bindingList;
-    for (auto& descriptorBinding : descriptorBindingList)
-    {
-        switch (descriptorBinding.DescriptorBindingType)
-        {
-            case kVertexDescsriptor:
-            {
-                descriptorBinding.DescriptorCount = includes.VertexPropertiesCount;
-                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.VertexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
-                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.VertexProperties, includes.VertexPropertiesCount * sizeof(VkDescriptorBufferInfo));
-                break;
-            }
-            case kIndexDescriptor:
-            {
-                descriptorBinding.DescriptorCount = includes.IndexPropertiesCount;
-                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.IndexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
-                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.IndexProperties, includes.IndexPropertiesCount * sizeof(VkDescriptorBufferInfo));
-                break;
-            }
-            case kTransformDescriptor:
-            {
-                descriptorBinding.DescriptorCount = includes.TransformPropertiesCount;
-                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.TransformPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
-                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.TransformProperties, includes.TransformPropertiesCount * sizeof(VkDescriptorBufferInfo));
-                break;
-            }
-            case kMeshPropertiesDescriptor:
-            {
-                descriptorBinding.DescriptorCount = includes.MeshPropertiesCount;
-                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.MeshPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
-                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.MeshProperties, includes.MeshPropertiesCount * sizeof(VkDescriptorBufferInfo));
-                break;
-            }
-            case kTextureDescriptor:
-            {
-                descriptorBinding.DescriptorCount = includes.TexturePropertiesListCount;
-                descriptorBinding.DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(includes.TexturePropertiesListCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
-                std::memcpy(descriptorBinding.DescriptorImageInfo, includes.TexturePropertiesList, includes.TexturePropertiesListCount * sizeof(VkDescriptorImageInfo));
-                break;
-            }
-            case kMaterialDescriptor:
-            {
-                descriptorBinding.DescriptorCount = includes.MaterialPropertiesCount;
-                descriptorBinding.DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(includes.MaterialPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + descriptorBinding.Name).c_str());
-                std::memcpy(descriptorBinding.DescriptorBufferInfo, includes.MaterialProperties, includes.MaterialPropertiesCount * sizeof(VkDescriptorBufferInfo));
-                break;
-            }
-            default:
-            {
-                throw std::runtime_error("Binding case hasn't been handled yet");
-            }
+    auto it = std::find_if(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableList + shaderStruct.ShaderBufferVariableListCount,
+        [&](const ShaderVariable& var) {
+            return var.Name == varName;
         }
+    );
+
+    if (it != shaderStruct.ShaderBufferVariableList + shaderStruct.ShaderBufferVariableListCount) {
+        ShaderVariable& foundVar = *it;
     }
+
+    return it;
 }
 
 const char* Renderer_GetShaderReflectError(SpvReflectResult result)

@@ -373,13 +373,6 @@ namespace nlohmann
             model.PipelineColorBlendAttachmentStateList[x] = j.at("PipelineColorBlendAttachmentStateList")[x];
         }
 
-        model.PipelineDescriptorModelsCount = j.at("PipelineDescriptorModelsList").size();
-        model.PipelineDescriptorModelsList = memorySystem.AddPtrBuffer<PipelineDescriptorModel>(model.PipelineDescriptorModelsCount, __FILE__, __LINE__, __func__);
-        for (int x = 0; x < model.PipelineDescriptorModelsCount; x++)
-        {
-            model.PipelineDescriptorModelsList[x] = j.at("PipelineDescriptorModelsList")[x];
-        }
-
         model.ViewportCount = j.at("ViewportList").size();
         model.ViewportList = memorySystem.AddPtrBuffer<VkViewport>(model.ViewportCount, __FILE__, __LINE__, __func__);
         for (int x = 0; x < model.ViewportCount; x++)

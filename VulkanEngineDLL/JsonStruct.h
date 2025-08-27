@@ -153,7 +153,6 @@ struct RenderPipelineLoader
     size_t ViewportCount = 0;
     size_t ScissorCount = 0;
     size_t PipelineColorBlendAttachmentStateCount = 0;
-    size_t PipelineDescriptorModelsCount = 0;
     VkPipelineColorBlendAttachmentState* PipelineColorBlendAttachmentStateList = nullptr;
     VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo;
     VkViewport* ViewportList = nullptr;
@@ -162,6 +161,5 @@ struct RenderPipelineLoader
     VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo;
     VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo;
     VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel;
-    PipelineDescriptorModel* PipelineDescriptorModelsList = nullptr;
     ivec2 RenderPassResolution;
 };

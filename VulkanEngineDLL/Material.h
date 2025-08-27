@@ -6,7 +6,7 @@
 #include "VulkanBuffer.h"
 #include "Vector.h"
 #include "Texture.h"
-
+#include "VulkanShader.h"
 
 
 
@@ -69,9 +69,9 @@ struct Vector2Traits<Material>
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, const char* jsonString);
-	DLL_EXPORT void Material_UpdateBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer, MaterialProperitiesBuffer& materialProperties);
-	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer);
+	DLL_EXPORT Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, ShaderStruct& materialBuffer, const char* jsonString);
+	DLL_EXPORT void Material_UpdateBuffer(const GraphicsRenderer& renderer, ShaderStruct& materialBuffer, MaterialProperitiesBuffer& materialProperties);
+	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, ShaderStruct& materialBuffer);
 #ifdef __cplusplus
 }
 #endif

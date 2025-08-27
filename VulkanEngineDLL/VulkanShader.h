@@ -18,12 +18,13 @@ extern "C"
 #include "JsonStruct.h"
 
 DLL_EXPORT void Shader_StartUp();
-DLL_EXPORT ShaderModule Shader_GetShaderData(const String& spvPath, const GPUIncludes& includes);
+DLL_EXPORT ShaderModule Shader_GetShaderData(const String& spvPath);
 DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 DLL_EXPORT Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
 DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 DLL_EXPORT void Shader_ShaderDestroy(ShaderModule& shader);
 DLL_EXPORT void Shader_DestroyConstantBufferVariableData(ShaderPushConstant* pushConstant, size_t pushConstantCount);
+DLL_EXPORT ShaderVariable* Shader_SearchShaderStructhVar(const ShaderStruct& shaderStruct, const String& varName);
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);
 void Shader_uint32ToUnsignedCharString(uint32 value, String& string);
@@ -38,13 +39,8 @@ Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo);
-void Shader_ShaderBindingData(Vector<ShaderDescriptorBinding>& descriptorBindingList, const GPUIncludes& includes);
-
+void Shader_ShaderBindingData(Vector<ShaderDescriptorBinding>& descriptorBindingList);
 void Shader_DestroyShaderBindingData(ShaderModule& shader);
-
-void printSpecializationConstants(SpvReflectShaderModule& module);
-SpvOp getSpecializationConstantOp(const SpvReflectShaderModule& module, uint32_t spirv_id);
-
 
 #define SPV_VULKAN_RESULT(call) { \
     SpvReflectResult result = (call); \

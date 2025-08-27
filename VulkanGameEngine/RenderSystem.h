@@ -27,8 +27,11 @@ private:
     VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);
     void RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
-
-
+    const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();
+    const Vector<VkDescriptorBufferInfo> GetIndexPropertiesBuffer();
+    const Vector<VkDescriptorBufferInfo> GetGameObjectTransformBuffer();
+    const Vector<VkDescriptorBufferInfo> GetMeshPropertiesBuffer(const VkGuid& levelLayerId);
+    const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(const VkGuid& renderPassId);
 
 public:
     GraphicsRenderer                                              renderer;

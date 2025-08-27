@@ -6,8 +6,6 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-#include "Structs.glsl"
-
 layout(constant_id = 0) const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;
 layout(constant_id = 2) const uint VertexAttributeLocation1 = 0;
@@ -57,12 +55,36 @@ struct Vertex2D
 	vec2 UV;
 };
 
-layout(binding = 0) readonly buffer MeshProperities 
-{ 
-	MeshProperitiesBuffer meshProperties; 
-} meshBuffer[];
+struct MeshProperitiesBuffer
+{
+	int	   MaterialIndex;
+	mat4   MeshTransform;
+};
+
+struct MaterialProperitiesBuffer
+{
+	vec3 Albedo;
+	float Metallic;
+	float Roughness;
+	float AmbientOcclusion;
+	vec3 Emission;
+	float Alpha;
+
+	uint AlbedoMap;
+	uint MetallicRoughnessMap;
+	uint MetallicMap;
+	uint RoughnessMap;
+	uint AmbientOcclusionMap;
+	uint NormalMap;
+	uint DepthMap;
+	uint AlphaMap;
+	uint EmissionMap;
+	uint HeightMap;
+};
+
+layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) uniform MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main() 
 {
