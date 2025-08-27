@@ -428,7 +428,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
                 else
                 {
                     std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
-                    byteAlignment = 4;
+                    byteAlignment = -1;
                 }
                 break;
             }
@@ -436,13 +436,12 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
 
             shaderVariables.emplace_back(ShaderVariable
                 {
-                    .Name = variable.struct_member_name ? std::string(variable.struct_member_name) : "",
+                    .Name = variable.struct_member_name,
                     .Size = memberSize,
                     .ByteAlignment = byteAlignment,
                     .Value = nullptr,
                     .MemberTypeEnum = memberType,
                 });
-   
             size_t alignment = byteAlignment;
             bufferSize = (bufferSize + alignment - 1) & ~(alignment - 1);
             bufferSize += memberSize;
@@ -516,8 +515,8 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
             }
             case SpvOpTypeMatrix:
             {
-                uint32_t rowCount = variable.traits.numeric.matrix.row_count;
-                uint32_t colCount = variable.traits.numeric.matrix.column_count;
+                uint rowCount = variable.traits.numeric.matrix.row_count;
+                uint colCount = variable.traits.numeric.matrix.column_count;
                 memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                 if (rowCount == 2 && colCount == 2)
                 {
@@ -537,7 +536,7 @@ Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderMod
                 else
                 {
                     std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
-                    byteAlignment = 4;
+                    byteAlignment = -1;
                 }
                 break;
             }

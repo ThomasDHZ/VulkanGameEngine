@@ -74,7 +74,7 @@ struct ShaderStruct
     size_t			ShaderBufferSize = 0;
     size_t          ShaderBufferVariableListCount = 0;
     ShaderVariable* ShaderBufferVariableList = nullptr;
-    VulkanBuffer    ShaderStructBuffer;
+    int             ShaderStructBufferId;
 };
 
 struct ShaderDescriptorSet

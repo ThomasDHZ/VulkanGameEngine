@@ -143,7 +143,8 @@ void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
         offset += shaderStrucVar.Size;
     }
 
-    VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, shaderStruct.ShaderStructBuffer, structStagingBuffer, shaderStruct.ShaderBufferSize, 1);
+    VulkanBuffer& vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
+    VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, vulkanBuffer, structStagingBuffer, shaderStruct.ShaderBufferSize, 1);
     memorySystem.RemovePtrBuffer(structStagingBuffer);
 }
 
