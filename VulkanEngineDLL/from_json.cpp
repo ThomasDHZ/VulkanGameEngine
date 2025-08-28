@@ -358,8 +358,6 @@ namespace nlohmann
     void from_json(const json& j, RenderPipelineLoader& model)
     {
         j.at("PipelineId").get_to(model.PipelineId);
-        j.at("VertexShader").get_to(model.VertexShaderModule.ShaderPath);
-        j.at("FragmentShader").get_to(model.FragmentShaderModule.ShaderPath);
         j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
         j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);

@@ -226,8 +226,7 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         renderPipelineLoader.RenderPassId = renderPassId;
         renderPipelineLoader.RenderPass = RenderPassMap[renderPassId].RenderPass;
         renderPipelineLoader.gpuIncludes = gpuIncludes;
-        renderPipelineLoader.VertexShaderModule = shaderSystem.AddShaderModule(pipelineJson["VertexShader"]);
-        renderPipelineLoader.FragmentShaderModule = shaderSystem.AddShaderModule(pipelineJson["FragmentShader"]);
+        renderPipelineLoader.ShaderPiplineInfo = shaderSystem.AddShaderModule(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
         renderPipelineLoader.RenderPassResolution = renderPassResolution;
         RenderPipelineMap[renderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
     }

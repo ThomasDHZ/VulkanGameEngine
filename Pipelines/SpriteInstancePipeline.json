@@ -1,8 +1,10 @@
 {
   "Name": "SpriteInstancePipeline",
   "PipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
-  "VertexShader": "..\\Shaders\\SpriteInstanceShaderVert.spv",
-  "FragmentShader": "..\\Shaders\\SpriteInstanceShaderFrag.spv",
+  "ShaderList": [
+    "..\\Shaders\\SpriteInstanceShaderVert.spv",
+    "..\\Shaders\\SpriteInstanceShaderFrag.spv"
+  ],
   "VertexType": 1,
   "ViewportList": [
     {

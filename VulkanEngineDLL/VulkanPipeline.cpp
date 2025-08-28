@@ -32,27 +32,7 @@
  VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VulkanPipeline& oldPipeline)
  {
      VulkanPipeline_Destroy(device, oldPipeline);
-
-     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-     VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPipelineLoader);
-     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPipelineLoader);
-     Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-     Pipeline_UpdatePipelineDescriptorSets(device, renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
-     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
-
-     return VulkanPipeline
-     {
-         .RenderPipelineId = renderPipelineLoader.PipelineId,
-         .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
-         .DescriptorSetCount = descriptorSetList.size(),
-         .DescriptorPool = descriptorPool,
-         .DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.data(), descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__),
-         .DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.data(), descriptorSetList.size(), __FILE__, __LINE__, __func__),
-         .Pipeline = pipeline,
-         .PipelineLayout = pipelineLayout,
-         .PipelineCache = pipelineCache
-     };
+     return VulkanPipeline_CreateRenderPipeline(device, renderPipelineLoader);
  }
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)
@@ -76,12 +56,12 @@ void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)
 VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
-    for (int x = 0; x < renderPipelineLoader.VertexShaderModule.DescriptorBindingCount; x++)
+    for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingCount; x++)
     {
         descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
             {
-                .type = renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescripterType,
-                .descriptorCount = static_cast<uint32>(renderPipelineLoader.VertexShaderModule.DescriptorBindingCount)
+                .type = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescripterType,
+                .descriptorCount = static_cast<uint32>(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingCount)
             });
     }
 
@@ -102,14 +82,15 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
 Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevice device, RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
-    for (int x = 0; x < renderPipelineLoader.VertexShaderModule.DescriptorBindingCount; x++)
+    Span<ShaderDescriptorBinding> descriptorBindingList(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList, renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingCount);
+    for (auto& descriptorBinding : descriptorBindingList)
     {
         descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
             {
-                .binding = renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Binding,
-                .descriptorType = renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescripterType,
-                .descriptorCount = static_cast<uint32>(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount),
-                .stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL,
+                .binding = descriptorBinding.Binding,
+                .descriptorType = descriptorBinding.DescripterType,
+                .descriptorCount = static_cast<uint32>(descriptorBinding.DescriptorCount),
+                .stageFlags = descriptorBinding.ShaderStageFlags,
                 .pImmutableSamplers = nullptr
             });
     }
@@ -156,7 +137,7 @@ void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader
     for (auto& descriptorSet : descriptorSetLayouts)
     {
         Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
-        Span<ShaderDescriptorBinding> descriptorSetBindingList(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList, renderPipelineLoader.VertexShaderModule.DescriptorBindingCount);
+        Span<ShaderDescriptorBinding> descriptorSetBindingList(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList, renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingCount);
         for (auto& descriptorSetBinding : descriptorSetBindingList)
         {
             writeDescriptorSet.emplace_back(VkWriteDescriptorSet
@@ -213,10 +194,10 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .vertexBindingDescriptionCount = static_cast<uint>(renderPipelineLoader.VertexShaderModule.VertexInputBindingCount),
-        .pVertexBindingDescriptions = renderPipelineLoader.VertexShaderModule.VertexInputBindingList,
-        .vertexAttributeDescriptionCount = static_cast<uint>(renderPipelineLoader.VertexShaderModule.VertexInputAttributeListCount),
-        .pVertexAttributeDescriptions = renderPipelineLoader.VertexShaderModule.VertexInputAttributeList
+        .vertexBindingDescriptionCount = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.VertexInputBindingCount),
+        .pVertexBindingDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputBindingList,
+        .vertexAttributeDescriptionCount = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeListCount),
+        .pVertexAttributeDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList
     };
 
     Vector<VkViewport> viewPortList;
@@ -285,11 +266,11 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .pDynamicStates = dynamicStateList.data()
     };
 
-    Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
-    {
-        Shader_CreateShader(device, renderPipelineLoader.VertexShaderModule.ShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
-        Shader_CreateShader(device, renderPipelineLoader.FragmentShaderModule.ShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
-    };
+    //Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
+    //{
+    //    Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
+    //    Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
+    //};
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = renderPipelineLoader.PipelineColorBlendStateCreateInfoModel;
     pipelineColorBlendStateCreateInfoModel.attachmentCount = renderPipelineLoader.PipelineColorBlendAttachmentStateCount;
@@ -303,8 +284,8 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .stageCount = static_cast<uint32>(pipelineShaderStageCreateInfoList.size()),
-        .pStages = pipelineShaderStageCreateInfoList.data(),
+       // .stageCount = static_cast<uint32>(pipelineShaderStageCreateInfoList.size()),
+      //  .pStages = pipelineShaderStageCreateInfoList.data(),
         .pVertexInputState = &vertexInputInfo,
         .pInputAssemblyState = &renderPipelineLoader.PipelineInputAssemblyStateCreateInfo,
         .pTessellationState = nullptr,
@@ -322,10 +303,10 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
     };
 
     VULKAN_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
-    for (auto& shader : pipelineShaderStageCreateInfoList)
-    {
-        vkDestroyShaderModule(device, shader.module, nullptr);
-    }
+    //for (auto& shader : pipelineShaderStageCreateInfoList)
+    //{
+    //    vkDestroyShaderModule(device, shader.module, nullptr);
+    //}
 
     return pipeline;
 }
@@ -333,50 +314,50 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
 void Pipeline_PipelineBindingData(RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<ShaderDescriptorBinding> bindingList;
-     for (int x = 0; x < renderPipelineLoader.VertexShaderModule.DescriptorBindingCount; x++)
+     for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingCount; x++)
     {
-        switch (renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBindingType)
+        switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
         {
         case kVertexDescsriptor:
         {
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.VertexPropertiesCount;
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.VertexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Name).c_str());
-            std::memcpy(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.VertexProperties, renderPipelineLoader.gpuIncludes.VertexPropertiesCount * sizeof(VkDescriptorBufferInfo));
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.VertexPropertiesCount;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.VertexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].Name).c_str());
+            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.VertexProperties, renderPipelineLoader.gpuIncludes.VertexPropertiesCount * sizeof(VkDescriptorBufferInfo));
             break;
         }
         case kIndexDescriptor:
         {
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.IndexPropertiesCount;
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.IndexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Name).c_str());
-            std::memcpy(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.IndexProperties, renderPipelineLoader.gpuIncludes.IndexPropertiesCount * sizeof(VkDescriptorBufferInfo));
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.IndexPropertiesCount;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.IndexPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].Name).c_str());
+            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.IndexProperties, renderPipelineLoader.gpuIncludes.IndexPropertiesCount * sizeof(VkDescriptorBufferInfo));
             break;
         }
         case kTransformDescriptor:
         {
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TransformPropertiesCount;
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.TransformPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Name).c_str());
-            std::memcpy(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.TransformProperties, renderPipelineLoader.gpuIncludes.TransformPropertiesCount * sizeof(VkDescriptorBufferInfo));
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TransformPropertiesCount;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.TransformPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].Name).c_str());
+            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.TransformProperties, renderPipelineLoader.gpuIncludes.TransformPropertiesCount * sizeof(VkDescriptorBufferInfo));
             break;
         }
         case kMeshPropertiesDescriptor:
         {
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MeshPropertiesCount;
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MeshPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Name).c_str());
-            std::memcpy(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MeshProperties, renderPipelineLoader.gpuIncludes.MeshPropertiesCount * sizeof(VkDescriptorBufferInfo));
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MeshPropertiesCount;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MeshPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].Name).c_str());
+            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MeshProperties, renderPipelineLoader.gpuIncludes.MeshPropertiesCount * sizeof(VkDescriptorBufferInfo));
             break;
         }
         case kTextureDescriptor:
         {
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TexturePropertiesListCount;
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(renderPipelineLoader.gpuIncludes.TexturePropertiesListCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Name).c_str());
-            std::memcpy(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorImageInfo, renderPipelineLoader.gpuIncludes.TexturePropertiesList, renderPipelineLoader.gpuIncludes.TexturePropertiesListCount * sizeof(VkDescriptorImageInfo));
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TexturePropertiesListCount;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(renderPipelineLoader.gpuIncludes.TexturePropertiesListCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].Name).c_str());
+            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo, renderPipelineLoader.gpuIncludes.TexturePropertiesList, renderPipelineLoader.gpuIncludes.TexturePropertiesListCount * sizeof(VkDescriptorImageInfo));
             break;
         }
         case kMaterialDescriptor:
         {
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MaterialPropertiesCount;
-            renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MaterialPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].Name).c_str());
-            std::memcpy(renderPipelineLoader.VertexShaderModule.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MaterialProperties, renderPipelineLoader.gpuIncludes.MaterialPropertiesCount * sizeof(VkDescriptorBufferInfo));
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MaterialPropertiesCount;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MaterialPropertiesCount, __FILE__, __LINE__, __func__, ("Descriptor Binding: " + renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].Name).c_str());
+            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MaterialProperties, renderPipelineLoader.gpuIncludes.MaterialPropertiesCount * sizeof(VkDescriptorBufferInfo));
             break;
         }
         default:

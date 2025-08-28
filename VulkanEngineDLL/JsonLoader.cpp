@@ -49,13 +49,13 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
     {
         nlohmann::json j = Json::ReadJson(renderPassLoaderJson);
 
-        j.at("PipelineId").get_to(renderPipelineLoader.PipelineId);
+  /*      j.at("PipelineId").get_to(renderPipelineLoader.PipelineId);
         j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderModule.ShaderPath);
         j.at("FragmentShader").get_to(renderPipelineLoader.FragmentShaderModule.ShaderPath);
         renderPipelineLoader.PipelineRasterizationStateCreateInfo = j.at("PipelineRasterizationStateCreateInfo");
         renderPipelineLoader.PipelineMultisampleStateCreateInfo = j.at("PipelineMultisampleStateCreateInfo");
         renderPipelineLoader.PipelineDepthStencilStateCreateInfo = j.at("PipelineDepthStencilStateCreateInfo");
-        renderPipelineLoader.PipelineInputAssemblyStateCreateInfo = j.at("PipelineInputAssemblyStateCreateInfo");
+        renderPipelineLoader.PipelineInputAssemblyStateCreateInfo = j.at("PipelineInputAssemblyStateCreateInfo");*/
 
         //for (int x = 0; x < j.at("PipelineColorBlendAttachmentStateList").size(); x++)
         //{

@@ -28,40 +28,39 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-ShaderModule ShaderSystem::AddShaderModule(const String& shaderPath)
+ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
 {
-    const char* fileName = File_GetFileNameFromPath(shaderPath.c_str());
-    if (!ShaderModuleExists(fileName))
-    {
-        ShaderModuleMap[fileName] = Shader_GetShaderData(shaderPath);
-        Span<ShaderPushConstant> pushConstantList(ShaderModuleMap[fileName].PushConstantList, ShaderModuleMap[fileName].PushConstantCount);
-        for (auto& pushConstant : pushConstantList)
-        {
-            if (!ShaderStructPrototypeExists(pushConstant.PushConstantName))
-            {
-                pushConstant.PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str());
-                for (int x = 0; x < pushConstant.PushConstantVariableListCount; x++)
-                {
-                    pushConstant.PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, pushConstant.PushConstantVariableList[x].Name.c_str());
-                }
-                ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
-            }
-        }
+    ShaderPiplineData pipelineData = Shader_GetShaderData(shaderPathList.data(), shaderPathList.size());
+    Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
 
-        Span<ShaderStruct> structList(ShaderModuleMap[fileName].ShaderStructList, ShaderModuleMap[fileName].ShaderStructCount);
-        for (auto& structVar : structList)
+    Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
+    for (auto& pushConstant : pushConstantList)
+    {
+        if (!ShaderPushConstantExists(pushConstant.PushConstantName))
         {
-            if (!ShaderStructPrototypeExists(structVar.Name))
+            pushConstant.PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str());
+            for (int x = 0; x < pushConstant.PushConstantVariableListCount; x++)
             {
-                for (int x = 0; x < structVar.ShaderBufferVariableListCount; x++)
-                {
-                    structVar.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
-                }
-                PipelineShaderStructPrototypeMap[structVar.Name] = structVar;
+                pushConstant.PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, pushConstant.PushConstantVariableList[x].Name.c_str());
             }
+            ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
         }
     }
-    return ShaderModuleMap[fileName];
+
+    Span<ShaderStruct> structList(pipelineData.ShaderStructList, pipelineData.ShaderStructCount);
+    for (auto& structVar : structList)
+    {
+        if (!ShaderStructPrototypeExists(structVar.Name))
+        {
+            for (int x = 0; x < structVar.ShaderBufferVariableListCount; x++)
+            {
+                structVar.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
+            }
+            PipelineShaderStructPrototypeMap[structVar.Name] = structVar;
+        }
+    }
+
+    return pipelineData;
 }
 
 ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName)
@@ -145,7 +144,7 @@ ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& push
     return nullptr;
 }
 
-ShaderModule& ShaderSystem::FindShaderModule(const String& shaderFile)
+ShaderPiplineData& ShaderSystem::FindShaderModule(const String& shaderFile)
 {
     auto it = ShaderModuleMap.find(shaderFile);
     if (it != ShaderModuleMap.end())

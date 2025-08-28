@@ -92,6 +92,7 @@ struct ShaderDescriptorBinding
     String Name;
     uint32 Binding;
     size_t DescriptorCount;
+    VkShaderStageFlags ShaderStageFlags;
     DescriptorBindingPropertiesEnum DescriptorBindingType;
     VkDescriptorType DescripterType;
     VkDescriptorImageInfo* DescriptorImageInfo;
@@ -108,16 +109,16 @@ struct ShaderPushConstant
     bool			GlobalPushContant = false;
 };
 
-struct ShaderModule
+struct ShaderPiplineData
 {
-    String							   ShaderPath;
-    SpvReflectShaderStageFlagBits      ShaderStage;
+    size_t                             ShaderCount;
     size_t                             DescriptorBindingCount = 0;
     size_t                             ShaderStructCount = 0;
     size_t                             VertexInputBindingCount = 0;
     size_t                             VertexInputAttributeListCount = 0;
     size_t							   ShaderOutputCount = 0;
     size_t                             PushConstantCount = 0;
+    String*                            ShaderList = nullptr;
     ShaderDescriptorBinding*           DescriptorBindingsList = nullptr;
     ShaderStruct*                      ShaderStructList = nullptr;
     VkVertexInputBindingDescription*   VertexInputBindingList = nullptr;
@@ -149,8 +150,7 @@ struct RenderPipelineLoader
     VkRenderPass RenderPass;
     GPUIncludes gpuIncludes;
     ShaderPushConstant PushConstant;
-    ShaderModule VertexShaderModule;
-    ShaderModule FragmentShaderModule;
+    ShaderPiplineData ShaderPiplineInfo;
     size_t ViewportCount = 0;
     size_t ScissorCount = 0;
     size_t PipelineColorBlendAttachmentStateCount = 0;

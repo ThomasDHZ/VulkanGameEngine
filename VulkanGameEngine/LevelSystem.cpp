@@ -25,8 +25,7 @@ void LevelSystem::LoadLevel(const String& levelPath)
     for (int x = 0; x < shaderJson["RenderPipelineList"].size(); x++)
     {
         nlohmann::json pipelineJson = Json::ReadJson(shaderJson["RenderPipelineList"][x]);
-        shaderSystem.AddShaderModule(pipelineJson["VertexShader"]);
-        shaderSystem.AddShaderModule(pipelineJson["FragmentShader"]);
+        shaderSystem.AddShaderModule(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
     }
 
     OrthographicCamera = std::make_shared<OrthographicCamera2D>(OrthographicCamera2D(vec2((float)renderSystem.renderer.SwapChainResolution.width, (float)renderSystem.renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
