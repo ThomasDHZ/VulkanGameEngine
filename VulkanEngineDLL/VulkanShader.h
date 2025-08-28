@@ -23,6 +23,7 @@ DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, 
 DLL_EXPORT Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
 DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 DLL_EXPORT void Shader_ShaderDestroy(ShaderModule& shader);
+DLL_EXPORT void Shader_DestroyShaderStructData(ShaderModule& shader);
 DLL_EXPORT void Shader_DestroyConstantBufferVariableData(ShaderPushConstant* pushConstant, size_t pushConstantCount);
 DLL_EXPORT ShaderVariable* Shader_SearchShaderStructhVar(const ShaderStruct& shaderStruct, const String& varName);
 

@@ -75,6 +75,7 @@ struct ShaderStruct
     size_t          ShaderBufferVariableListCount = 0;
     ShaderVariable* ShaderBufferVariableList = nullptr;
     int             ShaderStructBufferId;
+    void*           ShaderStructBuffer = nullptr;
 };
 
 struct ShaderDescriptorSet

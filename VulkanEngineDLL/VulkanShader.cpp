@@ -44,6 +44,7 @@ ShaderModule Shader_GetShaderData(const String& spvPath)
 
 void Shader_ShaderDestroy(ShaderModule& shader)
 {
+    Shader_DestroyShaderStructData(shader);
     Shader_DestroyShaderBindingData(shader);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
@@ -51,6 +52,14 @@ void Shader_ShaderDestroy(ShaderModule& shader)
     memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
     memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
     memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
+}
+
+void Shader_DestroyShaderStructData(ShaderModule& shader)
+{
+    for (int x = 0; x < shader.ShaderStructCount; x++)
+    {
+        memorySystem.RemovePtrBuffer(shader.ShaderStructList[x].ShaderStructBuffer);
+    }
 }
 
 void Shader_DestroyShaderBindingData(ShaderModule& shader)
@@ -454,6 +463,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         .ShaderBufferSize = bufferSize,
         .ShaderBufferVariableListCount = shaderVariables.size(),
         .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
+        .ShaderStructBuffer =  memorySystem.AddPtrBuffer<byte>(bufferSize, __FILE__, __LINE__, __func__,  ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str())
     };
 }
 

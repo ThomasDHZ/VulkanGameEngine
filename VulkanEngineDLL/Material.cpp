@@ -3,10 +3,13 @@
 
 Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct, const char* jsonString)
 {
-    materialBuffer = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderStruct.ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-        VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
+    materialBuffer = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderStruct.ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | 
+                                                                                                                                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | 
+                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+                                                                                                                                                                    VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
     nlohmann::json json = Json::ReadJson(jsonString);
     return Material
     {
@@ -33,9 +36,9 @@ Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferInd
 }
 
 
-void Material_UpdateBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct, MaterialProperitiesBuffer& materialProperties)
+void Material_UpdateBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct)
 {
-    VulkanBuffer_UpdateBufferMemory(renderer, materialBuffer, static_cast<void*>(&materialProperties), shaderStruct.ShaderBufferSize, 1);
+    VulkanBuffer_UpdateBufferMemory(renderer, materialBuffer, shaderStruct.ShaderStructBuffer, shaderStruct.ShaderBufferSize, 1);
 }
 
 void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer)

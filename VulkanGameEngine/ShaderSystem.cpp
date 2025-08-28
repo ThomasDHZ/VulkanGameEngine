@@ -132,20 +132,17 @@ void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
     }
 
     size_t offset = 0;
-    ShaderStruct shaderStruct = PipelineShaderStructMap[vulkanBufferId];
-    void* structStagingBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str());
+    ShaderStruct& shaderStruct = PipelineShaderStructMap[vulkanBufferId];
     Span<ShaderVariable> shaderStructVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
     for (const auto& shaderStrucVar : shaderStructVarList)
     {
         offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
-        void* dest = static_cast<byte*>(structStagingBuffer) + offset;
+        void* dest = static_cast<byte*>(shaderStruct.ShaderStructBuffer) + offset;
         memcpy(dest, shaderStrucVar.Value, shaderStrucVar.Size);
         offset += shaderStrucVar.Size;
     }
-
     VulkanBuffer& vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
-    VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, vulkanBuffer, structStagingBuffer, shaderStruct.ShaderBufferSize, 1);
-    memorySystem.RemovePtrBuffer(structStagingBuffer);
+    VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, vulkanBuffer, shaderStruct.ShaderStructBuffer, shaderStruct.ShaderBufferSize, 1);
 }
 
 ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& pushConstantName)
