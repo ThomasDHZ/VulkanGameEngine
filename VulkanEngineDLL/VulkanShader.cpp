@@ -93,6 +93,20 @@ VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const Strin
     return Shader_CreateShader(shaderModule, shaderStages);
 }
 
+void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount)
+{
+    size_t offset = 0;
+    Span<ShaderVariable> shaderStructVarList(shaderStruct->ShaderBufferVariableList, shaderStruct->ShaderBufferVariableListCount);
+    for (const auto& shaderStrucVar : shaderStructVarList)
+    {
+        offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
+        void* dest = static_cast<byte*>(shaderStruct->ShaderStructBuffer) + offset;
+        memcpy(dest, shaderStrucVar.Value, shaderStrucVar.Size);
+        offset += shaderStrucVar.Size;
+    }
+    VulkanBuffer_UpdateBufferMemory(renderer, vulkanBuffer, shaderStruct->ShaderStructBuffer, shaderStruct->ShaderBufferSize, shaderCount);
+}
+
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)
 {
     int strLength = WideCharToMultiByte(CP_UTF8, 0, lpcwszStr, -1, nullptr, 0, nullptr, nullptr);

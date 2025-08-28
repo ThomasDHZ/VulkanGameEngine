@@ -19,7 +19,7 @@ Mesh Mesh_CreateMesh(const GraphicsRenderer& renderer, const MeshLoader& meshLoa
 	return mesh;
 }
 
-void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& meshPropertiesBuffer, uint32 shaderMaterialBufferIndex, const float& deltaTime)
+void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime)
 {
 	const vec3 LastMeshPosition = mesh.MeshPosition;
 	const vec3 LastMeshRotation = mesh.MeshRotation;
@@ -48,13 +48,10 @@ void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer&
 		MeshMatrix = glm::scale(MeshMatrix, mesh.MeshScale);
 	}
 
-	MeshPropertiesStruct meshProperties = MeshPropertiesStruct
-	{
-		.ShaderMaterialBufferIndex = shaderMaterialBufferIndex,
-		.MeshTransform = GameObjectMatrix * MeshMatrix,
-	};
-
-	VulkanBuffer_UpdateBufferMemory(renderer, meshPropertiesBuffer, static_cast<void*>(&meshProperties), sizeof(MeshPropertiesStruct), 1);
+	Span<ShaderVariable> shaderVariableList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+	memcpy(Shader_SearchShaderStructhVar(shaderStruct, "MaterialIndex")->Value, &shaderMaterialBufferIndex, sizeof(uint));
+	memcpy(Shader_SearchShaderStructhVar(shaderStruct, "MeshTransform")->Value, &GameObjectMatrix, sizeof(mat4));
+	Shader_UpdateShaderBuffer(renderer, meshPropertiesBuffer, &shaderStruct, 1);
 }
 
 void Mesh_DestroyMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer)

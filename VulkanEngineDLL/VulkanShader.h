@@ -20,6 +20,7 @@ extern "C"
 DLL_EXPORT void Shader_StartUp();
 DLL_EXPORT ShaderModule Shader_GetShaderData(const String& spvPath);
 DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
+DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
 DLL_EXPORT Vector<ShaderPushConstant> Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module);
 DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 DLL_EXPORT void Shader_ShaderDestroy(ShaderModule& shader);

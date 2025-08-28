@@ -131,18 +131,9 @@ void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
         return;
     }
 
-    size_t offset = 0;
     ShaderStruct& shaderStruct = PipelineShaderStructMap[vulkanBufferId];
-    Span<ShaderVariable> shaderStructVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
-    for (const auto& shaderStrucVar : shaderStructVarList)
-    {
-        offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
-        void* dest = static_cast<byte*>(shaderStruct.ShaderStructBuffer) + offset;
-        memcpy(dest, shaderStrucVar.Value, shaderStrucVar.Size);
-        offset += shaderStrucVar.Size;
-    }
-    VulkanBuffer& vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
-    VulkanBuffer_UpdateBufferMemory(renderSystem.renderer, vulkanBuffer, shaderStruct.ShaderStructBuffer, shaderStruct.ShaderBufferSize, 1);
+    VulkanBuffer& vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId); 
+    Shader_UpdateShaderBuffer(renderSystem.renderer, vulkanBuffer, &shaderStruct, 1);
 }
 
 ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& pushConstantName)
