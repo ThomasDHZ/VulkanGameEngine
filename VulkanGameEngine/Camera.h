@@ -2,6 +2,7 @@
 #include "CVulkanRenderer.h"
 #include "Typedef.h"
 #include "SceneDataBuffer.h"
+#include "ShaderSystem.h"
 
 class Camera
 {
@@ -21,7 +22,7 @@ public:
 	Camera();
 	virtual ~Camera();
 
-	virtual void Update(SceneDataBuffer& sceneDataBuffer) = 0;
+	virtual void Update(ShaderPushConstant& sceneDataBuffer) = 0;
 	virtual void UpdateKeyboard(float deltaTime) = 0;
 	virtual void UpdateMouse() = 0;
 

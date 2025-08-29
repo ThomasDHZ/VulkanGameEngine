@@ -9,6 +9,10 @@ struct MemoryLeakPtr
     size_t PtrElements;      
     bool isArray;           
     String DanglingPtrMessage;
+    String File;
+    String Line;
+    String Function;
+    String Notes;
 };
 
 extern "C" 
@@ -57,10 +61,17 @@ public:
     T* AddPtrBuffer(T* elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
     {
         std::lock_guard<std::mutex> lock(Mutex);
-
         MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, func, notes);
+        if (!memoryLeakPtr.PtrAddress) {
+            std::cerr << "Failed to allocate memory for " << notes << " at " << file << ":" << line << std::endl;
+            return nullptr;
+        }
+        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
+        for (size_t i = 0; i < elementCount; ++i) {
+            new (&buffer[i]) T(elementData[i]);
+        }
         PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
+        return buffer;
     }
 
     template <class T>

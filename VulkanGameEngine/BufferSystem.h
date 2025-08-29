@@ -10,18 +10,17 @@
 class VulkanBufferSystem
 {
 private:
-	
+
 
 	template <typename T>
-	BufferTypeEnum GetBufferType() 
+	BufferTypeEnum GetBufferType()
 	{
 		if constexpr (std::is_same_v<T, uint32>) { return BufferType_UInt; }
 		else if constexpr (std::is_same_v<T, mat4>) { return BufferType_Mat4; }
-		else if constexpr (std::is_same_v<T, MaterialProperitiesBuffer>) { return BufferType_MaterialProperitiesBuffer; }
 		else if constexpr (std::is_same_v<T, MeshPropertiesStruct>) { return BufferType_MeshPropertiesStruct; }
 		else if constexpr (std::is_same_v<T, SpriteInstanceStruct>) { return BufferType_SpriteInstanceStruct; }
 		else if constexpr (std::is_same_v<T, Vertex2D>) { return BufferType_Vector2D; }
-		else 
+		else
 		{
 			throw std::runtime_error("Buffer type doesn't match");
 		}
@@ -110,12 +109,12 @@ public:
 		return DataList;
 	}
 
-	const VulkanBuffer& FindVulkanBuffer(int id);
+	VulkanBuffer& FindVulkanBuffer(int id);
 	const Vector<VulkanBuffer>& VulkanBufferList();
 
 	void DestroyBuffer(const GraphicsRenderer& renderer, int vulkanBufferId);
 	void DestroyAllBuffers();
-	
+
 	static VkResult CopyBuffer(const GraphicsRenderer& renderer, VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size)
 	{
 		return Buffer_CopyBuffer(renderer, srcBuffer, dstBuffer, size);

@@ -1,8 +1,10 @@
 {
   "Name": "LevelObjectPickerPipeline",
   "PipelineId": "241a46da-4621-4574-9eb4-7c3509f18710",
-  "VertexShader": "..\\Shaders\\LevelObjectPickerShader2DVert.spv",
-  "FragmentShader": "..\\Shaders\\LevelObjectPickerShader2DFrag.spv",
+  "ShaderList": [
+    "..\\Shaders\\LevelObjectPickerShader2DVert.spv",
+    "..\\Shaders\\LevelObjectPickerShader2DFrag.spv"
+  ],
   "VertexType": 1,
   "ViewportList": [
     {

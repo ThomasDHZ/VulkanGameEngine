@@ -29,7 +29,10 @@ extern "C"
             .PtrAddress = memory,
             .PtrElements = elementCount,
             .isArray = elementCount > 1,
-            .DanglingPtrMessage = "Ptr failed to delete at File: " + String(file) + " Line: " + std::to_string(line) + " Function: " + String(func) + " Notes: " + notes
+            .File = file,
+            .Line = std::to_string(line),
+            .Function = func,
+            .Notes = notes
         };
     }
 
@@ -49,10 +52,29 @@ extern "C"
                 GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
                 WORD originalAttributes = consoleInfo.wAttributes;
 
+                size_t pos = ptr->File.find_last_of("\\/");
+                String filename = (pos == String::npos) ? ptr->File : ptr->File.substr(pos + 1);
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "Error: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << ptr->DanglingPtrMessage << std::endl;
+                std::cout << "Memory Leak at: ";
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << "File: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << filename;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " Line: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << ptr->Line;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " Function: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << ptr->Function;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " Notes: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << ptr->Notes << std::endl;
             }
         }
     }

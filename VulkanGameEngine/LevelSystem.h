@@ -38,7 +38,6 @@ public:
 	RenderPassGuid						levelRenderPass2DId;
 	RenderPassGuid						spriteRenderPass2DId;
 	RenderPassGuid   					frameBufferId;
-	SceneDataBuffer												  SceneProperties;
 	SharedPtr<OrthographicCamera2D>								  OrthographicCamera;
 
 	LevelLayout                                                   levelLayout;

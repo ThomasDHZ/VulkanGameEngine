@@ -358,50 +358,33 @@ namespace nlohmann
     void from_json(const json& j, RenderPipelineLoader& model)
     {
         j.at("PipelineId").get_to(model.PipelineId);
-        j.at("VertexShader").get_to(model.VertexShaderPath);
-        j.at("FragmentShader").get_to(model.FragmentShaderPath);
-        j.at("VertexType").get_to(model.VertexType);
         j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
         j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
         j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
         j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
 
-        for (int x = 0; x < j.at("PipelineColorBlendAttachmentStateList").size(); x++)
+        model.PipelineColorBlendAttachmentStateCount = j.at("PipelineColorBlendAttachmentStateList").size();
+        model.PipelineColorBlendAttachmentStateList = memorySystem.AddPtrBuffer<VkPipelineColorBlendAttachmentState>(model.PipelineColorBlendAttachmentStateCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.PipelineColorBlendAttachmentStateCount; x++)
         {
-            model.PipelineColorBlendAttachmentStateList.emplace_back(j.at("PipelineColorBlendAttachmentStateList")[x]);
+            model.PipelineColorBlendAttachmentStateList[x] = j.at("PipelineColorBlendAttachmentStateList")[x];
         }
 
-        for (int x = 0; x < j.at("PipelineDescriptorModelsList").size(); x++)
+        model.ViewportCount = j.at("ViewportList").size();
+        model.ViewportList = memorySystem.AddPtrBuffer<VkViewport>(model.ViewportCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.ViewportCount; x++)
         {
-            model.PipelineDescriptorModelsList.emplace_back(j.at("PipelineDescriptorModelsList")[x]);
-
+            model.ViewportList[x] = j.at("ViewportList")[x];
         }
 
-        if (j.contains("ViewportList"))
+        model.ScissorCount = j.at("ScissorList").size();
+        model.ScissorList = memorySystem.AddPtrBuffer<VkRect2D>(model.ScissorCount, __FILE__, __LINE__, __func__);
+        for (int x = 0; x < model.ScissorCount; x++)
         {
-            for (int x = 0; x < j.at("ViewportList").size(); x++)
-            {
-                model.ViewportList.emplace_back(j.at("ViewportList")[x]);
-            }
-        }
-
-        if (j.contains("ScissorList"))
-        {
-            for (int x = 0; x < j.at("ScissorList").size(); x++)
-            {
-                model.ScissorList.emplace_back(j.at("ScissorList")[x]);
-            }
-        }
-
-        for (int x = 0; x < j.at("VertexInputBindingDescriptionList").size(); x++)
-        {
-            model.VertexInputBindingDescriptionList.emplace_back(model.VertexInputBindingDescriptionList.emplace_back(j.at("VertexInputBindingDescriptionList")[x]));
-        }
-
-        for (int x = 0; x < j.at("VertexInputAttributeDescriptionList").size(); x++)
-        {
-            model.VertexInputAttributeDescriptionList.emplace_back(j.at("VertexInputAttributeDescriptionList")[x]);
+            model.ScissorList[x] = j.at("ScissorList")[x];
         }
     }
+
 }
+

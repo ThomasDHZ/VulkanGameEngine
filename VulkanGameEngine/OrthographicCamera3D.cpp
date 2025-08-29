@@ -50,7 +50,7 @@ OrthographicCamera3D::~OrthographicCamera3D()
 
 }
 
-void OrthographicCamera3D::Update(SceneDataBuffer& sceneDataBuffer)
+void OrthographicCamera3D::Update(ShaderPushConstant& sceneDataBuffer)
 {
 	mat4 transform = glm::translate(mat4(1.0f), Position) * rotate(mat4(1.0f), glm::radians(0.0f), vec3(0, 0, 1));
 	ViewMatrix = glm::inverse(transform);
@@ -61,9 +61,10 @@ void OrthographicCamera3D::Update(SceneDataBuffer& sceneDataBuffer)
 
 	ViewScreenSize = vec2((Aspect * Zoom) * 2, (1.0f * Zoom) * 2);
 
-	sceneDataBuffer.CameraPosition = Position;
-	sceneDataBuffer.View = ViewMatrix;
-	sceneDataBuffer.Projection = ProjectionMatrix;
+	mat4 view = mat4(1.0f);
+	//shaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "Projection")->Value = static_cast<byte*>(&ProjectionMatrix);
+	//shaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "View")->Value = static_cast<void*>(&view);
+	//shaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "CameraPosition")->Value = static_cast<void*>(&Position);
 }
 
 void OrthographicCamera3D::UpdateKeyboard(float deltaTime)

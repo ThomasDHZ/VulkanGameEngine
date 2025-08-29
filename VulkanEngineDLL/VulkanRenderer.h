@@ -42,24 +42,6 @@ static Vector<VkValidationFeatureDisableEXT> disabledList =
 	VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT
 };
 
-struct GPUIncludes
-{
-	VkDescriptorBufferInfo* VertexProperties;
-	VkDescriptorBufferInfo* IndexProperties;
-	VkDescriptorBufferInfo* TransformProperties;
-	VkDescriptorBufferInfo* MeshProperties;
-	VkDescriptorBufferInfo* LevelLayerMeshProperties;
-	VkDescriptorImageInfo* TexturePropertiesList;
-	VkDescriptorBufferInfo* MaterialProperties;
-	size_t VertexPropertiesCount;
-	size_t IndexPropertiesCount;
-	size_t TransformPropertiesCount;
-	size_t MeshPropertiesCount;
-	size_t LevelLayerMeshPropertiesCount;
-	size_t TexturePropertiesListCount;
-	size_t MaterialPropertiesCount;
-};
-
 struct GraphicsRenderer
 {
 	VkInstance         Instance;

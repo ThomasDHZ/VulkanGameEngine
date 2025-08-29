@@ -82,6 +82,7 @@ void GameSystem::Draw(const float& deltaTime)
 
 void GameSystem::Destroy()
 {
+    shaderSystem.Destroy();
     textureSystem.DestroyAllTextures();
     materialSystem.DestroyAllMaterials();
     levelSystem.DestoryLevel();
