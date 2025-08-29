@@ -104,6 +104,7 @@ struct ShaderPushConstant
     String			PushConstantName;
     size_t			PushConstantSize = 0;
     size_t			PushConstantVariableListCount = 0;
+    VkShaderStageFlags ShaderStageFlags;
     ShaderVariable* PushConstantVariableList = nullptr;
     void*           PushConstantBuffer = nullptr;
     bool			GlobalPushContant = false;

@@ -166,7 +166,7 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLo
     {
         pushConstantRangeList.emplace_back(VkPushConstantRange
             {
-                .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                .stageFlags = renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].ShaderStageFlags,
                 .offset = 0,
                 .size = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize)
             });
@@ -201,10 +201,11 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .pVertexAttributeDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList
     };
 
-    Vector<VkViewport> viewPortList;
-    Vector<VkRect2D> scissorList;
+
     Vector<VkDynamicState> dynamicStateList;
-    if (renderPipelineLoader.ViewportList)
+    Vector<VkRect2D> scissorList(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
+    Vector<VkViewport> viewPortList(renderPipelineLoader.ViewportList, renderPipelineLoader.ViewportList + renderPipelineLoader.ViewportCount);
+    if (viewPortList.empty())
     {
         dynamicStateList = Vector<VkDynamicState>
         {
@@ -214,22 +215,19 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
     }
     else
     {
-        Vector<VkViewport> viewPortList = Vector<VkViewport>(renderPipelineLoader.ViewportList, renderPipelineLoader.ViewportList + renderPipelineLoader.ViewportCount);
         for (auto& viewPort : viewPortList)
         {
             viewPortList.emplace_back(VkViewport
                 {
                     .x = viewPort.x,
                     .y = viewPort.y,
-                    .width = static_cast<float>(viewPort.x),
-                    .height = static_cast<float>(viewPort.y),
+                    .width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x),
+                    .height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y),
                     .minDepth = viewPort.minDepth,
                     .maxDepth = viewPort.maxDepth
                 });
         }
-
-        Vector<VkRect2D> scissorList = Vector<VkRect2D>(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
-        for (auto& scissor : scissorList)
+        for (auto& viewPort : scissorList)
         {
             scissorList.emplace_back(VkRect2D
                 {
@@ -240,8 +238,8 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
                     },
                     .extent = VkExtent2D
                     {
-                        .width = static_cast<uint32>(scissor.extent.width),
-                        .height = static_cast<uint32>(scissor.extent.height)
+                        .width = static_cast<uint32>(renderPipelineLoader.RenderPassResolution.x),
+                        .height = static_cast<uint32>(renderPipelineLoader.RenderPassResolution.y)
                     }
                 });
         }

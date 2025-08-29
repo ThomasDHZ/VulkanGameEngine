@@ -342,14 +342,11 @@ void Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module, Ve
         else
         {
             auto it = std::find_if(shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.data() + shaderDescriptorSetBinding.size(),
-                [&](const ShaderDescriptorBinding& var) {
+                [&](ShaderDescriptorBinding& var) {
+                    var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
                     return var.Name == descriptorBinding->name;
                 }
             );
-
-            if (it != shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.size()) {
-                it->ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
-            }
         }
     }
 }
@@ -583,8 +580,18 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                     .PushConstantName = String(pushConstant->name),
                     .PushConstantSize = bufferSize,
                     .PushConstantVariableListCount = shaderVariables.size(),
+                    .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                     .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__),
                 });
+        }
+        else
+        {
+            auto it = std::find_if(shaderPushConstantList.data(), shaderPushConstantList.data() + shaderPushConstantList.size(),
+                [&](ShaderPushConstant& var) {
+                    var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
+                    return var.PushConstantName == pushConstant->name;
+                }
+            );
         }
     }
 }
