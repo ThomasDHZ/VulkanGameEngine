@@ -85,16 +85,5 @@
     "sType": 20,
     "topology": 3,
     "primitiveRestartEnable": 0
-  },
-  "PipelineDescriptorModelsList": [
-    {
-      "BindingNumber": 0,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 1,
-      "DescriptorType": 1,
-      "StageFlags": 2147483647
-    }
-  ],
-  "VertexInputBindingDescriptionList": [],
-  "VertexInputAttributeDescriptionList": []
+  }
 }

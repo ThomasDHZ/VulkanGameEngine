@@ -89,49 +89,5 @@
     "sType": 20,
     "topology": 3,
     "primitiveRestartEnable": 0
-  },
-  "PipelineDescriptorModelsList": [
-    {
-      "BindingNumber": 0,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 0,
-      "DescriptorType": 7,
-      "StageFlags": 2147483647
-    },
-    {
-      "BindingNumber": 1,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 1,
-      "DescriptorType": 1,
-      "StageFlags": 2147483647
-    },
-    {
-      "BindingNumber": 2,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 2,
-      "DescriptorType": 7,
-      "StageFlags": 2147483647
-    }
-  ],
-  "VertexInputBindingDescriptionList": [
-    {
-      "binding": 0,
-      "stride": 16,
-      "inputRate": 0
-    }
-  ],
-  "VertexInputAttributeDescriptionList": [
-    {
-      "location": 0,
-      "binding": 0,
-      "format": 103,
-      "offset": 0
-    },
-    {
-      "location": 1,
-      "binding": 0,
-      "format": 103,
-      "offset": 8
-    }
-  ]
+  }
 }
