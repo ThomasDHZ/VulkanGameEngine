@@ -4,7 +4,7 @@ int VulkanBufferSystem::NextBufferId = 0;
 
 VulkanBufferSystem bufferSystem = VulkanBufferSystem();
 
-const VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
+VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
 {
     auto it = VulkanBufferMap.find(id);
     if (it != VulkanBufferMap.end())
@@ -26,13 +26,13 @@ const Vector<VulkanBuffer>& VulkanBufferSystem::VulkanBufferList()
 
 void VulkanBufferSystem::DestroyBuffer(const GraphicsRenderer& renderer, int vulkanBufferId)
 {
-	VulkanBuffer_DestroyBuffer(renderer, VulkanBufferMap[vulkanBufferId]);
+    VulkanBuffer_DestroyBuffer(renderer, VulkanBufferMap[vulkanBufferId]);
 }
 
 void VulkanBufferSystem::DestroyAllBuffers()
 {
-	for (auto& buffer : VulkanBufferMap)
-	{
-		VulkanBuffer_DestroyBuffer(renderSystem.renderer, buffer.second);
-	}
+    for (auto& buffer : VulkanBufferMap)
+    {
+        VulkanBuffer_DestroyBuffer(renderSystem.renderer, buffer.second);
+    }
 }

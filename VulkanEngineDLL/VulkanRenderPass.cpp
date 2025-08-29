@@ -1,7 +1,7 @@
 #include "VulkanRenderPass.h"
 #include "../VulkanGameEngine/SceneDataBuffer.h"
 
-VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, int ConstBuffer, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
     const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
     RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
@@ -17,7 +17,7 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
         }
     }
 
-    VulkanRenderPass* vulkanRenderPassPtr = new VulkanRenderPass
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
         .SampleCount = VK_SAMPLE_COUNT_1_BIT,
@@ -30,38 +30,19 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
     };
 
     Vector<Texture> renderedTextureList;
-    vulkanRenderPassPtr->RenderPass = RenderPass_BuildRenderPass(renderer, renderPassLoader, renderedTextureList, depthTexture);
+    vulkanRenderPass.RenderPass = RenderPass_BuildRenderPass(renderer, renderPassLoader, renderedTextureList, depthTexture);
     RenderPass_BuildRenderPassAttachments(renderer, renderPassLoader, renderedTextureList, depthTexture);
-    Vector<VkFramebuffer> frameBufferList = RenderPass_BuildFrameBuffer(renderer, *vulkanRenderPassPtr, renderedTextureList, depthTexture);
-    RenderPass_CreateCommandBuffers(renderer, &vulkanRenderPassPtr->CommandBuffer, 1);
+    Vector<VkFramebuffer> frameBufferList = RenderPass_BuildFrameBuffer(renderer, vulkanRenderPass, renderedTextureList, depthTexture);
+    RenderPass_CreateCommandBuffers(renderer, &vulkanRenderPass.CommandBuffer, 1);
 
-    vulkanRenderPassPtr->InputTextureIdList = nullptr;
-    if (renderPassLoader.InputTextureList.size() > 0)
-    {
-        vulkanRenderPassPtr->InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(vulkanRenderPassPtr->InputTextureIdList, renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size() * sizeof(VkGuid));
-    }
-
-    vulkanRenderPassPtr->ClearValueList = nullptr;
-    if (renderPassLoader.ClearValueList.size() > 0)
-    {
-        vulkanRenderPassPtr->ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(vulkanRenderPassPtr->ClearValueList, renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size() * sizeof(VkClearValue));
-    }
-
-    vulkanRenderPassPtr->FrameBufferList = nullptr;
-    if (frameBufferList.size() > 0)
-    {
-        vulkanRenderPassPtr->FrameBufferCount = frameBufferList.size();
-        vulkanRenderPassPtr->FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(vulkanRenderPassPtr->FrameBufferList, frameBufferList.data(), frameBufferList.size() * sizeof(VkFramebuffer));
-    }
+    vulkanRenderPass.FrameBufferCount = frameBufferList.size();
+    vulkanRenderPass.InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.data(), frameBufferList.size(), __FILE__, __LINE__, __func__);
 
     renderedTextureCount = renderedTextureList.size();
     renderedTextureListPtr = *renderedTextureList.data();
 
-    VulkanRenderPass vulkanRenderPass = *vulkanRenderPassPtr;
-    delete vulkanRenderPassPtr;
     return vulkanRenderPass;
 }
 
@@ -81,9 +62,9 @@ VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, V
 
     Vector<Texture> renderedTextureList;
     Vector<VkFramebuffer> frameBufferList;
-    Renderer_DestroyFrameBuffers(renderer.Device, vulkanRenderPass.FrameBufferList, renderer.SwapChainImageCount);    
-    if(vulkanRenderPass.IsRenderedToSwapchain)
-    { 
+    Renderer_DestroyFrameBuffers(renderer.Device, vulkanRenderPass.FrameBufferList, renderer.SwapChainImageCount);
+    if (vulkanRenderPass.IsRenderedToSwapchain)
+    {
         vulkanRenderPass.RenderPassResolution = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
         renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
 
@@ -101,26 +82,9 @@ VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, V
         frameBufferList = RenderPass_BuildFrameBuffer(renderer, vulkanRenderPass, renderedTextureList, depthTexture);
     }
 
-    vulkanRenderPass.InputTextureIdList = nullptr;
-    if (renderPassLoader.InputTextureList.size() > 0)
-    {
-        vulkanRenderPass.InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(vulkanRenderPass.InputTextureIdList, renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size() * sizeof(VkGuid));
-    }
-
-    vulkanRenderPass.ClearValueList = nullptr;
-    if (renderPassLoader.ClearValueList.size() > 0)
-    {
-        vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(vulkanRenderPass.ClearValueList, renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size() * sizeof(VkClearValue));
-    }
-
-    vulkanRenderPass.FrameBufferList = nullptr;
-    if (frameBufferList.size() > 0)
-    {
-        vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.size(), __FILE__, __LINE__, __func__);
-        std::memcpy(vulkanRenderPass.FrameBufferList, frameBufferList.data(), frameBufferList.size() * sizeof(VkFramebuffer));
-    }
+    vulkanRenderPass.InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.data(), frameBufferList.size(), __FILE__, __LINE__, __func__);
 
     renderedTextureCount = renderedTextureList.size();
     renderedTextureListPtr = *renderedTextureList.data();
@@ -139,9 +103,8 @@ void VulkanRenderPass_DestoryRenderPassSwapChainTextures(GraphicsRenderer& rende
     renderedTextureList.clear();
 }
 
-void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass)
 {
-    VulkanRenderPass_DestoryRenderPassSwapChainTextures(renderer, renderedTextureListPtr, renderedTextureCount, depthTexture);
     Renderer_DestroyRenderPass(renderer.Device, &renderPass.RenderPass);
     Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &renderPass.CommandBuffer, 1);
     Renderer_DestroyFrameBuffers(renderer.Device, &renderPass.FrameBufferList[0], renderer.SwapChainImageCount);

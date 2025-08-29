@@ -22,6 +22,12 @@
     <Filter Include="Source Files\Json">
       <UniqueIdentifier>{bcd37c45-5d22-402c-a107-80944fac346e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\External">
+      <UniqueIdentifier>{64398007-2efd-4601-b096-040e6de1c989}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\spirv">
+      <UniqueIdentifier>{6e7cf11a-ca1e-4d76-b2d5-9d09da5013d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLL.h">
@@ -31,9 +37,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Macro.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanWindow.h">
@@ -135,7 +138,7 @@
     <ClInclude Include="MemorySystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderCompiler.h">
+    <ClInclude Include="VulkanShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Sprite.h">
@@ -153,11 +156,14 @@
     <ClInclude Include="ImGuiRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="VulkanError.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanWindow.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -257,7 +263,7 @@
     <ClCompile Include="MemorySystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderCompiler.cpp">
+    <ClCompile Include="VulkanShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sprite.cpp">
@@ -267,6 +273,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
+      <Filter>Source Files\spirv</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.c">
+      <Filter>Source Files\spirv</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanError.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

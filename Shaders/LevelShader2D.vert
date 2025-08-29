@@ -5,6 +5,10 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
+layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
+layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
+layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
+
 layout (location = 0)  in vec2  VS_Position;
 layout (location = 1)  in vec2  VS_UV;
 
@@ -18,40 +22,41 @@ layout(push_constant) uniform SceneDataBuffer {
     vec3 CameraPosition;
 } sceneData;
 
-//InputParams(DescriptorBindingPropertiesEnum = kMeshPropertiesDescriptor)
-layout(binding = 0) buffer meshPropertiesBuffer
+struct MeshProperitiesBuffer
 {
 	int	   MaterialIndex;
 	mat4   MeshTransform;
-} meshProperties[];
+};
 
-//InputParams(DescriptorBindingPropertiesEnum = kTextureDescriptor)
+struct MaterialProperitiesBuffer
+{
+	vec3 Albedo;
+	float Metallic;
+	float Roughness;
+	float AmbientOcclusion;
+	vec3 Emission;
+	float Alpha;
+
+	uint AlbedoMap;
+	uint MetallicRoughnessMap;
+	uint MetallicMap;
+	uint RoughnessMap;
+	uint AmbientOcclusionMap;
+	uint NormalMap;
+	uint DepthMap;
+	uint AlphaMap;
+	uint EmissionMap;
+	uint HeightMap;
+};
+
+layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
-
-//InputParams(DescriptorBindingPropertiesEnum = kMaterialDescriptor)
-layout(binding = 2) uniform MaterialPropertiesBuffer {
-    vec3 Albedo;
-    float Metallic;
-    float Roughness;
-    float AmbientOcclusion;
-    vec3 Emission;
-    float Alpha;
-    uint AlbedoMap;
-    uint MetallicRoughnessMap;
-    uint MetallicMap;
-    uint RoughnessMap;
-    uint AmbientOcclusionMap;
-    uint NormalMap;
-    uint DepthMap;
-    uint AlphaMap;
-    uint EmissionMap;
-    uint HeightMap;
-} materialBuffer[];
+layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main()
 {
     int meshIndex = sceneData.MeshBufferIndex;
-    mat4 meshTransform = meshProperties[meshIndex].MeshTransform;
+    mat4 meshTransform = meshBuffer[meshIndex].meshProperties.MeshTransform;
 
     PS_Position = vec3(meshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
 	PS_UV = VS_UV.xy;

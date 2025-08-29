@@ -1,54 +1,122 @@
 #version 460
-#extension GL_ARB_separate_shader_objects : enable
-#extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
+#extension GL_EXT_nonuniform_qualifier : enable 
 
-layout (location = 0) in vec3       PS_Position;
-layout (location = 1) in vec2       PS_UV;
-layout (location = 2) in vec2       PS_SpriteSize;
-layout (location = 3) in flat ivec2 PS_FlipSprite;
-layout (location = 4) in vec4       PS_Color;
-layout (location = 5) in flat uint  PS_MaterialID;
-layout (location = 6) in flat vec4  PS_UVOffset;
-layout (location = 7) in flat vec4  PS_Guid;
-
-layout(location = 0) out vec4 OutputColor;
-
-layout(push_constant) uniform SceneDataBuffer
+struct Attribute 
 {
-	int	 MeshBufferIndex;
-	mat4 Projection;
-	mat4 View;
-	vec3 CameraPosition;
-}sceneData;
+    uint location;   // Shader location (e.g., 4 for pos)
+    uint binding;    // Binding index
+    uint format;     // e.g., 103=R32G32_SFLOAT
+    uint offset;     // Offset in buffer
+};
 
-layout(binding = 0) buffer MeshProperitiesBuffer
-{
-	int	   MaterialIndex;
-	mat4   MeshTransform;
-} meshProperities[];
-layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperitiesBuffer {
-    vec3 Albedo;
-    float Metallic;
-    float Roughness;
-    float AmbientOcclusion;
-    vec3 Emission;
-    float Alpha;
-    uint AlbedoMap;
-    uint MetallicRoughnessMap;
-    uint MetallicMap;
-    uint RoughnessMap;
-    uint AmbientOcclusionMap;
-    uint NormalMap;
-    uint DepthMap;
-    uint AlphaMap;
-    uint EmissionMap;
-    uint HeightMap;
-} materialBuffer[];
+layout(binding = 0) uniform UpdateInfo {
+    uint numAttributes;
+    uint numBindings;
+    uint numVertices;
+    uint strides[16];  // Max 16 bindings
+    Attribute attributes[32];  // Max 32 attributes
+    uint attributesToUpdate[8]; // Indices into attributes[] to update (e.g., pos, normal)
+    uint numAttributesToUpdate;
+    vec4 updateParams; // Example: displacement for pos
+} updateInfo;
+layout(binding = 1) buffer VertexBuffers { uint data[]; } vertexBuffers[];
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 void main() 
 {
-    OutputColor = PS_Guid;
+    uint vertexIdx = gl_GlobalInvocationID.x;
+    if (vertexIdx >= updateInfo.numVertices) return;
+
+    for (uint x = 0; x < updateInfo.numAttributesToUpdate; ++x) 
+    {
+        uint attrIdx = updateInfo.attributesToUpdate[x];
+        Attribute attr = updateInfo.attributes[attrIdx];
+        uint binding = attr.binding;
+        uint offset = attr.offset;
+        uint stride = updateInfo.strides[binding];
+        uint idx = vertexIdx * stride / 4 + offset / 4;
+        switch (attr.format) 
+        {
+           case 98: //VK_FORMAT_R32_UINT
+           {
+                vertexBuffers[binding].data[idx]     = idx;
+                break;
+           }
+           case 101: //VK_FORMAT_R32G32_UINT
+           {
+                vertexBuffers[binding].data[idx]     = idx;
+                vertexBuffers[binding].data[idx + 1] = idx + 1;
+                break;
+           }
+           case 104: //VK_FORMAT_R32G32B32_UINT
+           {
+                vertexBuffers[binding].data[idx]     = idx;
+                vertexBuffers[binding].data[idx + 1] = idx + 1;
+                vertexBuffers[binding].data[idx + 2] = idx + 2;
+                break;
+           }
+           case 107: // VK_FORMAT_R32G32B32A32_UINT
+           {
+                vertexBuffers[binding].data[idx]     = idx;
+                vertexBuffers[binding].data[idx + 1] = idx + 1;
+                vertexBuffers[binding].data[idx + 2] = idx + 2;
+                vertexBuffers[binding].data[idx + 3] = idx + 3;
+                break;
+           }
+           case 99: //VK_FORMAT_R32_SINT
+           {
+                vertexBuffers[binding].data[idx]    = uint(idx);
+                break;
+           }
+           case 102: //VK_FORMAT_R32G32_SINT
+           {
+                vertexBuffers[binding].data[idx]     = uint(idx);
+                vertexBuffers[binding].data[idx + 1] = uint(idx + 1);
+                break;
+           }
+           case 105: //VK_FORMAT_R32G32B32_SINT
+           {
+                vertexBuffers[binding].data[idx]     = uint(idx);
+                vertexBuffers[binding].data[idx + 1] = uint(idx + 1);
+                vertexBuffers[binding].data[idx + 2] = uint(idx + 2);
+                break;
+           }
+           case 108: //VK_FORMAT_R32G32B32A32_SINT
+           {
+                vertexBuffers[binding].data[idx]     = uint(idx);
+                vertexBuffers[binding].data[idx + 1] = uint(idx + 1);
+                vertexBuffers[binding].data[idx + 2] = uint(idx + 2);
+                vertexBuffers[binding].data[idx + 3] = uint(idx + 3);
+                break;
+           }
+           case 100: //VK_FORMAT_R32_SFLOAT
+           {
+                vertexBuffers[binding].data[idx] =     floatBitsToUint(uintBitsToFloat(idx));
+                break;
+           }
+           case 103: //VK_FORMAT_R32G32_SFLOAT
+           {
+                vertexBuffers[binding].data[idx]     = floatBitsToUint(uintBitsToFloat(idx));
+                vertexBuffers[binding].data[idx + 1] = floatBitsToUint(uintBitsToFloat(idx + 1));
+                break;
+           }
+           case 106: //VK_FORMAT_R32G32B32_SFLOAT
+           {
+                vertexBuffers[binding].data[idx] =     floatBitsToUint(uintBitsToFloat(idx));
+                vertexBuffers[binding].data[idx + 1] = floatBitsToUint(uintBitsToFloat(idx + 1));
+                vertexBuffers[binding].data[idx + 2] = floatBitsToUint(uintBitsToFloat(idx + 2));
+                break;
+           }
+           case 109: // VK_FORMAT_R32G32B32A32_SFLOAT
+           {
+                vertexBuffers[binding].data[idx] =     floatBitsToUint(uintBitsToFloat(idx));
+                vertexBuffers[binding].data[idx + 1] = floatBitsToUint(uintBitsToFloat(idx + 1));
+                vertexBuffers[binding].data[idx + 2] = floatBitsToUint(uintBitsToFloat(idx + 2));
+                vertexBuffers[binding].data[idx + 3] = floatBitsToUint(uintBitsToFloat(idx + 3));
+                break;
+           }
+        }
+    }
 }

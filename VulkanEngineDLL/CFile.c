@@ -54,38 +54,37 @@ char* File_GetFileExtention(const char* fileName)
     return extension;
 }
 
-char* File_GetFileNameFromPath(const char* fileName)
+char* File_GetFileNameFromPath(const char* filePath)
 {
-    char baseFileName[256];
-    const char* lastDot = strrchr(fileName, '.');
-    const char* firstSlash = strchr(fileName, '/');
-    if (lastDot != NULL)
-    {
-        size_t length = lastDot - fileName;
-        if (firstSlash != NULL &&
-            firstSlash < lastDot)
-        {
-            length -= (firstSlash - fileName + 1);
-            strncpy(baseFileName, firstSlash + 1, length);
-        }
-        else
-        {
-            strncpy(baseFileName, fileName, length);
-        }
-        baseFileName[length] = '\0';
+    static char baseFileName[256];
+    const char* lastDot = strrchr(filePath, '.');
+    const char* lastSlashBack = strrchr(filePath, '\\');
+    const char* lastSlashSlash = strrchr(filePath, '/');
+
+    const char* lastSlash = lastSlashBack > lastSlashSlash ? lastSlashBack : lastSlashSlash;
+    const char* ch = "\\";
+    const char* lastBackslash = strrchr(filePath, '\\');
+
+    size_t startPos = 0;
+    if (lastSlash != NULL) {
+        startPos = lastSlash - filePath + 1;
     }
-    else
-    {
-        if (firstSlash != NULL)
-        {
-            strncpy(baseFileName, firstSlash + 1, strlen(firstSlash + 1));
-        }
-        else
-        {
-            strncpy(baseFileName, fileName, strlen(fileName));
-        }
-        baseFileName[strlen(baseFileName)] = '\0';
+
+    size_t endPos;
+    if (lastDot != NULL && lastDot > (filePath + startPos)) {
+        endPos = lastDot - filePath;
     }
+    else {
+        endPos = strlen(filePath);
+    }
+
+    size_t filenameLength = endPos - startPos;
+    if (filenameLength >= sizeof(baseFileName))
+        filenameLength = sizeof(baseFileName) - 1;
+
+    strncpy(baseFileName, filePath + startPos, filenameLength);
+    baseFileName[filenameLength] = '\0';
+
     return baseFileName;
 }
 

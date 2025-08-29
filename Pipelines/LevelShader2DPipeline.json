@@ -1,8 +1,10 @@
 {
   "Name": "LevelShader2DPipeline",
   "PipelineId": "a183b621-a8c3-46f1-bdbb-7f4a234f210e",
-  "VertexShader": "..\\Shaders\\LevelShader2DVert.spv",
-  "FragmentShader": "..\\Shaders\\LevelShader2DFrag.spv",
+  "ShaderList": [
+    "..\\Shaders\\LevelShader2DVert.spv",
+    "..\\Shaders\\LevelShader2DFrag.spv"
+  ],
   "VertexType": 1,
   "ViewportList": [
     {

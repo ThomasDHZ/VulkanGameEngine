@@ -57,9 +57,11 @@ int MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint3
 	};
 
 	Mesh mesh = Mesh_CreateMesh(renderSystem.renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
-		bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
-		bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
-		bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
+																   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+																   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+																   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
+	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = shaderSystem.FindShaderProtoTypeStruct("MeshProperitiesBuffer");
+	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderStructBufferId = meshLoader.MeshPropertiesLoader.PropertiesBufferId;
 	SpriteMeshMap[meshId] = mesh;
 	return meshId;
 }
@@ -105,14 +107,16 @@ int MeshSystem::CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& ve
 			.MeshPropertiesData = static_cast<void*>(&MeshMap[meshId].MeshProperties)
 		}
 	};
-
 	Vector<Mesh> meshList = Vector<Mesh>
 	{
 		Mesh_CreateMesh(renderSystem.renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
-											   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
-											   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
-											   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId])
+														   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+														   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+														   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId])
 	};
+																																	   
+	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = shaderSystem.FindShaderProtoTypeStruct("MeshProperitiesBuffer");
+	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderStructBufferId = meshLoader.MeshPropertiesLoader.PropertiesBufferId;
 	LevelLayerMeshListMap[levelId] = meshList;
 	return meshId;
 }
@@ -123,7 +127,8 @@ void MeshSystem::Update(const float& deltaTime)
 	{
 		VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[meshPair.second.PropertiesBufferId];
 		uint32 shaderMaterialBufferIndex = (meshPair.second.MaterialId != VkGuid()) ? materialSystem.FindMaterial(meshPair.second.MaterialId).ShaderMaterialBufferIndex : 0;
-		Mesh_UpdateMesh(renderSystem.renderer, meshPair.second, propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
+		Span<ShaderVariable> a(shaderSystem.PipelineShaderStructMap[meshPair.second.PropertiesBufferId].ShaderBufferVariableList, shaderSystem.PipelineShaderStructMap[meshPair.second.PropertiesBufferId].ShaderBufferVariableListCount);
+		Mesh_UpdateMesh(renderSystem.renderer, meshPair.second, shaderSystem.PipelineShaderStructMap[meshPair.second.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
 	}
 }
 

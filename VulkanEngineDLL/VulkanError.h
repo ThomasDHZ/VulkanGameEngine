@@ -17,6 +17,14 @@ extern "C" {
     } \
 }
 
+#define SPV_VULKAN_RESULT(call) { \
+    SpvReflectResult result = (call); \
+    if (result != SPV_REFLECT_RESULT_SUCCESS) { \
+        fprintf(stderr, "Error in %s at %s:%d (%s): %s\n", \
+                #call, __FILE__, __LINE__, __func__, result); \
+    } \
+}
+
 #ifdef __cplusplus
 }
 #endif

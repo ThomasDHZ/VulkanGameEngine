@@ -2,13 +2,14 @@
 #include <Typedef.h>
 #include <Material.h>
 #include <Vector.h>
+#include <VulkanShader.h>
 
 class MeshSystem;
 class MaterialSystem
 {
 private:
 	UnorderedMap<RenderPassGuid, Material>                        MaterialMap;
-
+	UnorderedMap<RenderPassGuid, ShaderStruct>					  ShaderStructMap;
 public:
 	MaterialSystem();
 	~MaterialSystem();

@@ -4,16 +4,18 @@
 #include "Typedef.h"
 #include "VkGuid.h"
 #include "VulkanBuffer.h"
+#include "VulkanShader.h"
 
 struct MeshPropertiesStruct
 {
-	alignas(4)  uint32 ShaderMaterialBufferIndex = 0;
+	alignas(8)  size_t ShaderMaterialBufferIndex = 0;
 	alignas(16) mat4   MeshTransform = mat4(1.0f);
 };
 
 const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
 VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT|
 VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
 VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
@@ -89,7 +91,7 @@ struct Mesh
 extern "C" {
 #endif
 DLL_EXPORT Mesh Mesh_CreateMesh(const GraphicsRenderer& renderer, const MeshLoader& meshLoader, VulkanBuffer& outVertexBuffer, VulkanBuffer& outIndexBuffer, VulkanBuffer& outTransformBuffer, VulkanBuffer& outPropertiesBuffer);
-DLL_EXPORT void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& meshPropertiesBuffer, uint32 shaderMaterialBufferIndex, const float& deltaTime);
+DLL_EXPORT void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
 DLL_EXPORT void Mesh_DestroyMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer);
 
 int Mesh_CreateVertexBuffer(const GraphicsRenderer& renderer, const VertexLoaderStruct& vertexLoader, VulkanBuffer& outVertexBuffer);
