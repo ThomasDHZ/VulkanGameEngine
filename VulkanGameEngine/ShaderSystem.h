@@ -42,6 +42,7 @@ public:
 	VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
+	void LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList);
 
 	ShaderPiplineData& FindShaderModule(const String& shaderFile);
 	ShaderPushConstant& FindShaderPushConstant(const String& shaderFile);

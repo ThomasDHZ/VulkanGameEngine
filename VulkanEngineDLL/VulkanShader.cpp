@@ -53,7 +53,12 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
 
 void Shader_ShaderDestroy(ShaderPiplineData& shader)
 {
-    Shader_DestroyShaderStructData(shader);
+    Span<ShaderStruct> shaderStructList(shader.ShaderStructList, shader.ShaderStructCount);
+    for(auto& shaderStruct : shaderStructList)
+    { 
+        Shader_DestroyShaderStructData(shaderStruct);
+    }
+
     Shader_DestroyShaderBindingData(shader);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
@@ -63,11 +68,11 @@ void Shader_ShaderDestroy(ShaderPiplineData& shader)
     memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
 }
 
-void Shader_DestroyShaderStructData(ShaderPiplineData& shader)
+void Shader_DestroyShaderStructData(ShaderStruct& structList)
 {
-    for (int x = 0; x < shader.ShaderStructCount; x++)
+    for (int x = 0; x < structList.ShaderBufferVariableListCount; x++)
     {
-        memorySystem.RemovePtrBuffer(shader.ShaderStructList[x].ShaderStructBuffer);
+        memorySystem.RemovePtrBuffer(structList.ShaderBufferVariableList);
     }
 }
 
@@ -114,6 +119,22 @@ void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& v
         offset += shaderStrucVar.Size;
     }
     VulkanBuffer_UpdateBufferMemory(renderer, vulkanBuffer, shaderStruct->ShaderStructBuffer, shaderStruct->ShaderBufferSize, shaderCount);
+}
+
+ShaderStruct* Shader_LoadProtoTypeStructs(String* pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount)
+{
+    SpvReflectShaderModule spvModule;
+    Vector<ShaderStruct> shaderStructs;
+    Span<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderCount);
+    for (auto& pipelineShaderPath : pipelineShaderPathList)
+    {
+        FileState file = File_Read(pipelineShaderPath.c_str());
+        SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
+        Shader_GetShaderDescriptorSetInfo(spvModule, shaderStructs);
+    }
+
+    outProtoTypeStructCount = shaderStructs.size();
+    return memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__);
 }
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)

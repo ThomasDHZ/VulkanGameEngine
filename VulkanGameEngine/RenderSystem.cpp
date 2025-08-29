@@ -218,7 +218,6 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         .MaterialProperties = materialPropertiesList.data()
     };
 
-
     for (int x = 0; x < json["RenderPipelineList"].size(); x++)
     {
         nlohmann::json pipelineJson = Json::ReadJson(json["RenderPipelineList"][x]);
