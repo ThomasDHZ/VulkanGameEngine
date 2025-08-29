@@ -201,48 +201,18 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .pVertexAttributeDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList
     };
 
-
-    Vector<VkDynamicState> dynamicStateList;
-    Vector<VkRect2D> scissorList(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
     Vector<VkViewport> viewPortList(renderPipelineLoader.ViewportList, renderPipelineLoader.ViewportList + renderPipelineLoader.ViewportCount);
-    if (viewPortList.empty())
+    for (auto& viewPort : viewPortList)
     {
-        dynamicStateList = Vector<VkDynamicState>
-        {
-            VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT,
-            VkDynamicState::VK_DYNAMIC_STATE_SCISSOR
-        };
+        viewPort.width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x);
+        viewPort.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
     }
-    else
+
+    Vector<VkRect2D> scissorList(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
+    for (auto& scissor : scissorList)
     {
-        for (auto& viewPort : viewPortList)
-        {
-            viewPortList.emplace_back(VkViewport
-                {
-                    .x = viewPort.x,
-                    .y = viewPort.y,
-                    .width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x),
-                    .height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y),
-                    .minDepth = viewPort.minDepth,
-                    .maxDepth = viewPort.maxDepth
-                });
-        }
-        for (auto& viewPort : scissorList)
-        {
-            scissorList.emplace_back(VkRect2D
-                {
-                    .offset = VkOffset2D
-                    {
-                        .x = 0,
-                        .y = 0
-                    },
-                    .extent = VkExtent2D
-                    {
-                        .width = static_cast<uint32>(renderPipelineLoader.RenderPassResolution.x),
-                        .height = static_cast<uint32>(renderPipelineLoader.RenderPassResolution.y)
-                    }
-                });
-        }
+        scissor.extent.width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x);
+        scissor.extent.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
     }
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = VkPipelineViewportStateCreateInfo
@@ -256,6 +226,7 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .pScissors = scissorList.data()
     };
 
+    Vector<VkDynamicState> dynamicStateList = viewPortList.empty() ? Vector<VkDynamicState> { VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT, VkDynamicState::VK_DYNAMIC_STATE_SCISSOR} : Vector<VkDynamicState>();
     VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = VkPipelineDynamicStateCreateInfo
     {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
