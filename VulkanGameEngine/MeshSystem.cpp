@@ -62,7 +62,6 @@ int MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint3
 																   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
 	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = shaderSystem.FindShaderProtoTypeStruct("MeshProperitiesBuffer");
 	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderStructBufferId = meshLoader.MeshPropertiesLoader.PropertiesBufferId;
-	Span<ShaderVariable> a(shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderBufferVariableList, shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderBufferVariableListCount);
 	SpriteMeshMap[meshId] = mesh;
 	return meshId;
 }
@@ -119,7 +118,6 @@ int MeshSystem::CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& ve
 	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = shaderSystem.FindShaderProtoTypeStruct("MeshProperitiesBuffer");
 	shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderStructBufferId = meshLoader.MeshPropertiesLoader.PropertiesBufferId;
 	LevelLayerMeshListMap[levelId] = meshList;
-	Span<ShaderVariable> a(shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderBufferVariableList, shaderSystem.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderBufferVariableListCount);
 	return meshId;
 }
 

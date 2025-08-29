@@ -23,23 +23,25 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
     Span<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderCount);
     for (auto& pipelineShaderPath : pipelineShaderPathList)
     {
-        vertexInputBindingList.clear();
-        vertexInputAttributeList.clear();
         FileState file = File_Read(pipelineShaderPath.c_str());
-        SpvReflectResult result = spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule);
+        SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
         Shader_GetShaderConstBuffer(spvModule, constBuffers);
         Shader_GetShaderDescriptorSetInfo(spvModule, shaderStructs);
         Shader_GetShaderDescriptorBindings(spvModule, descriptorBindings);
-        Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
+        if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
+        {
+            Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
+        }
     }
     ShaderPiplineData pipelineData = ShaderPiplineData
     {
+         .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
          .ShaderStructCount = shaderStructs.size(),
          .VertexInputBindingCount = vertexInputBindingList.size(),
          .VertexInputAttributeListCount = vertexInputAttributeList.size(),
-         .ShaderOutputCount = 0,
          .PushConstantCount = constBuffers.size(),
+         .ShaderList = memorySystem.AddPtrBuffer<String>(pipelineShaderPaths, pipelineShaderCount, __FILE__, __LINE__, __func__),
          .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
          .ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__),
          .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
@@ -346,7 +348,7 @@ void Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module, Ve
             );
 
             if (it != shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.size()) {
-                it->ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage);
+                it->ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
             }
         }
     }
@@ -369,7 +371,7 @@ void Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vec
             for (auto& shaderInfo : structList)
             {
                 if (shaderInfo.op == SpvOp::SpvOpTypeStruct &&
-                   !Shader_SearchShaderStructExists(shaderStructList.data(), shaderStructList.size(), shaderInfo.type_name))
+                    !Shader_SearchShaderStructExists(shaderStructList.data(), shaderStructList.size(), shaderInfo.type_name))
                 {
                     shaderStructList.emplace_back(Shader_GetShaderStruct(shaderInfo));
                 }
@@ -382,17 +384,15 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
 {
     size_t bufferSize = 0;
     Vector<ShaderVariable> shaderVariables;
-    Span<SpvReflectTypeDescription> structMembers(shaderInfo.struct_type_description, shaderInfo.member_count);
-    for (auto& members : structMembers)
+
+    Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(shaderInfo.members, shaderInfo.members + shaderInfo.member_count);
+    for (auto& variable : shaderVariableList)
     {
-        Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(members.members, members.members + members.member_count);
-        for (auto& variable : shaderVariableList)
+        uint memberSize = 0;
+        size_t byteAlignment = 0;
+        ShaderMemberType memberType;
+        switch (variable.op)
         {
-            uint memberSize = 0;
-            size_t byteAlignment = 0;
-            ShaderMemberType memberType;
-            switch (variable.op)
-            {
             case SpvOpTypeInt:
             {
                 memberSize = variable.traits.numeric.scalar.width / 8;
@@ -454,20 +454,19 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
                 }
                 break;
             }
-            }
-
-            shaderVariables.emplace_back(ShaderVariable
-                {
-                    .Name = variable.struct_member_name,
-                    .Size = memberSize,
-                    .ByteAlignment = byteAlignment,
-                    .Value = nullptr,
-                    .MemberTypeEnum = memberType,
-                });
-            size_t alignment = byteAlignment;
-            bufferSize = (bufferSize + alignment - 1) & ~(alignment - 1);
-            bufferSize += memberSize;
         }
+
+        shaderVariables.emplace_back(ShaderVariable
+            {
+                .Name = variable.struct_member_name,
+                .Size = memberSize,
+                .ByteAlignment = byteAlignment,
+                .Value = nullptr,
+                .MemberTypeEnum = memberType,
+            });
+        size_t alignment = byteAlignment;
+        bufferSize = (bufferSize + alignment - 1) & ~(alignment - 1);
+        bufferSize += memberSize;
     }
 
     return ShaderStruct
@@ -476,7 +475,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         .ShaderBufferSize = bufferSize,
         .ShaderBufferVariableListCount = shaderVariables.size(),
         .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
-        .ShaderStructBuffer =  memorySystem.AddPtrBuffer<byte>(bufferSize, __FILE__, __LINE__, __func__,  ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str())
+        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(bufferSize, __FILE__, __LINE__, __func__,  ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str())
     };
 }
 

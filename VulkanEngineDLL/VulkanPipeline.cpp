@@ -162,13 +162,13 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLo
 {
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     Vector<VkPushConstantRange> pushConstantRangeList = Vector<VkPushConstantRange>();
-    if (renderPipelineLoader.PushConstant.PushConstantSize > 0)
+    if (renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize > 0)
     {
         pushConstantRangeList.emplace_back(VkPushConstantRange
             {
                 .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 .offset = 0,
-                .size = static_cast<uint>(renderPipelineLoader.PushConstant.PushConstantSize)
+                .size = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize)
             });
     }
 
@@ -189,6 +189,7 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLo
 VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
     VkPipeline pipeline = VK_NULL_HANDLE;
+    Span<VkVertexInputAttributeDescription> asdf(renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList, renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeListCount);
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo
     {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -266,11 +267,11 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .pDynamicStates = dynamicStateList.data()
     };
 
-    //Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
-    //{
-    //    Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
-    //    Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
-    //};
+    Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
+    {
+        Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[0], VK_SHADER_STAGE_VERTEX_BIT),
+        Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[1], VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = renderPipelineLoader.PipelineColorBlendStateCreateInfoModel;
     pipelineColorBlendStateCreateInfoModel.attachmentCount = renderPipelineLoader.PipelineColorBlendAttachmentStateCount;
@@ -284,8 +285,8 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-       // .stageCount = static_cast<uint32>(pipelineShaderStageCreateInfoList.size()),
-      //  .pStages = pipelineShaderStageCreateInfoList.data(),
+        .stageCount = static_cast<uint32>(pipelineShaderStageCreateInfoList.size()),
+        .pStages = pipelineShaderStageCreateInfoList.data(),
         .pVertexInputState = &vertexInputInfo,
         .pInputAssemblyState = &renderPipelineLoader.PipelineInputAssemblyStateCreateInfo,
         .pTessellationState = nullptr,
@@ -303,10 +304,10 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
     };
 
     VULKAN_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
-    //for (auto& shader : pipelineShaderStageCreateInfoList)
-    //{
-    //    vkDestroyShaderModule(device, shader.module, nullptr);
-    //}
+    for (auto& shader : pipelineShaderStageCreateInfoList)
+    {
+        vkDestroyShaderModule(device, shader.module, nullptr);
+    }
 
     return pipeline;
 }

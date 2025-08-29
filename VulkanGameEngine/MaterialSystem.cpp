@@ -31,7 +31,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 
     int bufferIndex = ++bufferSystem.NextBufferId;
     VulkanBuffer& vulkanBuffer = bufferSystem.VulkanBufferMap[bufferIndex];
-    shaderSystem.PipelineShaderStructMap[bufferIndex] = shaderSystem.FindShaderProtoTypeStruct("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[bufferIndex] = shaderSystem.FindShaderProtoTypeStruct("MaterialProperitiesBuffer");
     MaterialMap[materialId] = Material_CreateMaterial(renderSystem.renderer, bufferIndex, vulkanBuffer, shaderSystem.PipelineShaderStructMap[bufferIndex], materialPath.c_str());
     return materialId;
 }
@@ -102,7 +102,6 @@ void MaterialSystem::Update(const float& deltaTime)
         materialPair.second.ShaderMaterialBufferIndex = x;
 
         const Material material = materialPair.second;
-        ShaderStruct& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
         const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
         const uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
         const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureBufferIndex : 0;
@@ -114,6 +113,7 @@ void MaterialSystem::Update(const float& deltaTime)
         const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : 0;
         const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
   
+        ShaderStruct& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap")->Value, &AlbedoMapId, sizeof(uint));
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicRoughnessMap")->Value, &MetallicRoughnessMapId, sizeof(uint));
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicMap")->Value, &MetallicMapId, sizeof(uint));
@@ -125,8 +125,6 @@ void MaterialSystem::Update(const float& deltaTime)
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "EmissionMap")->Value, &EmissionMapId, sizeof(uint));
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "HeightMap")->Value, &HeightMapId, sizeof(uint));
         shaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
-
-        Material_UpdateBuffer(renderSystem.renderer, bufferSystem.VulkanBufferMap[material.MaterialBufferId], shaderStruct);
         x++;
     }
 }

@@ -31,7 +31,6 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
 ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
 {
     ShaderPiplineData pipelineData = Shader_GetShaderData(shaderPathList.data(), shaderPathList.size());
-    Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
 
     Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
     for (auto& pushConstant : pushConstantList)
