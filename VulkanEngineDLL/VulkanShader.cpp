@@ -53,12 +53,6 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
 
 void Shader_ShaderDestroy(ShaderPiplineData& shader)
 {
-    Span<ShaderStruct> shaderStructList(shader.ShaderStructList, shader.ShaderStructCount);
-    for(auto& shaderStruct : shaderStructList)
-    { 
-        Shader_DestroyShaderStructData(shaderStruct);
-    }
-
     Shader_DestroyShaderBindingData(shader);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
@@ -70,7 +64,15 @@ void Shader_ShaderDestroy(ShaderPiplineData& shader)
 
 void Shader_DestroyShaderStructData(ShaderStruct& structList)
 {
-    for (int x = 0; x < structList.ShaderBufferVariableListCount; x++)
+    for (size_t x = 0; x < structList.ShaderBufferVariableListCount; x++)
+    {
+        ShaderVariable& var = structList.ShaderBufferVariableList[x];
+        if (var.Value)
+        {
+            memorySystem.RemovePtrBuffer(var.Value);
+        }
+    }
+    if (structList.ShaderBufferVariableList)
     {
         memorySystem.RemovePtrBuffer(structList.ShaderBufferVariableList);
     }
@@ -85,12 +87,16 @@ void Shader_DestroyShaderBindingData(ShaderPiplineData& shader)
     }
 }
 
-void Shader_DestroyConstantBufferVariableData(ShaderPushConstant* pushConstant, size_t pushConstantCount)
+void Shader_DestroyPushConstantBufferVariableData(ShaderPushConstant& pushConstant)
 {
-    for (int x = 0; x < pushConstantCount; x++)
+    for (int x = 0; x < pushConstant.PushConstantVariableListCount; x++)
     {
-        memorySystem.RemovePtrBuffer<ShaderPushConstant>(pushConstant);
+        if (pushConstant.PushConstantVariableList->Value)
+        {
+            memorySystem.RemovePtrBuffer(pushConstant.PushConstantVariableList);
+        }
     }
+    memorySystem.RemovePtrBuffer(pushConstant.PushConstantVariableList);
 }
 
 VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& filename, VkShaderStageFlagBits shaderStages)
@@ -493,7 +499,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         .ShaderBufferSize = bufferSize,
         .ShaderBufferVariableListCount = shaderVariables.size(),
         .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
-        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(bufferSize, __FILE__, __LINE__, __func__,  ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str())
+        .ShaderStructBuffer = nullptr
     };
 }
 

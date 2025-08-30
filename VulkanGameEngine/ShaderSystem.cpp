@@ -44,8 +44,11 @@ ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
             }
             ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
         }
+        else
+        {
+            Shader_DestroyPushConstantBufferVariableData(pushConstant);
+        }
     }
-
     return pipelineData;
 }
 
@@ -143,21 +146,18 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
             ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(shaderJsonList.data(), shaderJsonList.size(), protoTypeStructCount);
 
             Span<ShaderStruct> shaderStructList(shaderStructArray, protoTypeStructCount);
-            for (auto& structVar : shaderStructList)
+            for (auto& structStruct : shaderStructList)
             {
-                if (!ShaderStructPrototypeExists(structVar.Name))
+                if (!ShaderStructPrototypeExists(structStruct.Name))
                 {
-                    for (int x = 0; x < structVar.ShaderBufferVariableListCount; x++)
-                    {
-                        structVar.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(structVar.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, structVar.Name.c_str());
-                    }
-                    PipelineShaderStructPrototypeMap[structVar.Name] = structVar;
+                    PipelineShaderStructPrototypeMap[structStruct.Name] = structStruct;
                 }
                 else
                 {
-                    Shader_DestroyShaderStructData(structVar);
+                    Shader_DestroyShaderStructData(structStruct);
                 }
             }
+            memorySystem.RemovePtrBuffer<ShaderStruct>(shaderStructArray);
         }
     }
 }
@@ -202,6 +202,18 @@ ShaderStruct& ShaderSystem::FindShaderStruct(int vulkanBufferId)
     throw std::out_of_range("PipelineShaderStructMap not found");
 }
 
+ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)
+{
+    ShaderStruct shaderStruct = FindShaderProtoTypeStruct(structName);
+    shaderStruct.ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str());
+    Span<ShaderVariable> structVariableList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+    for (auto& shaderVar : structVariableList)
+    {
+        shaderVar.Value = memorySystem.AddPtrBuffer<byte>(shaderVar.Size, __FILE__, __LINE__, __func__, shaderVar.Name.c_str());
+    }
+    return shaderStruct;
+}
+
 bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
 {
     auto it = ShaderPushConstantMap.find(pushConstantName);
@@ -244,21 +256,24 @@ bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey)
 
 void ShaderSystem::Destroy()
 {
-
-    for (auto& pushConstant : ShaderPushConstantMap)
+    for (auto& shaderStruct : PipelineShaderStructPrototypeMap)
     {
-       
-    
-        memorySystem.RemovePtrBuffer<ShaderPushConstant>(&pushConstant.second);
+        Shader_DestroyShaderStructData(shaderStruct.second);
     }
     for (auto& shaderStruct : PipelineShaderStructPrototypeMap)
     {
-        memorySystem.RemovePtrBuffer<ShaderStruct>(&shaderStruct.second);
+        ShaderStruct* ptr = &shaderStruct.second;
+        memorySystem.RemovePtrBuffer(ptr);
     }
-    for (auto& shaderModule : PipelineShaderStructMap)
-    {
-        memorySystem.RemovePtrBuffer<ShaderStruct>(&shaderModule.second);
-    }
+    //for (auto& shaderStruct : PipelineShaderStructMap)
+    //{
+    //    Shader_DestroyShaderStructData(shaderStruct.second);
+    //}
+    //for (auto& shaderStruct : PipelineShaderStructMap)
+    //{
+    //    ShaderStruct* ptr = &shaderStruct.second;
+    //    memorySystem.RemovePtrBuffer(ptr);
+    //}
     for (auto& pipelineData : ShaderModuleMap)
     {
         Shader_ShaderDestroy(pipelineData.second);

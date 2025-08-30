@@ -75,13 +75,13 @@ public:
     }
 
     template <class T>
-    void RemovePtrBuffer(T* ptr) 
+    void RemovePtrBuffer(T*& ptr)
     {
         std::lock_guard<std::mutex> lock(Mutex);
         void* voidPtr = reinterpret_cast<void*>(ptr);
 
         auto it = PtrAddressMap.find(voidPtr);
-        if (it != PtrAddressMap.end()) 
+        if (it != PtrAddressMap.end())
         {
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);

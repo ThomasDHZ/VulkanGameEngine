@@ -12,7 +12,6 @@
 #include "TypeDef.h"
 #include "FileSystem.h"
 
-
 class ShaderSystem
 {
 private:
@@ -22,11 +21,10 @@ private:
 
 	UnorderedMap<String, ShaderPiplineData> ShaderModuleMap;
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
-
 	UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
 
 public:
-	UnorderedMap<int,   ShaderStruct>  PipelineShaderStructMap;
+	UnorderedMap<int, ShaderStruct>  PipelineShaderStructMap;
 	ShaderSystem();
 	~ShaderSystem();
 
@@ -48,6 +46,8 @@ public:
 	ShaderPushConstant& FindShaderPushConstant(const String& shaderFile);
 	ShaderStruct FindShaderProtoTypeStruct(const String& structKey);
 	ShaderStruct& FindShaderStruct(int vulkanBufferId);
+
+	ShaderStruct CopyShaderStructProtoType(const String& structName);
 
 	bool ShaderModuleExists(const String& shaderFile);
 	bool ShaderPushConstantExists(const String& pushConstantName);
