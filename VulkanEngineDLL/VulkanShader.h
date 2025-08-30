@@ -47,7 +47,7 @@ Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo);
-void Shader_DestroyShaderBindingData(ShaderPiplineData& shader);
+DLL_EXPORT void Shader_DestroyShaderBindingData(ShaderPiplineData& shader);
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);
 void Shader_uint32ToUnsignedCharString(uint32 value, String& string);

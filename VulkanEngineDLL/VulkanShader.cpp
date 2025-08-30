@@ -26,12 +26,14 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
         FileState file = File_Read(pipelineShaderPath.c_str());
         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
         Shader_GetShaderConstBuffer(spvModule, constBuffers);
-        Shader_GetShaderDescriptorSetInfo(spvModule, shaderStructs);
+        //memorySystem.ReportLeaks();
+        //Shader_GetShaderDescriptorSetInfo(spvModule, shaderStructs);
         Shader_GetShaderDescriptorBindings(spvModule, descriptorBindings);
         if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
         {
             Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
         }
+
     }
     ShaderPiplineData pipelineData = ShaderPiplineData
     {
@@ -48,18 +50,23 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
          .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__)
     };
+    //String* asdf = &pipelineShaderPaths[0];
+    //ShaderPushConstant* fdsa = &constBuffers[0];
+    //memorySystem.RemovePtrBuffer<String>(asdf);
+    //memorySystem.RemovePtrBuffer<ShaderPushConstant>(fdsa);
     return pipelineData;
 }
 
 void Shader_ShaderDestroy(ShaderPiplineData& shader)
 {
     Shader_DestroyShaderBindingData(shader);
+    memorySystem.RemovePtrBuffer<String>(shader.ShaderList);
+    memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
     memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
     memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
     memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
-    memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
 }
 
 void Shader_DestroyShaderStructData(ShaderStruct* structList)
@@ -94,11 +101,11 @@ void Shader_DestroyShaderBindingData(ShaderPiplineData& shader)
 void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant)
 {
     Span<ShaderVariable> shaderVarList(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
-    for (auto& shaderVar : shaderVarList)
+    for (int x = 0; x < pushConstant->PushConstantVariableListCount; x++)
     {
-        if (shaderVar.Value)
+        if (pushConstant->PushConstantVariableList[x].Value)
         {
-            memorySystem.RemovePtrBuffer(shaderVar.Value);
+            memorySystem.RemovePtrBuffer(pushConstant->PushConstantVariableList[x].Value);
         }
     }
     if (pushConstant->PushConstantVariableList)

@@ -36,7 +36,6 @@ ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
     {
         if (!ShaderPushConstantExists(pushConstant.PushConstantName))
         {
-            ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
             ShaderPushConstantMap[pushConstant.PushConstantName].GlobalPushContant = pushConstant.GlobalPushContant;
             ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str());
             ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantName = pushConstant.PushConstantName;
@@ -44,30 +43,31 @@ ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
             ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str());
             ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount = pushConstant.PushConstantVariableListCount;
             ShaderPushConstantMap[pushConstant.PushConstantName].ShaderStageFlags = pushConstant.ShaderStageFlags;
-
-            Span<ShaderVariable> pushConstantVariableList(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount);
-            for (auto& pushConstantVar : pushConstantVariableList)
+            for (int x = 0; x < ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
             {
-                pushConstantVar.Value = memorySystem.AddPtrBuffer<byte>(pushConstantVar.Size, __FILE__, __LINE__, __func__, pushConstantVar.Name.c_str());
+                ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList->Name.c_str());
+                
+               // auto afd = &pushConstant.PushConstantVariableList[x];
+              //  memorySystem.RemovePtrBuffer<ShaderVariable>(afd);
             }
         }
-        memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
+    //    memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
     }
-    memorySystem.RemovePtrBuffer<ShaderPushConstant>(pipelineData.PushConstantList);
-
-    for (auto& pushConstant : shaderSystem.ShaderPushConstantMap)
-    {
-        Shader_DestroyPushConstantBufferData(&pushConstant.second);
-    }
-    for (auto& shaderStruct : shaderSystem.PipelineShaderStructPrototypeMap)
-    {
-        Shader_DestroyShaderStructData(&shaderStruct.second);
-    }
-    for (auto& shaderStruct : shaderSystem.PipelineShaderStructMap)
-    {
-        Shader_DestroyShaderStructData(&shaderStruct.second);
-    }
-    memorySystem.ReportLeaks();
+   // memorySystem.RemovePtrBuffer<ShaderPushConstant>(pipelineData.PushConstantList);
+    //for (auto& pushConstant : shaderSystem.ShaderPushConstantMap)
+    //{
+    //    Shader_DestroyPushConstantBufferData(&pushConstant.second);
+    //}
+    //for (auto& shaderStruct : shaderSystem.PipelineShaderStructPrototypeMap)
+    //{
+    //    Shader_DestroyShaderStructData(&shaderStruct.second);
+    //}
+    //for (auto& shaderStruct : shaderSystem.PipelineShaderStructMap)
+    //{
+    //    Shader_DestroyShaderStructData(&shaderStruct.second);
+    //}
+    //Shader_ShaderDestroy(pipelineData);
+    //memorySystem.ReportLeaks();
     return pipelineData;
 }
 
@@ -286,20 +286,20 @@ bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey)
 
 void ShaderSystem::Destroy()
 {
-    for (auto& pushConstant : shaderSystem.ShaderPushConstantMap)
+ /*   for (auto& pushConstant : shaderSystem.ShaderPushConstantMap)
     {
         Shader_DestroyPushConstantBufferData(&pushConstant.second);
-    }
-    for (auto& shaderStruct : shaderSystem.PipelineShaderStructPrototypeMap)
-    {
-        Shader_DestroyShaderStructData(&shaderStruct.second);
-    }
-    for (auto& shaderStruct : shaderSystem.PipelineShaderStructMap)
-    {
-        Shader_DestroyShaderStructData(&shaderStruct.second);
-    }
-    for (auto& pipelineData : ShaderModuleMap)
-    {
-        Shader_ShaderDestroy(pipelineData.second);
-    }
+    }*/
+    //for (auto& shaderStruct : shaderSystem.PipelineShaderStructPrototypeMap)
+    //{
+    //    Shader_DestroyShaderStructData(&shaderStruct.second);
+    //}
+    //for (auto& shaderStruct : shaderSystem.PipelineShaderStructMap)
+    //{
+    //    Shader_DestroyShaderStructData(&shaderStruct.second);
+    //}
+    //for (auto& pipelineData : ShaderModuleMap)
+    //{
+    //    Shader_ShaderDestroy(pipelineData.second);
+    //}
 }
