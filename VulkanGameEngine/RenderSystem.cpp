@@ -228,6 +228,11 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         renderPipelineLoader.ShaderPiplineInfo = shaderSystem.AddShaderModule(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
         renderPipelineLoader.RenderPassResolution = renderPassResolution;
         RenderPipelineMap[renderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
+
+        memorySystem.RemovePtrBuffer(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
+        memorySystem.RemovePtrBuffer(renderPipelineLoader.ViewportList);
+        memorySystem.RemovePtrBuffer(renderPipelineLoader.ScissorList);
+        Shader_ShaderDestroy(renderPipelineLoader.ShaderPiplineInfo);
     }
     return renderPassId;
 }

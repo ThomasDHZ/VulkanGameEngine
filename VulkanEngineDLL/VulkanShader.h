@@ -35,8 +35,8 @@ DLL_EXPORT bool Shader_SearchShaderStructVarExists(const ShaderStruct& shaderStr
 
 DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 DLL_EXPORT void Shader_ShaderDestroy(ShaderPiplineData& shader);
-DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct& structList);
-DLL_EXPORT void Shader_DestroyPushConstantBufferVariableData(ShaderPushConstant& pushConstant);
+DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* structList);
+DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
 
 void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
 void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<ShaderPushConstant>& shaderPushConstantList);

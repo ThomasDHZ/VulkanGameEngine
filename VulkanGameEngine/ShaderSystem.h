@@ -20,10 +20,10 @@ private:
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> DefaultIncludeHandler;
 
 	UnorderedMap<String, ShaderPiplineData> ShaderModuleMap;
-	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
-	UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
 
 public:
+	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
+	UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
 	UnorderedMap<int, ShaderStruct>  PipelineShaderStructMap;
 	ShaderSystem();
 	~ShaderSystem();

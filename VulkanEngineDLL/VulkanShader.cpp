@@ -62,19 +62,23 @@ void Shader_ShaderDestroy(ShaderPiplineData& shader)
     memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
 }
 
-void Shader_DestroyShaderStructData(ShaderStruct& structList)
+void Shader_DestroyShaderStructData(ShaderStruct* structList)
 {
-    for (size_t x = 0; x < structList.ShaderBufferVariableListCount; x++)
+    Span<ShaderVariable> shaderVarList(structList->ShaderBufferVariableList, structList->ShaderBufferVariableListCount);
+    for (auto& shaderVar : shaderVarList)
     {
-        ShaderVariable& var = structList.ShaderBufferVariableList[x];
-        if (var.Value)
+        if (shaderVar.Value)
         {
-            memorySystem.RemovePtrBuffer(var.Value);
+            memorySystem.RemovePtrBuffer(shaderVar.Value);
         }
     }
-    if (structList.ShaderBufferVariableList)
+    if (structList->ShaderBufferVariableList)
     {
-        memorySystem.RemovePtrBuffer(structList.ShaderBufferVariableList);
+        memorySystem.RemovePtrBuffer<ShaderVariable>(structList->ShaderBufferVariableList);
+    }
+    if (structList->ShaderStructBuffer)
+    {
+        memorySystem.RemovePtrBuffer(structList->ShaderStructBuffer);
     }
 }
 
@@ -87,16 +91,24 @@ void Shader_DestroyShaderBindingData(ShaderPiplineData& shader)
     }
 }
 
-void Shader_DestroyPushConstantBufferVariableData(ShaderPushConstant& pushConstant)
+void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant)
 {
-    for (int x = 0; x < pushConstant.PushConstantVariableListCount; x++)
+    Span<ShaderVariable> shaderVarList(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
+    for (auto& shaderVar : shaderVarList)
     {
-        if (pushConstant.PushConstantVariableList->Value)
+        if (shaderVar.Value)
         {
-            memorySystem.RemovePtrBuffer(pushConstant.PushConstantVariableList);
+            memorySystem.RemovePtrBuffer(shaderVar.Value);
         }
     }
-    memorySystem.RemovePtrBuffer(pushConstant.PushConstantVariableList);
+    if (pushConstant->PushConstantVariableList)
+    {
+        memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant->PushConstantVariableList);
+    }
+    if (pushConstant->PushConstantBuffer)
+    {
+        memorySystem.RemovePtrBuffer(pushConstant->PushConstantBuffer);
+    }
 }
 
 VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& filename, VkShaderStageFlagBits shaderStages)
@@ -140,7 +152,8 @@ ShaderStruct* Shader_LoadProtoTypeStructs(String* pipelineShaderPaths, size_t pi
     }
 
     outProtoTypeStructCount = shaderStructs.size();
-    return memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__);
+    ShaderStruct* shaderStructPtr = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__);
+    return shaderStructPtr;
 }
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)
@@ -408,7 +421,6 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
 {
     size_t bufferSize = 0;
     Vector<ShaderVariable> shaderVariables;
-
     Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(shaderInfo.members, shaderInfo.members + shaderInfo.member_count);
     for (auto& variable : shaderVariableList)
     {
@@ -493,7 +505,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         bufferSize += memberSize;
     }
 
-    return ShaderStruct
+    ShaderStruct shaderStruct =
     {
         .Name = shaderInfo.type_name,
         .ShaderBufferSize = bufferSize,
@@ -501,6 +513,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
         .ShaderStructBuffer = nullptr
     };
+    return shaderStruct;
 }
 
 void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<ShaderPushConstant>& shaderPushConstantList)

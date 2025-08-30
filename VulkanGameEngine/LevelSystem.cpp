@@ -36,6 +36,7 @@ void LevelSystem::LoadLevel(const String& levelPath)
     {
         materialSystem.LoadMaterial(json["LoadMaterials"][x]);
     }
+
     for (int x = 0; x < json["LoadSpriteVRAM"].size(); x++)
     {
         spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
