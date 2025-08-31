@@ -55,14 +55,14 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
 
 void Shader_ShaderDestroy(ShaderPiplineData& shader)
 {
-    //Shader_DestroyShaderBindingData(shader);
-    //memorySystem.RemovePtrBuffer<String>(shader.ShaderList);
-    //memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
-    //memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
-    //memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
-    //memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
-    //memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
-    //memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
+    Shader_DestroyShaderBindingData(shader);
+    memorySystem.RemovePtrBuffer<String>(shader.ShaderList);
+    memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
+    memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
+    memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
+    memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
+    memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
+    memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
 }
 
 void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct)

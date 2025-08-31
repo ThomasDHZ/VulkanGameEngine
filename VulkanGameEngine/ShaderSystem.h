@@ -30,13 +30,13 @@ public:
 
 	
 	void StartUp();
-	ShaderPiplineData AddShaderModule(Vector<String> shaderPathList);
+	void AddShaderModule(ShaderPiplineData& pipelineData, Vector<String> shaderPathList);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);
 	void Destroy();
 
 	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
-	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName);
+	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const String& varName);
 	VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);

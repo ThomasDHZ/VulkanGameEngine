@@ -55,9 +55,9 @@ void OrthographicCamera2D::Update(ShaderPushConstant& sceneDataBuffer)
 {
 	mat4 view = mat4(1.0f);
 	ProjectionMatrix = glm::ortho(0.0f, Width, Height, 0.0f);
-	memcpy(shaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "Projection")->Value, &ProjectionMatrix, sizeof(ProjectionMatrix));
-	memcpy(shaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "View")->Value, &view, sizeof(view));
-	memcpy(shaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "CameraPosition")->Value, &Position, sizeof(Position));
+	memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "Projection")->Value, &ProjectionMatrix, sizeof(ProjectionMatrix));
+	memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "View")->Value, &view, sizeof(view));
+	memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "CameraPosition")->Value, &Position, sizeof(Position));
 }
 
 void OrthographicCamera2D::UpdateKeyboard(float deltaTime)

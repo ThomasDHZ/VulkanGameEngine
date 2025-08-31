@@ -28,10 +28,10 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
     return Shader_CreateShader(device, path, shaderStages);
 }
 
-ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
+void ShaderSystem::AddShaderModule(ShaderPiplineData& pipelineData, Vector<String> shaderPathList)
 {
-    ShaderPiplineData pipelineData = Shader_GetShaderData(shaderPathList.data(), shaderPathList.size());
-    Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
+    ShaderPiplineData pipelineDataCopy = Shader_GetShaderData(shaderPathList.data(), shaderPathList.size());
+    Span<ShaderPushConstant> pushConstantList(pipelineDataCopy.PushConstantList, pipelineDataCopy.PushConstantCount);
     for (auto& pushConstant : pushConstantList)
     {
         if (!ShaderPushConstantExists(pushConstant.PushConstantName))
@@ -52,39 +52,47 @@ ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
             {
                 ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList->Name.c_str());
                 
-               // auto afd = &pushConstant.PushConstantVariableList[x];
-              //  memorySystem.RemovePtrBuffer<ShaderVariable>(afd);
+                // auto afd = &pushConstant.PushConstantVariableList[x];
+               //  memorySystem.RemovePtrBuffer<ShaderVariable>(afd);
             }
         }
-    //    memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
+        //    memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
     }
-   // memorySystem.RemovePtrBuffer<ShaderPushConstant>(pipelineData.PushConstantList);
-    //for (auto& pushConstant : shaderSystem.ShaderPushConstantMap)
-    //{
-    //    Shader_DestroyPushConstantBufferData(&pushConstant.second);
-    //}
-    //for (auto& shaderStruct : shaderSystem.PipelineShaderStructPrototypeMap)
-    //{
-    //    Shader_DestroyShaderStructData(&shaderStruct.second);
-    //}
-    //for (auto& shaderStruct : shaderSystem.PipelineShaderStructMap)
-    //{
-    //    Shader_DestroyShaderStructData(&shaderStruct.second);
-    //}
-    //Shader_ShaderDestroy(pipelineData);
-    //memorySystem.ReportLeaks();
-    return pipelineData;
+    
+    pipelineData = ShaderPiplineData
+    {
+         .ShaderCount = pipelineDataCopy.ShaderCount,
+         .DescriptorBindingCount = pipelineDataCopy.DescriptorBindingCount,
+         .ShaderStructCount = pipelineDataCopy.ShaderStructCount,
+         .VertexInputBindingCount = pipelineDataCopy.VertexInputBindingCount,
+         .VertexInputAttributeListCount = pipelineDataCopy.VertexInputAttributeListCount,
+         .PushConstantCount = pipelineDataCopy.PushConstantCount,
+         .ShaderList = memorySystem.AddPtrBuffer<String>(pipelineDataCopy.ShaderList, pipelineDataCopy.ShaderCount, __FILE__, __LINE__, __func__),
+         .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(pipelineDataCopy.DescriptorBindingsList, pipelineDataCopy.DescriptorBindingCount, __FILE__, __LINE__, __func__),
+         .ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(pipelineDataCopy.ShaderStructList,  pipelineDataCopy.ShaderStructCount, __FILE__, __LINE__, __func__),
+         .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(pipelineDataCopy.VertexInputBindingList, pipelineDataCopy.VertexInputBindingCount, __FILE__, __LINE__, __func__),
+         .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(pipelineDataCopy.VertexInputAttributeList, pipelineDataCopy.VertexInputAttributeListCount, __FILE__, __LINE__, __func__),
+         .PushConstantList = pipelineDataCopy.PushConstantCount != 0 ? memorySystem.AddPtrBuffer<ShaderPushConstant>(pipelineDataCopy.PushConstantList, pipelineDataCopy.PushConstantCount, __FILE__, __LINE__, __func__) : nullptr
+    };
+    ShaderModuleMap[pipelineDataCopy.ShaderList[0]] = pipelineData;
+     Shader_ShaderDestroy(pipelineDataCopy);
+     memorySystem.ReportLeaks();
 }
 
-ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant& pushConstant, const String& varName)
+ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const String& varName)
 {
-    auto it = std::find_if(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount,
+    if (pushConstant == nullptr)
+    {
+        return nullptr;
+    }
+
+    auto it = std::find_if(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableList + pushConstant->PushConstantVariableListCount,
         [&](const ShaderVariable& var) {
             return var.Name == varName;
         }
     );
 
-    if (it != pushConstant.PushConstantVariableList + pushConstant.PushConstantVariableListCount) {
+    if (it != pushConstant->PushConstantVariableList + pushConstant->PushConstantVariableListCount) {
         ShaderVariable& foundVar = *it;
     }
 

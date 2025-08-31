@@ -162,7 +162,7 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLo
 {
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     Vector<VkPushConstantRange> pushConstantRangeList = Vector<VkPushConstantRange>();
-    if (renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize > 0)
+    if (renderPipelineLoader.ShaderPiplineInfo.PushConstantList != nullptr)
     {
         pushConstantRangeList.emplace_back(VkPushConstantRange
             {

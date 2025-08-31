@@ -43,10 +43,10 @@ extern "C"
 
     void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr) 
     {
-        if (ptr) 
+        if (ptr)
         {
             HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (hConsole != INVALID_HANDLE_VALUE) 
+            if (hConsole != INVALID_HANDLE_VALUE)
             {
                 CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
                 GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
@@ -60,21 +60,43 @@ extern "C"
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << "Memory Leak at: ";
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << "File: ";
+                std::cout << "Pointer: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << filename;
+                std::cout << ptr->PtrAddress;
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " Size: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << ptr->PtrElements * sizeof(byte);
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " IsArray: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << (ptr->isArray ? "Yes" : "No");
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " File: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << (ptr->File.empty() ? "Unknown" : filename);
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Line: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << ptr->Line;
+                std::cout << (ptr->Line.empty() ? "Unknown" : ptr->Line);
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Function: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << ptr->Function;
+                std::cout << (ptr->Function.empty() ? "Unknown" : ptr->Function);
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Notes: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << ptr->Notes << std::endl;
+                std::cout << (ptr->Notes.empty() ? "None" : ptr->Notes) << std::endl;
+            }
+            else
+            {
+                std::cerr << "Memory Leak at: Pointer: " << ptr->PtrAddress
+                    << " Size: " << ptr->PtrElements * sizeof(byte)
+                    << " IsArray: " << (ptr->isArray ? "Yes" : "No")
+                    << " File: " << (ptr->File.empty() ? "Unknown" : ptr->File)
+                    << " Line: " << (ptr->Line.empty() ? "Unknown" : ptr->Line)
+                    << " Function: " << (ptr->Function.empty() ? "Unknown" : ptr->Function)
+                    << " Notes: " << (ptr->Notes.empty() ? "None" : ptr->Notes) << std::endl;
             }
         }
     }
