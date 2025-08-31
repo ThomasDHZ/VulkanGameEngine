@@ -226,30 +226,13 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         renderPipelineLoader.RenderPass = RenderPassMap[renderPassId].RenderPass;
         renderPipelineLoader.gpuIncludes = gpuIncludes;
         renderPipelineLoader.RenderPassResolution = renderPassResolution;
-        shaderSystem.AddShaderModule(renderPipelineLoader.ShaderPiplineInfo, Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-        
-        //for (auto& pushConstant : shaderSystem.ShaderPushConstantMap)
-        //{
-        //    Shader_DestroyPushConstantBufferData(&pushConstant.second);
-        //}
-        //for (auto& shaderStruct : shaderSystem.PipelineShaderStructPrototypeMap)
-        //{
-        //    Shader_DestroyShaderStructData(&shaderStruct.second);
-        //}
-        //for (auto& shaderStruct : shaderSystem.PipelineShaderStructMap)
-        //{
-        //    Shader_DestroyShaderStructData(&shaderStruct.second);
-        //}
-        //Shader_ShaderDestroy(renderPipelineLoader.ShaderPiplineInfo);
-        //memorySystem.ReportLeaks();
+        renderPipelineLoader.ShaderPiplineInfo = shaderSystem.AddShaderModule(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+
         RenderPipelineMap[renderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
         memorySystem.RemovePtrBuffer(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
         memorySystem.RemovePtrBuffer(renderPipelineLoader.ViewportList);
         memorySystem.RemovePtrBuffer(renderPipelineLoader.ScissorList);
-        //shaderSystem.Destroy();
-        //memorySystem.ReportLeaks();
     }
-
     return renderPassId;
 }
 

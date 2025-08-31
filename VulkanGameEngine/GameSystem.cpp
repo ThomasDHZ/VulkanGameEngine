@@ -82,12 +82,12 @@ void GameSystem::Draw(const float& deltaTime)
 
 void GameSystem::Destroy()
 {
-    meshSystem.DestroyAllGameObjects(); // Destroy objects that may use shaders
-    materialSystem.DestroyAllMaterials(); // Destroy materials that may use shaders
-    textureSystem.DestroyAllTextures(); // Destroy textures
-    bufferSystem.DestroyAllBuffers(); // Destroy buffers
-    shaderSystem.Destroy(); // Destroy shaders after dependent resources
-    renderSystem.Destroy(); // Destroy renderer last
-    levelSystem.DestoryLevel(); // Destroy level
-    memorySystem.ReportLeaks(); // Report leaks after all systems are destroyed
+    meshSystem.DestroyAllGameObjects();
+    materialSystem.DestroyAllMaterials(); 
+    textureSystem.DestroyAllTextures(); 
+    bufferSystem.DestroyAllBuffers(); 
+    shaderSystem.Destroy();
+    renderSystem.Destroy(); 
+    levelSystem.DestoryLevel(); 
+    memorySystem.ReportLeaks();
 }

@@ -62,7 +62,10 @@ void Shader_ShaderDestroy(ShaderPiplineData& shader)
     memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);
     memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
     memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
-    memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
+    if (shader.ShaderOutputList)
+    {
+        memorySystem.RemovePtrBuffer<ShaderVariable>(shader.ShaderOutputList);
+    }
 }
 
 void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct)

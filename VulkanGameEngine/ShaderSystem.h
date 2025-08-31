@@ -30,7 +30,7 @@ public:
 
 	
 	void StartUp();
-	void AddShaderModule(ShaderPiplineData& pipelineData, Vector<String> shaderPathList);
+	ShaderPiplineData AddShaderModule(Vector<String> shaderPathList);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);
 	void Destroy();
