@@ -9,7 +9,6 @@ class MaterialSystem
 {
 private:
 	UnorderedMap<RenderPassGuid, Material>                        MaterialMap;
-	UnorderedMap<RenderPassGuid, ShaderStruct>					  ShaderStructMap;
 public:
 	MaterialSystem();
 	~MaterialSystem();

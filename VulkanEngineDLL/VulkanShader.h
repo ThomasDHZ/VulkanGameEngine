@@ -21,7 +21,9 @@ DLL_EXPORT void Shader_StartUp();
 DLL_EXPORT ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipelineShaderCount);
 DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
+DLL_EXPORT void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct);
 DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(String* pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
+DLL_EXPORT ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy);
 
 DLL_EXPORT ShaderPushConstant Shader_SearchShaderConstBuffer(ShaderPushConstant* shaderPushConstantList, size_t shaderPushConstantCount, const String& constBufferName);
 DLL_EXPORT ShaderDescriptorBinding Shader_SearchDescriptorBindings(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const String& descriptorBindingName);
@@ -37,6 +39,7 @@ DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 DLL_EXPORT void Shader_ShaderDestroy(ShaderPiplineData& shader);
 DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
 DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
+DLL_EXPORT void Shader_SetVariableDefaults(ShaderVariable& shaderVariable);
 
 void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
 void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<ShaderPushConstant>& shaderPushConstantList);
@@ -47,7 +50,7 @@ Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo);
-DLL_EXPORT void Shader_DestroyShaderBindingData(ShaderPiplineData& shader);
+void Shader_DestroyShaderBindingData(ShaderPiplineData& shader);
 
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);
 void Shader_uint32ToUnsignedCharString(uint32 value, String& string);
