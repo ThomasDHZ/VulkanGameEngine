@@ -1,5 +1,6 @@
 ﻿using CSScripting;
 using GlmSharp;
+using Silk.NET.GLFW;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,62 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static Dictionary<string, ShaderStruct> PipelineShaderStructPrototypeMap { get; private set; } = new Dictionary<string, ShaderStruct>();
         public static Dictionary<int, ShaderStruct> PipelineShaderStructMap { get; private set; } = new Dictionary<int, ShaderStruct>();
 
+        static void StartUp()
+        {
+            Shader_StartUp();
+        }
+
+        static void Destroy()
+        {
+            List<String> pushConstantKeys = new List<string>();
+            foreach (var pair in ShaderPushConstantMap)
+            {
+                pushConstantKeys.Add(pair.Key);
+            }
+            foreach (var key in pushConstantKeys)
+            {
+                var pushConstant = ShaderPushConstantMap[key];
+                Shader_DestroyPushConstantBufferData(&pushConstant);
+            }
+            ShaderPushConstantMap.Clear();
+
+            List<String> shaderStructProtoKeys = new List<string>();
+            foreach (var pair in PipelineShaderStructPrototypeMap)
+            {
+                shaderStructProtoKeys.Add(pair.Key);
+            }
+            foreach (var key in shaderStructProtoKeys)
+            {
+                var shaderStruct = PipelineShaderStructPrototypeMap[key];
+                Shader_DestroyShaderStructData(&shaderStruct);
+            }
+            PipelineShaderStructPrototypeMap.Clear();
+
+            List<int> shaderStructKeys = new List<int>();
+            foreach (var pair in PipelineShaderStructMap)
+            {
+                shaderStructKeys.Add(pair.Key);
+            }
+            foreach (var key in shaderStructKeys)
+            {
+                var shaderStruct = PipelineShaderStructMap[key];
+                Shader_DestroyShaderStructData(&shaderStruct);
+            }
+            PipelineShaderStructMap.Clear();
+
+            List<String> shaderModuleKeys = new List<string>();
+            foreach (var pair in ShaderModuleMap)
+            {
+                shaderModuleKeys.Add(pair.Key);
+            }
+            foreach (var key in shaderModuleKeys)
+            {
+                var pipelineData = ShaderModuleMap[key];
+                Shader_ShaderDestroy(pipelineData);
+            }
+            ShaderModuleMap.Clear();
+        }
+
         public static VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, string filename, VkShaderStageFlagBits shaderStages)
         {
             VkShaderModule shaderModule = VulkanCSConst.VK_NULL_HANDLE;
@@ -39,36 +96,162 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(shaderPathList);
             ShaderPipelineData pipelineData = Shader_GetShaderData(cShaderPathList, shaderPathList.Count);
-            ListPtr<ShaderPushConstant> pushConstantList = new ListPtr<ShaderPushConstant>(pipelineData.PushConstantList, pipelineData.PushConstantCount);
-            foreach (var pushConstant in pushConstantList)
-            {
-                if (!ShaderPushConstantExists(pushConstant.PushConstantName))
-                {
-                    ShaderPushConstantMap[pushConstant.PushConstantName] = new ShaderPushConstant
-                    {
-                        .PushConstantName = pushConstant.PushConstantName,
-                        .PushConstantSize = pushConstant.PushConstantSize,
-                        .PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
-                        .ShaderStageFlags = pushConstant.ShaderStageFlags,
-                        .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
-                        .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
-                        .GlobalPushContant = pushConstant.GlobalPushContant
-                    };
+            //ListPtr<ShaderPushConstant> pushConstantList = new ListPtr<ShaderPushConstant>(pipelineData.PushConstantList, pipelineData.PushConstantCount);
+            //foreach (var pushConstant in pushConstantList)
+            //{
+            //    if (!ShaderPushConstantExists(pushConstant.PushConstantName))
+            //    {
+            //        ShaderPushConstantMap[pushConstant.PushConstantName] = new ShaderPushConstant
+            //        {
+            //            .PushConstantName = pushConstant.PushConstantName,
+            //            .PushConstantSize = pushConstant.PushConstantSize,
+            //            .PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
+            //            .ShaderStageFlags = pushConstant.ShaderStageFlags,
+            //            .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
+            //            .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
+            //            .GlobalPushContant = pushConstant.GlobalPushContant
+            //        };
 
-                    for (int x = 0; x < ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
-                    {
-                        ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
-                        ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name.c_str());
-                        Shader_SetVariableDefaults(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x]);
-                        memorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
-                    }
-                }
-                memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList);
-                memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
-            }
-            CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
-            ShaderModuleMap[pipelineData.ShaderList[0]] = pipelineData;
+            //        for (int x = 0; x < ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
+            //        {
+            //            ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
+            //            ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name.c_str());
+            //            Shader_SetVariableDefaults(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x]);
+            //            memorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
+            //        }
+            //    }
+            //    memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList);
+            //    memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
+            //}
+            //CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
+            //ShaderModuleMap[pipelineData.ShaderList[0]] = pipelineData;
             return pipelineData;
+        }
+
+        public static ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, string varName)
+        {
+            if (pushConstant == null)
+            {
+                return null;
+            }
+
+            ListPtr<ShaderVariable> pushConstantShaderVariables = new ListPtr<ShaderVariable>(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
+            var matchingVar = pushConstantShaderVariables.FirstOrDefault(var => Marshal.PtrToStringAnsi((IntPtr)var.Name) == varName);
+            return &matchingVar;
+        }
+
+        public static ShaderVariable* SearchShaderStruct(ShaderStruct shaderStruct, string varName)
+        {
+            return Shader_SearchShaderStructVar(shaderStruct, varName);
+        }
+
+        public static void UpdateGlobalShaderBuffer(string pushConstantName)
+        {
+            if (!ShaderPushConstantExists(pushConstantName))
+            {
+               // std::cerr << "Error: Push constant '" << pushConstantName << "' does not exist!" << std::endl;
+                return;
+            }
+            Shader_UpdatePushConstantBuffer(RenderSystem.renderer, ShaderPushConstantMap[pushConstantName]);
+        }
+
+        public static void UpdateShaderBuffer(int vulkanBufferId)
+        {
+            if (!ShaderStructExists(vulkanBufferId))
+            {
+                return;
+            }
+
+            ShaderStruct shaderStruct = PipelineShaderStructMap[vulkanBufferId];
+            VulkanBuffer vulkanBuffer = BufferSystem.FindVulkanBuffer(vulkanBufferId);
+            Shader_UpdateShaderBuffer(RenderSystem.renderer, vulkanBuffer, &shaderStruct, 1);
+        }
+
+        public static ShaderPushConstant* GetGlobalShaderPushConstant(string pushConstantName)
+        {
+            return ShaderPushConstantExists(pushConstantName) ? &ShaderPushConstantMap[pushConstantName] : nullptr;
+        }
+
+        public static void LoadShaderPipelineStructPrototypes(List<String> renderPassJsonList)
+        {
+            size_t protoTypeStructCount = 0;
+            for (int x = 0; x < renderPassJsonList.size(); x++)
+            {
+                nlohmann::json renderPassJson = Json::ReadJson(renderPassJsonList[x]);
+                for (int x = 0; x < renderPassJson["RenderPipelineList"].size(); x++)
+                {
+                    nlohmann::json pipelineJson = Json::ReadJson(renderPassJson["RenderPipelineList"][x]);
+                    Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1]
+                };
+                    const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderJsonList);
+                    ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(cShaderList, shaderJsonList.size(), protoTypeStructCount);
+                    Span<ShaderStruct> shaderStructList(shaderStructArray, protoTypeStructCount);
+                    for (auto & shaderStruct : shaderStructList)
+                    {
+                        if (!ShaderStructPrototypeExists(shaderStruct.Name))
+                        {
+                            PipelineShaderStructPrototypeMap[shaderStruct.Name] = ShaderStruct
+                            {
+                                .Name = shaderStruct.Name,
+                                .ShaderBufferSize = shaderStruct.ShaderBufferSize,
+                                .ShaderBufferVariableListCount = shaderStruct.ShaderBufferVariableListCount,
+                                .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str()),
+                                .ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
+                                .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str())
+                            };
+                        }
+                        memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
+                    }
+                    memorySystem.RemovePtrBuffer<ShaderStruct>(shaderStructArray);
+                    CHelper_DestroyConstCharPtrPtr(cShaderList);
+                }
+            }
+        }
+
+        public static ShaderPipelineData FindShaderModule(string shaderFile)
+        {
+            return ShaderModuleMap[shaderFile];
+        }
+
+        public static ShaderPushConstant FindShaderPushConstant(string shaderFile)
+        {
+            return ShaderPushConstantMap[shaderFile];
+        }
+
+        public static ShaderStruct FindShaderProtoTypeStruct(string shaderKey)
+        {
+            return PipelineShaderStructPrototypeMap[shaderKey];
+        }
+
+        public static ShaderStruct FindShaderStruct(int vulkanBufferId)
+        {
+            return PipelineShaderStructMap[vulkanBufferId];
+        }
+
+        public static ShaderStruct CopyShaderStructProtoType(string structName)
+        {
+            ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName);
+        return Shader_CopyShaderStructPrototype(shaderStructCopy);
+        }
+
+        public static bool ShaderPushConstantExists(string pushConstantName)
+        {
+            return ShaderPushConstantMap.ContainsKey(pushConstantName);
+        }
+
+        public static bool ShaderModuleExists(string shaderFile)
+        {
+            return ShaderModuleMap.ContainsKey(shaderFile);
+        }
+
+        public static bool ShaderStructPrototypeExists(string structKey) 
+        {
+            return PipelineShaderStructPrototypeMap.ContainsKey(structKey);
+        }
+
+        public static bool ShaderStructExists(int vulkanBufferKey)
+        {
+            return PipelineShaderStructMap.ContainsKey(vulkanBufferKey);
         }
 
         public static bool CompileShader(string shaderFilePath, string shaderFile)
@@ -149,212 +332,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 }
             }
             return true;
-        }
-
-        public static ListPtr<VkVertexInputBindingDescription> LoadVertexBindingLayout(string vertexShaderFile)
-        {
-            ListPtr<VkVertexInputBindingDescription> vertexInputBindingList = new ListPtr<VkVertexInputBindingDescription>();
-            var vertexShaderTextLines = File.ReadLines(vertexShaderFile).ToList();
-            try
-            {
-                var vertexRegex = new Regex(@"layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*in\s+([^\s]+)\s+([^\s;]+)\s*;", RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-                var vertexInputLineList = vertexShaderTextLines.Where(x => vertexRegex.IsMatch(x)).ToList();
-
-                var paramsRegex = new Regex(@"//\s*InputParams\s*\(\s*binding\s*=\s*(\d+)\s*,\s*VertexType\s*=\s*(Vertex|Instance)\s*\)", RegexOptions.Compiled);
-                var paramLineList = vertexShaderTextLines.Where(x => paramsRegex.IsMatch(x)).ToList();
-
-                if (paramLineList.Any())
-                {
-                    foreach (var vertexInputLine in paramLineList)
-                    {
-                        var paramsMatch = paramsRegex.Match(vertexInputLine);
-                        vertexInputBindingList.Add(new VkVertexInputBindingDescription
-                        {
-                            binding = uint.Parse(paramsMatch.Groups[1].Value),
-                            inputRate = paramsMatch.Groups[2].Value == "Instance" ? VkVertexInputRate.VK_VERTEX_INPUT_RATE_INSTANCE : VkVertexInputRate.VK_VERTEX_INPUT_RATE_VERTEX
-                        });
-                    }
-                }
-                else
-                {
-                    foreach (var vertexInputLine in vertexInputLineList)
-                    {
-                        vertexInputBindingList.Add(new VkVertexInputBindingDescription
-                        {
-                            binding = 0,
-                            inputRate = VkVertexInputRate.VK_VERTEX_INPUT_RATE_VERTEX
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading vertex binding layout from {vertexShaderFile}: {ex.Message}");
-                throw;
-            }
-            return vertexInputBindingList;
-        }
-
-        public static List<VkVertexInputAttributeDescriptionModel> LoadVertexAttributesLayout(string vertexShaderFile)
-        {
-            List<VkVertexInputAttributeDescriptionModel> vertexInputAttributeList = new List<VkVertexInputAttributeDescriptionModel>();
-            var vertexShaderTextLines = File.ReadLines(vertexShaderFile).ToList();
-            try
-            {
-                var vertexRegex = new Regex(@"layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*in\s+([^\s]+)\s+([^\s;]+)\s*;", RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-                var vertexInputLineList = vertexShaderTextLines.Where(x => vertexRegex.IsMatch(x)).ToList();
-
-                var paramsRegex = new Regex(@"//\s*InputParams\s*\(\s*binding\s*=\s*(\d+)\s*,\s*VertexType\s*=\s*(Vertex|Instance)\s*\)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-                var paramLineList = vertexShaderTextLines.Where(x => paramsRegex.IsMatch(x)).ToList();
-
-                int x = 0;
-                uint vertexOffset = 0;
-                foreach (var vertexInputLine in vertexInputLineList)
-                {
-                    int size = 0;
-                    VkFormat format = VkFormat.VK_FORMAT_UNDEFINED;
-                    Match vertexMatchData = vertexRegex.Match(vertexInputLine);
-                    switch (vertexMatchData.Groups[2].Value)
-                    {
-                        case "float": format = VkFormat.VK_FORMAT_R32_SFLOAT; size = sizeof(float); break;
-                        case "vec2": format = VkFormat.VK_FORMAT_R32G32_SFLOAT; size = sizeof(vec2); break;
-                        case "vec3": format = VkFormat.VK_FORMAT_R32G32B32_SFLOAT; size = sizeof(vec3); break;
-                        case "vec4": format = VkFormat.VK_FORMAT_R32G32B32A32_SFLOAT; size = sizeof(vec4); break;
-                        case "int": format = VkFormat.VK_FORMAT_R32_SINT; size = sizeof(int); break;
-                        case "ivec2": format = VkFormat.VK_FORMAT_R32G32_SINT; size = sizeof(ivec2); break;
-                        case "ivec3": format = VkFormat.VK_FORMAT_R32G32B32_SINT; size = sizeof(ivec3); break;
-                        case "ivec4": format = VkFormat.VK_FORMAT_R32G32B32_SINT; size = sizeof(ivec4); break;
-                        case "uint": format = VkFormat.VK_FORMAT_R32_UINT; size = sizeof(uint); break;
-                        case "mat2": format = VkFormat.VK_FORMAT_R32G32_SFLOAT; size = sizeof(mat2); break;
-                        case "mat3": format = VkFormat.VK_FORMAT_R32G32B32_SFLOAT; size = sizeof(mat3); break;
-                        case "mat4": format = VkFormat.VK_FORMAT_R32G32B32A32_SFLOAT; size = sizeof(mat4); break;
-                        default: throw new NotSupportedException($"Unsupported GLSL type: {vertexMatchData.Groups[2].Value}");
-                    }
-
-                    vertexInputAttributeList.Add(new VkVertexInputAttributeDescriptionModel
-                    {
-                        Name = vertexMatchData.Groups[3].Value,
-                        Binding = paramLineList.Any() ? uint.Parse(paramsRegex.Match(paramLineList[x]).Groups[1].Value) : 0,
-                        Location = uint.Parse(vertexMatchData.Groups[1].Value),
-                        Type = vertexMatchData.Groups[2].Value,
-                        Format = format,
-                        Offset = vertexOffset
-                    });
-                    vertexOffset += (uint)size;
-                    x++;
-                }
-                return vertexInputAttributeList;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading vertex attribute layout from {vertexShaderFile}: {ex.Message}");
-                throw;
-            }
-        }
-
-        public static List<PipelineDescriptorModel> LoadDescriptorSetBindings(string vertexShaderFile)
-        {
-            List<PipelineDescriptorModel> pipelineDescriptorList = new List<PipelineDescriptorModel>();
-            var vertexShaderTextLines = File.ReadLines(vertexShaderFile).ToList();
-            try
-            {
-                var descriptorBindingPropertiesRegex = new Regex(@"//\s*InputParams\s*\(\s*DescriptorBindingPropertiesEnum\s*=\s*([^\s\)]+)\s*\)", RegexOptions.Compiled);
-                var descriptorBindingPropertiesRegexLineList = vertexShaderTextLines.Where(x => descriptorBindingPropertiesRegex.IsMatch(x)).ToList();
-
-                var descriptorTypeRegex = new Regex(@"layout\s*\(\s*binding\s*=\s*(\d+)\s*\)\s*(?:readonly\s+)?(readonly\s+buffer|buffer|uniform\s+sampler2D|uniform\s+samplerCube|uniform|[^\s;]+)", RegexOptions.Compiled);
-                var descriptorTypeLineList = vertexShaderTextLines.Where(x => descriptorTypeRegex.IsMatch(x)).ToList();
-
-                int x = 0;
-                foreach (var descriptorTypeLine in descriptorTypeLineList)
-                {
-                    Match descriptorBindingPropertiesMatch = descriptorBindingPropertiesRegex.Match(descriptorBindingPropertiesRegexLineList[x]);
-                    DescriptorBindingPropertiesEnum descriptorBinding = new DescriptorBindingPropertiesEnum();
-                    if (descriptorBindingPropertiesMatch.Success)
-                    {
-                        string enumName = descriptorBindingPropertiesMatch.Groups[1].Value;
-                        if (!Enum.TryParse(enumName, ignoreCase: true, out descriptorBinding))
-                        {
-                            throw new InvalidOperationException($"Invalid DescriptorBindingPropertiesEnum value: {enumName}");
-
-                        }
-                    }
-
-                    Match descriptorTypeMatch = descriptorTypeRegex.Match(descriptorTypeLine);
-                    VkDescriptorType descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_MAX_ENUM;
-                    switch (descriptorTypeMatch.Groups[2].Value)
-                    {
-                        case "buffer": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_STORAGE_BUFFER; break;
-                        case "uniform": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; break;
-                        case "uniform sampler2D": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; break;
-                        case "uniform samplerCube": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; break;
-                        default: throw new NotSupportedException($"Unsupported descriptor type: {descriptorTypeMatch.Groups[2].Value}");
-                    }
-
-                    pipelineDescriptorList.Add(new PipelineDescriptorModel
-                    {
-                        BindingNumber = uint.Parse(descriptorTypeMatch.Groups[1].Value),
-                        BindingPropertiesList = descriptorBinding,
-                        DescriptorType = descriptorType,
-                    });
-                    x++;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading descriptor set bindings from {vertexShaderFile}: {ex.Message}");
-                throw;
-            }
-            return pipelineDescriptorList;
-        }
-
-        public static List<VkDescriptorSetLayoutBindingModel> LoadDescriptorSetLayoutBindings(string vertexShaderFile)
-        {
-            List<VkDescriptorSetLayoutBindingModel> descriptorSetLayoutBindingList = new List<VkDescriptorSetLayoutBindingModel>();
-            var vertexShaderTextLines = File.ReadLines(vertexShaderFile).ToList();
-            try
-            {
-                var descriptorTypeRegex = new Regex(@"layout\s*\(\s*binding\s*=\s*(\d+)\s*\)\s*(?:readonly\s+)?(readonly\s+buffer|buffer|uniform\s+sampler2D|uniform\s+samplerCube|uniform|[^\s;]+)", RegexOptions.Compiled);
-                var descriptorTypeLineList = vertexShaderTextLines.Where(x => descriptorTypeRegex.IsMatch(x)).ToList();
-
-                int x = 0;
-                foreach (var descriptorTypeLine in descriptorTypeLineList)
-                {
-                    var match = descriptorTypeRegex.Match(descriptorTypeLine);
-                    VkDescriptorType descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_MAX_ENUM;
-                    switch (match.Groups[2].Value)
-                    {
-                        case "readonly buffer":
-                        case "buffer": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_STORAGE_BUFFER; break;
-                        case "uniform": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; break;
-                        case "uniform sampler2D": descriptorType = VkDescriptorType.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; break;
-                        default: throw new NotSupportedException($"Unsupported descriptor type: {match.Groups[2].Value}");
-                    }
-
-                    descriptorSetLayoutBindingList.Add(new VkDescriptorSetLayoutBindingModel
-                    {
-                        binding = uint.Parse(match.Groups[1].Value),
-                        descriptorType = descriptorType
-                    });
-                    x++;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading descriptor set layout bindings from {vertexShaderFile}: {ex.Message}");
-                throw;
-            }
-
-            return descriptorSetLayoutBindingList;
-        }
-
-        public static void UpdateGlobalShaderBuffer(string pushConstantName)
-        {
-            if (!ShaderPushConstantExists(pushConstantName))
-            {
-                std::cerr << "Error: Push constant '" << pushConstantName << "' does not exist!" << std::endl;
-                return;
-            }
-            Shader_UpdatePushConstantBuffer(renderSystem.renderer, ShaderPushConstantMap[pushConstantName]);
         }
 
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkShaderModule Shader_BuildGLSLShaderFile(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path);

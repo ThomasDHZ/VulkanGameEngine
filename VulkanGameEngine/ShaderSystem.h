@@ -25,21 +25,15 @@ public:
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
 	UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
 	UnorderedMap<int, ShaderStruct>  PipelineShaderStructMap;
+
 	ShaderSystem();
 	~ShaderSystem();
 
-	
 	void StartUp();
-	ShaderPipelineData LoadShaderPipelineData(Vector<String> shaderPathList);
-	void UpdateGlobalShaderBuffer(const String& pushConstantName);
-	void UpdateShaderBuffer(uint vulkanBufferId);
 	void Destroy();
 
-	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
-	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const String& varName);
+	ShaderPipelineData LoadShaderPipelineData(Vector<String> shaderPathList);
 	VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
-
-	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
 	void LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList);
 
 	ShaderPipelineData& FindShaderModule(const String& shaderFile);
@@ -48,10 +42,17 @@ public:
 	ShaderStruct& FindShaderStruct(int vulkanBufferId);
 
 	ShaderStruct CopyShaderStructProtoType(const String& structName);
+	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
 
-	bool ShaderModuleExists(const String& shaderFile);
-	bool ShaderPushConstantExists(const String& pushConstantName);
-	bool ShaderStructPrototypeExists(const String& structKey);
-	bool ShaderStructExists(uint vulkanBufferKey);
+	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
+	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const String& varName);
+
+	void UpdateGlobalShaderBuffer(const String& pushConstantName);
+	void UpdateShaderBuffer(uint vulkanBufferId);
+
+	const bool ShaderModuleExists(const String& shaderFile) const;
+	const bool ShaderPushConstantExists(const String& pushConstantName) const;
+	const bool ShaderStructPrototypeExists(const String& structKey) const;
+	const bool ShaderStructExists(uint vulkanBufferKey) const;
 };
 extern ShaderSystem shaderSystem;

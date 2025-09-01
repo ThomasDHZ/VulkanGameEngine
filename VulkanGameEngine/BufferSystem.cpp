@@ -12,6 +12,7 @@ VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
         return it->second;
     }
     throw std::out_of_range("VulkanBufferMap not found for given GUID");
+    return VulkanBufferMap.at(id);
 }
 
 const Vector<VulkanBuffer>& VulkanBufferSystem::VulkanBufferList()

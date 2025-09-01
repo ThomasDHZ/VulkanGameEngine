@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Vertex.h"
 #include <Mesh.h>
 #include "BufferSystem.h"
@@ -10,20 +11,19 @@
 class MeshSystem
 {
 private:
-	static uint NextMeshId;
-	static uint NextSpriteMeshId;
-	static uint NextLevelLayerMeshId;
+    static uint NextMeshId;
+    static uint NextSpriteMeshId;
+    static uint NextLevelLayerMeshId;
 
-	UnorderedMap<uint, Mesh>							  MeshMap;
-	UnorderedMap<UM_SpriteBatchID, Mesh>				  SpriteMeshMap;
-	UnorderedMap<LevelGuid, Vector<Mesh>>				  LevelLayerMeshListMap;
-	UnorderedMap<uint, Vector<Vertex2D>>				  Vertex2DListMap;
-	UnorderedMap<uint, Vector<uint>>					  IndexListMap;
+    UnorderedMap<uint, Mesh>                           MeshMap;
+    UnorderedMap<UM_SpriteBatchID, Mesh>               SpriteMeshMap;
+    UnorderedMap<LevelGuid, Vector<Mesh>>             LevelLayerMeshListMap;
+    UnorderedMap<uint, Vector<Vertex2D>>               Vertex2DListMap;
+    UnorderedMap<uint, Vector<uint>>                   IndexListMap;
 
 public:
-
-	MeshSystem();
-	~MeshSystem();
+    MeshSystem();
+    ~MeshSystem();
 
 	template<class T>
 	int CreateMesh(Vector<T>& vertexList, Vector<uint32>& indexList, VkGuid materialId)
@@ -68,26 +68,28 @@ public:
 		};
 
 		Mesh mesh = Mesh_CreateMesh(renderSystem.renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
-														   bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
-														   bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
-														   bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
+			bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+			bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+			bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);
 		return meshId;
 	}
 
-	int CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
-	int CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
-	void Update(const float& deltaTime);
-	void Destroy(uint meshId);
-	void DestroyAllGameObjects();
+    int CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+    int CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
 
-	const Mesh& FindMesh(const uint& id);
-	const Mesh& FindSpriteMesh(const uint& id);
-	const Vector<Mesh>& FindLevelLayerMeshList(const LevelGuid& guid);
-	const Vector<Vertex2D>& FindVertex2DList(const uint& id);
-	const Vector<uint>& FindIndexList(const uint& id);
+    void Update(const float& deltaTime);
 
-	const Vector<Mesh> MeshList();
-	const Vector<Mesh> SpriteMeshList();
+    void Destroy(uint meshId);
+    void DestroyAllGameObjects();
+
+    const Mesh& FindMesh(const uint& id);
+    const Mesh& FindSpriteMesh(const uint& id);
+    const Vector<Mesh>& FindLevelLayerMeshList(const LevelGuid& guid);
+    const Vector<Vertex2D>& FindVertex2DList(const uint& id);
+    const Vector<uint>& FindIndexList(const uint& id);
+
+    const Vector<Mesh> MeshList();
+    const Vector<Mesh> SpriteMeshList();
 };
-extern MeshSystem meshSystem;
 
+extern MeshSystem meshSystem;

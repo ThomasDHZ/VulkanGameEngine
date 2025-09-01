@@ -1,29 +1,31 @@
 #pragma once
+
 #include <Typedef.h>
 #include <Material.h>
 #include <Vector.h>
 #include <VulkanShader.h>
 
-class MeshSystem;
 class MaterialSystem
 {
 private:
-	UnorderedMap<RenderPassGuid, Material>                        MaterialMap;
+    UnorderedMap<RenderPassGuid, Material> MaterialMap;
+
 public:
-	MaterialSystem();
-	~MaterialSystem();
+    MaterialSystem();
+    ~MaterialSystem();
 
-	void Update(const float& deltaTime);
-	VkGuid LoadMaterial(const String& materialPath);
+    void Update(const float& deltaTime);
+    VkGuid LoadMaterial(const String& materialPath);
 
-	bool MaterialMapExists(const VkGuid& renderPassId);
+    bool MaterialMapExists(const VkGuid& renderPassId);
 
-	const Material& FindMaterial(const RenderPassGuid& guid);
-	const Vector<Material>& MaterialList();
-	const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer();
+    const Material& FindMaterial(const RenderPassGuid& guid);
+    const Vector<Material>& MaterialList();
 
-	void Destroy(const VkGuid& guid);
-	void DestroyAllMaterials();
+    const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer();
+
+    void Destroy(const VkGuid& guid);
+    void DestroyAllMaterials();
 };
-extern MaterialSystem materialSystem;
 
+extern MaterialSystem materialSystem;

@@ -88,6 +88,6 @@ void GameSystem::Destroy()
     bufferSystem.DestroyAllBuffers(); 
     shaderSystem.Destroy();
     renderSystem.Destroy(); 
-    levelSystem.DestoryLevel(); 
+    levelSystem.DestroyLevel(); 
     memorySystem.ReportLeaks();
 }

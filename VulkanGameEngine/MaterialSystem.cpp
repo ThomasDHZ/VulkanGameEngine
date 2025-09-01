@@ -13,6 +13,41 @@ MaterialSystem::~MaterialSystem()
 {
 }
 
+void MaterialSystem::Update(const float& deltaTime)
+{
+    uint x = 0;
+    for (auto& materialPair : MaterialMap)
+    {
+        materialPair.second.ShaderMaterialBufferIndex = x;
+
+        const Material material = materialPair.second;
+        const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
+        const uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
+        const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureBufferIndex : 0;
+        const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
+        const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? textureSystem.FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
+        const uint NormalMapId = material.NormalMapId != VkGuid() ? textureSystem.FindTexture(material.NormalMapId).textureBufferIndex : 0;
+        const uint DepthMapId = material.DepthMapId != VkGuid() ? textureSystem.FindTexture(material.DepthMapId).textureBufferIndex : 0;
+        const uint AlphaMapId = material.AlphaMapId != VkGuid() ? textureSystem.FindTexture(material.AlphaMapId).textureBufferIndex : 0;
+        const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : 0;
+        const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
+  
+        ShaderStruct& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap")->Value, &AlbedoMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicRoughnessMap")->Value, &MetallicRoughnessMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicMap")->Value, &MetallicMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "RoughnessMap")->Value, &RoughnessMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AmbientOcclusionMap")->Value, &AmbientOcclusionMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "NormalMap")->Value, &NormalMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "DepthMap")->Value, &DepthMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AlphaMap")->Value, &AlphaMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "EmissionMap")->Value, &EmissionMapId, sizeof(uint));
+        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "HeightMap")->Value, &HeightMapId, sizeof(uint));
+        shaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
+        x++;
+    }
+}
+
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 {
     if (materialPath.empty() ||
@@ -38,22 +73,12 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 
 bool MaterialSystem::MaterialMapExists(const VkGuid& renderPassId)
 {
-    auto it = MaterialMap.find(renderPassId);
-    if (it != MaterialMap.end())
-    {
-        return true;
-    }
-    return false;
+    return MaterialMap.contains(renderPassId);
 }
 
 const Material& MaterialSystem::FindMaterial(const RenderPassGuid& guid)
 {
-    auto it = MaterialMap.find(guid);
-    if (it != MaterialMap.end())
-    {
-        return it->second;
-    }
-    throw std::out_of_range("Material not found for given GUID");
+    return MaterialMap.at(guid);
 }
 
 const Vector<Material>& MaterialSystem::MaterialList()
@@ -94,40 +119,6 @@ const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialPropertiesBuffer
     return materialPropertiesBuffer;
 }
 
-void MaterialSystem::Update(const float& deltaTime)
-{
-    uint x = 0;
-    for (auto& materialPair : MaterialMap)
-    {
-        materialPair.second.ShaderMaterialBufferIndex = x;
-
-        const Material material = materialPair.second;
-        const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
-        const uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
-        const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureBufferIndex : 0;
-        const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
-        const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? textureSystem.FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
-        const uint NormalMapId = material.NormalMapId != VkGuid() ? textureSystem.FindTexture(material.NormalMapId).textureBufferIndex : 0;
-        const uint DepthMapId = material.DepthMapId != VkGuid() ? textureSystem.FindTexture(material.DepthMapId).textureBufferIndex : 0;
-        const uint AlphaMapId = material.AlphaMapId != VkGuid() ? textureSystem.FindTexture(material.AlphaMapId).textureBufferIndex : 0;
-        const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : 0;
-        const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
-  
-        ShaderStruct& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap")->Value, &AlbedoMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicRoughnessMap")->Value, &MetallicRoughnessMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicMap")->Value, &MetallicMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "RoughnessMap")->Value, &RoughnessMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AmbientOcclusionMap")->Value, &AmbientOcclusionMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "NormalMap")->Value, &NormalMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "DepthMap")->Value, &DepthMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AlphaMap")->Value, &AlphaMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "EmissionMap")->Value, &EmissionMapId, sizeof(uint));
-        memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "HeightMap")->Value, &HeightMapId, sizeof(uint));
-        shaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
-        x++;
-    }
-}
 
 void MaterialSystem::Destroy(const VkGuid& guid)
 {

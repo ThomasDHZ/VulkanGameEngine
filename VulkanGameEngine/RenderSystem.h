@@ -1,4 +1,5 @@
 #pragma once
+
 #include <VulkanRenderer.h>
 #include <VulkanRenderPass.h>
 #include <ImGuiRenderer.h>
@@ -6,6 +7,7 @@
 #include <nlohmann/json.hpp>
 #include "ShaderSystem.h"
 
+// Type definitions
 typedef uint UM_SpriteID;
 typedef uint UM_SpriteBatchID;
 typedef uint UM_RenderPassID;
@@ -17,13 +19,15 @@ typedef VkGuid LevelGuid;
 class RenderSystem
 {
     friend class JsonRenderPass;
-private:
 
+private:
+    // Private members
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
 
+    // Private methods
     VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);
     void RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
@@ -50,7 +54,7 @@ public:
 
     VkCommandBuffer RenderFrameBuffer(VkGuid& renderPassId, VkGuid& inputTextureRenderPassId);
     VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, ShaderPushConstant& sceneDataBuffer);
- 
+
     VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
 
     const VulkanRenderPass& FindRenderPass(const RenderPassGuid& guid);
@@ -60,9 +64,10 @@ public:
     VkResult EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList);
     void Destroy();
 
-    static VkCommandBuffer  BeginSingleTimeCommands();
-    static VkCommandBuffer  BeginSingleTimeCommands(VkCommandPool& commandPool);
-    static VkResult  EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-    static VkResult  EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool);
+    static VkCommandBuffer BeginSingleTimeCommands();
+    static VkCommandBuffer BeginSingleTimeCommands(VkCommandPool& commandPool);
+    static VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+    static VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool);
 };
+
 extern RenderSystem renderSystem;

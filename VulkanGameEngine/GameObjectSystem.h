@@ -1,4 +1,5 @@
 #pragma once
+
 #include <VkGuid.h>
 #include "Vertex.h"
 #include "InputComponent.h"
@@ -20,7 +21,7 @@ public:
         Vertex2D(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
         Vertex2D(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
         Vertex2D(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
-        Vertex2D(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f)),
+        Vertex2D(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
     };
 
     Vector<uint32> SpriteIndexList =
@@ -34,7 +35,7 @@ public:
 
     void CreateGameObject(const String& name, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition);
     void CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition);
-    
+
     void LoadTransformComponent(const nlohmann::json& json, GameObjectID id, const vec2& gameObjectPosition);
     void LoadInputComponent(const nlohmann::json& json, GameObjectID id);
     void LoadSpriteComponent(const nlohmann::json& json, GameObjectID id);
@@ -50,4 +51,5 @@ public:
     void DestroyGameObject(const GameObjectID& gameObjectId);
     void DestroyGameObjects();
 };
+
 extern GameObjectSystem gameObjectSystem;

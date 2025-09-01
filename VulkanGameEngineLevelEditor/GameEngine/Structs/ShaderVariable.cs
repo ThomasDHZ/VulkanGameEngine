@@ -26,7 +26,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 
     public unsafe struct ShaderVariable
     {
-        public string Name { get; set; } = string.Empty;
+        public fixed char Name[256];
         public size_t Size { get; set; } = 0;
         public size_t ByteAlignment { get; set; } = 0;
         public void* Value { get; set; } = null;

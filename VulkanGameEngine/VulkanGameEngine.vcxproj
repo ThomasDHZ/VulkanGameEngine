@@ -150,7 +150,6 @@
     <ClCompile Include="LevelSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
-    <ClCompile Include="MemoryLeakSystem.cpp" />
     <ClCompile Include="MeshSystem.cpp" />
     <ClCompile Include="OrthographicCamera2D.cpp" />
     <ClCompile Include="OrthographicCamera3D.cpp" />
@@ -174,7 +173,6 @@
     <ClInclude Include="LevelLayout.h" />
     <ClInclude Include="LevelSystem.h" />
     <ClInclude Include="MaterialSystem.h" />
-    <ClInclude Include="MemoryLeakSystem.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="MeshSystem.h" />
     <ClInclude Include="OrthographicCamera2D.h" />
