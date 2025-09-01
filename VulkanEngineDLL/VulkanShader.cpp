@@ -2,6 +2,7 @@
 #include <regex>
 #include "MemorySystem.h"
 #include "json.h"
+#include "CHelper.h"
 
 void Shader_StartUp()
 {
@@ -10,7 +11,7 @@ void Shader_StartUp()
     //dxc_utils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
 }
 
-ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipelineShaderCount)
+ShaderPipelineData Shader_GetShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount)
 {
     SpvReflectShaderModule spvModule;
     Vector<VkVertexInputBindingDescription> vertexInputBindingList;
@@ -20,14 +21,12 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
     Vector<ShaderVertexVariable> outputVariables;
     Vector<ShaderDescriptorBinding> descriptorBindings;
     
-    Span<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderCount);
+    Vector<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderPaths + pipelineShaderCount);
     for (auto& pipelineShaderPath : pipelineShaderPathList)
     {
         FileState file = File_Read(pipelineShaderPath.c_str());
         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
         Shader_GetShaderConstBuffer(spvModule, constBuffers);
-        //memorySystem.ReportLeaks();
-        //Shader_GetShaderDescriptorSetInfo(spvModule, shaderStructs);
         Shader_GetShaderDescriptorBindings(spvModule, descriptorBindings);
         if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
         {
@@ -35,7 +34,7 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
         }
         spvReflectDestroyShaderModule(&spvModule);
     }
-    ShaderPiplineData pipelineData = ShaderPiplineData
+    ShaderPipelineData pipelineData = ShaderPipelineData
     {
          .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
@@ -43,7 +42,7 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
          .VertexInputBindingCount = vertexInputBindingList.size(),
          .VertexInputAttributeListCount = vertexInputAttributeList.size(),
          .PushConstantCount = constBuffers.size(),
-         .ShaderList = memorySystem.AddPtrBuffer<String>(pipelineShaderPaths, pipelineShaderCount, __FILE__, __LINE__, __func__),
+         .ShaderList = memorySystem.AddPtrBuffer<String>(pipelineShaderPathList.data(), pipelineShaderPathList.size(), __FILE__, __LINE__, __func__),
          .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
          .ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__),
          .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
@@ -53,7 +52,7 @@ ShaderPiplineData Shader_GetShaderData(String* pipelineShaderPaths, size_t pipel
     return pipelineData;
 }
 
-void Shader_ShaderDestroy(ShaderPiplineData& shader)
+void Shader_ShaderDestroy(ShaderPipelineData& shader)
 {
     Shader_DestroyShaderBindingData(shader);
     memorySystem.RemovePtrBuffer<String>(shader.ShaderList);
@@ -102,7 +101,7 @@ void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct)
     }
 }
 
-void Shader_DestroyShaderBindingData(ShaderPiplineData& shader)
+void Shader_DestroyShaderBindingData(ShaderPipelineData& shader)
 {
     for (int x = 0; x < shader.DescriptorBindingCount; x++)
     {
@@ -231,16 +230,16 @@ void Shader_SetVariableDefaults(ShaderVariable& shaderVariable)
     }
 }
 
-VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const String& filename, VkShaderStageFlagBits shaderStages)
+VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const char* filename, VkShaderStageFlagBits shaderStages)
 {
     VkShaderModule shaderModule = VK_NULL_HANDLE;
-    if (File_GetFileExtention(filename.c_str()) == "hlsl")
+    if (File_GetFileExtention(filename) == "hlsl")
     {
       //  shaderModule = Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
     }
     else
     {
-        shaderModule = Shader_BuildGLSLShaderFile(device, filename.c_str());
+        shaderModule = Shader_BuildGLSLShaderFile(device, filename);
     }
     return Shader_CreateShader(shaderModule, shaderStages);
 }
@@ -272,11 +271,11 @@ void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPus
     }
 }
 
-ShaderStruct* Shader_LoadProtoTypeStructs(String* pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount)
+ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount)
 {
     SpvReflectShaderModule spvModule;
     Vector<ShaderStruct> shaderStructs;
-    Span<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderCount);
+    Vector<String> pipelineShaderPathList = CHelper_ConstCharPtrPtrToVector(pipelineShaderPaths, pipelineShaderCount);
     for (auto& pipelineShaderPath : pipelineShaderPathList)
     {
         FileState file = File_Read(pipelineShaderPath.c_str());
@@ -888,7 +887,7 @@ ShaderStruct Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t s
     return *it;
 }
 
-ShaderVariable* Shader_SearchShaderStructhVar(const ShaderStruct& shaderStruct, const String& varName)
+ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct& shaderStruct, const char* varName)
 {
     auto it = std::find_if(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableList + shaderStruct.ShaderBufferVariableListCount,
         [&](const ShaderVariable& var) {

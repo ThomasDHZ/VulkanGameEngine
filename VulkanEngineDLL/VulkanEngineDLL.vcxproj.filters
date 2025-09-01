@@ -162,6 +162,9 @@
     <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VulkanWindow.c">
@@ -282,6 +285,9 @@
       <Filter>Source Files\spirv</Filter>
     </ClCompile>
     <ClCompile Include="VulkanError.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

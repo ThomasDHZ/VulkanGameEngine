@@ -110,7 +110,7 @@ struct ShaderPushConstant
     bool			GlobalPushContant = false;
 };
 
-struct ShaderPiplineData
+struct ShaderPipelineData
 {
     size_t                             ShaderCount;
     size_t                             DescriptorBindingCount = 0;
@@ -151,7 +151,7 @@ struct RenderPipelineLoader
     VkRenderPass RenderPass;
     GPUIncludes gpuIncludes;
     ShaderPushConstant PushConstant;
-    ShaderPiplineData ShaderPiplineInfo;
+    ShaderPipelineData ShaderPiplineInfo;
     size_t ViewportCount = 0;
     size_t ScissorCount = 0;
     size_t PipelineColorBlendAttachmentStateCount = 0;

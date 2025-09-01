@@ -1,7 +1,6 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
-#pragma once
 #include <sys/stat.h>
 #include <time.h>
 #include <string.h>

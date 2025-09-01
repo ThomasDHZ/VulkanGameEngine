@@ -19,7 +19,7 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxc_compiler;
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> DefaultIncludeHandler;
 
-	UnorderedMap<String, ShaderPiplineData> ShaderModuleMap;
+	UnorderedMap<String, ShaderPipelineData> ShaderModuleMap;
 
 public:
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
@@ -30,7 +30,7 @@ public:
 
 	
 	void StartUp();
-	ShaderPiplineData AddShaderModule(Vector<String> shaderPathList);
+	ShaderPipelineData LoadShaderPipelineData(Vector<String> shaderPathList);
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);
 	void Destroy();
@@ -42,7 +42,7 @@ public:
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
 	void LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList);
 
-	ShaderPiplineData& FindShaderModule(const String& shaderFile);
+	ShaderPipelineData& FindShaderModule(const String& shaderFile);
 	ShaderPushConstant& FindShaderPushConstant(const String& shaderFile);
 	ShaderStruct FindShaderProtoTypeStruct(const String& structKey);
 	ShaderStruct& FindShaderStruct(int vulkanBufferId);

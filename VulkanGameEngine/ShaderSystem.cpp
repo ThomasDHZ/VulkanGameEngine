@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string_view>
+#include <CHelper.h>
 
 ShaderSystem shaderSystem = ShaderSystem();
 
@@ -25,12 +26,13 @@ void ShaderSystem::StartUp()
 
 VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages)
 {
-    return Shader_CreateShader(device, path, shaderStages);
+    return Shader_CreateShader(device, path.c_str(), shaderStages);
 }
 
-ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
+ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPathList)
 {
-    ShaderPiplineData pipelineData = Shader_GetShaderData(shaderPathList.data(), shaderPathList.size());
+    const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderPathList);
+    ShaderPipelineData pipelineData = Shader_GetShaderData(cShaderList, shaderPathList.size());
     Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
     for (auto& pushConstant : pushConstantList)
     {
@@ -58,6 +60,7 @@ ShaderPiplineData ShaderSystem::AddShaderModule(Vector<String> shaderPathList)
         memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList);
         memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
     }
+    CHelper_DestroyConstCharPtrPtr(cShaderList);
     ShaderModuleMap[pipelineData.ShaderList[0]] = pipelineData;
     return pipelineData;
 }
@@ -84,7 +87,7 @@ ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* 
 
 ShaderVariable* ShaderSystem::SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName)
 {
-    return Shader_SearchShaderStructhVar(shaderStruct, varName);
+    return Shader_SearchShaderStructVar(shaderStruct, varName.c_str());
 }
 
 void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
@@ -128,8 +131,8 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
         {
             nlohmann::json pipelineJson = Json::ReadJson(renderPassJson["RenderPipelineList"][x]);
             Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
-            ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(shaderJsonList.data(), shaderJsonList.size(), protoTypeStructCount);
-
+            const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderJsonList);
+            ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(cShaderList, shaderJsonList.size(), protoTypeStructCount);
             Span<ShaderStruct> shaderStructList(shaderStructArray, protoTypeStructCount);
             for (auto& shaderStruct : shaderStructList)
             {
@@ -148,11 +151,12 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
                 memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
             }
             memorySystem.RemovePtrBuffer<ShaderStruct>(shaderStructArray);
+            CHelper_DestroyConstCharPtrPtr(cShaderList);
         }
     }
 }
 
-ShaderPiplineData& ShaderSystem::FindShaderModule(const String& shaderFile)
+ShaderPipelineData& ShaderSystem::FindShaderModule(const String& shaderFile)
 {
     auto it = ShaderModuleMap.find(shaderFile);
     if (it != ShaderModuleMap.end())
