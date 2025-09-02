@@ -17,7 +17,7 @@ public:
     void Update(const float& deltaTime);
     VkGuid LoadMaterial(const String& materialPath);
 
-    bool MaterialMapExists(const VkGuid& renderPassId);
+    const bool MaterialMapExists(const VkGuid& renderPassId)  const;
 
     const Material& FindMaterial(const RenderPassGuid& guid);
     const Vector<Material>& MaterialList();

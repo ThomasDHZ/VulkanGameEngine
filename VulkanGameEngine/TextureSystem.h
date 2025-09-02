@@ -36,10 +36,10 @@ public:
     Texture& FindRenderedTexture(const TextureGuid& textureGuid);
     Vector<Texture>& FindRenderedTextureList(const RenderPassGuid& guid);
 
-    bool TextureExists(const RenderPassGuid& guid);
-    bool DepthTextureExists(const RenderPassGuid& guid);
-    bool RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid);
-    bool RenderedTextureListExists(const RenderPassGuid& guid);
+    const bool TextureExists(const RenderPassGuid& guid) const;
+    const bool DepthTextureExists(const RenderPassGuid& guid) const;
+    const bool RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid) const;
+    const bool RenderedTextureListExists(const RenderPassGuid& guid) const;
 
     const Vector<Texture> TextureList();
     const Vector<Texture> DepthTextureList();

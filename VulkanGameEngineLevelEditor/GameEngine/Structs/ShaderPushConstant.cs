@@ -10,7 +10,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
     public unsafe struct ShaderPushConstant
     {
-        public string PushConstantName { get; set; } = string.Empty;
+        public fixed char Name[256];
         public size_t PushConstantSize { get; set; } = 0;
         public size_t PushConstantVariableListCount { get; set; } = 0;
         public VkShaderStageFlagBits ShaderStageFlags { get; set; }

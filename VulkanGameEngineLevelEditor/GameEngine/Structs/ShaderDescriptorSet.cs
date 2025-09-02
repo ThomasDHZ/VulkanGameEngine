@@ -10,7 +10,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     public unsafe struct ShaderDescriptorSet
     {
 
-        public string Name { get; set; } = string.Empty;
+        public fixed char Name[256];
         public uint Binding { get; set; } = 0;
         public VkDescriptorType DescripterType { get; set; }
         public size_t ShaderStructListCount { get; set; } = 0;

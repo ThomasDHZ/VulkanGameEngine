@@ -130,17 +130,17 @@ Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& gu
     return RenderedTextureListMap.at(guid);
 }
 
-bool TextureSystem::TextureExists(const RenderPassGuid& guid)
+const bool TextureSystem::TextureExists(const RenderPassGuid& guid) const
 {
     return TextureMap.contains(guid);
 }
 
-bool TextureSystem::DepthTextureExists(const RenderPassGuid& guid)
+const bool TextureSystem::DepthTextureExists(const RenderPassGuid& guid) const
 {
     return DepthTextureMap.contains(guid);
 }
 
-bool TextureSystem::RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid)
+const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid) const
 {
     auto it = RenderedTextureListMap.find(guid);
     if (it != RenderedTextureListMap.end())
@@ -151,7 +151,7 @@ bool TextureSystem::RenderedTextureExists(const RenderPassGuid& guid, const Text
     return RenderedTextureListMap.contains(textureGuid);
 }
 
-bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& guid)
+const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& guid) const
 {
     return RenderedTextureListMap.find(guid) != RenderedTextureListMap.end();
 }

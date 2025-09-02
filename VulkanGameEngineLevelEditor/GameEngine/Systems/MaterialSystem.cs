@@ -27,6 +27,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static Guid LoadMaterial(string materialPath)
         {
+            MemorySystem.AddPtrBuffer<int>(3, "notes");
+            MemorySystem.ReportLeaks();
+
+
             if (materialPath.IsEmpty())
             {
                 return new Guid();

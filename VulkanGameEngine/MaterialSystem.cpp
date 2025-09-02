@@ -71,7 +71,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     return materialId;
 }
 
-bool MaterialSystem::MaterialMapExists(const VkGuid& renderPassId)
+const bool MaterialSystem::MaterialMapExists(const VkGuid& renderPassId)  const
 {
     return MaterialMap.contains(renderPassId);
 }
