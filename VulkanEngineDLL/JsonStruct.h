@@ -119,7 +119,7 @@ struct ShaderPipelineData
     size_t                             VertexInputAttributeListCount = 0;
     size_t							   ShaderOutputCount = 0;
     size_t                             PushConstantCount = 0;
-    String*                            ShaderList = nullptr;
+    const char**                       ShaderList = nullptr;
     ShaderDescriptorBinding*           DescriptorBindingsList = nullptr;
     ShaderStruct*                      ShaderStructList = nullptr;
     VkVertexInputBindingDescription*   VertexInputBindingList = nullptr;

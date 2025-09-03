@@ -49,6 +49,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             string jsonContent = File.ReadAllText(levelPath);
             LevelLoader levelLoader = JsonConvert.DeserializeObject<LevelLoader>(jsonContent);
 
+            ShaderSystem.LoadShaderPipelineData(new List<string> { @$"{ConstConfig.BaseDirectoryPath}Shaders\\LevelShader2DVert.spv", @$"{ConstConfig.BaseDirectoryPath}Shaders\\LevelShader2DFrag.spv" });
+
             Guid tileSetId = new Guid();
             foreach (var texturePath in levelLoader.LoadTextures)
             {

@@ -82,7 +82,7 @@ VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, cons
 ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPathList)
 {
     const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderPathList);
-    ShaderPipelineData pipelineData = Shader_GetShaderData(cShaderList, shaderPathList.size());
+    ShaderPipelineData pipelineData = Shader_LoadPipelineShaderData(cShaderList, shaderPathList.size());
     Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
     for (auto& pushConstant : pushConstantList)
     {

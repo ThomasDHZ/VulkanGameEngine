@@ -16,19 +16,25 @@ extern "C"
 #include "MemorySystem.h"
 #include "JsonStruct.h"
 
-DLL_EXPORT void Shader_StartUp();
-DLL_EXPORT ShaderPipelineData Shader_GetShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount);
-DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const char* path, VkShaderStageFlagBits shaderStages);
-DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
-DLL_EXPORT void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct);
-DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
-DLL_EXPORT ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy);
-DLL_EXPORT ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct& shaderStruct, const char* varName);
-DLL_EXPORT void Shader_ShaderDestroy(ShaderPipelineData& shader);
-DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
-DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
-DLL_EXPORT void Shader_SetVariableDefaults(ShaderVariable& shaderVariable);
+#ifdef __cplusplus
+extern "C" {
+#endif
+    DLL_EXPORT void Shader_StartUp();
+    DLL_EXPORT ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount);
+    DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
+    DLL_EXPORT void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct);
+    DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
+    DLL_EXPORT ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy);
+    DLL_EXPORT ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct& shaderStruct, const char* varName);
+    DLL_EXPORT void Shader_ShaderDestroy(ShaderPipelineData& shader);
+    DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
+    DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
+    DLL_EXPORT void Shader_SetVariableDefaults(ShaderVariable& shaderVariable);
+#ifdef __cplusplus
+}
+#endif
 
+DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const char* path, VkShaderStageFlagBits shaderStages);
 ShaderPushConstant Shader_SearchShaderConstBuffer(ShaderPushConstant* shaderPushConstantList, size_t shaderPushConstantCount, const String& constBufferName);
 ShaderDescriptorBinding Shader_SearchDescriptorBindings(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const String& descriptorBindingName);
 ShaderStruct Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const String& structName);

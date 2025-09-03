@@ -92,40 +92,75 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return Shader_CreateShader(shaderModule, shaderStages);
         }
 
-        public static ShaderPipelineData LoadShaderPipelineData(List<String> shaderPathList)
+        public static ShaderPipelineData LoadShaderPipelineData(List<string> shaderPathList)
         {
+            // Convert List<string> to const char**
             IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(shaderPathList);
-            ShaderPipelineData pipelineData = Shader_GetShaderData(cShaderPathList, shaderPathList.Count);
-            ListPtr<ShaderPushConstant> pushConstantList = new ListPtr<ShaderPushConstant>(pipelineData.PushConstantList, pipelineData.PushConstantCount);
-            foreach (var pushConstant in pushConstantList)
+            IntPtr shaderPathsPtr = IntPtr.Zero;
+            if (cShaderPathList != null && cShaderPathList.Length > 0)
             {
-                if (!ShaderPushConstantExists(Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)))
+                shaderPathsPtr = Marshal.AllocHGlobal(cShaderPathList.Length * IntPtr.Size);
+                for (int i = 0; i < cShaderPathList.Length; i++)
                 {
-                    ShaderPushConstantMap[Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)] = new ShaderPushConstant
-                    {
-                      //  Name = pushConstant.Name,
-                        PushConstantSize = pushConstant.PushConstantSize,
-                        PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
-                        ShaderStageFlags = pushConstant.ShaderStageFlags,
-                       // PushConstantVariableList = MemorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, pushConstant.Name),
-                       // PushConstantBuffer = MemorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, pushConstant.Name),
-                        GlobalPushContant = pushConstant.GlobalPushContant
-                    };
+                    Marshal.WriteIntPtr(shaderPathsPtr, i * IntPtr.Size, cShaderPathList[i]);
+                }
+            }
 
-                    for (int x = 0; x < ShaderPushConstantMap[Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)].PushConstantVariableListCount; x++)
+            try
+            {
+                // Call C++ function to load shader pipeline data
+                ShaderPipelineData pipelineData = Shader_LoadPipelineShaderData(shaderPathsPtr, shaderPathList.Count);
+
+                //// Process ShaderList and add to ShaderModuleMap
+                //string[] shaderPaths = pipelineData.GetShaderList();
+                //if (shaderPaths.Length > 0)
+                //{
+                //    ShaderModuleMap[shaderPaths[0]] = pipelineData; // Use first shader path as key
+                //}
+
+                // Process push constants
+                ListPtr<ShaderPushConstant> pushConstantList = new ListPtr<ShaderPushConstant>(pipelineData.PushConstantList, (int)pipelineData.PushConstantCount);
+                foreach (var pushConstant in pushConstantList)
+                {
+                    string name = Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name);
+                    if (!ShaderPushConstantExists(name))
                     {
-                        ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
-                        //ShaderPushConstantMap[Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)].PushConstantVariableList[x].Value = MemorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)].PushConstantVariableList[x].Size, ShaderPushConstantMap[Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)].PushConstantVariableList[x].Name);
-                        Shader_SetVariableDefaults(ShaderPushConstantMap[Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name)].PushConstantVariableList[x]);
-                        MemorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
+                        ListPtr<ShaderVariable> shaderVariables = new ListPtr<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount);
+
+                        // Create a new ShaderPushConstant for C# side
+                        ShaderPushConstant newPushConstant = new ShaderPushConstant
+                        {
+                            PushConstantSize = pushConstant.PushConstantSize,
+                            PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
+                            ShaderStageFlags = pushConstant.ShaderStageFlags,
+                            PushConstantVariableList = MemorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.Ptr, shaderVariables.Count, name),
+                            PushConstantBuffer = MemorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, name),
+                            GlobalPushContant = pushConstant.GlobalPushContant
+                        };
+                        newPushConstant.SetName(name);
+                        ShaderPushConstantMap[name] = newPushConstant;
+
+                        // Process variables
+                        for (size_t x = 0; x < newPushConstant.PushConstantVariableListCount; x++)
+                        {
+                            ShaderVariable* variablePtr = &newPushConstant.PushConstantVariableList[x];
+                            newPushConstant.PushConstantVariableList[x].Value = MemorySystem.AddPtrBuffer<byte>(newPushConstant.PushConstantVariableList[x].Size, name);
+                            Shader_SetVariableDefaults(newPushConstant.PushConstantVariableList[x]);
+                        }
                     }
                 }
-                MemorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList);
-               // MemorySystem.RemovePtrBuffer<IntPtr>((IntPtr)pushConstant.PushConstantBuffer);
+
+                return pipelineData;
             }
-            CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
-            ShaderModuleMap[pipelineData.ShaderList[0]] = pipelineData;
-            return pipelineData;
+            finally
+            {
+                // Clean up input shader paths
+                CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
+                if (shaderPathsPtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(shaderPathsPtr);
+                }
+            }
         }
 
         public static ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, string varName)
@@ -334,20 +369,20 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return true;
         }
 
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkShaderModule Shader_BuildGLSLShaderFile(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern bool Shader_BuildGLSLShaders([MarshalAs(UnmanagedType.LPStr)] string command);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkPipelineShaderStageCreateInfo Shader_CreateShader(VkShaderModule shaderModule, VkShaderStageFlagBits shaderStages);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_StartUp();
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderPipelineData Shader_GetShaderData(IntPtr[] pipelineShaderPaths, size_t pipelineShaderCount);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_ShaderDestroy(ShaderPipelineData shader);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_SetVariableDefaults(ShaderVariable shaderVariable);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern bool Shader_BuildGLSLShaders([MarshalAs(UnmanagedType.LPStr)] string command);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkShaderModule Shader_BuildGLSLShaderFile(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkPipelineShaderStageCreateInfo Shader_CreateShader(VkShaderModule shaderModule, VkShaderStageFlagBits shaderStages);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderPipelineData Shader_LoadPipelineShaderData(IntPtr pipelineShaderPaths, size_t pipelineShaderCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path, VkShaderStageFlagBits shaderStages);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdateShaderBuffer(GraphicsRenderer renderer, VulkanBuffer vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdatePushConstantBuffer(GraphicsRenderer renderer, ShaderPushConstant pushConstantStruct);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStruct* Shader_LoadProtoTypeStructs(IntPtr[] pipelineShaderPaths, size_t pipelineShaderCount, size_t outProtoTypeStructCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStruct Shader_CopyShaderStructPrototype(ShaderStruct shaderStructToCopy);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_ShaderDestroy(ShaderPipelineData shader);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_SetVariableDefaults(ShaderVariable shaderVariable);
     }
 }

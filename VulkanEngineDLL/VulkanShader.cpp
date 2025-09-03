@@ -11,7 +11,7 @@ void Shader_StartUp()
     //dxc_utils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
 }
 
-ShaderPipelineData Shader_GetShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount)
+ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount)
 {
     SpvReflectShaderModule spvModule;
     Vector<VkVertexInputBindingDescription> vertexInputBindingList;
@@ -34,6 +34,24 @@ ShaderPipelineData Shader_GetShaderData(const char** pipelineShaderPaths, size_t
         }
         spvReflectDestroyShaderModule(&spvModule);
     }
+
+    Vector<const char*> cPipelineShaderPathList;
+    cPipelineShaderPathList.reserve(pipelineShaderPathList.size());
+    for (const auto& pipelineShaderPath : pipelineShaderPathList)
+    {
+        size_t strLen = pipelineShaderPath.length() + 1;
+        char* copiedStr = memorySystem.AddPtrBuffer<char>(strLen, __FILE__, __LINE__, __func__, "Shader path string");
+        if (copiedStr)
+        {
+            std::memcpy(copiedStr, pipelineShaderPath.c_str(), strLen);
+            cPipelineShaderPathList.push_back(copiedStr);
+        }
+        else
+        {
+            std::cerr << "Failed to allocate memory for shader path: " << pipelineShaderPath << std::endl;
+        }
+    }
+
     ShaderPipelineData pipelineData = ShaderPipelineData
     {
          .ShaderCount = pipelineShaderCount,
@@ -42,7 +60,7 @@ ShaderPipelineData Shader_GetShaderData(const char** pipelineShaderPaths, size_t
          .VertexInputBindingCount = vertexInputBindingList.size(),
          .VertexInputAttributeListCount = vertexInputAttributeList.size(),
          .PushConstantCount = constBuffers.size(),
-         .ShaderList = memorySystem.AddPtrBuffer<String>(pipelineShaderPathList.data(), pipelineShaderPathList.size(), __FILE__, __LINE__, __func__),
+         .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__),
          .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
          .ShaderStructList = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__),
          .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
@@ -55,7 +73,6 @@ ShaderPipelineData Shader_GetShaderData(const char** pipelineShaderPaths, size_t
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
 {
     Shader_DestroyShaderBindingData(shader);
-    memorySystem.RemovePtrBuffer<String>(shader.ShaderList);
     memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<ShaderStruct>(shader.ShaderStructList);

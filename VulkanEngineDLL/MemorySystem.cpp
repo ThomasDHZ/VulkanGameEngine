@@ -24,15 +24,21 @@ extern "C"
             };
         }
 
+        const char* fileStr = file ? _strdup(file) : nullptr;
+        const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
+        const char* funcStr = func ? _strdup(func) : nullptr;
+        const char* notesStr = notes ? _strdup(notes) : nullptr;
+
         return MemoryLeakPtr
         {
             .PtrAddress = memory,
             .PtrElements = elementCount,
             .isArray = elementCount > 1,
-            .File = file,
-            .Line = std::to_string(line).c_str(),
-            .Function = func,
-            .Notes = notes
+            .DanglingPtrMessage = nullptr,
+            .File = fileStr,
+            .Line = lineStr,
+            .Function = funcStr,
+            .Notes = notesStr
         };
     }
 

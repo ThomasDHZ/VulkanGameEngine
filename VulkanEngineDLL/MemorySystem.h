@@ -76,6 +76,46 @@ public:
         return buffer;
     }
 
+    const char* AddPtrBuffer(const char* elementData, const char* file, int line, const char* func, const char* notes = "")
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        if (!elementData)
+        {
+            std::cerr << "Null string data for " << notes << " at " << file << ":" << line << " in " << func << std::endl;
+            return nullptr;
+        }
+
+        size_t strLen = std::strlen(elementData) + 1;
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(strLen, 1, file, line, func, notes);
+        if (!memoryLeakPtr.PtrAddress)
+        {
+            std::cerr << "Failed to allocate memory for string, length " << strLen << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
+            return nullptr;
+        }
+
+        char* buffer = reinterpret_cast<char*>(memoryLeakPtr.PtrAddress);
+        std::strcpy(buffer, elementData);
+
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
+    const char** AddPtrBuffer(const char** elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(const char*), elementCount, file, line, func, notes);
+        if (!memoryLeakPtr.PtrAddress)
+        {
+            std::cerr << "Failed to allocate memory for const char* array, count " << elementCount
+                << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
+            return nullptr;
+        }
+        const char** buffer = reinterpret_cast<const char**>(memoryLeakPtr.PtrAddress);
+        std::memcpy(buffer, elementData, elementCount * sizeof(const char*));
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
     template <class T>
     void RemovePtrBuffer(T*& ptr)
     {
