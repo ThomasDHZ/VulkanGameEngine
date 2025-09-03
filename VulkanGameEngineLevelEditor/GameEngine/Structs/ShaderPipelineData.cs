@@ -11,19 +11,29 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct ShaderPipelineData
     {
-        public nuint ShaderCount { get; set; } = 0;
-        public nuint DescriptorBindingCount { get; set; } = 0;
-        public nuint VertexInputBindingCount { get; set; } = 0;
-        public nuint VertexInputAttributeListCount { get; set; } = 0;
-        public nuint PushConstantCount { get; set; } = 0;
-        public IntPtr ShaderList { get; set; } = IntPtr.Zero;
-        public ShaderDescriptorBinding* DescriptorBindingsList { get; set; } = null;
-        public VkVertexInputBindingDescription* VertexInputBindingList { get; set; } = null;
-        public VkVertexInputAttributeDescription* VertexInputAttributeList { get; set; } = null;
-        public ShaderPushConstant* PushConstantList { get; set; } = null;
+        public nuint ShaderCount { get; set; }
+        public nuint DescriptorBindingCount { get; set; }
+        public nuint VertexInputBindingCount { get; set; }
+        public nuint VertexInputAttributeListCount { get; set; }
+        public nuint PushConstantCount { get; set; }
+        public ShaderDescriptorBinding* DescriptorBindingsList { get; set; }
+        public VkVertexInputBindingDescription* VertexInputBindingList { get; set; }
+        public VkVertexInputAttributeDescription* VertexInputAttributeList { get; set; }
+        public ShaderPushConstant* PushConstantList { get; set; }
+        public IntPtr ShaderList { get; set; }
 
         public ShaderPipelineData()
         {
+            ShaderCount = 0;
+            DescriptorBindingCount = 0;
+            VertexInputBindingCount = 0;
+            VertexInputAttributeListCount = 0;
+            PushConstantCount = 0;
+            ShaderList = IntPtr.Zero;
+            DescriptorBindingsList = null;
+            VertexInputBindingList = null;
+            VertexInputAttributeList = null;
+            PushConstantList = null;
         }
 
         public string[] GetShaderList()
@@ -34,8 +44,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
             string[] result = new string[ShaderCount];
             for (int i = 0; i < (int)ShaderCount; i++)
             {
-                IntPtr stringPtr = Marshal.ReadIntPtr(ShaderList, (int)(i * IntPtr.Size));
-                result[i] = stringPtr != IntPtr.Zero ? Marshal.PtrToStringAnsi(stringPtr) : null;
+                IntPtr stringPtr = Marshal.ReadIntPtr(ShaderList, i * IntPtr.Size);
+                result[i] = stringPtr != IntPtr.Zero ? Marshal.PtrToStringAnsi(stringPtr) : string.Empty;
             }
             return result;
         }

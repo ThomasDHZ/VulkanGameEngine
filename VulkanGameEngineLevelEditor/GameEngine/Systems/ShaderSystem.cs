@@ -111,41 +111,55 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 // Call C++ function to load shader pipeline data
                 ShaderPipelineData pipelineData = Shader_LoadPipelineShaderData(shaderPathsPtr, shaderPathList.Count);
 
-                //// Process ShaderList and add to ShaderModuleMap
-                //string[] shaderPaths = pipelineData.GetShaderList();
-                //if (shaderPaths.Length > 0)
-                //{
-                //    ShaderModuleMap[shaderPaths[0]] = pipelineData; // Use first shader path as key
-                //}
-
                 // Process push constants
                 ListPtr<ShaderPushConstant> pushConstantList = new ListPtr<ShaderPushConstant>(pipelineData.PushConstantList, (int)pipelineData.PushConstantCount);
                 foreach (var pushConstant in pushConstantList)
                 {
-                    string name = Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name);
+                    string name = Marshal.PtrToStringAnsi((IntPtr)pushConstant.Name) ?? string.Empty;
                     if (!ShaderPushConstantExists(name))
                     {
-                        ListPtr<ShaderVariable> shaderVariables = new ListPtr<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount);
+                        // Convert ShaderVariable list
+                        ListPtr<ShaderVariable> shaderVariables = new ListPtr<ShaderVariable>(pushConstant.PushConstantVariableList, (int)pushConstant.PushConstantVariableListCount);
+                        ShaderVariable* newVariableList = (ShaderVariable*)Marshal.AllocHGlobal((int)pushConstant.PushConstantVariableListCount * sizeof(ShaderVariable));
 
-                        // Create a new ShaderPushConstant for C# side
+                        // Copy and initialize ShaderVariable list
+                        for (int i = 0; i < (int)pushConstant.PushConstantVariableListCount; i++)
+                        {
+                            ShaderVariable srcVar = shaderVariables[i];
+                            ShaderVariable newVar = new ShaderVariable
+                            {
+                                Size = srcVar.Size,
+                                ByteAlignment = srcVar.ByteAlignment,
+                                MemberTypeEnum = srcVar.MemberTypeEnum,
+                                Value = null // Set later
+                            };
+                            // Copy Name from C++ const char* to C# fixed char[256]
+                            string varName = Marshal.PtrToStringAnsi((IntPtr)srcVar.Name) ?? string.Empty;
+                            newVar.SetName(varName);
+                            newVariableList[i] = newVar;
+                        }
+
+                        // Create a new ShaderPushConstant
                         ShaderPushConstant newPushConstant = new ShaderPushConstant
                         {
                             PushConstantSize = pushConstant.PushConstantSize,
                             PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
                             ShaderStageFlags = pushConstant.ShaderStageFlags,
-                            PushConstantVariableList = MemorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.Ptr, shaderVariables.Count, name),
-                            PushConstantBuffer = MemorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, name),
+                            PushConstantVariableList = newVariableList,
+                            PushConstantBuffer = MemorySystem.AddPtrBuffer<byte>((byte)pushConstant.PushConstantSize, name),
                             GlobalPushContant = pushConstant.GlobalPushContant
                         };
                         newPushConstant.SetName(name);
                         ShaderPushConstantMap[name] = newPushConstant;
 
-                        // Process variables
-                        for (size_t x = 0; x < newPushConstant.PushConstantVariableListCount; x++)
+                        // Initialize ShaderVariable Values and defaults
+                        for (nuint x = 0; x < newPushConstant.PushConstantVariableListCount; x++)
                         {
-                            ShaderVariable* variablePtr = &newPushConstant.PushConstantVariableList[x];
-                            newPushConstant.PushConstantVariableList[x].Value = MemorySystem.AddPtrBuffer<byte>(newPushConstant.PushConstantVariableList[x].Size, name);
-                            Shader_SetVariableDefaults(newPushConstant.PushConstantVariableList[x]);
+                            newPushConstant.PushConstantVariableList[x].Value = MemorySystem.AddPtrBuffer<byte>(
+                                (byte)newPushConstant.PushConstantVariableList[x].Size,
+                                newPushConstant.PushConstantVariableList[x].GetName()
+                            );
+                           // Shader_SetVariableDefaults(ref newPushConstant.PushConstantVariableList[x]);
                         }
                     }
                 }
@@ -162,7 +176,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 }
             }
         }
-
         public static ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, string varName)
         {
             if (pushConstant == null)
@@ -170,7 +183,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 return null;
             }
 
-            ListPtr<ShaderVariable> pushConstantShaderVariables = new ListPtr<ShaderVariable>(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
+            ListPtr<ShaderVariable> pushConstantShaderVariables = new ListPtr<ShaderVariable>(pushConstant->PushConstantVariableList, (size_t)pushConstant->PushConstantVariableListCount);
             var matchingVar = pushConstantShaderVariables.FirstOrDefault(var => Marshal.PtrToStringAnsi((IntPtr)var.Name) == varName);
             return &matchingVar;
         }

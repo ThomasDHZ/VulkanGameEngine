@@ -33,6 +33,8 @@ void MaterialSystem::Update(const float& deltaTime)
         const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
   
         ShaderStruct& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
+        Span<ShaderVariable> shaderVariableList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+        auto asdf = shaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap");
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap")->Value, &AlbedoMapId, sizeof(uint));
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicRoughnessMap")->Value, &MetallicRoughnessMapId, sizeof(uint));
         memcpy(shaderSystem.SearchShaderStruct(shaderStruct, "MetallicMap")->Value, &MetallicMapId, sizeof(uint));

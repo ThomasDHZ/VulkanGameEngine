@@ -52,16 +52,9 @@ struct RenderPassLoader
     RenderAreaModel RenderArea;
 };
 
-struct ShaderVertexVariable
-{
-    String Name;
-    uint32 Location;
-    VkFormat Format;
-};
-
 struct ShaderVariable
 {
-    String Name;
+    const char* Name;
     size_t Size = 0;
     size_t ByteAlignment = 0;
     void* Value = nullptr;
@@ -70,7 +63,7 @@ struct ShaderVariable
 
 struct ShaderStruct
 {
-    String          Name;
+    const char*     Name;
     size_t			ShaderBufferSize = 0;
     size_t          ShaderBufferVariableListCount = 0;
     ShaderVariable* ShaderBufferVariableList = nullptr;
@@ -101,7 +94,7 @@ struct ShaderDescriptorBinding
 
 struct ShaderPushConstant
 {
-    String			PushConstantName;
+    const char*     PushConstantName;
     size_t			PushConstantSize = 0;
     size_t			PushConstantVariableListCount = 0;
     VkShaderStageFlags ShaderStageFlags;
@@ -114,18 +107,14 @@ struct ShaderPipelineData
 {
     size_t                             ShaderCount;
     size_t                             DescriptorBindingCount = 0;
-    size_t                             ShaderStructCount = 0;
     size_t                             VertexInputBindingCount = 0;
     size_t                             VertexInputAttributeListCount = 0;
-    size_t							   ShaderOutputCount = 0;
     size_t                             PushConstantCount = 0;
-    const char**                       ShaderList = nullptr;
     ShaderDescriptorBinding*           DescriptorBindingsList = nullptr;
-    ShaderStruct*                      ShaderStructList = nullptr;
     VkVertexInputBindingDescription*   VertexInputBindingList = nullptr;
     VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
-    ShaderVariable*                    ShaderOutputList = nullptr;
     ShaderPushConstant*                PushConstantList = nullptr;
+    const char**                       ShaderList = nullptr;
 };
 
 struct GPUIncludes

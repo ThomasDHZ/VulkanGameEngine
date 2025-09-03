@@ -11,13 +11,14 @@ struct MemoryLeakPtr
     const char* DanglingPtrMessage;
     const char* File;
     const char* Line;
+    const char* Type;
     const char* Function;
     const char* Notes;
 };
 
 extern "C" 
 {
-    DLL_EXPORT MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* func, const char* notes);
+    DLL_EXPORT MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes);
     DLL_EXPORT void MemoryLeakPtr_DeletePtr(void* ptr);
     DLL_EXPORT void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr);
 }
@@ -41,7 +42,7 @@ public:
     {
         std::lock_guard<std::mutex> lock(Mutex);
 
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, func, notes);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
         PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
         return reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
     }
@@ -52,7 +53,7 @@ public:
     {
         std::lock_guard<std::mutex> lock(Mutex);
 
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, func, notes);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, typeid(T).name(), func, notes);
         PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
         return reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
     }
@@ -61,7 +62,7 @@ public:
     T* AddPtrBuffer(T* elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
     {
         std::lock_guard<std::mutex> lock(Mutex);
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, func, notes);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
         if (!memoryLeakPtr.PtrAddress)
         {
             std::cerr << "Failed to allocate memory for " << notes << " at " << file << ":" << line << std::endl;
@@ -86,7 +87,7 @@ public:
         }
 
         size_t strLen = std::strlen(elementData) + 1;
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(strLen, 1, file, line, func, notes);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(strLen, 1, file, line, "const char*", func, notes);
         if (!memoryLeakPtr.PtrAddress)
         {
             std::cerr << "Failed to allocate memory for string, length " << strLen << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
@@ -96,22 +97,6 @@ public:
         char* buffer = reinterpret_cast<char*>(memoryLeakPtr.PtrAddress);
         std::strcpy(buffer, elementData);
 
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
-    }
-
-    const char** AddPtrBuffer(const char** elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(const char*), elementCount, file, line, func, notes);
-        if (!memoryLeakPtr.PtrAddress)
-        {
-            std::cerr << "Failed to allocate memory for const char* array, count " << elementCount
-                << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
-            return nullptr;
-        }
-        const char** buffer = reinterpret_cast<const char**>(memoryLeakPtr.PtrAddress);
-        std::memcpy(buffer, elementData, elementCount * sizeof(const char*));
         PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
         return buffer;
     }
@@ -142,7 +127,7 @@ public:
 
         if (!PtrAddressMap.empty()) 
         {
-            fprintf(stderr, "Memory leaks detected in DLL:\n");
+            fprintf(stderr, "\nMemory leaks detected:\n");
             for (auto& ptr : PtrAddressMap) 
             {
                 MemoryLeakPtr_DanglingPtrMessage(&ptr.second);

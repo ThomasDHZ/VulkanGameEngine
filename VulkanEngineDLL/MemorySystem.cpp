@@ -5,7 +5,7 @@ MemorySystem memorySystem = MemorySystem();
 
 extern "C" 
 {
-    MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* func, const char* notes)
+    MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes)
     {
         void* memory = nullptr;
         try
@@ -26,6 +26,7 @@ extern "C"
 
         const char* fileStr = file ? _strdup(file) : nullptr;
         const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
+        const char* typeStr = type ? _strdup(type) : nullptr;
         const char* funcStr = func ? _strdup(func) : nullptr;
         const char* notesStr = notes ? _strdup(notes) : nullptr;
 
@@ -37,6 +38,7 @@ extern "C"
             .DanglingPtrMessage = nullptr,
             .File = fileStr,
             .Line = lineStr,
+            .Type = typeStr,
             .Function = funcStr,
             .Notes = notesStr
         };
@@ -53,6 +55,7 @@ extern "C"
         {
             String fileStr(ptr->File);
             String lineStr(ptr->Line);
+            String typeStr(ptr->Type);
             String functionStr(ptr->Function);
             String noteStr(ptr->Notes);
 
@@ -70,31 +73,43 @@ extern "C"
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
                 std::cout << "Error: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
+
                 std::cout << "Memory Leak at: ";
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << "Pointer: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << ptr->PtrAddress;
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Size: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << ptr->PtrElements * sizeof(byte);
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " IsArray: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << (ptr->isArray ? "Yes" : "No");
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " File: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << (fileStr.empty() ? "Unknown" : filename);
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Line: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << (lineStr.empty() ? "Unknown" : lineStr);
+
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                std::cout << " Type: ";
+                SetConsoleTextAttribute(hConsole, originalAttributes);
+                std::cout << (typeStr.empty() ? "Unknown" : typeStr);
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Function: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
                 std::cout << (functionStr.empty() ? "Unknown" : functionStr);
+
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Notes: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);

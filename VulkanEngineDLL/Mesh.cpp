@@ -49,8 +49,8 @@ void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct&
 	}
 
 	Span<ShaderVariable> shaderVariableList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
-	memcpy(Shader_SearchShaderStructVar(shaderStruct, "MaterialIndex")->Value, &shaderMaterialBufferIndex, sizeof(uint));
-	memcpy(Shader_SearchShaderStructVar(shaderStruct, "MeshTransform")->Value, &GameObjectMatrix, sizeof(mat4));
+	memcpy(Shader_SearchShaderStructVar(&shaderStruct, "MaterialIndex")->Value, &shaderMaterialBufferIndex, sizeof(uint));
+	memcpy(Shader_SearchShaderStructVar(&shaderStruct, "MeshTransform")->Value, &GameObjectMatrix, sizeof(mat4));
 	Shader_UpdateShaderBuffer(renderer, meshPropertiesBuffer, &shaderStruct, 1);
 }
 

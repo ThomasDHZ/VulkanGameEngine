@@ -10,20 +10,42 @@ using VulkanGameEngineLevelEditor.GameEngine.Systems;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct ShaderPushConstant
     {
         public fixed char Name[256];
-        public size_t PushConstantSize { get; set; }
-        public size_t PushConstantVariableListCount { get; set; }
+        public nuint PushConstantSize { get; set; }
+        public nuint PushConstantVariableListCount { get; set; }
         public VkShaderStageFlagBits ShaderStageFlags { get; set; }
         public ShaderVariable* PushConstantVariableList { get; set; }
         public void* PushConstantBuffer { get; set; }
         public bool GlobalPushContant { get; set; }
 
+        public ShaderPushConstant()
+        {
+            PushConstantSize = 0;
+            PushConstantVariableListCount = 0;
+            ShaderStageFlags = 0;
+            PushConstantVariableList = null;
+            PushConstantBuffer = null;
+            GlobalPushContant = false;
+            // Initialize Name to empty null-terminated string
+            fixed (char* ptr = Name)
+            {
+                ptr[0] = '\0';
+            }
+        }
+
         public void SetName(string name)
         {
             if (string.IsNullOrEmpty(name))
+            {
+                fixed (char* ptr = Name)
+                {
+                    ptr[0] = '\0';
+                }
                 return;
+            }
 
             fixed (char* ptr = Name)
             {
@@ -32,7 +54,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
                 {
                     ptr[i] = name[i];
                 }
-                ptr[length] = '\0'; // Null-terminate
+                ptr[length] = '\0';
             }
         }
 
@@ -44,4 +66,5 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
             }
         }
     }
+
 }

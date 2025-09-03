@@ -94,15 +94,15 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
                 .PushConstantSize = pushConstant.PushConstantSize,
                 .PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
                 .ShaderStageFlags = pushConstant.ShaderStageFlags,
-                .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
-                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
+                .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, __FILE__, __LINE__, __func__, pushConstant.PushConstantName),
+                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName),
                 .GlobalPushContant = pushConstant.GlobalPushContant
             };
 
             for (int x = 0; x < ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
             {
                 ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
-                ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name.c_str());
+                ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name);
                 Shader_SetVariableDefaults(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x]);
                 memorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
             }
@@ -124,7 +124,10 @@ ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* 
 
     auto it = std::ranges::find_if(
         std::span(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount),
-        [&varName](const ShaderVariable& var) { return var.Name == varName; }
+        [&](const ShaderVariable& var) 
+        { 
+            return var.Name != nullptr && std::strcmp(var.Name, varName.c_str()) == 0;
+        }
     );
 
     return (it != std::span(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount).end()) ? &(*it) : nullptr;
@@ -132,7 +135,7 @@ ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* 
 
 ShaderVariable* ShaderSystem::SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName)
 {
-    return Shader_SearchShaderStructVar(shaderStruct, varName.c_str());
+    return Shader_SearchShaderStructVar(&shaderStruct, varName.c_str());
 }
 
 void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
@@ -179,15 +182,17 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
             {
                 if (!ShaderStructPrototypeExists(shaderStruct.Name))
                 {
-                    PipelineShaderStructPrototypeMap[shaderStruct.Name] = ShaderStruct
+                    const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name copy");
+                    PipelineShaderStructPrototypeMap[copiedStr] = ShaderStruct
                     {
-                        .Name = shaderStruct.Name,
+                        .Name = copiedStr,
                         .ShaderBufferSize = shaderStruct.ShaderBufferSize,
                         .ShaderBufferVariableListCount = shaderStruct.ShaderBufferVariableListCount,
-                        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str()),
+                        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, copiedStr),
                         .ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
-                        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str())
+                        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, copiedStr)
                     };
+                    //memorySystem.RemovePtrBuffer<const char>(copiedStr);
                 }
                 memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
             }
