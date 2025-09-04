@@ -15,7 +15,6 @@ global using VkSurfaceKHR = nint;
 global using VkDevice = nint;
 global using VkFlags = uint;
 global using VkRenderPass = nint;
-global using VkBool32 = uint;
 global using VkFramebuffer = nint;
 global using VkQueryControlFlags = uint;
 global using VkDescriptorPool = nint;

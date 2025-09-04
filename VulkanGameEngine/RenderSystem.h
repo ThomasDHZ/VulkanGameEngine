@@ -21,13 +21,11 @@ class RenderSystem
     friend class JsonRenderPass;
 
 private:
-    // Private members
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
 
-    // Private methods
     VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);
     void RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 

@@ -77,8 +77,8 @@ namespace Vulkan
         public VkCompareOp depthCompareOp;
         public bool depthBoundsTestEnable;
         public bool stencilTestEnable;
-        public VkStencilOpState front;
-        public VkStencilOpState back;
+        public VkStencilOpState? front;
+        public VkStencilOpState? back;
         public float minDepthBounds;
         public float maxDepthBounds;
     }
@@ -136,9 +136,13 @@ namespace Vulkan
         public VkSampleCountFlagBits rasterizationSamples;
         public bool sampleShadingEnable;
         public float minSampleShading;
-        public VkSampleMask* pSampleMask;
+        public VkSampleMask? pSampleMask;
         public bool alphaToCoverageEnable;
         public bool alphaToOneEnable;
+
+        public VkPipelineMultisampleStateCreateInfo()
+        {
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

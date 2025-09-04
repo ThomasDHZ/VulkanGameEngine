@@ -44,7 +44,7 @@
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
-    "AttachmentCount": 0,
+    "AttachmentCount": 0
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
@@ -65,7 +65,6 @@
     "rasterizationSamples": 1,
     "sampleShadingEnable": false,
     "minSampleShading": 0.0,
-    "pSampleMask": { "value": 0 },
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false,
     "flags": 0
