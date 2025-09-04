@@ -45,7 +45,7 @@ public:
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
 
 	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
-	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const String& varName);
+	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
 
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);

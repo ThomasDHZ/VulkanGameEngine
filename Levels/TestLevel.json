@@ -15,7 +15,6 @@
     "../TileSets/SparkManTileSet.json"
   ],
   "LoadRenderPasses": [
-    "../RenderPass/ObjectPickerRenderPass.json",
     "../RenderPass/LevelShader2DRenderPass.json",
     "../RenderPass/FrameBufferRenderPass.json"
   ],

@@ -11,30 +11,16 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct ShaderPipelineData
     {
-        public nuint ShaderCount { get; set; }
-        public nuint DescriptorBindingCount { get; set; }
-        public nuint VertexInputBindingCount { get; set; }
-        public nuint VertexInputAttributeListCount { get; set; }
-        public nuint PushConstantCount { get; set; }
-        public ShaderDescriptorBinding* DescriptorBindingsList { get; set; }
-        public VkVertexInputBindingDescription* VertexInputBindingList { get; set; }
-        public VkVertexInputAttributeDescription* VertexInputAttributeList { get; set; }
-        public ShaderPushConstant* PushConstantList { get; set; }
-        public IntPtr ShaderList { get; set; }
-
-        public ShaderPipelineData()
-        {
-            ShaderCount = 0;
-            DescriptorBindingCount = 0;
-            VertexInputBindingCount = 0;
-            VertexInputAttributeListCount = 0;
-            PushConstantCount = 0;
-            ShaderList = IntPtr.Zero;
-            DescriptorBindingsList = null;
-            VertexInputBindingList = null;
-            VertexInputAttributeList = null;
-            PushConstantList = null;
-        }
+        public size_t ShaderCount;
+        public size_t DescriptorBindingCount;
+        public size_t VertexInputBindingCount;
+        public size_t VertexInputAttributeListCount;
+        public size_t PushConstantCount;
+        public ShaderDescriptorBinding* DescriptorBindingsList;
+        public VkVertexInputBindingDescription* VertexInputBindingList;
+        public VkVertexInputAttributeDescription* VertexInputAttributeList;
+        public ShaderPushConstant* PushConstantList;
+        public IntPtr ShaderList; 
 
         public string[] GetShaderList()
         {
@@ -42,10 +28,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
                 return Array.Empty<string>();
 
             string[] result = new string[ShaderCount];
-            for (int i = 0; i < (int)ShaderCount; i++)
+            for (size_t i = 0; i < ShaderCount; i++)
             {
-                IntPtr stringPtr = Marshal.ReadIntPtr(ShaderList, i * IntPtr.Size);
-                result[i] = stringPtr != IntPtr.Zero ? Marshal.PtrToStringAnsi(stringPtr) : string.Empty;
+                IntPtr stringPtr = Marshal.ReadIntPtr(ShaderList, (int)i * IntPtr.Size);
+                result[(int)i] = Marshal.PtrToStringAnsi(stringPtr) ?? string.Empty;
             }
             return result;
         }

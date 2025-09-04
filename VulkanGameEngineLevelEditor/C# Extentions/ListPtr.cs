@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace VulkanGameEngineLevelEditor
 {
-    public unsafe class ListPtr<T> : IEnumerable<T>, IDisposable where T : unmanaged
+    public unsafe class ListPtr<T> : IEnumerable<T>, IDisposable where T : struct
     {
         private T* _ptr;
         private T*[] _debugList; //Just here to make debugging easier.

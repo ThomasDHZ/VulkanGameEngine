@@ -12,7 +12,6 @@ namespace Vulkan
     using HINSTANCE = nint;
     using HWND = nint;
     using size_t = nint;
-    using VkBool32 = uint;
     using VkBuffer = nint;
     using VkBufferView = nint;
     using VkCommandBuffer = nint;
@@ -73,11 +72,11 @@ namespace Vulkan
         public VkStructureType sType;
         public void* pNext;
         public VkPipelineDepthStencilStateCreateFlagBits flags;
-        public VkBool32 depthTestEnable;
-        public VkBool32 depthWriteEnable;
+        public bool depthTestEnable;
+        public bool depthWriteEnable;
         public VkCompareOp depthCompareOp;
-        public VkBool32 depthBoundsTestEnable;
-        public VkBool32 stencilTestEnable;
+        public bool depthBoundsTestEnable;
+        public bool stencilTestEnable;
         public VkStencilOpState front;
         public VkStencilOpState back;
         public float minDepthBounds;
@@ -103,7 +102,7 @@ namespace Vulkan
         public void* pNext { get; set; } = null;
         [JsonIgnore]
         public VkPipelineColorBlendStateCreateFlagBits flags { get; set; }
-        public VkBool32 logicOpEnable { get; set; }
+        public bool logicOpEnable { get; set; }
         public VkLogicOp logicOp { get; set; }
         public uint attachmentCount { get; set; }
         public VkPipelineColorBlendAttachmentState* pAttachments { get; set; }
@@ -135,11 +134,11 @@ namespace Vulkan
         public void* pNext;
         public VkCullModeFlagBits flags;
         public VkSampleCountFlagBits rasterizationSamples;
-        public VkBool32 sampleShadingEnable;
+        public bool sampleShadingEnable;
         public float minSampleShading;
         public VkSampleMask* pSampleMask;
-        public VkBool32 alphaToCoverageEnable;
-        public VkBool32 alphaToOneEnable;
+        public bool alphaToCoverageEnable;
+        public bool alphaToOneEnable;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -237,12 +236,12 @@ namespace Vulkan
         public VkStructureType sType;
         public void* pNext;
         public VkCullModeFlagBits flags;
-        public VkBool32 depthClampEnable;
-        public VkBool32 rasterizerDiscardEnable;
+        public bool depthClampEnable;
+        public bool rasterizerDiscardEnable;
         public VkPolygonMode polygonMode;
         public VkCullModeFlagBits cullMode;
         public VkFrontFace frontFace;
-        public VkBool32 depthBiasEnable;
+        public bool depthBiasEnable;
         public float depthBiasConstantFactor;
         public float depthBiasClamp;
         public float depthBiasSlopeFactor;
@@ -294,7 +293,7 @@ namespace Vulkan
         public void* pNext;
         public VkCullModeFlagBits flags;
         public VkPrimitiveTopology topology;
-        public VkBool32 primitiveRestartEnable;
+        public bool primitiveRestartEnable;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -418,7 +417,7 @@ namespace Vulkan
         public VkRenderPass renderPass;
         public uint subpass;
         public VkFramebuffer framebuffer;
-        public VkBool32 occlusionQueryEnable;
+        public bool occlusionQueryEnable;
         public VkQueryControlFlagBits queryFlags;
         public VkQueryPipelineStatisticFlagBits pipelineStatistics;
     }
@@ -1294,60 +1293,60 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct VkPhysicalDeviceFeatures
     {
-        VkBool32 robustBufferAccess;
-        VkBool32 fullDrawIndexUint32;
-        VkBool32 imageCubeArray;
-        VkBool32 independentBlend;
-        VkBool32 geometryShader;
-        VkBool32 tessellationShader;
-        VkBool32 sampleRateShading;
-        VkBool32 dualSrcBlend;
-        VkBool32 logicOp;
-        VkBool32 multiDrawIndirect;
-        VkBool32 drawIndirectFirstInstance;
-        VkBool32 depthClamp;
-        VkBool32 depthBiasClamp;
-        VkBool32 fillModeNonSolid;
-        VkBool32 depthBounds;
-        VkBool32 wideLines;
-        VkBool32 largePoints;
-        VkBool32 alphaToOne;
-        VkBool32 multiViewport;
-        VkBool32 samplerAnisotropy;
-        VkBool32 textureCompressionETC2;
-        VkBool32 textureCompressionASTC_LDR;
-        VkBool32 textureCompressionBC;
-        VkBool32 occlusionQueryPrecise;
-        VkBool32 pipelineStatisticsQuery;
-        VkBool32 vertexPipelineStoresAndAtomics;
-        VkBool32 fragmentStoresAndAtomics;
-        VkBool32 shaderTessellationAndGeometryPointSize;
-        VkBool32 shaderImageGatherExtended;
-        VkBool32 shaderStorageImageExtendedFormats;
-        VkBool32 shaderStorageImageMultisample;
-        VkBool32 shaderStorageImageReadWithoutFormat;
-        VkBool32 shaderStorageImageWriteWithoutFormat;
-        VkBool32 shaderUniformBufferArrayDynamicIndexing;
-        VkBool32 shaderSampledImageArrayDynamicIndexing;
-        VkBool32 shaderStorageBufferArrayDynamicIndexing;
-        VkBool32 shaderStorageImageArrayDynamicIndexing;
-        VkBool32 shaderClipDistance;
-        VkBool32 shaderCullDistance;
-        VkBool32 shaderFloat64;
-        VkBool32 shaderInt64;
-        VkBool32 shaderInt16;
-        VkBool32 shaderResourceResidency;
-        VkBool32 shaderResourceMinLod;
-        VkBool32 sparseBinding;
-        VkBool32 sparseResidencyBuffer;
-        VkBool32 sparseResidencyImage2D;
-        VkBool32 sparseResidencyImage3D;
-        VkBool32 sparseResidency2Samples;
-        VkBool32 sparseResidency4Samples;
-        VkBool32 sparseResidency8Samples;
-        VkBool32 sparseResidency16Samples;
-        VkBool32 sparseResidencyAliased;
-        VkBool32 variableMultisampleRate;
-        VkBool32 inheritedQueries;
+        bool robustBufferAccess;
+        bool fullDrawIndexUint32;
+        bool imageCubeArray;
+        bool independentBlend;
+        bool geometryShader;
+        bool tessellationShader;
+        bool sampleRateShading;
+        bool dualSrcBlend;
+        bool logicOp;
+        bool multiDrawIndirect;
+        bool drawIndirectFirstInstance;
+        bool depthClamp;
+        bool depthBiasClamp;
+        bool fillModeNonSolid;
+        bool depthBounds;
+        bool wideLines;
+        bool largePoints;
+        bool alphaToOne;
+        bool multiViewport;
+        bool samplerAnisotropy;
+        bool textureCompressionETC2;
+        bool textureCompressionASTC_LDR;
+        bool textureCompressionBC;
+        bool occlusionQueryPrecise;
+        bool pipelineStatisticsQuery;
+        bool vertexPipelineStoresAndAtomics;
+        bool fragmentStoresAndAtomics;
+        bool shaderTessellationAndGeometryPointSize;
+        bool shaderImageGatherExtended;
+        bool shaderStorageImageExtendedFormats;
+        bool shaderStorageImageMultisample;
+        bool shaderStorageImageReadWithoutFormat;
+        bool shaderStorageImageWriteWithoutFormat;
+        bool shaderUniformBufferArrayDynamicIndexing;
+        bool shaderSampledImageArrayDynamicIndexing;
+        bool shaderStorageBufferArrayDynamicIndexing;
+        bool shaderStorageImageArrayDynamicIndexing;
+        bool shaderClipDistance;
+        bool shaderCullDistance;
+        bool shaderFloat64;
+        bool shaderInt64;
+        bool shaderInt16;
+        bool shaderResourceResidency;
+        bool shaderResourceMinLod;
+        bool sparseBinding;
+        bool sparseResidencyBuffer;
+        bool sparseResidencyImage2D;
+        bool sparseResidencyImage3D;
+        bool sparseResidency2Samples;
+        bool sparseResidency4Samples;
+        bool sparseResidency8Samples;
+        bool sparseResidency16Samples;
+        bool sparseResidencyAliased;
+        bool variableMultisampleRate;
+        bool inheritedQueries;
     }
 }

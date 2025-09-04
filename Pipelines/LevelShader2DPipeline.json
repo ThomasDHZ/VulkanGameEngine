@@ -41,12 +41,10 @@
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
-    "BlendConstants": { "FixedElementField": 0.0 },
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
     "AttachmentCount": 0,
-    "pAttachments": { "value": 0 }
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,

@@ -13,58 +13,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct ShaderPushConstant
     {
-        public fixed char Name[256];
-        public nuint PushConstantSize { get; set; }
-        public nuint PushConstantVariableListCount { get; set; }
-        public VkShaderStageFlagBits ShaderStageFlags { get; set; }
-        public ShaderVariable* PushConstantVariableList { get; set; }
-        public void* PushConstantBuffer { get; set; }
-        public bool GlobalPushContant { get; set; }
+        public IntPtr PushConstantName; 
+        public nuint PushConstantSize;
+        public nuint PushConstantVariableListCount;
+        public VkShaderStageFlagBits ShaderStageFlags;
+        public ShaderVariable* PushConstantVariableList;
+        public void* PushConstantBuffer;
+        public bool GlobalPushContant;
 
-        public ShaderPushConstant()
-        {
-            PushConstantSize = 0;
-            PushConstantVariableListCount = 0;
-            ShaderStageFlags = 0;
-            PushConstantVariableList = null;
-            PushConstantBuffer = null;
-            GlobalPushContant = false;
-            // Initialize Name to empty null-terminated string
-            fixed (char* ptr = Name)
-            {
-                ptr[0] = '\0';
-            }
-        }
-
-        public void SetName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                fixed (char* ptr = Name)
-                {
-                    ptr[0] = '\0';
-                }
-                return;
-            }
-
-            fixed (char* ptr = Name)
-            {
-                int length = Math.Min(name.Length, 255);
-                for (int i = 0; i < length; i++)
-                {
-                    ptr[i] = name[i];
-                }
-                ptr[length] = '\0';
-            }
-        }
-
-        public string GetName()
-        {
-            fixed (char* ptr = Name)
-            {
-                return new string(ptr);
-            }
-        }
+        public string GetName() => Marshal.PtrToStringAnsi(PushConstantName) ?? string.Empty;
     }
-
 }

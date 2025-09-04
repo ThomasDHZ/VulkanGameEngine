@@ -21,6 +21,15 @@ using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
+   public struct PipelineShader
+    {
+        public List<string> ShaderList = new List<string>();
+
+        public PipelineShader()
+        {
+        }
+    };
+
     public static unsafe class LevelSystem
     {
         public static OrthographicCamera2D OrthographicCamera { get; set; } = new OrthographicCamera2D();
@@ -49,7 +58,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             string jsonContent = File.ReadAllText(levelPath);
             LevelLoader levelLoader = JsonConvert.DeserializeObject<LevelLoader>(jsonContent);
 
-            ShaderSystem.LoadShaderPipelineData(new List<string> { @$"{ConstConfig.BaseDirectoryPath}Shaders\\LevelShader2DVert.spv", @$"{ConstConfig.BaseDirectoryPath}Shaders\\LevelShader2DFrag.spv" });
+            string renderPassJsonContent = File.ReadAllText(Path.Combine(levelDirectory, "../RenderPass/LevelShader2DRenderPass.json"));
+            RenderPassLoaderModel renderPassLoaderModel = JsonConvert.DeserializeObject<RenderPassLoaderModel>(renderPassJsonContent);
+
+            string pipelineJsonContent = File.ReadAllText(Path.Combine(levelDirectory, renderPassLoaderModel.RenderPipelineList[0]));
+            PipelineShader pipelineLoaderModel = JsonConvert.DeserializeObject<PipelineShader>(pipelineJsonContent);
+            ShaderSystem.LoadShaderPipelineStructPrototypes(pipelineLoaderModel.ShaderList);
 
             Guid tileSetId = new Guid();
             foreach (var texturePath in levelLoader.LoadTextures)
@@ -92,11 +106,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 spriteRenderPass2DId = new Guid("aa18e942-497b-4981-b917-d93a5b1de6eb");
 
                 SpriteSystem.AddSpriteBatchLayer(spriteRenderPass2DId);
-
-                string fulRenderPassPath = @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json";
-                string fulRenderPassPath2 = @$"{ConstConfig.BaseDirectoryPath}RenderPass/FrameBufferRenderPass.json";
-                spriteRenderPass2DId = RenderSystem.LoadRenderPass(levelLayout.LevelLayoutId, fulRenderPassPath, new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
-                frameBufferId = RenderSystem.LoadRenderPass(dummyGuid, fulRenderPassPath2, new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height));
+                ivec2 renderPassResultion = new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height);
+                spriteRenderPass2DId = RenderSystem.LoadRenderPass(levelLayout.LevelLayoutId, @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json", renderPassResultion);
+                frameBufferId = RenderSystem.LoadRenderPass(dummyGuid, @$"{ConstConfig.BaseDirectoryPath}RenderPass/FrameBufferRenderPass.json", renderPassResultion);
             }
         }
 

@@ -73,7 +73,7 @@ struct ShaderStruct
 
 struct ShaderDescriptorSet
 {
-    String Name;
+    const char* Name;
     uint32 Binding;
     VkDescriptorType DescripterType;
     size_t ShaderStructListCount;
@@ -82,7 +82,7 @@ struct ShaderDescriptorSet
 
 struct ShaderDescriptorBinding
 {
-    String Name;
+    const char* Name;
     uint32 Binding;
     size_t DescriptorCount;
     VkShaderStageFlags ShaderStageFlags;
@@ -105,7 +105,7 @@ struct ShaderPushConstant
 
 struct ShaderPipelineData
 {
-    size_t                             ShaderCount;
+    size_t                             ShaderCount = 0;
     size_t                             DescriptorBindingCount = 0;
     size_t                             VertexInputBindingCount = 0;
     size_t                             VertexInputAttributeListCount = 0;
@@ -119,18 +119,18 @@ struct ShaderPipelineData
 
 struct GPUIncludes
 {
-    size_t VertexPropertiesCount;
-    size_t IndexPropertiesCount;
-    size_t TransformPropertiesCount;
-    size_t MeshPropertiesCount;
-    size_t TexturePropertiesListCount;
-    size_t MaterialPropertiesCount;
-    VkDescriptorBufferInfo* VertexProperties;
-    VkDescriptorBufferInfo* IndexProperties;
-    VkDescriptorBufferInfo* TransformProperties;
-    VkDescriptorBufferInfo* MeshProperties;
-    VkDescriptorImageInfo* TexturePropertiesList;
-    VkDescriptorBufferInfo* MaterialProperties;
+    size_t VertexPropertiesCount = 0;
+    size_t IndexPropertiesCount = 0;
+    size_t TransformPropertiesCount = 0;
+    size_t MeshPropertiesCount = 0;
+    size_t TexturePropertiesListCount = 0;
+    size_t MaterialPropertiesCount = 0;
+    VkDescriptorBufferInfo* VertexProperties = nullptr;
+    VkDescriptorBufferInfo* IndexProperties = nullptr;
+    VkDescriptorBufferInfo* TransformProperties = nullptr;
+    VkDescriptorBufferInfo* MeshProperties = nullptr;
+    VkDescriptorImageInfo* TexturePropertiesList = nullptr;
+    VkDescriptorBufferInfo* MaterialProperties = nullptr;
 };
 
 struct RenderPipelineLoader

@@ -7,7 +7,7 @@ namespace VulkanGameEngineLevelEditor.Models
 {
     public unsafe class VkPipelineColorBlendAttachmentStateModel
     {
-        public Bool32 BlendEnable { get; set; }
+        public bool BlendEnable { get; set; }
         public VkBlendFactor SrcColorBlendFactor { get; set; }
         public VkBlendFactor DstColorBlendFactor { get; set; }
         public VkBlendOp ColorBlendOp { get; set; }

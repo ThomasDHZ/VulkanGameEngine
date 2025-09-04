@@ -32,22 +32,29 @@ void LevelSystem::LoadLevel(const String& levelPath)
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
     for (size_t x = 0; x < json["LoadTextures"].size(); x++)
+    {
         textureSystem.LoadTexture(json["LoadTextures"][x]);
+    }
 
     for (size_t x = 0; x < json["LoadMaterials"].size(); x++)
+    {
         materialSystem.LoadMaterial(json["LoadMaterials"][x]);
+    }
 
     for (size_t x = 0; x < json["LoadSpriteVRAM"].size(); x++)
+    {
         spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
+    }
 
     for (size_t x = 0; x < json["LoadTileSetVRAM"].size(); x++)
+    {
         tileSetId = LoadTileSetVRAM(json["LoadTileSetVRAM"][x]);
+    }
 
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
-        vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0],
-            json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
+        vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
         gameObjectSystem.CreateGameObject(objectJson, positionOverride);
     }
 

@@ -115,22 +115,9 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
     return pipelineData;
 }
 
-ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const String& varName)
+ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName)
 {
-    if (pushConstant == nullptr)
-    {
-        return nullptr;
-    }
-
-    auto it = std::ranges::find_if(
-        std::span(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount),
-        [&](const ShaderVariable& var) 
-        { 
-            return var.Name != nullptr && std::strcmp(var.Name, varName.c_str()) == 0;
-        }
-    );
-
-    return (it != std::span(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount).end()) ? &(*it) : nullptr;
+    return Shader_SearchShaderConstStructVar(pushConstant, varName);
 }
 
 ShaderVariable* ShaderSystem::SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName)

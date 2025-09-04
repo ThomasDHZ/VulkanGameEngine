@@ -300,7 +300,7 @@ namespace VulkanGameEngineLevelEditor
                         foreach(var pipelineModel in renderPassJsonModel.renderPipelineModelList)
                         {
                             var pipelineJson = JsonConvert.SerializeObject(pipelineModel);
-                            File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", pipelineJson);
+                           // File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", pipelineJson);
                         }
                     }
                 }
