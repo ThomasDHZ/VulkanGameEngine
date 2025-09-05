@@ -7,6 +7,9 @@
 #include <stdexcept>
 #include <array>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <string>
 
 class VkGuid
 {
@@ -66,6 +69,33 @@ public:
 
     bool operator==(const GUID& rhs) const {
         return std::memcmp(this, &rhs, sizeof(GUID)) == 0;
+    }
+
+    std::string ToString() const
+    {
+        std::ostringstream oss;
+        oss << std::hex << std::setfill('0');
+
+        // Data1: 8 hex digits
+        oss << '{'
+            << std::setw(8) << Data1 << '-'
+            // Data2: 4 hex digits
+            << std::setw(4) << Data2 << '-'
+            // Data3: 4 hex digits
+            << std::setw(4) << Data3 << '-'
+            // Data4[0..1]: 2 hex digits each
+            << std::setw(2) << static_cast<int>(Data4[0])
+            << std::setw(2) << static_cast<int>(Data4[1]) << '-'
+            // Data4[2..7]: 2 hex digits each
+            << std::setw(2) << static_cast<int>(Data4[2])
+            << std::setw(2) << static_cast<int>(Data4[3])
+            << std::setw(2) << static_cast<int>(Data4[4])
+            << std::setw(2) << static_cast<int>(Data4[5])
+            << std::setw(2) << static_cast<int>(Data4[6])
+            << std::setw(2) << static_cast<int>(Data4[7])
+            << '}';
+
+        return oss.str();
     }
 
     friend struct std::hash<VkGuid>;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Silk.NET.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace Vulkan
 {
+    using VkBool32 = uint;
     public class VulkanCSConst
     {
-        public const bool VK_FALSE = false;
-        public const bool VK_TRUE = true;
+        public const VkBool32 VK_FALSE = 0;
+        public const VkBool32 VK_TRUE = 1;
         public const uint VK_MAX_MEMORY_TYPES = 32;
         public const uint VK_MAX_MEMORY_HEAPS = 16;
         public const uint VK_MAX_PHYSICAL_DEVICE_NAME_SIZE = 256;

@@ -76,8 +76,24 @@
     "depthCompareOp": 1,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
-    "front": null,
-    "back": null,
+    "front": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "back": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
     "minDepthBounds": 0.0,
     "maxDepthBounds": 0.0,
     "flags": 0

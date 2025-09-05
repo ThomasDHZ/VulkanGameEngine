@@ -15,10 +15,10 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkStructureType sType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 
         [Tooltip("Enables or disables depth clamping to restrict depth values to the viewport range.")]
-        public bool depthClampEnable { get; set; }
+        public VkBool32 depthClampEnable { get; set; }
 
         [Tooltip("Enables or disables discarding of rasterized fragments before fragment shading.")]
-        public bool rasterizerDiscardEnable { get; set; }
+        public VkBool32 rasterizerDiscardEnable { get; set; }
 
         [Tooltip("Defines how polygons are rendered, such as filled, wireframe, or points.")]
         public VkPolygonMode polygonMode { get; set; }
@@ -30,7 +30,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkFrontFace frontFace { get; set; }
 
         [Tooltip("Enables or disables depth bias to adjust depth values for polygons.")]
-        public bool depthBiasEnable { get; set; }
+        public VkBool32 depthBiasEnable { get; set; }
 
         [Tooltip("Sets the constant factor for depth bias calculations.")]
         public float depthBiasConstantFactor { get; set; }

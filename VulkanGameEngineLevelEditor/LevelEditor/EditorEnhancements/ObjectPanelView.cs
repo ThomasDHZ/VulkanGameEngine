@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using Vulkan;
@@ -736,31 +737,31 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             var depthWriteProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.depthWriteEnable));
             var depthCompareProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.depthCompareOp));
-            var stencilTestProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.stencilTestEnable));
+           // var stencilTestProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.stencilTestEnable));
             var frontProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.front));
             var backProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.back));
 
-            if (!depthStencil.depthTestEnable)
-            {
-                if (depthWriteProp != null) AddDynamicAttribute(depthWriteProp, new IgnorePropertyAttribute());
-                if (depthCompareProp != null) AddDynamicAttribute(depthCompareProp, new IgnorePropertyAttribute());
-            }
-            else
-            {
-                if (depthWriteProp != null) RemoveDynamicAttribute(depthWriteProp, typeof(IgnorePropertyAttribute));
-                if (depthCompareProp != null) RemoveDynamicAttribute(depthCompareProp, typeof(IgnorePropertyAttribute));
-            }
+            //if (!depthStencil.depthTestEnable == V)
+            //{
+            //    if (depthWriteProp != null) AddDynamicAttribute(depthWriteProp, new IgnorePropertyAttribute());
+            //    if (depthCompareProp != null) AddDynamicAttribute(depthCompareProp, new IgnorePropertyAttribute());
+            //}
+            //else
+            //{
+            //    if (depthWriteProp != null) RemoveDynamicAttribute(depthWriteProp, typeof(IgnorePropertyAttribute));
+            //    if (depthCompareProp != null) RemoveDynamicAttribute(depthCompareProp, typeof(IgnorePropertyAttribute));
+            //}
 
-            if (!depthStencil.stencilTestEnable)
-            {
-                if (frontProp != null) AddDynamicAttribute(frontProp, new IgnorePropertyAttribute());
-                if (backProp != null) AddDynamicAttribute(backProp, new IgnorePropertyAttribute());
-            }
-            else
-            {
-                if (frontProp != null) RemoveDynamicAttribute(frontProp, typeof(IgnorePropertyAttribute));
-                if (backProp != null) RemoveDynamicAttribute(backProp, typeof(IgnorePropertyAttribute));
-            }
+            //if (!depthStencil.stencilTestEnable == 1)
+            //{
+            //    if (frontProp != null) AddDynamicAttribute(frontProp, new IgnorePropertyAttribute());
+            //    if (backProp != null) AddDynamicAttribute(backProp, new IgnorePropertyAttribute());
+            //}
+            //else
+            //{
+            //    if (frontProp != null) RemoveDynamicAttribute(frontProp, typeof(IgnorePropertyAttribute));
+            //    if (backProp != null) RemoveDynamicAttribute(backProp, typeof(IgnorePropertyAttribute));
+            //}
         }
 
         private void UpdateBlendStateDependencies(VkPipelineColorBlendAttachmentState blendState)
@@ -772,24 +773,24 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             var dstAlphaProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.dstAlphaBlendFactor));
             var alphaBlendOpProp = typeof(PipelineColorBlendAttachmentState).GetProperty(nameof(blendState.alphaBlendOp));
 
-            if (!blendState.blendEnable)
-            {
-                if (srcColorProp != null) AddDynamicAttribute(srcColorProp, new IgnorePropertyAttribute());
-                if (dstColorProp != null) AddDynamicAttribute(dstColorProp, new IgnorePropertyAttribute());
-                if (colorBlendOpProp != null) AddDynamicAttribute(colorBlendOpProp, new IgnorePropertyAttribute());
-                if (srcAlphaProp != null) AddDynamicAttribute(srcAlphaProp, new IgnorePropertyAttribute());
-                if (dstAlphaProp != null) AddDynamicAttribute(dstAlphaProp, new IgnorePropertyAttribute());
-                if (alphaBlendOpProp != null) AddDynamicAttribute(alphaBlendOpProp, new IgnorePropertyAttribute());
-            }
-            else
-            {
-                if (srcColorProp != null) RemoveDynamicAttribute(srcColorProp, typeof(IgnorePropertyAttribute));
-                if (dstColorProp != null) RemoveDynamicAttribute(dstColorProp, typeof(IgnorePropertyAttribute));
-                if (colorBlendOpProp != null) RemoveDynamicAttribute(colorBlendOpProp, typeof(IgnorePropertyAttribute));
-                if (srcAlphaProp != null) RemoveDynamicAttribute(srcAlphaProp, typeof(IgnorePropertyAttribute));
-                if (dstAlphaProp != null) RemoveDynamicAttribute(dstAlphaProp, typeof(IgnorePropertyAttribute));
-                if (alphaBlendOpProp != null) RemoveDynamicAttribute(alphaBlendOpProp, typeof(IgnorePropertyAttribute));
-            }
+            //if (!blendState.blendEnable)
+            //{
+            //    if (srcColorProp != null) AddDynamicAttribute(srcColorProp, new IgnorePropertyAttribute());
+            //    if (dstColorProp != null) AddDynamicAttribute(dstColorProp, new IgnorePropertyAttribute());
+            //    if (colorBlendOpProp != null) AddDynamicAttribute(colorBlendOpProp, new IgnorePropertyAttribute());
+            //    if (srcAlphaProp != null) AddDynamicAttribute(srcAlphaProp, new IgnorePropertyAttribute());
+            //    if (dstAlphaProp != null) AddDynamicAttribute(dstAlphaProp, new IgnorePropertyAttribute());
+            //    if (alphaBlendOpProp != null) AddDynamicAttribute(alphaBlendOpProp, new IgnorePropertyAttribute());
+            //}
+            //else
+            //{
+            //    if (srcColorProp != null) RemoveDynamicAttribute(srcColorProp, typeof(IgnorePropertyAttribute));
+            //    if (dstColorProp != null) RemoveDynamicAttribute(dstColorProp, typeof(IgnorePropertyAttribute));
+            //    if (colorBlendOpProp != null) RemoveDynamicAttribute(colorBlendOpProp, typeof(IgnorePropertyAttribute));
+            //    if (srcAlphaProp != null) RemoveDynamicAttribute(srcAlphaProp, typeof(IgnorePropertyAttribute));
+            //    if (dstAlphaProp != null) RemoveDynamicAttribute(dstAlphaProp, typeof(IgnorePropertyAttribute));
+            //    if (alphaBlendOpProp != null) RemoveDynamicAttribute(alphaBlendOpProp, typeof(IgnorePropertyAttribute));
+            //}
         }
 
         private void UpdateRenderAreaDependencies(RenderAreaModel renderArea)

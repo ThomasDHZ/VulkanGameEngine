@@ -199,13 +199,13 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         .IndexPropertiesCount = indexPropertiesList.size(),
         .TransformPropertiesCount = transformPropertiesList.size(),
         .MeshPropertiesCount = meshPropertiesList.size(),
-        .TexturePropertiesListCount = texturePropertiesList.size(),
+        .TexturePropertiesCount = texturePropertiesList.size(),
         .MaterialPropertiesCount = materialPropertiesList.size(),
         .VertexProperties = vertexPropertiesList.data(),
         .IndexProperties = indexPropertiesList.data(),
         .TransformProperties = transformPropertiesList.data(),
         .MeshProperties = meshPropertiesList.data(),
-        .TexturePropertiesList = texturePropertiesList.data(),
+        .TextureProperties = texturePropertiesList.data(),
         .MaterialProperties = materialPropertiesList.data()
     };
 

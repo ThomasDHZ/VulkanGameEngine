@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Vulkan;
@@ -18,27 +19,26 @@ using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 namespace VulkanGameEngineLevelEditor.Models
 {
-    [Serializable]
-    public unsafe class RenderPipelineLoaderModel
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    public unsafe struct RenderPipelineLoaderModel
     {
         public Guid PipelineId { get; set; }
         public Guid RenderPassId { get; set; }
-        public VkRenderPass RenderPass { get; set; }
+        public IntPtr RenderPass { get; set; } // VkRenderPass is an opaque handle
+        public ivec2 RenderPassResolution { get; set; }
         public GPUIncludes gpuIncludes { get; set; }
-        public ShaderPushConstant PushConstant { get; set; }
         public ShaderPipelineData ShaderPiplineInfo { get; set; }
-        public size_t ViewportCount { get; set; } = 0;
-        public size_t ScissorCount { get; set; } = 0;
-        public size_t PipelineColorBlendAttachmentStateCount { get; set; } = 0;
-        public VkPipelineColorBlendAttachmentState* PipelineColorBlendAttachmentStateList { get; set; } = null;
+        public size_t ViewportCount { get; set; }
+        public size_t ScissorCount { get; set; }
+        public size_t PipelineColorBlendAttachmentStateCount { get; set; }
+        public VkPipelineColorBlendAttachmentState* PipelineColorBlendAttachmentStateList { get; set; }
         public VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo { get; set; }
-        public VkViewport* ViewportList { get; set; } = null;
-        public VkRect2D* ScissorList { get; set; } = null;
+        public VkViewport* ViewportList { get; set; }
+        public VkRect2D* ScissorList { get; set; }
         public VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo { get; set; }
         public VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo { get; set; }
         public VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo { get; set; }
         public VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel { get; set; }
-        public ivec2 RenderPassResolution { get; set; }
 
         public RenderPipelineLoaderModel()
         {
@@ -46,22 +46,82 @@ namespace VulkanGameEngineLevelEditor.Models
 
         public RenderPipelineLoaderModel(RenderPipelineJsonLoaderModel model)
         {
-            ListPtr<VkViewport> ViewportJsonList = new ListPtr<VkViewport>(model.ViewportList);
-            ListPtr<VkRect2D> ScissorJsonList = new ListPtr<VkRect2D>(model.ScissorList);
-            ListPtr<VkPipelineColorBlendAttachmentState> PipelineColorBlendAttachmentStateJsonList = new ListPtr<VkPipelineColorBlendAttachmentState>(model.PipelineColorBlendAttachmentStateList);
+            // Allocate native memory for arrays
+            IntPtr colorBlendPtr = IntPtr.Zero;
+            IntPtr viewportPtr = IntPtr.Zero;
+            IntPtr scissorPtr = IntPtr.Zero;
 
-            PipelineColorBlendAttachmentStateCount = PipelineColorBlendAttachmentStateJsonList.Count;
-            PipelineColorBlendAttachmentStateList = PipelineColorBlendAttachmentStateJsonList.Ptr;
-            PipelineInputAssemblyStateCreateInfo = model.PipelineInputAssemblyStateCreateInfo;
-            PipelineColorBlendStateCreateInfoModel = model.PipelineColorBlendStateCreateInfoModel;
-            PipelineDepthStencilStateCreateInfo = model.PipelineDepthStencilStateCreateInfo;
-            PipelineRasterizationStateCreateInfo = model.PipelineRasterizationStateCreateInfo;
-            PipelineId = model.PipelineId;
-            PipelineMultisampleStateCreateInfo = model.PipelineMultisampleStateCreateInfo;
-            ViewportCount = ViewportJsonList.Count;
-            ViewportList = ViewportJsonList.Ptr;
-            ScissorCount = ScissorJsonList.Count;
-            ScissorList = ScissorJsonList.Ptr;
+            try
+            {
+                // Convert lists to native arrays
+                if (model.PipelineColorBlendAttachmentStateList != null && model.PipelineColorBlendAttachmentStateList.Count > 0)
+                {
+                    PipelineColorBlendAttachmentStateCount = (size_t)model.PipelineColorBlendAttachmentStateList.Count;
+                    colorBlendPtr = Marshal.AllocHGlobal((int)(PipelineColorBlendAttachmentStateCount * sizeof(VkPipelineColorBlendAttachmentState)));
+                    for (int i = 0; i < model.PipelineColorBlendAttachmentStateList.Count; i++)
+                    {
+                        Marshal.StructureToPtr(model.PipelineColorBlendAttachmentStateList[i], colorBlendPtr + i * sizeof(VkPipelineColorBlendAttachmentState), false);
+                    }
+                    PipelineColorBlendAttachmentStateList = (VkPipelineColorBlendAttachmentState*)colorBlendPtr;
+                }
+
+                if (model.ViewportList != null && model.ViewportList.Count > 0)
+                {
+                    ViewportCount = (size_t)model.ViewportList.Count;
+                    viewportPtr = Marshal.AllocHGlobal((int)(ViewportCount * sizeof(VkViewport)));
+                    for (int i = 0; i < model.ViewportList.Count; i++)
+                    {
+                        Marshal.StructureToPtr(model.ViewportList[i], viewportPtr + i * sizeof(VkViewport), false);
+                    }
+                    ViewportList = (VkViewport*)viewportPtr;
+                }
+
+                if (model.ScissorList != null && model.ScissorList.Count > 0)
+                {
+                    ScissorCount = (size_t)model.ScissorList.Count;
+                    scissorPtr = Marshal.AllocHGlobal((int)(ScissorCount * sizeof(VkRect2D)));
+                    for (int i = 0; i < model.ScissorList.Count; i++)
+                    {
+                        Marshal.StructureToPtr(model.ScissorList[i], scissorPtr + i * sizeof(VkRect2D), false);
+                    }
+                    ScissorList = (VkRect2D*)scissorPtr;
+                }
+
+                PipelineId = model.PipelineId;
+                PipelineInputAssemblyStateCreateInfo = model.PipelineInputAssemblyStateCreateInfo;
+                PipelineColorBlendStateCreateInfoModel = model.PipelineColorBlendStateCreateInfoModel;
+                PipelineDepthStencilStateCreateInfo = model.PipelineDepthStencilStateCreateInfo;
+                PipelineRasterizationStateCreateInfo = model.PipelineRasterizationStateCreateInfo;
+                PipelineMultisampleStateCreateInfo = model.PipelineMultisampleStateCreateInfo;
+            }
+            catch
+            {
+                // Clean up on failure
+                if (colorBlendPtr != IntPtr.Zero) Marshal.FreeHGlobal(colorBlendPtr);
+                if (viewportPtr != IntPtr.Zero) Marshal.FreeHGlobal(viewportPtr);
+                if (scissorPtr != IntPtr.Zero) Marshal.FreeHGlobal(scissorPtr);
+                throw;
+            }
+        }
+
+        // Clean up native memory
+        public void Dispose()
+        {
+            if (PipelineColorBlendAttachmentStateList != null)
+            {
+                Marshal.FreeHGlobal((IntPtr)PipelineColorBlendAttachmentStateList);
+                PipelineColorBlendAttachmentStateList = null;
+            }
+            if (ViewportList != null)
+            {
+                Marshal.FreeHGlobal((IntPtr)ViewportList);
+                ViewportList = null;
+            }
+            if (ScissorList != null)
+            {
+                Marshal.FreeHGlobal((IntPtr)ScissorList);
+                ScissorList = null;
+            }
         }
     }
 

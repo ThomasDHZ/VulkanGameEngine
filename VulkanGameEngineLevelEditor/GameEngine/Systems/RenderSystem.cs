@@ -47,7 +47,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             renderer = Renderer_RendererSetUp(windowType, renderAreaHandle, debuggerHandle);
         }
 
-        public static Guid LoadRenderPass(Guid levelId, string jsonPath, ivec2 renderPassResolution)
+        public static unsafe Guid LoadRenderPass(Guid levelId, string jsonPath, ivec2 renderPassResolution)
         {
             string jsonContent = File.ReadAllText(jsonPath);
             RenderPassLoaderModel renderPassModel = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
@@ -55,7 +55,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
             Texture depthTexture = new Texture();
             GraphicsRenderer gRenderer = renderer;
-            size_t renderedTextureCount = renderPassModel.RenderedTextureInfoModelList.Where(x => x.TextureType == RenderedTextureType.ColorRenderedTexture).Count();
+            size_t renderedTextureCount = (size_t)renderPassModel.RenderedTextureInfoModelList.Count(x => x.TextureType == RenderedTextureType.ColorRenderedTexture);
             ListPtr<Texture> renderedTextureListPtr = new ListPtr<Texture>(renderedTextureCount);
             VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(ref gRenderer, jsonPath, ref renderPassResolution, renderedTextureListPtr.Ptr, ref renderedTextureCount, ref depthTexture);
             RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
@@ -82,21 +82,28 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 MaterialProperties = materialPropertiesList.Ptr,
             };
 
-            foreach(var pipeline in renderPassModel.RenderPipelineList)
+            foreach (var pipeline in renderPassModel.RenderPipelineList)
             {
                 string pipelineJsonContent = File.ReadAllText(@$"{ConstConfig.BaseDirectoryPath}RenderPass/{pipeline}");
                 var pipelineJsonLoaderModel = JsonConvert.DeserializeObject<RenderPipelineJsonLoaderModel>(pipelineJsonContent);
-                RenderPipelineLoaderModel pipelineModel = new RenderPipelineLoaderModel(pipelineJsonLoaderModel);
-                pipelineModel.RenderPassId = renderPassModel.RenderPassId;
-                pipelineModel.RenderPass = RenderPassMap[renderPassModel.RenderPassId].RenderPass;
-                pipelineModel.gpuIncludes = gpuIncludes;
-                pipelineModel.RenderPassResolution = renderPassResolution;
-                pipelineModel.ShaderPiplineInfo = ShaderSystem.LoadShaderPipelineData( new List<string> { @$"{ConstConfig.BaseDirectoryPath}RenderPass/{pipelineJsonLoaderModel.ShaderList[0]}", @$"{ConstConfig.BaseDirectoryPath}RenderPass/{pipelineJsonLoaderModel.ShaderList[1]}" });
-                VulkanPipeline_CreateRenderPipeline(renderer.Device, pipelineModel);
+                RenderPipelineLoaderModel pipelineModel = new RenderPipelineLoaderModel(pipelineJsonLoaderModel)
+                {
+                    RenderPassId = renderPassModel.RenderPassId,
+                    RenderPass = RenderPassMap[renderPassModel.RenderPassId].RenderPass,
+                    gpuIncludes = gpuIncludes,
+                    RenderPassResolution = renderPassResolution,
+                    ShaderPiplineInfo = ShaderSystem.LoadShaderPipelineData(new List<string>
+                    {
+                        @$"{ConstConfig.BaseDirectoryPath}RenderPass/{pipelineJsonLoaderModel.ShaderList[0]}",
+                        @$"{ConstConfig.BaseDirectoryPath}RenderPass/{pipelineJsonLoaderModel.ShaderList[1]}"
+                    })
+                };
+                VulkanPipeline_CreateRenderPipeline(renderer.Device, ref pipelineModel);
+                pipelineModel.Dispose(); // Clean up native memory
             }
 
             TextureSystem.RenderedTextureListMap[vulkanRenderPass.RenderPassId] = new ListPtr<Texture>();
-            for (int x = 0; x < renderedTextureCount; x++)
+            for (int x = 0; x < (int)renderedTextureCount; x++)
             {
                 TextureSystem.RenderedTextureListMap[vulkanRenderPass.RenderPassId].Add(renderedTextureListPtr[x]);
             }
@@ -549,14 +556,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                     addressModeV = VkSamplerAddressMode.VK_SAMPLER_ADDRESS_MODE_REPEAT,
                     addressModeW = VkSamplerAddressMode.VK_SAMPLER_ADDRESS_MODE_REPEAT,
                     mipLodBias = 0,
-                    anisotropyEnable = true,
+                    anisotropyEnable = 1,
                     maxAnisotropy = 16.0f,
-                    compareEnable = false,
+                    compareEnable = 0,
                     compareOp = VkCompareOp.VK_COMPARE_OP_ALWAYS,
                     minLod = 0,
                     maxLod = 0,
                     borderColor = VkBorderColor.VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-                    unnormalizedCoordinates = false,
+                    unnormalizedCoordinates = 0,
                 };
 
                 VkFunc.vkCreateSampler(renderer.Device, &NullSamplerInfo, null, out VkSampler nullSampler);
@@ -647,6 +654,391 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             RenderPipelineMap.Clear();
         }
 
+        public static void DebugRenderPipelineLoaderModel(RenderPipelineLoaderModel model, string indent = "")
+        {
+            Console.WriteLine($"{indent}=== RenderPipelineLoaderModel ===");
+            Console.WriteLine($"{indent}PipelineId: {model.PipelineId}");
+            Console.WriteLine($"{indent}RenderPassId: {model.RenderPassId}");
+            Console.WriteLine($"{indent}RenderPass: 0x{model.RenderPass.ToInt64():X16}");
+            Console.WriteLine($"{indent}RenderPassResolution: ({model.RenderPassResolution.x}, {model.RenderPassResolution.y})");
+
+            Console.WriteLine($"{indent}--- GPUIncludes ---");
+            DebugGPUIncludes(model.gpuIncludes, indent + "  ");
+
+            Console.WriteLine($"{indent}--- ShaderPipelineData ---");
+            DebugShaderPipelineData(model.ShaderPiplineInfo, indent + "  ");
+
+            Console.WriteLine($"{indent}ViewportCount: {model.ViewportCount}");
+            DebugViewportList(model.ViewportList, model.ViewportCount, indent + "  ");
+
+            Console.WriteLine($"{indent}ScissorCount: {model.ScissorCount}");
+            DebugScissorList(model.ScissorList, model.ScissorCount, indent + "  ");
+
+            Console.WriteLine($"{indent}PipelineColorBlendAttachmentStateCount: {model.PipelineColorBlendAttachmentStateCount}");
+            DebugPipelineColorBlendAttachmentStateList(model.PipelineColorBlendAttachmentStateList, model.PipelineColorBlendAttachmentStateCount, indent + "  ");
+
+            Console.WriteLine($"{indent}PipelineInputAssemblyStateCreateInfo:");
+            DebugPipelineInputAssemblyState(model.PipelineInputAssemblyStateCreateInfo, indent + "  ");
+
+            Console.WriteLine($"{indent}PipelineRasterizationStateCreateInfo:");
+            DebugPipelineRasterizationState(model.PipelineRasterizationStateCreateInfo, indent + "  ");
+
+            Console.WriteLine($"{indent}PipelineMultisampleStateCreateInfo:");
+            DebugPipelineMultisampleState(model.PipelineMultisampleStateCreateInfo, indent + "  ");
+
+            Console.WriteLine($"{indent}PipelineDepthStencilStateCreateInfo:");
+            DebugPipelineDepthStencilState(model.PipelineDepthStencilStateCreateInfo, indent + "  ");
+
+            Console.WriteLine($"{indent}PipelineColorBlendStateCreateInfo:");
+            DebugPipelineColorBlendState(model.PipelineColorBlendStateCreateInfoModel, indent + "  ");
+        }
+
+        private static void DebugGPUIncludes(GPUIncludes includes, string indent)
+        {
+            Console.WriteLine($"{indent}VertexPropertiesCount: {includes.VertexPropertiesCount}");
+            DebugDescriptorBufferInfoList(includes.VertexProperties, includes.VertexPropertiesCount, "VertexProperties", indent + "  ");
+
+            Console.WriteLine($"{indent}IndexPropertiesCount: {includes.IndexPropertiesCount}");
+            DebugDescriptorBufferInfoList(includes.IndexProperties, includes.IndexPropertiesCount, "IndexProperties", indent + "  ");
+
+            Console.WriteLine($"{indent}TransformPropertiesCount: {includes.TransformPropertiesCount}");
+            DebugDescriptorBufferInfoList(includes.TransformProperties, includes.TransformPropertiesCount, "TransformProperties", indent + "  ");
+
+            Console.WriteLine($"{indent}MeshPropertiesCount: {includes.MeshPropertiesCount}");
+            DebugDescriptorBufferInfoList(includes.MeshProperties, includes.MeshPropertiesCount, "MeshProperties", indent + "  ");
+
+            Console.WriteLine($"{indent}TexturePropertiesCount: {includes.TexturePropertiesCount}");
+            DebugDescriptorImageInfoList(includes.TextureProperties, includes.TexturePropertiesCount, indent + "  ");
+
+            Console.WriteLine($"{indent}MaterialPropertiesCount: {includes.MaterialPropertiesCount}");
+            DebugDescriptorBufferInfoList(includes.MaterialProperties, includes.MaterialPropertiesCount, "MaterialProperties", indent + "  ");
+        }
+
+        private static void DebugShaderPipelineData(ShaderPipelineData data, string indent)
+        {
+            Console.WriteLine($"{indent}ShaderCount: {data.ShaderCount}");
+            DebugShaderList(data.ShaderList, data.ShaderCount, indent + "  ");
+
+            Console.WriteLine($"{indent}DescriptorBindingCount: {data.DescriptorBindingCount}");
+            DebugDescriptorBindingsList(data.DescriptorBindingsList, data.DescriptorBindingCount, indent + "  ");
+
+            Console.WriteLine($"{indent}ShaderStructCount: {data.ShaderStructCount}");
+            DebugShaderStructList(data.ShaderStructList, data.ShaderStructCount, indent + "  ");
+
+            Console.WriteLine($"{indent}VertexInputBindingCount: {data.VertexInputBindingCount}");
+            DebugVertexInputBindingList(data.VertexInputBindingList, data.VertexInputBindingCount, indent + "  ");
+
+            Console.WriteLine($"{indent}VertexInputAttributeListCount: {data.VertexInputAttributeListCount}");
+            DebugVertexInputAttributeList(data.VertexInputAttributeList, data.VertexInputAttributeListCount, indent + "  ");
+
+            Console.WriteLine($"{indent}ShaderOutputCount: {data.ShaderOutputCount}");
+            DebugShaderVariableList(data.ShaderOutputList, data.ShaderOutputCount, "ShaderOutput", indent + "  ");
+
+            Console.WriteLine($"{indent}PushConstantCount: {data.PushConstantCount}");
+            DebugPushConstantList(data.PushConstantList, data.PushConstantCount, indent + "  ");
+        }
+
+        private static void DebugShaderList(IntPtr shaderList, size_t count, string indent)
+        {
+            if (shaderList == IntPtr.Zero || count == 0)
+            {
+                Console.WriteLine($"{indent}ShaderList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                IntPtr stringPtr = Marshal.ReadIntPtr(shaderList, (int)(i * IntPtr.Size));
+                string shaderName = Marshal.PtrToStringAnsi(stringPtr) ?? "(null)";
+                Console.WriteLine($"{indent}[{i}] Shader: {shaderName}");
+            }
+        }
+
+        private static void DebugDescriptorBindingsList(ShaderDescriptorBinding* bindings, size_t count, string indent)
+        {
+            if (bindings == null || count == 0)
+            {
+                Console.WriteLine($"{indent}DescriptorBindingsList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                ShaderDescriptorBinding binding = bindings[i];
+                Console.WriteLine($"{indent}[{i}] DescriptorBinding:");
+                Console.WriteLine($"{indent}  Name: {binding.GetName()}");
+                Console.WriteLine($"{indent}  Binding: {binding.Binding}");
+                Console.WriteLine($"{indent}  DescriptorCount: {binding.DescriptorCount}");
+                Console.WriteLine($"{indent}  ShaderStageFlags: {binding.ShaderStageFlags}");
+                Console.WriteLine($"{indent}  DescriptorBindingType: {binding.DescriptorBindingType}");
+                Console.WriteLine($"{indent}  DescripterType: {binding.DescripterType}");
+                Console.WriteLine($"{indent}  DescriptorImageInfo: 0x{(binding.DescriptorImageInfo != null ? (long)binding.DescriptorImageInfo : 0):X16}");
+                Console.WriteLine($"{indent}  DescriptorBufferInfo: 0x{(binding.DescriptorBufferInfo != null ? (long)binding.DescriptorBufferInfo : 0):X16}");
+            }
+        }
+
+        private static void DebugShaderStructList(ShaderStruct* structs, size_t count, string indent)
+        {
+            if (structs == null || count == 0)
+            {
+                Console.WriteLine($"{indent}ShaderStructList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                ShaderStruct shaderStruct = structs[i];
+                Console.WriteLine($"{indent}[{i}] ShaderStruct:");
+                Console.WriteLine($"{indent}  Name: {shaderStruct.GetName()}");
+                Console.WriteLine($"{indent}  ShaderBufferSize: {shaderStruct.ShaderBufferSize}");
+                Console.WriteLine($"{indent}  ShaderBufferVariableListCount: {shaderStruct.ShaderBufferVariableListCount}");
+                Console.WriteLine($"{indent}  ShaderStructBufferId: {shaderStruct.ShaderStructBufferId}");
+                Console.WriteLine($"{indent}  ShaderStructBuffer: 0x{(shaderStruct.ShaderStructBuffer != null ? (long)shaderStruct.ShaderStructBuffer : 0):X16}");
+                DebugShaderVariableList(shaderStruct.ShaderBufferVariableList, (size_t)shaderStruct.ShaderBufferVariableListCount, "ShaderBufferVariable", indent + "    ");
+            }
+        }
+
+        private static void DebugShaderVariableList(ShaderVariable* variables, size_t count, string listName, string indent)
+        {
+            if (variables == null || count == 0)
+            {
+                Console.WriteLine($"{indent}{listName}List: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                ShaderVariable variable = variables[i];
+                Console.WriteLine($"{indent}[{i}] {listName}:");
+                Console.WriteLine($"{indent}  Name: {variable.GetName()}");
+                Console.WriteLine($"{indent}  Size: {variable.Size}");
+                Console.WriteLine($"{indent}  ByteAlignment: {variable.ByteAlignment}");
+                Console.WriteLine($"{indent}  Value: 0x{(variable.Value != null ? (long)variable.Value : 0):X16}");
+                Console.WriteLine($"{indent}  MemberTypeEnum: {variable.MemberTypeEnum}");
+            }
+        }
+
+        private static void DebugPushConstantList(ShaderPushConstant* pushConstants, size_t count, string indent)
+        {
+            if (pushConstants == null || count == 0)
+            {
+                Console.WriteLine($"{indent}PushConstantList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                ShaderPushConstant pushConstant = pushConstants[i];
+                Console.WriteLine($"{indent}[{i}] PushConstant:");
+                Console.WriteLine($"{indent}  Name: {pushConstant.GetName()}");
+                Console.WriteLine($"{indent}  PushConstantSize: {pushConstant.PushConstantSize}");
+                Console.WriteLine($"{indent}  PushConstantVariableListCount: {pushConstant.PushConstantVariableListCount}");
+                Console.WriteLine($"{indent}  ShaderStageFlags: {pushConstant.ShaderStageFlags}");
+                Console.WriteLine($"{indent}  PushConstantBuffer: 0x{(pushConstant.PushConstantBuffer != null ? (long)pushConstant.PushConstantBuffer : 0):X16}");
+                Console.WriteLine($"{indent}  GlobalPushContant: {pushConstant.GlobalPushContant}");
+                DebugShaderVariableList(pushConstant.PushConstantVariableList, (size_t)pushConstant.PushConstantVariableListCount, "PushConstantVariable", indent + "    ");
+            }
+        }
+
+        private static void DebugVertexInputBindingList(VkVertexInputBindingDescription* bindings, size_t count, string indent)
+        {
+            if (bindings == null || count == 0)
+            {
+                Console.WriteLine($"{indent}VertexInputBindingList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkVertexInputBindingDescription binding = bindings[i];
+                Console.WriteLine($"{indent}[{i}] VertexInputBinding:");
+                Console.WriteLine($"{indent}  Binding: {binding.binding}");
+                Console.WriteLine($"{indent}  Stride: {binding.stride}");
+                Console.WriteLine($"{indent}  InputRate: {binding.inputRate}");
+            }
+        }
+
+        private static void DebugVertexInputAttributeList(VkVertexInputAttributeDescription* attributes, size_t count, string indent)
+        {
+            if (attributes == null || count == 0)
+            {
+                Console.WriteLine($"{indent}VertexInputAttributeList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkVertexInputAttributeDescription attribute = attributes[i];
+                Console.WriteLine($"{indent}[{i}] VertexInputAttribute:");
+                Console.WriteLine($"{indent}  Location: {attribute.location}");
+                Console.WriteLine($"{indent}  Binding: {attribute.binding}");
+                Console.WriteLine($"{indent}  Format: {attribute.format}");
+                Console.WriteLine($"{indent}  Offset: {attribute.offset}");
+            }
+        }
+
+        private static void DebugDescriptorBufferInfoList(VkDescriptorBufferInfo* infos, size_t count, string name, string indent)
+        {
+            if (infos == null || count == 0)
+            {
+                Console.WriteLine($"{indent}{name}List: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkDescriptorBufferInfo info = infos[i];
+                Console.WriteLine($"{indent}[{i}] {name}:");
+                Console.WriteLine($"{indent}  Buffer: 0x{(long)info.buffer:X16}");
+                Console.WriteLine($"{indent}  Offset: {info.offset}");
+                Console.WriteLine($"{indent}  Range: {info.range}");
+            }
+        }
+
+        private static void DebugDescriptorImageInfoList(VkDescriptorImageInfo* infos, size_t count, string indent)
+        {
+            if (infos == null || count == 0)
+            {
+                Console.WriteLine($"{indent}TexturePropertiesList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkDescriptorImageInfo info = infos[i];
+                Console.WriteLine($"{indent}[{i}] TextureProperties:");
+                Console.WriteLine($"{indent}  Sampler: 0x{(long)info.sampler:X16}");
+                Console.WriteLine($"{indent}  ImageView: 0x{(long)info.imageView:X16}");
+                Console.WriteLine($"{indent}  ImageLayout: {info.imageLayout}");
+            }
+        }
+
+        private static void DebugViewportList(VkViewport* viewports, size_t count, string indent)
+        {
+            if (viewports == null || count == 0)
+            {
+                Console.WriteLine($"{indent}ViewportList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkViewport viewport = viewports[i];
+                Console.WriteLine($"{indent}[{i}] Viewport:");
+                Console.WriteLine($"{indent}  X: {viewport.x}");
+                Console.WriteLine($"{indent}  Y: {viewport.y}");
+                Console.WriteLine($"{indent}  Width: {viewport.width}");
+                Console.WriteLine($"{indent}  Height: {viewport.height}");
+                Console.WriteLine($"{indent}  MinDepth: {viewport.minDepth}");
+                Console.WriteLine($"{indent}  MaxDepth: {viewport.maxDepth}");
+            }
+        }
+
+        private static void DebugScissorList(VkRect2D* scissors, size_t count, string indent)
+        {
+            if (scissors == null || count == 0)
+            {
+                Console.WriteLine($"{indent}ScissorList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkRect2D scissor = scissors[i];
+                Console.WriteLine($"{indent}[{i}] Scissor:");
+                Console.WriteLine($"{indent}  Offset: ({scissor.offset.x}, {scissor.offset.y})");
+                Console.WriteLine($"{indent}  Extent: ({scissor.extent.width}, {scissor.extent.height})");
+            }
+        }
+
+        private static void DebugPipelineColorBlendAttachmentStateList(VkPipelineColorBlendAttachmentState* states, size_t count, string indent)
+        {
+            if (states == null || count == 0)
+            {
+                Console.WriteLine($"{indent}PipelineColorBlendAttachmentStateList: (empty)");
+                return;
+            }
+
+            for (size_t i = 0; i < count; i++)
+            {
+                VkPipelineColorBlendAttachmentState state = states[i];
+                Console.WriteLine($"{indent}[{i}] PipelineColorBlendAttachmentState:");
+                Console.WriteLine($"{indent}  BlendEnable: {state.blendEnable}");
+                Console.WriteLine($"{indent}  SrcColorBlendFactor: {state.srcColorBlendFactor}");
+                Console.WriteLine($"{indent}  DstColorBlendFactor: {state.dstColorBlendFactor}");
+                Console.WriteLine($"{indent}  ColorBlendOp: {state.colorBlendOp}");
+                Console.WriteLine($"{indent}  SrcAlphaBlendFactor: {state.srcAlphaBlendFactor}");
+                Console.WriteLine($"{indent}  DstAlphaBlendFactor: {state.dstAlphaBlendFactor}");
+                Console.WriteLine($"{indent}  AlphaBlendOp: {state.alphaBlendOp}");
+                Console.WriteLine($"{indent}  ColorWriteMask: {state.colorWriteMask}");
+            }
+        }
+
+        private static void DebugPipelineInputAssemblyState(VkPipelineInputAssemblyStateCreateInfo state, string indent)
+        {
+            Console.WriteLine($"{indent}Topology: {state.topology}");
+            Console.WriteLine($"{indent}PrimitiveRestartEnable: {state.primitiveRestartEnable}");
+        }
+
+        private static void DebugPipelineRasterizationState(VkPipelineRasterizationStateCreateInfo state, string indent)
+        {
+            Console.WriteLine($"{indent}DepthClampEnable: {state.depthClampEnable}");
+            Console.WriteLine($"{indent}RasterizerDiscardEnable: {state.rasterizerDiscardEnable}");
+            Console.WriteLine($"{indent}PolygonMode: {state.polygonMode}");
+            Console.WriteLine($"{indent}CullMode: {state.cullMode}");
+            Console.WriteLine($"{indent}FrontFace: {state.frontFace}");
+            Console.WriteLine($"{indent}DepthBiasEnable: {state.depthBiasEnable}");
+            Console.WriteLine($"{indent}DepthBiasConstantFactor: {state.depthBiasConstantFactor}");
+            Console.WriteLine($"{indent}DepthBiasClamp: {state.depthBiasClamp}");
+            Console.WriteLine($"{indent}DepthBiasSlopeFactor: {state.depthBiasSlopeFactor}");
+            Console.WriteLine($"{indent}LineWidth: {state.lineWidth}");
+        }
+
+        private static void DebugPipelineMultisampleState(VkPipelineMultisampleStateCreateInfo state, string indent)
+        {
+            Console.WriteLine($"{indent}RasterizationSamples: {state.rasterizationSamples}");
+            Console.WriteLine($"{indent}SampleShadingEnable: {state.sampleShadingEnable}");
+            Console.WriteLine($"{indent}MinSampleShading: {state.minSampleShading}");
+            Console.WriteLine($"{indent}AlphaToCoverageEnable: {state.alphaToCoverageEnable}");
+            Console.WriteLine($"{indent}AlphaToOneEnable: {state.alphaToOneEnable}");
+        }
+
+        private static void DebugPipelineDepthStencilState(VkPipelineDepthStencilStateCreateInfo state, string indent)
+        {
+
+            Console.WriteLine($"{indent}DepthTestEnable: {state.depthTestEnable}");
+            Console.WriteLine($"{indent}DepthWriteEnable: {state.depthWriteEnable}");
+            Console.WriteLine($"{indent}DepthCompareOp: {state.depthCompareOp}");
+            Console.WriteLine($"{indent}DepthBoundsTestEnable: {state.depthBoundsTestEnable}");
+            Console.WriteLine($"{indent}StencilTestEnable: {state.stencilTestEnable}");
+            //if (state.front.HasValue)
+            //{
+            //Console.WriteLine($"{indent}Front: [FailOp: {state.front.Value.failOp}, PassOp: {state.front.Value.passOp}, DepthFailOp: {state.front.Value.depthFailOp}, CompareOp: {state.front.Value.compareOp}]");
+
+            //}
+            //else
+            //{
+            //    Console.WriteLine($"{indent}Front: null");
+            //}
+            //if (state.back.HasValue)
+            //{
+            //    Console.WriteLine($"{indent}Back: [FailOp: {state.back.Value.failOp}, PassOp: {state.back.Value.passOp}, DepthFailOp: {state.back.Value.depthFailOp}, CompareOp: {state.back.Value.compareOp}]");
+            //}
+            //else
+            //{
+            //    Console.WriteLine($"{indent}Back: null");
+            //}
+                Console.WriteLine($"{indent}MinDepthBounds: {state.minDepthBounds}");
+            Console.WriteLine($"{indent}MaxDepthBounds: {state.maxDepthBounds}");
+        }
+
+        private static void DebugPipelineColorBlendState(VkPipelineColorBlendStateCreateInfo state, string indent)
+        {
+            Console.WriteLine($"{indent}LogicOpEnable: {state.logicOpEnable}");
+            Console.WriteLine($"{indent}LogicOp: {state.logicOp}");
+           // Console.WriteLine($"{indent}BlendConstants: [{state.blendConstants[0]}, {state.blendConstants[1]}, {state.blendConstants[2]}, {state.blendConstants[3]}]");
+        }
+
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle, void* debuggerHandle);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer* renderer);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_StartFrame(VkDevice device, VkSwapchainKHR swapChain, VkFence* fenceList, VkSemaphore* acquireImageSemaphoreList, size_t* pImageIndex, size_t* pCommandIndex, bool* pRebuildRendererFlag);
@@ -656,7 +1048,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(ref GraphicsRenderer renderer, [MarshalAs(UnmanagedType.LPStr)] string renderPassLoader, ref ivec2 renderPassResolution, Texture* renderedTextureListPtr, ref size_t renderedTextureCount,  ref Texture depthTexture);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer renderer, VulkanRenderPass vulkanRenderPass, [MarshalAs(UnmanagedType.LPStr)] string renderPassJson, ref ivec2 renderPassResolution, Texture* renderedTextureListPtr, size_t* renderedTextureCount, ref Texture depthTexture);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer renderer, VulkanRenderPass renderPass);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, RenderPipelineLoaderModel renderPipelineLoader);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass VulkanPipeline_CreateRenderPipeline(IntPtr device, ref RenderPipelineLoaderModel pipelineModel);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, Guid renderPassId, VulkanPipeline oldVulkanPipeline, [MarshalAs(UnmanagedType.LPStr)] string pipelineJson, VkRenderPass renderPass, size_t constBufferSize, ref ivec2 renderPassResolution, GPUIncludes includes);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline vulkanPipelineDLL);
     }

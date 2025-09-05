@@ -32,6 +32,9 @@ namespace VulkanGameEngineLevelEditor.Models
         kRotatingPaletteTextureDescriptor,
         kMathOpperation1Descriptor,
         kMathOpperation2Descriptor,
+        kVertexDescsriptor,
+        kIndexDescriptor,
+        kTransformDescriptor
     };
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]

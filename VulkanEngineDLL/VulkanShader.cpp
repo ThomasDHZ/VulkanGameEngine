@@ -56,11 +56,11 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
          .VertexInputBindingCount = vertexInputBindingList.size(),
          .VertexInputAttributeListCount = vertexInputAttributeList.size(),
          .PushConstantCount = constBuffers.size(),
+         .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__),
          .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
          .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
-         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__),
-         .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__)
+         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__)
     };
     return pipelineData;
 }

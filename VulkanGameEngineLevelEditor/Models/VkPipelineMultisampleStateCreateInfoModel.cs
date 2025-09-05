@@ -21,7 +21,7 @@ namespace VulkanGameEngineLevelEditor.Models
 
         [DisplayNameAttribute("Sample Shading Enable")]
         [Tooltip("Enables or disables sample shading for finer multisampling control.")]
-        public bool sampleShadingEnable { get; set; }
+        public VkBool32 sampleShadingEnable { get; set; }
 
         [DisplayNameAttribute("Min Sample Shading")]
         [Tooltip("Sets the minimum fraction of samples to shade when sample shading is enabled.")]
@@ -32,10 +32,10 @@ namespace VulkanGameEngineLevelEditor.Models
         public IntPtr pSampleMask { get; set; } = IntPtr.Zero;
 
         [Tooltip("Enables or disables alpha-to-coverage for multisampled rendering.")]
-        public bool alphaToCoverageEnable { get; set; }
+        public VkBool32 alphaToCoverageEnable { get; set; }
 
         [Tooltip("Enables or disables setting alpha to one for multisampled rendering.")]
-        public bool alphaToOneEnable { get; set; }
+        public VkBool32 alphaToOneEnable { get; set; }
 
         [IgnoreProperty]
         [Tooltip("Reserved for future use. Currently set to 0, as no flags are defined.")]

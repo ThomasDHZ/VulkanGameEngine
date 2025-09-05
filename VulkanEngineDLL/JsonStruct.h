@@ -105,41 +105,45 @@ struct ShaderPushConstant
 
 struct ShaderPipelineData
 {
-    size_t                             ShaderCount = 0;
-    size_t                             DescriptorBindingCount = 0;
-    size_t                             VertexInputBindingCount = 0;
-    size_t                             VertexInputAttributeListCount = 0;
-    size_t                             PushConstantCount = 0;
-    ShaderDescriptorBinding*           DescriptorBindingsList = nullptr;
-    VkVertexInputBindingDescription*   VertexInputBindingList = nullptr;
+    size_t ShaderCount = 0;
+    size_t DescriptorBindingCount = 0;
+    size_t ShaderStructCount = 0;
+    size_t VertexInputBindingCount = 0;
+    size_t VertexInputAttributeListCount = 0;
+    size_t ShaderOutputCount = 0;
+    size_t PushConstantCount = 0;
+    const char** ShaderList = nullptr;
+    ShaderDescriptorBinding* DescriptorBindingsList = nullptr;
+    ShaderStruct* ShaderStructList = nullptr;
+    VkVertexInputBindingDescription* VertexInputBindingList = nullptr;
     VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
-    ShaderPushConstant*                PushConstantList = nullptr;
-    const char**                       ShaderList = nullptr;
+    ShaderVariable* ShaderOutputList = nullptr;
+    ShaderPushConstant* PushConstantList = nullptr;
 };
 
 struct GPUIncludes
 {
-    size_t VertexPropertiesCount = 0;
-    size_t IndexPropertiesCount = 0;
-    size_t TransformPropertiesCount = 0;
-    size_t MeshPropertiesCount = 0;
-    size_t TexturePropertiesListCount = 0;
-    size_t MaterialPropertiesCount = 0;
-    VkDescriptorBufferInfo* VertexProperties = nullptr;
-    VkDescriptorBufferInfo* IndexProperties = nullptr;
-    VkDescriptorBufferInfo* TransformProperties = nullptr;
-    VkDescriptorBufferInfo* MeshProperties = nullptr;
-    VkDescriptorImageInfo* TexturePropertiesList = nullptr;
-    VkDescriptorBufferInfo* MaterialProperties = nullptr;
+    size_t VertexPropertiesCount;
+    size_t IndexPropertiesCount;
+    size_t TransformPropertiesCount;
+    size_t MeshPropertiesCount;
+    size_t TexturePropertiesCount;
+    size_t MaterialPropertiesCount;
+    VkDescriptorBufferInfo* VertexProperties;
+    VkDescriptorBufferInfo* IndexProperties;
+    VkDescriptorBufferInfo* TransformProperties;
+    VkDescriptorBufferInfo* MeshProperties;
+    VkDescriptorImageInfo* TextureProperties;
+    VkDescriptorBufferInfo* MaterialProperties;
 };
 
 struct RenderPipelineLoader
 {
     VkGuid PipelineId;
     VkGuid RenderPassId;
-    VkRenderPass RenderPass;
+    VkRenderPass RenderPass; 
+    ivec2 RenderPassResolution;
     GPUIncludes gpuIncludes;
-    ShaderPushConstant PushConstant;
     ShaderPipelineData ShaderPiplineInfo;
     size_t ViewportCount = 0;
     size_t ScissorCount = 0;
@@ -152,5 +156,4 @@ struct RenderPipelineLoader
     VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo;
     VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo;
     VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel;
-    ivec2 RenderPassResolution;
 };

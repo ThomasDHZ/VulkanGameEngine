@@ -42,16 +42,27 @@ namespace Vulkan
         public VkImageLayout layout;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct VkStencilOpState
     {
-        public VkStencilOp failOp;
-        public VkStencilOp passOp;
-        public VkStencilOp depthFailOp;
-        public VkCompareOp compareOp;
+        public int failOp;  // VkStencilOp (enum int)
+        public int passOp;
+        public int depthFailOp;
+        public int compareOp;  // VkCompareOp
         public uint compareMask;
         public uint writeMask;
         public uint reference;
+
+        public VkStencilOpState()
+        {
+            failOp = 1;  // VK_STENCIL_OP_KEEP (default from logs)
+            passOp = 1;
+            depthFailOp = 1;
+            compareOp = 0;  // VK_COMPARE_OP_NEVER (or ALWAYS=7 if needed)
+            compareMask = 0;
+            writeMask = 0;
+            reference = 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -69,16 +80,16 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct VkPipelineDepthStencilStateCreateInfo
     {
-        public VkStructureType sType;
+        public int sType;  // VkStructureType
         public void* pNext;
-        public VkPipelineDepthStencilStateCreateFlagBits flags;
-        public bool depthTestEnable;
-        public bool depthWriteEnable;
-        public VkCompareOp depthCompareOp;
-        public bool depthBoundsTestEnable;
-        public bool stencilTestEnable;
-        public VkStencilOpState? front;
-        public VkStencilOpState? back;
+        public uint flags;  // VkPipelineDepthStencilStateCreateFlags (uint)
+        public uint depthTestEnable;  // VkBool32
+        public uint depthWriteEnable;  // VkBool32
+        public int depthCompareOp;  // VkCompareOp (enum int)
+        public uint depthBoundsTestEnable;  // VkBool32
+        public uint stencilTestEnable;  // VkBool32
+        public VkStencilOpState front;  // Inline struct (define below; zero if unused)
+        public VkStencilOpState back;   // Inline
         public float minDepthBounds;
         public float maxDepthBounds;
     }
@@ -86,30 +97,42 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct VkPipelineColorBlendStateCreateInfo
     {
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct Blender
         {
-            public float R { get; set; } = 0.0f;
-            public float G { get; set; } = 0.0f;
-            public float B { get; set; } = 0.0f;
-            public float A { get; set; } = 0.0f;
+            public float R;
+            public float G;
+            public float B;
+            public float A;
+
             public Blender()
             {
+                R = 0f;
+                G = 0f;
+                B = 0f;
+                A = 0f;
             }
         }
 
-        public VkStructureType sType { get; set; }
-        [JsonIgnore]
-        public void* pNext { get; set; } = null;
-        [JsonIgnore]
-        public VkPipelineColorBlendStateCreateFlagBits flags { get; set; }
-        public bool logicOpEnable { get; set; }
-        public VkLogicOp logicOp { get; set; }
-        public uint attachmentCount { get; set; }
-        public VkPipelineColorBlendAttachmentState* pAttachments { get; set; }
-        public Blender blendConstants { get; set; } = new Blender();
+        public int sType;  // VkStructureType
+        public void* pNext;
+        public uint flags;  // VkPipelineColorBlendStateCreateFlags (uint)
+        public uint logicOpEnable;  // VkBool32
+        public int logicOp;  // VkLogicOp (enum int)
+        public uint attachmentCount;
+        public VkPipelineColorBlendAttachmentState* pAttachments;  // Pin array separately
+        public Blender blendConstants;
 
         public VkPipelineColorBlendStateCreateInfo()
         {
+            sType = 1000000000 + 12;  // VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
+            pNext = null;
+            flags = 0;
+            logicOpEnable = 0;
+            logicOp = 0;  // VK_LOGIC_OP_CLEAR
+            attachmentCount = 0;
+            pAttachments = null;
+            blendConstants = new Blender();
         }
     }
 
@@ -130,18 +153,27 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct VkPipelineMultisampleStateCreateInfo
     {
-        public VkStructureType sType;
+        public int sType;  // VkStructureType
         public void* pNext;
-        public VkCullModeFlagBits flags;
-        public VkSampleCountFlagBits rasterizationSamples;
-        public bool sampleShadingEnable;
+        public uint flags;  // VkPipelineMultisampleStateCreateFlags (uint)
+        public int rasterizationSamples;  // VkSampleCountFlagBits (enum int)
+        public uint sampleShadingEnable;  // VkBool32
         public float minSampleShading;
-        public VkSampleMask? pSampleMask;
-        public bool alphaToCoverageEnable;
-        public bool alphaToOneEnable;
+        public void* pSampleMask;  // const VkSampleMask* (use void* or fixed uint[1]; set to null for none)
+        public uint alphaToCoverageEnable;  // VkBool32
+        public uint alphaToOneEnable;  // VkBool32
 
         public VkPipelineMultisampleStateCreateInfo()
         {
+            sType = 1000000000 + 11;  // VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
+            pNext = null;
+            flags = 0;
+            rasterizationSamples = 1;  // VK_SAMPLE_COUNT_1_BIT
+            sampleShadingEnable = 0;
+            minSampleShading = 0f;
+            pSampleMask = null;
+            alphaToCoverageEnable = 0;
+            alphaToOneEnable = 0;
         }
     }
 
@@ -158,14 +190,14 @@ namespace Vulkan
         public VkSamplerAddressMode addressModeV;
         public VkSamplerAddressMode addressModeW;
         public float mipLodBias;
-        public bool anisotropyEnable;
+        public VkBool32 anisotropyEnable;
         public float maxAnisotropy;
-        public bool compareEnable;
+        public VkBool32 compareEnable;
         public VkCompareOp compareOp;
         public float minLod;
         public float maxLod;
         public VkBorderColor borderColor;
-        public bool unnormalizedCoordinates;
+        public VkBool32 unnormalizedCoordinates;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -237,67 +269,80 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct VkPipelineRasterizationStateCreateInfo
     {
-        public VkStructureType sType;
+        public int sType;  // VkStructureType
         public void* pNext;
-        public VkCullModeFlagBits flags;
-        public bool depthClampEnable;
-        public bool rasterizerDiscardEnable;
-        public VkPolygonMode polygonMode;
-        public VkCullModeFlagBits cullMode;
-        public VkFrontFace frontFace;
-        public bool depthBiasEnable;
+        public uint flags;  // VkPipelineRasterizationStateCreateFlags (uint)
+        public uint depthClampEnable;  // VkBool32
+        public uint rasterizerDiscardEnable;  // VkBool32
+        public int polygonMode;  // VkPolygonMode (enum int)
+        public uint cullMode;  // VkCullModeFlags (uint bitmask)
+        public int frontFace;  // VkFrontFace (enum int)
+        public uint depthBiasEnable;  // VkBool32
         public float depthBiasConstantFactor;
         public float depthBiasClamp;
         public float depthBiasSlopeFactor;
         public float lineWidth;
+
+        public VkPipelineRasterizationStateCreateInfo()
+        {
+            sType = 1000000000 + 10;  // VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
+            pNext = null;
+            flags = 0;
+            depthClampEnable = 0;
+            rasterizerDiscardEnable = 0;
+            polygonMode = 1;  // VK_POLYGON_MODE_FILL
+            cullMode = 2;  // VK_CULL_MODE_BACK_BIT
+            frontFace = 1;  // VK_FRONT_FACE_COUNTER_CLOCKWISE
+            depthBiasEnable = 0;
+            depthBiasConstantFactor = 0f;
+            depthBiasClamp = 0f;
+            depthBiasSlopeFactor = 0f;
+            lineWidth = 1f;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct VkPipelineColorBlendAttachmentState : INotifyPropertyChanged
+    public struct VkPipelineColorBlendAttachmentState
     {
-        [DisplayName("Blend enable")]
-        [Tooltip("Enables or disables blending for this attachment.")]
-        public bool blendEnable { get; set; }
-        [DisplayName("Source Color Blend Factor")]
+        public uint blendEnable;  // VkBool32
+        public int srcColorBlendFactor;  // VkBlendFactor (enum int)
+        public int dstColorBlendFactor;  // VkBlendFactor
+        public int colorBlendOp;  // VkBlendOp
+        public int srcAlphaBlendFactor;  // VkBlendFactor
+        public int dstAlphaBlendFactor;  // VkBlendFactor
+        public int alphaBlendOp;  // VkBlendOp
+        public uint colorWriteMask;  // VkColorComponentFlags (uint bitmask)
 
-        [Tooltip("Specifies the source color blend factor for blending calculations.")]
-        public VkBlendFactor srcColorBlendFactor { get; set; }
-        [DisplayName("Distanation Color Blend Factor")]
-
-        [Tooltip("Specifies the destination color blend factor for blending calculations.")]
-        public VkBlendFactor dstColorBlendFactor { get; set; }
-
-        [DisplayName("Color Blend Op")]
-        [Tooltip("Defines the blend operation for combining source and destination colors.")]
-        public VkBlendOp colorBlendOp { get; set; }
-        [DisplayName("Source Alpha Blend Factor")]
-
-        [Tooltip("Specifies the source alpha blend factor for blending calculations.")]
-        public VkBlendFactor srcAlphaBlendFactor { get; set; }
-        [DisplayName("Distanation Alpha Blend Factor")]
-
-        [Tooltip("Specifies the destination alpha blend factor for blending calculations.")]
-        public VkBlendFactor dstAlphaBlendFactor { get; set; }
-        [DisplayName("Alpha Blend Op")]
-
-        [Tooltip("Defines the blend operation for combining source and destination alpha values.")]
-        public VkBlendOp alphaBlendOp { get; set; }
-        [DisplayName("Color Write Mask")]
-
-        [Tooltip("Specifies which color components are written to the framebuffer.")]
-        public VkColorComponentFlagBits colorWriteMask { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public VkPipelineColorBlendAttachmentState()
+        {
+            blendEnable = 0;  // VK_FALSE
+            srcColorBlendFactor = 0;  // Default to VK_BLEND_FACTOR_ONE or set explicitly
+            dstColorBlendFactor = 0;  // VK_BLEND_FACTOR_ZERO
+            colorBlendOp = 0;  // VK_BLEND_OP_ADD
+            srcAlphaBlendFactor = 0;
+            dstAlphaBlendFactor = 0;
+            alphaBlendOp = 0;  // VK_BLEND_OP_ADD (fix invalid 15)
+            colorWriteMask = 0xF;  // All components (R|G|B|A=15)
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct VkPipelineInputAssemblyStateCreateInfo
     {
-        public VkStructureType sType;
+        public int sType;  // VkStructureType (enum int)
         public void* pNext;
-        public VkCullModeFlagBits flags;
-        public VkPrimitiveTopology topology;
-        public bool primitiveRestartEnable;
+        public uint flags;  // VkPipelineInputAssemblyStateCreateFlags (uint)
+        public int topology;  // VkPrimitiveTopology (enum int)
+        public uint primitiveRestartEnable;  // VkBool32
+
+        public VkPipelineInputAssemblyStateCreateInfo()
+        {
+            sType = 1000000000 + 7;  // VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO (adjust to actual value)
+            pNext = null;
+            flags = 0;
+            topology = 3;  // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST (default from logs)
+            primitiveRestartEnable = 0;  // VK_FALSE
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -421,7 +466,7 @@ namespace Vulkan
         public VkRenderPass renderPass;
         public uint subpass;
         public VkFramebuffer framebuffer;
-        public bool occlusionQueryEnable;
+        public VkBool32 occlusionQueryEnable;
         public VkQueryControlFlagBits queryFlags;
         public VkQueryPipelineStatisticFlagBits pipelineStatistics;
     }
@@ -1297,60 +1342,60 @@ namespace Vulkan
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct VkPhysicalDeviceFeatures
     {
-        bool robustBufferAccess;
-        bool fullDrawIndexUint32;
-        bool imageCubeArray;
-        bool independentBlend;
-        bool geometryShader;
-        bool tessellationShader;
-        bool sampleRateShading;
-        bool dualSrcBlend;
-        bool logicOp;
-        bool multiDrawIndirect;
-        bool drawIndirectFirstInstance;
-        bool depthClamp;
-        bool depthBiasClamp;
-        bool fillModeNonSolid;
-        bool depthBounds;
-        bool wideLines;
-        bool largePoints;
-        bool alphaToOne;
-        bool multiViewport;
-        bool samplerAnisotropy;
-        bool textureCompressionETC2;
-        bool textureCompressionASTC_LDR;
-        bool textureCompressionBC;
-        bool occlusionQueryPrecise;
-        bool pipelineStatisticsQuery;
-        bool vertexPipelineStoresAndAtomics;
-        bool fragmentStoresAndAtomics;
-        bool shaderTessellationAndGeometryPointSize;
-        bool shaderImageGatherExtended;
-        bool shaderStorageImageExtendedFormats;
-        bool shaderStorageImageMultisample;
-        bool shaderStorageImageReadWithoutFormat;
-        bool shaderStorageImageWriteWithoutFormat;
-        bool shaderUniformBufferArrayDynamicIndexing;
-        bool shaderSampledImageArrayDynamicIndexing;
-        bool shaderStorageBufferArrayDynamicIndexing;
-        bool shaderStorageImageArrayDynamicIndexing;
-        bool shaderClipDistance;
-        bool shaderCullDistance;
-        bool shaderFloat64;
-        bool shaderInt64;
-        bool shaderInt16;
-        bool shaderResourceResidency;
-        bool shaderResourceMinLod;
-        bool sparseBinding;
-        bool sparseResidencyBuffer;
-        bool sparseResidencyImage2D;
-        bool sparseResidencyImage3D;
-        bool sparseResidency2Samples;
-        bool sparseResidency4Samples;
-        bool sparseResidency8Samples;
-        bool sparseResidency16Samples;
-        bool sparseResidencyAliased;
-        bool variableMultisampleRate;
-        bool inheritedQueries;
+        VkBool32 robustBufferAccess;
+        VkBool32 fullDrawIndexUint32;
+        VkBool32 imageCubeArray;
+        VkBool32 independentBlend;
+        VkBool32 geometryShader;
+        VkBool32 tessellationShader;
+        VkBool32 sampleRateShading;
+        VkBool32 dualSrcBlend;
+        VkBool32 logicOp;
+        VkBool32 multiDrawIndirect;
+        VkBool32 drawIndirectFirstInstance;
+        VkBool32 depthClamp;
+        VkBool32 depthBiasClamp;
+        VkBool32 fillModeNonSolid;
+        VkBool32 depthBounds;
+        VkBool32 wideLines;
+        VkBool32 largePoints;
+        VkBool32 alphaToOne;
+        VkBool32 multiViewport;
+        VkBool32 samplerAnisotropy;
+        VkBool32 textureCompressionETC2;
+        VkBool32 textureCompressionASTC_LDR;
+        VkBool32 textureCompressionBC;
+        VkBool32 occlusionQueryPrecise;
+        VkBool32 pipelineStatisticsQuery;
+        VkBool32 vertexPipelineStoresAndAtomics;
+        VkBool32 fragmentStoresAndAtomics;
+        VkBool32 shaderTessellationAndGeometryPointSize;
+        VkBool32 shaderImageGatherExtended;
+        VkBool32 shaderStorageImageExtendedFormats;
+        VkBool32 shaderStorageImageMultisample;
+        VkBool32 shaderStorageImageReadWithoutFormat;
+        VkBool32 shaderStorageImageWriteWithoutFormat;
+        VkBool32 shaderUniformBufferArrayDynamicIndexing;
+        VkBool32 shaderSampledImageArrayDynamicIndexing;
+        VkBool32 shaderStorageBufferArrayDynamicIndexing;
+        VkBool32 shaderStorageImageArrayDynamicIndexing;
+        VkBool32 shaderClipDistance;
+        VkBool32 shaderCullDistance;
+        VkBool32 shaderFloat64;
+        VkBool32 shaderInt64;
+        VkBool32 shaderInt16;
+        VkBool32 shaderResourceResidency;
+        VkBool32 shaderResourceMinLod;
+        VkBool32 sparseBinding;
+        VkBool32 sparseResidencyBuffer;
+        VkBool32 sparseResidencyImage2D;
+        VkBool32 sparseResidencyImage3D;
+        VkBool32 sparseResidency2Samples;
+        VkBool32 sparseResidency4Samples;
+        VkBool32 sparseResidency8Samples;
+        VkBool32 sparseResidency16Samples;
+        VkBool32 sparseResidencyAliased;
+        VkBool32 variableMultisampleRate;
+        VkBool32 inheritedQueries;
     }
 }

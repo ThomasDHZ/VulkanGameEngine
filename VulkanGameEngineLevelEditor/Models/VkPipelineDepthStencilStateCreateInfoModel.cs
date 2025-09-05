@@ -15,19 +15,19 @@ namespace VulkanGameEngineLevelEditor.Models
         public VkStructureType sType { get; set; } = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
         [Tooltip("Enables or disables depth testing for fragments.")]
-        public bool depthTestEnable { get; set; }
+        public VkBool32 depthTestEnable { get; set; }
 
         [Tooltip("Enables or disables writing depth values to the depth buffer.")]
-        public bool depthWriteEnable { get; set; }
+        public VkBool32 depthWriteEnable { get; set; }
 
         [Tooltip("Specifies the comparison operation for depth testing.")]
         public VkCompareOp depthCompareOp { get; set; }
 
         [Tooltip("Enables or disables depth bounds testing to restrict fragment depth values.")]
-        public bool depthBoundsTestEnable { get; set; }
+        public VkBool32 depthBoundsTestEnable { get; set; }
 
         [Tooltip("Enables or disables stencil testing for fragments.")]
-        public bool stencilTestEnable { get; set; }
+        public VkBool32 c { get; set; }
 
         [Tooltip("Defines stencil operations and parameters for front-facing polygons.")]
         public VkStencilOpStateModel front { get; set; } = new VkStencilOpStateModel();
