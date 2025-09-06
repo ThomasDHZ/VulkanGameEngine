@@ -1,4 +1,5 @@
 ﻿using GlmSharp;
+using VulkanGameEngineLevelEditor.GameEngine.Structs;
 
 namespace VulkanGameEngineLevelEditor.GameEngineAPI
 {
@@ -18,7 +19,7 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
 
         }
 
-        public abstract SceneDataBuffer Update( SceneDataBuffer sceneProperties);
+        public abstract void Update(ShaderPushConstant sceneDataBuffer);
         public abstract void UpdateKeyboard(float deltaTime);
         public abstract void UpdateMouse();
     }

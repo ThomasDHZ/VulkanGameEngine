@@ -1,9 +1,12 @@
 ﻿using GlmSharp;
+using System;
 using System.Numerics;
+using VulkanGameEngineLevelEditor.GameEngine.Structs;
+using VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using vec2 = GlmSharp.vec2;
 
-public class OrthographicCamera : Camera
+public unsafe class OrthographicCamera : Camera
 {
 
     public OrthographicCamera()
@@ -38,7 +41,7 @@ public class OrthographicCamera : Camera
         ViewMatrix = mat4.Identity;
     }
 
-    public override SceneDataBuffer Update( SceneDataBuffer sceneProperties)
+    public override void Update(ShaderPushConstant sceneDataBuffer)
     {
         mat4 transform = mat4.Translate(Position) * mat4.Rotate(VMath.DegreesToRadians(0.0f), new vec3(0, 0, 1));
         ViewMatrix = transform.Inverse;
@@ -51,11 +54,34 @@ public class OrthographicCamera : Camera
 
         ViewScreenSize = new vec2((Aspect * Zoom) * 2, (1.0f * Zoom) * 2);
 
-        sceneProperties.CameraPosition = new vec3(Position.x, Position.y, Position.z);
-        sceneProperties.View = ViewMatrix;
-        sceneProperties.Projection = modifiedProjectionMatrix;
+        var shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "CameraPosition");
+        if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+        {
+            float* ptr = (float*)shaderVar->Value;
+            ptr[0] = Position.x;
+            ptr[1] = Position.y;
+            ptr[2] = Position.z;
+        }
 
-        return sceneProperties;
+        shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "ViewMatrix");
+        if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+        {
+            float* matrixPtr = (float*)shaderVar->Value;
+            for (int i = 0; i < 16; i++)
+            {
+                matrixPtr[i] = ViewMatrix[i];
+            }
+        }
+
+        shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "Projection");
+        if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+        {
+            float* matrixPtr = (float*)shaderVar->Value;
+            for (int i = 0; i < 16; i++)
+            {
+                matrixPtr[i] = modifiedProjectionMatrix[i];
+            }
+        }
     }
 
     public override void UpdateKeyboard(float deltaTime)
@@ -64,47 +90,5 @@ public class OrthographicCamera : Camera
 
     public override void UpdateMouse()
     {
-    }
-
-    public static class MatrixConverter
-    {
-        public static mat4 ToGLM(Matrix4x4 systemMatrix)
-        {
-            mat4 glmMatrix = new mat4();
-
-            glmMatrix[0, 0] = systemMatrix.M11;
-            glmMatrix[0, 1] = systemMatrix.M12;
-            glmMatrix[0, 2] = systemMatrix.M13;
-            glmMatrix[0, 3] = systemMatrix.M14;
-
-            glmMatrix[1, 0] = systemMatrix.M21;
-            glmMatrix[1, 1] = systemMatrix.M22;
-            glmMatrix[1, 2] = systemMatrix.M23;
-            glmMatrix[1, 3] = systemMatrix.M24;
-
-            glmMatrix[2, 0] = systemMatrix.M31;
-            glmMatrix[2, 1] = systemMatrix.M32;
-            glmMatrix[2, 2] = systemMatrix.M33;
-            glmMatrix[2, 3] = systemMatrix.M34;
-
-            glmMatrix[3, 0] = systemMatrix.M41;
-            glmMatrix[3, 1] = systemMatrix.M42;
-            glmMatrix[3, 2] = systemMatrix.M43;
-            glmMatrix[3, 3] = systemMatrix.M44;
-
-            return glmMatrix;
-        }
-
-        public static Matrix4x4 ToSystemNumerics(mat4 glmMatrix)
-        {
-            Matrix4x4 systemMatrix = new Matrix4x4(
-                glmMatrix[0, 0], glmMatrix[1, 0], glmMatrix[2, 0], glmMatrix[3, 0],
-                glmMatrix[0, 1], glmMatrix[1, 1], glmMatrix[2, 1], glmMatrix[3, 1],
-                glmMatrix[0, 2], glmMatrix[1, 2], glmMatrix[2, 2], glmMatrix[3, 2],
-                glmMatrix[0, 3], glmMatrix[1, 3], glmMatrix[2, 3], glmMatrix[3, 3]
-            );
-
-            return systemMatrix;
-        }
     }
 }

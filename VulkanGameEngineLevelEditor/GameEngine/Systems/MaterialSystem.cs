@@ -1,6 +1,7 @@
 ﻿using CSScripting;
 using GlmSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Silk.NET.Core.Native;
 using Silk.NET.SDL;
 using Silk.NET.Vulkan;
@@ -42,8 +43,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
             GraphicsRenderer renderer = RenderSystem.renderer;
             uint NextBufferIndex = ++BufferSystem.NextBufferId;
-            ShaderSystem.PipelineShaderStructMap[(int)NextBufferIndex] = ShaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
-            MaterialMap[materialJson.MaterialId] = Material_CreateMaterial(ref renderer, NextBufferIndex, out VulkanBuffer vulkanBuffer, ShaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer"), materialPath);
+            ShaderSystem.PipelineShaderStructMap[(int)NextBufferIndex] = ShaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer", (int)NextBufferIndex);
+            MaterialMap[materialJson.MaterialId] = Material_CreateMaterial(ref renderer, NextBufferIndex, out VulkanBuffer vulkanBuffer, ShaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer", (int)NextBufferIndex), materialPath);
             BufferSystem.VulkanBufferMap[NextBufferIndex] = vulkanBuffer;
 
             return materialJson.MaterialId;
@@ -83,21 +84,84 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             foreach (var materialPair in MaterialMap)
             {
                 Material material = materialPair.Value;
-                MaterialProperitiesBuffer materialBufferProperties = new MaterialProperitiesBuffer
-                {
-                    AlbedoMapId = material.AlbedoMapId != new Guid() ? TextureSystem.TextureList[material.AlbedoMapId].textureBufferIndex : 0,
-                    MetallicRoughnessMapId = material.MetallicRoughnessMapId != new Guid() ? TextureSystem.TextureList[material.MetallicRoughnessMapId].textureBufferIndex : 0,
-                    MetallicMapId = material.MetallicMapId != new Guid() ? TextureSystem.TextureList[material.MetallicMapId].textureBufferIndex : 0,
-                    RoughnessMapId = material.RoughnessMapId != new Guid() ? TextureSystem.TextureList[material.RoughnessMapId].textureBufferIndex : 0,
-                    AmbientOcclusionMapId = material.AmbientOcclusionMapId != new Guid() ? TextureSystem.TextureList[material.AmbientOcclusionMapId].textureBufferIndex : 0,
-                    NormalMapId = material.NormalMapId != new Guid() ? TextureSystem.TextureList[material.NormalMapId].textureBufferIndex : 0,
-                    DepthMapId = material.DepthMapId != new Guid() ? TextureSystem.TextureList[material.DepthMapId].textureBufferIndex : 0,
-                    AlphaMapId = material.AlphaMapId != new Guid() ? TextureSystem.TextureList[material.AlphaMapId].textureBufferIndex : 0,
-                    EmissionMapId = material.EmissionMapId != new Guid() ? TextureSystem.TextureList[material.EmissionMapId].textureBufferIndex : 0,
-                    HeightMapId = material.HeightMapId != new Guid() ? TextureSystem.TextureList[material.HeightMapId].textureBufferIndex : 0
-                };
+                uint AlbedoMapId = material.AlbedoMapId != Guid.Empty ? TextureSystem.FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
+                uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != Guid.Empty ? TextureSystem.FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
+                uint MetallicMapId = material.MetallicMapId != Guid.Empty ? TextureSystem.FindTexture(material.MetallicMapId).textureBufferIndex : 0;
+                uint RoughnessMapId = material.RoughnessMapId != Guid.Empty ? TextureSystem.FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
+                uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != Guid.Empty ? TextureSystem.FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
+                uint NormalMapId = material.NormalMapId != Guid.Empty ? TextureSystem.FindTexture(material.NormalMapId).textureBufferIndex : 0;
+                uint DepthMapId = material.DepthMapId != Guid.Empty ? TextureSystem.FindTexture(material.DepthMapId).textureBufferIndex : 0;
+                uint AlphaMapId = material.AlphaMapId != Guid.Empty ? TextureSystem.FindTexture(material.AlphaMapId).textureBufferIndex : 0;
+                uint EmissionMapId = material.EmissionMapId != Guid.Empty ? TextureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : 0;
+                uint HeightMapId = material.HeightMapId != Guid.Empty ? TextureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
 
-                Material_UpdateBuffer(RenderSystem.renderer, BufferSystem.VulkanBufferMap[(uint)material.MaterialBufferId], materialBufferProperties);
+
+                ShaderStruct shaderStruct = ShaderSystem.FindShaderStruct(material.MaterialBufferId);
+                var shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap");
+                if (shaderVar != null &&
+                    (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = AlbedoMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "MetallicRoughnessMap");
+                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = MetallicRoughnessMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "MetallicMap");
+                if (shaderVar != null &&
+                    (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = MetallicMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "RoughnessMapMap");
+                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = RoughnessMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "AmbientOcclusionMap");
+                if (shaderVar != null &&
+                    (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = AmbientOcclusionMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "NormalMap");
+                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = NormalMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "DepthMap");
+                if (shaderVar != null &&
+                    (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = DepthMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "AlphaMap");
+                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = AlphaMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "EmissionMap");
+                if (shaderVar != null &&
+                    (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = EmissionMapId;
+                }
+
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "HeightMap");
+                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+                {
+                    *(uint*)shaderVar->Value = HeightMapId;
+                }
+                ShaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
                 x++;
             }
         }

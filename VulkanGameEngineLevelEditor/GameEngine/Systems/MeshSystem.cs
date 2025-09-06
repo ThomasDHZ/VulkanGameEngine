@@ -99,6 +99,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 BufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId] = indexBuffer;
                 BufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId] = meshTransformBuffer;
                 BufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = propertiesBuffer;
+                ShaderSystem.PipelineShaderStructMap[(int)meshLoader.MeshPropertiesLoader.PropertiesBufferId] = ShaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer", (int)meshLoader.MeshPropertiesLoader.PropertiesBufferId);
                 MeshMap[meshId] = mesh;
             }
             finally
@@ -168,6 +169,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 BufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId] = indexBuffer;
                 BufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId] = meshTransformBuffer;
                 BufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = propertiesBuffer;
+                ShaderSystem.PipelineShaderStructMap[(int)propertiesBuffer.BufferId] = ShaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer", (int)propertiesBuffer.BufferId);
                 SpriteMeshMap[(int)meshId] = mesh;
             }
             finally
@@ -241,6 +243,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 BufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId] = indexBuffer;
                 BufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId] = meshTransformBuffer;
                 BufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = propertiesBuffer;
+                ShaderSystem.PipelineShaderStructMap[(int)meshLoader.MeshPropertiesLoader.PropertiesBufferId] = ShaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer", (int)meshLoader.MeshPropertiesLoader.PropertiesBufferId);
 
                 return (int)meshId;
             }
@@ -257,7 +260,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             {
                 VulkanBuffer propertiesBuffer = BufferSystem.VulkanBufferMap[(uint)meshPair.Value.PropertiesBufferId];
                 uint shaderMaterialBufferIndex = meshPair.Value.MaterialId != new Guid() ? MaterialSystem.MaterialMap[meshPair.Value.MaterialId].ShaderMaterialBufferIndex : 0;
-                Mesh_UpdateMesh(RenderSystem.renderer, meshPair.Value, propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
+                Mesh_UpdateMesh(RenderSystem.renderer, meshPair.Value, ShaderSystem.PipelineShaderStructMap[(int)meshPair.Value.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
             }
         }
 
@@ -312,7 +315,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         }
 
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Mesh Mesh_CreateMesh(GraphicsRenderer renderer, MeshLoader meshLoader, out VulkanBuffer outVertexBuffer, out VulkanBuffer outIndexBuffer, out VulkanBuffer outTransformBuffer, out VulkanBuffer outPropertiesBuffer);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Mesh_UpdateMesh(GraphicsRenderer renderer, Mesh mesh, VulkanBuffer meshPropertiesBuffer, uint shaderMaterialBufferIndex, float deltaTime);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Mesh_UpdateMesh(GraphicsRenderer renderer, Mesh mesh, ShaderStruct shaderStruct, VulkanBuffer meshPropertiesBuffer, uint shaderMaterialBufferIndex, float deltaTime);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Mesh_DestroyMesh(GraphicsRenderer renderer, Mesh mesh, VulkanBuffer vertexBuffer, VulkanBuffer indexBuffer, VulkanBuffer transformBuffer, VulkanBuffer propertiesBuffer);
     }
 }

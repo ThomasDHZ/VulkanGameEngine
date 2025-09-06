@@ -271,7 +271,7 @@ namespace VulkanGameEngineLevelEditor
                         {
                             isResizing = true;
                             RenderSystem.RebuildRendererFlag = true;
-                            RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap);
+                            RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap, ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
                             isResizing = false;
                         }
                     }

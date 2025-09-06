@@ -6,12 +6,6 @@ VulkanBufferSystem bufferSystem = VulkanBufferSystem();
 
 VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
 {
-    auto it = VulkanBufferMap.find(id);
-    if (it != VulkanBufferMap.end())
-    {
-        return it->second;
-    }
-    throw std::out_of_range("VulkanBufferMap not found for given GUID");
     return VulkanBufferMap.at(id);
 }
 

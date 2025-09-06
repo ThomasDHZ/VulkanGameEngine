@@ -87,7 +87,6 @@ void TextureSystem::DestroyTexture(Texture& texture)
     Texture_DestroyTexture(renderSystem.renderer, texture);
 }
 
-// Add Textures
 void TextureSystem::AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList)
 {
     RenderedTextureListMap[vkGuid] = renderedTextureList;
@@ -98,7 +97,6 @@ void TextureSystem::AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTextur
     DepthTextureMap[vkGuid] = depthTexture;
 }
 
-// Find Textures
 Texture& TextureSystem::FindTexture(const RenderPassGuid& guid)
 {
     return TextureMap.at(guid);

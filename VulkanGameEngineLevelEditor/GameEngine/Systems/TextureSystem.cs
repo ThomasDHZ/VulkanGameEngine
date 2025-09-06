@@ -84,6 +84,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return RenderedTextureListMap[guid].Any();
         }
 
+        public static Texture FindTexture(Guid textureGuid)
+        {
+            return TextureList[textureGuid];
+        }
+
         public static Texture FindRenderedTexture(Guid textureGuid)
         {
             foreach (var pair in RenderedTextureListMap)

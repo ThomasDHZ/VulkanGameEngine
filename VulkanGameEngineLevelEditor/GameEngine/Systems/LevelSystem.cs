@@ -33,7 +33,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
     public static unsafe class LevelSystem
     {
         public static OrthographicCamera2D OrthographicCamera { get; set; } = new OrthographicCamera2D();
-        public static SceneDataBuffer SceneProperties { get; set; }
         public static Guid levelRenderPass2DId { get; private set; }
         public static Guid spriteRenderPass2DId { get; private set; }
         public static Guid frameBufferId { get; private set; }
@@ -114,7 +113,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void Update(float deltaTime)
         {
-            SceneProperties = OrthographicCamera.Update(SceneProperties);
+            OrthographicCamera.Update(ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
             SpriteSystem.Update(deltaTime);
             foreach (var levelLayer in LevelLayerList)
             {
@@ -124,7 +123,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void Draw(ListPtr<VkCommandBuffer> commandBufferList, float deltaTime)
         {
-            commandBufferList.Add(RenderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime, SceneProperties));
+            commandBufferList.Add(RenderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime, ShaderSystem.GetGlobalShaderPushConstant("sceneData")));
             commandBufferList.Add(RenderSystem.RenderFrameBuffer(frameBufferId));
         }
 

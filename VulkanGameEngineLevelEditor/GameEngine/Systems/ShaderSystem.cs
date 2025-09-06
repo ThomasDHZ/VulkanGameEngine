@@ -188,22 +188,22 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             Shader_UpdatePushConstantBuffer(RenderSystem.renderer, ShaderPushConstantMap[pushConstantName]);
         }
 
-        //public static void UpdateShaderBuffer(int vulkanBufferId)
-        //{
-        //    if (!ShaderStructExists(vulkanBufferId))
-        //    {
-        //        return;
-        //    }
+        public static void UpdateShaderBuffer(int vulkanBufferId)
+        {
+            if (!ShaderStructExists(vulkanBufferId))
+            {
+                return;
+            }
 
-        //    ShaderStruct shaderStruct = PipelineShaderStructMap[vulkanBufferId];
-        //   // VulkanBuffer vulkanBuffer = BufferSystem.FindVulkanBuffer(vulkanBufferId);
-        //    Shader_UpdateShaderBuffer(RenderSystem.renderer, vulkanBuffer, &shaderStruct, 1);
-        //}
+            ShaderStruct shaderStruct = PipelineShaderStructMap[vulkanBufferId];
+            VulkanBuffer vulkanBuffer = BufferSystem.FindVulkanBuffer((uint)vulkanBufferId);
+            Shader_UpdateShaderBuffer(RenderSystem.renderer, vulkanBuffer, &shaderStruct, 1);
+        }
 
-        //public static ShaderPushConstant* GetGlobalShaderPushConstant(string pushConstantName)
-        //{
-        //    return ShaderPushConstantExists(pushConstantName) ? &ShaderPushConstantMap[pushConstantName] : nullptr;
-        //}
+        public static ShaderPushConstant GetGlobalShaderPushConstant(string pushConstantName)
+        {
+            return ShaderPushConstantExists(pushConstantName) ? ShaderPushConstantMap[pushConstantName] : new ShaderPushConstant();
+        }
 
         public static void LoadShaderPipelineStructPrototypes(List<String> shaderList)
         {
@@ -275,10 +275,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return PipelineShaderStructMap[vulkanBufferId];
         }
 
-        public static ShaderStruct CopyShaderStructProtoType(string structName)
+        public static ShaderStruct CopyShaderStructProtoType(string structName, int bufferId)
         {
             ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName);
-        return Shader_CopyShaderStructPrototype(shaderStructCopy);
+            ShaderStruct shaderStruct = Shader_CopyShaderStructPrototype(shaderStructCopy);
+            shaderStruct.ShaderStructBufferId = bufferId;
+            return shaderStruct;
         }
 
         public static bool ShaderPushConstantExists(string pushConstantName)
