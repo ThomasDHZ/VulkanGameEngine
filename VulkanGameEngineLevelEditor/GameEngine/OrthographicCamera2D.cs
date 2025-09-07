@@ -1,5 +1,6 @@
 ﻿using GlmSharp;
 using System;
+using System.Runtime.InteropServices;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 
@@ -56,20 +57,50 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
             throw new NotImplementedException();
         }
 
-        public override void Update(ShaderPushConstant sceneDataBuffer)
+        public override unsafe void Update(ShaderPushConstant sceneDataBuffer)
         {
-            mat4 transform = mat4.Translate(Position) * mat4.Rotate(VMath.DegreesToRadians(0.0f), new vec3(0, 0, 1));
+            if (sceneDataBuffer.PushConstantBuffer == null)
+            {
+                sceneDataBuffer.PushConstantBuffer = (void*)Marshal.AllocHGlobal((int)sceneDataBuffer.PushConstantSize);
+                byte* ptr = (byte*)sceneDataBuffer.PushConstantBuffer;
+                for (int i = 0; i < (int)sceneDataBuffer.PushConstantSize; i++)
+                {
+                    ptr[i] = 0;
+                }
+            }
+
+            mat4 transform = mat4.Translate(Position) * mat4.Rotate(0.0f, new vec3(0, 0, 1));
             ViewMatrix = transform.Inverse;
+            ProjectionMatrix = mat4.Ortho(0.0f, Width, Height, 0.0f);
 
-            float Aspect = Width / Height;
-            ProjectionMatrix = mat4.Ortho(-Aspect * Zoom, Aspect * Zoom, -1.0f * Zoom, 1.0f * Zoom, -10.0f, 10.0f);
+            ShaderVariable* shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex");
+            if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+            {
+                uint* ptr = (uint*)shaderVar->Value;
+                *ptr = 0; // Match C++ default
+            }
 
-            mat4 modifiedProjectionMatrix = ProjectionMatrix;
-            modifiedProjectionMatrix[1, 1] *= -1;
+            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "Projection");
+            if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+            {
+                float* matrixPtr = (float*)shaderVar->Value;
+                for (int x = 0; x < 16; x++)
+                {
+                    matrixPtr[x] = ProjectionMatrix[x];
+                }
+            }
 
-            ViewScreenSize = new vec2((Aspect * Zoom) * 2, (1.0f * Zoom) * 2);
+            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "View");
+            if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+            {
+                float* matrixPtr = (float*)shaderVar->Value;
+                for (int x = 0; x < 16; x++)
+                {
+                    matrixPtr[x] = ViewMatrix[x];
+                }
+            }
 
-            var shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "CameraPosition");
+            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "CameraPosition");
             if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
             {
                 float* ptr = (float*)shaderVar->Value;
@@ -78,24 +109,15 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
                 ptr[2] = Position.z;
             }
 
-            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "ViewMatrix");
-            if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
+            size_t offset = 0;
+            ListPtr<ShaderVariable> variables = new ListPtr<ShaderVariable>(sceneDataBuffer.PushConstantVariableList, (IntPtr)sceneDataBuffer.PushConstantVariableListCount);
+            foreach (ShaderVariable variable in variables)
             {
-                float* matrixPtr = (float*)shaderVar->Value;
-                for (int i = 0; i < 16; i++)
-                {
-                    matrixPtr[i] = ViewMatrix[i];
-                }
-            }
-
-            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "Projection");
-            if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
-            {
-                float* matrixPtr = (float*)shaderVar->Value;
-                for (int i = 0; i < 16; i++)
-                {
-                    matrixPtr[i] = modifiedProjectionMatrix[i];
-                }
+                offset = ((size_t)offset + (size_t)variable.ByteAlignment - 1) & ~((size_t)variable.ByteAlignment - 1);
+                byte* sourcePtr = (byte*)variable.Value;
+                byte* destPtr = (byte*)sceneDataBuffer.PushConstantBuffer + (int)offset;
+                Buffer.MemoryCopy(sourcePtr, destPtr, (nuint)variable.Size, (nuint)variable.Size);
+                offset += (size_t)variable.Size;
             }
         }
     }

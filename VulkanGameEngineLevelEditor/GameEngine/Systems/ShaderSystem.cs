@@ -150,8 +150,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                             for (nuint z = 0; z < ShaderPushConstantMap[name].PushConstantVariableListCount; z++)
                             {
                                 ref ShaderVariable var = ref ShaderPushConstantMap[name].PushConstantVariableList[(int)z];
-                                var.Value = MemorySystem.AddPtrBuffer<byte>((byte)var.Size);
-                                // Shader_SetVariableDefaults(ref var);  
+                                var.Value = MemorySystem.AddPtrBuffer<byte>((byte)var.Size, string.Empty, string.Empty, 0, string.Empty);
+                                Shader_SetVariableDefaults(var);  
                             }
                         }
                     }

@@ -23,5 +23,6 @@ namespace Vulkan
         public const uint MAX_FRAMES_IN_FLIGHT = 3;
         public static readonly IntPtr VK_NULL_HANDLE = IntPtr.Zero;
         public static readonly ulong VK_WHOLE_SIZE = ulong.MaxValue;
+        public const uint VK_REMAINING_MIP_LEVELS = 0xFFFFFFFF;
     }
 }

@@ -78,7 +78,7 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
     ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
 
-VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId, VkGuid& inputTextureRenderPassId)
+VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
 {
     const VulkanRenderPass renderPass = FindRenderPass(renderPassId);
     const VulkanPipeline& pipeline = FindRenderPipelineList(renderPassId)[0];

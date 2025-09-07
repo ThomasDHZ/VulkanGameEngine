@@ -53,7 +53,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static ListPtr<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer()
         {
             ListPtr<VkDescriptorBufferInfo> materialPropertiesBuffer = new ListPtr<VkDescriptorBufferInfo>();
-            if (MaterialMap.Any())
+            if (!MaterialMap.Any())
             {
                 materialPropertiesBuffer.Add(new VkDescriptorBufferInfo
                 {
