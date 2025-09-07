@@ -114,7 +114,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void Update(float deltaTime)
         {
             OrthographicCamera.Update(ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
-          //  SpriteSystem.Update(deltaTime);
+            SpriteSystem.Update(deltaTime);
             foreach (var levelLayer in LevelLayerList)
             {
                 // levelLayer.Update(deltaTime);
