@@ -11,30 +11,21 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}"
 	ProjectSection(SolutionItems) = preProject
 		Shaders\fragshader.frag = Shaders\fragshader.frag
-		Shaders\FrameBufferPixel.hlsl = Shaders\FrameBufferPixel.hlsl
 		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
 		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
-		Shaders\FrameBufferShaderFrag.spv = Shaders\FrameBufferShaderFrag.spv
-		Shaders\FrameBufferVertex.hlsl = Shaders\FrameBufferVertex.hlsl
-		Shaders\LevelPixelShader.hlsl = Shaders\LevelPixelShader.hlsl
 		Shaders\LevelShader2D.frag = Shaders\LevelShader2D.frag
 		Shaders\LevelShader2D.vert = Shaders\LevelShader2D.vert
-		Shaders\LevelVertexShader.hlsl = Shaders\LevelVertexShader.hlsl
-		Shaders\LevelWireFrameShader2D.frag = Shaders\LevelWireFrameShader2D.frag
-		Shaders\LevelWireFrameShader2D.vert = Shaders\LevelWireFrameShader2D.vert
 		Shaders\Shader2D.frag = Shaders\Shader2D.frag
 		Shaders\Shader2D.vert = Shaders\Shader2D.vert
 		Shaders\SpriteInstanceShader.frag = Shaders\SpriteInstanceShader.frag
 		Shaders\SpriteInstanceShader.vert = Shaders\SpriteInstanceShader.vert
-		Shaders\SpriteInstanceWireFrameShader.frag = Shaders\SpriteInstanceWireFrameShader.frag
-		Shaders\SpriteInstanceWireFrameShader.vert = Shaders\SpriteInstanceWireFrameShader.vert
-		Shaders\SpritePixelShader.hlsl = Shaders\SpritePixelShader.hlsl
-		Shaders\SpriteVertexShader.hlsl = Shaders\SpriteVertexShader.hlsl
-		Shaders\VertexUpdater.comp = Shaders\VertexUpdater.comp
 		Shaders\vertshader.vert = Shaders\vertshader.vert
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E282A3D5-3DCC-485B-AA01-B66AB307DBE2}"
+	ProjectSection(SolutionItems) = preProject
+		EngineConfig.json = EngineConfig.json
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{0EDEA954-1D78-4E87-B6E9-6AD004194688}"
 	ProjectSection(SolutionItems) = preProject
@@ -44,9 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		LevelObjectPickerPipeline.json = LevelObjectPickerPipeline.json
 		Pipelines\LevelObjectPickerPipeline.json = Pipelines\LevelObjectPickerPipeline.json
 		Pipelines\LevelShader2DPipeline.json = Pipelines\LevelShader2DPipeline.json
-		Pipelines\LevelShader2DWireframePipeline.json = Pipelines\LevelShader2DWireframePipeline.json
 		Pipelines\SpriteInstancePipeline.json = Pipelines\SpriteInstancePipeline.json
-		Pipelines\SpriteInstanceWireFramePipeline.json = Pipelines\SpriteInstanceWireFramePipeline.json
 		Pipelines\SpriteObjectPickerPipeline.json = Pipelines\SpriteObjectPickerPipeline.json
 	EndProjectSection
 EndProject
@@ -55,7 +44,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
 		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
-		LevelShader2DWireFrameRenderPass.json = LevelShader2DWireFrameRenderPass.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"
@@ -96,13 +84,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TileSets", "TileSets", "{12565B15-EF6B-4DAF-8552-844EE28936D7}"
 	ProjectSection(SolutionItems) = preProject
 		TileSets\SparkManTileSet.json = TileSets\SparkManTileSet.json
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Include", "Include", "{16D06342-80A9-4368-B5A9-860273C3CE12}"
-	ProjectSection(SolutionItems) = preProject
-		Shaders\SceneDataBuffer.hlsli = Shaders\SceneDataBuffer.hlsli
-		Shaders\Structs.glsl = Shaders\Structs.glsl
-		Shaders\Vertex.hlsli = Shaders\Vertex.hlsli
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelMapLevelLayout", "LevelMapLevelLayout", "{740E1C1F-320C-4A8F-A58D-B46058521506}"
@@ -178,7 +159,6 @@ Global
 		{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
 		{877021B2-F222-4B9F-BEBF-7C9A223DD6B0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
 		{12565B15-EF6B-4DAF-8552-844EE28936D7} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
-		{16D06342-80A9-4368-B5A9-860273C3CE12} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
 		{740E1C1F-320C-4A8F-A58D-B46058521506} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{21F6500D-6E92-4717-815C-AB3C6E100B64} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 	EndGlobalSection

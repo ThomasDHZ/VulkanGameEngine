@@ -1,0 +1,6 @@
+{
+  "WindowResolution": [ 1920, 1080 ],
+  "CompiledDebugPathCPP": "..\\x64\\Debug",
+  "CompiledReleasePathCPP": "..\\x64\\Release",
+  "CompilerLocation": "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe"
+}

@@ -33,7 +33,6 @@ public:
 	void Destroy();
 
 	ShaderPipelineData LoadShaderPipelineData(Vector<String> shaderPathList);
-	VkPipelineShaderStageCreateInfo CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages);
 	void LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList);
 
 	ShaderPipelineData& FindShaderModule(const String& shaderFile);
@@ -46,6 +45,8 @@ public:
 
 	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
+
+	VkPipelineShaderStageCreateInfo CompileShader(const char* shaderFilePath, VkShaderStageFlagBits stage);
 
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);

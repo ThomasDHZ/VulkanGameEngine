@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
@@ -164,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameObjectSystem.h" />

@@ -237,8 +237,8 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
 
     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
     {
-        Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[0], VK_SHADER_STAGE_VERTEX_BIT),
-        Shader_CreateShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[1], VK_SHADER_STAGE_FRAGMENT_BIT)
+        Shader_LoadShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[0], VK_SHADER_STAGE_VERTEX_BIT),
+        Shader_LoadShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[1], VK_SHADER_STAGE_FRAGMENT_BIT)
     };
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = renderPipelineLoader.PipelineColorBlendStateCreateInfoModel;

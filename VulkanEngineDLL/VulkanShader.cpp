@@ -49,7 +49,7 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
         }
     }
 
-    ShaderPipelineData pipelineData = ShaderPipelineData
+    return ShaderPipelineData
     {
          .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
@@ -62,7 +62,6 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
          .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__)
     };
-    return pipelineData;
 }
 
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
@@ -237,18 +236,30 @@ void Shader_SetVariableDefaults(ShaderVariable& shaderVariable)
     }
 }
 
-VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const char* filename, VkShaderStageFlagBits shaderStages)
+VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const char* filepath, VkShaderStageFlagBits shaderStages)
 {
     VkShaderModule shaderModule = VK_NULL_HANDLE;
-    if (File_GetFileExtention(filename) == "hlsl")
+    if (File_GetFileExtention(filepath) == "spv")
     {
-      //  shaderModule = Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
+        shaderModule = Shader_BuildGLSLShaderFile(device, filepath);
+
+    }
+    else if (File_GetFileExtention(filepath) == "hlsl")
+    {
+        //  shaderModule = Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
     }
     else
     {
-        shaderModule = Shader_BuildGLSLShaderFile(device, filename);
+        throw std::runtime_error("File extention not a accepted shader type.");
     }
-    return Shader_CreateShader(shaderModule, shaderStages);
+
+    return VkPipelineShaderStageCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = shaderStages,
+        .module = shaderModule,
+        .pName = "main"
+    };
 }
 
 void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount)
@@ -328,6 +339,14 @@ ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructTo
     return shaderStruct;
 }
 
+LPWSTR Shader_StringToLPWSTR(const String& str)
+{
+    std::wstring wstr(str.begin(), str.end());
+    LPWSTR result = new wchar_t[wstr.length() + 1];
+    wcscpy_s(result, wstr.length() + 1, wstr.c_str());
+    return result;
+}
+
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr)
 {
     int strLength = WideCharToMultiByte(CP_UTF8, 0, lpcwszStr, -1, nullptr, 0, nullptr, nullptr);
@@ -342,78 +361,6 @@ void Shader_uint32ToUnsignedCharString(uint32 value, String& string)
     string += static_cast<unsigned char>((value >> 16) & 0xFF);
     string += static_cast<unsigned char>((value >> 8) & 0xFF);
     string += static_cast<unsigned char>(value & 0xFF);
-}
-
-VkShaderModule Shader_BuildGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage)
-{
-    FileState file = File_Read(path);
-
-    VkShaderModuleCreateInfo shaderModuleCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = file.Size,
-        .pCode = (const uint32*)file.Data
-    };
-
-    VkShaderModule shaderModule = VK_NULL_HANDLE;
-    VULKAN_RESULT(vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shaderModule));
-
-    return shaderModule;
-}
-
-Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage)
-{
-    const char* cShaderCode = File_Read(path.c_str()).Data;
-    if (!cShaderCode) {
-        std::cerr << "Failed to read file: " << String(path) << std::endl;
-        return nullptr;
-    }
-    String shaderCode(cShaderCode);
-
-    if (shaderCode.size() >= 3 &&
-        static_cast<unsigned char>(shaderCode[0]) == 0xEF &&
-        static_cast<unsigned char>(shaderCode[1]) == 0xBB &&
-        static_cast<unsigned char>(shaderCode[2]) == 0xBF) {
-        shaderCode = shaderCode.substr(3);
-    }
-
-    DxcBuffer src_buffer = {
-        .Ptr = shaderCode.c_str(),
-        .Size = static_cast<uint32_t>(shaderCode.size()),
-        .Encoding = 0
-    };
-
-    std::vector<LPCWSTR> args;
-    args.emplace_back(L"-spirv");
-    args.emplace_back(L"-fspv-target-env=vulkan1.3");
-    switch (stage) {
-    case VK_SHADER_STAGE_VERTEX_BIT: args.emplace_back(L"-T vs_6_5"); break;
-    case VK_SHADER_STAGE_FRAGMENT_BIT: args.emplace_back(L"-T ps_6_5"); break;
-    case VK_SHADER_STAGE_COMPUTE_BIT: args.emplace_back(L"-T cs_6_5"); break;
-    default: args.emplace_back(L"-T lib_6_5"); break;
-    }
-
-    Microsoft::WRL::ComPtr<IDxcResult> result;
-   dxc_compiler->Compile(&src_buffer, args.data(), static_cast<uint32_t>(args.size()), defaultIncludeHandler.Get(), IID_PPV_ARGS(&result));
-
-    Microsoft::WRL::ComPtr<IDxcBlob> shader_obj;
-    result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shader_obj), nullptr);
-
-    Microsoft::WRL::ComPtr<IDxcBlobUtf8> error_message;
-    result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_message), nullptr);
-    if (error_message && error_message->GetStringLength() > 0) {
-        std::cout << "Compiler error: " << error_message->GetStringPointer() << std::endl;
-        std::cout << "Error in file: " << path << std::endl;
-    }
-
-    if (shader_obj) {
-        String spvFileName = String(File_GetFileNameFromPath(path.c_str())) + ".spv";
-        std::ofstream spvFile(spvFileName, std::ios::binary);
-        spvFile.write(static_cast<const char*>(shader_obj->GetBufferPointer()), shader_obj->GetBufferSize());
-        spvFile.close();
-    }
-
-    return shader_obj;
 }
 
 void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList)
@@ -588,6 +535,171 @@ void Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vec
             }
         }
     }
+}
+
+VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, const char* filename, VkShaderStageFlagBits shaderStages)
+{
+    VkShaderModule shaderModule = File_GetFileExtention(filename) == "hlsl" ? Shader_ReadGLSLShader(device, filename, shaderStages) : VkShaderModule(); //Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
+    return VkPipelineShaderStageCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = shaderStages,
+        .module = shaderModule,
+        .pName = "main"
+    };
+}
+
+VkPipelineShaderStageCreateInfo Shader_CompileShader(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits shaderStages)
+{
+    VkShaderModule shaderModule = VK_NULL_HANDLE;
+    String ext = File_GetFileExtention(shaderFilePath);
+    if (ext == "vert" ||
+        ext == "frag" ||
+        ext == "tesc" ||
+        ext == "tess" ||
+        ext == "geom" ||
+        ext == "comp")
+    {
+        Shader_CompileGLSLShader(device, shaderFilePath, VK_SHADER_STAGE_ALL_GRAPHICS);
+    }
+    else if (File_GetFileExtention(shaderFilePath) == "hlsl")
+    {
+        //  shaderModule = Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
+    }
+    else
+    {
+        throw std::runtime_error("File extention not a accepted shader type.");
+    }
+
+    return VkPipelineShaderStageCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = shaderStages,
+        .module = shaderModule,
+        .pName = "main"
+    };
+}
+
+VkShaderModule Shader_CompileGLSLShader(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits stage)
+{
+    if (!File_Exists(shaderFilePath))
+    {
+        String shaderExtention;
+        String shaderName(shaderFilePath);
+        switch (stage)
+        {
+            case VK_SHADER_STAGE_VERTEX_BIT: shaderExtention = "Vert"; break;
+            case VK_SHADER_STAGE_FRAGMENT_BIT: shaderExtention = "Frag"; break;
+            case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: shaderExtention = "Tesc"; break;
+            case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: shaderExtention = "Tess"; break;
+            case VK_SHADER_STAGE_GEOMETRY_BIT: shaderExtention = "Geom"; break;
+            case VK_SHADER_STAGE_COMPUTE_BIT: shaderExtention = "Comp"; break;
+        }
+
+        PROCESS_INFORMATION processInfo;
+        STARTUPINFO startUpInfo = { sizeof(startUpInfo) };
+        Vector<String> commandList = Vector<String>
+        {
+            "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe -V --target-env vulkan1.4 " + shaderName + "." + shaderExtention + " -o " + "../x64/Debug/" + shaderName + shaderExtention + ".spv",
+            "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe -V --target-env vulkan1.4 " + shaderName + "." + shaderExtention + " -o " + "../x64/Release/" + shaderName + shaderExtention + ".spv",
+        };
+        for (auto& command : commandList)
+        {
+            if (CreateProcess(NULL, Shader_StringToLPWSTR(command), NULL, NULL, FALSE, 0, NULL, NULL, &startUpInfo, &processInfo)) {
+                WaitForSingleObject(processInfo.hProcess, INFINITE);
+
+                DWORD exitCode;
+                GetExitCodeProcess(processInfo.hProcess, &exitCode);
+                CloseHandle(processInfo.hProcess);
+                CloseHandle(processInfo.hThread);
+            }
+        }
+    }
+    
+    FileState file = File_Read(shaderFilePath);
+    VkShaderModuleCreateInfo shaderModuleCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .codeSize = file.Size,
+        .pCode = (const uint32*)file.Data
+    };
+
+    VkShaderModule shaderModule = VK_NULL_HANDLE;
+    VULKAN_RESULT(vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shaderModule));
+
+    return VkShaderModule();
+}
+
+VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage)
+{
+    FileState file = File_Read(path);
+
+    VkShaderModuleCreateInfo shaderModuleCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .codeSize = file.Size,
+        .pCode = (const uint32*)file.Data
+    };
+
+    VkShaderModule shaderModule = VK_NULL_HANDLE;
+    VULKAN_RESULT(vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shaderModule));
+
+    return shaderModule;
+}
+
+Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage)
+{
+    const char* cShaderCode = File_Read(path.c_str()).Data;
+    if (!cShaderCode) {
+        std::cerr << "Failed to read file: " << String(path) << std::endl;
+        return nullptr;
+    }
+    String shaderCode(cShaderCode);
+
+    if (shaderCode.size() >= 3 &&
+        static_cast<unsigned char>(shaderCode[0]) == 0xEF &&
+        static_cast<unsigned char>(shaderCode[1]) == 0xBB &&
+        static_cast<unsigned char>(shaderCode[2]) == 0xBF) {
+        shaderCode = shaderCode.substr(3);
+    }
+
+    DxcBuffer src_buffer = {
+        .Ptr = shaderCode.c_str(),
+        .Size = static_cast<uint32_t>(shaderCode.size()),
+        .Encoding = 0
+    };
+
+    std::vector<LPCWSTR> args;
+    args.emplace_back(L"-spirv");
+    args.emplace_back(L"-fspv-target-env=vulkan1.4");
+    switch (stage) {
+    case VK_SHADER_STAGE_VERTEX_BIT: args.emplace_back(L"-T vs_6_5"); break;
+    case VK_SHADER_STAGE_FRAGMENT_BIT: args.emplace_back(L"-T ps_6_5"); break;
+    case VK_SHADER_STAGE_COMPUTE_BIT: args.emplace_back(L"-T cs_6_5"); break;
+    default: args.emplace_back(L"-T lib_6_5"); break;
+    }
+
+    Microsoft::WRL::ComPtr<IDxcResult> result;
+    dxc_compiler->Compile(&src_buffer, args.data(), static_cast<uint32_t>(args.size()), defaultIncludeHandler.Get(), IID_PPV_ARGS(&result));
+
+    Microsoft::WRL::ComPtr<IDxcBlob> shader_obj;
+    result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shader_obj), nullptr);
+
+    Microsoft::WRL::ComPtr<IDxcBlobUtf8> error_message;
+    result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_message), nullptr);
+    if (error_message && error_message->GetStringLength() > 0) {
+        std::cout << "Compiler error: " << error_message->GetStringPointer() << std::endl;
+        std::cout << "Error in file: " << path << std::endl;
+    }
+
+    if (shader_obj) {
+        String spvFileName = String(File_GetFileNameFromPath(path.c_str())) + ".spv";
+        std::ofstream spvFile(spvFileName, std::ios::binary);
+        spvFile.write(static_cast<const char*>(shader_obj->GetBufferPointer()), shader_obj->GetBufferSize());
+        spvFile.close();
+    }
+
+    return shader_obj;
 }
 
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)

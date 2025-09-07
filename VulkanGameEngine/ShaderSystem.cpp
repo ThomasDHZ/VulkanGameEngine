@@ -74,11 +74,6 @@ void ShaderSystem::Destroy()
     ShaderModuleMap.clear();
 }
 
-VkPipelineShaderStageCreateInfo ShaderSystem::CreateShader(VkDevice device, const String& path, VkShaderStageFlagBits shaderStages)
-{
-    return Shader_CreateShader(device, path.c_str(), shaderStages);
-}
-
 ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPathList)
 {
     const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderPathList);
@@ -233,4 +228,9 @@ const bool ShaderSystem::ShaderStructPrototypeExists(const String& structKey) co
 const bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey) const
 {
     return PipelineShaderStructMap.contains(vulkanBufferKey);
+}
+
+VkPipelineShaderStageCreateInfo ShaderSystem::CompileShader(const char* shaderFilePath, VkShaderStageFlagBits stage)
+{
+    return Shader_CompileShader(renderSystem.renderer.Device, shaderFilePath, stage);
 }

@@ -35,7 +35,8 @@ extern "C" {
 }
 #endif
 
-DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, const char* path, VkShaderStageFlagBits shaderStages);
+DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, const char* path, VkShaderStageFlagBits shaderStages);
+DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CompileShader(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits shaderStages);
 ShaderPushConstant* Shader_SearchShaderConstBuffer(ShaderPushConstant* shaderPushConstantList, size_t shaderPushConstantCount, const char* constBufferName);
 //ShaderDescriptorBinding* Shader_SearchDescriptorBindings(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const char* descriptorBindingName);
 ShaderStruct* Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName);
@@ -54,9 +55,13 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
 void Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module, Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList);
 void Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vector<ShaderStruct>& shaderStruct);
 
+VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage);
+VkShaderModule Shader_CompileGLSLShader(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits stage);
+Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage);
+
+LPWSTR Shader_StringToLPWSTR(const String& str);
 String Shader_ConvertLPCWSTRToString(LPCWSTR lpcwszStr);
 void Shader_uint32ToUnsignedCharString(uint32 value, String& string);
-VkShaderModule Shader_BuildGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage);
 const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 
 #define SPV_VULKAN_RESULT(call) { \

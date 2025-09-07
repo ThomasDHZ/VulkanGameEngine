@@ -11,12 +11,13 @@ extern "C"
 #include "FrameTimer.h"
 #include "GameSystem.h"
 #include "MaterialSystem.h"
+#include "EngineConfigSystem.h"
 
 int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
-    vulkanWindow = Window_CreateWindow(WindowType::GLFW, "Game", 1920, 1080);
+    vulkanWindow = Window_CreateWindow(WindowType::GLFW, "Game", configSystem().WindowResolution.x, configSystem().WindowResolution.y);
 
     gameSystem.StartUp(WindowType::GLFW, vulkanWindow->WindowHandle);
     while (!vulkanWindow->WindowShouldClose(vulkanWindow))
