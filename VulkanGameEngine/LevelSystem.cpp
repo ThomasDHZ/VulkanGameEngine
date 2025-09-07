@@ -64,8 +64,10 @@ void LevelSystem::LoadLevel(const String& levelPath)
     spriteSystem.AddSpriteBatchLayer(spriteRenderPass2DId);
 
     VkGuid LevelId = VkGuid(json["LevelID"].get<String>().c_str());
-    spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+    //spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+    //frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+    spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferWireFrameRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
 }
 
 
