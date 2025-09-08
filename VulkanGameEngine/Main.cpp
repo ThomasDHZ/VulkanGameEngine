@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
-    vulkanWindow = Window_CreateWindow(WindowType::GLFW, "Game", configSystem().WindowResolution.x, configSystem().WindowResolution.y);
+    vulkanWindow = Window_CreateWindow(WindowType::GLFW, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 
     gameSystem.StartUp(WindowType::GLFW, vulkanWindow->WindowHandle);
     while (!vulkanWindow->WindowShouldClose(vulkanWindow))

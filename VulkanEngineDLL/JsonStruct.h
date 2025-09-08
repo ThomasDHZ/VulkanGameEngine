@@ -123,37 +123,37 @@ struct ShaderPipelineData
 
 struct GPUIncludes
 {
-    size_t VertexPropertiesCount;
-    size_t IndexPropertiesCount;
-    size_t TransformPropertiesCount;
-    size_t MeshPropertiesCount;
-    size_t TexturePropertiesCount;
-    size_t MaterialPropertiesCount;
-    VkDescriptorBufferInfo* VertexProperties;
-    VkDescriptorBufferInfo* IndexProperties;
-    VkDescriptorBufferInfo* TransformProperties;
-    VkDescriptorBufferInfo* MeshProperties;
-    VkDescriptorImageInfo* TextureProperties;
-    VkDescriptorBufferInfo* MaterialProperties;
+    size_t VertexPropertiesCount = 0;
+    size_t IndexPropertiesCount = 0;
+    size_t TransformPropertiesCount = 0;
+    size_t MeshPropertiesCount = 0;
+    size_t TexturePropertiesCount = 0;
+    size_t MaterialPropertiesCount = 0;
+    VkDescriptorBufferInfo* VertexProperties = nullptr;
+    VkDescriptorBufferInfo* IndexProperties = nullptr;
+    VkDescriptorBufferInfo* TransformProperties = nullptr;
+    VkDescriptorBufferInfo* MeshProperties = nullptr;
+    VkDescriptorImageInfo* TextureProperties = nullptr;
+    VkDescriptorBufferInfo* MaterialProperties = nullptr;
 };
 
 struct RenderPipelineLoader
 {
-    VkGuid PipelineId;
-    VkGuid RenderPassId;
-    VkRenderPass RenderPass; 
-    ivec2 RenderPassResolution;
-    GPUIncludes gpuIncludes;
-    ShaderPipelineData ShaderPiplineInfo;
+    VkGuid PipelineId = VkGuid();
+    VkGuid RenderPassId = VkGuid();
+    VkRenderPass RenderPass = VK_NULL_HANDLE;
+    ivec2 RenderPassResolution = ivec2();
+    GPUIncludes gpuIncludes = GPUIncludes();
+    ShaderPipelineData ShaderPiplineInfo = ShaderPipelineData();
     size_t ViewportCount = 0;
     size_t ScissorCount = 0;
     size_t PipelineColorBlendAttachmentStateCount = 0;
     VkPipelineColorBlendAttachmentState* PipelineColorBlendAttachmentStateList = nullptr;
-    VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo;
+    VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo();
     VkViewport* ViewportList = nullptr;
     VkRect2D* ScissorList = nullptr;
-    VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo;
-    VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo;
-    VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo;
-    VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel;
+    VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo = VkPipelineRasterizationStateCreateInfo();
+    VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo = VkPipelineMultisampleStateCreateInfo();
+    VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo = VkPipelineDepthStencilStateCreateInfo();
+    VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel = VkPipelineColorBlendStateCreateInfo();
 };

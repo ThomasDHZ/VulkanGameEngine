@@ -137,6 +137,7 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="CFile.h" />
+    <ClInclude Include="File.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.c" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="CFile.c" />
+    <ClCompile Include="File.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />

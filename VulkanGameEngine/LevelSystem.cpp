@@ -6,6 +6,9 @@
 #include "VRAM.h"
 #include "SpriteSystem.h"
 #include "ShaderSystem.h"
+#include "EngineConfigSystem.h"
+#include <File.h>
+#include "VulkanFileSystem.h"
 
 LevelSystem levelSystem = LevelSystem();
 
@@ -26,7 +29,7 @@ void LevelSystem::LoadLevel(const String& levelPath)
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
 
-    shaderSystem.CompileShader("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/Shaders/SpriteInstanceShader.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str());
 
     nlohmann::json json = Json::ReadJson(levelPath);
     nlohmann::json shaderJson = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");

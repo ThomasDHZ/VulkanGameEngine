@@ -10,7 +10,6 @@
 #include <vulkan/vulkan.h>
 #include <fstream>
 #include "TypeDef.h"
-#include "FileSystem.h"
 
 class ShaderSystem
 {
@@ -46,7 +45,7 @@ public:
 	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
 	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
 
-	VkPipelineShaderStageCreateInfo CompileShader(const char* shaderFilePath, VkShaderStageFlagBits stage);
+	void CompileShaders(const char* shaderFilePath);
 
 	void UpdateGlobalShaderBuffer(const String& pushConstantName);
 	void UpdateShaderBuffer(uint vulkanBufferId);

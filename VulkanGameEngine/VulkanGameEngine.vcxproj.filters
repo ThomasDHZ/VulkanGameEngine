@@ -87,7 +87,7 @@
     <ClCompile Include="ShaderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="FileSystem.cpp">
+    <ClCompile Include="VulkanFileSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="EngineConfigSystem.cpp">
@@ -164,7 +164,7 @@
     <ClInclude Include="SpriteSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="FileSystem.h">
+    <ClInclude Include="VulkanFileSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShaderSystem.h">

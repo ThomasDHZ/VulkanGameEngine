@@ -14,6 +14,7 @@ private:
 
 public:
 	const ivec2 WindowResolution;
+    const String ShaderSourceDirectory;
 	const String CompiledDebugPathCPP;
 	const String CompiledReleasePathCPP;
 	const String CompilerLocation;
@@ -32,5 +33,5 @@ public:
         return ConfigSystem(j);
     }
 };
-const ConfigSystem& configSystem();
+extern ConfigSystem configSystem;
 

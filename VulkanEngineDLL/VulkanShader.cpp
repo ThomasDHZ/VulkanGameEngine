@@ -3,6 +3,8 @@
 #include "MemorySystem.h"
 #include "json.h"
 #include "CHelper.h"
+#include "File.h"
+#include "CFile.h"
 
 void Shader_StartUp()
 {
@@ -549,85 +551,102 @@ VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, const char* f
     };
 }
 
-VkPipelineShaderStageCreateInfo Shader_CompileShader(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits shaderStages)
+void Shader_CompileShaders(VkDevice device, const char* shaderDirectoryPath)
 {
-    VkShaderModule shaderModule = VK_NULL_HANDLE;
-    String ext = File_GetFileExtention(shaderFilePath);
-    if (ext == "vert" ||
-        ext == "frag" ||
-        ext == "tesc" ||
-        ext == "tess" ||
-        ext == "geom" ||
-        ext == "comp")
-    {
-        Shader_CompileGLSLShader(device, shaderFilePath, VK_SHADER_STAGE_ALL_GRAPHICS);
-    }
-    else if (File_GetFileExtention(shaderFilePath) == "hlsl")
-    {
-        //  shaderModule = Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
-    }
-    else
-    {
-        throw std::runtime_error("File extention not a accepted shader type.");
-    }
-
-    return VkPipelineShaderStageCreateInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-        .stage = shaderStages,
-        .module = shaderModule,
-        .pName = "main"
-    };
+        Shader_CompileGLSLShaders(device, shaderDirectoryPath, VK_SHADER_STAGE_ALL_GRAPHICS);
 }
 
-VkShaderModule Shader_CompileGLSLShader(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits stage)
+void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkShaderStageFlagBits stage) 
 {
-    if (!File_Exists(shaderFilePath))
+    Vector<const char*> fileExtenstionList
     {
-        String shaderExtention;
-        String shaderName(shaderFilePath);
-        switch (stage)
-        {
-            case VK_SHADER_STAGE_VERTEX_BIT: shaderExtention = "Vert"; break;
-            case VK_SHADER_STAGE_FRAGMENT_BIT: shaderExtention = "Frag"; break;
-            case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: shaderExtention = "Tesc"; break;
-            case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: shaderExtention = "Tess"; break;
-            case VK_SHADER_STAGE_GEOMETRY_BIT: shaderExtention = "Geom"; break;
-            case VK_SHADER_STAGE_COMPUTE_BIT: shaderExtention = "Comp"; break;
-        }
-
-        PROCESS_INFORMATION processInfo;
-        STARTUPINFO startUpInfo = { sizeof(startUpInfo) };
-        Vector<String> commandList = Vector<String>
-        {
-            "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe -V --target-env vulkan1.4 " + shaderName + "." + shaderExtention + " -o " + "../x64/Debug/" + shaderName + shaderExtention + ".spv",
-            "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe -V --target-env vulkan1.4 " + shaderName + "." + shaderExtention + " -o " + "../x64/Release/" + shaderName + shaderExtention + ".spv",
-        };
-        for (auto& command : commandList)
-        {
-            if (CreateProcess(NULL, Shader_StringToLPWSTR(command), NULL, NULL, FALSE, 0, NULL, NULL, &startUpInfo, &processInfo)) {
-                WaitForSingleObject(processInfo.hProcess, INFINITE);
-
-                DWORD exitCode;
-                GetExitCodeProcess(processInfo.hProcess, &exitCode);
-                CloseHandle(processInfo.hProcess);
-                CloseHandle(processInfo.hThread);
-            }
-        }
-    }
-    
-    FileState file = File_Read(shaderFilePath);
-    VkShaderModuleCreateInfo shaderModuleCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = file.Size,
-        .pCode = (const uint32*)file.Data
+        "vert",
+        "frag",
+        "tesc",
+        "tess",
+        "geom",
+        "comp",
+        "rgen",
+        "rchit",
+        "rmiss",
+        "rahit"
     };
 
-    VkShaderModule shaderModule = VK_NULL_HANDLE;
-    VULKAN_RESULT(vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shaderModule));
+    size_t returnFileCount = 0;
+    size_t extenstionListCount = fileExtenstionList.size();
+    const char** extenstionList = memorySystem.AddPtrBuffer<const char*>(fileExtenstionList.data(), fileExtenstionList.size(), __FILE__, __LINE__, __func__, "Directory List String");
+    const char** fileList = File_GetFilesFromDirectory(fileDirectory, extenstionList, extenstionListCount, returnFileCount);
+    if (!fileList || returnFileCount == 0) 
+    {
+        throw std::runtime_error("No shader files found in directory: " + std::string(fileDirectory));
+    }
 
-    return VkShaderModule();
+    Vector<String> shaderSourceFileList(fileList, fileList + returnFileCount);
+    delete[] fileList;
+
+    const String glslangPath = "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe";
+    const String debugPath = "..\\x64\\Debug";
+    const String releasePath = "..\\x64\\Release";
+    const String editorDebugPath = std::filesystem::path(debugPath).parent_path().string() + "/VulkanGameEngineLevelEditor/bin/Debug/";
+    const String editorReleasePath = std::filesystem::path(releasePath).parent_path().string() + "/VulkanGameEngineLevelEditor/bin/Release/";
+
+    Vector<String> commandList;
+    for (const auto& shaderSource : shaderSourceFileList) 
+    {
+        String shaderExtension = File_GetFileExtention(shaderSource.c_str());
+        String shaderSourceFile = File_GetFileNameFromPath(shaderSource.c_str());
+        String inputFile = shaderSource;
+        String outputFile = shaderSourceFile + shaderExtension + ".spv";
+        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\x64\\Debug\\" + outputFile);
+        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\x64\\Release\\" + outputFile);
+        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\VulkanGameEngineLevelEditor\\bin\\Debug\\" + outputFile);
+        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\VulkanGameEngineLevelEditor\\bin\\Release\\" + outputFile);
+    }
+
+    for (const auto& command : commandList)
+    {
+        LPWSTR commandW = Shader_StringToLPWSTR(command);
+        STARTUPINFO si = { sizeof(si) };
+        PROCESS_INFORMATION pi;
+        si.dwFlags = STARTF_USESTDHANDLES;
+        HANDLE hStdOutRead, hStdOutWrite;
+        SECURITY_ATTRIBUTES sa = { sizeof(sa), nullptr, TRUE };
+        CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0);
+        si.hStdOutput = hStdOutWrite;
+        si.hStdError = hStdOutWrite;
+
+        if (!CreateProcessW(nullptr, commandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
+        {
+            delete[] commandW;
+            CloseHandle(hStdOutRead);
+            CloseHandle(hStdOutWrite);
+            throw std::runtime_error("Failed to start glslangValidator: " + command);
+        }
+
+        CloseHandle(hStdOutWrite);
+        std::string output;
+        char buffer[4096];
+        DWORD bytesRead;
+        while (ReadFile(hStdOutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr) && bytesRead > 0) 
+        {
+            buffer[bytesRead] = '\0';
+            output += buffer;
+        }
+        CloseHandle(hStdOutRead);
+
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        DWORD exitCode;
+        GetExitCodeProcess(pi.hProcess, &exitCode);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        delete[] commandW;
+
+       /* if (exitCode != 0)
+        {
+            std::cerr << "glslangValidator failed for command: " << command << "\nOutput:\n" << output << "\n";
+            throw std::runtime_error("Shader compilation failed with exit code: " + std::to_string(exitCode));
+        }*/
+    }
 }
 
 VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage)
@@ -647,7 +666,7 @@ VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShader
     return shaderModule;
 }
 
-Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShader(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage)
+Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShaders(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage)
 {
     const char* cShaderCode = File_Read(path.c_str()).Data;
     if (!cShaderCode) {

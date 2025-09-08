@@ -230,7 +230,7 @@ const bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey) const
     return PipelineShaderStructMap.contains(vulkanBufferKey);
 }
 
-VkPipelineShaderStageCreateInfo ShaderSystem::CompileShader(const char* shaderFilePath, VkShaderStageFlagBits stage)
+void ShaderSystem::CompileShaders(const char* shaderFilePath)
 {
-    return Shader_CompileShader(renderSystem.renderer.Device, shaderFilePath, stage);
+     Shader_CompileShaders(renderSystem.renderer.Device, shaderFilePath);
 }

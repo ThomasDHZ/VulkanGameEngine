@@ -9,18 +9,18 @@
 
 struct VulkanRenderPass
 {
-	RenderPassGuid RenderPassId;
-	VkSampleCountFlagBits SampleCount;
-	VkRect2D RenderArea;
+	RenderPassGuid RenderPassId = VkGuid();
+	VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
+	VkRect2D RenderArea = VkRect2D();
 	VkRenderPass RenderPass = VK_NULL_HANDLE;
-	VkGuid* InputTextureIdList;
-	VkFramebuffer* FrameBufferList;
-	VkClearValue* ClearValueList;
-	size_t InputTextureIdListCount;
-	size_t FrameBufferCount;
-	size_t ClearValueCount;
+	VkGuid* InputTextureIdList = nullptr;
+	VkFramebuffer* FrameBufferList = nullptr;
+	VkClearValue* ClearValueList = nullptr;
+	size_t InputTextureIdListCount = 0;
+	size_t FrameBufferCount = 0;
+	size_t ClearValueCount = 0;
 	VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
-	ivec2 RenderPassResolution;
+	ivec2 RenderPassResolution = ivec2();
 	bool IsRenderedToSwapchain = false;
 };
 

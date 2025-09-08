@@ -142,7 +142,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
-    <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="VulkanFileSystem.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
     <ClCompile Include="GameSystem.cpp" />
@@ -166,7 +166,7 @@
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="EngineConfigSystem.h" />
-    <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="VulkanFileSystem.h" />
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameObjectSystem.h" />
     <ClInclude Include="GameSystem.h" />

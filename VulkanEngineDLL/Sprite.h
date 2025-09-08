@@ -101,8 +101,8 @@ struct SpriteInstanceVertex2D
 extern "C" {
 #endif
     DLL_EXPORT void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const AnimationFrames* frameList, const Material* materialList, size_t spriteCount, float deltaTime);
-    DLL_EXPORT SpriteInstanceStruct Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);
     DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite& sprite, Sprite::SpriteAnimationEnum spriteAnimation);
 #ifdef __cplusplus
 }
 #endif
+    DLL_EXPORT SpriteInstanceStruct Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);
