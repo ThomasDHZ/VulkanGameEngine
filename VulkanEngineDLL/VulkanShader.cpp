@@ -556,7 +556,7 @@ void Shader_CompileShaders(VkDevice device, const char* shaderDirectoryPath)
         Shader_CompileGLSLShaders(device, shaderDirectoryPath, VK_SHADER_STAGE_ALL_GRAPHICS);
 }
 
-void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkShaderStageFlagBits stage) 
+void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkShaderStageFlagBits stage)
 {
     Vector<const char*> fileExtenstionList
     {
@@ -576,7 +576,7 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkSha
     size_t extenstionListCount = fileExtenstionList.size();
     const char** extenstionList = memorySystem.AddPtrBuffer<const char*>(fileExtenstionList.data(), fileExtenstionList.size(), __FILE__, __LINE__, __func__, "Directory List String");
     const char** fileList = File_GetFilesFromDirectory(fileDirectory, extenstionList, extenstionListCount, returnFileCount);
-    if (!fileList || returnFileCount == 0) 
+    if (!fileList || returnFileCount == 0)
     {
         throw std::runtime_error("No shader files found in directory: " + std::string(fileDirectory));
     }
@@ -584,69 +584,84 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkSha
     Vector<String> shaderSourceFileList(fileList, fileList + returnFileCount);
     delete[] fileList;
 
-    const String glslangPath = "C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe";
-    const String debugPath = "..\\x64\\Debug";
-    const String releasePath = "..\\x64\\Release";
-    const String editorDebugPath = std::filesystem::path(debugPath).parent_path().string() + "/VulkanGameEngineLevelEditor/bin/Debug/";
-    const String editorReleasePath = std::filesystem::path(releasePath).parent_path().string() + "/VulkanGameEngineLevelEditor/bin/Release/";
-
-    Vector<String> commandList;
-    for (const auto& shaderSource : shaderSourceFileList) 
+    String command = "";
+    for (const auto& shaderSource : shaderSourceFileList)
     {
         String shaderExtension = File_GetFileExtention(shaderSource.c_str());
         String shaderSourceFile = File_GetFileNameFromPath(shaderSource.c_str());
-        String inputFile = shaderSource;
-        String outputFile = shaderSourceFile + shaderExtension + ".spv";
-        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\x64\\Debug\\" + outputFile);
-        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\x64\\Release\\" + outputFile);
-        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\VulkanGameEngineLevelEditor\\bin\\Debug\\" + outputFile);
-        commandList.emplace_back("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\VulkanGameEngineLevelEditor\\bin\\Release\\" + outputFile);
-    }
+        String inputFile = std::filesystem::absolute(shaderSource).string();
+        String outputFile = shaderSourceFile + shaderExtension;
+        outputFile[shaderSourceFile.size()] = std::toupper(outputFile[shaderSourceFile.size()]);
+        outputFile += ".spv";
 
-    for (const auto& command : commandList)
+        command += "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\Assets\\Shaders\\" + outputFile + "\r\n";
+    }
+    String tempBatchPath = std::filesystem::temp_directory_path().append("temp_glslc.bat").string();
+    std::ofstream tempBatch(tempBatchPath);
+    if (!tempBatch.is_open()) {
+        throw std::runtime_error("Failed to create temporary batch file: " + tempBatchPath);
+    }
+    tempBatch << command;
+    tempBatch.close();
+
+    STARTUPINFO startUpInfo = { sizeof(STARTUPINFO) };
+    PROCESS_INFORMATION processInformation;
+    startUpInfo.dwFlags = STARTF_USESTDHANDLES;
+    HANDLE hStdOutRead, hStdOutWrite;
+    SECURITY_ATTRIBUTES securityAttributes = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
+    if (!CreatePipe(&hStdOutRead, &hStdOutWrite, &securityAttributes, 0))
     {
-        LPWSTR commandW = Shader_StringToLPWSTR(command);
-        STARTUPINFO si = { sizeof(si) };
-        PROCESS_INFORMATION pi;
-        si.dwFlags = STARTF_USESTDHANDLES;
-        HANDLE hStdOutRead, hStdOutWrite;
-        SECURITY_ATTRIBUTES sa = { sizeof(sa), nullptr, TRUE };
-        CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0);
-        si.hStdOutput = hStdOutWrite;
-        si.hStdError = hStdOutWrite;
-
-        if (!CreateProcessW(nullptr, commandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
-        {
-            delete[] commandW;
-            CloseHandle(hStdOutRead);
-            CloseHandle(hStdOutWrite);
-            throw std::runtime_error("Failed to start glslangValidator: " + command);
-        }
-
-        CloseHandle(hStdOutWrite);
-        std::string output;
-        char buffer[4096];
-        DWORD bytesRead;
-        while (ReadFile(hStdOutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr) && bytesRead > 0) 
-        {
-            buffer[bytesRead] = '\0';
-            output += buffer;
-        }
-        CloseHandle(hStdOutRead);
-
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        DWORD exitCode;
-        GetExitCodeProcess(pi.hProcess, &exitCode);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-        delete[] commandW;
-
-       /* if (exitCode != 0)
-        {
-            std::cerr << "glslangValidator failed for command: " << command << "\nOutput:\n" << output << "\n";
-            throw std::runtime_error("Shader compilation failed with exit code: " + std::to_string(exitCode));
-        }*/
+        std::filesystem::remove(tempBatchPath);
+        throw std::runtime_error("Failed to create pipe for batch file output");
     }
+    SetHandleInformation(hStdOutRead, HANDLE_FLAG_INHERIT, 0);
+    startUpInfo.hStdOutput = hStdOutWrite;
+    startUpInfo.hStdError = hStdOutWrite;
+
+    String batchCommand = "cmd.exe /C \"" + tempBatchPath + "\"";
+    LPWSTR batchCommandW = Shader_StringToLPWSTR(batchCommand);
+    std::wstring workingDir = std::filesystem::path(fileDirectory).wstring();
+    if (!CreateProcessW(nullptr, batchCommandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, workingDir.c_str(), &startUpInfo, &processInformation)) {
+        DWORD errorCode = GetLastError();
+        std::stringstream errorMsg;
+        errorMsg << "Failed to start batch file: " << tempBatchPath << "\nWindows Error Code: " << errorCode;
+        delete[] batchCommandW;
+        CloseHandle(hStdOutRead);
+        CloseHandle(hStdOutWrite);
+        std::filesystem::remove(tempBatchPath);
+        throw std::runtime_error(errorMsg.str());
+    }
+    delete[] batchCommandW;
+    CloseHandle(hStdOutWrite);
+
+    String output;
+    char buffer[4096];
+    DWORD bytesRead;
+    while (true) {
+        bool readSuccess = ReadFile(hStdOutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr);
+        if (!readSuccess || 
+            bytesRead == 0) 
+        {
+            break;
+        }
+        buffer[bytesRead] = '\0';
+        output += buffer;
+        std::cout << buffer;
+        std::cout.flush();
+    }
+    CloseHandle(hStdOutRead);
+
+    DWORD waitResult = WaitForSingleObject(processInformation.hProcess, INFINITE);
+    if (waitResult == WAIT_TIMEOUT) {
+        std::cerr << "Batch file process timed out: " << tempBatchPath << "\n";
+        TerminateProcess(processInformation.hProcess, 1);
+    }
+
+    DWORD exitCode;
+    GetExitCodeProcess(processInformation.hProcess, &exitCode);
+    CloseHandle(processInformation.hProcess);
+    CloseHandle(processInformation.hThread);
+    std::filesystem::remove(tempBatchPath);
 }
 
 VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage)

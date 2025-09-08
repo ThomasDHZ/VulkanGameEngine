@@ -1,5 +1,5 @@
 C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 FrameBufferShader.vert -o FrameBufferShaderVert.spv
-C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 FrameBufferShader.frag -o FrameBufferShaderFrag.spv
+ "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe" --target-env=vulkan1.4 --target-spv=spv1.6 "C:\Users\dotha\Documents\GitHub\VulkanGameEngine\Shaders\FrameBufferShader.frag" -o "C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\DebugFrameBufferShaderFrag.spv"
 C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 Shader2D.vert -o Shader2DVert.spv
 C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 Shader2D.frag -o Shader2DFrag.spv
 C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 LevelShader2D.vert -o LevelShader2DVert.spv
