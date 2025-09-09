@@ -1,6 +1,6 @@
 {
   "Name": "LevelShader2DRenderPass",
-  "RenderPassId": "aa18e942-497b-4981-b917-d93a5b1de6eb",
+  "RenderPassId": "e26ff327-9a80-45b9-9ec1-6654d930f789",
   "RenderPipelineList": [ "../Pipelines/SpriteInstanceWireFramePipeline.json", "../Pipelines/LevelShader2DWireframePipeline.json" ],
   "InputTextureList": [],
   "RenderedTextureInfoModelList": [

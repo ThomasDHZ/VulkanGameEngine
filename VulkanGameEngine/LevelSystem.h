@@ -28,21 +28,25 @@ class MeshSystem;
 class LevelSystem
 {
 private:
+    bool WireframeModeFlag = false;
+
     VkGuid LoadTileSetVRAM(const String& tileSetPath);
     void LoadLevelLayout(const String& levelLayoutPath);
     void LoadLevelMesh(VkGuid& tileSetId);
     void DestroyDeadGameObjects();
 
 public:
-    RenderPassGuid levelRenderPass2DId;
-    RenderPassGuid spriteRenderPass2DId;
-    RenderPassGuid frameBufferId;
-    SharedPtr<OrthographicCamera2D> OrthographicCamera;
-
     LevelLayout levelLayout;
     Vector<LevelLayer> LevelLayerList;
     Vector<Vector<uint>> LevelTileMapList;
     UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
+    SharedPtr<OrthographicCamera2D> OrthographicCamera;
+
+    RenderPassGuid levelRenderPass2DId;
+    RenderPassGuid spriteRenderPass2DId;
+    RenderPassGuid levelWireFrameRenderPass2DId;
+    RenderPassGuid spriteWireFrameRenderPass2DId;
+    RenderPassGuid frameBufferId;
 
     LevelSystem();
     ~LevelSystem();

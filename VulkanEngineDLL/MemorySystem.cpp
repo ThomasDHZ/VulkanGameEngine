@@ -20,7 +20,7 @@ extern "C"
                 .PtrAddress = nullptr,
                 .PtrElements = 0,
                 .isArray = false,
-                .DanglingPtrMessage = ""
+                
             };
         }
 
@@ -35,7 +35,6 @@ extern "C"
             .PtrAddress = memory,
             .PtrElements = elementCount,
             .isArray = elementCount > 1,
-            .DanglingPtrMessage = nullptr,
             .File = fileStr,
             .Line = lineStr,
             .Type = typeStr,
@@ -74,11 +73,7 @@ extern "C"
                 std::cout << "Error: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
 
-                std::cout << "Memory Leak at: ";
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << "Pointer: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << ptr->PtrAddress;
+                std::cout << "Memory Leak at: 0x" << ptr->PtrAddress;
 
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Size: ";

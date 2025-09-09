@@ -33,7 +33,9 @@ void LevelSystem::LoadLevel(const String& levelPath)
 
     nlohmann::json json = Json::ReadJson(levelPath);
     nlohmann::json shaderJson = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
+    nlohmann::json shaderWiredJson = Json::ReadJson("../RenderPass/LevelShader2DWireFrameRenderPass.json");
     spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
+    levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
     for (size_t x = 0; x < json["LoadTextures"].size(); x++)
@@ -70,9 +72,8 @@ void LevelSystem::LoadLevel(const String& levelPath)
 
     VkGuid LevelId = VkGuid(json["LevelID"].get<String>().c_str());
     spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+    levelWireFrameRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-   // spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-   // frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferWireFrameRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
 }
 
 
@@ -81,10 +82,6 @@ void LevelSystem::Update(const float& deltaTime)
     OrthographicCamera->Update(*shaderSystem.GetGlobalShaderPushConstant("sceneData"));
     spriteSystem.Update(deltaTime);
     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
-
-    // Optional: update each level layer if needed
-    // for (auto& levelLayer : LevelLayerList)
-    //     levelLayer.Update(deltaTime);
 }
 
 void LevelSystem::Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime)

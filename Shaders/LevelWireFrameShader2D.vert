@@ -13,6 +13,7 @@ layout (location = 0)  in vec2  VS_Position;
 layout (location = 1)  in vec2  VS_UV;
 
 layout (location = 0) out vec3  PS_Position;
+layout (location = 1) out vec2  PS_UV;
 
 layout(push_constant) uniform SceneDataBuffer {
     int MeshBufferIndex;
@@ -49,11 +50,17 @@ struct MaterialProperitiesBuffer
 };
 
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 1) uniform sampler2D TextureMap[];
+layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main()
 {
     int meshIndex = sceneData.MeshBufferIndex;
     mat4 meshTransform = meshBuffer[meshIndex].meshProperties.MeshTransform;
+
+    PS_Position = vec3(meshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
+	PS_UV = VS_UV.xy;
+
     gl_Position = sceneData.Projection * 
                   sceneData.View *  
                   meshTransform *

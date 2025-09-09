@@ -10,16 +10,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}"
 	ProjectSection(SolutionItems) = preProject
-		Shaders\fragshader.frag = Shaders\fragshader.frag
 		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
 		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
+		Shaders\LevelObjectPickerShader2D.frag = Shaders\LevelObjectPickerShader2D.frag
+		Shaders\LevelObjectPickerShader2D.vert = Shaders\LevelObjectPickerShader2D.vert
 		Shaders\LevelShader2D.frag = Shaders\LevelShader2D.frag
 		Shaders\LevelShader2D.vert = Shaders\LevelShader2D.vert
+		RenderPass\LevelShader2DWireFrameRenderPass.json = RenderPass\LevelShader2DWireFrameRenderPass.json
+		Shaders\LevelWireFrameShader2D.frag = Shaders\LevelWireFrameShader2D.frag
+		Shaders\LevelWireFrameShader2D.vert = Shaders\LevelWireFrameShader2D.vert
 		Shaders\Shader2D.frag = Shaders\Shader2D.frag
 		Shaders\Shader2D.vert = Shaders\Shader2D.vert
 		Shaders\SpriteInstanceShader.frag = Shaders\SpriteInstanceShader.frag
 		Shaders\SpriteInstanceShader.vert = Shaders\SpriteInstanceShader.vert
-		Shaders\vertshader.vert = Shaders\vertshader.vert
+		Shaders\SpriteInstanceWireFrameShader.frag = Shaders\SpriteInstanceWireFrameShader.frag
+		Shaders\SpriteInstanceWireFrameShader.vert = Shaders\SpriteInstanceWireFrameShader.vert
+		Shaders\SpriteObjectPickerShader.frag = Shaders\SpriteObjectPickerShader.frag
+		Shaders\SpriteObjectPickerShader.vert = Shaders\SpriteObjectPickerShader.vert
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E282A3D5-3DCC-485B-AA01-B66AB307DBE2}"
@@ -35,7 +42,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		LevelObjectPickerPipeline.json = LevelObjectPickerPipeline.json
 		Pipelines\LevelObjectPickerPipeline.json = Pipelines\LevelObjectPickerPipeline.json
 		Pipelines\LevelShader2DPipeline.json = Pipelines\LevelShader2DPipeline.json
+		Pipelines\LevelShader2DWireframePipeline.json = Pipelines\LevelShader2DWireframePipeline.json
 		Pipelines\SpriteInstancePipeline.json = Pipelines\SpriteInstancePipeline.json
+		Pipelines\SpriteInstanceWireFramePipeline.json = Pipelines\SpriteInstanceWireFramePipeline.json
 		Pipelines\SpriteObjectPickerPipeline.json = Pipelines\SpriteObjectPickerPipeline.json
 	EndProjectSection
 EndProject
@@ -44,6 +53,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
 		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
+		RenderPass\LevelShader2DWireFrameRenderPass.json = RenderPass\LevelShader2DWireFrameRenderPass.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"

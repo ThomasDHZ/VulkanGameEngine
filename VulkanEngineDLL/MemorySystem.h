@@ -7,8 +7,7 @@ struct MemoryLeakPtr
 {
     void* PtrAddress;        
     size_t PtrElements;      
-    bool isArray;           
-    const char* DanglingPtrMessage;
+    bool isArray;         
     const char* File;
     const char* Line;
     const char* Type;
