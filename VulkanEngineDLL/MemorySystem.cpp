@@ -28,7 +28,7 @@ extern "C"
         const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
         const char* typeStr = type ? _strdup(type) : nullptr;
         const char* funcStr = func ? _strdup(func) : nullptr;
-        //const char* notesStr = notes ? _strdup(notes) : nullptr;
+        const char* notesStr = notes ? _strdup(notes) : nullptr;
 
         return MemoryLeakPtr
         {
@@ -39,7 +39,7 @@ extern "C"
             .Line = lineStr,
             .Type = typeStr,
             .Function = funcStr,
-           // .Notes = notesStr
+            .Notes = notesStr
         };
     }
 
