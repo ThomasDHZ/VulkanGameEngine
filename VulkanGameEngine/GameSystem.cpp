@@ -23,35 +23,9 @@ void GameSystem::StartUp(WindowType windowType, void* windowHandle)
     levelSystem.LoadLevel("../Levels/TestLevel.json");
 }
 
-void GameSystem::Input(const float& deltaTime)
-{
-    //for (auto& input : gameObjectSystem.InputComponentList())
-    //{
-    //    Sprite& sprite = levelSystem.SpriteList[input.GameObjectId];
-    //    Transform2DComponent& transform = gameObjectSystem.FindTransform2DComponent(input.GameObjectId);
-    //    if (vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_PRESSED ||
-    //        vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_HELD)
-    //    {
-    //        transform.GameObjectPosition.x -= 200.0f * deltaTime;
-    //        sprite.SetSpriteAnimation(Sprite::SpriteAnimationEnum::kWalking);
-    //        sprite.FlipSprite.x = 0;
-    //    }
-    //    else if (vulkanWindow->keyboard.KeyPressed[KEY_D] == KS_PRESSED ||
-    //             vulkanWindow->keyboard.KeyPressed[KEY_D] == KS_HELD)
-    //    {
-    //        transform.GameObjectPosition.x += 200.0f * deltaTime;
-    //        sprite.SetSpriteAnimation(Sprite::SpriteAnimationEnum::kWalking);
-    //        sprite.FlipSprite.x = 1;
-    //    }
-    //    else
-    //    {
-    //        sprite.SetSpriteAnimation(Sprite::SpriteAnimationEnum::kStanding);
-    //    }
-    //}
-}
-
 void GameSystem::Update(const float& deltaTime)
 {
+    inputSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
     textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);

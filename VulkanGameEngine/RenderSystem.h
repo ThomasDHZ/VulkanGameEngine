@@ -15,6 +15,7 @@ typedef uint UM_RenderPipelineID;
 typedef uint UM_LevelID;
 typedef VkGuid RenderPassGuid;
 typedef VkGuid LevelGuid;
+typedef VkGuid VramSpriteGuid;
 
 class RenderSystem
 {

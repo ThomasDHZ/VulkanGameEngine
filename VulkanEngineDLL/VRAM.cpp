@@ -28,27 +28,7 @@ Animation2D* VRAM_LoadSpriteAnimations(const char* spritePath, size_t& animation
     nlohmann::json json = Json::ReadJson(spritePath);
     for (size_t x = 0; x < json["AnimationList"].size(); ++x)
     {
-        Animation2D animation =
-        {
-            .AnimationId = json["AnimationList"][x]["AnimationId"].get<uint>(),
-            .FrameHoldTime = json["AnimationList"][x]["FrameHoldTime"].get<float>()
-        };
-        animationList.emplace_back(animation);
-    }
-
-    animationListCount = animationList.size();
-    Animation2D* animationListPtr = memorySystem.AddPtrBuffer<Animation2D>(animationList.size(), __FILE__, __LINE__, __func__);
-    std::memcpy(animationListPtr, animationList.data(), animationList.size() * sizeof(Animation2D));
-    return animationListPtr;
-}
-
-ivec2* VRAM_LoadSpriteAnimationFrames(const char* spritePath, size_t& animationFrameCount)
-{
-    Vector<ivec2> animationFrameList;
-    nlohmann::json json = Json::ReadJson(spritePath);
-    for (size_t x = 0; x < json["AnimationList"].size(); ++x)
-    {
-        AnimationFrames frameList;
+        Vector<ivec2> spriteFrameList;
         for (size_t y = 0; y < json["AnimationList"][x]["FrameList"].size(); ++y)
         {
             ivec2 frame =
@@ -56,14 +36,22 @@ ivec2* VRAM_LoadSpriteAnimationFrames(const char* spritePath, size_t& animationF
                 json["AnimationList"][x]["FrameList"][y][0].get<float>(),
                 json["AnimationList"][x]["FrameList"][y][1].get<float>()
             };
-            animationFrameList.emplace_back(frame);
+            spriteFrameList.emplace_back(frame);
         }
+
+        Animation2D animation =
+        {
+            .AnimationId = json["AnimationList"][x]["AnimationId"].get<uint>(),
+            .FrameList = memorySystem.AddPtrBuffer<ivec2>(spriteFrameList.data(), spriteFrameList.size(), __FILE__, __LINE__, __func__, ("Sprite animation frame list: " + String(spritePath)).c_str()),
+            .FrameCount = json["AnimationList"][x]["FrameList"].size(),
+            .FrameHoldTime = json["AnimationList"][x]["FrameHoldTime"].get<float>(),
+        };
+        animationList.emplace_back(animation);
     }
 
-    animationFrameCount = animationFrameList.size();
-    ivec2* animationFrameListPtr = memorySystem.AddPtrBuffer<ivec2>(animationFrameList.size(), __FILE__, __LINE__, __func__);
-    std::memcpy(animationFrameListPtr, animationFrameList.data(), animationFrameList.size() * sizeof(ivec2));
-    return animationFrameListPtr;
+    animationListCount = animationList.size();
+    Animation2D* animationListPtr = memorySystem.AddPtrBuffer<Animation2D>(animationList.data(), animationList.size(), __FILE__, __LINE__, __func__, ("Sprite animation: " + String(spritePath)).c_str());
+    return animationListPtr;
 }
 
 LevelTileSet VRAM_LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)

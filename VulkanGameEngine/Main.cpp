@@ -27,7 +27,6 @@ int main(int argc, char** argv)
         vulkanWindow->PollEventHandler(vulkanWindow);
         vulkanWindow->SwapBuffer(vulkanWindow);
 
-        gameSystem.Input(frameTime);
         gameSystem.Update(frameTime);
         gameSystem.DebugUpdate(frameTime);
         gameSystem.Draw(frameTime);

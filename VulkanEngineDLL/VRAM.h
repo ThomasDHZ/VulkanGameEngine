@@ -48,8 +48,10 @@ struct LevelLayout
 
 struct Animation2D
 {
-	uint  AnimationId;
-	float FrameHoldTime;
+	uint   AnimationId;
+    ivec2* FrameList;
+    size_t FrameCount;
+	float  FrameHoldTime;
 };
 typedef Vector<ivec2> AnimationFrames;
 
@@ -58,7 +60,6 @@ extern "C" {
 #endif
     DLL_EXPORT SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture);
     DLL_EXPORT Animation2D* VRAM_LoadSpriteAnimations(const char* spritePath, size_t& animationListCount);
-    DLL_EXPORT ivec2* VRAM_LoadSpriteAnimationFrames(const char* spritePath, size_t& animationFrameCount);
     DLL_EXPORT LevelTileSet VRAM_LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture);
     DLL_EXPORT void VRAM_LoadTileSets(const char* tileSetPath, LevelTileSet& levelTileSet);
     DLL_EXPORT LevelLayout VRAM_LoadLevelInfo(const char* levelLayoutPath);

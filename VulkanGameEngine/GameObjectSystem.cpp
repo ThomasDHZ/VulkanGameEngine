@@ -24,21 +24,9 @@ void GameObjectSystem::CreateGameObject(const String& name, const Vector<Compone
     {
         switch (component)
         {
-            case kTransform2DComponent:
-            {
-                Transform2DComponentMap[id] = Transform2DComponent(objectPosition);
-                break;
-            }
-            case kInputComponent:
-            {
-                InputComponentMap[id] = InputComponent(id);
-                break;
-            }
-            case kSpriteComponent:
-            {
-                spriteSystem.AddSprite(id, vramId);
-                break;
-            }
+            case kTransform2DComponent: Transform2DComponentMap[id] = Transform2DComponent(objectPosition); break;
+            case kInputComponent: InputComponentMap[id] = InputComponent(id); break;
+            case kSpriteComponent: spriteSystem.AddSprite(id, vramId); break;
         }
     }
 }
@@ -55,21 +43,9 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectPath, const vec2
         int componentType = json["GameObjectComponentList"][x]["ComponentType"];
         switch (componentType)
         {
-            case kTransform2DComponent:
-            {
-                LoadTransformComponent(json["GameObjectComponentList"][x], id, gameObjectPosition);
-                break;
-            }
-            case kInputComponent:
-            {
-                LoadInputComponent(json["GameObjectComponentList"][x], id);
-                break;
-            }
-            case kSpriteComponent:
-            {
-                LoadSpriteComponent(json["GameObjectComponentList"][x], id);
-                break;
-            }
+            case kTransform2DComponent: LoadTransformComponent(json["GameObjectComponentList"][x], id, gameObjectPosition); break;
+            case kInputComponent: LoadInputComponent(json["GameObjectComponentList"][x], id); break;
+            case kSpriteComponent: LoadSpriteComponent(json["GameObjectComponentList"][x], id); break;
         }
     }
 }
@@ -85,7 +61,7 @@ void GameObjectSystem::LoadTransformComponent(const nlohmann::json& json, GameOb
 
 void GameObjectSystem::LoadInputComponent(const nlohmann::json& json, GameObjectID id)
 {
-    InputComponentMap[id] = InputComponent();
+    InputComponentMap[id] = InputComponent(id);
 }
 
 void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, GameObjectID id)

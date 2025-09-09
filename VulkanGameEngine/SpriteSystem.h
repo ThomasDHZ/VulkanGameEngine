@@ -4,19 +4,18 @@
 #include <VRAM.h>
 #include "SpriteBatchLayer.h"
 #include "Transform2DComponent.h"
-#include <Sprite.h>
+#include "RenderSystem.h"
 
 class SpriteSystem
 {
 private:
-    Vector<SpriteInstanceStruct>                                                  SpriteInstanceList;
+    Vector<SpriteInstanceStruct>                                    SpriteInstanceList;
     Vector<SpriteBatchLayer>                                        SpriteBatchLayerList;
     Vector<SpriteVram>                                              SpriteVramList;
 
     UnorderedMap<GameObjectID, size_t>                              SpriteIdToListIndexMap;
-    UnorderedMap<UM_SpriteBatchID, int>                               SpriteInstanceBufferIdMap;
-    UnorderedMap<UM_AnimationListID, Animation2D>                     SpriteAnimationMap;
-    UnorderedMap<VkGuid, Vector<AnimationFrames>>                     SpriteAnimationFrameListMap;
+    UnorderedMap<UM_SpriteBatchID, int>                             SpriteInstanceBufferIdMap;
+    UnorderedMap<VramSpriteGuid, Vector<Animation2D>>               SpriteAnimationMap;
     UnorderedMap<UM_SpriteBatchID, Vector<SpriteInstanceStruct>>    SpriteInstanceListMap;
     UnorderedMap<UM_SpriteBatchID, Vector<GameObjectID>>            SpriteBatchObjectListMap;
 
@@ -38,12 +37,11 @@ public:
 
     void Update(const float& deltaTime);
 
-    void SetSpriteAnimation(Sprite& sprite, Sprite::SpriteAnimationEnum spriteAnimation);
+    void SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnum spriteAnimation);
 
     Sprite* FindSprite(GameObjectID gameObjectId);
     const SpriteVram& FindVramSprite(VkGuid VramSpriteID);
-    const Animation2D& FindSpriteAnimation(const UM_AnimationListID& animationId);
-    Vector<AnimationFrames>& FindSpriteAnimationFrames(const VkGuid& vramSpriteId);
+    const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
     const SpriteInstanceStruct* FindSpriteInstance(GameObjectID gameObjectId);
     const int FindSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId);
     Vector<SpriteInstanceStruct>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);

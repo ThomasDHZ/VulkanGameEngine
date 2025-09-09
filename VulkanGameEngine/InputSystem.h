@@ -5,5 +5,11 @@ class InputSystem
 private:
 	MouseState  mouse;
 	KeyboardState keyboard;
-};
 
+public:
+	InputSystem();
+	~InputSystem();
+
+	void Update(const float& deltaTime);
+};
+extern InputSystem inputSystem;

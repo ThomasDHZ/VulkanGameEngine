@@ -27,7 +27,7 @@ SpriteSystem::~SpriteSystem()
 
 void SpriteSystem::UpdateBatchSprites(const float& deltaTime)
 {
-    size_t count = SpriteInstanceList.size();
+    const size_t count = SpriteInstanceList.size();
     Vector<Transform2DComponent> transform2D(count);
     Vector<SpriteVram> vram(count);
     Vector<Animation2D> animation(count);
@@ -39,27 +39,23 @@ void SpriteSystem::UpdateBatchSprites(const float& deltaTime)
         const auto& sprite = SpriteList[x];
         transform2D[x] = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
         vram[x] = FindVramSprite(sprite.SpriteVramId);
-        animation[x] = FindSpriteAnimation(sprite.CurrentAnimationID);
-        frameList[x] = FindSpriteAnimationFrames(vram[x].VramSpriteID)[sprite.CurrentAnimationID];
+        animation[x] = FindSpriteAnimation(sprite.SpriteVramId, sprite.CurrentAnimationID);
         material[x] = materialSystem.FindMaterial(vram[x].SpriteMaterialID);
     }
-    Sprite_UpdateBatchSprites(SpriteInstanceList.data(), SpriteList.data(), transform2D.data(), vram.data(), animation.data(), frameList.data(), material.data(), count, deltaTime);
+    Sprite_UpdateBatchSprites(SpriteInstanceList.data(), SpriteList.data(), transform2D.data(), vram.data(), animation.data(), material.data(), count, deltaTime);
 }
 
 void SpriteSystem::UpdateSprites(const float& deltaTime)
 {
-    size_t count = SpriteList.size();
-    for (size_t x = 0; x < count; ++x)
+    for (size_t x = 0; x < SpriteList.size(); ++x)
     {
         Sprite& sprite = SpriteList[x];
         const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
         const auto& vram = FindVramSprite(sprite.SpriteVramId);
-        const auto& animation = FindSpriteAnimation(sprite.CurrentAnimationID);
-        const auto& frameList = FindSpriteAnimationFrames(vram.VramSpriteID)[sprite.CurrentAnimationID];
+        const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
         const auto& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
-        const auto& currentFrame = frameList[sprite.CurrentFrame];
-
-        SpriteInstanceList[x] = Sprite_UpdateSprites(transform2D, vram, animation, material, currentFrame, sprite, frameList.size(), deltaTime);
+        const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
+        SpriteInstanceList[x] = Sprite_UpdateSprites(transform2D, vram, animation, material, currentFrame, sprite, animation.FrameCount, deltaTime);
     }
 }
 
@@ -119,18 +115,23 @@ void SpriteSystem::AddSpriteBatchObjectList(UM_SpriteBatchID spriteBatchId, Game
 void SpriteSystem::Update(const float& deltaTime)
 {
     if (SpriteList.size() > 100)
+    {
         UpdateBatchSprites(deltaTime);
+    }
     else
+    {
         UpdateSprites(deltaTime);
+    }
 
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
     UpdateSpriteBatchLayers(deltaTime);
     renderSystem.EndSingleTimeCommands(commandBuffer);
 }
 
-void SpriteSystem::SetSpriteAnimation(Sprite& sprite, Sprite::SpriteAnimationEnum spriteAnimation)
+void SpriteSystem::SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnum spriteAnimation)
 {
-    Sprite_SetSpriteAnimation(sprite, spriteAnimation);
+
+    Sprite_SetSpriteAnimation(*sprite, spriteAnimation);
 }
 
 Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)
@@ -155,14 +156,9 @@ const SpriteVram& SpriteSystem::FindVramSprite(VkGuid vramSpriteId)
     return *it;
 }
 
-const Animation2D& SpriteSystem::FindSpriteAnimation(const UM_AnimationListID& animationId)
+const Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId)
 {
-    return SpriteAnimationMap.at(animationId);
-}
-
-Vector<AnimationFrames>& SpriteSystem::FindSpriteAnimationFrames(const VkGuid& vramSpriteId)
-{
-    return SpriteAnimationFrameListMap.at(vramSpriteId);
+    return SpriteAnimationMap.at(vramId)[animationId];
 }
 
 const SpriteInstanceStruct* SpriteSystem::FindSpriteInstance(GameObjectID gameObjectId)
@@ -212,13 +208,9 @@ size_t SpriteSystem::FindSpriteIndex(GameObjectID gameObjectId)
 
 VkGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 {
-    size_t animationListCount = 0;
-    size_t animationFrameCount = 0;
 
     nlohmann::json json = Json::ReadJson(spriteVramPath);
     VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
-    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
-
     auto it = std::find_if(SpriteVramList.begin(), SpriteVramList.end(),
         [vramId](const SpriteVram& sprite)
         {
@@ -229,22 +221,12 @@ VkGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
         return vramId;
     }
 
+    size_t animationListCount = 0;
+    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
     const Material& material = materialSystem.FindMaterial(materialId);
     const Texture& texture = textureSystem.FindTexture(material.AlbedoMapId);
-
-    SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
     Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath.c_str(), animationListCount);
-    ivec2* animationFrameListPtr = VRAM_LoadSpriteAnimationFrames(spriteVramPath.c_str(), animationFrameCount);
-
-    Vector<Animation2D> animation2DList = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
-    Vector<ivec2> animationFrameList = Vector<ivec2>(animationFrameListPtr, animationFrameListPtr + animationFrameCount);
-
-    for (size_t x = 0; x < animation2DList.size(); x++)
-    {
-        SpriteAnimationMap[animation2DList[x].AnimationId] = animation2DList[x];
-    }
-    SpriteAnimationFrameListMap[vramId].emplace_back(animationFrameList);
-
-    VRAM_DeleteSpriteVRAM(animationListPtr, animationFrameListPtr);
+    SpriteAnimationMap[vramId] = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
+    SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
     return vramId;
 }

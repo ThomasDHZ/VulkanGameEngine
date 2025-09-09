@@ -1,8 +1,9 @@
 #include "Sprite.h"
 #include "VulkanBuffer.h"
 
-void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const AnimationFrames* frameList, const Material* materialList, size_t spriteCount, float deltaTime)
+void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
 {
+    Span<ivec2> frameList(animationList->FrameList, animationList->FrameList + animationList->FrameCount);
     for (size_t x = 0; x < spriteCount; x++)
     {
         glm::mat4 spriteMatrix = glm::mat4(1.0f);
@@ -32,7 +33,7 @@ void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite*
             }
         }
 
-        const ivec2& currentFrame = frameList[x][spriteList[x].CurrentFrame];
+        const ivec2& currentFrame = frameList[spriteList[x].CurrentFrame];
         spriteInstanceList[x].SpritePosition = transform2DList[x].GameObjectPosition;
         spriteInstanceList[x].SpriteSize = vramList[x].SpriteSize;
         spriteInstanceList[x].MaterialID = materialList[x].ShaderMaterialBufferIndex;
