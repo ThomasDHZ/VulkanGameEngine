@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string_view>
 #include <CHelper.h>
+#include "EngineConfigSystem.h"
 
 ShaderSystem shaderSystem = ShaderSystem();
 
@@ -232,5 +233,5 @@ const bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey) const
 
 void ShaderSystem::CompileShaders(const char* shaderFilePath)
 {
-     Shader_CompileShaders(renderSystem.renderer.Device, shaderFilePath);
+     Shader_CompileShaders(renderSystem.renderer.Device, shaderFilePath, configSystem.CompiledShaderOutputDirectory.c_str());
 }

@@ -324,10 +324,10 @@ ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructTo
     Span<ShaderVariable> sourceVarList(shaderStructToCopy.ShaderBufferVariableList, shaderStructToCopy.ShaderBufferVariableListCount);
     Span<ShaderVariable> destVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
     assert(sourceVarList.size() == destVarList.size());
-    for (size_t i = 0; i < sourceVarList.size(); ++i)
+    for (size_t x = 0; x < sourceVarList.size(); ++x)
     {
-        ShaderVariable& destVar = destVarList[i];
-        const ShaderVariable& srcVar = sourceVarList[i];
+        ShaderVariable& destVar = destVarList[x];
+        const ShaderVariable& srcVar = sourceVarList[x];
 
         destVar.Name = memorySystem.AddPtrBuffer(srcVar.Name ? srcVar.Name : "", __FILE__, __LINE__, __func__, "ShaderVariable.Name copy");
         destVar.Size = srcVar.Size;
@@ -541,7 +541,8 @@ void Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vec
 
 VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, const char* filename, VkShaderStageFlagBits shaderStages)
 {
-    VkShaderModule shaderModule = File_GetFileExtention(filename) == "hlsl" ? Shader_ReadGLSLShader(device, filename, shaderStages) : VkShaderModule(); //Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
+    VkShaderModule shaderModule =Shader_ReadGLSLShader(device, filename, shaderStages);
+    //VkShaderModule shaderModule = File_GetFileExtention(filename) == "spv" ? Shader_ReadGLSLShader(device, filename, shaderStages) : VkShaderModule(); //Shader_BuildHLSLShader(device, filename.c_str(), shaderStages);
     return VkPipelineShaderStageCreateInfo
     {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -551,12 +552,12 @@ VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, const char* f
     };
 }
 
-void Shader_CompileShaders(VkDevice device, const char* shaderDirectoryPath)
+void Shader_CompileShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory)
 {
-        Shader_CompileGLSLShaders(device, shaderDirectoryPath, VK_SHADER_STAGE_ALL_GRAPHICS);
+        Shader_CompileGLSLShaders(device, fileDirectory, outputDirectory);
 }
 
-void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkShaderStageFlagBits stage)
+void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory)
 {
     Vector<const char*> fileExtenstionList
     {
@@ -578,7 +579,7 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkSha
     const char** fileList = File_GetFilesFromDirectory(fileDirectory, extenstionList, extenstionListCount, returnFileCount);
     if (!fileList || returnFileCount == 0)
     {
-        throw std::runtime_error("No shader files found in directory: " + std::string(fileDirectory));
+        throw std::runtime_error("No shader files found in directory: " + String(fileDirectory));
     }
 
     Vector<String> shaderSourceFileList(fileList, fileList + returnFileCount);
@@ -593,12 +594,16 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkSha
         String outputFile = shaderSourceFile + shaderExtension;
         outputFile[shaderSourceFile.size()] = std::toupper(outputFile[shaderSourceFile.size()]);
         outputFile += ".spv";
-
-        command += "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + "..\\Assets\\Shaders\\" + outputFile + "\r\n";
+      
+        if (std::filesystem::last_write_time(("..\\Assets\\Shaders\\" + outputFile).c_str()) < std::filesystem::last_write_time(inputFile.c_str()))
+        {
+            command += "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + outputDirectory + outputFile + "\n";
+        }
     }
     String tempBatchPath = std::filesystem::temp_directory_path().append("temp_glslc.bat").string();
     std::ofstream tempBatch(tempBatchPath);
-    if (!tempBatch.is_open()) {
+    if (!tempBatch.is_open()) 
+    {
         throw std::runtime_error("Failed to create temporary batch file: " + tempBatchPath);
     }
     tempBatch << command;
@@ -621,7 +626,8 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkSha
     String batchCommand = "cmd.exe /C \"" + tempBatchPath + "\"";
     LPWSTR batchCommandW = Shader_StringToLPWSTR(batchCommand);
     std::wstring workingDir = std::filesystem::path(fileDirectory).wstring();
-    if (!CreateProcessW(nullptr, batchCommandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, workingDir.c_str(), &startUpInfo, &processInformation)) {
+    if (!CreateProcessW(nullptr, batchCommandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, workingDir.c_str(), &startUpInfo, &processInformation)) 
+    {
         DWORD errorCode = GetLastError();
         std::stringstream errorMsg;
         errorMsg << "Failed to start batch file: " << tempBatchPath << "\nWindows Error Code: " << errorCode;
@@ -637,7 +643,8 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, VkSha
     String output;
     char buffer[4096];
     DWORD bytesRead;
-    while (true) {
+    while (true)
+    {
         bool readSuccess = ReadFile(hStdOutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr);
         if (!readSuccess || 
             bytesRead == 0) 

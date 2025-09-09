@@ -2,8 +2,8 @@
   "Name": "SpriteObjectPickerPipeline",
   "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
   "ShaderList": [
-    "..\\Shaders\\SpriteObjectPickerShaderVert.spv",
-    "..\\Shaders\\SpriteObjectPickerShaderFrag.spv"
+    "..\\Assets\\Shaders\\SpriteObjectPickerShaderVert.spv",
+    "..\\Assets\\Shaders\\SpriteObjectPickerShaderFrag.spv"
   ],
   "VertexType": 1,
   "ViewportList": [

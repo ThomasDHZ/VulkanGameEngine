@@ -4,20 +4,19 @@ ConfigSystem configSystem = ConfigSystem::LoadConfig("../EngineConfig.json");
 
 ConfigSystem::ConfigSystem() : WindowResolution(glm::ivec2(1280, 720)),
                                ShaderSourceDirectory("..\\Shaders"),
-							   CompiledDebugPathCPP("..\\x64\\Debug"),
-							   CompiledReleasePathCPP("..\\x64\\Release"),
-							   CompilerLocation("C:/VulkanSDK/1.4.313.0/Bin/glslangValidator.exe")
+                               CompilerLocation("C:/VulkanSDK/1.4.313.0/Bin/glslc.exe"),
+                               CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
+                               CompiledShaderOutputDirectory("..\\Assets\\Shaders\\")
 {
 }
 
 ConfigSystem::ConfigSystem(const nlohmann::json& j) : WindowResolution(ParseWindowResolution(j)),
                                                       ShaderSourceDirectory(j.at("ShaderSourceDirectory").get<String>()),
-													  CompiledDebugPathCPP(j.at("CompiledDebugPathCPP").get<String>()),
-													  CompiledReleasePathCPP(j.at("CompiledReleasePathCPP").get<String>()),
-													  CompilerLocation(j.at("CompilerLocation").get<String>())
+                                                      CompilerLocation(j.at("CompilerLocation").get<String>()),
+                                                      CompilerBuildParams(j.at("CompilerBuildParams").get<String>()),
+                                                      CompiledShaderOutputDirectory(j.at("CompiledShaderOutputDirectory").get<String>())
 {
 }
-
 ConfigSystem::~ConfigSystem()
 {
 }

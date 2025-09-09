@@ -13,11 +13,11 @@ private:
     ivec2 ParseWindowResolution(const nlohmann::json& j);
 
 public:
-	const ivec2 WindowResolution;
+    const ivec2 WindowResolution;
     const String ShaderSourceDirectory;
-	const String CompiledDebugPathCPP;
-	const String CompiledReleasePathCPP;
-	const String CompilerLocation;
+    const String CompilerLocation;
+    const String CompilerBuildParams;
+    const String CompiledShaderOutputDirectory;
 
     ConfigSystem();
 	ConfigSystem(const nlohmann::json& j);

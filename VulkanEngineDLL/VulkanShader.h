@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, const char* path, VkShaderStageFlagBits shaderStages);
-DLL_EXPORT void Shader_CompileShaders(VkDevice device, const char* shaderDirectoryPath);
+DLL_EXPORT void Shader_CompileShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory);
 ShaderPushConstant* Shader_SearchShaderConstBuffer(ShaderPushConstant* shaderPushConstantList, size_t shaderPushConstantCount, const char* constBufferName);
 //ShaderDescriptorBinding* Shader_SearchDescriptorBindings(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const char* descriptorBindingName);
 ShaderStruct* Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName);
@@ -56,7 +56,7 @@ void Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module, Ve
 void Shader_GetShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vector<ShaderStruct>& shaderStruct);
 
 VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage);
-void Shader_CompileGLSLShaders(VkDevice device, const char* shaderFilePath, VkShaderStageFlagBits stage);
+void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory);
 Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShaders(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage);
 
 LPWSTR Shader_StringToLPWSTR(const String& str);
