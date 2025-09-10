@@ -12,7 +12,16 @@ struct Sprite
     enum SpriteAnimationEnum
     {
         kStanding,
-        kWalking
+        kWalking,
+        kSlide,
+        kJump,
+        kClimb,
+        kClimbEnd,
+        kDamage,
+        kShoot,
+        kShootWalk,
+        kShootJump,
+        kClimbShoot
     };
 
     GameObjectID GameObjectId;
