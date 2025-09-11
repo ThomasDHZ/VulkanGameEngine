@@ -52,6 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 	ProjectSection(SolutionItems) = preProject
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
+		RenderPass\LevelShader2DMultiSampledRenderPass.json = RenderPass\LevelShader2DMultiSampledRenderPass.json
 		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
 		RenderPass\LevelShader2DWireFrameRenderPass.json = RenderPass\LevelShader2DWireFrameRenderPass.json
 	EndProjectSection

@@ -13,7 +13,7 @@
         "Format": 44,
         "MipLevels": 1,
         "ArrayLayers": 1,
-        "Samples": 1,
+        "Samples": 8,
         "Tiling": 0,
         "Usage": 23,
         "SharingMode": 0,
@@ -116,5 +116,6 @@
       }
     }
   },
-  "IsRenderedToSwapchain": false
+  "IsRenderedToSwapchain": false,
+  "MultiSampled": false
 }

@@ -4,6 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include "GPUSystem.h"
 
 Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonString)
 {
@@ -35,7 +36,7 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 		.mipMapLevels = 1,
 		.textureByteFormat = createImageInfo.format,
 		.textureImageLayout = createImageInfo.initialLayout,
-		.sampleCount = createImageInfo.samples,
+		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
 	};
 
 	Texture_CreateTextureImage(renderer, texture, createImageInfo);
@@ -46,14 +47,16 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 
 Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
-	Texture texture;
-	texture.width = static_cast<int>(createImageInfo.extent.width);
-	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth);
-	texture.textureByteFormat = createImageInfo.format;
-	texture.textureImageLayout = createImageInfo.initialLayout;
-	texture.sampleCount = createImageInfo.samples;
-	texture.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1;
+	Texture texture
+	{
+		.width = static_cast<int>(createImageInfo.extent.width),
+		.height = static_cast<int>(createImageInfo.extent.height),
+		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
+		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
+		.textureByteFormat = createImageInfo.format,
+		.textureImageLayout = createImageInfo.initialLayout,
+		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
+	};
 
 	Texture_CreateTextureImage(renderer, texture, texturePath);
 	Texture_CreateTextureView(renderer, texture, imageType);
@@ -63,14 +66,16 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& te
 
 Texture Texture_CreateTexture(const GraphicsRenderer& renderer, Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
-	Texture texture;
-	texture.width = static_cast<int>(createImageInfo.extent.width);
-	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth);
-	texture.textureByteFormat = createImageInfo.format;
-	texture.textureImageLayout = createImageInfo.initialLayout;
-	texture.sampleCount = createImageInfo.samples;
-	texture.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1;
+	Texture texture
+	{
+		.width = static_cast<int>(createImageInfo.extent.width),
+		.height = static_cast<int>(createImageInfo.extent.height),
+		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
+		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
+		.textureByteFormat = createImageInfo.format,
+		.textureImageLayout = createImageInfo.initialLayout,
+		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
+	};
 
 	Texture_CreateTextureImage(renderer, texture, clearColor);
 	Texture_CreateTextureView(renderer, texture, imageType);

@@ -44,34 +44,34 @@ static Vector<VkValidationFeatureDisableEXT> disabledList =
 
 struct GraphicsRenderer
 {
-	VkInstance         Instance;
-	VkDevice           Device;
-	VkPhysicalDevice   PhysicalDevice;
-	VkSurfaceKHR       Surface;
-	VkCommandPool      CommandPool;
+	VkInstance				 Instance;
+	VkDevice				 Device;
+	VkPhysicalDevice		 PhysicalDevice;
+	VkSurfaceKHR			 Surface;
+	VkCommandPool			 CommandPool;
 	VkDebugUtilsMessengerEXT DebugMessenger;
 
-	VkFence* InFlightFences;
-	VkSemaphore* AcquireImageSemaphores;
-	VkSemaphore* PresentImageSemaphores;
-	VkImage* SwapChainImages;
-	VkImageView* SwapChainImageViews;
-	VkExtent2D         SwapChainResolution;
-	VkSwapchainKHR     Swapchain;
+	VkFence*				 InFlightFences;
+	VkSemaphore*			 AcquireImageSemaphores;
+	VkSemaphore*			 PresentImageSemaphores;
+	VkImage*				 SwapChainImages;
+	VkImageView*			 SwapChainImageViews;
+	VkExtent2D				 SwapChainResolution;
+	VkSwapchainKHR			 Swapchain;
 
-	size_t			   SwapChainImageCount;
-	size_t			   ImageIndex;
-	size_t			   CommandIndex;
-	uint32			   GraphicsFamily;
-	uint32			   PresentFamily;
+	size_t					 SwapChainImageCount;
+	size_t					 ImageIndex;
+	size_t					 CommandIndex;
+	uint32					 GraphicsFamily;
+	uint32					 PresentFamily;
 
-	VkQueue			   GraphicsQueue;
-	VkQueue			   PresentQueue;
-	VkFormat           Format;
-	VkColorSpaceKHR    ColorSpace;
-	VkPresentModeKHR   PresentMode;
+	VkQueue					 GraphicsQueue;
+	VkQueue					 PresentQueue;
+	VkFormat				 Format;
+	VkColorSpaceKHR			 ColorSpace;
+	VkPresentModeKHR		 PresentMode;
 
-	bool               RebuildRendererFlag;
+	bool					 RebuildRendererFlag;
 };
 
 extern HWND editorRichTextBoxCallback;

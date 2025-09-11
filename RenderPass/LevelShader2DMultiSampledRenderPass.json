@@ -1,19 +1,20 @@
 {
-  "Name": "LevelShader2DRenderPass",
-  "RenderPassId": "aa18e942-497b-4981-b917-d93a5b1de6eb",
+  "Name": "LevelShader2DMultiSampledRenderPass",
+  "RenderPassId": "2a991826-8089-4848-9a43-6ce494f30033",
   "RenderPipelineList": [ "../Pipelines/SpriteInstancePipeline.json", "../Pipelines/LevelShader2DPipeline.json" ],
   "InputTextureList": [],
   "RenderedTextureInfoModelList": [
     {
-      "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
+      "TextureId": "a5ed3a80-ccc5-4018-893a-87b6b7d2ff26",
       "TextureType": 0,
+      "SampleCountOverride": 8,
       "ImageCreateInfo": {
         "SType": 14,
         "ImageType": 1,
         "Format": 44,
         "MipLevels": 1,
         "ArrayLayers": 1,
-        "Samples": 1,
+        "Samples": 8,
         "Tiling": 0,
         "Usage": 23,
         "SharingMode": 0,
@@ -41,7 +42,7 @@
         "StructureType": 0,
         "Flags": 0,
         "Format": 44,
-        "Samples": 1,
+        "Samples": 8,
         "LoadOp": 1,
         "StoreOp": 0,
         "StencilLoadOp": 2,
@@ -78,14 +79,39 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1024,
+      "SrcStageMask": 128,
       "DstStageMask": 1024,
-      "SrcAccessMask": 0,
-      "DstAccessMask": 384,
-      "DependencyFlags": 0
+      "SrcAccessMask": 32,
+      "DstAccessMask": 256,
+      "DependencyFlags": 1
+    },
+    {
+      "SrcSubpass": 0,
+      "DstSubpass": 4294967295,
+      "SrcStageMask": 1024,
+      "DstStageMask": 128,
+      "SrcAccessMask": 256,
+      "DstAccessMask": 32,
+      "DependencyFlags": 1
     }
   ],
   "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
     {
       "Color": {
         "Float32_0": 0.0,
@@ -116,6 +142,5 @@
       }
     }
   },
-  "IsRenderedToSwapchain": false,
-  "MultiSampled": false
+  "IsRenderedToSwapchain": false
 }

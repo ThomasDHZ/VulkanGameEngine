@@ -184,7 +184,19 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
 
 VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution)
 {
-    nlohmann::json json = Json::ReadJson(jsonPath);
+    nlohmann::json renderPassJson = Json::ReadJson(jsonPath);
+    RenderPassLoader renderPassLoader = renderPassJson.get<RenderPassLoader>();
+    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    {
+        renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+        renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+        for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+        {
+            renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+            renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+            renderTexture.ImageCreateInfo.extent.depth = 1;
+        }
+    }
     VkGuid renderPassId = CreateVulkanRenderPass(jsonPath, renderPassResolution);
 
     Vector<VkDescriptorBufferInfo> vertexPropertiesList = GetVertexPropertiesBuffer();
@@ -210,10 +222,12 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         .MaterialProperties = materialPropertiesList.data()
     };
 
-    for (int x = 0; x < json["RenderPipelineList"].size(); x++)
+    for (int x = 0; x < renderPassJson["RenderPipelineList"].size(); x++)
     {
-        nlohmann::json pipelineJson = Json::ReadJson(json["RenderPipelineList"][x]);
+        nlohmann::json pipelineJson = Json::ReadJson(renderPassLoader.RenderPipelineList[x]);
         RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride : VK_SAMPLE_COUNT_1_BIT;
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? true : false;
         renderPipelineLoader.RenderPassId = renderPassId;
         renderPipelineLoader.RenderPass = RenderPassMap[renderPassId].RenderPass;
         renderPipelineLoader.gpuIncludes = gpuIncludes;

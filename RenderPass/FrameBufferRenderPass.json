@@ -49,7 +49,7 @@
       "_name": null
     }
   ],
-  "InputTextureList": [ "1e0878ca-0650-4b58-b290-ca07c169ec54" ],
+  "InputTextureList": [ "a5ed3a80-ccc5-4018-893a-87b6b7d2ff26" ],
   "RenderPipelineList": [
     "../Pipelines/FrameBufferPipeline.json"
   ],
@@ -89,5 +89,6 @@
   ],
   "Name": "BasicRenderPass",
   "IsRenderedToSwapchain": true,
-  "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856"
+  "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856",
+  "MultiSampled": false
 }

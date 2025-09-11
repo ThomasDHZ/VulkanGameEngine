@@ -62,8 +62,8 @@
   },
   "PipelineMultisampleStateCreateInfo": {
     "sType": 24,
-    "rasterizationSamples": 1,
-    "sampleShadingEnable": false,
+    "rasterizationSamples": 8,
+    "sampleShadingEnable": true,
     "minSampleShading": 0.0,
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false,

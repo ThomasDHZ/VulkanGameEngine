@@ -1,4 +1,5 @@
 #include "from_json.h"
+#include "GPUSystem.h"
 #include "VulkanPipeline.h"
 
 namespace nlohmann
@@ -144,6 +145,14 @@ namespace nlohmann
         j.at("ImageCreateInfo").get_to(model.ImageCreateInfo);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
         j.at("AttachmentDescription").get_to(model.AttachmentDescription);
+
+        if (j.contains("SampleCountOverride"))
+        {
+            j.at("SampleCountOverride").get_to(model.SampleCountOverride);
+            model.SampleCountOverride = model.SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : model.SampleCountOverride;
+            model.ImageCreateInfo.samples = model.SampleCountOverride;
+            model.AttachmentDescription.samples = model.SampleCountOverride;
+        }
     }
 
     void from_json(const json& j, RenderedTextureInfoModel& model)

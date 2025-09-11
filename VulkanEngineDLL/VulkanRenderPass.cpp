@@ -1,5 +1,6 @@
 #include "VulkanRenderPass.h"
 #include "../VulkanGameEngine/SceneDataBuffer.h"
+#include "GPUSystem.h"
 
 VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
@@ -16,11 +17,11 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
             renderTexture.ImageCreateInfo.extent.depth = 1;
         }
     }
-
+    
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
-        .SampleCount = VK_SAMPLE_COUNT_1_BIT,
+        .SampleCount = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride,
         .RenderArea = renderPassLoader.RenderArea.RenderArea,
         .InputTextureIdListCount = renderPassLoader.InputTextureList.size(),
         .ClearValueCount = renderPassLoader.ClearValueList.size(),
@@ -153,6 +154,7 @@ VkRenderPass RenderPass_BuildRenderPass(const GraphicsRenderer& renderer, const 
     for (RenderedTextureLoader renderedTextureInfoModel : renderPassJsonLoader.RenderedTextureInfoModelList)
     {
         attachmentDescriptionList.emplace_back(renderedTextureInfoModel.AttachmentDescription);
+        attachmentDescriptionList.back().samples = renderedTextureInfoModel.SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : renderedTextureInfoModel.SampleCountOverride;
         switch (renderedTextureInfoModel.TextureType)
         {
         case RenderedTextureType::ColorRenderedTexture:
