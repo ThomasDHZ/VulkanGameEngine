@@ -2,23 +2,9 @@
 #include "../VulkanGameEngine/SceneDataBuffer.h"
 #include "GPUSystem.h"
 
-VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+RenderPassAttachementTextures VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, RenderPassLoader& renderPassLoader, ivec2& renderPassResolution)
 {
-    const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
-    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
-    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
-    {
-        renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
-        renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
-        for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
-        {
-            renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
-            renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
-            renderTexture.ImageCreateInfo.extent.depth = 1;
-        }
-    }
-
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
+    vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
         .SampleCount = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride,
@@ -30,6 +16,7 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
     };
 
+    Texture depthTexture;
     Vector<Texture> renderedTextureList;
     vulkanRenderPass.RenderPass = RenderPass_BuildRenderPass(renderer, renderPassLoader, renderedTextureList, depthTexture);
     RenderPass_BuildRenderPassAttachments(renderer, renderPassLoader, renderedTextureList, depthTexture);
@@ -41,10 +28,12 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
     vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
     vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.data(), frameBufferList.size(), __FILE__, __LINE__, __func__);
 
-    renderedTextureCount = renderedTextureList.size();
-    renderedTextureListPtr = *renderedTextureList.data();
-
-    return vulkanRenderPass;
+    return RenderPassAttachementTextures
+    {
+        .RenderPassTextureCount = renderPassLoader.RenderedTextureInfoModelList.size(),
+        .RenderPassTexture = memorySystem.AddPtrBuffer<Texture>(renderedTextureList.data(), renderedTextureList.size(), __FILE__, __LINE__, __func__),
+        .DepthTexture = memorySystem.AddPtrBuffer<Texture>(&depthTexture, 1, __FILE__, __LINE__, __func__)
+    };
 }
 
 VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
@@ -151,52 +140,52 @@ VkRenderPass RenderPass_BuildRenderPass(const GraphicsRenderer& renderer, const 
     Vector<VkAttachmentReference> resolveAttachmentReferenceList = Vector<VkAttachmentReference>();
     Vector<VkSubpassDescription> preserveAttachmentReferenceList = Vector<VkSubpassDescription>();
     Vector<VkAttachmentReference> depthReference = Vector<VkAttachmentReference>();
-    for (RenderedTextureLoader renderedTextureInfoModel : renderPassJsonLoader.RenderedTextureInfoModelList)
+    for (int x = 0; x < renderPassJsonLoader.RenderedTextureInfoModelList.size(); x++)
     {
-        attachmentDescriptionList.emplace_back(renderedTextureInfoModel.AttachmentDescription);
-        attachmentDescriptionList.back().samples = renderedTextureInfoModel.SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : renderedTextureInfoModel.SampleCountOverride;
-        switch (renderedTextureInfoModel.TextureType)
+        attachmentDescriptionList.emplace_back(renderPassJsonLoader.RenderedTextureInfoModelList[x].AttachmentDescription);
+        attachmentDescriptionList.back().samples = renderPassJsonLoader.RenderedTextureInfoModelList[x].SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : renderPassJsonLoader.RenderedTextureInfoModelList[x].SampleCountOverride;
+        switch (renderPassJsonLoader.RenderedTextureInfoModelList[x].TextureType)
         {
-        case RenderedTextureType::ColorRenderedTexture:
-        {
-            colorAttachmentReferenceList.emplace_back(VkAttachmentReference
-                {
-                    .attachment = static_cast<uint32>(colorAttachmentReferenceList.size()),
-                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-                });
-            break;
-        }
-        case RenderedTextureType::InputAttachmentTexture:
-        {
-            inputAttachmentReferenceList.emplace_back(VkAttachmentReference
-                {
-                    .attachment = static_cast<uint32>(inputAttachmentReferenceList.size()),
-                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-                });
-            break;
-        }
-        case RenderedTextureType::ResolveAttachmentTexture:
-        {
-            resolveAttachmentReferenceList.emplace_back(VkAttachmentReference
-                {
-                    .attachment = static_cast<uint32>(colorAttachmentReferenceList.size() + 1),
-                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-                });
-            break;
-        }
-        default:
-        {
-            throw std::runtime_error("Case doesn't exist: RenderedTextureType");
-        }
-        case RenderedTextureType::DepthRenderedTexture:
-        {
-            depthReference.emplace_back(VkAttachmentReference
-                {
-                    .attachment = (uint)(colorAttachmentReferenceList.size() + resolveAttachmentReferenceList.size()),
-                    .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
-                });
-            break;
-        }
+            case RenderedTextureType::ColorRenderedTexture:
+            {
+                colorAttachmentReferenceList.emplace_back(VkAttachmentReference
+                    {
+                        .attachment = static_cast<uint32>(x),
+                        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                    });
+                break;
+            }
+            case RenderedTextureType::InputAttachmentTexture:
+            {
+                inputAttachmentReferenceList.emplace_back(VkAttachmentReference
+                    {
+                        .attachment = static_cast<uint32>(x),
+                        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                    });
+                break;
+            }
+            case RenderedTextureType::ResolveAttachmentTexture:
+            {
+                resolveAttachmentReferenceList.emplace_back(VkAttachmentReference
+                    {
+                        .attachment = static_cast<uint32>(x),
+                        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                    });
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("Case doesn't exist: RenderedTextureType");
+            }
+            case RenderedTextureType::DepthRenderedTexture:
+            {
+                depthReference.emplace_back(VkAttachmentReference
+                    {
+                        .attachment = (uint)(x),
+                        .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
+                    });
+                break;
+            }
         }
     }
 

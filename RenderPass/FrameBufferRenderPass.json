@@ -46,11 +46,11 @@
       },
       "TextureType": 0,
       "TextureId": "6492ef85-2573-4b76-9510-d8550ca5315d",
-      "SampleCountOverride": 1,
       "_name": null
     }
   ],
-  "InputTextureList": [ "1e0878ca-0650-4b58-b290-ca07c169ec54" ],
+  "InputTextureList": [ "ca62ddec-30ff-49e2-b168-3cfeddcedb8e" ],
+  "SampleCountOverride": 1,
   "RenderPipelineList": [
     "../Pipelines/FrameBufferPipeline.json"
   ],
@@ -90,5 +90,6 @@
   ],
   "Name": "BasicRenderPass",
   "IsRenderedToSwapchain": true,
-  "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856"
+  "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856",
+  "MultiSampled": false
 }

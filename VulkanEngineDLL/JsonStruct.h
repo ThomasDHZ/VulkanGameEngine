@@ -3,6 +3,7 @@
 #include "JsonStructs.h"
 #include "VulkanBuffer.h"
 #include <SPIRV-Reflect/spirv_reflect.h>
+#include "Texture.h"
 
 enum ShaderMemberType
 {
@@ -39,6 +40,13 @@ struct  RenderedTextureLoader
     VkAttachmentDescription AttachmentDescription;
     RenderedTextureType TextureType;
     VkSampleCountFlagBits SampleCountOverride;
+};
+
+struct RenderPassAttachementTextures
+{
+    size_t RenderPassTextureCount;
+    Texture* RenderPassTexture;
+    Texture* DepthTexture;
 };
 
 struct RenderPassLoader

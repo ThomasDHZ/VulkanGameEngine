@@ -38,20 +38,34 @@ void RenderSystem::Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const f
 
 VkGuid RenderSystem::CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution)
 {
-    Texture depthTexture = Texture();
-    size_t renderedTextureCount = 1;
-    Vector<Texture> renderedTextureList = Vector<Texture>(renderedTextureCount);
+    const char* jsonDataString = File_Read(jsonPath.c_str()).Data;
+    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
+    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    {
+        renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+        renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+        for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+        {
+            renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+            renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+            renderTexture.ImageCreateInfo.extent.depth = 1;
+        }
+    }
 
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath.c_str(), renderPassResolution, renderedTextureList[0], renderedTextureCount, depthTexture);
+    VulkanRenderPass vulkanRenderPass;
+    RenderPassAttachementTextures renderPassAttachments = VulkanRenderPass_CreateVulkanRenderPass(renderer, vulkanRenderPass, renderPassLoader, renderPassResolution);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
     RenderPassLoaderJsonMap[vulkanRenderPass.RenderPassId] = jsonPath;
 
-    textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
-    if (depthTexture.textureView != VK_NULL_HANDLE)
+    Vector<Texture> renderTextureList(renderPassAttachments.RenderPassTexture, renderPassAttachments.RenderPassTexture + renderPassAttachments.RenderPassTextureCount);
+    textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderTextureList);
+    if (renderPassAttachments.DepthTexture != VK_NULL_HANDLE)
     {
-        textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
+        textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, *renderPassAttachments.DepthTexture);
     }
 
+    memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
+    memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
     return vulkanRenderPass.RenderPassId;
 }
 
@@ -112,7 +126,6 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
     };
 
     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
-    textureSystem.UpdateTextureLayout(renderPassTexture[0], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -143,6 +156,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         .pClearValues = renderPass.ClearValueList
     };
 
+    VkDeviceSize offsets[] = { 0 };
     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     for (auto& levelLayer : levelLayerList)
@@ -151,7 +165,6 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
         uint meshIndex = 0;
-        VkDeviceSize offsets[] = { 0 };
         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &meshIndex, sizeof(meshIndex));
         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataBuffer.PushConstantSize, sceneDataBuffer.PushConstantBuffer);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
@@ -162,13 +175,12 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
     }
     for (auto& spriteLayer : spriteLayerList)
     {
-        const Vector<SpriteInstanceStruct>& spriteInstanceList = spriteSystem.FindSpriteInstanceList(spriteLayer.SpriteBatchLayerID);
         const Mesh& spriteMesh = meshSystem.FindSpriteMesh(spriteLayer.SpriteLayerMeshId);
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshVertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
+        const Vector<SpriteInstanceStruct>& spriteInstanceList = spriteSystem.FindSpriteInstanceList(spriteLayer.SpriteBatchLayerID);
         const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteSystem.FindSpriteInstanceBufferId(spriteLayer.SpriteBatchLayerID)).Buffer;
 
-        VkDeviceSize offsets[] = { 0 };
         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &spriteLayer.SpriteLayerMeshId, sizeof(spriteLayer.SpriteLayerMeshId));
         vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataBuffer.PushConstantSize, sceneDataBuffer.PushConstantBuffer);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
@@ -226,7 +238,7 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
     {
         nlohmann::json pipelineJson = Json::ReadJson(renderPassLoader.RenderPipelineList[x]);
         RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
-        renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride : VK_SAMPLE_COUNT_1_BIT;
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride : VK_SAMPLE_COUNT_1_BIT;
         renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? true : false;
         renderPipelineLoader.RenderPassId = renderPassId;
         renderPipelineLoader.RenderPass = RenderPassMap[renderPassId].RenderPass;
