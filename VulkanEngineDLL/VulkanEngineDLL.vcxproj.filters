@@ -168,6 +168,9 @@
     <ClInclude Include="CFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GPUSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VulkanWindow.c">
@@ -295,6 +298,9 @@
     </ClCompile>
     <ClCompile Include="CFile.c">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GPUSystem.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

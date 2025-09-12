@@ -46,6 +46,7 @@
       },
       "TextureType": 0,
       "TextureId": "6492ef85-2573-4b76-9510-d8550ca5315d",
+      "SampleCountOverride": 1,
       "_name": null
     }
   ],

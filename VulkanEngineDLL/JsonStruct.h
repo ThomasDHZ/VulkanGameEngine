@@ -38,6 +38,7 @@ struct  RenderedTextureLoader
     VkSamplerCreateInfo SamplerCreateInfo;
     VkAttachmentDescription AttachmentDescription;
     RenderedTextureType TextureType;
+    VkSampleCountFlagBits SampleCountOverride;
 };
 
 struct RenderPassLoader

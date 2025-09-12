@@ -4,6 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include "GPUSystem.h"
 
 Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonString)
 {
@@ -35,7 +36,7 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 		.mipMapLevels = 1,
 		.textureByteFormat = createImageInfo.format,
 		.textureImageLayout = createImageInfo.initialLayout,
-		.sampleCount = createImageInfo.samples,
+		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
 	};
 
 	Texture_CreateTextureImage(renderer, texture, createImageInfo);
@@ -46,14 +47,16 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 
 Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
-	Texture texture;
-	texture.width = static_cast<int>(createImageInfo.extent.width);
-	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth);
-	texture.textureByteFormat = createImageInfo.format;
-	texture.textureImageLayout = createImageInfo.initialLayout;
-	texture.sampleCount = createImageInfo.samples;
-	texture.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1;
+	Texture texture
+	{
+		.width = static_cast<int>(createImageInfo.extent.width),
+		.height = static_cast<int>(createImageInfo.extent.height),
+		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
+		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
+		.textureByteFormat = createImageInfo.format,
+		.textureImageLayout = createImageInfo.initialLayout,
+		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
+	};
 
 	Texture_CreateTextureImage(renderer, texture, texturePath);
 	Texture_CreateTextureView(renderer, texture, imageType);
@@ -63,14 +66,16 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& te
 
 Texture Texture_CreateTexture(const GraphicsRenderer& renderer, Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
-	Texture texture;
-	texture.width = static_cast<int>(createImageInfo.extent.width);
-	texture.height = static_cast<int>(createImageInfo.extent.height);
-	texture.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth);
-	texture.textureByteFormat = createImageInfo.format;
-	texture.textureImageLayout = createImageInfo.initialLayout;
-	texture.sampleCount = createImageInfo.samples;
-	texture.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1;
+	Texture texture
+	{
+		.width = static_cast<int>(createImageInfo.extent.width),
+		.height = static_cast<int>(createImageInfo.extent.height),
+		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
+		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
+		.textureByteFormat = createImageInfo.format,
+		.textureImageLayout = createImageInfo.initialLayout,
+		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
+	};
 
 	Texture_CreateTextureImage(renderer, texture, clearColor);
 	Texture_CreateTextureView(renderer, texture, imageType);
@@ -129,16 +134,16 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 	std::vector<Pixel> pixels(texture.width * texture.height, clearColor);
 	Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, (void*)pixels.data(), bufferSize, bufferUsage, bufferProperties);
 
-	VkImageCreateInfo imageCreateInfo = 
+	VkImageCreateInfo imageCreateInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
 		.extent = VkExtent3D
 		{
-			.width = static_cast<uint32_t>(texture.width), 
+			.width = static_cast<uint32_t>(texture.width),
 			.height = static_cast<uint32_t>(texture.height),
-			.depth = 1 
+			.depth = 1
 		},
 		.mipLevels = texture.mipMapLevels,
 		.arrayLayers = 1,
@@ -225,12 +230,12 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 
 VkResult Texture_UpdateImage(const GraphicsRenderer& renderer, Texture& texture)
 {
-	VkImageCreateInfo imageCreateInfo = 
+	VkImageCreateInfo imageCreateInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
-		.extent = 
+		.extent =
 		{
 			.width = static_cast<uint32_t>(texture.width),
 			.height = static_cast<uint32_t>(texture.height),
@@ -296,73 +301,73 @@ VkResult Texture_CreateTextureView(const GraphicsRenderer& renderer, Texture& te
 	return vkCreateImageView(renderer.Device, &TextureImageViewInfo, NULL, &texture.textureView);
 }
 
- VkResult Texture_CreateSpriteTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
+VkResult Texture_CreateSpriteTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
 {
-	 VkSamplerCreateInfo spriteSamplerInfo = {
-	.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-	.magFilter = VK_FILTER_NEAREST,           
-	.minFilter = VK_FILTER_NEAREST,         
-	.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST, 
-	.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-	.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 
-	.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 
-	.mipLodBias = 0,                          
-	.anisotropyEnable = VK_FALSE,          
-	.maxAnisotropy = 1.0f,                   
-	.compareEnable = VK_FALSE,             
-	.compareOp = VK_COMPARE_OP_ALWAYS,        
-	.minLod = 0,                             
-	.maxLod = 0,                 
-	.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK, 
-	.unnormalizedCoordinates = VK_FALSE, 
-	 };
-	 return vkCreateSampler(renderer.Device, &spriteSamplerInfo, NULL, &smapler);
+	VkSamplerCreateInfo spriteSamplerInfo = {
+   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+   .magFilter = VK_FILTER_NEAREST,
+   .minFilter = VK_FILTER_NEAREST,
+   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .mipLodBias = 0,
+   .anisotropyEnable = VK_FALSE,
+   .maxAnisotropy = 1.0f,
+   .compareEnable = VK_FALSE,
+   .compareOp = VK_COMPARE_OP_ALWAYS,
+   .minLod = 0,
+   .maxLod = 0,
+   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+   .unnormalizedCoordinates = VK_FALSE,
+	};
+	return vkCreateSampler(renderer.Device, &spriteSamplerInfo, NULL, &smapler);
 }
 
- VkResult Texture_CreateRenderedTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
+VkResult Texture_CreateRenderedTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
 {
-	 VkSamplerCreateInfo renderPassSamplerInfo = {
-	.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-	.magFilter = VK_FILTER_LINEAR,          
-	.minFilter = VK_FILTER_LINEAR,          
-	.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR, 
-	.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-	.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 
-	.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-	.mipLodBias = 0,                         
-	.anisotropyEnable = VK_FALSE,            
-	.maxAnisotropy = 1.0f,                  
-	.compareEnable = VK_FALSE,              
-	.compareOp = VK_COMPARE_OP_ALWAYS,       
-	.minLod = 0,                           
-	.maxLod = 0,                          
-	.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-	.unnormalizedCoordinates = VK_FALSE,    
-	 };
-	 return vkCreateSampler(renderer.Device, &renderPassSamplerInfo, NULL, &smapler);
+	VkSamplerCreateInfo renderPassSamplerInfo = {
+   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+   .magFilter = VK_FILTER_LINEAR,
+   .minFilter = VK_FILTER_LINEAR,
+   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .mipLodBias = 0,
+   .anisotropyEnable = VK_FALSE,
+   .maxAnisotropy = 1.0f,
+   .compareEnable = VK_FALSE,
+   .compareOp = VK_COMPARE_OP_ALWAYS,
+   .minLod = 0,
+   .maxLod = 0,
+   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+   .unnormalizedCoordinates = VK_FALSE,
+	};
+	return vkCreateSampler(renderer.Device, &renderPassSamplerInfo, NULL, &smapler);
 }
 
- VkResult Texture_CreateDepthTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
+VkResult Texture_CreateDepthTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
 {
-	 VkSamplerCreateInfo depthMapSamplerInfo = {
-	.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-	.magFilter = VK_FILTER_LINEAR,           
-	.minFilter = VK_FILTER_LINEAR,         
-	.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
-	.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 
-	.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-	.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-	.mipLodBias = 0,                     
-	.anisotropyEnable = VK_FALSE,            
-	.maxAnisotropy = 1.0f,                   
-	.compareEnable = VK_TRUE,                
-	.compareOp = VK_COMPARE_OP_LESS,         
-	.minLod = 0,                           
-	.maxLod = 0,                            
-	.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-	.unnormalizedCoordinates = VK_FALSE,     
-	 };
-	 return vkCreateSampler(renderer.Device, &depthMapSamplerInfo, NULL, &smapler);
+	VkSamplerCreateInfo depthMapSamplerInfo = {
+   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+   .magFilter = VK_FILTER_LINEAR,
+   .minFilter = VK_FILTER_LINEAR,
+   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+   .mipLodBias = 0,
+   .anisotropyEnable = VK_FALSE,
+   .maxAnisotropy = 1.0f,
+   .compareEnable = VK_TRUE,
+   .compareOp = VK_COMPARE_OP_LESS,
+   .minLod = 0,
+   .maxLod = 0,
+   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+   .unnormalizedCoordinates = VK_FALSE,
+	};
+	return vkCreateSampler(renderer.Device, &depthMapSamplerInfo, NULL, &smapler);
 }
 
 VkResult Texture_TransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout)

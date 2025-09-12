@@ -6,6 +6,7 @@
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
+#include <GPUSystem.h>
 
 GameSystem gameSystem = GameSystem();
 
@@ -20,6 +21,7 @@ GameSystem::~GameSystem()
 void GameSystem::StartUp(WindowType windowType, void* windowHandle)
 {
     renderSystem.StartUp(windowType, windowHandle);
+    gpuSystem.StartUp(renderSystem.renderer);
     levelSystem.LoadLevel("../Levels/TestLevel.json");
 }
 
