@@ -84,15 +84,15 @@ struct Texture
 DLL_EXPORT Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
 DLL_EXPORT Texture Texture_CreateTexture(const GraphicsRenderer& renderer, Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
 
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, const Pixel & clearColor);
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, const String & filePath);
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, VkImageCreateInfo & createImageInfo);
+void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, const Pixel& clearColor);
+void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, const String& filePath);
+void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, VkImageCreateInfo& createImageInfo);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
         DLL_EXPORT Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonText);
-        DLL_EXPORT Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo);
+        DLL_EXPORT Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
         DLL_EXPORT void Texture_UpdateTextureSize(const GraphicsRenderer& renderer, Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution);
         DLL_EXPORT void Texture_UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
         DLL_EXPORT void Texture_GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);

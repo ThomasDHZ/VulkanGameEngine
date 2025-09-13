@@ -145,6 +145,7 @@ namespace nlohmann
         j.at("ImageCreateInfo").get_to(model.ImageCreateInfo);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
         j.at("AttachmentDescription").get_to(model.AttachmentDescription);
+        j.at("UsingMipMaps").get_to(model.UsingMipMaps);
         if (j.contains("SampleCountOverride"))
         {
             j.at("SampleCountOverride").get_to(model.SampleCountOverride);

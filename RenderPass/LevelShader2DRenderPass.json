@@ -5,12 +5,14 @@
     "../Pipelines/SpriteInstancePipeline.json",
     "../Pipelines/LevelShader2DPipeline.json"
   ],
+  "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderedTextureInfoModelList": [
     {
       "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
       "TextureType": 0,
       "SampleCountOverride": 8,
+      "UsingMipMaps": false,
       "ImageCreateInfo": {
         "SType": 14,
         "ImageType": 1,
@@ -81,6 +83,7 @@
       "TextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
       "TextureType": 3,
       "SampleCountOverride": 1,
+      "UsingMipMaps": false,
       "ImageCreateInfo": {
         "SType": 14,
         "ImageType": 1,
@@ -214,6 +217,5 @@
         "height": 0
       }
     }
-  },
-  "IsRenderedToSwapchain": false
+  }
 }

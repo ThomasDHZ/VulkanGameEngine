@@ -4,5 +4,5 @@
   "TextureByteFormat": 43,
   "ImageType": 1,
   "TextureType": 5,
-  "UseMipMaps": false
+  "UseMipMaps": true
 }

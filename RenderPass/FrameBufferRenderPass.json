@@ -1,7 +1,17 @@
 {
+  "Name": "BasicRenderPass",
+  "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856",
+  "RenderPipelineList": [
+    "../Pipelines/FrameBufferPipeline.json"
+  ],
+  "IsRenderedToSwapchain": true,
+  "InputTextureList": [ "ca62ddec-30ff-49e2-b168-3cfeddcedb8e" ],
   "RenderedTextureInfoModelList": [
     {
-      "RenderedTextureInfoName": "ColorRenderTexture",
+      "TextureId": "6492ef85-2573-4b76-9510-d8550ca5315d",
+      "TextureType": 0,
+      "SampleCountOverride": 1,
+      "UsingMipMaps": false,
       "ImageCreateInfo": {
         "ImageType": 1,
         "Format": 37,
@@ -43,16 +53,8 @@
         "InitialLayout": 0,
         "FinalLayout": 1000001002,
         "_name": "DefaultColorAttachment"
-      },
-      "TextureType": 0,
-      "TextureId": "6492ef85-2573-4b76-9510-d8550ca5315d",
-      "_name": null
+      }
     }
-  ],
-  "InputTextureList": [ "ca62ddec-30ff-49e2-b168-3cfeddcedb8e" ],
-  "SampleCountOverride": 1,
-  "RenderPipelineList": [
-    "../Pipelines/FrameBufferPipeline.json"
   ],
   "SubpassDependencyList": [
     {
@@ -87,9 +89,5 @@
         "stencil": 0
       }
     }
-  ],
-  "Name": "BasicRenderPass",
-  "IsRenderedToSwapchain": true,
-  "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856",
-  "MultiSampled": false
+  ]
 }

@@ -17,15 +17,16 @@ Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonSt
 	texture.textureId = VkGuid(json["TextureId"].get<String>().c_str());
 	texture.textureByteFormat = json["TextureByteFormat"];
 	texture.textureType = json["TextureType"];
-	texture.mipMapLevels = useMipMap ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1;
+	texture.mipMapLevels = useMipMap ? 1 : static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1;
 
 	Texture_CreateTextureImage(renderer, texture, textureFilePath);
 	Texture_CreateTextureView(renderer, texture, imageType);
 	Texture_CreateSpriteTextureSampler(renderer, texture.textureSampler);
+	texture.mipMapLevels = useMipMap ? 1 : static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1;
 	return texture;
 }
 
-Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo)
+Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
 	Texture texture
 	{
@@ -33,7 +34,7 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 		.width = static_cast<int>(createImageInfo.extent.width),
 		.height = static_cast<int>(createImageInfo.extent.height),
 		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
-		.mipMapLevels = 1,
+		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
 		.textureByteFormat = createImageInfo.format,
 		.textureImageLayout = createImageInfo.initialLayout,
 		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,

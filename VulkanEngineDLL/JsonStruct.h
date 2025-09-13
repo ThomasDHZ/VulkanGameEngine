@@ -40,6 +40,7 @@ struct  RenderedTextureLoader
     VkAttachmentDescription AttachmentDescription;
     RenderedTextureType TextureType;
     VkSampleCountFlagBits SampleCountOverride;
+    bool UsingMipMaps;
 };
 
 struct RenderPassAttachementTextures
