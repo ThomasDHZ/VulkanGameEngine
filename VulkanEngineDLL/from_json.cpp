@@ -26,9 +26,11 @@ namespace nlohmann
         j.at("z").get_to(offset.z);
     }
 
-    void from_json(const json& j, VkImageCreateInfo& info) {
-        info = {};
+    void from_json(const json& j, VkImageCreateInfo& info) 
+    {
         info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        info.pNext = nullptr;
+        info.flags = 0;
         j.at("ImageType").get_to(info.imageType);
         j.at("Format").get_to(info.format);
         j.at("MipLevels").get_to(info.mipLevels);

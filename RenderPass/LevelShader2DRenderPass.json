@@ -149,6 +149,148 @@
           "Alpha": 1.0
         }
       }
+    },
+    {
+      "TextureId": "ba64cbda-d29e-406a-a5d0-cd940b8fc0bf",
+      "TextureType": 0,
+      "SampleCountOverride": 8,
+      "UsingMipMaps": false,
+      "ImageCreateInfo": {
+        "SType": 14,
+        "ImageType": 1,
+        "Format": 44,
+        "MipLevels": 1,
+        "ArrayLayers": 1,
+        "Samples": 8,
+        "Tiling": 0,
+        "Usage": 23,
+        "SharingMode": 0,
+        "InitialLayout": 0
+      },
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      },
+      "AttachmentDescription": {
+        "StructureType": 0,
+        "Flags": 0,
+        "Format": 44,
+        "Samples": 8,
+        "LoadOp": 1,
+        "StoreOp": 1,
+        "StencilLoadOp": 2,
+        "StencilStoreOp": 1,
+        "InitialLayout": 0,
+        "FinalLayout": 2
+      },
+      "ColorBlendState": {
+        "SType": 19,
+        "LogicOpEnable": false,
+        "LogicOp": 0,
+        "Attachments": [
+          {
+            "BlendEnable": true,
+            "SrcColorBlendFactor": 1,
+            "DstColorBlendFactor": 1,
+            "ColorBlendOp": 0,
+            "SrcAlphaBlendFactor": 1,
+            "DstAlphaBlendFactor": 1,
+            "AlphaBlendOp": 0,
+            "ColorWriteMask": 15
+          }
+        ],
+        "BlendConstants": {
+          "Red": 1.0,
+          "Green": 1.0,
+          "Blue": 1.0,
+          "Alpha": 1.0
+        }
+      }
+    },
+    {
+      "TextureId": "5b937f79-d0de-4d22-b95e-ee6627de88f4",
+      "TextureType": 3,
+      "SampleCountOverride": 1,
+      "UsingMipMaps": false,
+      "ImageCreateInfo": {
+        "SType": 14,
+        "ImageType": 1,
+        "Format": 44,
+        "MipLevels": 1,
+        "ArrayLayers": 1,
+        "Samples": 1,
+        "Tiling": 0,
+        "Usage": 29,
+        "SharingMode": 0,
+        "InitialLayout": 0
+      },
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      },
+      "AttachmentDescription": {
+        "StructureType": 0,
+        "Flags": 0,
+        "Format": 44,
+        "Samples": 1,
+        "LoadOp": 2,
+        "StoreOp": 0,
+        "StencilLoadOp": 2,
+        "StencilStoreOp": 1,
+        "InitialLayout": 0,
+        "FinalLayout": 5
+      },
+      "ColorBlendState": {
+        "SType": 19,
+        "LogicOpEnable": false,
+        "LogicOp": 0,
+        "Attachments": [
+          {
+            "BlendEnable": true,
+            "SrcColorBlendFactor": 1,
+            "DstColorBlendFactor": 1,
+            "ColorBlendOp": 0,
+            "SrcAlphaBlendFactor": 1,
+            "DstAlphaBlendFactor": 1,
+            "AlphaBlendOp": 0,
+            "ColorWriteMask": 15
+          }
+        ],
+        "BlendConstants": {
+          "Red": 1.0,
+          "Green": 1.0,
+          "Blue": 1.0,
+          "Alpha": 1.0
+        }
+      }
     }
   ],
   "SubpassDependencyList": [
@@ -172,6 +314,38 @@
     }
   ],
   "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
     {
       "Color": {
         "Float32_0": 0.0,

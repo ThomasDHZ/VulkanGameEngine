@@ -81,12 +81,8 @@ struct Texture
     ColorChannelUsed colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
-DLL_EXPORT Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
-DLL_EXPORT Texture Texture_CreateTexture(const GraphicsRenderer& renderer, Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
-
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, const Pixel& clearColor);
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, const String& filePath);
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture & texture, VkImageCreateInfo& createImageInfo);
+void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, byte* textureData, VkDeviceSize textureSize);
+VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& createImageInfo);
 
 #ifdef __cplusplus
 extern "C" {

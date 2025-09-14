@@ -583,7 +583,7 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
     }
 
     Vector<String> shaderSourceFileList(fileList, fileList + returnFileCount);
-    delete[] fileList;
+    memorySystem.RemovePtrBuffer(fileList);
 
     String command = "";
     for (const auto& shaderSource : shaderSourceFileList)
@@ -595,7 +595,8 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
         outputFile[shaderSourceFile.size()] = std::toupper(outputFile[shaderSourceFile.size()]);
         outputFile += ".spv";
       
-        if (std::filesystem::last_write_time(("..\\Assets\\Shaders\\" + outputFile).c_str()) < std::filesystem::last_write_time(inputFile.c_str()))
+        if (std::filesystem::exists(inputFile.c_str()) ||
+            std::filesystem::last_write_time(("..\\Assets\\Shaders\\" + outputFile).c_str()) < std::filesystem::last_write_time(inputFile.c_str()))
         {
             command += "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + outputDirectory + outputFile + "\n";
         }

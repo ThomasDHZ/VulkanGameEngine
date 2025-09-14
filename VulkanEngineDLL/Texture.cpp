@@ -8,21 +8,29 @@
 
 Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonString)
 {
+	int width = 0;
+	int height = 0;
+	ColorChannelUsed colorChannels;
 	nlohmann::json json = Json::ReadJson(jsonString);
-	String textureFilePath = json["TextureFilePath"];
-	VkImageType imageType = json["ImageType"];
+	byte* data = stbi_load(json["TextureFilePath"].get<String>().c_str(), &width, &height, (int*)&colorChannels, 0);
+	VkDeviceSize bufferSize = width * height * colorChannels;
+	Texture texture
+	{
+		.textureId = VkGuid(json["TextureId"].get<String>().c_str()),
+		.width = width,
+		.height = height,
+		.depth = 1,
+		.mipMapLevels = json["UseMipMaps"] ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
+		.textureByteFormat = json["TextureByteFormat"],
+		.sampleCount = json["SampleCount"].get<VkSampleCountFlagBits>() >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : json["SampleCount"].get<VkSampleCountFlagBits>(),
+		.colorChannels = colorChannels
+	};
 
-	bool useMipMap = json["UseMipMaps"];
-	Texture texture;
-	texture.textureId = VkGuid(json["TextureId"].get<String>().c_str());
-	texture.textureByteFormat = json["TextureByteFormat"];
-	texture.textureType = json["TextureType"];
-	texture.mipMapLevels = useMipMap ? 1 : static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1;
-
-	Texture_CreateTextureImage(renderer, texture, textureFilePath);
-	Texture_CreateTextureView(renderer, texture, imageType);
-	Texture_CreateSpriteTextureSampler(renderer, texture.textureSampler);
-	texture.mipMapLevels = useMipMap ? 1 : static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1;
+	Texture_CreateTextureImage(renderer, texture, data, bufferSize);
+	VULKAN_RESULT(Texture_CreateTextureView(renderer, texture, json["ImageType"]));
+	VULKAN_RESULT(Texture_CreateSpriteTextureSampler(renderer, texture.textureSampler));
+	VULKAN_RESULT(Texture_GenerateMipmaps(renderer, texture));
+	stbi_image_free(data);
 	return texture;
 }
 
@@ -40,48 +48,12 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
 	};
 
-	Texture_CreateTextureImage(renderer, texture, createImageInfo);
-	Texture_CreateTextureView(renderer, texture, imageType);
-	Texture_CreateRenderedTextureSampler(renderer, texture.textureSampler);
-	return texture;
-}
-
-Texture Texture_CreateTexture(const GraphicsRenderer& renderer, const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
-{
-	Texture texture
-	{
-		.width = static_cast<int>(createImageInfo.extent.width),
-		.height = static_cast<int>(createImageInfo.extent.height),
-		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
-		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
-		.textureByteFormat = createImageInfo.format,
-		.textureImageLayout = createImageInfo.initialLayout,
-		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
-	};
-
-	Texture_CreateTextureImage(renderer, texture, texturePath);
-	Texture_CreateTextureView(renderer, texture, imageType);
-	Texture_CreateRenderedTextureSampler(renderer, texture.textureSampler);
-	return texture;
-}
-
-Texture Texture_CreateTexture(const GraphicsRenderer& renderer, Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
-{
-	Texture texture
-	{
-		.width = static_cast<int>(createImageInfo.extent.width),
-		.height = static_cast<int>(createImageInfo.extent.height),
-		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
-		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
-		.textureByteFormat = createImageInfo.format,
-		.textureImageLayout = createImageInfo.initialLayout,
-		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
-	};
-
-	Texture_CreateTextureImage(renderer, texture, clearColor);
-	Texture_CreateTextureView(renderer, texture, imageType);
-	Texture_CreateRenderedTextureSampler(renderer, texture.textureSampler);
-	return texture;
+	createImageInfo.mipLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1;
+	VULKAN_RESULT(Texture_CreateTextureImage(renderer, texture, createImageInfo));
+	VULKAN_RESULT(Texture_CreateTextureView(renderer, texture, imageType));
+	VULKAN_RESULT(Texture_CreateRenderedTextureSampler(renderer, texture.textureSampler));
+	VULKAN_RESULT(Texture_GenerateMipmaps(renderer, texture));
+	return texture; 
 }
 
 void Texture_UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex)
@@ -132,7 +104,7 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 	VkMemoryPropertyFlags bufferProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 	VkBufferUsageFlags bufferUsage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-	std::vector<Pixel> pixels(texture.width * texture.height, clearColor);
+	Vector<Pixel> pixels(texture.width * texture.height, clearColor);
 	Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, (void*)pixels.data(), bufferSize, bufferUsage, bufferProperties);
 
 	VkImageCreateInfo imageCreateInfo =
@@ -165,19 +137,15 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 	Renderer_FreeDeviceMemory(renderer.Device, &stagingBufferMemory);
 }
 
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, const String& filePath)
+void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, byte* textureData, VkDeviceSize textureSize)
 {
 	VkBuffer buffer = VK_NULL_HANDLE;
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
 	VkDeviceMemory bufferMemory = VK_NULL_HANDLE;
-
-	byte* data = stbi_load(filePath.c_str(), &texture.width, &texture.height, (int*)&texture.colorChannels, 0);
-	VkDeviceSize bufferSize = texture.width * texture.height * texture.colorChannels;
 	VkBufferUsageFlags bufferUsage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 	VkMemoryPropertyFlags bufferProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-	Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, data, bufferSize, bufferUsage, bufferProperties);
 
 	VkImageCreateInfo imageCreateInfo =
 	{
@@ -199,6 +167,7 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
+	VULKAN_RESULT(Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, bufferUsage, bufferProperties));
 	VULKAN_RESULT(Texture_CreateImage(renderer, texture, imageCreateInfo));
 	VULKAN_RESULT(Texture_QuickTransitionImageLayout(renderer, texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));
 	VULKAN_RESULT(Texture_CopyBufferToTexture(renderer, texture, buffer));
@@ -209,10 +178,9 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 	Renderer_FreeDeviceMemory(renderer.Device, &bufferMemory);
 	Renderer_DestroyBuffer(renderer.Device, &stagingBuffer);
 	Renderer_FreeDeviceMemory(renderer.Device, &stagingBufferMemory);
-	stbi_image_free(data);
 }
 
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& createImageInfo)
+VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& createImageInfo)
 {
 	VULKAN_RESULT(vkCreateImage(renderer.Device, &createImageInfo, nullptr, &texture.textureImage));
 
@@ -226,7 +194,7 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& textu
 		.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
 	VULKAN_RESULT(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, &texture.textureMemory));
-	VULKAN_RESULT(vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0));
+	return vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0);
 }
 
 VkResult Texture_UpdateImage(const GraphicsRenderer& renderer, Texture& texture)
@@ -304,22 +272,23 @@ VkResult Texture_CreateTextureView(const GraphicsRenderer& renderer, Texture& te
 
 VkResult Texture_CreateSpriteTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
 {
-	VkSamplerCreateInfo spriteSamplerInfo = {
-   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-   .magFilter = VK_FILTER_NEAREST,
-   .minFilter = VK_FILTER_NEAREST,
-   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
-   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-   .mipLodBias = 0,
-   .anisotropyEnable = VK_FALSE,
-   .maxAnisotropy = 1.0f,
-   .compareEnable = VK_FALSE,
-   .compareOp = VK_COMPARE_OP_ALWAYS,
-   .minLod = 0,
-   .maxLod = 0,
-   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+	VkSamplerCreateInfo spriteSamplerInfo = 
+	{
+	   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+	   .magFilter = VK_FILTER_NEAREST,
+	   .minFilter = VK_FILTER_NEAREST,
+	   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+	   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+	   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+	   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+	   .mipLodBias = 0,
+	   .anisotropyEnable = VK_FALSE,
+	   .maxAnisotropy = 1.0f,
+	   .compareEnable = VK_FALSE,
+	   .compareOp = VK_COMPARE_OP_ALWAYS,
+	   .minLod = 0,
+	   .maxLod = 0,
+	   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
    .unnormalizedCoordinates = VK_FALSE,
 	};
 	return vkCreateSampler(renderer.Device, &spriteSamplerInfo, NULL, &smapler);
@@ -327,23 +296,24 @@ VkResult Texture_CreateSpriteTextureSampler(const GraphicsRenderer& renderer, Vk
 
 VkResult Texture_CreateRenderedTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler)
 {
-	VkSamplerCreateInfo renderPassSamplerInfo = {
-   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-   .magFilter = VK_FILTER_LINEAR,
-   .minFilter = VK_FILTER_LINEAR,
-   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-   .mipLodBias = 0,
-   .anisotropyEnable = VK_FALSE,
-   .maxAnisotropy = 1.0f,
-   .compareEnable = VK_FALSE,
-   .compareOp = VK_COMPARE_OP_ALWAYS,
-   .minLod = 0,
-   .maxLod = 0,
-   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-   .unnormalizedCoordinates = VK_FALSE,
+	VkSamplerCreateInfo renderPassSamplerInfo = 
+	{
+	   .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+	   .magFilter = VK_FILTER_LINEAR,
+	   .minFilter = VK_FILTER_LINEAR,
+	   .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+	   .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+	   .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+	   .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+	   .mipLodBias = 0,
+	   .anisotropyEnable = VK_FALSE,
+	   .maxAnisotropy = 1.0f,
+	   .compareEnable = VK_FALSE,
+	   .compareOp = VK_COMPARE_OP_ALWAYS,
+	   .minLod = 0,
+	   .maxLod = 0,
+	   .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+	   .unnormalizedCoordinates = VK_FALSE,
 	};
 	return vkCreateSampler(renderer.Device, &renderPassSamplerInfo, NULL, &smapler);
 }

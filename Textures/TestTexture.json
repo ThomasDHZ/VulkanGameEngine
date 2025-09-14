@@ -2,7 +2,8 @@
   "TextureFilePath": "C:/Users/dotha/Documents/GitHub/VulkanGameEngine/Textures/MegaMan_diffuse.bmp",
   "TextureId": "5904c4a1-5611-49e1-a6aa-9469b96c9844",
   "TextureByteFormat": 43,
+  "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
-  "UseMipMaps": true
+  "UseMipMaps": false
 }

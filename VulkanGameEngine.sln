@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5
 	ProjectSection(SolutionItems) = preProject
 		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
 		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
+		Shaders\GaussianBlurShader.frag = Shaders\GaussianBlurShader.frag
+		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
 		Shaders\LevelObjectPickerShader2D.frag = Shaders\LevelObjectPickerShader2D.frag
 		Shaders\LevelObjectPickerShader2D.vert = Shaders\LevelObjectPickerShader2D.vert
 		Shaders\LevelShader2D.frag = Shaders\LevelShader2D.frag
@@ -39,6 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		Pipelines\Default2DPipeline.json = Pipelines\Default2DPipeline.json
 		Pipelines\DefaultPipeline.json = Pipelines\DefaultPipeline.json
 		Pipelines\FrameBufferPipeline.json = Pipelines\FrameBufferPipeline.json
+		Pipelines\GaussianBlurPipeline.json = Pipelines\GaussianBlurPipeline.json
 		LevelObjectPickerPipeline.json = LevelObjectPickerPipeline.json
 		Pipelines\LevelObjectPickerPipeline.json = Pipelines\LevelObjectPickerPipeline.json
 		Pipelines\LevelShader2DPipeline.json = Pipelines\LevelShader2DPipeline.json
@@ -53,6 +56,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
 		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
+		RenderPass\GaussianBlurRenderPass.json = RenderPass\GaussianBlurRenderPass.json
 		RenderPass\LevelShader2DWireFrameRenderPass.json = RenderPass\LevelShader2DWireFrameRenderPass.json
 	EndProjectSection
 EndProject

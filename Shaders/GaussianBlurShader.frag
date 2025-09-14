@@ -4,6 +4,8 @@
 
 layout(location = 0) in vec2 UV;
 layout(location = 0) out vec4 outColor;
+
+layout(constant_id = 0) const uint DescriptorBindingType1 = 1;
 layout(binding = 0) uniform sampler2D BloomTexture;
 
 layout(push_constant) uniform BloomSettings

@@ -12,7 +12,8 @@ layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
 layout(location = 0) in vec3 inPS_Position; 
 layout(location = 1) in vec2 inPS_UV;    
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out vec4 OutputColor;
+layout(location = 1) out vec4 OutputBloom;
 
 layout(push_constant) uniform SceneDataBuffer {
     int MeshBufferIndex;
@@ -63,5 +64,6 @@ void main()
 
     float gamma = 2.2;
     vec3 color = pow(Albedo, vec3(1.0 / gamma));
-    outColor = vec4(color, Alpha);
+    OutputColor = vec4(color, Alpha);
+	OutputBloom = vec4(color, Alpha);
 }

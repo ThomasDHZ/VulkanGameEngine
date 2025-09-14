@@ -47,6 +47,7 @@ public:
     RenderPassGuid levelWireFrameRenderPass2DId;
     RenderPassGuid spriteWireFrameRenderPass2DId;
     RenderPassGuid frameBufferId;
+    RenderPassGuid gaussianBlurRenderPassId;
 
     LevelSystem();
     ~LevelSystem();

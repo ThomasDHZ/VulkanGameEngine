@@ -1,9 +1,9 @@
 {
-  "Name": "SpriteInstancePipeline",
-  "PipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
+  "Name": "SpriteObjectPickerPipeline",
+  "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
   "ShaderList": [
-    "..\\Assets\\Shaders\\SpriteInstanceShaderVert.spv",
-    "..\\Assets\\Shaders\\SpriteInstanceShaderFrag.spv"
+    "..\\Assets\\Shaders\\GaussianBlurShaderVert.spv",
+    "..\\Assets\\Shaders\\GaussianBlurShaderFrag.spv"
   ],
   "VertexType": 1,
   "ViewportList": [
@@ -30,17 +30,7 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
-      "ColorBlendOp": 0,
-      "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 0,
-      "AlphaBlendOp": 0,
-      "ColorWriteMask": 15
-    },
-    {
-      "BlendEnable": true,
+      "BlendEnable": false,
       "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
@@ -55,7 +45,8 @@
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
-    "AttachmentCount": 0
+    "AttachmentCount": 0,
+    "pAttachments": { "value": 0 }
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
@@ -76,6 +67,7 @@
     "rasterizationSamples": 1,
     "sampleShadingEnable": false,
     "minSampleShading": 0.0,
+    "pSampleMask": { "value": 0 },
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false,
     "flags": 0
@@ -113,5 +105,28 @@
     "sType": 20,
     "topology": 3,
     "primitiveRestartEnable": 0
-  }
+  },
+  "PipelineDescriptorModelsList": [
+    {
+      "BindingNumber": 0,
+      "DstArrayElement": 0,
+      "BindingPropertiesList": 0,
+      "DescriptorType": 7,
+      "StageFlags": 2147483647
+    },
+    {
+      "BindingNumber": 1,
+      "DstArrayElement": 0,
+      "BindingPropertiesList": 1,
+      "DescriptorType": 1,
+      "StageFlags": 2147483647
+    },
+    {
+      "BindingNumber": 2,
+      "DstArrayElement": 0,
+      "BindingPropertiesList": 2,
+      "DescriptorType": 7,
+      "StageFlags": 2147483647
+    }
+  ]
 }
