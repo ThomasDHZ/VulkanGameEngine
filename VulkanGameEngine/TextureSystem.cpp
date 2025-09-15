@@ -6,17 +6,20 @@ TextureSystem textureSystem = TextureSystem();
 VkGuid TextureSystem::LoadTexture(const String& texturePath)
 {
     if (texturePath.empty() || texturePath == "")
+    {
         return VkGuid();
+    }
 
-    nlohmann::json json = Json::ReadJson(texturePath);
-    VkGuid textureId = VkGuid(json["TextureId"].get<String>().c_str());
+    const char* jsonDataString = File_Read(texturePath.c_str()).Data;
+    TextureLoader textureLoader = nlohmann::json::parse(jsonDataString).get<TextureLoader>();
 
-    auto it = textureSystem.TextureMap.find(textureId);
-    if (it != textureSystem.TextureMap.end())
-        return textureId;
+    if (TextureExists(textureLoader.TextureId))
+    {
+        return textureLoader.TextureId;
+    }
 
-    TextureMap[textureId] = Texture_LoadTexture(renderSystem.renderer, texturePath.c_str());
-    return textureId;
+    TextureMap[textureLoader.TextureId] = Texture_LoadTexture(renderSystem.renderer, textureLoader);
+    return textureLoader.TextureId;
 }
 
 // Update

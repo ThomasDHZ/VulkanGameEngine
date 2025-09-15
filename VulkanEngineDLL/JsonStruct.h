@@ -5,24 +5,6 @@
 #include <SPIRV-Reflect/spirv_reflect.h>
 #include "Texture.h"
 
-enum ShaderMemberType
-{
-    shaderUnknown,
-    shaderInt,
-    shaderUint,
-    shaderFloat,
-    shaderIvec2,
-    shaderIvec3,
-    shaderIvec4,
-    shaderVec2,
-    shaderVec3,
-    shaderVec4,
-    shaderMat2,
-    shaderMat3,
-    shaderMat4,
-    shaderbool
-};
-
 struct BlendConstantsModel
 {
     float Red;
@@ -48,6 +30,17 @@ struct RenderPassAttachementTextures
     size_t RenderPassTextureCount;
     Texture* RenderPassTexture;
     Texture* DepthTexture;
+};
+
+struct TextureLoader
+{
+    String TextureFilePath;
+    VkGuid TextureId;
+    VkImageAspectFlags ImageType;
+    TextureTypeEnum TextureType;
+    bool UseMipMaps;
+    VkImageCreateInfo ImageCreateInfo;
+    VkSamplerCreateInfo SamplerCreateInfo;
 };
 
 struct RenderPassLoader
