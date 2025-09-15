@@ -51,8 +51,9 @@ public:
     void StartUp(WindowType windowType, void* windowHandle);
     void Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
+    VkCommandBuffer RenderBloomPass(VkGuid& renderPassId);
     VkCommandBuffer RenderFrameBuffer(VkGuid& renderPassId);
-    VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime, ShaderPushConstant& sceneDataBuffer);
+    VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
 
     VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
 

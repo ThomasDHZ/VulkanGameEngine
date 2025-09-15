@@ -5,7 +5,7 @@
 layout(location = 0) in vec2 UV;
 layout(location = 0) out vec4 outColor;
 
-layout(constant_id = 0) const uint DescriptorBindingType1 = 1;
+layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
 layout(binding = 0) uniform sampler2D BloomTexture;
 
 layout(push_constant) uniform BloomSettings
@@ -29,14 +29,12 @@ const vec2 offsets[25] = {
     {-2.0f,  2.0f}, {-1.0f,  2.0f}, { 0.0f,  2.0f}, { 1.0f,  2.0f}, { 1.0f,  2.0f}};
 
 void main()
-{  
-     vec2 tex_offset = 1.0 / textureSize(BloomTexture, 0) * bloomSettings.blurScale;
-
+{
      vec3 result = vec3(0.0f);
+     vec2 tex_offset = 1.0 / textureSize(BloomTexture, 0) * bloomSettings.blurScale;
      for(int x = 1; x < 25; x++)
      {
         result += (texture(BloomTexture, UV + (tex_offset * offsets[x])).rgb) * blurWeights[x] * bloomSettings.blurStrength;
      }
-
-     outColor = vec4(result, 1.0);
+     outColor =    texture(BloomTexture, UV);
 }

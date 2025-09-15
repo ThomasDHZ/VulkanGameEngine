@@ -1,36 +1,16 @@
 {
-  "Name": "SpriteObjectPickerPipeline",
+  "Name": "GaussianBlurPipeline",
   "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
   "ShaderList": [
     "..\\Assets\\Shaders\\GaussianBlurShaderVert.spv",
     "..\\Assets\\Shaders\\GaussianBlurShaderFrag.spv"
   ],
-  "VertexType": 1,
-  "ViewportList": [
-    {
-      "x": 0.0,
-      "y": 0.0,
-      "width": 0.0,
-      "height": 0.0,
-      "minDepth": 0.0,
-      "maxDepth": 1.0
-    }
-  ],
-  "ScissorList": [
-    {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  ],
+  "VertexType": 0,
+  "ViewportList": [],
+  "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": false,
+      "BlendEnable": true,
       "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
@@ -42,18 +22,17 @@
   ],
   "PipelineColorBlendStateCreateInfoModel": {
     "BlendConstants": { "FixedElementField": 0.0 },
-    "sType": 26,
+    "SType": 26,
     "LogicOpEnable": false,
-    "LogicOp": 0,
-    "AttachmentCount": 0,
-    "pAttachments": { "value": 0 }
+    "LogicOp": 5,
+    "AttachmentCount": 1
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
     "polygonMode": 0,
-    "cullMode": 2,
+    "cullMode": 0,
     "frontFace": 0,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
@@ -67,7 +46,6 @@
     "rasterizationSamples": 1,
     "sampleShadingEnable": false,
     "minSampleShading": 0.0,
-    "pSampleMask": { "value": 0 },
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false,
     "flags": 0
@@ -76,7 +54,7 @@
     "sType": 25,
     "depthTestEnable": true,
     "depthWriteEnable": true,
-    "depthCompareOp": 1,
+    "depthCompareOp": 3,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {
@@ -105,28 +83,5 @@
     "sType": 20,
     "topology": 3,
     "primitiveRestartEnable": 0
-  },
-  "PipelineDescriptorModelsList": [
-    {
-      "BindingNumber": 0,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 0,
-      "DescriptorType": 7,
-      "StageFlags": 2147483647
-    },
-    {
-      "BindingNumber": 1,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 1,
-      "DescriptorType": 1,
-      "StageFlags": 2147483647
-    },
-    {
-      "BindingNumber": 2,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 2,
-      "DescriptorType": 7,
-      "StageFlags": 2147483647
-    }
-  ]
+  }
 }
