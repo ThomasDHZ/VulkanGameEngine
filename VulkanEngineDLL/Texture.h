@@ -9,55 +9,9 @@ extern "C"
 #include "json.h"
 #include "VulkanRenderer.h"
 #include "VulkanBuffer.h"
+#include "enum.h"
 
-typedef enum ColorChannelUsed
-{
-    ChannelR = 1,
-    ChannelRG,
-    ChannelRGB,
-    ChannelRGBA
-};
-
-typedef enum TextureUsageEnum
-{
-    kUse_Undefined,
-    kUse_2DImageTexture,
-    kUse_2DDataTexture,
-    kUse_2DRenderedTexture,
-    kUse_2DDepthTexture,
-    kUse_3DImageTexture,
-    kUse_3DDataTexture,
-    kUse_3DRenderedTexture,
-    kUse_3DDepthTexture,
-    kUse_CubeMapTexture,
-    kUse_CubeMapDepthTexture
-};
-
-typedef enum TextureTypeEnum
-{
-    kType_UndefinedTexture,
-    kType_TextureAtlas,
-    kType_RenderedColorTexture,
-    kType_RenderedDepthTexture,
-    kType_ReadableTexture,
-    kType_DiffuseTextureMap,
-    kType_SpecularTextureMap,
-    kType_AlbedoTextureMap,
-    kType_MetallicTextureMap,
-    kType_RoughnessTextureMap,
-    kType_AmbientOcclusionTextureMap,
-    kType_NormalTextureMap,
-    kType_DepthTextureMap,
-    kType_AlphaTextureMap,
-    kType_EmissionTextureMap,
-    kType_PaletteRotationMap,
-    kType_CubeMapTexture,
-    kType_CubeMapDepthTexture,
-    kType_EnvironmentTexture,
-    kType_RenderedCubeMap,
-    kType_BakedTexture
-};
-
+struct TextureLoader;
 struct Texture
 {
     TextureGuid textureId;
@@ -81,8 +35,8 @@ struct Texture
     ColorChannelUsed colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, byte* textureData, VkDeviceSize textureSize);
 VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& createImageInfo);
+VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,11 +52,8 @@ extern "C" {
 
         VkResult Texture_UpdateImage(const GraphicsRenderer& renderer, Texture & texture);
         VkResult Texture_CreateImage(const GraphicsRenderer& renderer, Texture & texture, VkImageCreateInfo& imageCreateInfo);
+        VkResult Texture_CreateTextureSampler(const GraphicsRenderer& renderer, Texture& texture, VkSamplerCreateInfo& sampleCreateInfo);
         VkResult Texture_CreateTextureView(const GraphicsRenderer& renderer, Texture & texture, VkImageAspectFlags imageAspectFlags);
-        VkResult Texture_CreateSpriteTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler);
-        VkResult Texture_CreateRenderedTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler);
-        VkResult Texture_CreateDepthTextureSampler(const GraphicsRenderer& renderer, VkSampler& smapler);
-
         VkResult Texture_TransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
         VkResult Texture_QuickTransitionImageLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout newLayout);
         VkResult Texture_CommandBufferTransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout);
