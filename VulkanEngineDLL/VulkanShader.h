@@ -28,8 +28,8 @@ extern "C" {
     DLL_EXPORT ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, const char* varName);
     DLL_EXPORT ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct* shaderStruct, const char* varName);
     DLL_EXPORT void Shader_ShaderDestroy(ShaderPipelineData& shader);
-    DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
-    DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
+    DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStrucCount);
+    DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant, size_t pushConstantCount);
     DLL_EXPORT void Shader_SetVariableDefaults(ShaderVariable& shaderVariable);
 #ifdef __cplusplus
 }

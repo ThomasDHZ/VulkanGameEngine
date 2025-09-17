@@ -23,9 +23,13 @@ public:
     void UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution);
     void GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
     void UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout);
+    void UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout, uint32 mipLevels);
     void UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
+    void UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels);
     void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout);
+    void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout, uint32 mipLevels);
     void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
+    void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels);
     void DestroyTexture(Texture& texture);
 
     void AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList);

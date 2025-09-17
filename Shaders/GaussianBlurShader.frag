@@ -36,5 +36,5 @@ void main()
      {
         result += (texture(BloomTexture, UV + (tex_offset * offsets[x])).rgb) * blurWeights[x] * bloomSettings.blurStrength;
      }
-     outColor =    texture(BloomTexture, UV);
+     outColor = vec4(texture(BloomTexture, UV).rgb, 1.0f);
 }

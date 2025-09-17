@@ -34,6 +34,8 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
             Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
         }
         spvReflectDestroyShaderModule(&spvModule);
+        free(file.Data);
+        file.Data = nullptr;
     }
 
     Vector<const char*> cPipelineShaderPathList;
@@ -75,37 +77,42 @@ void Shader_ShaderDestroy(ShaderPipelineData& shader)
     memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
 }
 
-void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct)
+void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStrucCount)
 {
     if (!shaderStruct)
     {
         return;
     }
 
-    Span<ShaderVariable> shaderVarList(shaderStruct->ShaderBufferVariableList, shaderStruct->ShaderBufferVariableListCount);
-    for (auto& shaderVar : shaderVarList)
+    Span<ShaderStruct> shaderStructList(shaderStruct, shaderStruct + shaderStrucCount);
+    for(auto& shaderStruct : shaderStructList)
     {
-        if (shaderVar.Value)
+        Span<ShaderVariable> shaderVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+        for (auto& shaderVar : shaderVarList)
         {
-            shaderVar.ByteAlignment = 0;
-            shaderVar.MemberTypeEnum = ShaderMemberType::shaderUnknown;
-            shaderVar.Name = "";
-            shaderVar.Size = 0;
-            memorySystem.RemovePtrBuffer(shaderVar.Value);
+            memorySystem.RemovePtrBuffer(shaderVar.Name);
+            if (shaderVar.Value)
+            {
+                shaderVar.ByteAlignment = 0;
+                shaderVar.MemberTypeEnum = ShaderMemberType::shaderUnknown;
+                shaderVar.Size = 0;
+                memorySystem.RemovePtrBuffer(shaderVar.Value);
+            }
         }
-    }
 
-    shaderStruct->Name = "";
-    shaderStruct->ShaderBufferSize = 0;
-    shaderStruct->ShaderBufferVariableListCount = 0;
-    shaderStruct->ShaderStructBufferId = 0;
-    if (shaderStruct->ShaderBufferVariableList)
-    {
-        memorySystem.RemovePtrBuffer<ShaderVariable>(shaderStruct->ShaderBufferVariableList);
-    }
-    if (shaderStruct->ShaderStructBuffer)
-    {
-        memorySystem.RemovePtrBuffer(shaderStruct->ShaderStructBuffer);
+        shaderStruct.Name = "";
+        shaderStruct.ShaderBufferSize = 0;
+        shaderStruct.ShaderBufferVariableListCount = 0;
+        shaderStruct.ShaderStructBufferId = 0;
+        memorySystem.RemovePtrBuffer(shaderStruct.Name);
+        if (shaderStruct.ShaderBufferVariableList)
+        {
+            memorySystem.RemovePtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList);
+        }
+        if (shaderStruct.ShaderStructBuffer)
+        {
+            memorySystem.RemovePtrBuffer(shaderStruct.ShaderStructBuffer);
+        }
     }
 }
 
@@ -124,39 +131,72 @@ void Shader_DestroyShaderBindingData(ShaderPipelineData& shader)
     }
 }
 
-void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant)
+void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant, size_t pushConstantCount)
 {
-    if (!pushConstant)
+    Span<ShaderPushConstant> pushConstantList(pushConstant, pushConstant + pushConstantCount);
+    Vector<const char*> shaderPushConstantNameList;
+    Vector<ShaderVariable*> shaderPushConstantVariableList;
+    for (auto& pushConstant : pushConstantList)
     {
-        return;
+        shaderPushConstantNameList.push_back(pushConstant.PushConstantName);
+        shaderPushConstantVariableList.push_back(pushConstant.PushConstantVariableList);
     }
 
-    Span<ShaderVariable> shaderVarList(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
-    for (int x = 0; x < pushConstant->PushConstantVariableListCount; x++)
+    Vector<const char*> shaderPushConstantVariableNameList;
+    Vector<void*> shaderPushConstantVariableBufferList;
+    for (auto& shaderPushConstantVariable : shaderPushConstantVariableList)
     {
-        if (pushConstant->PushConstantVariableList[x].Value)
-        {
-            pushConstant->PushConstantVariableList[x].ByteAlignment = 0;
-            pushConstant->PushConstantVariableList[x].MemberTypeEnum = ShaderMemberType::shaderUnknown;
-            pushConstant->PushConstantVariableList[x].Name = "";
-            pushConstant->PushConstantVariableList[x].Size = 0;
-            memorySystem.RemovePtrBuffer(pushConstant->PushConstantVariableList[x].Value);
-        }
+        shaderPushConstantVariableNameList.push_back(shaderPushConstantVariable->Name);
+        shaderPushConstantVariableBufferList.push_back(shaderPushConstantVariable->Value);
     }
 
-    pushConstant->GlobalPushContant = false;
-    pushConstant->PushConstantName = "";
-    pushConstant->PushConstantSize = 0;
-    pushConstant->PushConstantVariableListCount = 0;
-    pushConstant->ShaderStageFlags = 0;
-    if (pushConstant->PushConstantVariableList)
+    for (auto& shaderPushConstantVariableBuffer : shaderPushConstantVariableBufferList)
     {
-        memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant->PushConstantVariableList);
+        memorySystem.RemovePtrBuffer(shaderPushConstantVariableBuffer);
     }
-    if (pushConstant->PushConstantBuffer)
+
+    for (auto& shaderPushConstantVariableName : shaderPushConstantVariableNameList)
     {
-        memorySystem.RemovePtrBuffer(pushConstant->PushConstantBuffer);
+        memorySystem.RemovePtrBuffer(shaderPushConstantVariableName);
     }
+
+    for (auto& shaderPushConstantVariable : shaderPushConstantVariableList)
+    {
+        memorySystem.RemovePtrBuffer(shaderPushConstantVariable);
+    }
+
+    for (auto& shaderPushConstantName : shaderPushConstantNameList)
+    {
+        memorySystem.RemovePtrBuffer(shaderPushConstantName);
+    }
+    //if (!pushConstant)
+    //{
+    //    return;
+    //}
+
+    //Span<ShaderVariable> shaderVarList(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
+    //for (auto& shaderVar : shaderVarList)
+    //{
+    //    shaderVar.ByteAlignment = 0;
+    //    shaderVar.MemberTypeEnum = ShaderMemberType::shaderUnknown;
+    //    shaderVar.Size = 0;
+    //    memorySystem.RemovePtrBuffer(shaderVar.Name);
+    //    memorySystem.RemovePtrBuffer(shaderVar.Value);
+    //}
+
+    //pushConstant->GlobalPushContant = false;
+    //pushConstant->PushConstantSize = 0;
+    //pushConstant->PushConstantVariableListCount = 0;
+    //pushConstant->ShaderStageFlags = 0;
+    //memorySystem.RemovePtrBuffer(pushConstant->PushConstantName);
+    //if (pushConstant->PushConstantVariableList)
+    //{
+    //    memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant->PushConstantVariableList);
+    //}
+    //if (pushConstant->PushConstantBuffer)
+    //{
+    //    memorySystem.RemovePtrBuffer(pushConstant->PushConstantBuffer);
+    //}
 }
 
 void Shader_SetVariableDefaults(ShaderVariable& shaderVariable)
@@ -301,11 +341,11 @@ ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size
         FileState file = File_Read(pipelineShaderPath.c_str());
         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
         Shader_GetShaderDescriptorSetInfo(spvModule, shaderStructs);
+        spvReflectDestroyShaderModule(&spvModule);
     }
 
     outProtoTypeStructCount = shaderStructs.size();
-    ShaderStruct* shaderStructPtr = memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__);
-    return shaderStructPtr;
+    return memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__);
 }
 
 ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy)
@@ -756,73 +796,72 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
         ShaderMemberType memberType;
         switch (variable.op)
         {
-            case SpvOpTypeInt:
+        case SpvOpTypeInt:
+        {
+            memberSize = variable.traits.numeric.scalar.width / 8;
+            memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+            byteAlignment = 4;
+            break;
+        }
+        case SpvOpTypeFloat:
+        {
+            memberSize = variable.traits.numeric.scalar.width / 8;
+            memberType = shaderFloat;
+            byteAlignment = 4;
+            break;
+        }
+        case SpvOpTypeVector:
+        {
+            memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
+            switch (variable.traits.numeric.vector.component_count)
             {
-                memberSize = variable.traits.numeric.scalar.width / 8;
-                memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
-                byteAlignment = 4;
+            case 2:
+                memberType = shaderVec2;
+                byteAlignment = 8;
+                break;
+            case 3:
+                memberType = shaderVec3;
+                byteAlignment = 16;
+                break;
+            case 4:
+                memberType = shaderVec4;
+                byteAlignment = 16;
                 break;
             }
-            case SpvOpTypeFloat:
+            break;
+        }
+        case SpvOpTypeMatrix:
+        {
+            uint32_t rowCount = variable.traits.numeric.matrix.row_count;
+            uint32_t colCount = variable.traits.numeric.matrix.column_count;
+            memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+            if (rowCount == 2 && colCount == 2)
             {
-                memberSize = variable.traits.numeric.scalar.width / 8;
-                memberType = shaderFloat;
-                byteAlignment = 4;
-                break;
+                memberType = shaderMat2;
+                byteAlignment = 8;
             }
-            case SpvOpTypeVector:
+            else if (rowCount == 3 && colCount == 3)
             {
-                memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
-                switch (variable.traits.numeric.vector.component_count)
-                {
-                case 2:
-                    memberType = shaderVec2;
-                    byteAlignment = 8;
-                    break;
-                case 3:
-                    memberType = shaderVec3;
-                    byteAlignment = 16;
-                    break;
-                case 4:
-                    memberType = shaderVec4;
-                    byteAlignment = 16;
-                    break;
-                }
-                break;
+                memberType = shaderMat3;
+                byteAlignment = 16;
             }
-            case SpvOpTypeMatrix:
+            else if (rowCount == 4 && colCount == 4)
             {
-                uint32_t rowCount = variable.traits.numeric.matrix.row_count;
-                uint32_t colCount = variable.traits.numeric.matrix.column_count;
-                memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
-                if (rowCount == 2 && colCount == 2)
-                {
-                    memberType = shaderMat2;
-                    byteAlignment = 8;
-                }
-                else if (rowCount == 3 && colCount == 3)
-                {
-                    memberType = shaderMat3;
-                    byteAlignment = 16;
-                }
-                else if (rowCount == 4 && colCount == 4)
-                {
-                    memberType = shaderMat4;
-                    byteAlignment = 16;
-                }
-                else
-                {
-                    std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
-                    byteAlignment = -1;
-                }
-                break;
+                memberType = shaderMat4;
+                byteAlignment = 16;
             }
+            else
+            {
+                std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
+                byteAlignment = -1;
+            }
+            break;
+        }
         }
 
-        const char* copiedStr = memorySystem.AddPtrBuffer(variable.struct_member_name, __FILE__, __LINE__, __func__, "variable.struct_member_name copy");
         shaderVariables.emplace_back(ShaderVariable
             {
-                .Name = copiedStr,
+                .Name = memorySystem.AddPtrBuffer(variable.struct_member_name, __FILE__, __LINE__, __func__, ("variable.struct_member_name - " + String(variable.struct_member_name) + "copy 564").c_str()),
                 .Size = memberSize,
                 .ByteAlignment = byteAlignment,
                 .Value = nullptr,
@@ -835,10 +874,10 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
 
     ShaderStruct shaderStruct =
     {
-        .Name = shaderInfo.type_name,
+        .Name = memorySystem.AddPtrBuffer(shaderInfo.type_name, __FILE__, __LINE__, __func__, "shader struct name copy"),
         .ShaderBufferSize = bufferSize,
         .ShaderBufferVariableListCount = shaderVariables.size(),
-        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + (shaderInfo.type_name ? std::string(shaderInfo.type_name) : "")).c_str()),
+        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, ("Struct Name: " + std::string(shaderStruct.Name)).c_str()),
         .ShaderStructBuffer = nullptr
     };
     return shaderStruct;

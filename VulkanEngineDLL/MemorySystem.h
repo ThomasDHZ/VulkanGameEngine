@@ -120,6 +120,30 @@ public:
         }
     }
 
+    void RemovePtrBuffer(const char*& ptr)
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        void* voidPtr = const_cast<void*>(reinterpret_cast<const void*>(ptr));
+
+        auto it = PtrAddressMap.find(voidPtr);
+        if (it != PtrAddressMap.end())
+        {
+            MemoryLeakPtr& memoryLeakPtr = it->second;
+            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            PtrAddressMap.erase(it);
+            auto it3 = PtrAddressMap.find(voidPtr);
+            if (it3 != PtrAddressMap.end())
+            {
+                int a = 34;
+            }
+            ptr = nullptr;
+        }
+        else
+        {
+            std::cerr << "Warning: Attempted to remove unregistered pointer: " << ptr << std::endl;
+        }
+    }
+
     void ReportLeaks() 
     {
         std::lock_guard<std::mutex> lock(Mutex);

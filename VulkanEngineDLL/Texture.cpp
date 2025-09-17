@@ -51,22 +51,37 @@ Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonSt
 	return texture;
 }
 
-void Texture_CreateTextureImage(const GraphicsRenderer& renderer, ivec2 textureResolution, const Pixel& clearColor)
+VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType)
 {
-	//ColorChannelUsed colorChannels;
-	//VkDeviceSize bufferSize = textureResolution.x * textureResolution.y * texture.colorChannels;
-	//VkMemoryPropertyFlags bufferProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	//VkBufferUsageFlags bufferUsage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	//Vector<Pixel> pixels(textureResolution.x * textureResolution.y, clearColor);
+	//VkDeviceSize bufferSize = (textureResolution.x * textureResolution.y * colorChannels);
 
-	//Vector<Pixel> pixels(texture.width * texture.height, clearColor);
-	//Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, (void*)pixels.data(), bufferSize, bufferUsage, bufferProperties);
+	//Texture texture = Texture
+	//{
+	//	.width = textureResolution.x,
+	//	.height = textureResolution.y,
+	//	.depth = 1,
+	//	.mipMapLevels = 1,
+	//	.textureBufferIndex = 0,
+	//	.textureImage = VK_NULL_HANDLE,
+	//	.textureMemory = VK_NULL_HANDLE,
+	//	.textureView = VK_NULL_HANDLE,
+	//	.textureSampler = VK_NULL_HANDLE,
+	//	.ImGuiDescriptorSet = VK_NULL_HANDLE,
+	//	.textureUsage = kUse_2DImageTexture,
+	//	.textureType = kType_UndefinedTexture,
+	//	.textureByteFormat = VK_FORMAT_R8G8B8A8_SRGB,
+	//	.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+	//	.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+	//	.colorChannels = colorChannels,
+	//};
 
 	//VkImageCreateInfo imageCreateInfo =
 	//{
 	//	.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 	//	.imageType = VK_IMAGE_TYPE_2D,
 	//	.format = texture.textureByteFormat,
-	//	.extent = VkExtent3D
+	//	.extent =
 	//	{
 	//		.width = static_cast<uint32_t>(texture.width),
 	//		.height = static_cast<uint32_t>(texture.height),
@@ -81,13 +96,13 @@ void Texture_CreateTextureImage(const GraphicsRenderer& renderer, ivec2 textureR
 	//	.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	//};
 
-	//textureLoader.ImageCreateInfo.extent.width = width;
-	//textureLoader.ImageCreateInfo.extent.height = height;
-	//textureLoader.ImageCreateInfo.extent.depth = 1;
-	//VULKAN_RESULT(Texture_CreateTextureImage(renderer, texture, textureLoader.ImageCreateInfo, data, bufferSize));
-	//VULKAN_RESULT(Texture_CreateTextureView(renderer, texture, textureLoader.ImageType));
+	//byte* pixelData = static_cast<byte*>(pixels.data());
+	//VULKAN_RESULT(Texture_CreateTextureImage(renderer, texture, ImageCreateInfo, static_cast<byte*>(pixels.data()), bufferSize));
+	//VULKAN_RESULT(Texture_CreateTextureView(renderer, texture, imageType));
 	//VULKAN_RESULT(Texture_CreateTextureSampler(renderer, texture, textureLoader.SamplerCreateInfo));
 	//VULKAN_RESULT(Texture_GenerateMipmaps(renderer, texture));
+	//return texture;
+	return VK_SUCCESS;
 }
 
 Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
@@ -322,12 +337,12 @@ VkResult Texture_TransitionImageLayout(const GraphicsRenderer& renderer, VkComma
 	return VK_SUCCESS;
 }
 
-VkResult Texture_CommandBufferTransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout)
+VkResult Texture_CommandBufferTransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel)
 {
 	return Texture_TransitionImageLayout(renderer, commandBuffer, texture, newLayout);
 }
 
-void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& oldImageLayout, VkImageLayout& newImageLayout)
+void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& oldImageLayout, VkImageLayout& newImageLayout, uint32 mipmapLevel)
 {
 	VkImageMemoryBarrier imageMemoryBarrier =
 	{
@@ -340,7 +355,7 @@ void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandB
 		.subresourceRange =
 		{
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = texture.mipMapLevels - 1,
+			.baseMipLevel = mipmapLevel,
 			.levelCount = VK_REMAINING_MIP_LEVELS,
 			.layerCount = 1
 		}
@@ -350,7 +365,7 @@ void Texture_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandB
 	texture.textureImageLayout = newImageLayout;
 }
 
-void Texture_UpdateTextureLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+void Texture_UpdateTextureLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipmapLevel)
 {
 	VkImageMemoryBarrier imageMemoryBarrier =
 	{
@@ -363,7 +378,7 @@ void Texture_UpdateTextureLayout(const GraphicsRenderer& renderer, Texture& text
 		.subresourceRange =
 		{
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-		.baseMipLevel = texture.mipMapLevels - 1,
+			.baseMipLevel = mipmapLevel,
 			.levelCount = VK_REMAINING_MIP_LEVELS,
 			.layerCount = 1
 		}

@@ -147,13 +147,12 @@ VkCommandBuffer RenderSystem::RenderBloomPass(VkGuid& renderPassId)
             .pClearValues = renderPass.ClearValueList
         };
 
-        float blurStrength = 1.0f + x * 0.5f; // Increase blur per level
+        float blurStrength = 1.0f + x * 0.5f;
         float lodLevel = static_cast<float>(x);
         memcpy(shaderSystem.SearchGlobalShaderConstantVar(&pushConstant, "blurScale")->Value, &lodLevel, sizeof(lodLevel));
         memcpy(shaderSystem.SearchGlobalShaderConstantVar(&pushConstant, "blurStrength")->Value, &blurStrength, sizeof(blurStrength));
 
         VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &CommandBufferBeginInfo));
-      //  textureSystem.UpdateTextureLayout();
         vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -162,7 +161,7 @@ VkCommandBuffer RenderSystem::RenderBloomPass(VkGuid& renderPassId)
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetCount, pipeline.DescriptorSetList, 0, nullptr);
         vkCmdDraw(commandBuffer, 6, 1, 0, 0);
         vkCmdEndRenderPass(commandBuffer);
-        vkEndCommandBuffer(commandBuffer);
+        VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
     }
     return commandBuffer;
 }
@@ -209,7 +208,7 @@ VkCommandBuffer RenderSystem::RenderFrameBuffer(VkGuid& renderPassId)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetCount, pipeline.DescriptorSetList, 0, nullptr);
     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
-    vkEndCommandBuffer(commandBuffer);
+    VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
     return commandBuffer;
 }
 
@@ -267,7 +266,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         vkCmdDrawIndexed(commandBuffer, gameObjectSystem.SpriteIndexList.size(), spriteInstanceList.size(), 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
-    vkEndCommandBuffer(commandBuffer);
+    VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
     return commandBuffer;
 }
 

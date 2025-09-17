@@ -26,41 +26,26 @@ void ShaderSystem::StartUp()
 
 void ShaderSystem::Destroy()
 {
-    Vector<String> pushConstantKeys;
-    for (const auto& pair : ShaderPushConstantMap)
-    {
-        pushConstantKeys.push_back(pair.first);
+    Vector<ShaderPushConstant> shaderPushConstantList;
+    shaderPushConstantList.reserve(ShaderPushConstantMap.size());
+    for (const auto& pair : ShaderPushConstantMap) {
+        shaderPushConstantList.push_back(pair.second);
     }
-    for (const auto& key : pushConstantKeys)
-    {
-        auto& pushConstant = ShaderPushConstantMap[key];
-        Shader_DestroyPushConstantBufferData(&pushConstant);
-    }
-    ShaderPushConstantMap.clear();
+    Shader_DestroyPushConstantBufferData(shaderPushConstantList.data(), shaderPushConstantList.size());
 
-    Vector<String> shaderStructProtoKeys;
-    for (const auto& pair : PipelineShaderStructPrototypeMap)
-    {
-        shaderStructProtoKeys.push_back(pair.first);
+    Vector<ShaderStruct> shaderStructProtoList;
+    shaderStructProtoList.reserve(PipelineShaderStructPrototypeMap.size());
+    for (const auto& pair : PipelineShaderStructPrototypeMap) {
+        shaderStructProtoList.push_back(pair.second);
     }
-    for (const auto& key : shaderStructProtoKeys)
-    {
-        auto& shaderStruct = PipelineShaderStructPrototypeMap[key];
-        Shader_DestroyShaderStructData(&shaderStruct);
-    }
-    PipelineShaderStructPrototypeMap.clear();
+    Shader_DestroyShaderStructData(shaderStructProtoList.data(), shaderStructProtoList.size());
 
-    Vector<int> shaderStructKeys;
-    for (const auto& pair : PipelineShaderStructMap)
-    {
-        shaderStructKeys.push_back(pair.first);
+    Vector<ShaderStruct> shaderStructList;
+    shaderStructList.reserve(PipelineShaderStructMap.size());
+    for (const auto& pair : PipelineShaderStructMap) {
+        shaderStructList.push_back(pair.second);
     }
-    for (const auto& key : shaderStructKeys)
-    {
-        auto& shaderStruct = PipelineShaderStructMap[key];
-        Shader_DestroyShaderStructData(&shaderStruct);
-    }
-    PipelineShaderStructMap.clear();
+    Shader_DestroyShaderStructData(shaderStructList.data(), shaderStructList.size());
 
     Vector<String> shaderModuleKeys;
     for (const auto& pair : ShaderModuleMap)
@@ -72,6 +57,7 @@ void ShaderSystem::Destroy()
         auto& pipelineData = ShaderModuleMap[key];
         Shader_ShaderDestroy(pipelineData);
     }
+
     ShaderModuleMap.clear();
 }
 
@@ -165,6 +151,12 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
             {
                 if (!ShaderStructPrototypeExists(shaderStruct.Name))
                 {
+                    //memorySystem.ReportLeaks();
+                   // const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name sdfgsdfg copy");
+                    //memorySystem.ReportLeaks();
+                    //memorySystem.RemovePtrBuffer(shaderStruct.Name);
+                    //memorySystem.ReportLeaks();
+
                     const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name copy");
                     PipelineShaderStructPrototypeMap[copiedStr] = ShaderStruct
                     {
