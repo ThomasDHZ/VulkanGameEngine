@@ -27,7 +27,6 @@ private:
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
 
-    VkGuid CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution);
     void RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
     const Vector<VkDescriptorBufferInfo> GetVertexPropertiesBuffer();

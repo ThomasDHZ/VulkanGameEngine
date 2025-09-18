@@ -36,25 +36,6 @@ void RenderSystem::Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const f
     }
 }
 
-VkGuid RenderSystem::CreateVulkanRenderPass(const String& jsonPath, ivec2& renderPassResolution)
-{
-    RenderPassAttachementTextures renderPassAttachments;
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(renderer, jsonPath.c_str(), renderPassAttachments, renderPassResolution);
-    RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
-    RenderPassLoaderJsonMap[vulkanRenderPass.RenderPassId] = jsonPath;
-
-    Vector<Texture> renderTextureList(renderPassAttachments.RenderPassTexture, renderPassAttachments.RenderPassTexture + renderPassAttachments.RenderPassTextureCount);
-    textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderTextureList);
-    if (renderPassAttachments.DepthTexture != VK_NULL_HANDLE)
-    {
-        textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, *renderPassAttachments.DepthTexture);
-    }
-
-    memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
-    memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
-    return vulkanRenderPass.RenderPassId;
-}
-
 void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
 {
     vkDeviceWaitIdle(renderer.Device);
@@ -258,9 +239,8 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
 
 VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution)
 {
-    nlohmann::json renderPassJson = Json::ReadJson(jsonPath);
-    const char* jsonDataString = File_Read(jsonPath.c_str()).Data;
-    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
+    const char* renderPassJson = File_Read(jsonPath.c_str()).Data;
+    RenderPassLoader renderPassLoader = nlohmann::json::parse(renderPassJson).get<RenderPassLoader>();
     if (renderPassLoader.RenderArea.UseDefaultRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
@@ -289,8 +269,9 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
     Vector<VkDescriptorBufferInfo> indexPropertiesList = GetIndexPropertiesBuffer();
     Vector<VkDescriptorBufferInfo> transformPropertiesList = GetGameObjectTransformBuffer();
     Vector<VkDescriptorBufferInfo> meshPropertiesList = GetMeshPropertiesBuffer(levelId);
-    Vector<VkDescriptorImageInfo> texturePropertiesList = GetTexturePropertiesBuffer(vulkanRenderPass.RenderPassId);
+    Vector<VkDescriptorImageInfo> texturePropertiesList = GetTexturePropertiesBuffer(renderPassLoader.RenderPassId);
     Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
+
     GPUIncludes gpuIncludes =
     {
         .VertexPropertiesCount = vertexPropertiesList.size(),
@@ -307,30 +288,26 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         .MaterialProperties = materialPropertiesList.data()
     };
 
-    for (int x = 0; x < renderPassJson["RenderPipelineList"].size(); x++)
+    for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
     {
+        VkSampleCountFlagBits sampleCountOverride = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride;
 
-        VkSampleCountFlagBits sampleCountOverride = renderPassJson.at("RenderedTextureInfoModelList")[x]["SampleCountOverride"].get<VkSampleCountFlagBits>();
-
-        nlohmann::json pipelineJson = Json::ReadJson(renderPassJson["RenderPipelineList"][x]);
+        nlohmann::json pipelineJson = Json::ReadJson(renderPassLoader.RenderPipelineList[x]);
         RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
         renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = sampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? sampleCountOverride : VK_SAMPLE_COUNT_1_BIT;
         renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = sampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? true : false;
-        renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
-        renderPipelineLoader.RenderPass = RenderPassMap[vulkanRenderPass.RenderPassId].RenderPass;
+        renderPipelineLoader.RenderPassId = renderPassLoader.RenderPassId;
+        renderPipelineLoader.RenderPass = RenderPassMap[renderPassLoader.RenderPassId].RenderPass;
         renderPipelineLoader.gpuIncludes = gpuIncludes;
         renderPipelineLoader.RenderPassResolution = renderPassResolution;
         renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
 
-        RenderPipelineMap[vulkanRenderPass.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
+        RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
         memorySystem.RemovePtrBuffer(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
         memorySystem.RemovePtrBuffer(renderPipelineLoader.ViewportList);
         memorySystem.RemovePtrBuffer(renderPipelineLoader.ScissorList);
     }
-    memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
-    memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
-
-    return vulkanRenderPass.RenderPassId;
+    return renderPassLoader.RenderPassId;
 }
 
 const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& guid)
