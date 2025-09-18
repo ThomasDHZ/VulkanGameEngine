@@ -125,6 +125,72 @@ struct ShaderPipelineData
     ShaderPushConstant* PushConstantList = nullptr;
 };
 
+struct ShaderVariableCPP
+{
+    String Name;
+    size_t Size = 0;
+    size_t ByteAlignment = 0;
+    void* Value = nullptr;
+    ShaderMemberType  MemberTypeEnum = shaderUnknown;
+};
+
+struct ShaderStructCPP
+{
+    String                 Name;
+    size_t			       ShaderBufferSize = 0;
+    int                    ShaderStructBufferId = 0;
+    Vector<ShaderVariable> ShaderBufferVariableList;
+    void*                  ShaderStructBuffer = nullptr;
+};
+
+struct ShaderDescriptorSetCPP
+{
+    String                  Name;
+    uint32                  Binding;
+    VkDescriptorType        DescripterType;
+    Vector<ShaderStruct>    ShaderStructList;
+};
+
+struct ShaderDescriptorBindingCPP
+{
+    String                          Name;
+    uint32                          Binding;
+    size_t                          DescriptorCount;
+    VkShaderStageFlags              ShaderStageFlags;
+    DescriptorBindingPropertiesEnum DescriptorBindingType;
+    VkDescriptorType                DescripterType;
+    VkDescriptorImageInfo           DescriptorImageInfo;
+    VkDescriptorBufferInfo          DescriptorBufferInfo;
+};
+
+struct ShaderPushConstantCPP
+{
+    String                  PushConstantName;
+    size_t			        PushConstantSize = 0;
+    VkShaderStageFlags      ShaderStageFlags;
+    Vector<ShaderVariable>  PushConstantVariableList;
+    void*                   PushConstantBuffer = nullptr;
+    bool			        GlobalPushContant = false;
+};
+
+struct ShaderPipelineDataCPP
+{
+    size_t ShaderCount = 0;
+    size_t DescriptorBindingCount = 0;
+    size_t ShaderStructCount = 0;
+    size_t VertexInputBindingCount = 0;
+    size_t VertexInputAttributeListCount = 0;
+    size_t ShaderOutputCount = 0;
+    size_t PushConstantCount = 0;
+    const char** ShaderList = nullptr;
+    ShaderDescriptorBinding* DescriptorBindingsList = nullptr;
+    ShaderStruct* ShaderStructList = nullptr;
+    VkVertexInputBindingDescription* VertexInputBindingList = nullptr;
+    VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
+    ShaderVariable* ShaderOutputList = nullptr;
+    ShaderPushConstant* PushConstantList = nullptr;
+};
+
 struct GPUIncludes
 {
     size_t VertexPropertiesCount = 0;
