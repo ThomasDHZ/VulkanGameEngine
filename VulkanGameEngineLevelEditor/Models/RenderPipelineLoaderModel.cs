@@ -54,35 +54,35 @@ namespace VulkanGameEngineLevelEditor.Models
             try
             {
                 // Convert lists to native arrays
-                if (model.PipelineColorBlendAttachmentStateList != null && model.PipelineColorBlendAttachmentStateList.Count > 0)
+                if (model.PipelineColorBlendAttachmentStateList != null && model.PipelineColorBlendAttachmentStateCount > 0)
                 {
-                    PipelineColorBlendAttachmentStateCount = (size_t)model.PipelineColorBlendAttachmentStateList.Count;
+                    PipelineColorBlendAttachmentStateCount = (size_t)model.PipelineColorBlendAttachmentStateCount;
                     colorBlendPtr = Marshal.AllocHGlobal((int)(PipelineColorBlendAttachmentStateCount * sizeof(VkPipelineColorBlendAttachmentState)));
-                    for (int i = 0; i < model.PipelineColorBlendAttachmentStateList.Count; i++)
+                    for (int i = 0; i < model.PipelineColorBlendAttachmentStateCount; i++)
                     {
                         Marshal.StructureToPtr(model.PipelineColorBlendAttachmentStateList[i], colorBlendPtr + i * sizeof(VkPipelineColorBlendAttachmentState), false);
                     }
                     PipelineColorBlendAttachmentStateList = (VkPipelineColorBlendAttachmentState*)colorBlendPtr;
                 }
 
-                if (model.ViewportList != null && model.ViewportList.Count > 0)
+                if (model.ViewportList != null && model.ViewportCount > 0)
                 {
-                    ViewportCount = (size_t)model.ViewportList.Count;
+                    ViewportCount = (size_t)model.ViewportCount;
                     viewportPtr = Marshal.AllocHGlobal((int)(ViewportCount * sizeof(VkViewport)));
-                    for (int i = 0; i < model.ViewportList.Count; i++)
+                    for (int i = 0; i < model.ViewportCount; i++)
                     {
                         Marshal.StructureToPtr(model.ViewportList[i], viewportPtr + i * sizeof(VkViewport), false);
                     }
                     ViewportList = (VkViewport*)viewportPtr;
                 }
 
-                if (model.ScissorList != null && model.ScissorList.Count > 0)
+                if (model.ScissorList != null && model.ScissorCount > 0)
                 {
-                    ScissorCount = (size_t)model.ScissorList.Count;
+                    ScissorCount = (size_t)model.ScissorCount;
                     scissorPtr = Marshal.AllocHGlobal((int)(ScissorCount * sizeof(VkRect2D)));
-                    for (int i = 0; i < model.ScissorList.Count; i++)
+                    for (int i = 0; i < model.ScissorCount; i++)
                     {
-                        Marshal.StructureToPtr(model.ScissorList[i], scissorPtr + i * sizeof(VkRect2D), false);
+                        Marshal.StructureToPtr(model.ScissorCount, scissorPtr + i * sizeof(VkRect2D), false);
                     }
                     ScissorList = (VkRect2D*)scissorPtr;
                 }
@@ -125,17 +125,24 @@ namespace VulkanGameEngineLevelEditor.Models
         }
     }
 
-    public class RenderPipelineJsonLoaderModel
+    public unsafe class RenderPipelineJsonLoaderModel
     {
-        public Guid PipelineId { get; set; }
-        public List<string> ShaderList { get; set; } = new List<string>();
-        public List<VkViewport> ViewportList { get; set; } = new List<VkViewport>();
-        public List<VkRect2D> ScissorList { get; set; } = new List<VkRect2D>();
-        public List<VkPipelineColorBlendAttachmentState> PipelineColorBlendAttachmentStateList { get; set; }
-        public VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel { get; set; }
-        public VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo { get; set; }
-        public VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo { get; set; }
-        public VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo { get; set; }
-        public VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo { get; set; }
+        public Guid PipelineId { get; set; } = Guid.Empty;
+        public Guid RenderPassId { get; set; } = Guid.Empty;
+        public VkRenderPass RenderPass { get; set; } = VulkanCSConst.VK_NULL_HANDLE;
+        public ivec2 RenderPassResolution { get; set; } = new ivec2();
+        public GPUIncludes gpuIncludes { get; set; } = new GPUIncludes();
+        public ShaderPipelineData ShaderPiplineInfo { get; set; } = new ShaderPipelineData();
+        public size_t ViewportCount { get; set; } = 0;
+        public size_t ScissorCount { get; set; } = 0;
+        public size_t PipelineColorBlendAttachmentStateCount { get; set; } = 0;
+        public VkPipelineColorBlendAttachmentState* PipelineColorBlendAttachmentStateList { get; set; } = null;
+        public VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo { get; set; } = new VkPipelineInputAssemblyStateCreateInfo();
+        public VkViewport* ViewportList { get; set; } = null;
+        public VkRect2D* ScissorList { get; set; } = null;
+        public VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo { get; set; } = new VkPipelineRasterizationStateCreateInfo();
+        public VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo { get; set; } = new VkPipelineMultisampleStateCreateInfo();
+        public VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo { get; set; } = new VkPipelineDepthStencilStateCreateInfo();
+        public VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel { get; set; } = new VkPipelineColorBlendStateCreateInfo();
     }
 }

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Silk.NET.SDL;
+using System;
 using System.ComponentModel;
 using System.Reflection;
+using Vulkan;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
 namespace VulkanGameEngineLevelEditor.Models
@@ -18,11 +20,7 @@ namespace VulkanGameEngineLevelEditor.Models
     {
         [IgnoreProperty]
         [Tooltip("Unique identifier for the texture.")]
-        public Guid TextureId { get; set; }
-
-        [DisplayName("Texture Type")]
-        [Tooltip("Specifies the type of the rendered texture.")]
-        public RenderedTextureType TextureType { get; set; }
+        public Guid RenderedTextureId { get; set; }
 
         [DisplayName("Texture Properties Info")]
         [Tooltip("Defines the properties for creating the texture's image.")]
@@ -35,6 +33,13 @@ namespace VulkanGameEngineLevelEditor.Models
         [DisplayName("Attachment Description")]
         [Tooltip("Describes the attachment properties for the render pass.")]
         public VkAttachmentDescriptionModel AttachmentDescription { get; set; } = new VkAttachmentDescriptionModel();
+
+        [DisplayName("Texture Type")]
+        [Tooltip("Specifies the type of the rendered texture.")]
+        public RenderedTextureType TextureType { get; set; }
+
+        public VkSampleCountFlagBits SampleCountOverride { get; set; }
+        public bool UsingMipMaps { get; set; }
 
         public RenderedTextureInfoModel() : base()
         {

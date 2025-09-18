@@ -185,18 +185,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             if (!TextureSystem.TextureList.TryGetValue(spriteMaterial.AlbedoMapId, out var spriteTexture))
                 throw new KeyNotFoundException($"Texture ID {spriteMaterial.AlbedoMapId} not found.");
 
-            SpriteVramList.Add(VRAM_LoadSpriteVRAM(spriteVramPath, ref spriteMaterial, ref spriteTexture));
             Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath, out size_t animationListCount);
-            vec2* animationFrameListPtr = VRAM_LoadSpriteAnimationFrames(spriteVramPath, out size_t animationFrameCount);
-
             var animationList = new ListPtr<Animation2D>(animationListPtr, animationListCount);
-            var frameList = new ListPtr<vec2>(animationFrameListPtr, animationFrameCount);
+            SpriteVramList.Add(VRAM_LoadSpriteVRAM(spriteVramPath, ref spriteMaterial, ref spriteTexture));
 
             for (size_t x = 0; x < animationList.Count; x++)
             {
                 SpriteAnimationMap[animationList[(int)x].AnimationId] = animationList[(int)x];
             }
-            SpriteAnimationFrameListMap[spriteVramJson.VramSpriteId] = frameList;
 
             return spriteVramJson.VramSpriteId;
         }

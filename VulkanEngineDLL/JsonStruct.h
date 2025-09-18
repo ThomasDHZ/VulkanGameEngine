@@ -17,7 +17,6 @@ struct BlendConstantsModel
 struct  RenderedTextureLoader
 {
     VkGuid RenderedTextureId;
-    String RenderedTextureInfoName;
     VkImageCreateInfo ImageCreateInfo;
     VkSamplerCreateInfo SamplerCreateInfo;
     VkAttachmentDescription AttachmentDescription;

@@ -21,6 +21,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
     public unsafe static class TextureSystem
     {
+     
         public static Dictionary<Guid, Texture> TextureList { get; set; } = new Dictionary<Guid, Texture>();
         public static Dictionary<Guid, Texture> DepthTextureList { get; set; } = new Dictionary<Guid, Texture>();
         public static Dictionary<Guid, ListPtr<Texture>> RenderedTextureListMap { get; set; } = new Dictionary<Guid, ListPtr<Texture>>();
@@ -64,43 +65,54 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             textureDescriptorList.Add(textureDescriptor);
         }
 
+        public static void AddRenderedTexture(Guid vkGuid, ListPtr<Texture> renderedTextureList)
+        {
+            RenderedTextureListMap[vkGuid] = renderedTextureList;
+        }
+
+        public static void AddDepthTexture(Guid vkGuid, Texture depthTexture)
+        {
+            DepthTextureList[vkGuid] = depthTexture;
+        }
+
         public static void UpdateTextureLayout(Texture texture, VkImageLayout newImageLayout)
         {
-            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, texture.textureImageLayout, newImageLayout);
+            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout newImageLayout, uint mipLevels)
+        {
+            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
         }
 
         public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
         {
-            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, oldImageLayout, newImageLayout);
+            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipLevels)
+        {
+            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, oldImageLayout, newImageLayout, mipLevels);
         }
 
         public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout newImageLayout)
         {
-            VkImageMemoryBarrier imageMemoryBarrier = new VkImageMemoryBarrier
-            {
-                sType = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                srcAccessMask = 0,
-                dstAccessMask = VkAccessFlagBits.VK_ACCESS_TRANSFER_WRITE_BIT,
-                oldLayout = texture.textureImageLayout,
-                newLayout = newImageLayout,
-                image = texture.textureImage,
-                subresourceRange =
+            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        }
 
-                    {
-                        aspectMask = VkImageAspectFlagBits.VK_IMAGE_ASPECT_COLOR_BIT,
-                        baseMipLevel = texture.mipMapLevels - 1,
-                        levelCount = VulkanCSConst.VK_REMAINING_MIP_LEVELS,
-                        layerCount = 1
-                }
-            };
-
-            VkFunc.vkCmdPipelineBarrier(commandBuffer, VkPipelineStageFlagBits.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkPipelineStageFlagBits.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, null, 0, null, 1, &imageMemoryBarrier);
-            texture.textureImageLayout = newImageLayout;
+        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout newImageLayout, uint mipLevels) 
+        {
+            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
         }
 
         public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
         {
-            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout);
+            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipLevels)
+        {
+            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
         }
 
         public static bool TextureExists(Guid guid)
@@ -143,12 +155,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         }
 
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Texture Texture_LoadTexture(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Texture Texture_CreateTexture(GraphicsRenderer renderer, VkImageAspectFlagBits imageType, VkImageCreateInfo createImageInfo, VkSamplerCreateInfo samplerCreateInfo);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Texture Texture_CreateTexture(GraphicsRenderer renderer, Guid textureId, VkImageAspectFlagBits imageType, VkImageCreateInfo createImageInfo, VkSamplerCreateInfo samplerCreateInfo, bool useMipMaps);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureSize(GraphicsRenderer renderer, Texture texture, VkImageAspectFlagBits imageType, vec2 TextureResolution);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureBufferIndex(Texture texture, uint bufferIndex);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_GetTexturePropertiesBuffer(Texture texture, List<VkDescriptorImageInfo> textureDescriptorList);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_DestroyTexture(GraphicsRenderer renderer, Texture texture);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateCmdTextureLayout(GraphicsRenderer renderer, VkCommandBuffer commandBuffer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureLayout(GraphicsRenderer renderer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateCmdTextureLayout(GraphicsRenderer renderer, VkCommandBuffer commandBuffer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipmapLevel);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureLayout(GraphicsRenderer renderer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipmapLevel);
     }
 }
