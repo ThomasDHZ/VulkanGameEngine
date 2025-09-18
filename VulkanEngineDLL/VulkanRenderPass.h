@@ -27,7 +27,7 @@ struct VulkanRenderPass
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT RenderPassAttachementTextures VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, RenderPassLoader& renderPassLoader, ivec2& renderPassResolution);
+	DLL_EXPORT VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, RenderPassAttachementTextures& vulkanRenderPass, ivec2& renderPassResolution);
 	DLL_EXPORT VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
 	DLL_EXPORT void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass);
 

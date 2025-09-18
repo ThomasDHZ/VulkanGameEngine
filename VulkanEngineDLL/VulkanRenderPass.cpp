@@ -2,9 +2,23 @@
 #include "../VulkanGameEngine/SceneDataBuffer.h"
 #include "GPUSystem.h"
 
-RenderPassAttachementTextures VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, RenderPassLoader& renderPassLoader, ivec2& renderPassResolution)
+VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, RenderPassAttachementTextures& renderPassAttachments, ivec2& renderPassResolution)
 {
-    vulkanRenderPass = VulkanRenderPass
+    const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
+    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
+    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    {
+        renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+        renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+        for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+        {
+            renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+            renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+            renderTexture.ImageCreateInfo.extent.depth = 1;
+        }
+    }
+
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
         .SampleCount = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride,
@@ -28,12 +42,14 @@ RenderPassAttachementTextures VulkanRenderPass_CreateVulkanRenderPass(GraphicsRe
     vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
     vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.data(), frameBufferList.size(), __FILE__, __LINE__, __func__);
 
-    return RenderPassAttachementTextures
+    renderPassAttachments = RenderPassAttachementTextures
     {
         .RenderPassTextureCount = renderPassLoader.RenderedTextureInfoModelList.size(),
         .RenderPassTexture = memorySystem.AddPtrBuffer<Texture>(renderedTextureList.data(), renderedTextureList.size(), __FILE__, __LINE__, __func__),
         .DepthTexture = memorySystem.AddPtrBuffer<Texture>(&depthTexture, 1, __FILE__, __LINE__, __func__)
     };
+
+    return vulkanRenderPass;
 }
 
 VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)

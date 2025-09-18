@@ -121,7 +121,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             ListPtr<VulkanPipeline> vulkanPipelineList = new ListPtr<VulkanPipeline>();
             foreach (var pipeline in renderPassLoader.RenderPipelineList)
             {
-            
                 List<String> ShaderList = new List<string>();
                 JObject jsonObject = JObject.Parse(File.ReadAllText(@$"{ConstConfig.BaseDirectoryPath}RenderPass/{pipeline}"));
                 jsonObject.Add(jsonObject["ShaderList"][0]);
