@@ -131,11 +131,6 @@ public:
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
             PtrAddressMap.erase(it);
-            auto it3 = PtrAddressMap.find(voidPtr);
-            if (it3 != PtrAddressMap.end())
-            {
-                int a = 34;
-            }
             ptr = nullptr;
         }
         else
@@ -150,7 +145,7 @@ public:
 
         if (!PtrAddressMap.empty()) 
         {
-            fprintf(stderr, "\nMemory leaks detected:\n");
+            std::cout << "\nMemory leaks detected: Found MemoryLeaks " + std::to_string(PtrAddressMap.size()) << std::endl;
             for (auto& ptr : PtrAddressMap) 
             {
                 MemoryLeakPtr_DanglingPtrMessage(&ptr.second);

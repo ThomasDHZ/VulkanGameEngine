@@ -172,6 +172,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
 
 void LevelSystem::DestroyLevel()
 {
+    spriteSystem.Destroy();
     for (auto& tileMap : LevelTileSetMap)
     {
         VRAM_DeleteLevelVRAM(tileMap.second.LevelTileListPtr);

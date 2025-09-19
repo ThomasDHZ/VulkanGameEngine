@@ -39,7 +39,7 @@ DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_LoadShader(VkDevice device, co
 DLL_EXPORT void Shader_CompileShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory);
 const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
 //ShaderDescriptorBinding* Shader_SearchDescriptorBindings(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const char* descriptorBindingName);
-ShaderStruct* Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName);
+const ShaderStruct* Shader_SearchShaderStructs(const Vector<ShaderStruct>& shaderStructList, const String& structName);
 Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexInputVariables(const SpvReflectShaderModule& module);
 Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
@@ -48,7 +48,7 @@ ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo);
 void Shader_DestroyShaderBindingData(ShaderPipelineData& shader);
 bool Shader_SearchShaderConstBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
 bool Shader_SearchDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
-bool Shader_SearchShaderStructExists(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName);
+bool Shader_SearchShaderStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
 bool Shader_SearchShaderStructVarExists(const ShaderStruct* shaderStruct, const char* varName);
 void Shader_GetShaderInputVertexVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
 void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<ShaderPushConstant>& shaderPushConstantList);

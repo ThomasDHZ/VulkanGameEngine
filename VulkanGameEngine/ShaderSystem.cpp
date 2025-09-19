@@ -83,7 +83,7 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
             for (int x = 0; x < pushConstant.PushConstantVariableList.size(); x++)
             {
                 ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
-                ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name);
+                ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name.c_str());
                 Shader_SetVariableDefaults(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x]);
                 memorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
             }
@@ -149,25 +149,15 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
             {
                 if (!ShaderStructPrototypeExists(shaderStruct.Name))
                 {
-                    //memorySystem.ReportLeaks();
-                   // const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name sdfgsdfg copy");
-                    //memorySystem.ReportLeaks();
-                    //memorySystem.RemovePtrBuffer(shaderStruct.Name);
-                    //memorySystem.ReportLeaks();
-
-                    const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name copy");
-                    PipelineShaderStructPrototypeMap[copiedStr] = ShaderStruct
+                    PipelineShaderStructPrototypeMap[shaderStruct.Name] = ShaderStruct
                     {
-                        .Name = copiedStr,
+                        .Name = shaderStruct.Name,
                         .ShaderBufferSize = shaderStruct.ShaderBufferSize,
-                        .ShaderBufferVariableListCount = shaderStruct.ShaderBufferVariableListCount,
-                        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, copiedStr),
+                        .ShaderBufferVariableList = shaderStruct.ShaderBufferVariableList,
                         .ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
-                        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, copiedStr)
+                        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStruct.Name.c_str())
                     };
-                    //memorySystem.RemovePtrBuffer<const char>(copiedStr);
                 }
-                memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
             }
             memorySystem.RemovePtrBuffer<ShaderStruct>(shaderStructArray);
             CHelper_DestroyConstCharPtrPtr(cShaderList);

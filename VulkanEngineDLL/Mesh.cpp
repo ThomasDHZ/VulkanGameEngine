@@ -48,7 +48,6 @@ void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct&
 		MeshMatrix = glm::scale(MeshMatrix, mesh.MeshScale);
 	}
 
-	Span<ShaderVariable> shaderVariableList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
 	memcpy(Shader_SearchShaderStructVar(&shaderStruct, "MaterialIndex")->Value, &shaderMaterialBufferIndex, sizeof(uint));
 	memcpy(Shader_SearchShaderStructVar(&shaderStruct, "MeshTransform")->Value, &GameObjectMatrix, sizeof(mat4));
 	Shader_UpdateShaderBuffer(renderer, meshPropertiesBuffer, &shaderStruct, 1);

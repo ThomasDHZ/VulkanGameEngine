@@ -137,7 +137,6 @@ void MeshSystem::Update(const float& deltaTime)
     {
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[meshPair.second.PropertiesBufferId];
         uint32 shaderMaterialBufferIndex = (meshPair.second.MaterialId != VkGuid()) ? materialSystem.FindMaterial(meshPair.second.MaterialId).ShaderMaterialBufferIndex : 0;
-        Span<ShaderVariable> a(shaderSystem.PipelineShaderStructMap[meshPair.second.PropertiesBufferId].ShaderBufferVariableList, shaderSystem.PipelineShaderStructMap[meshPair.second.PropertiesBufferId].ShaderBufferVariableListCount);
         Mesh_UpdateMesh(renderSystem.renderer, meshPair.second, shaderSystem.PipelineShaderStructMap[meshPair.second.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
     }
 }

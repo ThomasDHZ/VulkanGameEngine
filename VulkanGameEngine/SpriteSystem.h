@@ -36,6 +36,7 @@ public:
     void AddSpriteBatchObjectList(UM_SpriteBatchID spriteBatchId, GameObjectID spriteBatchObject);
 
     void Update(const float& deltaTime);
+    void Destroy();
 
     void SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnum spriteAnimation);
 
