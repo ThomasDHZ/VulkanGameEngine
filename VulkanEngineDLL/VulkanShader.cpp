@@ -138,8 +138,8 @@ void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant, size
     Vector<ShaderVariable*> shaderPushConstantVariableList;
     for (auto& pushConstant : pushConstantList)
     {
-        shaderPushConstantNameList.push_back(pushConstant.PushConstantName);
-        shaderPushConstantVariableList.push_back(pushConstant.PushConstantVariableList);
+   //     shaderPushConstantNameList.push_back(pushConstant.PushConstantName);
+      //  shaderPushConstantVariableList.push_back(pushConstant.PushConstantVariableList);
     }
 
     Vector<const char*> shaderPushConstantVariableNameList;
@@ -321,8 +321,7 @@ void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& v
 void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct)
 {
     size_t offset = 0;
-    Span<ShaderVariable> pushConstantVarList(pushConstantStruct.PushConstantVariableList, pushConstantStruct.PushConstantVariableListCount);
-    for (const auto& pushConstantVar : pushConstantVarList)
+    for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
     {
         offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
         void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer) + offset;
@@ -527,14 +526,14 @@ void Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module, Ve
 
     for (auto& descriptorBinding : descriptorSetBindings)
     {
-        if (!Shader_SearchDescriptorBindingExists(shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.size(), descriptorBinding->name))
+        String name(descriptorBinding->name);
+        if (!Shader_SearchDescriptorBindingExists(shaderDescriptorSetBinding, name))
         {
             String searchString(String("DescriptorBindingType" + std::to_string(descriptorBinding->binding)));
             Vector<SpvReflectSpecializationConstant*> DescriptorBindingAttributeTypeResult = Shader_SearchShaderSpecializationConstant(specializationConstantList, searchString.c_str());
-            const char* copiedStr = memorySystem.AddPtrBuffer(descriptorBinding->name, __FILE__, __LINE__, __func__, "descriptorBinding->name copy");
             shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBinding
                 {
-                    .Name = copiedStr,
+                    .Name = String(descriptorBinding->name),
                     .Binding = descriptorBinding->binding,
                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                     .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->default_literals),
@@ -892,7 +891,8 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
 
     for (auto pushConstant : pushConstants)
     {
-        if (!Shader_SearchShaderConstBufferExists(shaderPushConstantList.data(), shaderPushConstantList.size(), pushConstant->name))
+        String pushConstantName(pushConstant->name);
+        if (!Shader_SearchShaderConstBufferExists(shaderPushConstantList, pushConstantName))
         {
             size_t bufferSize = 0;
             Vector<ShaderVariable> shaderVariables;
@@ -983,14 +983,12 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                 bufferSize += memberSize;
             }
 
-            const char* copiedStr = memorySystem.AddPtrBuffer(pushConstant->name, __FILE__, __LINE__, __func__, "pushConstant->name copy");
             shaderPushConstantList.emplace_back(ShaderPushConstant
                 {
-                    .PushConstantName = copiedStr,
+                    .PushConstantName = pushConstantName,
                     .PushConstantSize = bufferSize,
-                    .PushConstantVariableListCount = shaderVariables.size(),
                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
-                    .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__),
+                    .PushConstantVariableList = shaderVariables,
                 });
         }
         else
@@ -1062,42 +1060,23 @@ Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConst
     return results;
 }
 
-ShaderPushConstant* Shader_SearchShaderConstBuffer(ShaderPushConstant* shaderPushConstantList, size_t shaderPushConstantCount, const char* constBufferName)
+const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName)
 {
-    if (shaderPushConstantList == nullptr ||
-        shaderPushConstantList->PushConstantName == nullptr ||
-        constBufferName == nullptr)
-    {
-        return nullptr;
-    }
-
-    Span span = Span(shaderPushConstantList, shaderPushConstantCount);
-    auto it = std::ranges::find_if(span, [&](const ShaderPushConstant& var)
+    auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstant& var)
         {
-            return var.PushConstantName != nullptr && 
-                   std::strcmp(var.PushConstantName, constBufferName) == 0;
+            return var.PushConstantName == constBufferName;
         });
-
-    return (it != span.end()) ? &(*it) : nullptr;
+    return (it != shaderPushConstantList.end()) ? &(*it) : nullptr;
 }
 
-ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, const char* varName)
+ const ShaderVariable* Shader_SearchShaderConstStructVar(const ShaderPushConstant* pushConstant, const String& varName)
 {
-    if (pushConstant == nullptr)
-    {
-        return nullptr;
-    }
-
-    auto it = std::ranges::find_if(
-        std::span(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount),
-        [&](const ShaderVariable& var)
+    auto& variableList = pushConstant->PushConstantVariableList;
+    auto it = std::ranges::find_if(variableList, [&](const ShaderVariable& var)
         {
-            return var.Name != nullptr &&
-                std::strcmp(var.Name, varName) == 0;
-        }
-    );
-
-    return (it != std::span(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount).end()) ? &(*it) : nullptr;
+            return std::strcmp(var.Name, varName.c_str()) == 0;
+        });
+    return (it != variableList.end()) ? &(*it) : nullptr;
 }
 
 ShaderStruct* Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName)
@@ -1136,40 +1115,22 @@ ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct* shaderStruct, const c
     return (it != span.end()) ? &(*it) : nullptr;
 }
 
-bool Shader_SearchShaderConstBufferExists(ShaderPushConstant* shaderPushConstantList, size_t shaderPushConstantCount, const char* constBufferName)
+bool Shader_SearchShaderConstBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName)
 {
-    if (shaderPushConstantList == nullptr ||
-        shaderPushConstantList->PushConstantName == nullptr ||
-        constBufferName == nullptr)
-    {
-        return false;
-    }
-
-    Span span = Span(shaderPushConstantList, shaderPushConstantCount);
-    auto it = std::ranges::find_if(span, [&](const ShaderPushConstant& var)
+    auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstant& var)
         {
-            return var.PushConstantName != nullptr && std::strcmp(var.PushConstantName, constBufferName) == 0;
+            return var.PushConstantName == constBufferName;
         });
-
-    return (it != span.end()) ? true : false;
+    return it != shaderPushConstantList.end();
 }
 
-bool Shader_SearchDescriptorBindingExists(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const char* descriptorBindingName)
+bool Shader_SearchDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName)
 {
-    if (shaderDescriptorBindingList == nullptr ||
-        shaderDescriptorBindingList->Name == nullptr ||
-        descriptorBindingName == nullptr)
-    {
-        return false;
-    }
-
-    Span span = Span(shaderDescriptorBindingList, shaderDescriptorBindingsCount);
-    auto it = std::ranges::find_if(span, [&](const ShaderDescriptorBinding& var)
+    auto it = std::ranges::find_if(shaderDescriptorBindingList, [&](const ShaderDescriptorBinding& var)
         {
-            return var.Name != nullptr && std::strcmp(var.Name, descriptorBindingName) == 0;
+            return var.Name == descriptorBindingName;
         });
-
-    return (it != span.end()) ? true : false;
+    return it != shaderDescriptorBindingList.end();
 }
 
 bool Shader_SearchShaderStructExists(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName)

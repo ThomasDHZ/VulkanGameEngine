@@ -14,6 +14,23 @@ struct BlendConstantsModel
     float Alpha;
 };
 
+struct VulkanRenderPass
+{
+	RenderPassGuid RenderPassId = VkGuid();
+	VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
+	VkRect2D RenderArea = VkRect2D();
+	VkRenderPass RenderPass = VK_NULL_HANDLE;
+	VkGuid* InputTextureIdList = nullptr;
+	VkFramebuffer* FrameBufferList = nullptr;
+	VkClearValue* ClearValueList = nullptr;
+	size_t InputTextureIdListCount = 0;
+	size_t FrameBufferCount = 0;
+	size_t ClearValueCount = 0;
+	VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
+	ivec2 RenderPassResolution = ivec2();
+	bool IsRenderedToSwapchain = false;
+};
+
 struct  RenderedTextureLoader
 {
     VkGuid RenderedTextureId;
@@ -85,7 +102,7 @@ struct ShaderDescriptorSet
 
 struct ShaderDescriptorBinding
 {
-    const char* Name;
+    String Name;
     uint32 Binding;
     size_t DescriptorCount;
     VkShaderStageFlags ShaderStageFlags;
@@ -97,11 +114,10 @@ struct ShaderDescriptorBinding
 
 struct ShaderPushConstant
 {
-    const char*     PushConstantName;
+    String     PushConstantName;
     size_t			PushConstantSize = 0;
-    size_t			PushConstantVariableListCount = 0;
     VkShaderStageFlags ShaderStageFlags;
-    ShaderVariable* PushConstantVariableList = nullptr;
+    Vector<ShaderVariable> PushConstantVariableList;
     void*           PushConstantBuffer = nullptr;
     bool			GlobalPushContant = false;
 };

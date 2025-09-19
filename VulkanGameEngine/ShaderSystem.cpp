@@ -74,14 +74,13 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
             {
                 .PushConstantName = pushConstant.PushConstantName,
                 .PushConstantSize = pushConstant.PushConstantSize,
-                .PushConstantVariableListCount = pushConstant.PushConstantVariableListCount,
                 .ShaderStageFlags = pushConstant.ShaderStageFlags,
-                .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList, pushConstant.PushConstantVariableListCount, __FILE__, __LINE__, __func__, pushConstant.PushConstantName),
-                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName),
+                .PushConstantVariableList = pushConstant.PushConstantVariableList,
+                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
                 .GlobalPushContant = pushConstant.GlobalPushContant
             };
 
-            for (int x = 0; x < ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableListCount; x++)
+            for (int x = 0; x < pushConstant.PushConstantVariableList.size(); x++)
             {
                 ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
                 ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name);
@@ -89,7 +88,6 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
                 memorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
             }
         }
-        memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant.PushConstantVariableList);
         memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
     }
     CHelper_DestroyConstCharPtrPtr(cShaderList);
@@ -97,7 +95,7 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
     return pipelineData;
 }
 
-ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName)
+const ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName)
 {
     return Shader_SearchShaderConstStructVar(pushConstant, varName);
 }

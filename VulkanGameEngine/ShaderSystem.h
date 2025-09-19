@@ -43,7 +43,7 @@ public:
 	ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName);
 
 	ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
-	ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
+	const ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
 
 	void CompileShaders(const char* shaderFilePath);
 
