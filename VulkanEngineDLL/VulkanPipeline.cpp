@@ -4,9 +4,20 @@
 #include "VulkanShader.h"
 #include "JsonLoader.h"
 #include "GPUSystem.h"
+#include "JsonStruct.h"
 
-VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, RenderPipelineLoader& renderPipelineLoader)
+VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineData& shaderPipelineData)
 {
+    nlohmann::json pipelineJson = Json::ReadJson(pipelineJsonFilePath);
+    RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
+    renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
+    renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;
+    renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
+    renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
+    renderPipelineLoader.gpuIncludes = gpuIncludes;
+    renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
+    renderPipelineLoader.ShaderPiplineInfo = shaderPipelineData;
+
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
     Pipeline_PipelineBindingData(renderPipelineLoader);
     VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPipelineLoader);
@@ -16,7 +27,7 @@ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, RenderPipeli
     VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
     VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
-    return VulkanPipeline
+    VulkanPipeline vulkanPipeline = VulkanPipeline
     {
         .RenderPipelineId = renderPipelineLoader.PipelineId,
         .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
@@ -28,12 +39,17 @@ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, RenderPipeli
         .PipelineLayout = pipelineLayout,
         .PipelineCache = pipelineCache
     };
+
+    memorySystem.RemovePtrBuffer(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
+    memorySystem.RemovePtrBuffer(renderPipelineLoader.ViewportList);
+    memorySystem.RemovePtrBuffer(renderPipelineLoader.ScissorList);
+    return vulkanPipeline;
 }
 
-VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VulkanPipeline& oldPipeline)
+VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineData& shaderPipelineData)
 {
     VulkanPipeline_Destroy(device, oldPipeline);
-    return VulkanPipeline_CreateRenderPipeline(device, renderPipelineLoader);
+    return VulkanPipeline_CreateRenderPipeline(device, vulkanRenderPass, pipelineJsonFilePath, gpuIncludes, shaderPipelineData);
 }
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)

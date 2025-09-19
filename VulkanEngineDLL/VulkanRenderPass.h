@@ -4,25 +4,7 @@
 #include "JsonLoader.h"
 #include "MemorySystem.h"
 #include "VulkanRenderer.h"
-#include "VulkanPipeline.h"
 #include "Texture.h"
-
-struct VulkanRenderPass
-{
-	RenderPassGuid RenderPassId = VkGuid();
-	VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
-	VkRect2D RenderArea = VkRect2D();
-	VkRenderPass RenderPass = VK_NULL_HANDLE;
-	VkGuid* InputTextureIdList = nullptr;
-	VkFramebuffer* FrameBufferList = nullptr;
-	VkClearValue* ClearValueList = nullptr;
-	size_t InputTextureIdListCount = 0;
-	size_t FrameBufferCount = 0;
-	size_t ClearValueCount = 0;
-	VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
-	ivec2 RenderPassResolution = ivec2();
-	bool IsRenderedToSwapchain = false;
-};
 
 #ifdef __cplusplus
 extern "C" {

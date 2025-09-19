@@ -290,22 +290,9 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
 
     for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
     {
-        VkSampleCountFlagBits sampleCountOverride = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride;
-
         nlohmann::json pipelineJson = Json::ReadJson(renderPassLoader.RenderPipelineList[x]);
-        RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
-        renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = sampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? sampleCountOverride : VK_SAMPLE_COUNT_1_BIT;
-        renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = sampleCountOverride > VK_SAMPLE_COUNT_1_BIT ? true : false;
-        renderPipelineLoader.RenderPassId = renderPassLoader.RenderPassId;
-        renderPipelineLoader.RenderPass = RenderPassMap[renderPassLoader.RenderPassId].RenderPass;
-        renderPipelineLoader.gpuIncludes = gpuIncludes;
-        renderPipelineLoader.RenderPassResolution = renderPassResolution;
-        renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-
-        RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderPipelineLoader));
-        memorySystem.RemovePtrBuffer(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
-        memorySystem.RemovePtrBuffer(renderPipelineLoader.ViewportList);
-        memorySystem.RemovePtrBuffer(renderPipelineLoader.ScissorList);
+        ShaderPipelineData shaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+        RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), gpuIncludes, shaderPiplineInfo));
     }
     return renderPassLoader.RenderPassId;
 }

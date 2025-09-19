@@ -6,6 +6,7 @@
 #include "SceneDataBuffer.h"
 #include <nlohmann/json.hpp>
 #include "ShaderSystem.h"
+#include <VulkanPipeline.h>
 
 // Type definitions
 typedef uint UM_SpriteID;
