@@ -90,6 +90,16 @@ struct ShaderStruct
     void*           ShaderStructBuffer = nullptr;
 };
 
+struct ShaderStructDLL
+{
+    const char* Name;
+    size_t          ShaderBufferSize = 0;
+    size_t          ShaderBufferVariableCount = 0;
+    ShaderVariable* ShaderBufferVariableList;
+    int             ShaderStructBufferId;
+    void* ShaderStructBuffer = nullptr;
+};
+
 struct ShaderDescriptorSet
 {
     const char* Name;

@@ -14,6 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.LevelEditor;
@@ -124,10 +125,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                                 for (nuint y = 0; y < pushConstant.PushConstantVariableListCount; y++)
                                 {
                                     ShaderVariable srcVar = pushConstant.PushConstantVariableList[(int)y];
-                                    string varName = srcVar.GetName();
+                                   // string varName = srcVar.GetName();
                                     newVariableList[(int)y] = new ShaderVariable
                                     {
-                                        Name = Marshal.StringToHGlobalAnsi(varName),
+                                    //    Name = Marshal.StringToHGlobalAnsi(varName),
                                         Size = srcVar.Size,
                                         ByteAlignment = srcVar.ByteAlignment,
                                         MemberTypeEnum = srcVar.MemberTypeEnum,
@@ -205,55 +206,109 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return ShaderPushConstantExists(pushConstantName) ? ShaderPushConstantMap[pushConstantName] : new ShaderPushConstant();
         }
 
-        public static void LoadShaderPipelineStructPrototypes(List<String> shaderList)
+        //public static void LoadShaderPipelineStructPrototypes(List<string> shaderList)
+        //{
+        //    if (shaderList == null || shaderList.Count == 0)
+        //    {
+        //        Console.WriteLine("LoadShaderPipelineStructPrototypes: Shader list is null or empty.");
+        //        throw new ArgumentException("Shader list cannot be null or empty.");
+        //    }
+
+        //    var shaderDirectory = Path.GetDirectoryName($"{ConstConfig.BaseDirectoryPath}Shaders/");
+        //    if (string.IsNullOrEmpty(shaderDirectory))
+        //    {
+        //        Console.WriteLine("LoadShaderPipelineStructPrototypes: Invalid shader directory.");
+        //        throw new InvalidOperationException("Shader directory is invalid.");
+        //    }
+
+        //    var fullPathString = shaderList.Select(path =>
+        //    {
+        //        if (string.IsNullOrWhiteSpace(path))
+        //        {
+        //            Console.WriteLine($"LoadShaderPipelineStructPrototypes: Invalid shader path: {path}");
+        //            throw new ArgumentException($"Invalid shader path: {path}");
+        //        }
+        //        string fullPath = Path.GetFullPath(Path.Combine(shaderDirectory, path));
+        //        if (!File.Exists(fullPath))
+        //        {
+        //            Console.WriteLine($"LoadShaderPipelineStructPrototypes: Shader file not found: {fullPath}");
+        //            throw new FileNotFoundException($"Shader file not found: {fullPath}");
+        //        }
+        //        return fullPath;
+        //    }).ToList();
+
+        //    Console.WriteLine($"LoadShaderPipelineStructPrototypes: Full paths: {string.Join(", ", fullPathString)}");
+
+        //    IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(fullPathString);
+        //    if (cShaderPathList == null || cShaderPathList.Length == 0)
+        //    {
+        //        Console.WriteLine("LoadShaderPipelineStructPrototypes: Failed to convert shader paths to native pointers.");
+        //        throw new InvalidOperationException("Failed to convert shader paths to native pointers.");
+        //    }
+
+        //    Console.WriteLine($"LoadShaderPipelineStructPrototypes: cShaderPathList length: {cShaderPathList.Length}");
+
+        //    try
+        //    {
+        //        ShaderStructDLL shaderStructDLL = Shader_LoadProtoTypeStructsCS(cShaderPathList, (nuint)cShaderPathList.Length, out nuint protoTypeStructCount);
+        //        // Now construct as before
+        //        ShaderStruct shaderStruct = new ShaderStruct(shaderStructDLL);
+
+        //        Console.WriteLine($"LoadShaderPipelineStructPrototypes: protoTypeStructCount: {protoTypeStructCount}");
+
+        //        if (protoTypeStructCount == 0)
+        //        {
+        //            Console.WriteLine("LoadShaderPipelineStructPrototypes: No prototype structs were loaded.");
+        //            throw new InvalidOperationException("No prototype structs were loaded.");
+        //        }
+
+        //        shaderStruct.ShaderStructBuffer = MemorySystem.AddPtrBuffer((byte)shaderStruct.ShaderBufferSize);
+        //    }
+        //    finally
+        //    {
+        //        CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
+        //    }
+        //}
+
+        public static void LoadShaderPipelineStructPrototypes(List<string> shaderList)
         {
-            for (int x = 0; x < shaderList.Count(); x++)
+            var shaderDirectory = Path.GetDirectoryName(Path.Combine(ConstConfig.BaseDirectoryPath, "Shaders"));
+            List<string> fullPathString = shaderList.Select(path => Path.Combine(shaderDirectory, path)).ToList();
+            IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(fullPathString);
+            IntPtr shaderPathsPtr = IntPtr.Zero;
+
+            if (cShaderPathList != null && cShaderPathList.Length > 0)
             {
-                var shaderDirectory = Path.GetDirectoryName((@$"{ConstConfig.BaseDirectoryPath}Shaders/"));
-                List<String> fullPathString = new List<string> { Path.Combine(shaderDirectory, shaderList[0]), Path.Combine(shaderDirectory, shaderList[1]) };
-                IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(fullPathString);
-                IntPtr shaderPathsPtr = IntPtr.Zero;
-                if (cShaderPathList != null && cShaderPathList.Length > 0)
+                shaderPathsPtr = Marshal.AllocHGlobal(cShaderPathList.Length * IntPtr.Size);
+                for (int y = 0; y < cShaderPathList.Length; y++)
                 {
-                    shaderPathsPtr = Marshal.AllocHGlobal(cShaderPathList.Length * IntPtr.Size);
-                    for (int y = 0; y < cShaderPathList.Length; y++)
-                    {
-                        Marshal.WriteIntPtr(shaderPathsPtr, y * IntPtr.Size, cShaderPathList[y]);
-                    }
-                }
-                try
-                {
-                    ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(cShaderPathList, cShaderPathList.Count(), out size_t protoTypeStructCount);
-                    ListPtr<ShaderStruct> shaderStructList = new ListPtr<ShaderStruct>(shaderStructArray, protoTypeStructCount);
-                    foreach (var shaderStruct in shaderStructList)
-                    {
-                        string name = shaderStruct.GetName();
-                        if (!ShaderStructPrototypeExists(name))
-                        {
-                            PipelineShaderStructPrototypeMap[name] = new ShaderStruct
-                            {
-                                Name = shaderStruct.Name,
-                                ShaderBufferSize = shaderStruct.ShaderBufferSize,
-                                ShaderBufferVariableListCount = shaderStruct.ShaderBufferVariableListCount,
-                                ShaderBufferVariableList = MemorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, (size_t)shaderStruct.ShaderBufferVariableListCount),
-                                ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
-                                ShaderStructBuffer = MemorySystem.AddPtrBuffer<byte>((byte)shaderStruct.ShaderBufferSize)
-                            };
-                        }
-                        MemorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
-                    }
-                    MemorySystem.RemovePtrBuffer<ShaderStruct>(shaderStructArray);
-                }
-                finally
-                {
-                    CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
-                    if (shaderPathsPtr != IntPtr.Zero)
-                    {
-                        Marshal.FreeHGlobal(shaderPathsPtr);
-                    }
+                    Marshal.WriteIntPtr(shaderPathsPtr, y * IntPtr.Size, cShaderPathList[y]);
                 }
             }
+
+            try
+            {
+                ShaderStructDLL* shaderStructPtr = Shader_LoadProtoTypeStructsCS(cShaderPathList, (nuint)cShaderPathList.Length, out nuint protoTypeStructCount);
+                var a = 324;
+                   // ShaderStructDLL shaderStructArray = Marshal.PtrToStructure<ShaderStructDLL>(shaderStructPtr);
+                   // ShaderStruct shaderStruct = new ShaderStruct(shaderStructArray);
+                    // Process shaderStruct as needed
+                
+            }
+            finally
+            {
+                CHelper.CHelper_DestroyConstCharPtrPtr(cShaderPathList);
+                if (shaderPathsPtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(shaderPathsPtr);
+                }
+                //if (shaderStructPtr != IntPtr.Zero)
+                //{
+                //    Shader_FreeProtoTypeStructsCS(shaderStructPtr); // Free the ShaderStructDLL
+                //}
+            }
         }
+
 
         public static ShaderPipelineData FindShaderModule(string shaderFile)
         {
@@ -395,9 +450,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path, VkShaderStageFlagBits shaderStages);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdateShaderBuffer(GraphicsRenderer renderer, VulkanBuffer vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdatePushConstantBuffer(GraphicsRenderer renderer, ShaderPushConstant pushConstantStruct);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStruct* Shader_LoadProtoTypeStructs(IntPtr[] pipelineShaderPaths, size_t pipelineShaderCount, out size_t outProtoTypeStructCount);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStructDLL* Shader_LoadProtoTypeStructsCS(IntPtr[] pipelineShaderPaths, nuint pipelineShaderCount, out nuint outProtoTypeStructCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStruct Shader_CopyShaderStructPrototype(ShaderStruct shaderStructToCopy);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, [MarshalAs(UnmanagedType.LPStr)] string varName);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);
     }
 }
+

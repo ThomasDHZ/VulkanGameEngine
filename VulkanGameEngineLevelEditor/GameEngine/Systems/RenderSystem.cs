@@ -670,90 +670,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             RenderPipelineMap.Clear();
         }
 
-        public static void DebugRenderPipelineLoaderModel(RenderPipelineLoaderModel model, string indent = "")
-        {
-            Console.WriteLine($"{indent}=== RenderPipelineLoaderModel ===");
-            Console.WriteLine($"{indent}PipelineId: {model.PipelineId}");
-            Console.WriteLine($"{indent}RenderPassId: {model.RenderPassId}");
-            Console.WriteLine($"{indent}RenderPass: 0x{model.RenderPass.ToInt64():X16}");
-            Console.WriteLine($"{indent}RenderPassResolution: ({model.RenderPassResolution.x}, {model.RenderPassResolution.y})");
-
-            Console.WriteLine($"{indent}--- GPUIncludes ---");
-            DebugGPUIncludes(model.gpuIncludes, indent + "  ");
-
-            Console.WriteLine($"{indent}--- ShaderPipelineData ---");
-            DebugShaderPipelineData(model.ShaderPiplineInfo, indent + "  ");
-
-            Console.WriteLine($"{indent}ViewportCount: {model.ViewportCount}");
-            DebugViewportList(model.ViewportList, model.ViewportCount, indent + "  ");
-
-            Console.WriteLine($"{indent}ScissorCount: {model.ScissorCount}");
-            DebugScissorList(model.ScissorList, model.ScissorCount, indent + "  ");
-
-            Console.WriteLine($"{indent}PipelineColorBlendAttachmentStateCount: {model.PipelineColorBlendAttachmentStateCount}");
-            DebugPipelineColorBlendAttachmentStateList(model.PipelineColorBlendAttachmentStateList, model.PipelineColorBlendAttachmentStateCount, indent + "  ");
-
-            Console.WriteLine($"{indent}PipelineInputAssemblyStateCreateInfo:");
-            DebugPipelineInputAssemblyState(model.PipelineInputAssemblyStateCreateInfo, indent + "  ");
-
-            Console.WriteLine($"{indent}PipelineRasterizationStateCreateInfo:");
-            DebugPipelineRasterizationState(model.PipelineRasterizationStateCreateInfo, indent + "  ");
-
-            Console.WriteLine($"{indent}PipelineMultisampleStateCreateInfo:");
-            DebugPipelineMultisampleState(model.PipelineMultisampleStateCreateInfo, indent + "  ");
-
-            Console.WriteLine($"{indent}PipelineDepthStencilStateCreateInfo:");
-            DebugPipelineDepthStencilState(model.PipelineDepthStencilStateCreateInfo, indent + "  ");
-
-            Console.WriteLine($"{indent}PipelineColorBlendStateCreateInfo:");
-            DebugPipelineColorBlendState(model.PipelineColorBlendStateCreateInfoModel, indent + "  ");
-        }
-
-        private static void DebugGPUIncludes(GPUIncludes includes, string indent)
-        {
-            Console.WriteLine($"{indent}VertexPropertiesCount: {includes.VertexPropertiesCount}");
-            DebugDescriptorBufferInfoList(includes.VertexProperties, includes.VertexPropertiesCount, "VertexProperties", indent + "  ");
-
-            Console.WriteLine($"{indent}IndexPropertiesCount: {includes.IndexPropertiesCount}");
-            DebugDescriptorBufferInfoList(includes.IndexProperties, includes.IndexPropertiesCount, "IndexProperties", indent + "  ");
-
-            Console.WriteLine($"{indent}TransformPropertiesCount: {includes.TransformPropertiesCount}");
-            DebugDescriptorBufferInfoList(includes.TransformProperties, includes.TransformPropertiesCount, "TransformProperties", indent + "  ");
-
-            Console.WriteLine($"{indent}MeshPropertiesCount: {includes.MeshPropertiesCount}");
-            DebugDescriptorBufferInfoList(includes.MeshProperties, includes.MeshPropertiesCount, "MeshProperties", indent + "  ");
-
-            Console.WriteLine($"{indent}TexturePropertiesCount: {includes.TexturePropertiesCount}");
-            DebugDescriptorImageInfoList(includes.TextureProperties, includes.TexturePropertiesCount, indent + "  ");
-
-            Console.WriteLine($"{indent}MaterialPropertiesCount: {includes.MaterialPropertiesCount}");
-            DebugDescriptorBufferInfoList(includes.MaterialProperties, includes.MaterialPropertiesCount, "MaterialProperties", indent + "  ");
-        }
-
-        private static void DebugShaderPipelineData(ShaderPipelineData data, string indent)
-        {
-            Console.WriteLine($"{indent}ShaderCount: {data.ShaderCount}");
-            DebugShaderList(data.ShaderList, data.ShaderCount, indent + "  ");
-
-            Console.WriteLine($"{indent}DescriptorBindingCount: {data.DescriptorBindingCount}");
-            DebugDescriptorBindingsList(data.DescriptorBindingsList, data.DescriptorBindingCount, indent + "  ");
-
-            Console.WriteLine($"{indent}ShaderStructCount: {data.ShaderStructCount}");
-            DebugShaderStructList(data.ShaderStructList, data.ShaderStructCount, indent + "  ");
-
-            Console.WriteLine($"{indent}VertexInputBindingCount: {data.VertexInputBindingCount}");
-            DebugVertexInputBindingList(data.VertexInputBindingList, data.VertexInputBindingCount, indent + "  ");
-
-            Console.WriteLine($"{indent}VertexInputAttributeListCount: {data.VertexInputAttributeListCount}");
-            DebugVertexInputAttributeList(data.VertexInputAttributeList, data.VertexInputAttributeListCount, indent + "  ");
-
-            Console.WriteLine($"{indent}ShaderOutputCount: {data.ShaderOutputCount}");
-            DebugShaderVariableList(data.ShaderOutputList, data.ShaderOutputCount, "ShaderOutput", indent + "  ");
-
-            Console.WriteLine($"{indent}PushConstantCount: {data.PushConstantCount}");
-            DebugPushConstantList(data.PushConstantList, data.PushConstantCount, indent + "  ");
-        }
-
         private static void DebugShaderList(IntPtr shaderList, size_t count, string indent)
         {
             if (shaderList == IntPtr.Zero || count == 0)
@@ -805,12 +721,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             {
                 ShaderStruct shaderStruct = structs[i];
                 Console.WriteLine($"{indent}[{i}] ShaderStruct:");
-                Console.WriteLine($"{indent}  Name: {shaderStruct.GetName()}");
+               //Console.WriteLine($"{indent}  Name: {shaderStruct.GetName()}");
                 Console.WriteLine($"{indent}  ShaderBufferSize: {shaderStruct.ShaderBufferSize}");
-                Console.WriteLine($"{indent}  ShaderBufferVariableListCount: {shaderStruct.ShaderBufferVariableListCount}");
+              //  Console.WriteLine($"{indent}  ShaderBufferVariableListCount: {shaderStruct.ShaderBufferVariableListCount}");
                 Console.WriteLine($"{indent}  ShaderStructBufferId: {shaderStruct.ShaderStructBufferId}");
                 Console.WriteLine($"{indent}  ShaderStructBuffer: 0x{(shaderStruct.ShaderStructBuffer != null ? (long)shaderStruct.ShaderStructBuffer : 0):X16}");
-                DebugShaderVariableList(shaderStruct.ShaderBufferVariableList, (size_t)shaderStruct.ShaderBufferVariableListCount, "ShaderBufferVariable", indent + "    ");
+              //  DebugShaderVariableList(shaderStruct.ShaderBufferVariableList, (size_t)shaderStruct.ShaderBufferVariableListCount, "ShaderBufferVariable", indent + "    ");
             }
         }
 

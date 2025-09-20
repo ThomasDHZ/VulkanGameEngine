@@ -24,6 +24,7 @@ extern "C" {
     DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
     DLL_EXPORT void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct);
     DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
+    DLL_EXPORT ShaderStructDLL* Shader_LoadProtoTypeStructsCS(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
     DLL_EXPORT ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy);
     DLL_EXPORT const ShaderVariable* Shader_SearchShaderConstStructVar(const ShaderPushConstant* pushConstant, const String& varName);
     DLL_EXPORT ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct* shaderStruct, const char* varName);

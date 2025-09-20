@@ -288,6 +288,27 @@ ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size
     return memorySystem.AddPtrBuffer<ShaderStruct>(shaderStructs.data(), shaderStructs.size(), __FILE__, __LINE__, __func__);
 }
 
+ShaderStructDLL* Shader_LoadProtoTypeStructsCS(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount)
+{
+    ShaderStruct* shaderStruct = Shader_LoadProtoTypeStructs(pipelineShaderPaths, pipelineShaderCount, outProtoTypeStructCount);
+
+    // Allocate ShaderStructDLL dynamically
+    ShaderStructDLL* shaderStructDLL = new ShaderStructDLL;
+    shaderStructDLL->Name = memorySystem.AddPtrBuffer(shaderStruct->Name.c_str(), __FILE__, __LINE__, __func__);
+    shaderStructDLL->ShaderBufferSize = shaderStruct->ShaderBufferSize;
+    shaderStructDLL->ShaderBufferVariableCount = shaderStruct->ShaderBufferVariableList.size();
+    shaderStructDLL->ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(
+        shaderStruct->ShaderBufferVariableList.data(),
+        shaderStruct->ShaderBufferVariableList.size(),
+        __FILE__, __LINE__, __func__,
+        shaderStruct->Name.c_str()
+    );
+    shaderStructDLL->ShaderStructBufferId = shaderStruct->ShaderStructBufferId;
+    shaderStructDLL->ShaderStructBuffer = nullptr;
+
+    return shaderStructDLL;
+}
+
 ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy)
 {
     ShaderStruct shaderStruct = ShaderStruct

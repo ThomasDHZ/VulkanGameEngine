@@ -13,24 +13,52 @@ using VulkanGameEngineLevelEditor.GameEngine.Systems;
 
 namespace VulkanGameEngineLevelEditor.GameEngine
 {
-    public unsafe static class CHelper
+    public static class CHelper
     {
-
-        public static IntPtr[] VectorToConstCharPtrPtr(List<String> list)
+        public static IntPtr[] VectorToConstCharPtrPtr(List<string> strings)
         {
-            IntPtr[] stringPointers = new IntPtr[list.Count];
-            for (int x = 0; x < list.Count; x++)
+            if (strings == null || strings.Count == 0)
             {
-                stringPointers[x] = Marshal.StringToHGlobalAnsi(list[x]);
+                Console.WriteLine("CHelper.VectorToConstCharPtrPtr: Input list is null or empty.");
+                return null;
             }
-            return stringPointers;
+
+            try
+            {
+                IntPtr[] result = new IntPtr[strings.Count];
+                for (int i = 0; i < strings.Count; i++)
+                {
+                    if (strings[i] == null)
+                    {
+                        Console.WriteLine($"CHelper.VectorToConstCharPtrPtr: String at index {i} is null.");
+                        return null; // Or handle differently, e.g., skip or throw
+                    }
+                    result[i] = Marshal.StringToHGlobalAnsi(strings[i]);
+                    if (result[i] == IntPtr.Zero)
+                    {
+                        Console.WriteLine($"CHelper.VectorToConstCharPtrPtr: Failed to allocate memory for string at index {i}.");
+                        // Free previously allocated pointers
+                        for (int j = 0; j < i; j++)
+                            Marshal.FreeHGlobal(result[j]);
+                        return null;
+                    }
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"CHelper.VectorToConstCharPtrPtr: Exception occurred: {ex.Message}");
+                return null;
+            }
         }
 
-        public static void CHelper_DestroyConstCharPtrPtr(IntPtr[] constCharPtrPtr)
+        public static void CHelper_DestroyConstCharPtrPtr(IntPtr[] ptrs)
         {
-            foreach (var ptr in constCharPtrPtr)
+            if (ptrs == null) return;
+            foreach (var ptr in ptrs)
             {
-                Marshal.FreeHGlobal(ptr);
+                if (ptr != IntPtr.Zero)
+                    Marshal.FreeHGlobal(ptr);
             }
         }
     }

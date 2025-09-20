@@ -28,12 +28,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct ShaderVariable
     {
-        public IntPtr Name;
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string Name;
         public nuint Size;
         public nuint ByteAlignment;
         public void* Value;
         public ShaderMemberType MemberTypeEnum;
-
-        public string GetName() => Marshal.PtrToStringAnsi(Name) ?? string.Empty;
     }
 }
