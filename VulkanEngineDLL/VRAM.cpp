@@ -1,5 +1,5 @@
-#include "VRAM.h"
 #include "MemorySystem.h"
+#include "VRAM.h"
 
 SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture)
 {

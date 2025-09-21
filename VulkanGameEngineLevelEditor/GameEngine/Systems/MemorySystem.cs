@@ -74,6 +74,23 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
+        public static void RemovePtrBuffer(IntPtr ptr)
+        {
+            lock (lockObject)
+            {
+                if (PtrAddressMap.ContainsKey(ptr))
+                {
+                    MemoryLeakPtr_DeletePtr(ptr);
+                    PtrAddressMap.Remove(ptr);
+                    ptr = IntPtr.Zero;
+                }
+                else
+                {
+                    Console.WriteLine(@$"Warning: Attempted to remove unregistered pointer: {ptr.ToString()}\n");
+                }
+            }
+        }
+
         public static void ReportLeaks()
         {
             lock (lockObject)

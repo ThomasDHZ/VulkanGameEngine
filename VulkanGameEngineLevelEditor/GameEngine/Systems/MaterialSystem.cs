@@ -44,7 +44,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             GraphicsRenderer renderer = RenderSystem.renderer;
             uint NextBufferIndex = ++BufferSystem.NextBufferId;
             ShaderSystem.PipelineShaderStructMap[(int)NextBufferIndex] = ShaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer", (int)NextBufferIndex);
-            MaterialMap[materialJson.MaterialId] = Material_CreateMaterial(ref renderer, NextBufferIndex, out VulkanBuffer vulkanBuffer, ShaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer", (int)NextBufferIndex), materialPath);
+            MaterialMap[materialJson.MaterialId] = Material_CreateMaterial(ref renderer, NextBufferIndex, out VulkanBuffer vulkanBuffer, (nint)ShaderSystem.PipelineShaderStructMap[(int)NextBufferIndex].ShaderBufferSize, materialPath);
             BufferSystem.VulkanBufferMap[NextBufferIndex] = vulkanBuffer;
 
             return materialJson.MaterialId;
@@ -171,8 +171,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return MaterialMap.Where(x => x.Key == renderPassGuid).First().Value;
         }
 
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Material Material_CreateMaterial(ref GraphicsRenderer renderer, uint bufferIndex, out VulkanBuffer vulkanBuffer, ShaderStruct shaderStruct, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Material_UpdateBuffer(GraphicsRenderer renderer, VulkanBuffer materialBuffer, MaterialProperitiesBuffer materialProperties);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern Material Material_CreateMaterial(ref GraphicsRenderer renderer, uint bufferIndex, out VulkanBuffer vulkanBuffer, size_t shaderStructSize, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void Material_DestroyBuffer(GraphicsRenderer renderer, VulkanBuffer materialBuffer);
     }
 }

@@ -132,7 +132,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                                         Size = srcVar.Size,
                                         ByteAlignment = srcVar.ByteAlignment,
                                         MemberTypeEnum = srcVar.MemberTypeEnum,
-                                        Value = null 
+                                      //  Value = IntPtr.Zero 
                                     };
                                 }
                             }
@@ -151,7 +151,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                             for (nuint z = 0; z < ShaderPushConstantMap[name].PushConstantVariableListCount; z++)
                             {
                                 ref ShaderVariable var = ref ShaderPushConstantMap[name].PushConstantVariableList[(int)z];
-                                var.Value = MemorySystem.AddPtrBuffer<byte>((byte)var.Size, string.Empty, string.Empty, 0, string.Empty);
+                            //    var.Value = (nint)MemorySystem.AddPtrBuffer<byte>((byte)var.Size, string.Empty, string.Empty, 0, string.Empty);
                                 Shader_SetVariableDefaults(var);  
                             }
                         }
@@ -272,8 +272,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void LoadShaderPipelineStructPrototypes(List<string> shaderList)
         {
-            var shaderDirectory = Path.GetDirectoryName(Path.Combine(ConstConfig.BaseDirectoryPath, "Shaders"));
-            List<string> fullPathString = shaderList.Select(path => Path.Combine(shaderDirectory, path)).ToList();
+            var shaderDirectory = Path.GetDirectoryName(Path.Combine(ConstConfig.BaseDirectoryPath, "Assets\\Shaders"));
+            List<string> fullPathString = shaderList.Select(path => Path.Combine("C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\VulkanGameEngine\\", path)).ToList();
             IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(fullPathString);
             IntPtr shaderPathsPtr = IntPtr.Zero;
 
@@ -286,14 +286,16 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 }
             }
 
+            ShaderStructDLL* shaderStructPtr = null;
             try
             {
-                ShaderStructDLL* shaderStructPtr = Shader_LoadProtoTypeStructsCS(cShaderPathList, (nuint)cShaderPathList.Length, out nuint protoTypeStructCount);
-                var a = 324;
-                   // ShaderStructDLL shaderStructArray = Marshal.PtrToStructure<ShaderStructDLL>(shaderStructPtr);
-                   // ShaderStruct shaderStruct = new ShaderStruct(shaderStructArray);
-                    // Process shaderStruct as needed
-                
+                shaderStructPtr = Shader_LoadProtoTypeStructsCS(cShaderPathList, (nuint)cShaderPathList.Length, out nuint protoTypeStructCount);
+                 for (nuint x = 0; x < protoTypeStructCount; x++)
+                {
+                    ShaderStructDLL* currentPtr = shaderStructPtr + x;  
+                    ShaderStruct shaderStruct = new ShaderStruct(currentPtr);
+                    PipelineShaderStructPrototypeMap[shaderStruct.Name] = shaderStruct;
+                }
             }
             finally
             {
@@ -302,13 +304,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 {
                     Marshal.FreeHGlobal(shaderPathsPtr);
                 }
-                //if (shaderStructPtr != IntPtr.Zero)
-                //{
-                //    Shader_FreeProtoTypeStructsCS(shaderStructPtr); // Free the ShaderStructDLL
-                //}
             }
+            var a = 234;
         }
-
 
         public static ShaderPipelineData FindShaderModule(string shaderFile)
         {
@@ -333,9 +331,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static ShaderStruct CopyShaderStructProtoType(string structName, int bufferId)
         {
             ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName);
-            ShaderStruct shaderStruct = Shader_CopyShaderStructPrototype(shaderStructCopy);
-            shaderStruct.ShaderStructBufferId = bufferId;
-            return shaderStruct;
+            shaderStructCopy.ShaderStructBuffer = MemorySystem.AddPtrBuffer(shaderStructCopy.ShaderBufferSize);
+            shaderStructCopy.ShaderStructBufferId = bufferId;
+            return shaderStructCopy;
         }
 
         public static bool ShaderPushConstantExists(string pushConstantName)
@@ -450,7 +448,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkPipelineShaderStageCreateInfo Shader_CreateShader(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path, VkShaderStageFlagBits shaderStages);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdateShaderBuffer(GraphicsRenderer renderer, VulkanBuffer vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdatePushConstantBuffer(GraphicsRenderer renderer, ShaderPushConstant pushConstantStruct);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStructDLL* Shader_LoadProtoTypeStructsCS(IntPtr[] pipelineShaderPaths, nuint pipelineShaderCount, out nuint outProtoTypeStructCount);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)]
+        private static extern ShaderStructDLL* Shader_LoadProtoTypeStructsCS(IntPtr[] pipelineShaderPaths, nuint pipelineShaderCount, out nuint outProtoTypeStructCount);
+
+        // Add this for freeing (implement in C++)
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)]
+        private static extern void Shader_FreeProtoTypeStructsCS(ShaderStructDLL* ptr, nuint count);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStruct Shader_CopyShaderStructPrototype(ShaderStruct shaderStructToCopy);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, [MarshalAs(UnmanagedType.LPStr)] string varName);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);

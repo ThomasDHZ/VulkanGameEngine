@@ -81,6 +81,15 @@ struct ShaderVariable
     ShaderMemberType  MemberTypeEnum = shaderUnknown;
 };
 
+struct ShaderVariableDLL
+{
+    const char* Name;
+    size_t Size = 0;
+    size_t ByteAlignment = 0;
+    void* Value = nullptr;
+    ShaderMemberType  MemberTypeEnum = shaderUnknown;
+};
+
 struct ShaderStruct
 {
     String          Name;
@@ -95,7 +104,7 @@ struct ShaderStructDLL
     const char* Name;
     size_t          ShaderBufferSize = 0;
     size_t          ShaderBufferVariableCount = 0;
-    ShaderVariable* ShaderBufferVariableList;
+    ShaderVariableDLL* ShaderBufferVariableList;
     int             ShaderStructBufferId;
     void* ShaderStructBuffer = nullptr;
 };

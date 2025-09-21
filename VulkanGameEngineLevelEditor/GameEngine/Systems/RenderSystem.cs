@@ -126,8 +126,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
                 JObject jObject = JObject.Parse(pipelineJsonContent);
                 string pipelineJson = renderPassLoader.RenderPipelineList[x];
-                ShaderPipelineData shaderPiplineInfo = ShaderSystem.LoadShaderPipelineData(new List<string> { jObject["ShaderList"][0].ToString(), jObject["ShaderList"][1].ToString() });
-                var a = VulkanPipeline_CreateRenderPipeline(renderer.Device, vulkanRenderPass, pipelineJson, gpuIncludes, shaderPiplineInfo);
+                string shader1 = @$"{ConstConfig.BaseDirectoryPath}RenderPass/{jObject["ShaderList"][0].ToString()}";
+                string shader2 = @$"{ConstConfig.BaseDirectoryPath}RenderPass/{jObject["ShaderList"][1].ToString()}";
+                ShaderPipelineData shaderPiplineInfo = ShaderSystem.LoadShaderPipelineData(new List<string> { shader1, shader2 });
+                var a = VulkanPipeline_CreateRenderPipeline(renderer.Device, vulkanRenderPass, @$"{ConstConfig.BaseDirectoryPath}RenderPass/{renderPassLoader.RenderPipelineList[x]}", gpuIncludes, shaderPiplineInfo);
             }
             return vulkanRenderPass.RenderPassId;
         }

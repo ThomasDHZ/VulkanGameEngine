@@ -1,9 +1,9 @@
 #include "Material.h"
 #include "json.h"
 
-Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct, const char* jsonString)
+Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString)
 {
-    materialBuffer = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderStruct.ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | 
+    materialBuffer = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderStructBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
                                                                                                                                                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | 
                                                                                                                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
                                                                                                                                                                     VK_BUFFER_USAGE_TRANSFER_DST_BIT,
@@ -33,12 +33,6 @@ Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferInd
         .AmbientOcclusion = json["AmbientOcclusion"],
         .Alpha = json["Alpha"],
     };
-}
-
-
-void Material_UpdateBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct)
-{
-    VulkanBuffer_UpdateBufferMemory(renderer, materialBuffer, shaderStruct.ShaderStructBuffer, shaderStruct.ShaderBufferSize, 1);
 }
 
 void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer)

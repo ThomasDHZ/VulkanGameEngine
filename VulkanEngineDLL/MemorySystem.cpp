@@ -28,7 +28,7 @@ extern "C"
         const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
         const char* typeStr = type ? _strdup(type) : nullptr;
         const char* funcStr = func ? _strdup(func) : nullptr;
-        const char* notesStr = notes ? _strdup(notes) : nullptr;
+       // const char* notesStr = notes ? _strdup(notes) : nullptr;
 
         return MemoryLeakPtr
         {
@@ -39,7 +39,7 @@ extern "C"
             .Line = lineStr,
             .Type = typeStr,
             .Function = funcStr,
-            .Notes = notesStr
+          //  .Notes = notesStr
         };
     }
 
@@ -56,7 +56,7 @@ extern "C"
             String lineStr(ptr->Line);
             String typeStr(ptr->Type);
             String functionStr(ptr->Function);
-            String noteStr(ptr->Notes);
+            //String noteStr(ptr->Notes);
 
             HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
             if (hConsole != INVALID_HANDLE_VALUE)
@@ -108,7 +108,7 @@ extern "C"
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                 std::cout << " Notes: ";
                 SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (noteStr.empty() ? "None" : noteStr) << std::endl;
+               // std::cout << (noteStr.empty() ? "None" : noteStr) << std::endl;
             }
             else
             {
@@ -117,8 +117,8 @@ extern "C"
                           << " IsArray: " << (ptr->isArray ? "Yes" : "No")
                           << " File: " << (fileStr.empty() ? "Unknown" : fileStr)
                           << " Line: " << (lineStr.empty() ? "Unknown" : lineStr)
-                          << " Function: " << (functionStr.empty() ? "Unknown" : functionStr)
-                          << " Notes: " << (noteStr.empty() ? "None" : noteStr) << std::endl;
+                          << " Function: " << (functionStr.empty() ? "Unknown" : functionStr) << std::endl;
+                         // << " Notes: " << (noteStr.empty() ? "None" : noteStr) << std::endl;
             }
         }
     }

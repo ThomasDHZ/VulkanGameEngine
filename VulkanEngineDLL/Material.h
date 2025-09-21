@@ -48,8 +48,7 @@ struct Vector2Traits<Material>
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct, const char* jsonString);
-	DLL_EXPORT void Material_UpdateBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer, ShaderStruct& shaderStruct);
+	DLL_EXPORT Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString);
 	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, ShaderStruct& materialBuffer);
 #ifdef __cplusplus
 }
