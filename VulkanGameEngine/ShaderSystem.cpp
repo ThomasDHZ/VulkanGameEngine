@@ -70,23 +70,25 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
     {
         if (!ShaderPushConstantExists(pushConstant.PushConstantName))
         {
-            ShaderPushConstantMap[pushConstant.PushConstantName] = ShaderPushConstant
+            ShaderPushConstant shaderPushConstant = ShaderPushConstant
             {
                 .PushConstantName = pushConstant.PushConstantName,
                 .PushConstantSize = pushConstant.PushConstantSize,
-                .ShaderStageFlags = pushConstant.ShaderStageFlags,
                 .PushConstantVariableList = pushConstant.PushConstantVariableList,
                 .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
+                .ShaderStageFlags = pushConstant.ShaderStageFlags,
                 .GlobalPushContant = pushConstant.GlobalPushContant
             };
 
-            for (int x = 0; x < pushConstant.PushConstantVariableList.size(); x++)
+            for (auto& shaderVariable : shaderPushConstant.PushConstantVariableList)
             {
-                ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
-                ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name.c_str());
-                Shader_SetVariableDefaults(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x]);
-                memorySystem.RemovePtrBuffer<ShaderVariable>(variablePtr);
+                const String variableName = shaderVariable.Name;
+                ShaderVariable* shaderVariablePtr = &shaderVariable;
+                shaderVariable.Value = memorySystem.AddPtrBuffer<byte>(shaderVariable.Size, __FILE__, __LINE__, __func__, variableName.c_str());
+                Shader_SetVariableDefaults(shaderVariable.Value, shaderVariable.MemberTypeEnum);
+                memorySystem.RemovePtrBuffer<ShaderVariable>(shaderVariablePtr);
             }
+            ShaderPushConstantMap[pushConstant.PushConstantName] = shaderPushConstant;
         }
         memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
     }

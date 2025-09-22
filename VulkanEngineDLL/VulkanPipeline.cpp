@@ -11,7 +11,7 @@ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRender
     nlohmann::json pipelineJson = Json::ReadJson(pipelineJsonFilePath);
     RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
-    renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;
+    renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount > VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
     renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
     renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
     renderPipelineLoader.gpuIncludes = gpuIncludes;

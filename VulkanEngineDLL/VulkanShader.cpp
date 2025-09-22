@@ -51,20 +51,19 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
         }
     }
 
-    ShaderPipelineData shaderPipelineData = ShaderPipelineData
+    return ShaderPipelineData
     {
          .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
          .VertexInputBindingCount = vertexInputBindingList.size(),
          .VertexInputAttributeListCount = vertexInputAttributeList.size(),
          .PushConstantCount = constBuffers.size(),
+         .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__),
          .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
          .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
-         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__),
-         .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__)
+         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__)
     };
-    return shaderPipelineData;
 }
 
 ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShaderPaths, size_t pipelineShaderCount)
@@ -154,7 +153,7 @@ ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShade
             });
     }
 
-    ShaderPipelineDataDLL shaderPipelineData = ShaderPipelineDataDLL
+    return ShaderPipelineDataDLL
     {
          .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
@@ -167,7 +166,6 @@ ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShade
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
          .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstantDLL>(shaderPushConstantList.data(), shaderPushConstantList.size(), __FILE__, __LINE__, __func__),
     };
-    return shaderPipelineData;
 }
 
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
@@ -243,82 +241,22 @@ void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstantListAr
     }
 }
 
-void Shader_SetVariableDefaults(ShaderVariable& shaderVariable)
+void Shader_SetVariableDefaults(void* valuePtr, ShaderMemberType memberType)
 {
-    switch (shaderVariable.MemberTypeEnum)
+    switch (memberType)
     {
-        case shaderInt:
-        {
-            int varType = 0;
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderUint:
-        {
-            int varType = 0;
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderFloat:
-        {
-            int varType = 0.0f;
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderIvec2:
-        {
-            ivec2 varType = ivec2(0.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderIvec3:
-        {
-            ivec3 varType = ivec3(0.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderIvec4:
-        {
-            ivec4 varType = ivec4(0.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderVec2:
-        {
-            vec2 varType = vec2(0.0);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderVec3:
-        {
-            vec3 varType = vec3(0.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderVec4:
-        {
-            vec4 varType = vec4(0.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderMat2:
-        {
-            mat2 varType = mat2(1.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderMat3:
-        {
-            mat3 varType = mat3(1.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
-        case shaderMat4:
-        {
-            mat4 varType = mat4(1.0f);
-            memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-            break;
-        }
+        case shaderInt:   { int   varType = 0;          memcpy(valuePtr, &varType, sizeof(int));   break; }
+        case shaderUint:  { int   varType = 0;          memcpy(valuePtr, &varType, sizeof(uint));  break; }
+        case shaderFloat: { int   varType = 0.0f;       memcpy(valuePtr, &varType, sizeof(float)); break; }
+        case shaderIvec2: { ivec2 varType = ivec2(0);   memcpy(valuePtr, &varType, sizeof(ivec2)); break; }
+        case shaderIvec3: { ivec3 varType = ivec3(0);   memcpy(valuePtr, &varType, sizeof(ivec3)); break; }
+        case shaderIvec4: { ivec4 varType = ivec4(0);   memcpy(valuePtr, &varType, sizeof(ivec4)); break; }
+        case shaderVec2:  { vec2  varType = vec2(0.0);  memcpy(valuePtr, &varType, sizeof(vec2));  break; }
+        case shaderVec3:  { vec3  varType = vec3(0.0f); memcpy(valuePtr, &varType, sizeof(vec3));  break; }
+        case shaderVec4:  { vec4  varType = vec4(0.0f); memcpy(valuePtr, &varType, sizeof(vec4));  break; }
+        case shaderMat2:  { mat2  varType = mat2(1.0f); memcpy(valuePtr, &varType, sizeof(mat2));  break; }
+        case shaderMat3:  { mat3  varType = mat3(1.0f); memcpy(valuePtr, &varType, sizeof(mat3));  break; }
+        case shaderMat4:  { mat4  varType = mat4(1.0f); memcpy(valuePtr, &varType, sizeof(mat4));  break; }
     }
 }
 
@@ -475,7 +413,7 @@ ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructTo
     for (size_t x = 0; x < shaderStruct.ShaderBufferVariableList.size(); ++x)
     {
         shaderStruct.ShaderBufferVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferVariableList[x].Size, __FILE__, __LINE__, __func__, shaderStruct.ShaderBufferVariableList[x].Name.c_str());
-        Shader_SetVariableDefaults(shaderStruct.ShaderBufferVariableList[x]);
+        Shader_SetVariableDefaults(shaderStruct.ShaderBufferVariableList[x].Value, shaderStruct.ShaderBufferVariableList[x].MemberTypeEnum);
     }
 
     return shaderStruct;

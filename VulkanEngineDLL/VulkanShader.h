@@ -30,7 +30,7 @@ extern "C" {
     DLL_EXPORT void Shader_ShaderDestroy(ShaderPipelineData& shader);
     DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStrucCount);
     DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant, size_t pushConstantCount);
-    DLL_EXPORT void Shader_SetVariableDefaults(ShaderVariable& shaderVariable);
+    DLL_EXPORT void Shader_SetVariableDefaults(void* valuePtr, ShaderMemberType memberType);
    
     DLL_EXPORT ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShaderPaths, size_t pipelineShaderCount);
     DLL_EXPORT ShaderStructDLL* Shader_LoadProtoTypeStructsCS(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);

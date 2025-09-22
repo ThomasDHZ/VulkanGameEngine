@@ -107,15 +107,35 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 }
             }
 
-            //ShaderPipelineData nativeData = null;
             try
             {
                 ShaderPipelineData shaderPipelineData = Shader_LoadPipelineShaderDataCS(shaderPathsPtr, (nuint)shaderPathList.Count);
+
+                List<VkVertexInputAttributeDescription> vertexInputAttribute = new ListPtr<VkVertexInputAttributeDescription>(shaderPipelineData.VertexInputAttributeList, shaderPipelineData.VertexInputAttributeListCount).ToList();
+                List<VkVertexInputBindingDescription> vertexInputBinding = new ListPtr<VkVertexInputBindingDescription>(shaderPipelineData.VertexInputBindingList, shaderPipelineData.VertexInputBindingCount).ToList();
+                List<ShaderDescriptorBindingDLL> shaderDescriptorBindingList = new ListPtr<ShaderDescriptorBindingDLL>(shaderPipelineData.DescriptorBindingsList, shaderPipelineData.DescriptorBindingCount).ToList();
                 ListPtr<ShaderPushConstantDLL> shaderPushConstantList = new ListPtr<ShaderPushConstantDLL>(shaderPipelineData.PushConstantList, shaderPipelineData.PushConstantCount);
-                foreach(var shaderPushConstant in shaderPushConstantList) 
+                foreach (var shaderPushConstantDLL in shaderPushConstantList)
                 {
-                    string name = Marshal.PtrToStringAnsi(shaderPushConstant.PushConstantName);
-                    ShaderPushConstantMap[name] = new ShaderPushConstant(shaderPushConstant);
+                    string name = Marshal.PtrToStringAnsi(shaderPushConstantDLL.PushConstantName);
+                    ShaderPushConstant shaderPushConstant = new ShaderPushConstant(shaderPushConstantDLL);
+                    if (!ShaderPushConstantExists(Marshal.PtrToStringAnsi(shaderPushConstantDLL.PushConstantName)))
+                    {
+                        shaderPushConstant.PushConstantBuffer = MemorySystem.AddPtrBuffer<byte>((byte)shaderPushConstant.PushConstantSize);
+                        for (int x = 0; x < shaderPushConstant.PushConstantVariableList.Count(); x++)
+                        {
+                            shaderPushConstant.PushConstantVariableList[x] = new ShaderVariable
+                            {
+                                Name = shaderPushConstant.PushConstantVariableList[x].Name,
+                                ByteAlignment = shaderPushConstant.PushConstantVariableList[x].ByteAlignment,
+                                MemberTypeEnum = shaderPushConstant.PushConstantVariableList[x].MemberTypeEnum,
+                                Size = shaderPushConstant.PushConstantVariableList[x].Size,
+                                Value = MemorySystem.AddPtrBuffer<byte>((byte)shaderPushConstant.PushConstantVariableList[x].Size)
+                            };
+                            Shader_SetVariableDefaults(shaderPushConstant.PushConstantVariableList[x].Value, shaderPushConstant.PushConstantVariableList[x].MemberTypeEnum);
+                        }
+                    }
+                    ShaderPushConstantMap[name] = shaderPushConstant;
                 }
                 return shaderPipelineData;
             }
@@ -399,7 +419,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_ShaderDestroy(ShaderPipelineData shader);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_SetVariableDefaults(ShaderVariable shaderVariable);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_SetVariableDefaults(void* shaderVariableValue, ShaderMemberType shaderMemberTypeEnum);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern bool Shader_BuildGLSLShaders([MarshalAs(UnmanagedType.LPStr)] string command);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkShaderModule Shader_BuildGLSLShaderFile(VkDevice device, [MarshalAs(UnmanagedType.LPStr)] string path);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern VkPipelineShaderStageCreateInfo Shader_CreateShader(VkShaderModule shaderModule, VkShaderStageFlagBits shaderStages);
