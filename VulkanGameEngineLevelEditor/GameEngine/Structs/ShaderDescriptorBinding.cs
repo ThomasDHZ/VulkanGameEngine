@@ -11,7 +11,7 @@ using VulkanGameEngineLevelEditor.Models;
 namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    public unsafe struct ShaderDescriptorBinding
+    public unsafe struct ShaderDescriptorBindingDLL
     {
         public IntPtr Name;
         public uint Binding;

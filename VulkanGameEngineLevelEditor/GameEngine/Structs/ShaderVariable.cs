@@ -62,5 +62,19 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
         public nuint ByteAlignment;
         public IntPtr Value;
         public ShaderMemberType MemberTypeEnum;
+
+        public ShaderVariableDLL()
+        {
+
+        }
+
+        public ShaderVariableDLL(ShaderVariable shaderStruct)
+        {
+            Name = Marshal.StringToHGlobalAnsi(shaderStruct.Name);
+            Size = shaderStruct.Size;
+            ByteAlignment = shaderStruct.ByteAlignment;
+            Value = (nint)shaderStruct.Value;
+            MemberTypeEnum = shaderStruct.MemberTypeEnum;
+        }
     }
 }

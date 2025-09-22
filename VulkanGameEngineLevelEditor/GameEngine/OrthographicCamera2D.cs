@@ -110,8 +110,7 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
             }
 
             size_t offset = 0;
-            ListPtr<ShaderVariable> variables = new ListPtr<ShaderVariable>(sceneDataBuffer.PushConstantVariableList, (IntPtr)sceneDataBuffer.PushConstantVariableListCount);
-            foreach (ShaderVariable variable in variables)
+            foreach (ShaderVariable variable in sceneDataBuffer.PushConstantVariableList)
             {
                 offset = ((size_t)offset + (size_t)variable.ByteAlignment - 1) & ~((size_t)variable.ByteAlignment - 1);
                 byte* sourcePtr = (byte*)variable.Value;

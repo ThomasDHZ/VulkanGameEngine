@@ -130,14 +130,37 @@ struct ShaderDescriptorBinding
     VkDescriptorBufferInfo* DescriptorBufferInfo;
 };
 
+struct ShaderDescriptorBindingDLL
+{
+    const char* Name;
+    uint32 Binding;
+    size_t DescriptorCount;
+    VkShaderStageFlags ShaderStageFlags;
+    DescriptorBindingPropertiesEnum DescriptorBindingType;
+    VkDescriptorType DescripterType;
+    VkDescriptorImageInfo* DescriptorImageInfo;
+    VkDescriptorBufferInfo* DescriptorBufferInfo;
+};
+
 struct ShaderPushConstant
 {
     String     PushConstantName;
     size_t			PushConstantSize = 0;
-    VkShaderStageFlags ShaderStageFlags;
     Vector<ShaderVariable> PushConstantVariableList;
     void*           PushConstantBuffer = nullptr;
+    VkShaderStageFlags ShaderStageFlags;
     bool			GlobalPushContant = false;
+};
+
+struct ShaderPushConstantDLL
+{
+    const char*        PushConstantName;
+    size_t			   PushConstantSize = 0;
+    size_t             PushConstantVariableCount = 0;
+    ShaderVariableDLL*    PushConstantVariableList;
+    void*              PushConstantBuffer = nullptr;
+    VkShaderStageFlags ShaderStageFlags;
+    bool			   GlobalPushContant = false;
 };
 
 struct ShaderPipelineData
@@ -149,13 +172,31 @@ struct ShaderPipelineData
     size_t VertexInputAttributeListCount = 0;
     size_t ShaderOutputCount = 0;
     size_t PushConstantCount = 0;
-    const char** ShaderList = nullptr;
     ShaderDescriptorBinding* DescriptorBindingsList = nullptr;
     ShaderStruct* ShaderStructList = nullptr;
     VkVertexInputBindingDescription* VertexInputBindingList = nullptr;
     VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
     ShaderVariable* ShaderOutputList = nullptr;
     ShaderPushConstant* PushConstantList = nullptr;
+    const char** ShaderList = nullptr;
+};
+
+struct ShaderPipelineDataDLL
+{
+    size_t ShaderCount = 0;
+    size_t DescriptorBindingCount = 0;
+    size_t ShaderStructCount = 0;
+    size_t VertexInputBindingCount = 0;
+    size_t VertexInputAttributeListCount = 0;
+    size_t ShaderOutputCount = 0;
+    size_t PushConstantCount = 0;
+    const char** ShaderList = nullptr;
+    ShaderDescriptorBindingDLL* DescriptorBindingsList = nullptr;
+    ShaderStructDLL* ShaderStructList = nullptr;
+    VkVertexInputBindingDescription* VertexInputBindingList = nullptr;
+    VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
+    ShaderVariableDLL* ShaderOutputList = nullptr;
+    ShaderPushConstantDLL* PushConstantList = nullptr;
 };
 
 struct GPUIncludes

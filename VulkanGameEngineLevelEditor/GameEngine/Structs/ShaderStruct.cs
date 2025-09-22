@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Structs
@@ -43,5 +44,26 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
         public ShaderVariableDLL* ShaderBufferVariableList;
         public int ShaderStructBufferId;
         public void* ShaderStructBuffer;
+
+        public ShaderStructDLL()
+        {
+
+        }
+
+        public ShaderStructDLL(ShaderStruct shaderStruct)
+        {
+            ListPtr<ShaderVariableDLL> shaderVariableList = new ListPtr<ShaderVariableDLL>();
+            foreach (var shaderVar in shaderStruct.ShaderBufferVariableList)
+            {
+                shaderVariableList.Add(new ShaderVariableDLL(shaderVar));
+            }
+
+            Name = Marshal.StringToHGlobalAnsi(shaderStruct.Name);
+            ShaderBufferSize = shaderStruct.ShaderBufferSize;
+            ShaderBufferVariableCount = (nuint)shaderVariableList.Count;
+            ShaderBufferVariableList = shaderVariableList.Ptr;
+            ShaderStructBufferId = shaderStruct.ShaderStructBufferId;
+            ShaderStructBuffer = shaderStruct.ShaderStructBuffer;
+        }
     }
 }

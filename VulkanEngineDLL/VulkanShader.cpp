@@ -1,7 +1,5 @@
 #include "VulkanShader.h"
-#include <regex>
 #include "MemorySystem.h"
-#include "json.h"
 #include "CHelper.h"
 #include "File.h"
 #include "CFile.h"
@@ -53,7 +51,110 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
         }
     }
 
-    return ShaderPipelineData
+    ShaderPipelineData shaderPipelineData = ShaderPipelineData
+    {
+         .ShaderCount = pipelineShaderCount,
+         .DescriptorBindingCount = descriptorBindings.size(),
+         .VertexInputBindingCount = vertexInputBindingList.size(),
+         .VertexInputAttributeListCount = vertexInputAttributeList.size(),
+         .PushConstantCount = constBuffers.size(),
+         .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
+         .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
+         .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
+         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__),
+         .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__)
+    };
+    return shaderPipelineData;
+}
+
+ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShaderPaths, size_t pipelineShaderCount)
+{
+    SpvReflectShaderModule spvModule;
+    Vector<VkVertexInputBindingDescription> vertexInputBindingList;
+    Vector<VkVertexInputAttributeDescription> vertexInputAttributeList;
+    Vector<ShaderPushConstant> constBuffers;
+    Vector<ShaderStruct> shaderStructs;
+    Vector<ShaderDescriptorBinding> descriptorBindings;
+
+    Vector<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderPaths + pipelineShaderCount);
+    for (auto& pipelineShaderPath : pipelineShaderPathList)
+    {
+        FileState file = File_Read(pipelineShaderPath.c_str());
+        SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
+        Shader_GetShaderConstBuffer(spvModule, constBuffers);
+        Shader_GetShaderDescriptorBindings(spvModule, descriptorBindings);
+        if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
+        {
+            Shader_GetShaderInputVertexVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
+        }
+        spvReflectDestroyShaderModule(&spvModule);
+        free(file.Data);
+        file.Data = nullptr;
+    }
+
+    Vector<const char*> cPipelineShaderPathList;
+    cPipelineShaderPathList.reserve(pipelineShaderPathList.size());
+    for (const auto& pipelineShaderPath : pipelineShaderPathList)
+    {
+        const char* copiedStr = memorySystem.AddPtrBuffer(pipelineShaderPath.c_str(), __FILE__, __LINE__, __func__, "Shader path string");
+        if (copiedStr)
+        {
+            cPipelineShaderPathList.push_back(copiedStr);
+        }
+        else
+        {
+            std::cerr << "Failed to allocate memory for shader path: " << pipelineShaderPath << std::endl;
+        }
+    }
+
+    Vector<ShaderDescriptorBindingDLL> shaderDescriptorBindingList;
+    for (auto& descriptorBinding : descriptorBindings)
+    {
+        const char* copiedStr = memorySystem.AddPtrBuffer(descriptorBinding.Name.c_str(), __FILE__, __LINE__, __func__, "ShaderDescriptorBinding");
+        shaderDescriptorBindingList.emplace_back(ShaderDescriptorBindingDLL
+            {
+                .Name = copiedStr,
+                .Binding = descriptorBinding.Binding,
+                .DescriptorCount = descriptorBinding.DescriptorCount,
+                .ShaderStageFlags = descriptorBinding.ShaderStageFlags,
+                .DescriptorBindingType = descriptorBinding.DescriptorBindingType,
+                .DescripterType = descriptorBinding.DescripterType,
+                .DescriptorImageInfo = descriptorBinding.DescriptorImageInfo,
+                .DescriptorBufferInfo = descriptorBinding.DescriptorBufferInfo,
+            });
+    }
+
+    Vector<ShaderPushConstantDLL> shaderPushConstantList;
+    for (auto& constBuffer : constBuffers)
+    {
+        Vector<ShaderVariableDLL> shaderVariableList;
+        for (auto& pushConstVariable : constBuffer.PushConstantVariableList)
+        {
+            const char* shaderVariableCopiedStr = memorySystem.AddPtrBuffer(pushConstVariable.Name.c_str(), __FILE__, __LINE__, __func__, "ShaderPushConstant Variable");
+            shaderVariableList.emplace_back(ShaderVariableDLL
+                {
+                    .Name = shaderVariableCopiedStr,
+                    .Size = pushConstVariable.Size,
+                    .ByteAlignment = pushConstVariable.ByteAlignment,
+                    .Value = pushConstVariable.Value,
+                    .MemberTypeEnum = pushConstVariable.MemberTypeEnum
+                });
+        }
+
+        const char* pushConstantCopiedStr = memorySystem.AddPtrBuffer(constBuffer.PushConstantName.c_str(), __FILE__, __LINE__, __func__, "ShaderPushConstant");
+        shaderPushConstantList.emplace_back(ShaderPushConstantDLL
+            {
+                .PushConstantName = pushConstantCopiedStr,
+                .PushConstantSize = constBuffer.PushConstantSize,
+                .PushConstantVariableCount = shaderVariableList.size(),
+                .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariableDLL>(shaderVariableList.data(), shaderVariableList.size(), __FILE__, __LINE__, __func__),
+                .PushConstantBuffer = constBuffer.PushConstantBuffer,
+                .ShaderStageFlags = constBuffer.ShaderStageFlags,
+                .GlobalPushContant = constBuffer.GlobalPushContant,
+            });
+    }
+
+    ShaderPipelineDataDLL shaderPipelineData = ShaderPipelineDataDLL
     {
          .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
@@ -61,11 +162,12 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
          .VertexInputAttributeListCount = vertexInputAttributeList.size(),
          .PushConstantCount = constBuffers.size(),
          .ShaderList = memorySystem.AddPtrBuffer<const char*>(cPipelineShaderPathList.data(), cPipelineShaderPathList.size(), __FILE__, __LINE__, __func__),
-         .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBinding>(descriptorBindings.data(), descriptorBindings.size(), __FILE__, __LINE__, __func__),
+         .DescriptorBindingsList = memorySystem.AddPtrBuffer<ShaderDescriptorBindingDLL>(shaderDescriptorBindingList.data(), shaderDescriptorBindingList.size(), __FILE__, __LINE__, __func__),
          .VertexInputBindingList = memorySystem.AddPtrBuffer<VkVertexInputBindingDescription>(vertexInputBindingList.data(), vertexInputBindingList.size(), __FILE__, __LINE__, __func__),
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
-         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstant>(constBuffers.data(), constBuffers.size(), __FILE__, __LINE__, __func__)
+         .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstantDLL>(shaderPushConstantList.data(), shaderPushConstantList.size(), __FILE__, __LINE__, __func__),
     };
+    return shaderPipelineData;
 }
 
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
@@ -989,8 +1091,8 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                 {
                     .PushConstantName = pushConstantName,
                     .PushConstantSize = bufferSize,
-                    .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                     .PushConstantVariableList = shaderVariables,
+                    .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                 });
         }
         else

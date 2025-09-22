@@ -1,10 +1,6 @@
 #pragma once
-#include <nlohmann/json.hpp>
-#include "Typedef.h"
-#include <vulkan/vulkan.h>
 #include "JsonStructs.h"
 #include "JsonStruct.h"
-#include "json.h"
 
 namespace nlohmann
 {
