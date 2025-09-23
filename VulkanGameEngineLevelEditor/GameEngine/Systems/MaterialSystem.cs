@@ -117,7 +117,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                     *(uint*)shaderVar->Value = MetallicMapId;
                 }
 
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "RoughnessMapMap");
+                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "RoughnessMap");
                 if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
                 {
                     *(uint*)shaderVar->Value = RoughnessMapId;

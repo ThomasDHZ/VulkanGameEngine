@@ -25,7 +25,7 @@ extern "C" {
     DLL_EXPORT void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct);
     DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
     DLL_EXPORT ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy);
-    DLL_EXPORT const ShaderVariable* Shader_SearchShaderConstStructVar(const ShaderPushConstant* pushConstant, const String& varName);
+    DLL_EXPORT ShaderVariable* Shader_SearchShaderPushConstStructVar(ShaderPushConstant* pushConstant, const char* varName);
     DLL_EXPORT ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct* shaderStruct, const char* varName);
     DLL_EXPORT void Shader_ShaderDestroy(ShaderPipelineData& shader);
     DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStrucCount);
@@ -34,6 +34,8 @@ extern "C" {
    
     DLL_EXPORT ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShaderPaths, size_t pipelineShaderCount);
     DLL_EXPORT ShaderStructDLL* Shader_LoadProtoTypeStructsCS(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
+    DLL_EXPORT ShaderVariableDLL* Shader_SearchShaderPushConstStructVarCS(ShaderPushConstantDLL* pushConstant, const char* varName);
+    DLL_EXPORT ShaderVariableDLL* Shader_SearchShaderStructVarCS(ShaderStructDLL* shaderStruct, const char* varName);
 #ifdef __cplusplus
 }
 #endif

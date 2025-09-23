@@ -73,14 +73,14 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
             ViewMatrix = transform.Inverse;
             ProjectionMatrix = mat4.Ortho(0.0f, Width, Height, 0.0f);
 
-            ShaderVariable* shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex");
+            ShaderVariable* shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "MeshBufferIndex");
             if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
             {
                 uint* ptr = (uint*)shaderVar->Value;
                 *ptr = 0; // Match C++ default
             }
 
-            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "Projection");
+            shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "Projection");
             if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
             {
                 float* matrixPtr = (float*)shaderVar->Value;
@@ -90,7 +90,7 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
                 }
             }
 
-            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "View");
+            shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "View");
             if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
             {
                 float* matrixPtr = (float*)shaderVar->Value;
@@ -100,7 +100,7 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
                 }
             }
 
-            shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "CameraPosition");
+            shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "CameraPosition");
             if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
             {
                 float* ptr = (float*)shaderVar->Value;

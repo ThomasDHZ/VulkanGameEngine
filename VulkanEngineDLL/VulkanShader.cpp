@@ -401,6 +401,81 @@ ShaderStructDLL* Shader_LoadProtoTypeStructsCS(const char** pipelineShaderPaths,
     return dllStructs;
 }
 
+ShaderVariableDLL* Shader_SearchShaderPushConstStructVarCS(ShaderPushConstantDLL* pushConstantDLL, const char* varName)
+{
+    Vector<ShaderVariable> shaderVariableList;
+    Span<ShaderVariableDLL> shaderVariableSpan(pushConstantDLL->VariableList, pushConstantDLL->VariableCount);
+    for (auto& pushConstVariable : shaderVariableSpan)
+    {
+        shaderVariableList.emplace_back(ShaderVariable
+            {
+                .Name = String(pushConstVariable.Name),
+                .Size = pushConstVariable.Size,
+                .ByteAlignment = pushConstVariable.ByteAlignment,
+                .Value = pushConstVariable.Value,
+                .MemberTypeEnum = pushConstVariable.MemberTypeEnum
+            });
+    }
+
+    ShaderPushConstant pushConstant = ShaderPushConstant
+    {
+        .Name = String(pushConstantDLL->Name),
+        .Size = pushConstantDLL->Size,
+        .VariableList = shaderVariableList,
+        .Buffer = pushConstantDLL->Buffer,
+        .ShaderStageFlags = pushConstantDLL->ShaderStageFlags,
+        .GlobalPushContant = pushConstantDLL->GlobalPushContant
+    };
+    ShaderPushConstant* pushConstantRef = &pushConstant;
+    ShaderVariable* ptr = Shader_SearchShaderPushConstStructVar(pushConstantRef, varName);
+    ShaderVariableDLL shaderVariable = ShaderVariableDLL
+    {
+        .Name = ptr->Name.c_str(),
+        .Size = ptr->Size,
+        .ByteAlignment = ptr->ByteAlignment,
+        .Value = ptr->Value,
+        .MemberTypeEnum = ptr->MemberTypeEnum
+    };
+    return &shaderVariable;
+}
+
+ShaderVariableDLL* Shader_SearchShaderStructVarCS(ShaderStructDLL* shaderStructDLL, const char* varName)
+{
+    Vector<ShaderVariable> shaderVariableList;
+    Span<ShaderVariableDLL> shaderVariableSpan(shaderStructDLL->ShaderBufferVariableList, shaderStructDLL->ShaderBufferVariableCount);
+    for (auto& pushConstVariable : shaderVariableSpan)
+    {
+        shaderVariableList.emplace_back(ShaderVariable
+            {
+                .Name = String(pushConstVariable.Name),
+                .Size = pushConstVariable.Size,
+                .ByteAlignment = pushConstVariable.ByteAlignment,
+                .Value = pushConstVariable.Value,
+                .MemberTypeEnum = pushConstVariable.MemberTypeEnum
+            });
+    }
+
+    ShaderStruct shaderStruct = ShaderStruct
+    {
+        .Name = String(shaderStructDLL->Name),
+        .ShaderBufferSize = shaderStructDLL->ShaderBufferSize,
+        .ShaderBufferVariableList = shaderVariableList,
+        .ShaderStructBufferId = shaderStructDLL->ShaderStructBufferId,
+        .ShaderStructBuffer = shaderStructDLL->ShaderStructBuffer,
+    };
+
+    ShaderVariable* ptr = Shader_SearchShaderStructVar(&shaderStruct, varName);
+    ShaderVariableDLL shaderVariable = ShaderVariableDLL
+    {
+        .Name = ptr->Name.c_str(),
+        .Size = ptr->Size,
+        .ByteAlignment = ptr->ByteAlignment,
+        .Value = ptr->Value,
+        .MemberTypeEnum = ptr->MemberTypeEnum
+    };
+    return &shaderVariable;
+}
+
 ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy)
 {
     ShaderStruct shaderStruct = ShaderStruct
@@ -1112,12 +1187,12 @@ const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPush
     return (it != shaderPushConstantList.end()) ? &(*it) : nullptr;
 }
 
- const ShaderVariable* Shader_SearchShaderConstStructVar(const ShaderPushConstant* pushConstant, const String& varName)
+ShaderVariable* Shader_SearchShaderPushConstStructVar(ShaderPushConstant* pushConstant, const char* varName)
 {
     auto& variableList = pushConstant->VariableList;
     auto it = std::ranges::find_if(variableList, [&](const ShaderVariable& var)
         {
-            return std::strcmp(var.Name.c_str(), varName.c_str()) == 0;
+            return std::strcmp(var.Name.c_str(), varName) == 0;
         });
     return (it != variableList.end()) ? &(*it) : nullptr;
 }

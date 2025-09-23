@@ -145,14 +145,59 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
-        public static unsafe ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, string varName)
+        public static unsafe ShaderVariable* SearchGlobalShaderPushConstantVar(ShaderPushConstant pushConstant, string varName)
         {
-            return Shader_SearchShaderConstStructVar(pushConstant, varName);
+            ListPtr<ShaderVariableDLL> shaderVariableList = new ListPtr<ShaderVariableDLL>();
+            for(int x = 0; x < pushConstant.PushConstantVariableList.Count(); x++)
+            {
+                shaderVariableList.Add(new ShaderVariableDLL
+                {
+                    ByteAlignment = pushConstant.PushConstantVariableList[(int)x].ByteAlignment,
+                    MemberTypeEnum = pushConstant.PushConstantVariableList[(int)x].MemberTypeEnum,
+                    Name = Marshal.StringToHGlobalAnsi(pushConstant.PushConstantVariableList[(int)x].Name),
+                    Size = pushConstant.PushConstantVariableList[(int)x].Size,
+                    Value = (nint)pushConstant.PushConstantVariableList[(int)x].Value
+                });
+            }
+
+            ShaderPushConstantDLL shaderPushConstantDLL = new ShaderPushConstantDLL
+            {
+                GlobalPushContant = pushConstant.GlobalPushContant,
+                PushConstantBuffer = pushConstant.PushConstantBuffer,
+                PushConstantName = Marshal.StringToHGlobalAnsi(pushConstant.PushConstantName),
+                PushConstantSize = pushConstant.PushConstantSize,
+                PushConstantVariableList = shaderVariableList.Ptr,
+                PushConstantVariableListCount = (nuint)shaderVariableList.Count,
+                ShaderStageFlags = pushConstant.ShaderStageFlags
+            };
+            return Shader_SearchShaderPushConstStructVarCS(&shaderPushConstantDLL, varName);
         }
 
         public static ShaderVariable* SearchShaderStruct(ShaderStruct shaderStruct, string varName)
         {
-            return Shader_SearchShaderStructVar(shaderStruct, varName);
+            ListPtr<ShaderVariableDLL> shaderVariableList = new ListPtr<ShaderVariableDLL>();
+            for (int x = 0; x < shaderStruct.ShaderBufferVariableList.Count(); x++)
+            {
+                shaderVariableList.Add(new ShaderVariableDLL
+                {
+                    ByteAlignment = shaderStruct.ShaderBufferVariableList[(int)x].ByteAlignment,
+                    MemberTypeEnum = shaderStruct.ShaderBufferVariableList[(int)x].MemberTypeEnum,
+                    Name = Marshal.StringToHGlobalAnsi(shaderStruct.ShaderBufferVariableList[(int)x].Name),
+                    Size = shaderStruct.ShaderBufferVariableList[(int)x].Size,
+                    Value = (nint)shaderStruct.ShaderBufferVariableList[(int)x].Value
+                });
+            }
+
+            ShaderStructDLL shaderStructDLL = new ShaderStructDLL
+            {
+                Name = Marshal.StringToHGlobalAnsi(shaderStruct.Name),
+                ShaderBufferSize = shaderStruct.ShaderBufferSize,
+                ShaderBufferVariableCount = (nuint)shaderVariableList.Count,
+                ShaderBufferVariableList = shaderVariableList.Ptr,
+                ShaderStructBuffer = shaderStruct.ShaderStructBuffer,
+                ShaderStructBufferId = shaderStruct.ShaderStructBufferId
+            };
+            return Shader_SearchShaderStructVarCS(&shaderStructDLL, varName);
         }
 
         public static void UpdateGlobalShaderBuffer(string pushConstantName)
@@ -425,8 +470,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_UpdatePushConstantBuffer(GraphicsRenderer renderer, ShaderPushConstant pushConstantStruct);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStructDLL* Shader_LoadProtoTypeStructsCS(IntPtr[] pipelineShaderPaths, nuint pipelineShaderCount, out nuint outProtoTypeStructCount);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderStruct Shader_CopyShaderStructPrototype(ShaderStruct shaderStructToCopy);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, [MarshalAs(UnmanagedType.LPStr)] string varName);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderPushConstStructVarCS(ShaderPushConstantDLL* pushConstant, [MarshalAs(UnmanagedType.LPStr)] string varName);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVarCS(ShaderStructDLL* shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);
     }
 }
 
