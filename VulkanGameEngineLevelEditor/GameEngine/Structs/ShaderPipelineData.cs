@@ -11,13 +11,13 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct ShaderPipelineData
     {
-        public size_t ShaderCount { get; set; }
-        public size_t DescriptorBindingCount { get; set; }
-        public size_t ShaderStructCount { get; set; }
-        public size_t VertexInputBindingCount { get; set; }
-        public size_t VertexInputAttributeListCount { get; set; }
-        public size_t ShaderOutputCount { get; set; }
-        public size_t PushConstantCount { get; set; }
+        public nuint ShaderCount { get; set; }
+        public nuint DescriptorBindingCount { get; set; }
+        public nuint ShaderStructCount { get; set; }
+        public nuint VertexInputBindingCount { get; set; }
+        public nuint VertexInputAttributeListCount { get; set; }
+        public nuint ShaderOutputCount { get; set; }
+        public nuint PushConstantCount { get; set; }
         public IntPtr ShaderList { get; set; } // const char**
         public ShaderDescriptorBindingDLL* DescriptorBindingsList { get; set; }
         public ShaderStructDLL* ShaderStructList { get; set; }
@@ -32,9 +32,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
                 return Array.Empty<string>();
 
             string[] result = new string[ShaderCount];
-            for (size_t i = 0; i < ShaderCount; i++)
+            for (nuint i = 0; i < ShaderCount; i++)
             {
-                IntPtr stringPtr = Marshal.ReadIntPtr(ShaderList, (int)(i * IntPtr.Size));
+                IntPtr stringPtr = Marshal.ReadIntPtr(ShaderList, (int)(i * (nuint)IntPtr.Size));
                 result[i] = stringPtr != IntPtr.Zero ? Marshal.PtrToStringAnsi(stringPtr) : null;
             }
             return result;

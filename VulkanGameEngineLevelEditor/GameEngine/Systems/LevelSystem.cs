@@ -75,11 +75,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 string fullMaterialPath = Path.GetFullPath(Path.Combine(levelDirectory, materialPath));
                 MaterialSystem.LoadMaterial(fullMaterialPath);
             }
-            foreach (var spriteVRAMPath in levelLoader.LoadSpriteVRAM)
-            {
-                string fullSpriteVRAMPath = Path.GetFullPath(Path.Combine(levelDirectory, spriteVRAMPath));
-                SpriteSystem.LoadSpriteVRAM(fullSpriteVRAMPath);
-            }
+            //foreach (var spriteVRAMPath in levelLoader.LoadSpriteVRAM)
+            //{
+            //    string fullSpriteVRAMPath = Path.GetFullPath(Path.Combine(levelDirectory, spriteVRAMPath));
+            //    SpriteSystem.LoadSpriteVRAM(fullSpriteVRAMPath);
+            //}
             foreach (var levelLayoutPath in levelLoader.LoadTileSetVRAM)
             {
                 string fullLevelLayoutPath = Path.GetFullPath(Path.Combine(levelDirectory, levelLayoutPath));
@@ -114,7 +114,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void Update(float deltaTime)
         {
             OrthographicCamera.Update(ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
-            SpriteSystem.Update(deltaTime);
+          //  SpriteSystem.Update(deltaTime);
             foreach (var levelLayer in LevelLayerList)
             {
                 // levelLayer.Update(deltaTime);

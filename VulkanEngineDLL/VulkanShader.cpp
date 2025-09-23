@@ -127,7 +127,7 @@ ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShade
     for (auto& constBuffer : constBuffers)
     {
         Vector<ShaderVariableDLL> shaderVariableList;
-        for (auto& pushConstVariable : constBuffer.PushConstantVariableList)
+        for (auto& pushConstVariable : constBuffer.VariableList)
         {
             const char* shaderVariableCopiedStr = memorySystem.AddPtrBuffer(pushConstVariable.Name.c_str(), __FILE__, __LINE__, __func__, "ShaderPushConstant Variable");
             shaderVariableList.emplace_back(ShaderVariableDLL
@@ -140,20 +140,20 @@ ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShade
                 });
         }
 
-        const char* pushConstantCopiedStr = memorySystem.AddPtrBuffer(constBuffer.PushConstantName.c_str(), __FILE__, __LINE__, __func__, "ShaderPushConstant");
+        const char* pushConstantCopiedStr = memorySystem.AddPtrBuffer(constBuffer.Name.c_str(), __FILE__, __LINE__, __func__, "ShaderPushConstant");
         shaderPushConstantList.emplace_back(ShaderPushConstantDLL
             {
-                .PushConstantName = pushConstantCopiedStr,
-                .PushConstantSize = constBuffer.PushConstantSize,
-                .PushConstantVariableCount = shaderVariableList.size(),
-                .PushConstantVariableList = memorySystem.AddPtrBuffer<ShaderVariableDLL>(shaderVariableList.data(), shaderVariableList.size(), __FILE__, __LINE__, __func__),
-                .PushConstantBuffer = constBuffer.PushConstantBuffer,
+                .Name = pushConstantCopiedStr,
+                .Size = constBuffer.Size,
+                .VariableCount = shaderVariableList.size(),
+                .VariableList = memorySystem.AddPtrBuffer<ShaderVariableDLL>(shaderVariableList.data(), shaderVariableList.size(), __FILE__, __LINE__, __func__),
+                .Buffer = constBuffer.Buffer,
                 .ShaderStageFlags = constBuffer.ShaderStageFlags,
                 .GlobalPushContant = constBuffer.GlobalPushContant,
             });
     }
 
-    return ShaderPipelineDataDLL
+    ShaderPipelineDataDLL shaderPipelineData = ShaderPipelineDataDLL
     {
          .ShaderCount = pipelineShaderCount,
          .DescriptorBindingCount = descriptorBindings.size(),
@@ -166,6 +166,8 @@ ShaderPipelineDataDLL Shader_LoadPipelineShaderDataCS(const char** pipelineShade
          .VertexInputAttributeList = memorySystem.AddPtrBuffer<VkVertexInputAttributeDescription>(vertexInputAttributeList.data(), vertexInputAttributeList.size(), __FILE__, __LINE__, __func__),
          .PushConstantList = memorySystem.AddPtrBuffer<ShaderPushConstantDLL>(shaderPushConstantList.data(), shaderPushConstantList.size(), __FILE__, __LINE__, __func__),
     };
+
+    return shaderPipelineData;
 }
 
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
@@ -221,7 +223,7 @@ void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstantListAr
     Span<ShaderPushConstant> pushConstantSpan(pushConstantListArray, pushConstantCount);
     for (auto& pushConstant : pushConstantSpan)
     {
-        for (auto& shaderVar : pushConstant.PushConstantVariableList)
+        for (auto& shaderVar : pushConstant.VariableList)
         {
             shaderVar.Name = shaderVar.Name.empty();
             shaderVar.ByteAlignment = 0;
@@ -230,13 +232,13 @@ void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstantListAr
             memorySystem.RemovePtrBuffer(shaderVar.Value);
         }
 
-        pushConstant.PushConstantName = pushConstant.PushConstantName.empty();
+        pushConstant.Name = pushConstant.Name.empty();
         pushConstant.GlobalPushContant = false;
-        pushConstant.PushConstantSize = 0;
+        pushConstant.Size = 0;
         pushConstant.ShaderStageFlags = 0;
-        if (pushConstant.PushConstantBuffer)
+        if (pushConstant.Buffer)
         {
-            memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
+            memorySystem.RemovePtrBuffer(pushConstant.Buffer);
         }
     }
 }
@@ -302,10 +304,10 @@ void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& v
 void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct)
 {
     size_t offset = 0;
-    for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
+    for (const auto& pushConstantVar : pushConstantStruct.VariableList)
     {
         offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
-        void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer) + offset;
+        void* dest = static_cast<byte*>(pushConstantStruct.Buffer) + offset;
         memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
         offset += pushConstantVar.Size;
     }
@@ -1027,9 +1029,9 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
 
             shaderPushConstantList.emplace_back(ShaderPushConstant
                 {
-                    .PushConstantName = pushConstantName,
-                    .PushConstantSize = bufferSize,
-                    .PushConstantVariableList = shaderVariables,
+                    .Name = pushConstantName,
+                    .Size = bufferSize,
+                    .VariableList = shaderVariables,
                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                 });
         }
@@ -1039,7 +1041,7 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
             auto it = std::find_if(shaderPushConstantList.data(), shaderPushConstantList.data() + shaderPushConstantList.size(),
                 [&](ShaderPushConstant& var) {
                     var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
-                    return var.PushConstantName == String(pushConstant->name);
+                    return var.Name == String(pushConstant->name);
                 }
             );
         }
@@ -1105,14 +1107,14 @@ const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPush
 {
     auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstant& var)
         {
-            return var.PushConstantName == constBufferName;
+            return var.Name == constBufferName;
         });
     return (it != shaderPushConstantList.end()) ? &(*it) : nullptr;
 }
 
  const ShaderVariable* Shader_SearchShaderConstStructVar(const ShaderPushConstant* pushConstant, const String& varName)
 {
-    auto& variableList = pushConstant->PushConstantVariableList;
+    auto& variableList = pushConstant->VariableList;
     auto it = std::ranges::find_if(variableList, [&](const ShaderVariable& var)
         {
             return std::strcmp(var.Name.c_str(), varName.c_str()) == 0;
@@ -1149,7 +1151,7 @@ bool Shader_SearchShaderConstBufferExists(const Vector<ShaderPushConstant>& shad
 {
     auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstant& var)
         {
-            return var.PushConstantName == constBufferName;
+            return var.Name == constBufferName;
         });
     return it != shaderPushConstantList.end();
 }

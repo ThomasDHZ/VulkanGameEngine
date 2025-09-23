@@ -55,7 +55,7 @@ namespace VulkanGameEngineLevelEditor
 
         public ListPtr(T* ptr, size_t size)
         {
-            if (size <= 0) throw new ArgumentException("Size must be greater than 0.");
+            //if (size <= 0) throw new ArgumentException("Size must be greater than 0.");
 
             _count = size;
             _capacity = size;

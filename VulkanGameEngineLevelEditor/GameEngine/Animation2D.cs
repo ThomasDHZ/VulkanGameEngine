@@ -7,9 +7,11 @@ using VulkanGameEngineLevelEditor.Models;
 namespace VulkanGameEngineLevelEditor.GameEngineAPI
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Animation2D
+    public unsafe struct Animation2D
     {
         public uint AnimationId { get; set; }
+        public ivec2* FrameList { get; set; }
+        public size_t FrameCount { get; set; }
         public float FrameHoldTime { get; set; }
     }
 }

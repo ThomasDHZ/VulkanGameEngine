@@ -68,19 +68,19 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
     Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
     for (auto& pushConstant : pushConstantList)
     {
-        if (!ShaderPushConstantExists(pushConstant.PushConstantName))
+        if (!ShaderPushConstantExists(pushConstant.Name))
         {
             ShaderPushConstant shaderPushConstant = ShaderPushConstant
             {
-                .PushConstantName = pushConstant.PushConstantName,
-                .PushConstantSize = pushConstant.PushConstantSize,
-                .PushConstantVariableList = pushConstant.PushConstantVariableList,
-                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
+                .Name = pushConstant.Name,
+                .Size = pushConstant.Size,
+                .VariableList = pushConstant.VariableList,
+                .Buffer = memorySystem.AddPtrBuffer<byte>(pushConstant.Size, __FILE__, __LINE__, __func__, pushConstant.Name.c_str()),
                 .ShaderStageFlags = pushConstant.ShaderStageFlags,
                 .GlobalPushContant = pushConstant.GlobalPushContant
             };
 
-            for (auto& shaderVariable : shaderPushConstant.PushConstantVariableList)
+            for (auto& shaderVariable : shaderPushConstant.VariableList)
             {
                 const String variableName = shaderVariable.Name;
                 ShaderVariable* shaderVariablePtr = &shaderVariable;
@@ -88,9 +88,9 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
                 Shader_SetVariableDefaults(shaderVariable.Value, shaderVariable.MemberTypeEnum);
                 memorySystem.RemovePtrBuffer<ShaderVariable>(shaderVariablePtr);
             }
-            ShaderPushConstantMap[pushConstant.PushConstantName] = shaderPushConstant;
+            ShaderPushConstantMap[pushConstant.Name] = shaderPushConstant;
         }
-        memorySystem.RemovePtrBuffer(pushConstant.PushConstantBuffer);
+        memorySystem.RemovePtrBuffer(pushConstant.Buffer);
     }
     CHelper_DestroyConstCharPtrPtr(cShaderList);
     ShaderModuleMap[pipelineData.ShaderList[0]] = pipelineData;

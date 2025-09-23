@@ -21,6 +21,7 @@ struct VulkanPipeline
 extern "C" {
 #endif
 DLL_EXPORT VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineData& shaderPipelineData);
+DLL_EXPORT VulkanPipeline VulkanPipeline_CreateRenderPipelineCS(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineDataDLL& shaderPipelineDataDLL);
 DLL_EXPORT VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineData& shaderPipelineData);
 DLL_EXPORT void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipelineDLL);
 #ifdef __cplusplus

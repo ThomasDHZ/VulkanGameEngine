@@ -110,11 +110,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             try
             {
                 ShaderPipelineData shaderPipelineData = Shader_LoadPipelineShaderDataCS(shaderPathsPtr, (nuint)shaderPathList.Count);
-
-                List<VkVertexInputAttributeDescription> vertexInputAttribute = new ListPtr<VkVertexInputAttributeDescription>(shaderPipelineData.VertexInputAttributeList, shaderPipelineData.VertexInputAttributeListCount).ToList();
-                List<VkVertexInputBindingDescription> vertexInputBinding = new ListPtr<VkVertexInputBindingDescription>(shaderPipelineData.VertexInputBindingList, shaderPipelineData.VertexInputBindingCount).ToList();
-                List<ShaderDescriptorBindingDLL> shaderDescriptorBindingList = new ListPtr<ShaderDescriptorBindingDLL>(shaderPipelineData.DescriptorBindingsList, shaderPipelineData.DescriptorBindingCount).ToList();
-                ListPtr<ShaderPushConstantDLL> shaderPushConstantList = new ListPtr<ShaderPushConstantDLL>(shaderPipelineData.PushConstantList, shaderPipelineData.PushConstantCount);
+                ListPtr<ShaderPushConstantDLL> shaderPushConstantList = new ListPtr<ShaderPushConstantDLL>(shaderPipelineData.PushConstantList, (nint)shaderPipelineData.PushConstantCount);
                 foreach (var shaderPushConstantDLL in shaderPushConstantList)
                 {
                     string name = Marshal.PtrToStringAnsi(shaderPushConstantDLL.PushConstantName);
