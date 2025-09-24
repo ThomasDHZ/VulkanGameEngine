@@ -228,5 +228,17 @@ VkGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
     Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath.c_str(), animationListCount);
     SpriteAnimationMap[vramId] = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
     SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
+    memorySystem.RemovePtrBuffer(animationListPtr);
     return vramId;
+}
+
+void SpriteSystem::Destroy()
+{
+    for (auto& spriteAnimationList : SpriteAnimationMap)
+    {
+        for (auto& spriteAnimation : spriteAnimationList.second)
+        {
+            memorySystem.RemovePtrBuffer(spriteAnimation.FrameList);
+        }
+    }
 }

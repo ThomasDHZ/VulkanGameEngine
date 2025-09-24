@@ -26,7 +26,7 @@ void GameSystem::StartUp(WindowType windowType, void* windowHandle)
     auto spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
     auto levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
 
-  //  shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+   // shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
     ShaderPipelineData shaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { "..\\Assets\\Shaders\\SpriteInstanceShaderVert.spv", "..\\Assets\\Shaders\\SpriteInstanceShaderFrag.spv" });
     renderSystem.StartUp(windowType, windowHandle);
     gpuSystem.StartUp(renderSystem.renderer);

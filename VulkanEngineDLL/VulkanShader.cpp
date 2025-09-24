@@ -21,7 +21,7 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
     Vector<ShaderPushConstant> constBuffers;
     Vector<ShaderStruct> shaderStructs;
     Vector<ShaderDescriptorBinding> descriptorBindings;
-    
+
     Vector<String> pipelineShaderPathList(pipelineShaderPaths, pipelineShaderPaths + pipelineShaderCount);
     for (auto& pipelineShaderPath : pipelineShaderPathList)
     {
@@ -70,7 +70,7 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
 
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
 {
-    Shader_DestroyShaderBindingData(shader);
+    Shader_DestroyShaderBindingData(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
@@ -97,87 +97,29 @@ void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStr
     }
 }
 
-void Shader_DestroyShaderBindingData(ShaderPipelineData& shader)
+void Shader_DestroyShaderBindingData(ShaderDescriptorBinding* descriptorBinding)
 {
-    for (int x = 0; x < shader.DescriptorBindingCount; x++)
-    {
-        if (shader.DescriptorBindingsList[x].DescriptorBufferInfo != nullptr)
-        {
-            memorySystem.RemovePtrBuffer<VkDescriptorBufferInfo>(shader.DescriptorBindingsList[x].DescriptorBufferInfo);
-        }
-        if (shader.DescriptorBindingsList[x].DescriptorImageInfo != nullptr)
-        {
-            memorySystem.RemovePtrBuffer<VkDescriptorImageInfo>(shader.DescriptorBindingsList[x].DescriptorImageInfo);
-        }
-    }
+    if (descriptorBinding->Name != nullptr) memorySystem.RemovePtrBuffer(descriptorBinding->Name);
 }
 
 void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant, size_t pushConstantCount)
 {
-    Span<ShaderPushConstant> pushConstantList(pushConstant, pushConstant + pushConstantCount);
-    Vector<const char*> shaderPushConstantNameList;
-    Vector<ShaderVariable*> shaderPushConstantVariableList;
-    for (auto& pushConstant : pushConstantList)
+    Span<ShaderPushConstant> shaderPushConstantList(pushConstant, pushConstant + pushConstantCount);
+    for (auto& shaderPushConstant : shaderPushConstantList)
     {
-   //     shaderPushConstantNameList.push_back(pushConstant.PushConstantName);
-      //  shaderPushConstantVariableList.push_back(pushConstant.PushConstantVariableList);
+        if (shaderPushConstant.PushConstantVariableList != nullptr)
+        {
+            Span<ShaderVariable> shaderVarList(shaderPushConstant.PushConstantVariableList, shaderPushConstant.PushConstantVariableCount);
+            for (auto& shaderVar : shaderVarList)
+            {
+                if (shaderVar.Name != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Name);
+                if (shaderVar.Value != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Value);
+            }
+        }
+        if (shaderPushConstant.PushConstantName != nullptr) memorySystem.RemovePtrBuffer(shaderPushConstant.PushConstantName);
+        if (shaderPushConstant.PushConstantVariableList != nullptr) memorySystem.RemovePtrBuffer(shaderPushConstant.PushConstantVariableList);
+        if (shaderPushConstant.PushConstantBuffer != nullptr) memorySystem.RemovePtrBuffer(shaderPushConstant.PushConstantBuffer);
     }
-
-    Vector<const char*> shaderPushConstantVariableNameList;
-    Vector<void*> shaderPushConstantVariableBufferList;
-    for (auto& shaderPushConstantVariable : shaderPushConstantVariableList)
-    {
-        shaderPushConstantVariableNameList.push_back(shaderPushConstantVariable->Name);
-        shaderPushConstantVariableBufferList.push_back(shaderPushConstantVariable->Value);
-    }
-
-    for (auto& shaderPushConstantVariableBuffer : shaderPushConstantVariableBufferList)
-    {
-        memorySystem.RemovePtrBuffer(shaderPushConstantVariableBuffer);
-    }
-
-    for (auto& shaderPushConstantVariableName : shaderPushConstantVariableNameList)
-    {
-        memorySystem.RemovePtrBuffer(shaderPushConstantVariableName);
-    }
-
-    for (auto& shaderPushConstantVariable : shaderPushConstantVariableList)
-    {
-        memorySystem.RemovePtrBuffer(shaderPushConstantVariable);
-    }
-
-    for (auto& shaderPushConstantName : shaderPushConstantNameList)
-    {
-        memorySystem.RemovePtrBuffer(shaderPushConstantName);
-    }
-    //if (!pushConstant)
-    //{
-    //    return;
-    //}
-
-    //Span<ShaderVariable> shaderVarList(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableListCount);
-    //for (auto& shaderVar : shaderVarList)
-    //{
-    //    shaderVar.ByteAlignment = 0;
-    //    shaderVar.MemberTypeEnum = ShaderMemberType::shaderUnknown;
-    //    shaderVar.Size = 0;
-    //    memorySystem.RemovePtrBuffer(shaderVar.Name);
-    //    memorySystem.RemovePtrBuffer(shaderVar.Value);
-    //}
-
-    //pushConstant->GlobalPushContant = false;
-    //pushConstant->PushConstantSize = 0;
-    //pushConstant->PushConstantVariableListCount = 0;
-    //pushConstant->ShaderStageFlags = 0;
-    //memorySystem.RemovePtrBuffer(pushConstant->PushConstantName);
-    //if (pushConstant->PushConstantVariableList)
-    //{
-    //    memorySystem.RemovePtrBuffer<ShaderVariable>(pushConstant->PushConstantVariableList);
-    //}
-    //if (pushConstant->PushConstantBuffer)
-    //{
-    //    memorySystem.RemovePtrBuffer(pushConstant->PushConstantBuffer);
-    //}
 }
 
 void Shader_SetVariableDefaults(ShaderVariable& shaderVariable)
@@ -515,7 +457,7 @@ void Shader_GetShaderDescriptorBindings(const SpvReflectShaderModule& module, Ve
             Vector<SpvReflectSpecializationConstant*> DescriptorBindingAttributeTypeResult = Shader_SearchShaderSpecializationConstant(specializationConstantList, searchString.c_str());
             shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBinding
                 {
-                    .Name = String(descriptorBinding->name),
+                    .Name = memorySystem.AddPtrBuffer(descriptorBinding->name, __FILE__, __LINE__, __func__),
                     .Binding = descriptorBinding->binding,
                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                     .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->default_literals),
@@ -604,7 +546,6 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
     }
 
     Vector<String> shaderSourceFileList(fileList, fileList + returnFileCount);
-    memorySystem.RemovePtrBuffer(fileList);
 
     String command = "";
     for (const auto& shaderSource : shaderSourceFileList)
@@ -615,7 +556,7 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
         String outputFile = shaderSourceFile + shaderExtension;
         outputFile[shaderSourceFile.size()] = std::toupper(outputFile[shaderSourceFile.size()]);
         outputFile += ".spv";
-      
+
         if (!std::filesystem::exists(inputFile.c_str()) ||
             std::filesystem::last_write_time(("..\\Assets\\Shaders\\" + outputFile).c_str()) < std::filesystem::last_write_time(inputFile.c_str()))
         {
@@ -624,7 +565,7 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
     }
     String tempBatchPath = std::filesystem::temp_directory_path().append("temp_glslc.bat").string();
     std::ofstream tempBatch(tempBatchPath);
-    if (!tempBatch.is_open()) 
+    if (!tempBatch.is_open())
     {
         throw std::runtime_error("Failed to create temporary batch file: " + tempBatchPath);
     }
@@ -648,7 +589,7 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
     String batchCommand = "cmd.exe /C \"" + tempBatchPath + "\"";
     LPWSTR batchCommandW = Shader_StringToLPWSTR(batchCommand);
     std::wstring workingDir = std::filesystem::path(fileDirectory).wstring();
-    if (!CreateProcessW(nullptr, batchCommandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, workingDir.c_str(), &startUpInfo, &processInformation)) 
+    if (!CreateProcessW(nullptr, batchCommandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, workingDir.c_str(), &startUpInfo, &processInformation))
     {
         DWORD errorCode = GetLastError();
         std::stringstream errorMsg;
@@ -668,8 +609,8 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
     while (true)
     {
         bool readSuccess = ReadFile(hStdOutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr);
-        if (!readSuccess || 
-            bytesRead == 0) 
+        if (!readSuccess ||
+            bytesRead == 0)
         {
             break;
         }
@@ -691,6 +632,13 @@ void Shader_CompileGLSLShaders(VkDevice device, const char* fileDirectory, const
     CloseHandle(processInformation.hProcess);
     CloseHandle(processInformation.hThread);
     std::filesystem::remove(tempBatchPath);
+
+    for (int x = 0; x < returnFileCount; x++)
+    {
+        memorySystem.RemovePtrBuffer(fileList[x]);
+    }
+    memorySystem.RemovePtrBuffer(fileList);
+    memorySystem.RemovePtrBuffer(extenstionList);
 }
 
 VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShaderStageFlagBits stage)
@@ -708,61 +656,6 @@ VkShaderModule Shader_ReadGLSLShader(VkDevice device, const char* path, VkShader
     VULKAN_RESULT(vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shaderModule));
 
     return shaderModule;
-}
-
-Microsoft::WRL::ComPtr<IDxcBlob> Shader_CompileHLSLShaders(VkDevice device, const String& path, Microsoft::WRL::ComPtr<IDxcCompiler3>& dxc_compiler, Microsoft::WRL::ComPtr<IDxcIncludeHandler>& defaultIncludeHandler, VkShaderStageFlagBits stage)
-{
-    const char* cShaderCode = File_Read(path.c_str()).Data;
-    if (!cShaderCode) {
-        std::cerr << "Failed to read file: " << String(path) << std::endl;
-        return nullptr;
-    }
-    String shaderCode(cShaderCode);
-
-    if (shaderCode.size() >= 3 &&
-        static_cast<unsigned char>(shaderCode[0]) == 0xEF &&
-        static_cast<unsigned char>(shaderCode[1]) == 0xBB &&
-        static_cast<unsigned char>(shaderCode[2]) == 0xBF) {
-        shaderCode = shaderCode.substr(3);
-    }
-
-    DxcBuffer src_buffer = {
-        .Ptr = shaderCode.c_str(),
-        .Size = static_cast<uint32_t>(shaderCode.size()),
-        .Encoding = 0
-    };
-
-    std::vector<LPCWSTR> args;
-    args.emplace_back(L"-spirv");
-    args.emplace_back(L"-fspv-target-env=vulkan1.4");
-    switch (stage) {
-    case VK_SHADER_STAGE_VERTEX_BIT: args.emplace_back(L"-T vs_6_5"); break;
-    case VK_SHADER_STAGE_FRAGMENT_BIT: args.emplace_back(L"-T ps_6_5"); break;
-    case VK_SHADER_STAGE_COMPUTE_BIT: args.emplace_back(L"-T cs_6_5"); break;
-    default: args.emplace_back(L"-T lib_6_5"); break;
-    }
-
-    Microsoft::WRL::ComPtr<IDxcResult> result;
-    dxc_compiler->Compile(&src_buffer, args.data(), static_cast<uint32_t>(args.size()), defaultIncludeHandler.Get(), IID_PPV_ARGS(&result));
-
-    Microsoft::WRL::ComPtr<IDxcBlob> shader_obj;
-    result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shader_obj), nullptr);
-
-    Microsoft::WRL::ComPtr<IDxcBlobUtf8> error_message;
-    result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&error_message), nullptr);
-    if (error_message && error_message->GetStringLength() > 0) {
-        std::cout << "Compiler error: " << error_message->GetStringPointer() << std::endl;
-        std::cout << "Error in file: " << path << std::endl;
-    }
-
-    if (shader_obj) {
-        String spvFileName = String(File_GetFileNameFromPath(path.c_str())) + ".spv";
-        std::ofstream spvFile(spvFileName, std::ios::binary);
-        spvFile.write(static_cast<const char*>(shader_obj->GetBufferPointer()), shader_obj->GetBufferSize());
-        spvFile.close();
-    }
-
-    return shader_obj;
 }
 
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo)
@@ -888,67 +781,67 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                 ShaderMemberType memberType = shaderUnknown;
                 switch (variable.op)
                 {
-                    case SpvOpTypeInt:
+                case SpvOpTypeInt:
+                {
+                    memberSize = variable.traits.numeric.scalar.width / 8;
+                    memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                    byteAlignment = 4;
+                    break;
+                }
+                case SpvOpTypeFloat:
+                {
+                    memberSize = variable.traits.numeric.scalar.width / 8;
+                    memberType = shaderFloat;
+                    byteAlignment = 4;
+                    break;
+                }
+                case SpvOpTypeVector:
+                {
+                    memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
+                    switch (variable.traits.numeric.vector.component_count)
                     {
-                        memberSize = variable.traits.numeric.scalar.width / 8;
-                        memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
-                        byteAlignment = 4;
+                    case 2:
+                        memberType = shaderVec2;
+                        byteAlignment = 8;
+                        break;
+                    case 3:
+                        memberType = shaderVec3;
+                        byteAlignment = 16;
+                        break;
+                    case 4:
+                        memberType = shaderVec4;
+                        byteAlignment = 16;
                         break;
                     }
-                    case SpvOpTypeFloat:
+                    break;
+                }
+                case SpvOpTypeMatrix:
+                {
+                    uint rowCount = variable.traits.numeric.matrix.row_count;
+                    uint colCount = variable.traits.numeric.matrix.column_count;
+                    memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                    if (rowCount == 2 && colCount == 2)
                     {
-                        memberSize = variable.traits.numeric.scalar.width / 8;
-                        memberType = shaderFloat;
-                        byteAlignment = 4;
-                        break;
+                        memberType = shaderMat2;
+                        byteAlignment = 8;
                     }
-                    case SpvOpTypeVector:
+                    else if (rowCount == 3 && colCount == 3)
                     {
-                        memberSize = (variable.traits.numeric.scalar.width / 8) * variable.traits.numeric.vector.component_count;
-                        switch (variable.traits.numeric.vector.component_count)
-                        {
-                        case 2:
-                            memberType = shaderVec2;
-                            byteAlignment = 8;
-                            break;
-                        case 3:
-                            memberType = shaderVec3;
-                            byteAlignment = 16;
-                            break;
-                        case 4:
-                            memberType = shaderVec4;
-                            byteAlignment = 16;
-                            break;
-                        }
-                        break;
+                        memberType = shaderMat3;
+                        byteAlignment = 16;
                     }
-                    case SpvOpTypeMatrix:
+                    else if (rowCount == 4 && colCount == 4)
                     {
-                        uint rowCount = variable.traits.numeric.matrix.row_count;
-                        uint colCount = variable.traits.numeric.matrix.column_count;
-                        memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
-                        if (rowCount == 2 && colCount == 2)
-                        {
-                            memberType = shaderMat2;
-                            byteAlignment = 8;
-                        }
-                        else if (rowCount == 3 && colCount == 3)
-                        {
-                            memberType = shaderMat3;
-                            byteAlignment = 16;
-                        }
-                        else if (rowCount == 4 && colCount == 4)
-                        {
-                            memberType = shaderMat4;
-                            byteAlignment = 16;
-                        }
-                        else
-                        {
-                            std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
-                            byteAlignment = -1;
-                        }
-                        break;
+                        memberType = shaderMat4;
+                        byteAlignment = 16;
                     }
+                    else
+                    {
+                        std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
+                        byteAlignment = -1;
+                    }
+                    break;
+                }
                 }
 
                 shaderVariables.emplace_back(ShaderVariable
@@ -963,7 +856,6 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                 bufferSize = (bufferSize + alignment - 1) & ~(alignment - 1);
                 bufferSize += memberSize;
             }
-
             shaderPushConstantList.emplace_back(ShaderPushConstant
                 {
                     .PushConstantName = memorySystem.AddPtrBuffer(pushConstantName.c_str(), __FILE__, __LINE__, __func__, pushConstantName.c_str()),
@@ -972,14 +864,19 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                     .PushConstantVariableList = memorySystem.AddPtrBuffer(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, pushConstantName.c_str()),
                 });
+
+            for (size_t x = 0; x < shaderVariables.size(); ++x)
+            {
+                shaderVariables[x].Name = nullptr;
+                shaderVariables[x].Value = nullptr;
+            }
         }
         else
         {
-            const char* copiedStr = memorySystem.AddPtrBuffer(pushConstant->name, __FILE__, __LINE__, __func__, "pushConstant->name copy");
             auto it = std::find_if(shaderPushConstantList.data(), shaderPushConstantList.data() + shaderPushConstantList.size(),
                 [&](ShaderPushConstant& var) {
                     var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
-                    return var.PushConstantName == copiedStr;
+                    return var.PushConstantName == pushConstant->name;
                 }
             );
         }

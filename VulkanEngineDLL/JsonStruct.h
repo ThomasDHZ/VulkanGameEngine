@@ -102,7 +102,7 @@ struct ShaderDescriptorSet
 
 struct ShaderDescriptorBinding
 {
-    String Name;
+    const char* Name;
     uint32 Binding;
     size_t DescriptorCount;
     VkShaderStageFlags ShaderStageFlags;
