@@ -45,7 +45,7 @@ Vector<SpvReflectInterfaceVariable*> Shader_GetShaderVertexOutputVariables(const
 Vector<SpvReflectSpecializationConstant*> Shader_GetShaderSpecializationConstant(const SpvReflectShaderModule& module);
 Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConstant(Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const char* searchString);
 ShaderStruct Shader_GetShaderStruct(SpvReflectTypeDescription& shaderInfo);
-void Shader_DestroyShaderBindingData(ShaderDescriptorBinding* descriptorBinding);
+void Shader_DestroyShaderBindingData(ShaderDescriptorBinding* descriptorBinding, size_t descriptorCount);
 bool Shader_SearchShaderConstBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
 bool Shader_SearchDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
 bool Shader_SearchShaderStructExists(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName);

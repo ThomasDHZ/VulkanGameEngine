@@ -70,7 +70,7 @@ ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPath
 
 void Shader_ShaderDestroy(ShaderPipelineData& shader)
 {
-    Shader_DestroyShaderBindingData(shader.DescriptorBindingsList);
+    Shader_DestroyShaderBindingData(shader.DescriptorBindingsList, shader.DescriptorBindingCount);
     memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
     memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
     memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
@@ -97,7 +97,7 @@ void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStr
     }
 }
 
-void Shader_DestroyShaderBindingData(ShaderDescriptorBinding* descriptorBinding)
+void Shader_DestroyShaderBindingData(ShaderDescriptorBinding* descriptorBinding, size_t descriptorCount)
 {
     if (descriptorBinding->Name != nullptr) memorySystem.RemovePtrBuffer(descriptorBinding->Name);
 }

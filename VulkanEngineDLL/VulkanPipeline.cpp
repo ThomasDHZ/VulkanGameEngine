@@ -39,7 +39,17 @@ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRender
         .PipelineLayout = pipelineLayout,
         .PipelineCache = pipelineCache
     };
-
+    for(int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingCount; x++)
+    {
+        if (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo != nullptr)
+        {
+            memorySystem.RemovePtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo);
+        }
+        if (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo != nullptr)
+        {
+            memorySystem.RemovePtrBuffer<VkDescriptorImageInfo>(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo);
+        }
+    }
     memorySystem.RemovePtrBuffer(renderPipelineLoader.PipelineColorBlendAttachmentStateList);
     memorySystem.RemovePtrBuffer(renderPipelineLoader.ViewportList);
     memorySystem.RemovePtrBuffer(renderPipelineLoader.ScissorList);
@@ -307,52 +317,52 @@ void Pipeline_PipelineBindingData(RenderPipelineLoader& renderPipelineLoader)
     {
         switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
         {
-        case kVertexDescsriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.VertexPropertiesCount;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.VertexPropertiesCount, __FILE__, __LINE__, __func__, "a");
-            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.VertexProperties, renderPipelineLoader.gpuIncludes.VertexPropertiesCount * sizeof(VkDescriptorBufferInfo));
-            break;
-        }
-        case kIndexDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.IndexPropertiesCount;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.IndexPropertiesCount, __FILE__, __LINE__, __func__, "b");
-            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.IndexProperties, renderPipelineLoader.gpuIncludes.IndexPropertiesCount * sizeof(VkDescriptorBufferInfo));
-            break;
-        }
-        case kTransformDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TransformPropertiesCount;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.TransformPropertiesCount, __FILE__, __LINE__, __func__, "c");
-            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.TransformProperties, renderPipelineLoader.gpuIncludes.TransformPropertiesCount * sizeof(VkDescriptorBufferInfo));
-            break;
-        }
-        case kMeshPropertiesDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MeshPropertiesCount;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MeshPropertiesCount, __FILE__, __LINE__, __func__, "d");
-            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MeshProperties, renderPipelineLoader.gpuIncludes.MeshPropertiesCount * sizeof(VkDescriptorBufferInfo));
-            break;
-        }
-        case kTextureDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TexturePropertiesCount;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(renderPipelineLoader.gpuIncludes.TexturePropertiesCount, __FILE__, __LINE__, __func__, "e");
-            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo, renderPipelineLoader.gpuIncludes.TextureProperties, renderPipelineLoader.gpuIncludes.TexturePropertiesCount * sizeof(VkDescriptorImageInfo));
-            break;
-        }
-        case kMaterialDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MaterialPropertiesCount;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MaterialPropertiesCount, __FILE__, __LINE__, __func__);
-            std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MaterialProperties, renderPipelineLoader.gpuIncludes.MaterialPropertiesCount * sizeof(VkDescriptorBufferInfo));
-            break;
-        }
-        default:
-        {
-            throw std::runtime_error("Binding case hasn't been handled yet");
-        }
+            case kVertexDescsriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.VertexPropertiesCount;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.VertexPropertiesCount, __FILE__, __LINE__, __func__, "a");
+                std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.VertexProperties, renderPipelineLoader.gpuIncludes.VertexPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kIndexDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.IndexPropertiesCount;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.IndexPropertiesCount, __FILE__, __LINE__, __func__, "b");
+                std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.IndexProperties, renderPipelineLoader.gpuIncludes.IndexPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kTransformDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TransformPropertiesCount;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.TransformPropertiesCount, __FILE__, __LINE__, __func__, "c");
+                std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.TransformProperties, renderPipelineLoader.gpuIncludes.TransformPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kMeshPropertiesDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MeshPropertiesCount;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MeshPropertiesCount, __FILE__, __LINE__, __func__, "d");
+                std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MeshProperties, renderPipelineLoader.gpuIncludes.MeshPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            case kTextureDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.TexturePropertiesCount;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = memorySystem.AddPtrBuffer<VkDescriptorImageInfo>(renderPipelineLoader.gpuIncludes.TexturePropertiesCount, __FILE__, __LINE__, __func__, "e");
+                std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo, renderPipelineLoader.gpuIncludes.TextureProperties, renderPipelineLoader.gpuIncludes.TexturePropertiesCount * sizeof(VkDescriptorImageInfo));
+                break;
+            }
+            case kMaterialDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderPipelineLoader.gpuIncludes.MaterialPropertiesCount;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memorySystem.AddPtrBuffer<VkDescriptorBufferInfo>(renderPipelineLoader.gpuIncludes.MaterialPropertiesCount, __FILE__, __LINE__, __func__, "f");
+                std::memcpy(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo, renderPipelineLoader.gpuIncludes.MaterialProperties, renderPipelineLoader.gpuIncludes.MaterialPropertiesCount * sizeof(VkDescriptorBufferInfo));
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("Binding case hasn't been handled yet");
+            }
         }
     }
 }
