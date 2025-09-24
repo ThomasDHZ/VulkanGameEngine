@@ -223,6 +223,12 @@ extern "C" {
         KeyState KeyPressed[MAXKEYBOARDKEY];
     }KeyboardState;
 
+    typedef struct gameControllerState
+    {
+        int ControllerId;
+        GLFWgamepadstate state;
+    }GameControllerState;
+
     typedef struct VulkanWindow
     {
         WindowType WindowType;
@@ -233,6 +239,7 @@ extern "C" {
         bool        ShouldClose;
         MouseState  mouse;
         KeyboardState keyboard;
+        GameControllerState gameControllerState;
 
         void (*CreateGraphicsWindow)(struct VulkanWindow* self, const char* WindowName, uint32_t width, uint32_t height);
         void (*PollEventHandler)(struct VulkanWindow* self);

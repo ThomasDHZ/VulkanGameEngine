@@ -2,22 +2,45 @@
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
 #include "LevelSystem.h"
-
+//GLFWgamepadstate GameController::ControllerState;
 InputSystem inputSystem = InputSystem();
 InputSystem::InputSystem()
 {
+    PrimaryController = glfwJoystickPresent(GLFW_JOYSTICK_1);
 }
 
 InputSystem::~InputSystem()
 {
 }
 
+void InputSystem::GameControllerJoyStickMoved(int axis)
+{
+    GameEngine_GLFW_GameControllerJoyStickMoved(PrimaryController, axis);
+}
+
+void InputSystem::GameControllerButtonPressedEvent(int button)
+{
+    GameEngine_GLFW_GameControllerButtonPressedEvent(PrimaryController, button);
+}
+
 void InputSystem::Update(const float& deltaTime)
 {
+    if (glfwGetGamepadState(PrimaryController, &ControllerState[PrimaryController]))
+    {
+        if (ControllerState[PrimaryController].buttons[GLFW_GAMEPAD_BUTTON_CROSS] == GLFW_PRESS)
+        {
+            int a = 34;
+        }
+        else if (ControllerState[PrimaryController].buttons[GLFW_GAMEPAD_BUTTON_SQUARE] == GLFW_PRESS)
+        {
+            int a = 34;
+        }
+    }
     for (auto& input : gameObjectSystem.InputComponentList())
     {
         Sprite* sprite = spriteSystem.FindSprite(input.GameObjectId);
         Transform2DComponent& transform = gameObjectSystem.FindTransform2DComponent(input.GameObjectId);
+
         if ((vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_HELD) &&
              vulkanWindow->keyboard.KeyPressed[KEY_E] == KS_PRESSED)
         {

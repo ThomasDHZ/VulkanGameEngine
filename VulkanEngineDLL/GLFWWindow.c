@@ -1,6 +1,7 @@
 #include "GLFWWindow.h"
 #include "Mouse.h"
 #include "Keyboard.h"
+#include "GameController.h"
 
 static void error_callback(int error, const char* description)
 {
@@ -33,6 +34,7 @@ void Window_GLFW_CreateGraphicsWindow(VulkanWindow* self, const char* WindowName
 	glfwSetMouseButtonCallback((GLFWWindow*)self->WindowHandle, GameEngine_GLFW_MouseButtonPressedEvent);
 	glfwSetScrollCallback((GLFWWindow*)self->WindowHandle, GameEngine_GLFW_MouseWheelEvent);
 	glfwSetKeyCallback((GLFWWindow*)self->WindowHandle, GameEngine_GLFW_KeyboardKeyPressed);
+	glfwSetJoystickCallback(GameEngine_GLFW_GameControllerConnectCallBack);
 	return self;
 }
 

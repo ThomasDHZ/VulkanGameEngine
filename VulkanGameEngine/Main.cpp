@@ -27,6 +27,14 @@ int main(int argc, char** argv)
         vulkanWindow->PollEventHandler(vulkanWindow);
         vulkanWindow->SwapBuffer(vulkanWindow);
 
+     /*   for (int i = 0; i <= GLFW_JOYSTICK_LAST; i++) {
+            if (glfwJoystickPresent(i) && glfwJoystickIsGamepad(i)) {
+                joystick_id = i;
+                printf("Controller found: %s\n", glfwGetGamepadName(i));
+                break;
+            }
+        }*/
+
         gameSystem.Update(frameTime);
         gameSystem.DebugUpdate(frameTime);
         gameSystem.Draw(frameTime);

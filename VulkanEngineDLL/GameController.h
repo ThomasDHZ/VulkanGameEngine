@@ -1,29 +1,14 @@
-//#pragma once
-//#include "SDLWindow.h"
-//#include <stdbool.h>
-//
-//typedef enum gameControllerButtons
-//{
-//	GCB_DPadLeft,
-//	GCB_DPadRight,
-//	GCB_DPadUp,
-//	GCB_DPadDown
-//}GameControllerButtons;
-//
-//typedef enum gameControllerEventState
-//{
-//	GCS_UNPRESSED,
-//	GCS_PRESSED,
-//	GCS_HELD
-//}GameControllerEventState;
-//
-//typedef struct gameControllerState
-//{
-//	GameControllerEventState ButtonPressed[16];
-//	GameControllerEventState AxisMoved[16];
-//}GameControllerState;
-//
-//void GameEngine_CreateGameController();
-//void GameEngine_ControllerMoveAxis(const SDL_Event* event);
-//void GameEngine_ControllerButtonDown(const SDL_Event* event);
-//void GameEngine_ControllerButtonUp(const SDL_Event* event);
+#pragma once
+#include "VulkanWindow.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+	DLL_EXPORT void GameEngine_GLFW_GameControllerJoyStickMoved(int controllerId, int axis);
+	DLL_EXPORT void GameEngine_GLFW_GameControllerButtonPressedEvent(int controllerId, int button);
+
+	void GameEngine_GLFW_GameControllerConnectCallBack(int controllerId, int event);
+	void GameEngine_GLFW_GameControllerStartUp(int controllerId);
+#ifdef __cplusplus
+}
+#endif

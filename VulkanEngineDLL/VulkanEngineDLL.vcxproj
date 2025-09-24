@@ -199,13 +199,13 @@
     <ClCompile Include="CFile.c" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="CHelper.cpp" />
+    <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="CShaderCompiler.c" />
     <ClCompile Include="CVulkanRenderer.c" />
     <ClCompile Include="from_json.cpp" />
-    <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GLFWWindow.c" />
     <ClCompile Include="ImGuiRenderer.cpp" />
