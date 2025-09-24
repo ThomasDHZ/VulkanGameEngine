@@ -20,6 +20,14 @@ GameSystem::~GameSystem()
 
 void GameSystem::StartUp(WindowType windowType, void* windowHandle)
 {
+    nlohmann::json json = Json::ReadJson("C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Levels\\TestLevel.json");
+    nlohmann::json shaderJson = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
+    nlohmann::json shaderWiredJson = Json::ReadJson("../RenderPass/LevelShader2DWireFrameRenderPass.json");
+    auto spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
+    auto levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
+
+  //  shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+    ShaderPipelineData shaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { "..\\Assets\\Shaders\\SpriteInstanceShaderVert.spv", "..\\Assets\\Shaders\\SpriteInstanceShaderFrag.spv" });
     renderSystem.StartUp(windowType, windowHandle);
     gpuSystem.StartUp(renderSystem.renderer);
     levelSystem.LoadLevel("../Levels/TestLevel.json");

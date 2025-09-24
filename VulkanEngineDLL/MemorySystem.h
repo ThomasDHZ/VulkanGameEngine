@@ -100,6 +100,100 @@ public:
         return buffer;
     }
 
+    const char* ReplacePtrBuffer(const char* srcString, const char* file, int line, const char* func, const char* notes = "")
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        if (!srcString)
+        {
+            std::cerr << "Null string data for " << notes << " at " << file << ":" << line << " in " << func << std::endl;
+            return nullptr;
+        }
+
+        size_t strLen = std::strlen(srcString) + 1;
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(strLen, 1, file, line, "const char*", func, notes);
+        if (!memoryLeakPtr.PtrAddress)
+        {
+            std::cerr << "Failed to allocate memory for string, length " << strLen << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
+            return nullptr;
+        }
+
+        char* buffer = reinterpret_cast<char*>(memoryLeakPtr.PtrAddress);
+        std::strcpy(buffer, srcString);
+        void* voidPtr = const_cast<void*>(reinterpret_cast<const void*>(srcString));
+
+        auto it = PtrAddressMap.find(voidPtr);
+        if (it != PtrAddressMap.end())
+        {
+            MemoryLeakPtr& memoryLeakPtr = it->second;
+            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            PtrAddressMap.erase(it);
+            srcString = nullptr;
+        }
+
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
+    template <class T>
+    T* ReplacePtrBuffer(T*& obj, const char* file, int line, const char* func, const char* notes = "")
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, typeid(T).name(), func, notes);
+        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
+
+        void* voidPtr = reinterpret_cast<void*>(obj);
+        auto it = PtrAddressMap.find(voidPtr);
+        if (it != PtrAddressMap.end())
+        {
+            MemoryLeakPtr& memoryLeakPtr = it->second;
+            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            PtrAddressMap.erase(it);
+            obj = nullptr;
+        }
+        else
+        {
+            std::cerr << "Warning: Attempted to remove unregistered pointer: " << obj << std::endl;
+        }
+
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
+    template <class T>
+    T* ReplacePtrBuffer(T*& obj, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
+        if (!memoryLeakPtr.PtrAddress)
+        {
+            std::cerr << "Failed to allocate memory for " << notes << " at " << file << ":" << line << std::endl;
+            return nullptr;
+        }
+        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
+        for (size_t x = 0; x < elementCount; ++x)
+        {
+            new (&buffer[x]) T(obj[x]);
+        }
+
+        void* voidPtr = reinterpret_cast<void*>(obj);
+        auto it = PtrAddressMap.find(voidPtr);
+        if (it != PtrAddressMap.end())
+        {
+            MemoryLeakPtr& memoryLeakPtr = it->second;
+            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            PtrAddressMap.erase(it);
+            obj = nullptr;
+        }
+        else
+        {
+            std::cerr << "Warning: Attempted to remove unregistered pointer: " << obj << std::endl;
+        }
+
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
     template <class T>
     void RemovePtrBuffer(T*& ptr)
     {
@@ -131,11 +225,6 @@ public:
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
             PtrAddressMap.erase(it);
-            auto it3 = PtrAddressMap.find(voidPtr);
-            if (it3 != PtrAddressMap.end())
-            {
-                int a = 34;
-            }
             ptr = nullptr;
         }
         else
@@ -150,7 +239,7 @@ public:
 
         if (!PtrAddressMap.empty()) 
         {
-            fprintf(stderr, "\nMemory leaks detected:\n");
+            std::cout << ("\nMemory leaks detected:" + std::to_string(PtrAddressMap.size()) + " Memory leaks found.") << std::endl;
             for (auto& ptr : PtrAddressMap) 
             {
                 MemoryLeakPtr_DanglingPtrMessage(&ptr.second);

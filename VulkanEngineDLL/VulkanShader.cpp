@@ -79,40 +79,21 @@ void Shader_ShaderDestroy(ShaderPipelineData& shader)
 
 void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStrucCount)
 {
-    if (!shaderStruct)
-    {
-        return;
-    }
-
     Span<ShaderStruct> shaderStructList(shaderStruct, shaderStruct + shaderStrucCount);
-    for(auto& shaderStruct : shaderStructList)
+    for (auto& shaderStruct : shaderStructList)
     {
-        Span<ShaderVariable> shaderVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
-        for (auto& shaderVar : shaderVarList)
+        if (shaderStruct.ShaderBufferVariableList != nullptr)
         {
-            memorySystem.RemovePtrBuffer(shaderVar.Name);
-            if (shaderVar.Value)
+            Span<ShaderVariable> shaderVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+            for (auto& shaderVar : shaderVarList)
             {
-                shaderVar.ByteAlignment = 0;
-                shaderVar.MemberTypeEnum = ShaderMemberType::shaderUnknown;
-                shaderVar.Size = 0;
-                memorySystem.RemovePtrBuffer(shaderVar.Value);
+                if (shaderVar.Name != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Name);
+                if (shaderVar.Value != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Value);
             }
         }
-
-        shaderStruct.Name = "";
-        shaderStruct.ShaderBufferSize = 0;
-        shaderStruct.ShaderBufferVariableListCount = 0;
-        shaderStruct.ShaderStructBufferId = 0;
-        memorySystem.RemovePtrBuffer(shaderStruct.Name);
-        if (shaderStruct.ShaderBufferVariableList)
-        {
-            memorySystem.RemovePtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList);
-        }
-        if (shaderStruct.ShaderStructBuffer)
-        {
-            memorySystem.RemovePtrBuffer(shaderStruct.ShaderStructBuffer);
-        }
+        if (shaderStruct.Name != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.Name);
+        if (shaderStruct.ShaderBufferVariableList != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
+        if (shaderStruct.ShaderStructBuffer != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.ShaderStructBuffer);
     }
 }
 
@@ -321,7 +302,8 @@ void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& v
 void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct)
 {
     size_t offset = 0;
-    for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
+    Span<ShaderVariable> pushConstantVarList(pushConstantStruct.PushConstantVariableList, pushConstantStruct.PushConstantVariableCount);
+    for (const auto& pushConstantVar : pushConstantVarList)
     {
         offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
         void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer) + offset;
@@ -969,10 +951,9 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
                     }
                 }
 
-                const char* copiedStr = memorySystem.AddPtrBuffer(variable.struct_member_name, __FILE__, __LINE__, __func__, "variable.struct_member_name copy");
                 shaderVariables.emplace_back(ShaderVariable
                     {
-                        .Name = copiedStr,
+                        .Name = memorySystem.AddPtrBuffer(variable.struct_member_name, __FILE__, __LINE__, __func__, "variable.struct_member_name copy"),
                         .Size = memberSize,
                         .ByteAlignment = byteAlignment,
                         .Value = nullptr,
@@ -985,10 +966,11 @@ void Shader_GetShaderConstBuffer(const SpvReflectShaderModule& module, Vector<Sh
 
             shaderPushConstantList.emplace_back(ShaderPushConstant
                 {
-                    .PushConstantName = pushConstantName,
+                    .PushConstantName = memorySystem.AddPtrBuffer(pushConstantName.c_str(), __FILE__, __LINE__, __func__, pushConstantName.c_str()),
                     .PushConstantSize = bufferSize,
+                    .PushConstantVariableCount = shaderVariables.size(),
                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
-                    .PushConstantVariableList = shaderVariables,
+                    .PushConstantVariableList = memorySystem.AddPtrBuffer(shaderVariables.data(), shaderVariables.size(), __FILE__, __LINE__, __func__, pushConstantName.c_str()),
                 });
         }
         else
@@ -1060,7 +1042,7 @@ Vector<SpvReflectSpecializationConstant*> Shader_SearchShaderSpecializationConst
     return results;
 }
 
-const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName)
+const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPushConstant>& shaderPushConstantList, const char* constBufferName)
 {
     auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstant& var)
         {
@@ -1069,14 +1051,21 @@ const ShaderPushConstant* Shader_SearchShaderConstBuffer(const Vector<ShaderPush
     return (it != shaderPushConstantList.end()) ? &(*it) : nullptr;
 }
 
- const ShaderVariable* Shader_SearchShaderConstStructVar(const ShaderPushConstant* pushConstant, const String& varName)
+ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, const char* varName)
 {
-    auto& variableList = pushConstant->PushConstantVariableList;
-    auto it = std::ranges::find_if(variableList, [&](const ShaderVariable& var)
+    if (pushConstant == nullptr)
+    {
+        return nullptr;
+    }
+
+    Span pushConstantVariableList(pushConstant->PushConstantVariableList, pushConstant->PushConstantVariableCount);
+    auto it = std::ranges::find_if(pushConstantVariableList, [&](const ShaderVariable& var)
         {
-            return std::strcmp(var.Name, varName.c_str()) == 0;
-        });
-    return (it != variableList.end()) ? &(*it) : nullptr;
+            return var.Name != nullptr &&
+                   std::strcmp(var.Name, varName) == 0;
+        }
+    );
+    return (it != pushConstantVariableList.end()) ? &(*it) : nullptr;
 }
 
 ShaderStruct* Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName)

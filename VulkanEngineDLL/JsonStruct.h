@@ -114,10 +114,11 @@ struct ShaderDescriptorBinding
 
 struct ShaderPushConstant
 {
-    String     PushConstantName;
+    const char*     PushConstantName;
     size_t			PushConstantSize = 0;
+    size_t			PushConstantVariableCount = 0;
     VkShaderStageFlags ShaderStageFlags;
-    Vector<ShaderVariable> PushConstantVariableList;
+    ShaderVariable* PushConstantVariableList;
     void*           PushConstantBuffer = nullptr;
     bool			GlobalPushContant = false;
 };

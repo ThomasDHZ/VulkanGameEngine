@@ -65,6 +65,24 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
 {
     const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderPathList);
     ShaderPipelineData pipelineData = Shader_LoadPipelineShaderData(cShaderList, shaderPathList.size());
+  /*  for (int x = 0; x < pipelineData.PushConstantCount; x++)
+    {
+        if (pipelineData.PushConstantList != nullptr)
+        {
+            for (int y = 0; x < pipelineData.PushConstantList[y].PushConstantVariableCount; y++)
+            {
+                if (pipelineData.PushConstantList[x].PushConstantVariableList[y].Name != nullptr) memorySystem.RemovePtrBuffer(pipelineData.PushConstantList[x].PushConstantVariableList[y].Name);
+                if (pipelineData.PushConstantList[x].PushConstantVariableList[y].Value != nullptr) memorySystem.RemovePtrBuffer(pipelineData.PushConstantList[x].PushConstantVariableList[y].Value);
+            }
+        }
+
+        if (pipelineData.PushConstantList[x].PushConstantName != nullptr) memorySystem.RemovePtrBuffer(pipelineData.PushConstantList[x].PushConstantName);
+        if (pipelineData.PushConstantList[x].PushConstantVariableList != nullptr) memorySystem.RemovePtrBuffer(pipelineData.PushConstantList[x].PushConstantVariableList);
+        if (pipelineData.PushConstantList[x].PushConstantBuffer != nullptr) memorySystem.RemovePtrBuffer(pipelineData.PushConstantList[x].PushConstantBuffer);
+    }
+    shaderSystem.Destroy();
+memorySystem.ReportLeaks();*/
+
     Span<ShaderPushConstant> pushConstantList(pipelineData.PushConstantList, pipelineData.PushConstantCount);
     for (auto& pushConstant : pushConstantList)
     {
@@ -76,11 +94,11 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
                 .PushConstantSize = pushConstant.PushConstantSize,
                 .ShaderStageFlags = pushConstant.ShaderStageFlags,
                 .PushConstantVariableList = pushConstant.PushConstantVariableList,
-                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName.c_str()),
+                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(pushConstant.PushConstantSize, __FILE__, __LINE__, __func__, pushConstant.PushConstantName),
                 .GlobalPushContant = pushConstant.GlobalPushContant
             };
 
-            for (int x = 0; x < pushConstant.PushConstantVariableList.size(); x++)
+            for (int x = 0; x < pushConstant.PushConstantVariableCount; x++)
             {
                 ShaderVariable* variablePtr = &pushConstant.PushConstantVariableList[x];
                 ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Value = memorySystem.AddPtrBuffer<byte>(ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Size, __FILE__, __LINE__, __func__, ShaderPushConstantMap[pushConstant.PushConstantName].PushConstantVariableList[x].Name);
@@ -92,6 +110,9 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
     }
     CHelper_DestroyConstCharPtrPtr(cShaderList);
     ShaderModuleMap[pipelineData.ShaderList[0]] = pipelineData;
+
+   // shaderSystem.Destroy();
+
     return pipelineData;
 }
 
@@ -135,12 +156,12 @@ ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& push
 void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList)
 {
     size_t protoTypeStructCount = 0;
-    for (int x = 0; x < renderPassJsonList.size(); x++)
+    for (size_t x = 0; x < renderPassJsonList.size(); ++x)
     {
         nlohmann::json renderPassJson = Json::ReadJson(renderPassJsonList[x]);
-        for (int x = 0; x < renderPassJson["RenderPipelineList"].size(); x++)
+        for (size_t y = 0; y < renderPassJson["RenderPipelineList"].size(); ++y)
         {
-            nlohmann::json pipelineJson = Json::ReadJson(renderPassJson["RenderPipelineList"][x]);
+            nlohmann::json pipelineJson = Json::ReadJson(renderPassJson["RenderPipelineList"][y]);
             Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
             const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderJsonList);
             ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(cShaderList, shaderJsonList.size(), protoTypeStructCount);
@@ -149,28 +170,44 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
             {
                 if (!ShaderStructPrototypeExists(shaderStruct.Name))
                 {
-                    //memorySystem.ReportLeaks();
-                   // const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name sdfgsdfg copy");
-                    //memorySystem.ReportLeaks();
-                    //memorySystem.RemovePtrBuffer(shaderStruct.Name);
-                    //memorySystem.ReportLeaks();
-
-                    const char* copiedStr = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__, "shaderStructToCopy.Name copy");
-                    PipelineShaderStructPrototypeMap[copiedStr] = ShaderStruct
+                    String name = shaderStruct.Name;
+                    PipelineShaderStructPrototypeMap[name] = ShaderStruct
                     {
-                        .Name = copiedStr,
-                        .ShaderBufferSize = shaderStruct.ShaderBufferSize,
+                        .Name = memorySystem.AddPtrBuffer(shaderStruct.Name, __FILE__, __LINE__, __func__),
                         .ShaderBufferVariableListCount = shaderStruct.ShaderBufferVariableListCount,
-                        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, copiedStr),
+                        .ShaderBufferVariableList = memorySystem.AddPtrBuffer<ShaderVariable>(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount, __FILE__, __LINE__, __func__, name.c_str()),
                         .ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
-                        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, copiedStr)
+                        .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, name.c_str())
                     };
-                    //memorySystem.RemovePtrBuffer<const char>(copiedStr);
+
+                    for (size_t z = 0; z < shaderStruct.ShaderBufferVariableListCount; ++z)
+                    {
+                        shaderStruct.ShaderBufferVariableList[z].Name = nullptr;
+                        shaderStruct.ShaderBufferVariableList[z].Value = nullptr;
+                    }
                 }
-                memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
             }
-            memorySystem.RemovePtrBuffer<ShaderStruct>(shaderStructArray);
+
+            for (auto& shaderStruct : shaderStructList)
+            {
+                if (shaderStruct.ShaderBufferVariableList != nullptr)
+                {
+                    Span<ShaderVariable> shaderVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
+                    for (auto& shaderVar : shaderVarList)
+                    {
+                        if (shaderVar.Name != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Name);
+                        if (shaderVar.Value != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Value);
+                    }
+                }
+
+                if (shaderStruct.Name != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.Name); 
+                if (shaderStruct.ShaderBufferVariableList != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
+                if (shaderStruct.ShaderStructBuffer != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.ShaderStructBuffer);
+            }
+
+            Shader_DestroyShaderStructData(shaderStructList.data(), shaderStructList.size());
             CHelper_DestroyConstCharPtrPtr(cShaderList);
+            memorySystem.RemovePtrBuffer(shaderStructArray);
         }
     }
 }
