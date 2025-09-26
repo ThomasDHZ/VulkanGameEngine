@@ -18,7 +18,7 @@ GameSystem::~GameSystem()
 {
 }
 
-void GameSystem::StartUp(WindowType windowType, void* windowHandle)
+void GameSystem::StartUp(WindowTypeEnum windowType, void* windowHandle)
 {
     nlohmann::json json = Json::ReadJson("C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Levels\\TestLevel.json");
     nlohmann::json shaderJson = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");

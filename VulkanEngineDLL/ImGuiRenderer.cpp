@@ -12,10 +12,10 @@ ImGuiRenderer ImGui_StartUp(const GraphicsRenderer& renderer)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
     ImGui::StyleColorsDark();
-    switch (vulkanWindow->WindowType)
+    switch (vulkanWindow.WindowType)
     {
         //case SDL: ImGui_ImplSDL3_InitForVulkan((SDL_Window*)vulkanWindow->WindowHandle); break;
-    case GLFW: ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)vulkanWindow->WindowHandle, true); break;
+    case GLFW: ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)vulkanWindow.WindowHandle, true); break;
     }
 
     imGui.RenderPass = ImGui_CreateRenderPass(renderer);
@@ -146,7 +146,7 @@ void ImGui_Destroy(GraphicsRenderer& renderer, ImGuiRenderer& imGuiRenderer)
     Renderer_DestroyDescriptorPool(renderer.Device, &imGuiRenderer.ImGuiDescriptorPool);
     Renderer_DestroyRenderPass(renderer.Device, &imGuiRenderer.RenderPass);
     Renderer_DestroyFrameBuffers(renderer.Device, &imGuiRenderer.SwapChainFramebuffers[0], renderer.SwapChainImageCount);
-    switch (vulkanWindow->WindowType)
+    switch (vulkanWindow.WindowType)
     {
         //case SDL: ImGui_ImplSDL3_Shutdown(); break;
     case GLFW: ImGui_ImplGlfw_Shutdown(); break;

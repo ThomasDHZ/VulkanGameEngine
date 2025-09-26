@@ -48,7 +48,7 @@ public:
     void DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
     void DestroyBuffer(VkBuffer& buffer);
 
-    void StartUp(WindowType windowType, void* windowHandle);
+    void StartUp(WindowTypeEnum windowType, void* windowHandle);
     void Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
 
     VkCommandBuffer RenderBloomPass(VkGuid& renderPassId);

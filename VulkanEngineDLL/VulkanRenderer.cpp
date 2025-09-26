@@ -26,7 +26,7 @@ void LogVulkanMessage(const char* message, int severity)
     }
 }
 
-GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle)
+GraphicsRenderer Renderer_RendererSetUp(WindowTypeEnum windowType, void* windowHandle)
 {
     GraphicsRenderer renderer;
     renderer.ImageIndex = 0;
@@ -39,13 +39,14 @@ GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandl
     VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
     renderer.Instance = Renderer_CreateVulkanInstance();
     renderer.DebugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
-    if (windowType == WindowType::GLFW)
+    if (windowType == WindowTypeEnum::GLFW)
     {
-        vulkanWindow->CreateSurface(windowHandle, &renderer.Instance, &renderer.Surface);
+        GLFWwindow* window = static_cast<GLFWwindow*>(windowHandle);
+        VkResult result = glfwCreateWindowSurface(renderer.Instance, window, NULL, &renderer.Surface);
     }
     else
     {
-        renderer.Surface = Renderer_CreateVulkanSurface(windowHandle, renderer.Instance);
+       // renderer.Surface = Renderer_CreateVulkanSurface(windowHandle, renderer.Instance);
     }
     renderer.PhysicalDevice = Renderer_SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     renderer.Device = Renderer_SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
@@ -57,7 +58,7 @@ GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandl
     return renderer;
 }
 
-GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
+GraphicsRenderer Renderer_RebuildSwapChain(WindowTypeEnum windowType, void* windowHandle, GraphicsRenderer& renderer)
 {
     vkDeviceWaitIdle(renderer.Device);
     Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], MAX_FRAMES_IN_FLIGHT);
@@ -67,7 +68,7 @@ GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHa
     return renderer;
 }
 
-VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
+VkResult Renderer_SetUpSwapChain(WindowTypeEnum windowType, void* windowHandle, GraphicsRenderer& renderer)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities = SwapChain_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = SwapChain_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
@@ -76,11 +77,12 @@ VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, Grap
     VkSurfaceFormatKHR swapChainImageFormat = SwapChain_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = SwapChain_FindSwapPresentMode(compatiblePresentModesList);
 
-    if (windowType == WindowType::GLFW)
+    if (windowType == WindowTypeEnum::GLFW)
     {
         int width = 0;
         int height = 0;
-        vulkanWindow->GetFrameBufferSize(windowHandle, &width, &height);
+        GLFWwindow* window = static_cast<GLFWwindow*>(windowHandle);
+        VulkanWindow_GLFWFrameBufferResizeCallBack(window, width, height);
         renderer.SwapChainResolution.width = surfaceCapabilities.currentExtent.width;
         renderer.SwapChainResolution.height = surfaceCapabilities.currentExtent.height;
     }

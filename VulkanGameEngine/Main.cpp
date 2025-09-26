@@ -17,15 +17,15 @@ int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
-    vulkanWindow = Window_CreateWindow(WindowType::GLFW, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
+    VulkanWindow_CreateGraphicsWindow(WindowTypeEnum::GLFW, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 
-    gameSystem.StartUp(WindowType::GLFW, vulkanWindow->WindowHandle);
-    while (!vulkanWindow->WindowShouldClose(vulkanWindow))
+    gameSystem.StartUp(WindowTypeEnum::GLFW, vulkanWindow.WindowHandle);
+    while (!VulkanWindow_WindowShouldClose(vulkanWindow.WindowHandle))
     {
         const float frameTime = deltaTime.GetFrameTime();
 
-        vulkanWindow->PollEventHandler(vulkanWindow);
-        vulkanWindow->SwapBuffer(vulkanWindow);
+        VulkanWindow_PollEventHandler();
+        VulkanWindow_SwapBuffer();
 
      /*   for (int i = 0; i <= GLFW_JOYSTICK_LAST; i++) {
             if (glfwJoystickPresent(i) && glfwJoystickIsGamepad(i)) {
@@ -42,6 +42,6 @@ int main(int argc, char** argv)
     }
     vkDeviceWaitIdle(renderSystem.renderer.Device);
     gameSystem.Destroy();
-    vulkanWindow->DestroyWindow(vulkanWindow);
+    VulkanWindow_DestroyWindow(vulkanWindow.WindowHandle);
     return 0;
 }

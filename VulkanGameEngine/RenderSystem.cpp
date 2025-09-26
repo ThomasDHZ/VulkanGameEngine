@@ -20,7 +20,7 @@ RenderSystem::~RenderSystem()
 
 }
 
-void RenderSystem::StartUp(WindowType windowType, void* windowHandle)
+void RenderSystem::StartUp(WindowTypeEnum windowType, void* windowHandle)
 {
     renderer = Renderer_RendererSetUp(windowType, windowHandle);
     imGuiRenderer = ImGui_StartUp(renderer);
@@ -39,7 +39,7 @@ void RenderSystem::Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const f
 void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
 {
     vkDeviceWaitIdle(renderer.Device);
-    Renderer_RebuildSwapChain(vulkanWindow->WindowType, vulkanWindow->WindowHandle, renderer);
+    //Renderer_RebuildSwapChain(vulkanWindow->WindowType, vulkanWindow->WindowHandle, renderer);
     for (auto& renderPassPair : RenderPassMap)
     {
         VulkanRenderPass& renderPass = renderPassPair.second;

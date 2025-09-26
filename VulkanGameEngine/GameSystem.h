@@ -15,7 +15,7 @@ public:
 	GameSystem();
 	~GameSystem();
 
-	void StartUp(WindowType windowType, void* windowHandle);
+	void StartUp(WindowTypeEnum windowType, void* windowHandle);
 	void Update(const float& deltaTime);
 	void DebugUpdate(const float& deltaTime);
 	void Draw(const float& deltaTime);

@@ -141,6 +141,8 @@
     <ClInclude Include="File.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GPUSystem.h" />
+    <ClInclude Include="InputEnums.h" />
+    <ClInclude Include="Mouse2.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="CShaderCompiler.h" />
@@ -201,6 +203,7 @@
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
+    <ClCompile Include="Mouse2.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="CShaderCompiler.c" />
@@ -226,7 +229,7 @@
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />
-    <ClCompile Include="VulkanWindow.c" />
+    <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
