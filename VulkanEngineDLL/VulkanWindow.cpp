@@ -1,16 +1,16 @@
 #include "VulkanWindow.h"
 #include "SDLWindow.h"
 #include "GLFWWindow.h"
-
-VulkanWindow* vulkanWindow = { 0 };
-
+#include "MemorySystem.h"
+int joystick_id = -1;
+VulkanWindow* vulkanWindow = nullptr;
 VulkanWindow* Window_CreateWindow(WindowType windowType, const char* WindowName, uint32_t width, uint32_t height)
 {
     switch (windowType)
     {
     case SDL:
     {
-        VulkanWindow* window = malloc(sizeof(VulkanWindow));
+        VulkanWindow* window = memorySystem.AddPtrBuffer<VulkanWindow>(sizeof(VulkanWindow), __FILE__, __LINE__, __func__);
         //if (!window)
         //{
         //    fprintf(stderr, "Failed to allocate memory for SDLWindow.\n");
@@ -29,7 +29,7 @@ VulkanWindow* Window_CreateWindow(WindowType windowType, const char* WindowName,
     }
     case GLFW:
     {
-        VulkanWindow* window = malloc(sizeof(VulkanWindow));
+        VulkanWindow* window = memorySystem.AddPtrBuffer<VulkanWindow>(sizeof(VulkanWindow), __FILE__, __LINE__, __func__);
         if (!window)
         {
             fprintf(stderr, "Failed to allocate memory for SDLWindow.\n");

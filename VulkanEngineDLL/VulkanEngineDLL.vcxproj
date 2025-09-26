@@ -140,6 +140,7 @@
     <ClInclude Include="enum.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="CHelper.h" />
+    <ClInclude Include="GLFWWindow.h" />
     <ClInclude Include="GPUSystem.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
@@ -152,7 +153,6 @@
     <ClInclude Include="from_json.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="GLFWWindow.h" />
     <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="json.h" />
@@ -199,6 +199,7 @@
     <ClCompile Include="CFile.c" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="CHelper.cpp" />
+    <ClCompile Include="GLFWWindow.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
@@ -207,7 +208,6 @@
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameLevel.cpp" />
-    <ClCompile Include="GLFWWindow.c" />
     <ClCompile Include="ImGuiRenderer.cpp" />
     <ClCompile Include="JsonFunc.cpp" />
     <ClCompile Include="JsonLoader.cpp" />
@@ -226,7 +226,7 @@
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />
-    <ClCompile Include="VulkanWindow.c" />
+    <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

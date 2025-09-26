@@ -99,7 +99,7 @@ ShaderPipelineData ShaderSystem::LoadShaderPipelineData(Vector<String> shaderPat
 
 const ShaderVariable* ShaderSystem::SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName)
 {
-    return Shader_SearchShaderConstStructVar(pushConstant, varName);
+    return Shader_SearchShaderPushConstStructVar(pushConstant, varName);
 }
 
 ShaderVariable* ShaderSystem::SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName)
