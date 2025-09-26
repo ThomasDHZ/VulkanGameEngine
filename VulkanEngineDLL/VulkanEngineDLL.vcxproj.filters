@@ -168,10 +168,7 @@
     <ClInclude Include="enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GLFWWindow.h">
+    <ClInclude Include="InputEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -297,12 +294,6 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="GPUSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GLFWWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

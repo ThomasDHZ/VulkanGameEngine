@@ -22,8 +22,11 @@ RenderSystem::~RenderSystem()
 
 void RenderSystem::StartUp(WindowType windowType, void* windowHandle)
 {
-    renderer = Renderer_RendererSetUp(windowType, windowHandle);
-    imGuiRenderer = ImGui_StartUp(renderer);
+    renderer.Instance = Renderer_CreateVulkanInstance();
+    renderer.DebugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
+    glfwCreateWindowSurface(renderer.Instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &renderer.Surface);
+    Renderer_RendererSetUp(windowType, windowHandle, renderer);
+  //  imGuiRenderer = ImGui_StartUp(renderer);
     shaderSystem.StartUp();
 }
 
@@ -56,7 +59,7 @@ void RenderSystem::RecreateSwapchain(VkGuid& spriteRenderPass2DId, VkGuid& level
         size_t size = renderedTextureList.size();
         renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, *renderedTextureList.data(), size, depthTexture);
     }
-    ImGui_RebuildSwapChain(renderer, imGuiRenderer);
+    //ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
 
 VkCommandBuffer RenderSystem::RenderBloomPass(VkGuid& renderPassId)
@@ -339,7 +342,7 @@ void RenderSystem::DestroyRenderPipelines()
 
 void RenderSystem::Destroy()
 {
-    ImGui_Destroy(renderer, imGuiRenderer);
+   // ImGui_Destroy(renderer, imGuiRenderer);
     DestroyRenderPasses();
     DestroyRenderPipelines();
     Renderer_DestroyRenderer(renderer);

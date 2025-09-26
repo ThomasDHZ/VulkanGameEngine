@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
+    <ClCompile Include="GLFWWindow.cpp" />
     <ClCompile Include="VulkanFileSystem.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
@@ -161,11 +162,13 @@
     <ClCompile Include="SystemClock.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
+    <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="EngineConfigSystem.h" />
+    <ClInclude Include="GLFWWindow.h" />
     <ClInclude Include="VulkanFileSystem.h" />
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameObjectSystem.h" />
@@ -189,6 +192,7 @@
     <ClInclude Include="SystemClock.h" />
     <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="BufferSystem.h" />
+    <ClInclude Include="VulkanWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

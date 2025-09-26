@@ -3,9 +3,9 @@
 #include <stdbool.h>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_win32.h>
+#include "InputEnum.h"
 #include "Typedef.h"
 #include "CVulkanRenderer.h"
-#include "VulkanWindow.h"
 #include "JsonStructs.h"
 
 static const char* ValidationLayers[] = { "VK_LAYER_KHRONOS_validation" };
@@ -83,7 +83,9 @@ extern "C" {
 	DLL_EXPORT void Debug_SetRichTextBoxHandle(HWND hwnd);
 	DLL_EXPORT void SetLogVulkanMessageCallback(LogVulkanMessageCallback callback);
 	DLL_EXPORT void LogVulkanMessage(const char* message, int severity);
-	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle);
+	DLL_EXPORT VkInstance Renderer_CreateVulkanInstance();
+	DLL_EXPORT VkDebugUtilsMessengerEXT Renderer_SetupDebugMessenger(VkInstance instance);
+	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer);
 	DLL_EXPORT GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer);
 	DLL_EXPORT VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 	DLL_EXPORT VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
@@ -100,8 +102,6 @@ extern "C" {
 	Vector<VkPresentModeKHR> Renderer_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	bool Renderer_GetRayTracingSupport();
 	void Renderer_GetRendererFeatures(VkPhysicalDeviceVulkan11Features * physicalDeviceVulkan11Features);
-	VkInstance Renderer_CreateVulkanInstance();
-	VkDebugUtilsMessengerEXT Renderer_SetupDebugMessenger(VkInstance instance);
 	VkPhysicalDeviceFeatures Renderer_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
 	Vector<VkPhysicalDevice> Renderer_GetPhysicalDeviceList(VkInstance & instance);
 	VkPhysicalDevice Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32 & graphicsFamily, uint32 & presentFamily);

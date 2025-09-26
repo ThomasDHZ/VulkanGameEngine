@@ -1,5 +1,4 @@
 //#pragma once
-#include "VulkanWindow.h"
 //
 ////void GameEngine_SDL_MouseMoveEvent(VulkanWindow* self, const SDL_Event* event);
 ////void GameEngine_SDL_MouseButtonPressedEvent(VulkanWindow* self, const SDL_Event* event);

@@ -1,10 +1,10 @@
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <glfw/include/GLFW/glfw3.h>
 #include "GLFWWindow.h"
-#include "Mouse.h"
-#include "Keyboard.h"
-#include "MemorySystem.h"
-#include "GameController.h"
+#include <Mouse.h>
+#include <Keyboard.h>
+#include <MemorySystem.h>
+#include <GameController.h>
 
 void joystick_callback(int jid, int event) {
 	if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
@@ -19,7 +19,7 @@ void joystick_callback(int jid, int event) {
 	}
 }
 
-static void error_callback(int error, const char* description)
+ void error_callback(int error, const char* description)
 {
 	fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }

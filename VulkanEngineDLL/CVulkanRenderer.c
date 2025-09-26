@@ -1,6 +1,4 @@
 #include "CVulkanRenderer.h"
-#include "VulkanWindow.h"
-#include "GLFWWindow.h"
 #include "CTypedef.h"
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)

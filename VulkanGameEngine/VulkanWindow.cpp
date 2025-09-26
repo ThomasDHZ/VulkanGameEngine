@@ -2,7 +2,7 @@
 #include "SDLWindow.h"
 #include "GLFWWindow.h"
 #include "MemorySystem.h"
-int joystick_id = -1;
+
 VulkanWindow* vulkanWindow = nullptr;
 VulkanWindow* Window_CreateWindow(WindowType windowType, const char* WindowName, uint32_t width, uint32_t height)
 {

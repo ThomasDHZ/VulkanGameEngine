@@ -1,10 +1,4 @@
 #pragma once
-#include "DLL.h"
-#include <vulkan/vulkan_core.h>
-#include <stdbool.h>
-#include "Macro.h"
-#include <glfw/include/GLFW/glfw3.h>
-
 #define MAXMOUSEKEY 3
 #define MAXKEYBOARDKEY 350
 
@@ -216,27 +210,3 @@ typedef struct keyboardState
 {
     KeyState KeyPressed[MAXKEYBOARDKEY];
 }KeyboardState;
-
-typedef struct VulkanWindow
-{
-    WindowType WindowType;
-    void* WindowHandle;
-    uint32_t    Width;
-    uint32_t    Height;
-    bool        FrameBufferResized;
-    bool        ShouldClose;
-    MouseState  mouse;
-    KeyboardState keyboard;
-    int jid;
-
-    void (*CreateGraphicsWindow)(struct VulkanWindow* self, const char* WindowName, uint32_t width, uint32_t height);
-    void (*PollEventHandler)(struct VulkanWindow* self);
-    void (*SwapBuffer)(struct VulkanWindow* self);
-    const char** (*GetInstanceExtensions)(struct VulkanWindow* self, uint32_t* outExtensionCount, bool enableValidationLayers);
-    void (*CreateSurface)(void* windowHandle, VkInstance* instance, VkSurfaceKHR* surface);
-    void (*GetFrameBufferSize)(void* windowHandle, int* width, int* height);
-    void (*DestroyWindow)(struct VulkanWindow* self);
-    bool (*WindowShouldClose)(struct VulkanWindow* self);
-} VulkanWindow;
-DLL_EXPORT extern VulkanWindow* vulkanWindow;
-DLL_EXPORT VulkanWindow* Window_CreateWindow(WindowType windowType, const char* WindowName, uint32_t width, uint32_t height);

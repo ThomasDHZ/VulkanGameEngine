@@ -1,6 +1,4 @@
 #pragma once
-#include "VulkanWindow.h"
-
 //typedef enum keys
 //{
 //    KeyCode = 0xFFFF,

@@ -1,3 +1,5 @@
+#define GLFW_INCLUDE_VULKAN
+#include <glfw/include/GLFW/glfw3.h>
 #include "VulkanRenderer.h"
 #include <cstdlib>
 #include <iostream>
@@ -26,27 +28,14 @@ void LogVulkanMessage(const char* message, int severity)
     }
 }
 
-GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle)
+GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
 {
-    GraphicsRenderer renderer;
     renderer.ImageIndex = 0;
     renderer.CommandIndex = 0;
     renderer.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
     renderer.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
     renderer.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
-
     renderer.RebuildRendererFlag = false;
-    VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-    renderer.Instance = Renderer_CreateVulkanInstance();
-    renderer.DebugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
-    if (windowType == WindowType::GLFW)
-    {
-        vulkanWindow->CreateSurface(windowHandle, &renderer.Instance, &renderer.Surface);
-    }
-    else
-    {
-        renderer.Surface = Renderer_CreateVulkanSurface(windowHandle, renderer.Instance);
-    }
     renderer.PhysicalDevice = Renderer_SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     renderer.Device = Renderer_SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
     VULKAN_RESULT(Renderer_SetUpSwapChain(windowType, windowHandle, renderer));
@@ -76,24 +65,11 @@ VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, Grap
     VkSurfaceFormatKHR swapChainImageFormat = SwapChain_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = SwapChain_FindSwapPresentMode(compatiblePresentModesList);
 
-    if (windowType == WindowType::GLFW)
-    {
-        int width = 0;
-        int height = 0;
-        vulkanWindow->GetFrameBufferSize(windowHandle, &width, &height);
-        renderer.SwapChainResolution.width = surfaceCapabilities.currentExtent.width;
-        renderer.SwapChainResolution.height = surfaceCapabilities.currentExtent.height;
-    }
-    else
-    {
-        renderer.SwapChainResolution.width = surfaceCapabilities.currentExtent.width;
-        renderer.SwapChainResolution.height = surfaceCapabilities.currentExtent.height;
-    }
-
     SwapChain_SetUpSwapChain(renderer);
+    renderer.SwapChainResolution.width = surfaceCapabilities.currentExtent.width;
+    renderer.SwapChainResolution.height = surfaceCapabilities.currentExtent.height;
     renderer.SwapChainImages = SwapChain_SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(MAX_FRAMES_IN_FLIGHT));
     renderer.SwapChainImageViews = SwapChain_SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
-
     return VK_SUCCESS;
 }
 

@@ -140,8 +140,8 @@
     <ClInclude Include="enum.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="CHelper.h" />
-    <ClInclude Include="GLFWWindow.h" />
     <ClInclude Include="GPUSystem.h" />
+    <ClInclude Include="InputEnum.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="CShaderCompiler.h" />
@@ -181,7 +181,6 @@
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanPipeline.h" />
     <ClInclude Include="VulkanRenderPass.h" />
-    <ClInclude Include="VulkanWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\External\imgui\backends\imgui_impl_glfw.cpp" />
@@ -199,7 +198,6 @@
     <ClCompile Include="CFile.c" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="CHelper.cpp" />
-    <ClCompile Include="GLFWWindow.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
@@ -226,7 +224,6 @@
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />
-    <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
