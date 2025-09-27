@@ -79,7 +79,7 @@ void InputSystem::Update(const float& deltaTime)
             }
         }
         
-        if ((vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_HELD) &&
+      /*  if ((vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_HELD) &&
              vulkanWindow->keyboard.KeyPressed[KEY_E] == KS_PRESSED)
         {
             sprite->FlipSprite.x = 0;
@@ -121,6 +121,6 @@ void InputSystem::Update(const float& deltaTime)
         else
         {
             spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kStanding);
-        }
+        }*/
     }
 }

@@ -2,11 +2,13 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include "json.h"
 #include "TextureSystem.h"
-#include <ImGuiRenderer.h>
+#include "ImGuiRenderer.h"
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
 #include <GPUSystem.h>
+#include "Mouse.h"
+
 
 GameSystem gameSystem = GameSystem();
 
@@ -40,18 +42,21 @@ void GameSystem::Update(const float& deltaTime)
 
 void GameSystem::DebugUpdate(const float& deltaTime)
 {
-  //  ImGui_StartFrame();
-    //ImGui::Begin("Button Window");
-   // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ////texture2.get()->ImGuiShowTexture(ImVec2(256, 128));
-//    ImGui_EndFrame();
+    ImGui_StartFrame();
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
+    ImGui::Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
+    ImGui::Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
+    ImGui::Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
+    ImGui::Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");
+    ImGui_EndFrame();
 }
 
 void GameSystem::Draw(const float& deltaTime)
 {
     renderSystem.StartFrame();
     levelSystem.Draw(CommandBufferSubmitList, deltaTime);
-  //  CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, imGuiRenderer));
+    CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, imGuiRenderer));
     renderSystem.EndFrame(CommandBufferSubmitList);
     CommandBufferSubmitList.clear();
 }

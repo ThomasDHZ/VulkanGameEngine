@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\ImGui">
-      <UniqueIdentifier>{8f937b0d-0f84-487b-9e74-2f34412f56f5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Json">
       <UniqueIdentifier>{6c682fe2-9902-4555-9688-8ebb36d34dfb}</UniqueIdentifier>
     </Filter>
@@ -39,15 +36,6 @@
     <ClInclude Include="Macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDLWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CVulkanRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -64,9 +52,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="File.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
@@ -147,9 +132,6 @@
     <ClInclude Include="VRAM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGuiRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -173,15 +155,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Mouse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SDLWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Keyboard.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CVulkanRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -192,9 +165,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="File.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
@@ -208,36 +178,6 @@
     </ClCompile>
     <ClCompile Include="VulkanRenderPass.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_vulkan.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_demo.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_draw.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_tables.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_widgets.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\ImPlot\implot.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\ImPlot\implot_demo.cpp">
-      <Filter>Source Files\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\ImPlot\implot_items.cpp">
-      <Filter>Source Files\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="VulkanBuffer.cpp">
       <Filter>Source Files</Filter>
@@ -273,9 +213,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VRAM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">

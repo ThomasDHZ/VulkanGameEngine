@@ -3,8 +3,7 @@
 class InputSystem
 {
 private:
-	MouseState  mouse;
-	KeyboardState keyboard;
+
 
 public:
 	InputSystem();

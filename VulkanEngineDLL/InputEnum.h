@@ -9,28 +9,6 @@ typedef enum WindowType
     GLFW
 } WindowType;
 
-typedef enum mouseButtons
-{
-    MB_Left = 1,
-    MB_Middle = 2,
-    MB_Right = 3
-}MouseButtons;
-
-typedef enum mouseButtonEventState
-{
-    MS_RELEASED,
-    MS_PRESSED,
-    MS_HELD
-}MouseButtonEventState;
-
-typedef struct mouseState
-{
-    int X;
-    int Y;
-    int WheelOffset;
-    MouseButtonEventState MouseButtonState[MAXMOUSEKEY];
-}MouseState;
-
 typedef enum KeyboardKeyCode {
     KEY_UNKNOWN = -1,
     KEY_A = 0, KEY_B, KEY_C, KEY_D, KEY_E, KEY_F, KEY_G, KEY_H, KEY_I,
