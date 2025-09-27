@@ -132,9 +132,6 @@
     <ClInclude Include="VRAM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -151,6 +148,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InputEnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
