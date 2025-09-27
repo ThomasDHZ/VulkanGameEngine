@@ -178,7 +178,6 @@
     <ClInclude Include="VulkanRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.c" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="CFile.c" />
     <ClCompile Include="File.cpp" />
