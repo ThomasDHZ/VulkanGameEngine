@@ -16,19 +16,19 @@ struct BlendConstantsModel
 
 struct VulkanRenderPass
 {
-	RenderPassGuid RenderPassId = VkGuid();
-	VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
-	VkRect2D RenderArea = VkRect2D();
-	VkRenderPass RenderPass = VK_NULL_HANDLE;
-	VkGuid* InputTextureIdList = nullptr;
-	VkFramebuffer* FrameBufferList = nullptr;
-	VkClearValue* ClearValueList = nullptr;
-	size_t InputTextureIdListCount = 0;
-	size_t FrameBufferCount = 0;
-	size_t ClearValueCount = 0;
-	VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
-	ivec2 RenderPassResolution = ivec2();
-	bool IsRenderedToSwapchain = false;
+    RenderPassGuid RenderPassId = VkGuid();
+    VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkRect2D RenderArea = VkRect2D();
+    VkRenderPass RenderPass = VK_NULL_HANDLE;
+    VkGuid* InputTextureIdList = nullptr;
+    VkFramebuffer* FrameBufferList = nullptr;
+    VkClearValue* ClearValueList = nullptr;
+    size_t InputTextureIdListCount = 0;
+    size_t FrameBufferCount = 0;
+    size_t ClearValueCount = 0;
+    VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
+    ivec2 RenderPassResolution = ivec2();
+    bool IsRenderedToSwapchain = false;
 };
 
 struct  RenderedTextureLoader
@@ -74,15 +74,6 @@ struct RenderPassLoader
 
 struct ShaderVariable
 {
-    String Name;
-    size_t Size = 0;
-    size_t ByteAlignment = 0;
-    void* Value = nullptr;
-    ShaderMemberType  MemberTypeEnum = shaderUnknown;
-};
-
-struct ShaderVariableDLL
-{
     const char* Name;
     size_t Size = 0;
     size_t ByteAlignment = 0;
@@ -92,19 +83,10 @@ struct ShaderVariableDLL
 
 struct ShaderStruct
 {
-    String          Name;
-    size_t			ShaderBufferSize = 0;
-    Vector<ShaderVariable> ShaderBufferVariableList;
-    int             ShaderStructBufferId;
-    void*           ShaderStructBuffer = nullptr;
-};
-
-struct ShaderStructDLL
-{
     const char* Name;
-    size_t          ShaderBufferSize = 0;
-    size_t          ShaderBufferVariableCount = 0;
-    ShaderVariableDLL* ShaderBufferVariableList;
+    size_t			ShaderBufferSize = 0;
+    size_t          ShaderBufferVariableListCount = 0;
+    ShaderVariable* ShaderBufferVariableList = nullptr;
     int             ShaderStructBufferId;
     void* ShaderStructBuffer = nullptr;
 };
@@ -120,18 +102,6 @@ struct ShaderDescriptorSet
 
 struct ShaderDescriptorBinding
 {
-    String Name;
-    uint32 Binding;
-    size_t DescriptorCount;
-    VkShaderStageFlags ShaderStageFlags;
-    DescriptorBindingPropertiesEnum DescriptorBindingType;
-    VkDescriptorType DescripterType;
-    VkDescriptorImageInfo* DescriptorImageInfo;
-    VkDescriptorBufferInfo* DescriptorBufferInfo;
-};
-
-struct ShaderDescriptorBindingDLL
-{
     const char* Name;
     uint32 Binding;
     size_t DescriptorCount;
@@ -144,23 +114,13 @@ struct ShaderDescriptorBindingDLL
 
 struct ShaderPushConstant
 {
-    String           Name;
-    size_t			 Size = 0;
-    Vector<ShaderVariable>  VariableList;
-    void*              Buffer = nullptr;
+    const char* PushConstantName;
+    size_t			PushConstantSize = 0;
+    size_t			PushConstantVariableCount = 0;
     VkShaderStageFlags ShaderStageFlags;
-    bool			   GlobalPushContant = false;
-};
-
-struct ShaderPushConstantDLL
-{
-    const char*        Name;
-    size_t			   Size = 0;
-    size_t             VariableCount = 0;
-    ShaderVariableDLL*    VariableList;
-    void*              Buffer = nullptr;
-    VkShaderStageFlags ShaderStageFlags;
-    bool			   GlobalPushContant = false;
+    ShaderVariable* PushConstantVariableList;
+    void* PushConstantBuffer = nullptr;
+    bool			GlobalPushContant = false;
 };
 
 struct ShaderPipelineData
@@ -181,7 +141,55 @@ struct ShaderPipelineData
     ShaderPushConstant* PushConstantList = nullptr;
 };
 
-struct ShaderPipelineDataDLL
+struct ShaderVariableCPP
+{
+    String Name;
+    size_t Size = 0;
+    size_t ByteAlignment = 0;
+    void* Value = nullptr;
+    ShaderMemberType  MemberTypeEnum = shaderUnknown;
+};
+
+struct ShaderStructCPP
+{
+    String                 Name;
+    size_t			       ShaderBufferSize = 0;
+    int                    ShaderStructBufferId = 0;
+    Vector<ShaderVariable> ShaderBufferVariableList;
+    void* ShaderStructBuffer = nullptr;
+};
+
+struct ShaderDescriptorSetCPP
+{
+    String                  Name;
+    uint32                  Binding;
+    VkDescriptorType        DescripterType;
+    Vector<ShaderStruct>    ShaderStructList;
+};
+
+struct ShaderDescriptorBindingCPP
+{
+    String                          Name;
+    uint32                          Binding;
+    size_t                          DescriptorCount;
+    VkShaderStageFlags              ShaderStageFlags;
+    DescriptorBindingPropertiesEnum DescriptorBindingType;
+    VkDescriptorType                DescripterType;
+    VkDescriptorImageInfo           DescriptorImageInfo;
+    VkDescriptorBufferInfo          DescriptorBufferInfo;
+};
+
+struct ShaderPushConstantCPP
+{
+    String                  PushConstantName;
+    size_t			        PushConstantSize = 0;
+    VkShaderStageFlags      ShaderStageFlags;
+    Vector<ShaderVariable>  PushConstantVariableList;
+    void* PushConstantBuffer = nullptr;
+    bool			        GlobalPushContant = false;
+};
+
+struct ShaderPipelineDataCPP
 {
     size_t ShaderCount = 0;
     size_t DescriptorBindingCount = 0;
@@ -191,12 +199,12 @@ struct ShaderPipelineDataDLL
     size_t ShaderOutputCount = 0;
     size_t PushConstantCount = 0;
     const char** ShaderList = nullptr;
-    ShaderDescriptorBindingDLL* DescriptorBindingsList = nullptr;
-    ShaderStructDLL* ShaderStructList = nullptr;
+    ShaderDescriptorBinding* DescriptorBindingsList = nullptr;
+    ShaderStruct* ShaderStructList = nullptr;
     VkVertexInputBindingDescription* VertexInputBindingList = nullptr;
     VkVertexInputAttributeDescription* VertexInputAttributeList = nullptr;
-    ShaderVariableDLL* ShaderOutputList = nullptr;
-    ShaderPushConstantDLL* PushConstantList = nullptr;
+    ShaderVariable* ShaderOutputList = nullptr;
+    ShaderPushConstant* PushConstantList = nullptr;
 };
 
 struct GPUIncludes
@@ -222,7 +230,7 @@ struct RenderPipelineLoader
     VkRenderPass RenderPass = VK_NULL_HANDLE;
     ivec2 RenderPassResolution = ivec2();
     GPUIncludes gpuIncludes = GPUIncludes();
-    ShaderPipelineData ShaderPipelineInfo = ShaderPipelineData();
+    ShaderPipelineData ShaderPiplineInfo = ShaderPipelineData();
     size_t ViewportCount = 0;
     size_t ScissorCount = 0;
     size_t PipelineColorBlendAttachmentStateCount = 0;
