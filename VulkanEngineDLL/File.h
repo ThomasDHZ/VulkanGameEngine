@@ -5,5 +5,5 @@
 #include <filesystem>
 #include <chrono>
 #include <iomanip>
-
+ 
 DLL_EXPORT const char** File_GetFilesFromDirectory(const char* fileDirectory, const char** fileExtensions, size_t fileExtenstionCount, size_t& returnFileCount);
