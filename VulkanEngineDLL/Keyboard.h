@@ -137,7 +137,7 @@ typedef enum keys
     F23 = 0x86,
     F24 = 0x87,
     NumLock = 0x90,
-    Scroll = 0x91,
+    Scroll = 0x91, 
     LShiftKey = 0xA0,
     RShiftKey = 0xA1,
     LControlKey = 0xA2,
