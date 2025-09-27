@@ -296,9 +296,9 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
         nlohmann::json pipelineJson = Json::ReadJson(renderPassLoader.RenderPipelineList[x]);
         ShaderPipelineData shaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
         RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), gpuIncludes, shaderPiplineInfo));
-        
+
         Span<const char*> shaderListPtr(shaderPiplineInfo.ShaderList, shaderPiplineInfo.ShaderCount);
-        for(auto& shaderString : shaderListPtr)
+        for (auto& shaderString : shaderListPtr)
         {
             memorySystem.RemovePtrBuffer(shaderString);
         }
@@ -306,6 +306,7 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
     }
     memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
     memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
+
     return renderPassLoader.RenderPassId;
 }
 
