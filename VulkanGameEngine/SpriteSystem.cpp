@@ -16,7 +16,6 @@ SpriteSystem::SpriteSystem()
     SpriteList.reserve(10000);
     SpriteInstanceList.reserve(10000);
     SpriteIdToListIndexMap.reserve(10000);
-    SpriteInstanceBufferIdMap.reserve(10000);
     SpriteBatchLayerList.reserve(10000);
 }
 
@@ -63,8 +62,8 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
     for (auto& spriteBatchLayer : SpriteBatchLayerList)
     {
-        Vector<SpriteInstance>& spriteInstanceStructList = FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerID);
-        Vector<GameObjectID> spriteBatchObjectList = SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteBatchLayerID);
+        Vector<SpriteInstance>& spriteInstanceStructList = FindSpriteInstanceList(spriteBatchLayer.SpriteLayerId);
+        Vector<GameObjectID> spriteBatchObjectList = SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteLayerId);
 
         spriteInstanceStructList.clear();
         spriteInstanceStructList.reserve(spriteBatchObjectList.size());
@@ -76,8 +75,7 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 
         if (spriteBatchObjectList.size())
         {
-            uint bufferId = FindSpriteInstanceBufferId(spriteBatchLayer.SpriteBatchLayerID);
-            bufferSystem.UpdateBufferMemory(renderSystem.renderer, bufferId, spriteInstanceStructList);
+            bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteBatchLayer.SpriteLayerBufferId, spriteInstanceStructList);
         }
     }
 }
@@ -97,23 +95,18 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
     SpriteBatchLayer spriteBatchLayer = SpriteBatchLayer
     {
         .RenderPassId = renderPassId,
-        .SpriteBatchLayerID = ++NextSpriteBatchLayerID,
+        .SpriteLayerId = ++NextSpriteBatchLayerID,
         .SpriteLayerMeshId = meshSystem.CreateSpriteLayerMesh(gameObjectSystem.SpriteVertexList, gameObjectSystem.SpriteIndexList)
     };
     for (int x = 0; x < spriteSystem.SpriteList.size(); x++)
     {
-        spriteSystem.AddSpriteBatchObjectList(spriteBatchLayer.SpriteBatchLayerID, GameObjectID(x + 1));
+        spriteSystem.AddSpriteBatchObjectList(spriteBatchLayer.SpriteLayerId, GameObjectID(x + 1));
     }
 
-    Vector<SpriteInstance> spriteInstanceList = Vector<SpriteInstance>(SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteBatchLayerID).size());
-    spriteSystem.AddSpriteInstanceLayerList(spriteBatchLayer.SpriteBatchLayerID, spriteInstanceList);
-    spriteSystem.AddSpriteInstanceBufferId(spriteBatchLayer.SpriteBatchLayerID, bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderSystem.renderer, spriteSystem.FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerID), MeshBufferUsageSettings, MeshBufferPropertySettings, false));
+    Vector<SpriteInstance> spriteInstanceList = Vector<SpriteInstance>(SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteLayerId).size());
+    spriteSystem.AddSpriteInstanceLayerList(spriteBatchLayer.SpriteLayerId, spriteInstanceList);
+    spriteBatchLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderSystem.renderer, spriteSystem.FindSpriteInstanceList(spriteBatchLayer.SpriteLayerId), MeshBufferUsageSettings, MeshBufferPropertySettings, false);
     SpriteBatchLayerList.emplace_back(spriteBatchLayer);
-}
-
-void SpriteSystem::AddSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId, int BufferId)
-{
-    SpriteInstanceBufferIdMap[spriteInstanceBufferId] = BufferId;
 }
 
 void SpriteSystem::AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstance>& spriteInstanceList)
@@ -185,11 +178,6 @@ const SpriteInstance* SpriteSystem::FindSpriteInstance(GameObjectID gameObjectId
         auto it = SpriteIdToListIndexMap.find(gameObjectId);
         return it != SpriteIdToListIndexMap.end() ? &SpriteInstanceList[it->second] : nullptr;
     }
-}
-
-const int SpriteSystem::FindSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId)
-{
-    return SpriteInstanceBufferIdMap.at(spriteInstanceBufferId);
 }
 
 Vector<SpriteInstance>& SpriteSystem::FindSpriteInstanceList(UM_SpriteBatchID spriteBatchId)

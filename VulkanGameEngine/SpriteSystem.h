@@ -9,8 +9,9 @@ static uint32 NextSpriteBatchLayerID;
 struct SpriteBatchLayer
 {
     VkGuid RenderPassId;
-    uint SpriteBatchLayerID = 0;
+    uint SpriteLayerId = 0;
     uint SpriteLayerMeshId = 0;
+    uint SpriteLayerBufferId = 0;
 };
 
 class SpriteSystem
@@ -22,7 +23,6 @@ private:
     Vector<SpriteVram>                                        SpriteVramList;
 
     UnorderedMap<GameObjectID, size_t>                        SpriteIdToListIndexMap;
-    UnorderedMap<UM_SpriteBatchID, int>                       SpriteInstanceBufferIdMap;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>>         SpriteAnimationMap;
     UnorderedMap<UM_SpriteBatchID, Vector<SpriteInstance>>    SpriteInstanceListMap;
     UnorderedMap<UM_SpriteBatchID, Vector<GameObjectID>>      SpriteBatchObjectListMap;
@@ -54,7 +54,6 @@ public:
     const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
     const SpriteInstance* FindSpriteInstance(GameObjectID gameObjectId);
 
-    const int FindSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId);
     Vector<SpriteInstance>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);
     Vector<SpriteBatchLayer> FindSpriteBatchLayer(RenderPassGuid& guid);
 
