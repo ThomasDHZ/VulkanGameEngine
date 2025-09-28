@@ -170,7 +170,6 @@
     <ClCompile Include="OrthographicCamera3D.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="ShaderSystem.cpp" />
-    <ClCompile Include="SpriteBatchLayer.cpp" />
     <ClCompile Include="SpriteSystem.cpp" />
     <ClCompile Include="SystemClock.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
@@ -202,7 +201,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneDataBuffer.h" />
     <ClInclude Include="ShaderSystem.h" />
-    <ClInclude Include="SpriteBatchLayer.h" />
     <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="SpriteVRAM.h" />
     <ClInclude Include="SystemClock.h" />

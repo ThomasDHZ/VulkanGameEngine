@@ -1,6 +1,5 @@
 #pragma once
 #include "Sprite.h"
-#include "SpriteBatchLayer.h"
 #include "Level2D.h"
 #include "RenderSystem.h"
 #include "OrthographicCamera2D.h"

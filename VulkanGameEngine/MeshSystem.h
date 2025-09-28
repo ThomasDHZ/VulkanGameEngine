@@ -17,7 +17,7 @@ private:
 
     UnorderedMap<uint, Mesh>                           MeshMap;
     UnorderedMap<UM_SpriteBatchID, Mesh>               SpriteMeshMap;
-    UnorderedMap<LevelGuid, Vector<Mesh>>             LevelLayerMeshListMap;
+    UnorderedMap<LevelGuid, Vector<Mesh>>              LevelLayerMeshListMap;
     UnorderedMap<uint, Vector<Vertex2D>>               Vertex2DListMap;
     UnorderedMap<uint, Vector<uint>>                   IndexListMap;
 
@@ -26,7 +26,7 @@ public:
     ~MeshSystem();
 
 	template<class T>
-	int CreateMesh(Vector<T>& vertexList, Vector<uint32>& indexList, VkGuid materialId)
+	uint CreateMesh(Vector<T>& vertexList, Vector<uint32>& indexList, VkGuid materialId)
 	{
 		uint meshId = NextMeshId++;
 		mat4 meshMatrix = mat4(1.0f);
@@ -74,8 +74,8 @@ public:
 		return meshId;
 	}
 
-    int CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
-    int CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+    uint CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+    uint CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
 
     void Update(const float& deltaTime);
 

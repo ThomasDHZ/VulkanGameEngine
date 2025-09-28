@@ -16,7 +16,7 @@ MeshSystem::~MeshSystem()
 
 }
 
-int MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
+uint MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
 {
     uint meshId = ++NextSpriteMeshId;
     mat4 meshMatrix = mat4(1.0f);
@@ -74,7 +74,7 @@ int MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint3
     return meshId;
 }
 
-int MeshSystem::CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
+uint MeshSystem::CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
 {
     uint meshId = ++NextLevelLayerMeshId;
     mat4 meshMatrix = mat4(1.0f);

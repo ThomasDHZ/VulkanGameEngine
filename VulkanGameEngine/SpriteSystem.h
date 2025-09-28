@@ -2,13 +2,21 @@
 #include "ECSid.h"
 #include "Sprite.h"
 #include <VRAM.h>
-#include "SpriteBatchLayer.h"
 #include "Transform2DComponent.h"
 #include "RenderSystem.h"
+
+static uint32 NextSpriteBatchLayerID;
+struct SpriteBatchLayer
+{
+    VkGuid RenderPassId;
+    uint SpriteBatchLayerID = 0;
+    uint SpriteLayerMeshId = 0;
+};
 
 class SpriteSystem
 {
 private:
+    Vector<Sprite>										    		SpriteList;
     Vector<SpriteInstanceStruct>                                    SpriteInstanceList;
     Vector<SpriteBatchLayer>                                        SpriteBatchLayerList;
     Vector<SpriteVram>                                              SpriteVramList;
@@ -24,7 +32,6 @@ private:
     void UpdateSpriteBatchLayers(const float& deltaTime);
 
 public:
-    Vector<Sprite>												  SpriteList;
    
     SpriteSystem();
     ~SpriteSystem();
@@ -50,7 +57,6 @@ public:
     Vector<SpriteInstanceStruct>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);
     const Vector<GameObjectID>& FindSpriteBatchObjectListMap(UM_SpriteBatchID spriteBatchObjectListId);
     Vector<SpriteBatchLayer> FindSpriteBatchLayer(RenderPassGuid& guid);
-
 
     const Vector<Sprite>& SpriteListRef() { return SpriteList; }
 };

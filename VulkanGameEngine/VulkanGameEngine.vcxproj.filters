@@ -54,9 +54,6 @@
     <ClCompile Include="OrthographicCamera3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteBatchLayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SystemClock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -168,9 +165,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SceneDataBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteBatchLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpriteVRAM.h">
