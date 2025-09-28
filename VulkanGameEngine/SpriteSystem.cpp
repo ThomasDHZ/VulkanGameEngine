@@ -38,7 +38,7 @@ void SpriteSystem::UpdateBatchSprites(const float& deltaTime)
     {
         const auto& sprite = SpriteList[x];
         transform2D[x] = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
-        vram[x] = FindVramSprite(sprite.SpriteVramId);
+        vram[x] = FindSpriteVram(sprite.SpriteVramId);
         animation[x] = FindSpriteAnimation(sprite.SpriteVramId, sprite.CurrentAnimationID);
         material[x] = materialSystem.FindMaterial(vram[x].SpriteMaterialID);
     }
@@ -51,7 +51,7 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
     {
         Sprite& sprite = SpriteList[x];
         const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
-        const auto& vram = FindVramSprite(sprite.SpriteVramId);
+        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
         const auto& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
         const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
@@ -138,8 +138,7 @@ Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)
 {
     if (SpriteList.size() <= 200)
     {
-        auto it = std::find_if(SpriteList.begin(), SpriteList.end(),
-            [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
+        auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
         return it != SpriteList.end() ? &(*it) : nullptr;
     }
     else
@@ -149,11 +148,9 @@ Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)
     }
 }
 
-const SpriteVram& SpriteSystem::FindVramSprite(VkGuid vramSpriteId)
+const SpriteVram& SpriteSystem::FindSpriteVram(VkGuid vramSpriteId)
 {
-    auto it = std::find_if(SpriteVramList.begin(), SpriteVramList.end(),
-        [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
-    return *it;
+    return *std::find_if(SpriteVramList.begin(), SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }
 
 const Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId)
@@ -165,7 +162,8 @@ const SpriteInstanceStruct* SpriteSystem::FindSpriteInstance(GameObjectID gameOb
 {
     if (SpriteInstanceList.size() <= 200)
     {
-        size_t spriteInstanceIndex = FindSpriteIndex(gameObjectId);
+        auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
+        size_t spriteInstanceIndex = it != SpriteList.end() ? std::distance(SpriteList.begin(), it) : (std::numeric_limits<size_t>::max)();
         return &SpriteInstanceList[spriteInstanceIndex];
     }
     else
@@ -197,13 +195,6 @@ Vector<SpriteBatchLayer> SpriteSystem::FindSpriteBatchLayer(RenderPassGuid& guid
         std::back_inserter(matchingLayers),
         [guid](const SpriteBatchLayer& sprite) { return sprite.RenderPassId == guid; });
     return matchingLayers;
-}
-
-size_t SpriteSystem::FindSpriteIndex(GameObjectID gameObjectId)
-{
-    auto it = std::find_if(SpriteList.begin(), SpriteList.end(),
-        [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
-    return it != SpriteList.end() ? std::distance(SpriteList.begin(), it) : (std::numeric_limits<size_t>::max)();
 }
 
 VkGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)

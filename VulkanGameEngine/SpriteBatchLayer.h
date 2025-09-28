@@ -5,7 +5,7 @@
 #include <VulkanPipeline.h>
 #include "ECSid.h"
 
-	static uint32 NextSpriteBatchLayerID;
+static uint32 NextSpriteBatchLayerID;
 class SpriteBatchLayer
 {
 private:
