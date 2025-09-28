@@ -1,7 +1,7 @@
 #include "Sprite.h"
 #include "VulkanBuffer.h"
 
-void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
+void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
 {
     Span<ivec2> frameList(animationList->FrameList, animationList->FrameList + animationList->FrameCount);
     for (size_t x = 0; x < spriteCount; x++)
@@ -43,7 +43,7 @@ void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite*
     }
 }
 
-SpriteInstanceStruct Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime)
+SpriteInstance Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime)
 {
     mat4 spriteMatrix = mat4(1.0f);
     if (sprite.LastSpritePosition != sprite.SpritePosition)
@@ -74,7 +74,7 @@ SpriteInstanceStruct Sprite_UpdateSprites(const Transform2DComponent& transform2
         }
     }
 
-    SpriteInstanceStruct spriteInstance;
+    SpriteInstance spriteInstance;
     spriteInstance.SpritePosition = transform2D.GameObjectPosition;
     spriteInstance.SpriteSize = vram.SpriteSize;
     spriteInstance.MaterialID = material.ShaderMaterialBufferIndex;

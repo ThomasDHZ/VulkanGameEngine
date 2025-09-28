@@ -63,14 +63,14 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
     for (auto& spriteBatchLayer : SpriteBatchLayerList)
     {
-        Vector<SpriteInstanceStruct>& spriteInstanceStructList = FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerID);
-        Vector<GameObjectID> spriteBatchObjectList = FindSpriteBatchObjectListMap(spriteBatchLayer.SpriteBatchLayerID);
+        Vector<SpriteInstance>& spriteInstanceStructList = FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerID);
+        Vector<GameObjectID> spriteBatchObjectList = SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteBatchLayerID);
 
         spriteInstanceStructList.clear();
         spriteInstanceStructList.reserve(spriteBatchObjectList.size());
         for (auto& gameObjectID : spriteBatchObjectList)
         {
-            SpriteInstanceStruct spriteInstanceStruct = *FindSpriteInstance(gameObjectID);
+            SpriteInstance spriteInstanceStruct = *FindSpriteInstance(gameObjectID);
             spriteInstanceStructList.emplace_back(spriteInstanceStruct);
         }
 
@@ -88,7 +88,7 @@ void SpriteSystem::AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId)
     sprite.GameObjectId = gameObjectId;
     sprite.SpriteVramId = spriteVramId;
     SpriteList.emplace_back(sprite);
-    SpriteInstanceList.emplace_back(SpriteInstanceStruct());
+    SpriteInstanceList.emplace_back(SpriteInstance());
     SpriteIdToListIndexMap[gameObjectId] = SpriteList.size() - 1;
 }
 
@@ -105,9 +105,9 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
         spriteSystem.AddSpriteBatchObjectList(spriteBatchLayer.SpriteBatchLayerID, GameObjectID(x + 1));
     }
 
-    Vector<SpriteInstanceStruct> af = Vector<SpriteInstanceStruct>(spriteSystem.FindSpriteBatchObjectListMap(spriteBatchLayer.SpriteBatchLayerID).size());
-    spriteSystem.AddSpriteInstanceLayerList(spriteBatchLayer.SpriteBatchLayerID, af);
-    spriteSystem.AddSpriteInstanceBufferId(spriteBatchLayer.SpriteBatchLayerID, bufferSystem.CreateVulkanBuffer<SpriteInstanceStruct>(renderSystem.renderer, spriteSystem.FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerID), MeshBufferUsageSettings, MeshBufferPropertySettings, false));
+    Vector<SpriteInstance> spriteInstanceList = Vector<SpriteInstance>(SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteBatchLayerID).size());
+    spriteSystem.AddSpriteInstanceLayerList(spriteBatchLayer.SpriteBatchLayerID, spriteInstanceList);
+    spriteSystem.AddSpriteInstanceBufferId(spriteBatchLayer.SpriteBatchLayerID, bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderSystem.renderer, spriteSystem.FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerID), MeshBufferUsageSettings, MeshBufferPropertySettings, false));
     SpriteBatchLayerList.emplace_back(spriteBatchLayer);
 }
 
@@ -116,7 +116,7 @@ void SpriteSystem::AddSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBuff
     SpriteInstanceBufferIdMap[spriteInstanceBufferId] = BufferId;
 }
 
-void SpriteSystem::AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstanceStruct>& spriteInstanceList)
+void SpriteSystem::AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstance>& spriteInstanceList)
 {
     SpriteInstanceListMap[spriteBatchId] = spriteInstanceList;
 }
@@ -172,7 +172,7 @@ const Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramI
     return SpriteAnimationMap.at(vramId)[animationId];
 }
 
-const SpriteInstanceStruct* SpriteSystem::FindSpriteInstance(GameObjectID gameObjectId)
+const SpriteInstance* SpriteSystem::FindSpriteInstance(GameObjectID gameObjectId)
 {
     if (SpriteInstanceList.size() <= 200)
     {
@@ -192,7 +192,7 @@ const int SpriteSystem::FindSpriteInstanceBufferId(UM_SpriteBatchID spriteInstan
     return SpriteInstanceBufferIdMap.at(spriteInstanceBufferId);
 }
 
-Vector<SpriteInstanceStruct>& SpriteSystem::FindSpriteInstanceList(UM_SpriteBatchID spriteBatchId)
+Vector<SpriteInstance>& SpriteSystem::FindSpriteInstanceList(UM_SpriteBatchID spriteBatchId)
 {
     return SpriteInstanceListMap.at(spriteBatchId);
 }

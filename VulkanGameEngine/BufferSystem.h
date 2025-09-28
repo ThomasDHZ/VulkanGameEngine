@@ -30,7 +30,7 @@ private:
         {
             return BufferType_MeshPropertiesStruct;
         }
-        else if constexpr (std::is_same_v<T, SpriteInstanceStruct>) 
+        else if constexpr (std::is_same_v<T, SpriteInstance>)
         {
             return BufferType_SpriteInstanceStruct;
         }

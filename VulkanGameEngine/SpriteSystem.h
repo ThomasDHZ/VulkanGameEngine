@@ -16,21 +16,22 @@ struct SpriteBatchLayer
 class SpriteSystem
 {
 private:
-    Vector<Sprite>										    		SpriteList;
-    Vector<SpriteInstanceStruct>                                    SpriteInstanceList;
-    Vector<SpriteBatchLayer>                                        SpriteBatchLayerList;
-    Vector<SpriteVram>                                              SpriteVramList;
+    Vector<Sprite>										      SpriteList;
+    Vector<SpriteInstance>                                    SpriteInstanceList;
+    Vector<SpriteBatchLayer>                                  SpriteBatchLayerList;
+    Vector<SpriteVram>                                        SpriteVramList;
 
-    UnorderedMap<GameObjectID, size_t>                              SpriteIdToListIndexMap;
-    UnorderedMap<UM_SpriteBatchID, int>                             SpriteInstanceBufferIdMap;
-    UnorderedMap<VramSpriteGuid, Vector<Animation2D>>               SpriteAnimationMap;
-    UnorderedMap<UM_SpriteBatchID, Vector<SpriteInstanceStruct>>    SpriteInstanceListMap;
-    UnorderedMap<UM_SpriteBatchID, Vector<GameObjectID>>            SpriteBatchObjectListMap;
+    UnorderedMap<GameObjectID, size_t>                        SpriteIdToListIndexMap;
+    UnorderedMap<UM_SpriteBatchID, int>                       SpriteInstanceBufferIdMap;
+    UnorderedMap<VramSpriteGuid, Vector<Animation2D>>         SpriteAnimationMap;
+    UnorderedMap<UM_SpriteBatchID, Vector<SpriteInstance>>    SpriteInstanceListMap;
+    UnorderedMap<UM_SpriteBatchID, Vector<GameObjectID>>      SpriteBatchObjectListMap;
 
     void UpdateSprites(const float& deltaTime);
     void UpdateBatchSprites(const float& deltaTime);
     void UpdateSpriteBatchLayers(const float& deltaTime);
 
+    const Vector<GameObjectID>& FindSpriteBatchObjectListMap(UM_SpriteBatchID spriteBatchObjectListId);
 public:
    
     SpriteSystem();
@@ -39,7 +40,7 @@ public:
     void AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId);
     void AddSpriteBatchLayer(RenderPassGuid& renderPassId);
     void AddSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId, int BufferId);
-    void AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstanceStruct>& spriteInstanceList);
+    void AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstance>& spriteInstanceList);
     void AddSpriteBatchObjectList(UM_SpriteBatchID spriteBatchId, GameObjectID spriteBatchObject);
     VkGuid LoadSpriteVRAM(const String& spriteVramPath);
 
@@ -51,11 +52,10 @@ public:
     Sprite* FindSprite(GameObjectID gameObjectId);
     const SpriteVram& FindSpriteVram(VkGuid VramSpriteID);
     const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
-    const SpriteInstanceStruct* FindSpriteInstance(GameObjectID gameObjectId);
+    const SpriteInstance* FindSpriteInstance(GameObjectID gameObjectId);
 
     const int FindSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId);
-    Vector<SpriteInstanceStruct>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);
-    const Vector<GameObjectID>& FindSpriteBatchObjectListMap(UM_SpriteBatchID spriteBatchObjectListId);
+    Vector<SpriteInstance>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);
     Vector<SpriteBatchLayer> FindSpriteBatchLayer(RenderPassGuid& guid);
 
     const Vector<Sprite>& SpriteListRef() { return SpriteList; }

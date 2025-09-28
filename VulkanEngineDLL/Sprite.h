@@ -40,7 +40,7 @@ struct Sprite
     vec2 SpriteScale = vec2(1.0f);
 };
 
-struct SpriteInstanceStruct
+struct SpriteInstance
 {
     vec2  SpritePosition;
     vec4  UVOffset;
@@ -50,7 +50,7 @@ struct SpriteInstanceStruct
     mat4  InstanceTransform;
     uint  MaterialID;
 
-    SpriteInstanceStruct()
+    SpriteInstance()
     {
         SpritePosition = vec2(0.0f);
         UVOffset = vec4(0.0f);
@@ -61,7 +61,7 @@ struct SpriteInstanceStruct
         InstanceTransform = mat4(1.0f);
     }
 
-    SpriteInstanceStruct(vec2 spritePosition, vec4 uv, vec2 spriteSize, ivec2 flipSprite, vec4 color, uint materialID, mat4 instanceTransform, uint spriteLayer)
+    SpriteInstance(vec2 spritePosition, vec4 uv, vec2 spriteSize, ivec2 flipSprite, vec4 color, uint materialID, mat4 instanceTransform, uint spriteLayer)
     {
         SpritePosition = spritePosition;
         UVOffset = uv;
@@ -109,9 +109,9 @@ struct SpriteInstanceVertex2D
 #ifdef __cplusplus
 extern "C" {
 #endif
-    DLL_EXPORT void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime);
+    DLL_EXPORT void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime);
     DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite& sprite, Sprite::SpriteAnimationEnum spriteAnimation);
 #ifdef __cplusplus
 }
 #endif
-    DLL_EXPORT SpriteInstanceStruct Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);
+    DLL_EXPORT SpriteInstance Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);
