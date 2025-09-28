@@ -211,6 +211,7 @@ VkGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 
     nlohmann::json json = Json::ReadJson(spriteVramPath);
     VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
+
     auto it = std::find_if(SpriteVramList.begin(), SpriteVramList.end(),
         [vramId](const SpriteVram& sprite)
         {

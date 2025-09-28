@@ -61,6 +61,16 @@ void InputSystem::Update(const float& deltaTime)
                 else if (state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
                 {
                     spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShoot);
+
+                    if (a)
+                    {
+                        Vector<ComponentTypeEnum> ab = Vector<ComponentTypeEnum>
+                        {
+                            kSpriteComponent,
+                            kTransform2DComponent,
+                        };
+                        gameObjectSystem.CreateGameObject("asdfa", ab, VkGuid("129950e8-683a-4379-96df-36dc07b810d5"), transform.GameObjectPosition);
+                    }
                 }
                 else
                 {
@@ -69,7 +79,7 @@ void InputSystem::Update(const float& deltaTime)
             }
             else {
                 std::cout << "Not mapped as gamepad. Raw axes/buttons available." << std::endl;
-                // Fallback to raw joystick (less standardized)
+   
                 int count;
                 const float* axes = glfwGetJoystickAxes(joy, &count);
                 const unsigned char* buttons = glfwGetJoystickButtons(joy, &count);
