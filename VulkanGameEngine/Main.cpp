@@ -12,10 +12,10 @@
 int joystick_id = -1;
 int main(int argc, char** argv)
 {
-    GLFWgamepadstate state = GLFWgamepadstate();
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
+    vulkanWindow = new GameEngineWindow();
     vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
     gameSystem.StartUp(WindowType::GLFW, vulkanWindow->WindowHandle);
     while (!vulkanWindow->WindowShouldClose(vulkanWindow))
@@ -33,6 +33,5 @@ int main(int argc, char** argv)
     vkDeviceWaitIdle(renderSystem.renderer.Device);
     gameSystem.Destroy();
     vulkanWindow->DestroyWindow(vulkanWindow);
-    memorySystem.RemovePtrBuffer(vulkanWindow);
     return 0;
 }

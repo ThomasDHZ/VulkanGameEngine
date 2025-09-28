@@ -6,7 +6,7 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 
-GameEngineWindow* vulkanWindow = memorySystem.AddPtrBuffer<GameEngineWindow>(sizeof(GameEngineWindow), __FILE__, __LINE__, "Game Window Constructer");
+GameEngineWindow* vulkanWindow = nullptr;
 
 GameEngineWindow::GameEngineWindow()
 {
@@ -58,21 +58,21 @@ void GameEngineWindow::CreateSurface(void* windowHandle, VkInstance* instance, V
 
 void GameEngineWindow::GetFrameBufferSize(void* windowHandle, int* width, int* height)
 {
-    GLFWwindow* handel = (GLFWwindow*)windowHandle;
-    glfwGetFramebufferSize(handel, &*width, &*height);
+    GLFWwindow* handle = (GLFWwindow*)windowHandle;
+    glfwGetFramebufferSize(handle, &*width, &*height);
 }
 
 void GameEngineWindow::DestroyWindow(GameEngineWindow* self)
 {
-    GLFWwindow* handel = (GLFWwindow*)self->WindowHandle;
-    glfwDestroyWindow(handel);
+    GLFWwindow* handle = (GLFWwindow*)self->WindowHandle;
+    glfwDestroyWindow(handle);
     glfwTerminate();
 }
 
 bool GameEngineWindow::WindowShouldClose(GameEngineWindow* self)
 {
-    GLFWwindow* handel = (GLFWwindow*)self->WindowHandle;
-    return  glfwWindowShouldClose(handel);
+    GLFWwindow* handle = (GLFWwindow*)self->WindowHandle;
+    return  glfwWindowShouldClose(handle);
 }
 
 const char** GameEngineWindow::GetInstanceExtensions(GameEngineWindow* self, uint32_t* outExtensionCount, bool enableValidationLayers)

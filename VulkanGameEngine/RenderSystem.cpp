@@ -306,7 +306,6 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
     }
     memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
     memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
-
     return renderPassLoader.RenderPassId;
 }
 
