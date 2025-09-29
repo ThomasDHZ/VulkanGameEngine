@@ -41,7 +41,7 @@ void SpriteSystem::UpdateBatchSprites(const float& deltaTime)
         animation[x] = FindSpriteAnimation(sprite.SpriteVramId, sprite.CurrentAnimationID);
         material[x] = materialSystem.FindMaterial(vram[x].SpriteMaterialID);
     }
-    Sprite_UpdateBatchSprites(SpriteInstanceList.data(), SpriteList.data(), transform2D.data(), vram.data(), animation.data(), material.data(), count, deltaTime);
+  //  Sprite_UpdateBatchSprites(SpriteInstanceList.data(), SpriteList.data(), transform2D.data(), vram.data(), animation.data(), material.data(), count, deltaTime);
 }
 
 void SpriteSystem::UpdateSprites(const float& deltaTime)
@@ -62,20 +62,22 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
     for (auto& spriteBatchLayer : SpriteBatchLayerList)
     {
-        Vector<SpriteInstance>& spriteInstanceStructList = FindSpriteInstanceList(spriteBatchLayer.SpriteLayerId);
-        Vector<GameObjectID> spriteBatchObjectList = SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteLayerId);
+        Vector<Sprite> spriteLamdaList;
+        uint spriteLayerId = spriteBatchLayer.SpriteLayerId;
+        std::copy_if(SpriteList.begin(), SpriteList.end(), std::back_inserter(spriteLamdaList),
+            [spriteLayerId](const Sprite& obj) {
+                return obj.SpriteLayer == spriteLayerId;
+            });
 
-        spriteInstanceStructList.clear();
-        spriteInstanceStructList.reserve(spriteBatchObjectList.size());
-        for (auto& gameObjectID : spriteBatchObjectList)
+        if (spriteLamdaList.size())
         {
-            SpriteInstance spriteInstanceStruct = *FindSpriteInstance(gameObjectID);
-            spriteInstanceStructList.emplace_back(spriteInstanceStruct);
-        }
-
-        if (spriteBatchObjectList.size())
-        {
-            bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteBatchLayer.SpriteLayerBufferId, spriteInstanceStructList);
+            Vector<SpriteInstance> spriteInstanceDataList;
+            spriteInstanceDataList.reserve(spriteLamdaList.size());
+            for (auto& sprite : spriteLamdaList)
+            {
+                spriteInstanceDataList.emplace_back(SpriteInstanceList[sprite.SpriteInstance]);
+            }
+            bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteBatchLayer.SpriteLayerBufferId, spriteInstanceDataList);
         }
     }
 }
@@ -85,6 +87,7 @@ void SpriteSystem::AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId)
     Sprite sprite;
     sprite.GameObjectId = gameObjectId;
     sprite.SpriteVramId = spriteVramId;
+    sprite.SpriteLayer = FindSpriteVram(spriteVramId).SpriteLayer + 1;
     SpriteList.emplace_back(sprite);
     SpriteInstanceList.emplace_back(SpriteInstance());
     SpriteIdToListIndexMap[gameObjectId] = SpriteList.size() - 1;

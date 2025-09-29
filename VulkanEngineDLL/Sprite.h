@@ -28,6 +28,8 @@ struct Sprite
     uint SpriteID = 0;
     uint CurrentAnimationID = 0;
     uint CurrentFrame = 0;
+    uint SpriteLayer = 0;
+    uint SpriteInstance = 0;
     VkGuid SpriteVramId;
     float CurrentFrameTime = 0.0f;
     bool SpriteAlive = true;

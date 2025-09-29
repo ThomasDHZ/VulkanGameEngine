@@ -39,7 +39,6 @@ public:
 
     void AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId);
     void AddSpriteBatchLayer(RenderPassGuid& renderPassId);
-    void AddSpriteInstanceBufferId(UM_SpriteBatchID spriteInstanceBufferId, int BufferId);
     void AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstance>& spriteInstanceList);
     void AddSpriteBatchObjectList(UM_SpriteBatchID spriteBatchId, GameObjectID spriteBatchObject);
     VkGuid LoadSpriteVRAM(const String& spriteVramPath);
