@@ -5,8 +5,8 @@
 #include "Transform2DComponent.h"
 #include "RenderSystem.h"
 
-static uint32 NextSpriteBatchLayerID;
-struct SpriteBatchLayer
+static uint32 NextSpriteLayerID;
+struct SpriteLayer
 {
     VkGuid RenderPassId;
     uint SpriteLayerId = 0;
@@ -19,7 +19,7 @@ class SpriteSystem
 private:
     Vector<Sprite>										      SpriteList;
     Vector<SpriteInstance>                                    SpriteInstanceList;
-    Vector<SpriteBatchLayer>                                  SpriteBatchLayerList;
+    Vector<SpriteLayer>                                       SpriteLayerList;
     Vector<SpriteVram>                                        SpriteVramList;
 
     UnorderedMap<GameObjectID, size_t>                        SpriteIdToListIndexMap;
@@ -54,7 +54,7 @@ public:
     const SpriteInstance* FindSpriteInstance(GameObjectID gameObjectId);
 
     Vector<SpriteInstance>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);
-    Vector<SpriteBatchLayer> FindSpriteBatchLayer(RenderPassGuid& guid);
+    Vector<SpriteLayer> FindSpriteLayer(RenderPassGuid& guid);
 
     const Vector<Sprite>& SpriteListRef() { return SpriteList; }
 };

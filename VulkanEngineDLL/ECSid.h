@@ -1,7 +1,7 @@
 #pragma once
 #include "TypeDef.h"
 
-typedef uint UM_SpriteBatchID;
+typedef uint UM_SpriteLayerID;
 typedef uint UM_RenderPassID;
 typedef uint32 UM_GameObjectID;
 typedef uint32 UM_TextureID;

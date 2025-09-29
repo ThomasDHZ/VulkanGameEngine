@@ -16,7 +16,7 @@ SpriteSystem::SpriteSystem()
     SpriteList.reserve(10000);
     SpriteInstanceList.reserve(10000);
     SpriteIdToListIndexMap.reserve(10000);
-    SpriteBatchLayerList.reserve(10000);
+    SpriteLayerList.reserve(10000);
 }
 
 SpriteSystem::~SpriteSystem()
@@ -60,10 +60,10 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
 
 void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
-    for (auto& spriteBatchLayer : SpriteBatchLayerList)
+    for (auto& spriteLayer : SpriteLayerList)
     {
         Vector<Sprite> spriteLamdaList;
-        uint spriteLayerId = spriteBatchLayer.SpriteLayerId;
+        uint spriteLayerId = spriteLayer.SpriteLayerId;
         std::copy_if(SpriteList.begin(), SpriteList.end(), std::back_inserter(spriteLamdaList),
             [spriteLayerId](const Sprite& obj) {
                 return obj.SpriteLayer == spriteLayerId;
@@ -77,7 +77,7 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
             {
                 spriteInstanceDataList.emplace_back(SpriteInstanceList[sprite.SpriteInstance]);
             }
-            bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteBatchLayer.SpriteLayerBufferId, spriteInstanceDataList);
+            bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceDataList);
         }
     }
 }
@@ -95,21 +95,21 @@ void SpriteSystem::AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId)
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
 {
-    SpriteBatchLayer spriteBatchLayer = SpriteBatchLayer
+    SpriteLayer spriteLayer = SpriteLayer
     {
         .RenderPassId = renderPassId,
-        .SpriteLayerId = ++NextSpriteBatchLayerID,
+        .SpriteLayerId = ++NextSpriteLayerID,
         .SpriteLayerMeshId = meshSystem.CreateSpriteLayerMesh(gameObjectSystem.SpriteVertexList, gameObjectSystem.SpriteIndexList)
     };
     for (int x = 0; x < spriteSystem.SpriteList.size(); x++)
     {
-        spriteSystem.AddSpriteBatchObjectList(spriteBatchLayer.SpriteLayerId, GameObjectID(x + 1));
+        spriteSystem.AddSpriteBatchObjectList(spriteLayer.SpriteLayerId, GameObjectID(x + 1));
     }
 
-    Vector<SpriteInstance> spriteInstanceList = Vector<SpriteInstance>(SpriteBatchObjectListMap.at(spriteBatchLayer.SpriteLayerId).size());
-    spriteSystem.AddSpriteInstanceLayerList(spriteBatchLayer.SpriteLayerId, spriteInstanceList);
-    spriteBatchLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderSystem.renderer, spriteSystem.FindSpriteInstanceList(spriteBatchLayer.SpriteLayerId), MeshBufferUsageSettings, MeshBufferPropertySettings, false);
-    SpriteBatchLayerList.emplace_back(spriteBatchLayer);
+    Vector<SpriteInstance> spriteInstanceList = Vector<SpriteInstance>(SpriteBatchObjectListMap.at(spriteLayer.SpriteLayerId).size());
+    spriteSystem.AddSpriteInstanceLayerList(spriteLayer.SpriteLayerId, spriteInstanceList);
+    spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderSystem.renderer, spriteSystem.FindSpriteInstanceList(spriteLayer.SpriteLayerId), MeshBufferUsageSettings, MeshBufferPropertySettings, false);
+    SpriteLayerList.emplace_back(spriteLayer);
 }
 
 void SpriteSystem::AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstance>& spriteInstanceList)
@@ -193,12 +193,12 @@ const Vector<GameObjectID>& SpriteSystem::FindSpriteBatchObjectListMap(UM_Sprite
     return SpriteBatchObjectListMap.at(spriteBatchObjectListId);
 }
 
-Vector<SpriteBatchLayer> SpriteSystem::FindSpriteBatchLayer(RenderPassGuid& guid)
+Vector<SpriteLayer> SpriteSystem::FindSpriteLayer(RenderPassGuid& guid)
 {
-    std::vector<SpriteBatchLayer> matchingLayers;
-    std::copy_if(SpriteBatchLayerList.begin(), SpriteBatchLayerList.end(),
+    Vector<SpriteLayer> matchingLayers;
+    std::copy_if(SpriteLayerList.begin(), SpriteLayerList.end(),
         std::back_inserter(matchingLayers),
-        [guid](const SpriteBatchLayer& sprite) { return sprite.RenderPassId == guid; });
+        [guid](const SpriteLayer& sprite) { return sprite.RenderPassId == guid; });
     return matchingLayers;
 }
 

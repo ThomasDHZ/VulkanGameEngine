@@ -187,7 +187,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
     const VulkanRenderPass& renderPass = FindRenderPass(renderPassId);
     const VulkanPipeline& spritePipeline = FindRenderPipelineList(renderPassId)[0];
     const VulkanPipeline& levelPipeline = FindRenderPipelineList(renderPassId)[1];
-    const Vector<SpriteBatchLayer>& spriteLayerList = spriteSystem.FindSpriteBatchLayer(renderPassId);
+    const Vector<SpriteLayer>& spriteLayerList = spriteSystem.FindSpriteLayer(renderPassId);
     const Vector<Mesh>& levelLayerList = meshSystem.FindLevelLayerMeshList(levelId);
     const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
     ShaderPushConstant pushConstant = *shaderSystem.GetGlobalShaderPushConstant("sceneData");
