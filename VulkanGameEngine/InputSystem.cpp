@@ -69,7 +69,7 @@ void InputSystem::Update(const float& deltaTime)
                             kSpriteComponent,
                             kTransform2DComponent,
                         };
-                        gameObjectSystem.CreateGameObject("asdfa", ab, VkGuid("129950e8-683a-4379-96df-36dc07b810d5"), transform.GameObjectPosition);
+                        gameObjectSystem.CreateGameObject("asdfa", ab, VkGuid("129950e8-683a-4379-96df-36dc07b810d5"), sprite->SpritePosition);
                     }
                 }
                 else

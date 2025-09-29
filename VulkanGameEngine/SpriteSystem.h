@@ -5,6 +5,7 @@
 #include "Transform2DComponent.h"
 #include "RenderSystem.h"
 
+static uint32 NextSpriteId;
 static uint32 NextSpriteLayerID;
 struct SpriteLayer
 {
@@ -21,17 +22,14 @@ private:
     Vector<SpriteInstance>                                    SpriteInstanceList;
     Vector<SpriteLayer>                                       SpriteLayerList;
     Vector<SpriteVram>                                        SpriteVramList;
-
     UnorderedMap<GameObjectID, size_t>                        SpriteIdToListIndexMap;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>>         SpriteAnimationMap;
-    UnorderedMap<UM_SpriteBatchID, Vector<SpriteInstance>>    SpriteInstanceListMap;
-    UnorderedMap<UM_SpriteBatchID, Vector<GameObjectID>>      SpriteBatchObjectListMap;
 
     void UpdateSprites(const float& deltaTime);
     void UpdateBatchSprites(const float& deltaTime);
     void UpdateSpriteBatchLayers(const float& deltaTime);
+    uint AddSpriteInstance();
 
-    const Vector<GameObjectID>& FindSpriteBatchObjectListMap(UM_SpriteBatchID spriteBatchObjectListId);
 public:
    
     SpriteSystem();
@@ -39,8 +37,6 @@ public:
 
     void AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId);
     void AddSpriteBatchLayer(RenderPassGuid& renderPassId);
-    void AddSpriteInstanceLayerList(UM_SpriteBatchID spriteBatchId, Vector<SpriteInstance>& spriteInstanceList);
-    void AddSpriteBatchObjectList(UM_SpriteBatchID spriteBatchId, GameObjectID spriteBatchObject);
     VkGuid LoadSpriteVRAM(const String& spriteVramPath);
 
     void Update(const float& deltaTime);
@@ -56,7 +52,6 @@ public:
     const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
     const SpriteInstance* FindSpriteInstance(GameObjectID gameObjectId);
 
-    Vector<SpriteInstance>& FindSpriteInstanceList(UM_SpriteBatchID spriteAnimation);
     Vector<SpriteLayer> FindSpriteLayer(RenderPassGuid& guid);
 
     const Vector<Sprite>& SpriteListRef() { return SpriteList; }
