@@ -49,6 +49,9 @@ public:
     void SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnum spriteAnimation);
 
     Sprite* FindSprite(GameObjectID gameObjectId);
+    Vector<std::reference_wrapper<Sprite>> FindSpritesByLayer(const SpriteLayer& spriteLayer);
+    const Vector<SpriteInstance> FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer);
+
     const SpriteVram& FindSpriteVram(VkGuid VramSpriteID);
     const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
     const SpriteInstance* FindSpriteInstance(GameObjectID gameObjectId);

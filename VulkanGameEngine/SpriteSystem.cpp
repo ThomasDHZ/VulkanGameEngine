@@ -33,6 +33,7 @@ void SpriteSystem::UpdateBatchSprites(const float& deltaTime)
     Vector<AnimationFrames> frameList(count);
     Vector<Material> material(count);
 
+
     for (size_t x = 0; x < count; ++x)
     {
         const auto& sprite = SpriteList[x];
@@ -62,23 +63,8 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
     for (auto& spriteLayer : SpriteLayerList)
     {
-        Vector<Sprite> spriteLamdaList;
-        uint spriteLayerId = spriteLayer.SpriteLayerId;
-        std::copy_if(SpriteList.begin(), SpriteList.end(), std::back_inserter(spriteLamdaList),
-            [spriteLayerId](const Sprite& obj) {
-                return obj.SpriteLayer == spriteLayerId;
-            });
-
-        if (spriteLamdaList.size())
-        {
-            Vector<SpriteInstance> spriteInstanceDataList;
-            spriteInstanceDataList.reserve(spriteLamdaList.size());
-            for (auto& sprite : spriteLamdaList)
-            {
-                spriteInstanceDataList.emplace_back(SpriteInstanceList[sprite.SpriteInstance]);
-            }
-            bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceDataList);
-        }
+        Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer);
+        bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceList);
     }
 }
 
@@ -156,6 +142,32 @@ Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)
         auto it = SpriteIdToListIndexMap.find(gameObjectId);
         return it != SpriteIdToListIndexMap.end() ? &SpriteList[it->second] : nullptr;
     }
+}
+
+Vector<std::reference_wrapper<Sprite>> SpriteSystem::FindSpritesByLayer(const SpriteLayer& spriteLayer) 
+{
+    Vector<std::reference_wrapper<Sprite>> matches;
+    auto predicate = [spriteLayer](const Sprite& sprite) 
+        {
+            return sprite.SpriteLayer == spriteLayer.SpriteLayerId;
+        };
+    auto it = SpriteList.begin();
+    while ((it = std::find_if(it, SpriteList.end(), predicate)) != SpriteList.end()) {
+        matches.emplace_back(std::ref(*it)); 
+        ++it;  
+    }
+    return matches;
+}
+
+const Vector<SpriteInstance> SpriteSystem::FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer)
+{
+    Vector<SpriteInstance> spriteInstanceList;
+    Vector<std::reference_wrapper<Sprite>> spriteList = FindSpritesByLayer(spriteLayer);
+    for (auto& sprite : spriteList)
+    {
+        spriteInstanceList.emplace_back(SpriteInstanceList[sprite.get().SpriteInstance]);
+    }
+    return spriteInstanceList;
 }
 
 const SpriteVram& SpriteSystem::FindSpriteVram(VkGuid vramSpriteId)
