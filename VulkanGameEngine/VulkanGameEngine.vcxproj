@@ -75,8 +75,8 @@
     <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.304.0\Lib;$(SolutionDir)External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\Coral\Include;$(SolutionDir)External\sdl\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\;C:\VulkanSDK\1.4.321.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.321.1\Lib;$(SolutionDir)External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\;C:\VulkanSDK\1.4.321.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.321.1\Lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,7 +120,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;VulkanEngineDLL.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;VulkanEngineDLL.lib;ComponentDLL.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -177,7 +177,6 @@
     <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animation2D.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="GameController.h" />
@@ -190,7 +189,6 @@
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="LevelLayer.h" />
-    <ClInclude Include="LevelLayout.h" />
     <ClInclude Include="LevelSystem.h" />
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="MemoryPool.h" />
@@ -202,7 +200,6 @@
     <ClInclude Include="SceneDataBuffer.h" />
     <ClInclude Include="ShaderSystem.h" />
     <ClInclude Include="SpriteSystem.h" />
-    <ClInclude Include="SpriteVRAM.h" />
     <ClInclude Include="SystemClock.h" />
     <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="BufferSystem.h" />

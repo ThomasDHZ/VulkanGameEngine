@@ -16,7 +16,6 @@ SpriteSystem::SpriteSystem()
 {
     SpriteList.reserve(10000);
     SpriteInstanceList.reserve(10000);
-    SpriteIdToListIndexMap.reserve(10000);
     SpriteLayerList.reserve(10000);
 }
 
@@ -25,38 +24,16 @@ SpriteSystem::~SpriteSystem()
 
 }
 
-void SpriteSystem::UpdateBatchSprites(const float& deltaTime)
-{
-    const size_t count = SpriteInstanceList.size();
-    Vector<Transform2DComponent> transform2D(count);
-    Vector<SpriteVram> vram(count);
-    Vector<Animation2D> animation(count);
-    Vector<AnimationFrames> frameList(count);
-    Vector<Material> material(count);
-
-
-    for (size_t x = 0; x < count; ++x)
-    {
-        const auto& sprite = SpriteList[x];
-        transform2D[x] = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
-        vram[x] = FindSpriteVram(sprite.SpriteVramId);
-        animation[x] = FindSpriteAnimation(sprite.SpriteVramId, sprite.CurrentAnimationID);
-        material[x] = materialSystem.FindMaterial(vram[x].SpriteMaterialID);
-    }
-  //  Sprite_UpdateBatchSprites(SpriteInstanceList.data(), SpriteList.data(), transform2D.data(), vram.data(), animation.data(), material.data(), count, deltaTime);
-}
-
 void SpriteSystem::UpdateSprites(const float& deltaTime)
 {
-    for (size_t x = 0; x < SpriteList.size(); ++x)
+    for (auto& sprite : SpriteList)
     {
-        Sprite& sprite = SpriteList[x];
         const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
         const auto& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
         const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
-        SpriteInstanceList[x] = Sprite_UpdateSprites(transform2D, vram, animation, material, currentFrame, sprite, animation.FrameCount, deltaTime);
+        SpriteInstanceList[sprite.SpriteInstance] = Sprite_UpdateSprites(transform2D, vram, animation, material, currentFrame, sprite, animation.FrameCount, deltaTime);
     }
 }
 
@@ -76,9 +53,9 @@ void SpriteSystem::AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId)
     sprite.GameObjectId = gameObjectId;
     sprite.SpriteVramId = spriteVramId;
     sprite.SpriteLayer = FindSpriteVram(spriteVramId).SpriteLayer + 1;
-    sprite.SpriteInstance = AddSpriteInstance();
+    sprite.SpriteInstance = SpriteInstanceList.size();
     SpriteList.emplace_back(sprite);
-    SpriteIdToListIndexMap[gameObjectId] = SpriteList.size() - 1;
+    SpriteInstanceList.emplace_back(SpriteInstance());
 }
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
@@ -96,16 +73,8 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
 
 void SpriteSystem::Update(const float& deltaTime)
 {
-    if (SpriteList.size() > 100)
-    {
-        UpdateBatchSprites(deltaTime);
-    }
-    else
-    {
-        UpdateSprites(deltaTime);
-    }
-
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
+    UpdateSprites(deltaTime);
     UpdateSpriteBatchLayers(deltaTime);
     renderSystem.EndSingleTimeCommands(commandBuffer);
 }
@@ -118,16 +87,8 @@ void SpriteSystem::SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnu
 
 Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)
 {
-    if (SpriteList.size() <= 200)
-    {
-        auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
-        return it != SpriteList.end() ? &(*it) : nullptr;
-    }
-    else
-    {
-        auto it = SpriteIdToListIndexMap.find(gameObjectId);
-        return it != SpriteIdToListIndexMap.end() ? &SpriteList[it->second] : nullptr;
-    }
+    auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
+    return it != SpriteList.end() ? &(*it) : nullptr;
 }
 
 Vector<std::reference_wrapper<Sprite>> SpriteSystem::FindSpritesByLayer(const SpriteLayer& spriteLayer) 
@@ -164,28 +125,6 @@ const SpriteVram& SpriteSystem::FindSpriteVram(VkGuid vramSpriteId)
 const Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId)
 {
     return SpriteAnimationMap.at(vramId)[animationId];
-}
-
-const SpriteInstance* SpriteSystem::FindSpriteInstance(GameObjectID gameObjectId)
-{
-    if (SpriteInstanceList.size() <= 200)
-    {
-        auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
-        size_t spriteInstanceIndex = it != SpriteList.end() ? std::distance(SpriteList.begin(), it) : (std::numeric_limits<size_t>::max)();
-        return &SpriteInstanceList[spriteInstanceIndex];
-    }
-    else
-    {
-        auto it = SpriteIdToListIndexMap.find(gameObjectId);
-        return it != SpriteIdToListIndexMap.end() ? &SpriteInstanceList[it->second] : nullptr;
-    }
-}
-
-uint SpriteSystem::AddSpriteInstance()
-{
-    uint id = SpriteInstanceList.size();
-    SpriteInstanceList.emplace_back(SpriteInstance());
-    return id;
 }
 
 Vector<SpriteLayer> SpriteSystem::FindSpriteLayer(RenderPassGuid& guid)

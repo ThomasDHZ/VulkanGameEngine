@@ -37,6 +37,12 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{4bb26132-3fa7-4917-bb64-ba9239a35432}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GameObjects">
+      <UniqueIdentifier>{9116ac1e-b4fe-41e4-9910-31a647c7dc34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameObjects">
+      <UniqueIdentifier>{2a2cf4dc-3f1d-41ff-ae8b-6cfe619ff6bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -146,9 +152,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animation2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -167,16 +170,10 @@
     <ClInclude Include="SceneDataBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteVRAM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FrameTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LevelLayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextureSystem.h">
@@ -212,9 +209,6 @@
     <ClInclude Include="SpriteSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanFileSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -235,6 +229,9 @@
     </ClInclude>
     <ClInclude Include="GameController.h">
       <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFileSystem.h">
+      <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

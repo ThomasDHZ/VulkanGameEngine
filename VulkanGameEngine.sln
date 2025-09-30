@@ -1,10 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.11.35222.181
+VisualStudioVersion = 17.14.36511.14 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor", "VulkanGameEngineLevelEditor\VulkanGameEngineLevelEditor.csproj", "{44233629-8998-416F-B8FB-E454D1A0CDCA}"
 	ProjectSection(ProjectDependencies) = postProject
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
@@ -55,8 +56,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 	ProjectSection(SolutionItems) = preProject
 		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
 		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
-		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
 		RenderPass\GaussianBlurRenderPass.json = RenderPass\GaussianBlurRenderPass.json
+		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
 		RenderPass\LevelShader2DWireFrameRenderPass.json = RenderPass\LevelShader2DWireFrameRenderPass.json
 	EndProjectSection
 EndProject
@@ -68,11 +69,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{4CCF9A80-6215-4938-8BF7-38F42B25CDFB}"
 	ProjectSection(SolutionItems) = preProject
 		Materials\Material1.json = Materials\Material1.json
+		Materials\MegaManShotMaterial.json = Materials\MegaManShotMaterial.json
 		Materials\SparkManTileSetMaterial.json = Materials\SparkManTileSetMaterial.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sprites", "Sprites", "{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A}"
 	ProjectSection(SolutionItems) = preProject
+		Sprites\MegaManShotSprite.json = Sprites\MegaManShotSprite.json
 		Sprites\TestSprite.json = Sprites\TestSprite.json
 	EndProjectSection
 EndProject
@@ -80,18 +83,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{93
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0}"
 	ProjectSection(SolutionItems) = preProject
+		Textures\MegaManShotTexture.json = Textures\MegaManShotTexture.json
 		Textures\SparkManTexture.json = Textures\SparkManTexture.json
 		Textures\TestTexture.json = Textures\TestTexture.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Texture", "Texture", "{877021B2-F222-4B9F-BEBF-7C9A223DD6B0}"
 	ProjectSection(SolutionItems) = preProject
+		Textures\MegaManShot.png = Textures\MegaManShot.png
 		Textures\MegaMan_diffuse.bmp = Textures\MegaMan_diffuse.bmp
 		Textures\SparkMan.png = Textures\SparkMan.png
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
 	ProjectSection(ProjectDependencies) = postProject
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
@@ -107,10 +113,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelMapLevelLayout", "Leve
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects", "{21F6500D-6E92-4717-815C-AB3C6E100B64}"
 	ProjectSection(SolutionItems) = preProject
+		GameObjects\MegaManShotObject.json = GameObjects\MegaManShotObject.json
 		GameObjects\TestGameObject.json = GameObjects\TestGameObject.json
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEngineDLL\VulkanEngineDLL.vcxproj", "{D22B29FB-1F02-471C-81AC-A352862F6951}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComponentDLL", "ComponentDLL\ComponentDLL.vcxproj", "{7A95B5E9-9F85-4981-A621-FEF118C3A650}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -158,6 +170,18 @@ Global
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x64.Build.0 = Release|x64
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.ActiveCfg = Release|Win32
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.Build.0 = Release|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|Any CPU.Build.0 = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x64.ActiveCfg = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x64.Build.0 = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x86.ActiveCfg = Debug|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x86.Build.0 = Debug|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|Any CPU.ActiveCfg = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|Any CPU.Build.0 = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x64.ActiveCfg = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x64.Build.0 = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x86.ActiveCfg = Release|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,8 +4,8 @@
 #include "VkGuid.h"
 #include "ECSid.h"
 #include "Material.h"
-#include "Transform2DComponent.h"
 #include "VRAM.h"
+#include "Transform2DComponent.h"
 
 struct Sprite
 {

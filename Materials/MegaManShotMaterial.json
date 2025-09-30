@@ -1,0 +1,30 @@
+{
+  "Name": "MegaManShot",
+  "MaterialId": "a74a9f9d-af4b-4e97-9242-46af0846aaa7",
+  "ShaderMaterialBufferIndex": 0,
+  "MaterialBufferId": 0,
+  "AlbedoMapId": "cf0daea4-871d-4137-a9f9-8c6fda795325",
+  "MetallicRoughnessMapId": "00000000-0000-0000-0000-000000000000",
+  "MetallicMapId": "00000000-0000-0000-0000-000000000000",
+  "RoughnessMapId": "00000000-0000-0000-0000-000000000000",
+  "AmbientOcclusionMapId": "00000000-0000-0000-0000-000000000000",
+  "NormalMapId": "00000000-0000-0000-0000-000000000000",
+  "DepthMapId": "00000000-0000-0000-0000-000000000000",
+  "AlphaMapId": "00000000-0000-0000-0000-000000000000",
+  "EmissionMapId": "00000000-0000-0000-0000-000000000000",
+  "HeightMapId": "00000000-0000-0000-0000-000000000000",
+  "Albedo": [
+    0.0,
+    0.35,
+    0.45
+  ],
+  "Metallic": 0.0,
+  "Roughness": 0.0,
+  "AmbientOcclusion": 1.0,
+  "Emission": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "Alpha": 1.0
+}
