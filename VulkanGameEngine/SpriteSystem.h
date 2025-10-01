@@ -39,7 +39,7 @@ public:
     void Update(const float& deltaTime);
     void Destroy();
 
-    void SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnum spriteAnimation);
+    void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
 
     Sprite* FindSprite(GameObjectID gameObjectId);
     Vector<SpriteLayer> FindSpriteLayer(RenderPassGuid& guid);

@@ -1,4 +1,6 @@
 #pragma once
+#include <MegaManObject.h>
+
 #include "VulkanWindow.h"
 class InputSystem
 {

@@ -1,6 +1,7 @@
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "SpriteSystem.h"
+#include <MegaManObject.h>
 
 GameObjectSystem gameObjectSystem = GameObjectSystem();
 
@@ -140,76 +141,3 @@ void GameObjectSystem::DestroyGameObjects()
     Transform2DComponentMap.clear();
     InputComponentMap.clear();
 }
-
-    void MegaMan_Input(GameObjectID gameObjectId, const float& deltaTime)
-    {
-        Sprite* sprite = spriteSystem.FindSprite(gameObjectId);
-        Transform2DComponent& transform = gameObjectSystem.FindTransform2DComponent(gameObjectId);
-
-        int joy = GLFW_JOYSTICK_1;
-        if (glfwJoystickPresent(GLFW_JOYSTICK_1))
-        {
-            if (glfwJoystickIsGamepad(joy))
-            {
-                GLFWgamepadstate state;
-                glfwGetGamepadState(joy, &state);
-                if (state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
-                    state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
-                {
-                    sprite->FlipSprite.x = 0;
-                    transform.GameObjectPosition.x -= 200.0f * deltaTime;
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShootWalk);
-                }
-                else if (state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT])
-                {
-                    sprite->FlipSprite.x = 0;
-                    transform.GameObjectPosition.x -= 200.0f * deltaTime;
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kWalking);
-                }
-                else if (state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] &&
-                    state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
-                {
-                    sprite->FlipSprite.x = 1;
-                    transform.GameObjectPosition.x += 200.0f * deltaTime;
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShootWalk);
-                }
-                else if (state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT])
-                {
-                    sprite->FlipSprite.x = 1;
-                    transform.GameObjectPosition.x += 200.0f * deltaTime;
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kWalking);
-                }
-                else if (state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] &&
-                    state.buttons[GLFW_GAMEPAD_BUTTON_CROSS])
-                {
-                    sprite->FlipSprite.x == 1 ? transform.GameObjectPosition.x += 200.0f * deltaTime : transform.GameObjectPosition.x -= 200.0f * deltaTime;
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kSlide);
-                }
-                else if (state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
-                {
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShoot);
-                }
-                else
-                {
-                    spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kStanding);
-                }
-            }
-            else {
-                std::cout << "Not mapped as gamepad. Raw axes/buttons available." << std::endl;
-
-                int count;
-                const float* axes = glfwGetJoystickAxes(joy, &count);
-                const unsigned char* buttons = glfwGetJoystickButtons(joy, &count);
-                if (count > 0) {
-                    std::cout << "Raw axes count: " << count << std::endl;
-                }
-            }
-        }
-    }
-
-    void MegaMan_Behaviors(ComponentBehavior & componentBehavior)
-    {
-        componentBehavior.Input = MegaMan_Input;
-        componentBehavior.Movement = nullptr;
-        componentBehavior.Destroy = nullptr;
-    }

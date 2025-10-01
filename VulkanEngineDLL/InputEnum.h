@@ -183,8 +183,3 @@ typedef enum keyState
     KS_PRESSED,
     KS_HELD
 }KeyState;
-
-typedef struct keyboardState
-{
-    KeyState KeyPressed[MAXKEYBOARDKEY];
-}KeyboardState;

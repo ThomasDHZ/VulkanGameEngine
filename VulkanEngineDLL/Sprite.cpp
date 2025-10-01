@@ -85,14 +85,14 @@ SpriteInstance Sprite_UpdateSprites(const Transform2DComponent& transform2D, con
     return spriteInstance;
 }
 
-void Sprite_SetSpriteAnimation(Sprite& sprite, Sprite::SpriteAnimationEnum spriteAnimation)
+void Sprite_SetSpriteAnimation(Sprite& sprite, uint spriteAnimationEnum)
 {
-    if (sprite.CurrentAnimationID == spriteAnimation)
+    if (sprite.CurrentAnimationID == spriteAnimationEnum)
     {
         return;
     }
 
-    sprite.CurrentAnimationID = spriteAnimation;
+    sprite.CurrentAnimationID = spriteAnimationEnum;
     sprite.CurrentFrame = 0;
     sprite.CurrentFrameTime = 0.0f;
 }

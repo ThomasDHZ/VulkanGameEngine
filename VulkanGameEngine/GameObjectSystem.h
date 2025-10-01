@@ -1,42 +1,13 @@
 #pragma once
 #include "VulkanWindow.h"
 #include <VkGuid.h>
+#include <ComponentBehavior.h>
 #include "Vertex.h"
 #include "InputComponent.h"
 #include "Transform2DComponent.h"
 #include "GameObject.h"
 #include "SceneDataBuffer.h"
 #include <Level2D.h>
-
-
-struct ComponentBehavior
-{
-    void (*Input)(GameObjectID gameObjectId, const float& deltaTime);
-    void (*Movement)(const float& deltaTime, Transform2DComponent& transform2D);
-    void (*Destroy)();
-};
-
-//void MegaManShot_Movement(const float& deltaTime, Transform2DComponent& transform2D)
-//{
-//
-//}
-//
-//void MegaManShot_Destroy()
-//{
-//
-//}
-//
-//struct MegaManShot
-//{
-//    Transform2DComponent* transform2D;
-//    void (*Movement)(const float& deltaTime, Transform2DComponent& transform2D) = MegaManShot_Movement;
-//    void (*Destroy)() = MegaManShot_Destroy;
-//};
-
-enum ObjectEnum
-{
-    kMegaMan
-};
 
 class GameObjectSystem
 {
@@ -85,6 +56,3 @@ public:
     void DestroyGameObjects();
 };
 extern GameObjectSystem gameObjectSystem;
-
-void MegaMan_Input(GameObjectID gameObjectId, const float& deltaTime);
-void MegaMan_Behaviors(ComponentBehavior& componentBehavior);

@@ -79,10 +79,9 @@ void SpriteSystem::Update(const float& deltaTime)
     renderSystem.EndSingleTimeCommands(commandBuffer);
 }
 
-void SpriteSystem::SetSpriteAnimation(Sprite* sprite, Sprite::SpriteAnimationEnum spriteAnimation)
+void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
 {
-
-    Sprite_SetSpriteAnimation(*sprite, spriteAnimation);
+    Sprite_SetSpriteAnimation(*sprite, spriteAnimationEnum);
 }
 
 Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)

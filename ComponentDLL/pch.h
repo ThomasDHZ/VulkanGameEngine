@@ -8,7 +8,9 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
+#include <glfw/include/GLFW/glfw3.h>
 #include <DLL.h>
 #include <Typedef.h>
+#include <InputEnum.h>
 #include "ComponentBehavior.h"
 #endif //PCH_H

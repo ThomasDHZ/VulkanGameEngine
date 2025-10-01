@@ -9,21 +9,6 @@
 
 struct Sprite
 {
-    enum SpriteAnimationEnum
-    {
-        kStanding,
-        kWalking,
-        kSlide,
-        kJump,
-        kClimb,
-        kClimbEnd,
-        kDamage,
-        kShoot,
-        kShootWalk,
-        kShootJump,
-        kClimbShoot
-    };
-
     GameObjectID GameObjectId;
     uint SpriteID = 0;
     uint CurrentAnimationID = 0;
@@ -112,7 +97,7 @@ struct SpriteInstanceVertex2D
 extern "C" {
 #endif
     DLL_EXPORT void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime);
-    DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite& sprite, Sprite::SpriteAnimationEnum spriteAnimation);
+    DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite& sprite, uint spriteAnimationEnum);
 #ifdef __cplusplus
 }
 #endif

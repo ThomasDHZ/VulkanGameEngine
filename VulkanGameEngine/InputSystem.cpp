@@ -2,6 +2,7 @@
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
 #include "LevelSystem.h"
+#include "Keyboard.h"
 
 InputSystem inputSystem = InputSystem();
 InputSystem::InputSystem()
@@ -14,55 +15,41 @@ InputSystem::~InputSystem()
 
 void InputSystem::Update(const float& deltaTime)
 {
+    int joy = GLFW_JOYSTICK_1;
     for (auto& input : gameObjectSystem.InputComponentList())
     {
-        if (gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].Input)
+        Sprite* sprite = spriteSystem.FindSprite(input.GameObjectId);
+        Transform2DComponent& transform = gameObjectSystem.FindTransform2DComponent(input.GameObjectId);
+
+        if (gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].ControllerInput)
         {
-            gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].Input(input.GameObjectId, deltaTime);
+            int joy = GLFW_JOYSTICK_1;
+            if (glfwJoystickPresent(GLFW_JOYSTICK_1))
+            {
+                if (glfwJoystickIsGamepad(joy))
+                {
+                    GLFWgamepadstate state;
+                    glfwGetGamepadState(joy, &state);
+                    gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].ControllerInput(deltaTime, state, *sprite, transform);
+                }
+            }
+            else 
+            {
+                std::cout << "Not mapped as gamepad. Raw axes/buttons available." << std::endl;
+
+                int count;
+                const float* axes = glfwGetJoystickAxes(joy, &count);
+                const unsigned char* buttons = glfwGetJoystickButtons(joy, &count);
+                if (count > 0) {
+                    std::cout << "Raw axes count: " << count << std::endl;
+                }
+            }
+        }
+        if (gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].ControllerInput)
+        {
+            gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].KeyBoardInput(deltaTime, keyboard.GetKeyBoardState(), *sprite, transform);
         }
         
-      /*  if ((vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_HELD) &&
-             vulkanWindow->keyboard.KeyPressed[KEY_E] == KS_PRESSED)
-        {
-            sprite->FlipSprite.x = 0;
-            transform.GameObjectPosition.x -= 200.0f * deltaTime;
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShootWalk);
-        }
-        else if (vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_PRESSED ||
-                 vulkanWindow->keyboard.KeyPressed[KEY_A] == KS_HELD)
-        {
-            sprite->FlipSprite.x = 0;
-            transform.GameObjectPosition.x -= 200.0f * deltaTime;
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kWalking);
-        }
-        else if ((vulkanWindow->keyboard.KeyPressed[KEY_D] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_D] == KS_HELD) &&
-                  vulkanWindow->keyboard.KeyPressed[KEY_E] == KS_PRESSED)
-        {
-            sprite->FlipSprite.x = 1;
-            transform.GameObjectPosition.x += 200.0f * deltaTime;
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShootWalk);
-        }
-        else if (vulkanWindow->keyboard.KeyPressed[KEY_D] == KS_PRESSED ||
-                 vulkanWindow->keyboard.KeyPressed[KEY_D] == KS_HELD)
-        {
-            sprite->FlipSprite.x = 1;
-            transform.GameObjectPosition.x += 200.0f * deltaTime;
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kWalking);
-        }
-        else if ((vulkanWindow->keyboard.KeyPressed[KEY_S] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_S] == KS_HELD) &&
-                 (vulkanWindow->keyboard.KeyPressed[KEY_SPACE] == KS_PRESSED || vulkanWindow->keyboard.KeyPressed[KEY_D] == KEY_SPACE))
-        {
-            sprite->FlipSprite.x == 1 ? transform.GameObjectPosition.x += 200.0f * deltaTime : transform.GameObjectPosition.x -= 200.0f * deltaTime;
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kSlide);
-        }
-        else if (vulkanWindow->keyboard.KeyPressed[KEY_E] == KS_PRESSED ||
-                 vulkanWindow->keyboard.KeyPressed[KEY_E] == KS_HELD)
-        {
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kShoot);
-        }
-        else
-        {
-            spriteSystem.SetSpriteAnimation(sprite, Sprite::SpriteAnimationEnum::kStanding);
-        }*/
+     
     }
 }
