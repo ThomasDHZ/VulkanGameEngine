@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="Animation2D.h" />
-    <ClInclude Include="CFile.h" />
     <ClInclude Include="enum.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="CHelper.h" />
@@ -144,7 +143,6 @@
     <ClInclude Include="InputEnum.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
-    <ClInclude Include="CShaderCompiler.h" />
     <ClInclude Include="CTypedef.h" />
     <ClInclude Include="CVulkanRenderer.h" />
     <ClInclude Include="DLL.h" />
@@ -153,11 +151,8 @@
     <ClInclude Include="from_json.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="InputComponent.h" />
-    <ClInclude Include="json.h" />
-    <ClInclude Include="JsonFunc.h" />
     <ClInclude Include="JsonLoader.h" />
     <ClInclude Include="JsonStruct.h" />
-    <ClInclude Include="JsonStructs.h" />
     <ClInclude Include="Level2D.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="Material.h" />
@@ -169,7 +164,6 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform2DComponent.h" />
     <ClInclude Include="Typedef.h" />
-    <ClInclude Include="Vector.h" />
     <ClInclude Include="vertex.h" />
     <ClInclude Include="VkGuid.h" />
     <ClInclude Include="VRAM.h" />
@@ -179,13 +173,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
-    <ClCompile Include="CFile.c" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
-    <ClCompile Include="CShaderCompiler.c" />
     <ClCompile Include="CVulkanRenderer.c" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="GameLevel.cpp" />

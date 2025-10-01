@@ -8,6 +8,7 @@
 #include <string_view>
 #include <CHelper.h>
 #include "EngineConfigSystem.h"
+#include "VulkanFileSystem.h"
 
 ShaderSystem shaderSystem = ShaderSystem();
 
@@ -164,10 +165,10 @@ void ShaderSystem::LoadShaderPipelineStructPrototypes(const Vector<String>& rend
     size_t protoTypeStructCount = 0;
     for (size_t x = 0; x < renderPassJsonList.size(); ++x)
     {
-        nlohmann::json renderPassJson = Json::ReadJson(renderPassJsonList[x]);
+        nlohmann::json renderPassJson = vulkanFileSystem.LoadJsonFile(renderPassJsonList[x]);
         for (size_t y = 0; y < renderPassJson["RenderPipelineList"].size(); ++y)
         {
-            nlohmann::json pipelineJson = Json::ReadJson(renderPassJson["RenderPipelineList"][y]);
+            nlohmann::json pipelineJson = vulkanFileSystem.LoadJsonFile(renderPassJson["RenderPipelineList"][y]);
             Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
             const char** cShaderList = CHelper_VectorToConstCharPtrPtr(shaderJsonList);
             ShaderStruct* shaderStructArray = Shader_LoadProtoTypeStructs(cShaderList, shaderJsonList.size(), protoTypeStructCount);

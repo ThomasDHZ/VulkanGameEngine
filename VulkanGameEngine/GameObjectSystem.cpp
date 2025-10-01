@@ -2,6 +2,7 @@
 #include "LevelSystem.h"
 #include "SpriteSystem.h"
 #include <MegaManObject.h>
+#include "VulkanFileSystem.h"
 
 GameObjectSystem gameObjectSystem = GameObjectSystem();
 
@@ -49,7 +50,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectPath, const vec2
     id.id = static_cast<uint>(GameObjectMap.size() + 1);
     GameObjectMap[id] = GameObject(id);
 
-    nlohmann::json json = Json::ReadJson(gameObjectPath);
+    nlohmann::json json = vulkanFileSystem.LoadJsonFile(gameObjectPath);
     for (size_t x = 0; x < json["GameObjectComponentList"].size(); x++)
     {
         int componentType = json["GameObjectComponentList"][x]["ComponentType"];

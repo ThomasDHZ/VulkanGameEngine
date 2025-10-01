@@ -1,12 +1,12 @@
 #include "JsonLoader.h"
-#include "json.h"
+#include "File.h"
 
 RenderPassLoader JsonLoader_LoadRenderPassLoaderInfo(const char* renderPassLoaderJson, const ivec2& defaultRenderPassResoultion)
 {
     RenderPassLoader renderPassLoader = {};
     try 
     {
-        nlohmann::json j = Json::ReadJson(renderPassLoaderJson);
+        nlohmann::json j = File_LoadJsonFile(renderPassLoaderJson);
 
         j.at("RenderPassId").get_to(renderPassLoader.RenderPassId);
         j.at("IsRenderedToSwapchain").get_to(renderPassLoader.IsRenderedToSwapchain);
@@ -47,7 +47,7 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
     RenderPipelineLoader renderPipelineLoader = {};
     try
     {
-        nlohmann::json j = Json::ReadJson(renderPassLoaderJson);
+        nlohmann::json j = File_LoadJsonFile(renderPassLoaderJson);
 
   /*      j.at("PipelineId").get_to(renderPipelineLoader.PipelineId);
         j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderModule.ShaderPath);

@@ -49,7 +49,5 @@ void InputSystem::Update(const float& deltaTime)
         {
             gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].KeyBoardInput(deltaTime, keyboard.GetKeyBoardState(), *sprite, transform);
         }
-        
-     
     }
 }

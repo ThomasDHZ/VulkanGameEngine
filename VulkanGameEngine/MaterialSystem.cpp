@@ -2,6 +2,7 @@
 #include "TextureSystem.h"
 #include <Material.h>
 #include "BufferSystem.h"
+#include "vulkanfilesystem.h"
 
 MaterialSystem materialSystem = MaterialSystem();
 
@@ -56,7 +57,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
         return VkGuid();
     }
 
-    nlohmann::json json = Json::ReadJson(materialPath);
+    nlohmann::json json = vulkanFileSystem.LoadJsonFile(materialPath);
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
 
     if (MaterialMapExists(materialId))

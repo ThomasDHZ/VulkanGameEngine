@@ -7,22 +7,11 @@
 
 static uint32 NextSpriteId;
 static uint32 NextSpriteLayerID;
-struct SpriteLayer
-{
-    VkGuid RenderPassId;
-    uint SpriteLayerId = 0;
-    uint SpriteLayerMeshId = 0;
-    uint SpriteLayerBufferId = 0;
-};
 
 class SpriteSystem
 {
 private:
-    Vector<Sprite>										      SpriteList;
-    Vector<SpriteInstance>                                    SpriteInstanceList;
-    Vector<SpriteLayer>                                       SpriteLayerList;
-    Vector<SpriteVram>                                        SpriteVramList;
-    UnorderedMap<VramSpriteGuid, Vector<Animation2D>>         SpriteAnimationMap;
+    SpriteContainer* spriteContainerPtr;
 
     void UpdateSprites(const float& deltaTime);
     void UpdateSpriteBatchLayers(const float& deltaTime);

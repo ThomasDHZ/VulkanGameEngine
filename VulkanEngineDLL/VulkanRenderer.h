@@ -6,7 +6,6 @@
 #include "InputEnum.h"
 #include "Typedef.h"
 #include "CVulkanRenderer.h"
-#include "JsonStructs.h"
 
 static const char* ValidationLayers[] = { "VK_LAYER_KHRONOS_validation" };
 

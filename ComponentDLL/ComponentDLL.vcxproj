@@ -147,11 +147,13 @@
   <ItemGroup>
     <ClInclude Include="ComponentBehavior.h" />
     <ClInclude Include="MegaManObject.h" />
+    <ClInclude Include="MegaManShot.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComponentBehavior.cpp" />
     <ClCompile Include="MegaManObject.cpp" />
+    <ClCompile Include="MegaManShot.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -1,15 +1,10 @@
 #pragma once
 #include "DLL.h"
 #include "Typedef.h"
-#include "json.h"
 #include "VulkanRenderer.h"
 #include "VulkanBuffer.h"
-#include "Vector.h"
 #include "Texture.h"
 #include "VulkanShader.h"
-
-
-
 
 struct Material
 {
@@ -37,19 +32,11 @@ struct Material
 	float Alpha = 1.0f;
 };
 
-template<>
-struct Vector2Traits<Material>
-{
-	static const VkGuid& GetGuid(const Material& obj) { return obj.materialGuid; }
-	static int GetId(const Material& obj) { return obj.MaterialBufferId; }
-	static int GetVectorMapKey(const Material& obj) { return obj.VectorMapKey; }
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 	DLL_EXPORT Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString);
-	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, ShaderStruct& materialBuffer);
+	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer);
 #ifdef __cplusplus
 }
 #endif

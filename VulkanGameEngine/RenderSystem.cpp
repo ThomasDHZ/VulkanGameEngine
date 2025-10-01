@@ -1,5 +1,4 @@
 #include "renderSystem.h"
-#include "json.h"
 #include "TextureSystem.h"
 #include <VulkanShader.h>
 #include "BufferSystem.h"
@@ -7,6 +6,7 @@
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
 #include "ShaderSystem.h"
+#include "VulkanFileSystem.h"
 
 RenderSystem renderSystem = RenderSystem();
 
@@ -293,7 +293,7 @@ VkGuid RenderSystem::LoadRenderPass(VkGuid& levelId, const String& jsonPath, ive
 
     for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
     {
-        nlohmann::json pipelineJson = Json::ReadJson(renderPassLoader.RenderPipelineList[x]);
+        nlohmann::json pipelineJson = vulkanFileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList[x]);
         ShaderPipelineData shaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
         RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), gpuIncludes, shaderPiplineInfo));
 

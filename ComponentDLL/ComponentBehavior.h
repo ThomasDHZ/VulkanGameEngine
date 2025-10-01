@@ -3,13 +3,15 @@
 #include <Transform2DComponent.h>
 enum ObjectEnum
 {
-    kMegaMan
+    kMegaMan,
+    kMegaManShot
 };
 
 struct ComponentBehavior
 {
-    void (*KeyBoardInput)(const float& deltaTime, const KeyState* keyBoardStateArray, Sprite& sprite, Transform2DComponent& transform) = nullptr;
-    void (*ControllerInput)(const float& deltaTime, const GLFWgamepadstate& controlelrState, Sprite& sprite, Transform2DComponent& transform) = nullptr;
-    void (*Movement)(const float& deltaTime, Transform2DComponent& transform2D) = nullptr;
-    void (*Destroy)() = nullptr;
+    void* (*CreateObject)();
+    void  (*KeyBoardInput)(const float& deltaTime, const KeyState* keyBoardStateArray, Sprite& sprite, Transform2DComponent& transform) = nullptr;
+    void  (*ControllerInput)(const float& deltaTime, const GLFWgamepadstate& controlelrState, Sprite& sprite, Transform2DComponent& transform) = nullptr;
+    void  (*Movement)(const float& deltaTime, Transform2DComponent& transform2D, bool direction) = nullptr;
+    void  (*Destroy)() = nullptr;
 };

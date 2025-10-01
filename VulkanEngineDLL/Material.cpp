@@ -1,5 +1,5 @@
 #include "Material.h"
-#include "json.h"
+#include "File.h"
 
 Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString)
 {
@@ -10,7 +10,7 @@ Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferInd
                                                                                                                                                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                                                                                                                                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
                                                                                                                                                                     VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
-    nlohmann::json json = Json::ReadJson(jsonString);
+    nlohmann::json json = File_LoadJsonFile(jsonString);
     return Material
     {
         .materialGuid = VkGuid(json["MaterialId"].get<String>().c_str()),

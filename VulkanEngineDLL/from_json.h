@@ -1,5 +1,4 @@
 #pragma once
-#include "JsonStructs.h"
 #include "JsonStruct.h"
 
 namespace nlohmann

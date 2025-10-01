@@ -1,14 +1,14 @@
 #include "VulkanPipeline.h"
 #include "MemorySystem.h"
-#include "json.h"
 #include "VulkanShader.h"
 #include "JsonLoader.h"
 #include "GPUSystem.h"
 #include "JsonStruct.h"
+#include "File.h"
 
 VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineData& shaderPipelineData)
 {
-    nlohmann::json pipelineJson = Json::ReadJson(pipelineJsonFilePath);
+    nlohmann::json pipelineJson = File_LoadJsonFile(pipelineJsonFilePath);
     RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;

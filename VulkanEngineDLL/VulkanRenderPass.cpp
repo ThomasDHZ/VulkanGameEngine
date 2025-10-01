@@ -1,11 +1,11 @@
 #include "VulkanRenderPass.h"
 #include "../VulkanGameEngine/SceneDataBuffer.h"
 #include "GPUSystem.h"
+#include "File.h"
 
 VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, RenderPassAttachementTextures& renderPassAttachments, ivec2& renderPassResolution)
 {
-    const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
-    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
+    RenderPassLoader renderPassLoader = File_LoadJsonFile(renderPassJsonFilePath);
     if (renderPassLoader.RenderArea.UseDefaultRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;

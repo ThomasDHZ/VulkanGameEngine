@@ -31,9 +31,9 @@ void LevelSystem::LoadLevel(const String& levelPath)
 
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str());
 
-    nlohmann::json json = Json::ReadJson(levelPath);
-    nlohmann::json shaderJson = Json::ReadJson("../RenderPass/LevelShader2DRenderPass.json");
-    nlohmann::json shaderWiredJson = Json::ReadJson("../RenderPass/LevelShader2DWireFrameRenderPass.json");
+    nlohmann::json json = vulkanFileSystem.LoadJsonFile(levelPath);
+    nlohmann::json shaderJson = vulkanFileSystem.LoadJsonFile("../RenderPass/LevelShader2DRenderPass.json");
+    nlohmann::json shaderWiredJson = vulkanFileSystem.LoadJsonFile("../RenderPass/LevelShader2DWireFrameRenderPass.json");
     spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
     levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
@@ -118,7 +118,7 @@ VkGuid LevelSystem::LoadTileSetVRAM(const String& tileSetPath)
     if (tileSetPath.empty() || tileSetPath == "")
         return VkGuid();
 
-    auto json = Json::ReadJson(tileSetPath);
+    auto json = nlohmann::json::parse(File_Read(tileSetPath.c_str()).Data);
     VkGuid tileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
 

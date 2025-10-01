@@ -2,9 +2,7 @@
 #include <nlohmann/json.hpp>
 #include "Typedef.h"
 #include <vulkan/vulkan.h>
-#include "JsonStructs.h"
 #include "JsonStruct.h"
-#include "json.h"
 #include <fstream>
 
 class ConfigSystem

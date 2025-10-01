@@ -11,7 +11,7 @@ public:
 	~VulkanFileSystem();
 
 	const char* ReadFile(const String& filePath);
-	nlohmann::json ReadJsonFile(const String& filePath);
+	nlohmann::json LoadJsonFile(const String& filePath);
 	bool   WriteFile(void* fileInfo, size_t size, const String& filePath);
 	String GetFileExtention(const String& filePath);
 	String GetFileNameFromPath(const String& filePath);
@@ -19,6 +19,7 @@ public:
 	time_t LastModifiedTime(const String& filePath);
 	String RemoveFileExtention(const String& filePath);
 	bool FileExists(const String& filePath);
+
 };
 extern VulkanFileSystem vulkanFileSystem;
 

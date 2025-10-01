@@ -93,6 +93,24 @@ struct SpriteInstanceVertex2D
     }
 };
 
+struct SpriteLayer
+{
+    VkGuid RenderPassId;
+    uint SpriteLayerId = 0;
+    uint SpriteLayerMeshId = 0;
+    uint SpriteLayerBufferId = 0;
+};
+typedef VkGuid VramSpriteGuid;
+struct SpriteContainer
+{
+    Vector<Sprite>										      SpriteList;
+    Vector<SpriteInstance>                                    SpriteInstanceList;
+    Vector<SpriteLayer>                                       SpriteLayerList;
+    Vector<SpriteVram>                                        SpriteVramList;
+    UnorderedMap<VramSpriteGuid, Vector<Animation2D>>         SpriteAnimationMap;
+};
+DLL_EXPORT SpriteContainer spriteContainer;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

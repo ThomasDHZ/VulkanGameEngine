@@ -1,6 +1,7 @@
 #include "Sprite.h"
 #include "VulkanBuffer.h"
 
+SpriteContainer spriteContainer = SpriteContainer();
 void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
 {
     Span<ivec2> frameList(animationList->FrameList, animationList->FrameList + animationList->FrameCount);

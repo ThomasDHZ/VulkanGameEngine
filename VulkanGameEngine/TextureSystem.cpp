@@ -1,4 +1,5 @@
 #include "TextureSystem.h"
+#include "VulkanFileSystem.h"
 
 TextureSystem textureSystem = TextureSystem();
 
@@ -11,7 +12,7 @@ VkGuid TextureSystem::LoadTexture(const String& texturePath)
         return VkGuid();
     }
 
-    nlohmann::json json = Json::ReadJson(texturePath);
+    nlohmann::json json = vulkanFileSystem.LoadJsonFile(texturePath);
     VkGuid textureId = VkGuid(json["TextureId"].get<String>().c_str());
 
     if(TextureExists(textureId)) return textureId;

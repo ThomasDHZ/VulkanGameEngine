@@ -7,14 +7,14 @@
 #include "GPUSystem.h"
 #include "from_json.h"
 #include "JsonStruct.h"
+#include "File.h"
 
 Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonString)
 {
 	int width = 0;
 	int height = 0;
 	ColorChannelUsed colorChannels;
-	const char* jsonDataString = File_Read(jsonString).Data;
-	TextureLoader textureLoader = nlohmann::json::parse(jsonDataString).get<TextureLoader>();
+	TextureLoader textureLoader = File_LoadJsonFile(jsonString);
 
 	byte* data = stbi_load(textureLoader.TextureFilePath.c_str(), &width, &height, (int*)&colorChannels, 0);
 	VkDeviceSize bufferSize = width * height * colorChannels;

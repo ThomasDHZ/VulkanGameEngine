@@ -1,8 +1,4 @@
 #pragma once
-extern "C"
-{
-#include "CShaderCompiler.h"
-}
 #include <Windows.h>
 #include <dxcapi.h>
 #include <wrl/client.h>
@@ -12,7 +8,6 @@ extern "C"
 #include <fstream>
 #include <vulkan/vulkan.h>
 #include "TypeDef.h"
-#include "JsonStructs.h"
 #include "MemorySystem.h"
 #include "JsonStruct.h"
 
@@ -31,6 +26,9 @@ extern "C" {
     DLL_EXPORT void Shader_DestroyShaderStructData(ShaderStruct* shaderStruct, size_t shaderStrucCount);
     DLL_EXPORT void Shader_DestroyPushConstantBufferData(ShaderPushConstant* pushConstant, size_t pushConstantCount);
     DLL_EXPORT void Shader_SetVariableDefaults(ShaderVariable& shaderVariable);
+    DLL_EXPORT VkShaderModule Shader_BuildGLSLShaderFile(VkDevice device, const char* path);
+    DLL_EXPORT bool Shader_BuildGLSLShaders(const char* command);
+    DLL_EXPORT VkPipelineShaderStageCreateInfo Shader_CreateShader(VkShaderModule shaderModule, VkShaderStageFlagBits shaderStages);
 #ifdef __cplusplus
 }
 #endif
