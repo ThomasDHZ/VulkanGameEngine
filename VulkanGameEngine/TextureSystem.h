@@ -7,11 +7,10 @@
 class TextureSystem
 {
 private:
-    UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
-    UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
-
+    TextureArchive* textureArchivePtr;
 public:
-    UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
+    TextureSystem();
+    ~TextureSystem();
 
     VkGuid LoadTexture(const String& texturePath);
     //Texture CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
@@ -47,7 +46,6 @@ public:
 
     const Vector<Texture> TextureList();
     const Vector<Texture> DepthTextureList();
-
     void DestroyAllTextures();
 };
 

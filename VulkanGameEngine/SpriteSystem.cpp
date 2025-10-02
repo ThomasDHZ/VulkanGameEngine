@@ -44,7 +44,7 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
     for (auto& spriteLayer : spriteContainerPtr->SpriteLayerList)
     {
         Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer);
-        bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceList);
+        bufferSystem.UpdateBufferMemory(renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceList);
     }
 }
 
@@ -69,7 +69,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
         .SpriteLayerMeshId = meshSystem.CreateSpriteLayerMesh(gameObjectSystem.SpriteVertexList, gameObjectSystem.SpriteIndexList)
     };
     Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer);
-    spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderSystem.renderer, spriteInstanceList, MeshBufferUsageSettings, MeshBufferPropertySettings, false);
+    spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderer, spriteInstanceList, MeshBufferUsageSettings, MeshBufferPropertySettings, false);
     spriteContainerPtr->SpriteLayerList.emplace_back(spriteLayer);
 }
 

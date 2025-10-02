@@ -140,7 +140,7 @@ void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
         std::cerr << "Error: Push constant '" << pushConstantName << "' does not exist!" << std::endl;
         return;
     }
-    Shader_UpdatePushConstantBuffer(renderSystem.renderer, ShaderPushConstantMap[pushConstantName]);
+    Shader_UpdatePushConstantBuffer(renderer, ShaderPushConstantMap[pushConstantName]);
 }
 
 void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
@@ -152,7 +152,7 @@ void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
 
     ShaderStruct& shaderStruct = PipelineShaderStructMap[vulkanBufferId];
     VulkanBuffer& vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
-    Shader_UpdateShaderBuffer(renderSystem.renderer, vulkanBuffer, &shaderStruct, 1);
+    Shader_UpdateShaderBuffer(renderer, vulkanBuffer, &shaderStruct, 1);
 }
 
 ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& pushConstantName)
@@ -268,5 +268,5 @@ const bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey) const
 
 void ShaderSystem::CompileShaders(const char* shaderFilePath)
 {
-    Shader_CompileShaders(renderSystem.renderer.Device, shaderFilePath, configSystem.CompiledShaderOutputDirectory.c_str());
+    Shader_CompileShaders(renderer.Device, shaderFilePath, configSystem.CompiledShaderOutputDirectory.c_str());
 }

@@ -36,7 +36,7 @@ private:
     const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(const VkGuid& renderPassId);
 
 public:
-    GraphicsRenderer                                              renderer;
+    GraphicsRenderer*                                              rendererPtr;
 
     RenderSystem();
     ~RenderSystem();
@@ -68,5 +68,4 @@ public:
     static VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer);
     static VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool);
 };
-
 extern RenderSystem renderSystem;

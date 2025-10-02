@@ -67,7 +67,7 @@ public:
 			}
 		};
 
-		Mesh mesh = Mesh_CreateMesh(renderSystem.renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
+		Mesh mesh = Mesh_CreateMesh(renderer, meshLoader, bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
 			bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
 			bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
 			bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]);

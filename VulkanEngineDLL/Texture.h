@@ -34,9 +34,31 @@ struct Texture
     ColorChannelUsed colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
+struct TextureArchive
+{
+    UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
+    UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
+    UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
+};
+DLL_EXPORT TextureArchive textureArchive;
+
 VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& createImageInfo);
 VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
 VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType);
+
+DLL_EXPORT void Texture_AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList);
+DLL_EXPORT void Texture_AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTexture);
+
+DLL_EXPORT Texture& Texture_FindTexture(const RenderPassGuid& guid);
+DLL_EXPORT Texture& Texture_FindDepthTexture(const RenderPassGuid& guid);
+DLL_EXPORT Texture& Texture_FindRenderedTexture(const TextureGuid& textureGuid);
+DLL_EXPORT Vector<Texture>& Texture_FindRenderedTextureList(const RenderPassGuid& guid);
+
+DLL_EXPORT bool Texture_TextureExists(const RenderPassGuid& guid);
+DLL_EXPORT bool Texture_DepthTextureExists(const RenderPassGuid& guid);
+DLL_EXPORT bool Texture_RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid);
+DLL_EXPORT bool Texture_RenderedTextureListExists(const RenderPassGuid& guid);
+DLL_EXPORT void Texture_DestroyAllTextures();
 
 #ifdef __cplusplus
 extern "C" {

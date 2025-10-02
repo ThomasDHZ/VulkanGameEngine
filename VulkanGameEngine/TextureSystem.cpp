@@ -3,6 +3,15 @@
 
 TextureSystem textureSystem = TextureSystem();
 
+TextureSystem::TextureSystem()
+{
+    textureArchivePtr = &textureArchive;
+}
+
+TextureSystem::~TextureSystem()
+{
+}
+
 // Load Texture
 VkGuid TextureSystem::LoadTexture(const String& texturePath)
 {
@@ -16,7 +25,7 @@ VkGuid TextureSystem::LoadTexture(const String& texturePath)
     VkGuid textureId = VkGuid(json["TextureId"].get<String>().c_str());
 
     if(TextureExists(textureId)) return textureId;
-    TextureMap[textureId] = Texture_LoadTexture(renderSystem.renderer, texturePath.c_str());
+    textureArchivePtr->TextureMap[textureId] = Texture_LoadTexture(renderer, texturePath.c_str());
     return textureId;
 }
 
@@ -24,7 +33,7 @@ VkGuid TextureSystem::LoadTexture(const String& texturePath)
 void TextureSystem::Update(const float& deltaTime)
 {
     int x = 0;
-    for (auto& [id, texture] : TextureMap)
+    for (auto& [id, texture] : textureArchivePtr->TextureMap)
     {
         UpdateTextureBufferIndex(texture, x);
         x++;
@@ -55,7 +64,7 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 
 void TextureSystem::UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution)
 {
-    Texture_UpdateTextureSize(renderSystem.renderer, texture, imageType, TextureResolution);
+    Texture_UpdateTextureSize(renderer, texture, imageType, TextureResolution);
 }
 
 void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
@@ -65,121 +74,104 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateTextureLayout(renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateTextureLayout(renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateTextureLayout(renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, oldImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateTextureLayout(renderer, texture, oldImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::DestroyTexture(Texture& texture)
 {
-    Texture_DestroyTexture(renderSystem.renderer, texture);
+    Texture_DestroyTexture(renderer, texture);
 }
 
 void TextureSystem::AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList)
 {
-    RenderedTextureListMap[vkGuid] = renderedTextureList;
+    Texture_AddRenderedTexture(vkGuid, renderedTextureList);
 }
 
 void TextureSystem::AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTexture)
 {
-    DepthTextureMap[vkGuid] = depthTexture;
+    Texture_AddDepthTexture(vkGuid, depthTexture);
 }
 
 Texture& TextureSystem::FindTexture(const RenderPassGuid& guid)
 {
-    return TextureMap.at(guid);
+    return Texture_FindTexture(guid);
 }
 
 Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& guid)
 {
-    return DepthTextureMap.at(guid);
+    return Texture_FindDepthTexture(guid);
 }
 
 Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 {
-    for (auto& pair : RenderedTextureListMap)
-    {
-        auto& textureList = pair.second;
-        auto it = std::find_if(textureList.begin(), textureList.end(),
-            [&textureGuid](const Texture& texture)
-            {
-                return texture.textureId == textureGuid;
-            });
-        if (it != textureList.end())
-            return *it;
-    }
-    throw std::out_of_range("Texture with given ID not found");
+    return Texture_FindRenderedTexture(textureGuid);
 }
 
 Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& guid)
 {
-    return RenderedTextureListMap.at(guid);
+    return Texture_FindRenderedTextureList(guid);
 }
 
 const bool TextureSystem::TextureExists(const RenderPassGuid& guid) const
 {
-    return TextureMap.contains(guid);
+    return Texture_TextureExists(guid);
 }
 
 const bool TextureSystem::DepthTextureExists(const RenderPassGuid& guid) const
 {
-    return DepthTextureMap.contains(guid);
+    return Texture_DepthTextureExists(guid);
 }
 
 const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid) const
 {
-    auto it = RenderedTextureListMap.find(guid);
-    if (it != RenderedTextureListMap.end())
-    {
-        return std::any_of(it->second.begin(), it->second.end(),
-            [&textureGuid](const Texture& texture) { return texture.textureId == textureGuid; });
-    }
-    return RenderedTextureListMap.contains(textureGuid);
+    return Texture_RenderedTextureExists(guid, textureGuid);
 }
 
 const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& guid) const
 {
-    return RenderedTextureListMap.find(guid) != RenderedTextureListMap.end();
+    return Texture_RenderedTextureListExists(guid);
 }
 
 const Vector<Texture> TextureSystem::TextureList()
 {
     Vector<Texture> list;
-    list.reserve(TextureMap.size());
-    for (const auto& pair : TextureMap)
+    list.reserve(textureArchivePtr->TextureMap.size());
+    for (const auto& pair : textureArchivePtr->TextureMap)
     {
         list.emplace_back(pair.second);
     }
@@ -189,32 +181,13 @@ const Vector<Texture> TextureSystem::TextureList()
 const Vector<Texture> TextureSystem::DepthTextureList()
 {
     Vector<Texture> list;
-    list.reserve(DepthTextureMap.size());
-    for (const auto& pair : DepthTextureMap)
+    list.reserve(textureArchivePtr->DepthTextureMap.size());
+    for (const auto& pair : textureArchivePtr->DepthTextureMap)
         list.emplace_back(pair.second);
     return list;
 }
 
 void TextureSystem::DestroyAllTextures()
 {
-    for (auto& pair : TextureMap)
-    {
-        Texture_DestroyTexture(renderSystem.renderer, pair.second);
-    }
-    TextureMap.clear();
-    
-    for (auto& pair : DepthTextureMap)
-    {
-        Texture_DestroyTexture(renderSystem.renderer, pair.second);
-    }
-    DepthTextureMap.clear();
-    
-    for (auto& list : RenderedTextureListMap)
-    {
-        for (auto& texture : list.second)
-        {
-            Texture_DestroyTexture(renderSystem.renderer, texture);
-        }
-    }
-    RenderedTextureListMap.clear();
+    Texture_DestroyAllTextures();
 }

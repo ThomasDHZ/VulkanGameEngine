@@ -9,6 +9,8 @@
 #include "JsonStruct.h"
 #include "File.h"
 
+TextureArchive textureArchive = TextureArchive();
+
 Texture Texture_LoadTexture(const GraphicsRenderer& renderer, const char* jsonString)
 {
 	int width = 0;
@@ -134,6 +136,120 @@ Texture Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureI
 	VULKAN_RESULT(Texture_GenerateMipmaps(renderer, texture));
 	return texture; 
 }
+
+void Texture_AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList)
+{
+	textureArchive.RenderedTextureListMap[vkGuid] = renderedTextureList;
+}
+
+void Texture_AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTexture)
+{
+	textureArchive.DepthTextureMap[vkGuid] = depthTexture;
+}
+
+Texture& Texture_FindTexture(const RenderPassGuid& guid)
+{
+	return textureArchive.TextureMap.at(guid);
+}
+
+Texture& Texture_FindDepthTexture(const RenderPassGuid& guid)
+{
+	return textureArchive.DepthTextureMap.at(guid);
+}
+
+Texture& Texture_FindRenderedTexture(const TextureGuid& textureGuid)
+{
+	for (auto& pair : textureArchive.RenderedTextureListMap)
+	{
+		auto& textureList = pair.second;
+		auto it = std::find_if(textureList.begin(), textureList.end(),
+			[&textureGuid](const Texture& texture)
+			{
+				return texture.textureId == textureGuid;
+			});
+		if (it != textureList.end())
+			return *it;
+	}
+	throw std::out_of_range("Texture with given ID not found");
+}
+
+Vector<Texture>& Texture_FindRenderedTextureList(const RenderPassGuid& guid)
+{
+	return textureArchive.RenderedTextureListMap.at(guid);
+}
+
+ bool Texture_TextureExists(const RenderPassGuid& guid) 
+{
+	return textureArchive.TextureMap.contains(guid);
+}
+
+ bool Texture_DepthTextureExists(const RenderPassGuid& guid) 
+{
+	return textureArchive.DepthTextureMap.contains(guid);
+}
+
+ bool Texture_RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid) 
+{
+	auto it = textureArchive.RenderedTextureListMap.find(guid);
+	if (it != textureArchive.RenderedTextureListMap.end())
+	{
+		return std::any_of(it->second.begin(), it->second.end(),
+			[&textureGuid](const Texture& texture) { return texture.textureId == textureGuid; });
+	}
+	return textureArchive.RenderedTextureListMap.contains(textureGuid);
+}
+
+ bool Texture_RenderedTextureListExists(const RenderPassGuid& guid)
+{
+	return textureArchive.RenderedTextureListMap.find(guid) != textureArchive.RenderedTextureListMap.end();
+}
+
+ Vector<Texture> Texture_TextureList()
+{
+	Vector<Texture> list;
+	list.reserve(textureArchive.TextureMap.size());
+	for (const auto& pair : textureArchive.TextureMap)
+	{
+		list.emplace_back(pair.second);
+	}
+	return list;
+}
+
+const Vector<Texture> Texture_DepthTextureList()
+{
+	Vector<Texture> list;
+	list.reserve(textureArchive.DepthTextureMap.size());
+	for (const auto& pair : textureArchive.DepthTextureMap)
+	{
+		list.emplace_back(pair.second);
+	}
+	return list;
+}
+
+void Texture_DestroyAllTextures()
+{
+	for (auto& pair : textureArchive.TextureMap)
+	{
+		Texture_DestroyTexture(renderer, pair.second);
+	}
+	textureArchive.TextureMap.clear();
+
+	for (auto& pair : textureArchive.DepthTextureMap)
+	{
+		Texture_DestroyTexture(renderer, pair.second);
+	}
+	textureArchive.DepthTextureMap.clear();
+
+	for (auto& list : textureArchive.RenderedTextureListMap)
+	{
+		for (auto& texture : list.second)
+		{
+			Texture_DestroyTexture(renderer, texture);
+		}
+	}
+	textureArchive.RenderedTextureListMap.clear();
+}
+
 
 void Texture_UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex)
 {
