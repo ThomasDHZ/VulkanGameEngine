@@ -12,7 +12,7 @@ RenderSystem renderSystem = RenderSystem();
 
 RenderSystem::RenderSystem()
 {
-    rendererPtr = &renderer;
+
 }
 
 RenderSystem::~RenderSystem()
@@ -350,37 +350,37 @@ void RenderSystem::Destroy()
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    Renderer_DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size());
+    Renderer_DestroyFrameBuffers(renderSystem.renderer.Device, frameBufferList.data(), frameBufferList.size());
 }
 
 void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
 {
-    Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1);
+    Renderer_DestroyCommandBuffers(renderSystem.renderer.Device, &renderSystem.renderer.CommandPool, &commandBuffer, 1);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
-    Renderer_DestroyBuffer(renderer.Device, &buffer);
+    Renderer_DestroyBuffer(renderSystem.renderer.Device, &buffer);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleTimeCommands()
 {
-    return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
+    return Renderer_BeginSingleTimeCommands(renderSystem.renderer.Device, renderSystem.renderer.CommandPool);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleTimeCommands(VkCommandPool& commandPool)
 {
-    return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
+    return Renderer_BeginSingleTimeCommands(renderSystem.renderer.Device, renderSystem.renderer.CommandPool);
 }
 
 VkResult RenderSystem::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 {
-    return Renderer_EndSingleTimeCommands(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    return Renderer_EndSingleTimeCommands(renderSystem.renderer.Device, renderSystem.renderer.CommandPool, renderSystem.renderer.GraphicsQueue, commandBuffer);
 }
 
 VkResult RenderSystem::EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
 {
-    return Renderer_EndSingleTimeCommands(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
+    return Renderer_EndSingleTimeCommands(renderSystem.renderer.Device, commandPool, renderSystem.renderer.GraphicsQueue, commandBuffer);
 }
 
 VkResult RenderSystem::StartFrame()
@@ -396,7 +396,7 @@ VkResult RenderSystem::StartFrame()
 
 VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
 {
-    return Renderer_EndFrame(renderer.Swapchain,
+    return Renderer_EndFrame(renderSystem.renderer.Swapchain,
         renderer.AcquireImageSemaphores,
         renderer.PresentImageSemaphores,
         renderer.InFlightFences,
@@ -602,7 +602,7 @@ const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(con
         };
 
         VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(renderer.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        if (vkCreateSampler(renderSystem.renderer.Device, &NullSamplerInfo, nullptr, &nullSampler))
         {
             throw std::runtime_error("Failed to create Sampler.");
         }

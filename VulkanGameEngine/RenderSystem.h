@@ -36,7 +36,7 @@ private:
     const Vector<VkDescriptorImageInfo>  GetTexturePropertiesBuffer(const VkGuid& renderPassId);
 
 public:
-    GraphicsRenderer*                                              rendererPtr;
+    GraphicsRenderer                                              renderer;
 
     RenderSystem();
     ~RenderSystem();

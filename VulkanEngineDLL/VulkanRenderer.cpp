@@ -7,8 +7,6 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include "MemorySystem.h"
 
-GraphicsRenderer renderer = GraphicsRenderer();
-
 HWND editorRichTextBoxCallback;
 LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
 

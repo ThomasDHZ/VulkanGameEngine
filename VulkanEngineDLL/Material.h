@@ -32,6 +32,12 @@ struct Material
 	float Alpha = 1.0f;
 };
 
+struct MaterialArchive
+{
+	UnorderedMap<RenderPassGuid, Material> MaterialMap;
+};
+DLL_EXPORT MaterialArchive materialArchive;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,3 +46,12 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+DLL_EXPORT void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime);
+DLL_EXPORT VkGuid Material_LoadMaterial(const GraphicsRenderer& renderer, const String& materialPath);
+DLL_EXPORT const bool Material_MaterialMapExists(const VkGuid& renderPassId);
+DLL_EXPORT const Material& Material_FindMaterial(const RenderPassGuid& guid);
+DLL_EXPORT const Vector<Material>& Material_MaterialList();
+DLL_EXPORT const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer();
+DLL_EXPORT void Material_Destroy(const VkGuid& guid);
+DLL_EXPORT void Material_DestroyAllMaterials();

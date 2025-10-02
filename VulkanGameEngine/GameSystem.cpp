@@ -23,7 +23,7 @@ GameSystem::~GameSystem()
 void GameSystem::StartUp(WindowType windowType, void* windowHandle)
 {
     renderSystem.StartUp(windowType, windowHandle);
-    gpuSystem.StartUp(renderer);
+    gpuSystem.StartUp(renderSystem.renderer);
     levelSystem.LoadLevel("../Levels/TestLevel.json");
 }
 
@@ -76,7 +76,7 @@ void GameSystem::Draw(const float& deltaTime)
 {
     renderSystem.StartFrame();
     levelSystem.Draw(CommandBufferSubmitList, deltaTime);
-    CommandBufferSubmitList.emplace_back(ImGui_Draw(renderer, imGuiRenderer));
+    CommandBufferSubmitList.emplace_back(ImGui_Draw(renderSystem.renderer, imGuiRenderer));
     renderSystem.EndFrame(CommandBufferSubmitList);
     CommandBufferSubmitList.clear();
 }
@@ -86,7 +86,7 @@ void GameSystem::Destroy()
     meshSystem.DestroyAllGameObjects();
     materialSystem.DestroyAllMaterials(); 
     textureSystem.DestroyAllTextures(); 
-    bufferSystem.DestroyAllBuffers(renderer); 
+    bufferSystem.DestroyAllBuffers(renderSystem.renderer);
     shaderSystem.Destroy();
     renderSystem.Destroy(); 
     levelSystem.DestroyLevel(); 

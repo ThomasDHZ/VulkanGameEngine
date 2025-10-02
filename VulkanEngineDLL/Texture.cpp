@@ -226,7 +226,7 @@ const Vector<Texture> Texture_DepthTextureList()
 	return list;
 }
 
-void Texture_DestroyAllTextures()
+void Texture_DestroyAllTextures(const GraphicsRenderer& renderer)
 {
 	for (auto& pair : textureArchive.TextureMap)
 	{

@@ -58,7 +58,7 @@ DLL_EXPORT bool Texture_TextureExists(const RenderPassGuid& guid);
 DLL_EXPORT bool Texture_DepthTextureExists(const RenderPassGuid& guid);
 DLL_EXPORT bool Texture_RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid);
 DLL_EXPORT bool Texture_RenderedTextureListExists(const RenderPassGuid& guid);
-DLL_EXPORT void Texture_DestroyAllTextures();
+DLL_EXPORT void Texture_DestroyAllTextures(const GraphicsRenderer& renderer);
 
 #ifdef __cplusplus
 extern "C" {

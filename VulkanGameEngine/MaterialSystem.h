@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Typedef.h>
 #include <Material.h>
 #include <VulkanShader.h>
@@ -26,5 +25,4 @@ public:
     void Destroy(const VkGuid& guid);
     void DestroyAllMaterials();
 };
-
 extern MaterialSystem materialSystem;

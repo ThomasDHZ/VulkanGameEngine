@@ -72,7 +72,6 @@ struct GraphicsRenderer
 
 	bool               RebuildRendererFlag;
 };
-DLL_EXPORT GraphicsRenderer renderer;
 
 extern HWND editorRichTextBoxCallback;
 typedef void (*LogVulkanMessageCallback)(const char* message, int severity);

@@ -1,6 +1,8 @@
 #include "Material.h"
 #include "File.h"
+#include "BufferSystem.h"
 
+MaterialArchive materialArchive = MaterialArchive();
 Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString)
 {
     materialBuffer = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderStructBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
@@ -38,4 +40,128 @@ Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferInd
 void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer)
 {
     VulkanBuffer_DestroyBuffer(renderer, materialBuffer);
+}
+
+void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime)
+{
+    uint x = 0;
+    for (auto& materialPair : materialArchive.MaterialMap)
+    {
+        materialPair.second.ShaderMaterialBufferIndex = x;
+
+        const Material material = materialPair.second;
+        const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? Texture_FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
+        const uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != VkGuid() ? Texture_FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
+        const uint MetallicMapId = material.MetallicMapId != VkGuid() ? Texture_FindTexture(material.MetallicMapId).textureBufferIndex : 0;
+        const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? Texture_FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
+        const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? Texture_FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
+        const uint NormalMapId = material.NormalMapId != VkGuid() ? Texture_FindTexture(material.NormalMapId).textureBufferIndex : 0;
+        const uint DepthMapId = material.DepthMapId != VkGuid() ? Texture_FindTexture(material.DepthMapId).textureBufferIndex : 0;
+        const uint AlphaMapId = material.AlphaMapId != VkGuid() ? Texture_FindTexture(material.AlphaMapId).textureBufferIndex : 0;
+        const uint EmissionMapId = material.EmissionMapId != VkGuid() ? Texture_FindTexture(material.EmissionMapId).textureBufferIndex : 0;
+        const uint HeightMapId = material.HeightMapId != VkGuid() ? Texture_FindTexture(material.HeightMapId).textureBufferIndex : 0;
+
+        ShaderStruct& shaderStruct = Shader_FindShaderStruct(material.MaterialBufferId);
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "AlbedoMap")->Value, &AlbedoMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "MetallicRoughnessMap")->Value, &MetallicRoughnessMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "MetallicMap")->Value, &MetallicMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "RoughnessMap")->Value, &RoughnessMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "AmbientOcclusionMap")->Value, &AmbientOcclusionMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "NormalMap")->Value, &NormalMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "DepthMap")->Value, &DepthMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "AlphaMap")->Value, &AlphaMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "EmissionMap")->Value, &EmissionMapId, sizeof(uint));
+        memcpy(Shader_SearchShaderStruct(shaderStruct, "HeightMap")->Value, &HeightMapId, sizeof(uint));
+        Shader_UpdateShaderBuffer(renderer, material.MaterialBufferId);
+        x++;
+    }
+}
+
+VkGuid Material_LoadMaterial(const GraphicsRenderer& renderer, const String& materialPath)
+{
+    if (materialPath.empty() ||
+        materialPath == "")
+    {
+        return VkGuid();
+    }
+
+    nlohmann::json json = File_LoadJsonFile(materialPath.c_str());
+    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
+
+    if (Material_MaterialMapExists(materialId))
+    {
+        return materialId;
+    }
+
+    int bufferIndex = ++NextBufferId;
+    VulkanBuffer& vulkanBuffer = bufferSystem.VulkanBufferMap[bufferIndex];
+    shaderArchive.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
+    materialArchive.MaterialMap[materialId] = Material_CreateMaterial(renderer, bufferIndex, vulkanBuffer, shaderArchive.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, materialPath.c_str());
+    return materialId;
+}
+
+const bool Material_MaterialMapExists(const VkGuid& renderPassId)
+{
+    return materialArchive.MaterialMap.contains(renderPassId);
+}
+
+const Material& Material_FindMaterial(const RenderPassGuid& guid)
+{
+    return materialArchive.MaterialMap.at(guid);
+}
+
+const Vector<Material>& Material_MaterialList()
+{
+    Vector<Material> materialList;
+    for (const auto& material : materialArchive.MaterialMap)
+    {
+        materialList.emplace_back(material.second);
+    }
+    return materialList;
+}
+
+const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer()
+{
+    std::vector<VkDescriptorBufferInfo>	materialPropertiesBuffer;
+    if (materialArchive.MaterialMap.empty())
+    {
+        materialPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+            {
+                .buffer = VK_NULL_HANDLE,
+                .offset = 0,
+                .range = VK_WHOLE_SIZE
+            });
+    }
+    else
+    {
+        for (auto& material : materialArchive.MaterialMap)
+        {
+            VkDescriptorBufferInfo meshBufferInfo =
+            {
+                .buffer = bufferSystem.FindVulkanBuffer(material.second.MaterialBufferId).Buffer,
+                .offset = 0,
+                .range = VK_WHOLE_SIZE
+            };
+            materialPropertiesBuffer.emplace_back(meshBufferInfo);
+        }
+    }
+    return materialPropertiesBuffer;
+}
+
+
+void Material_Destroy(const VkGuid& guid)
+{
+    Material& material = materialArchive.MaterialMap[guid];
+
+    VulkanBuffer& materialBuffer = bufferSystem.VulkanBufferMap[material.MaterialBufferId];
+    //Material_DestroyBuffer(renderSystem.renderer, materialBuffer);
+    bufferSystem.VulkanBufferMap.erase(material.MaterialBufferId);
+}
+
+void Material_DestroyAllMaterials()
+{
+    for (auto& materialPair : materialArchive.MaterialMap)
+    {
+        Material_Destroy(materialPair.second.materialGuid);
+    }
 }
