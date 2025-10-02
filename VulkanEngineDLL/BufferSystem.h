@@ -1,17 +1,16 @@
 #pragma once
-
-#include <Typedef.h>
-#include <VulkanBuffer.h>
-#include <Mesh.h>
-#include <Material.h>
-#include "RenderSystem.h"
+#include "DLL.h"
+#include "Typedef.h"
+#include "VulkanBuffer.h"
+#include "Mesh.h"
+#include "Material.h"
 #include "Vertex.h"
-#include <Sprite.h>
+#include "Sprite.h"
 
+DLL_EXPORT int NextBufferId;
 class VulkanBufferSystem
 {
 public:
-    static int NextBufferId;
     UnorderedMap<int, VulkanBuffer> VulkanBufferMap;
 
 private:
@@ -34,7 +33,7 @@ private:
         {
             return BufferType_SpriteInstanceStruct;
         }
-        else if constexpr (std::is_same_v<T, Vertex2D>) 
+        else if constexpr (std::is_same_v<T, Vertex2D>)
         {
             return BufferType_Vector2D;
         }
@@ -102,7 +101,7 @@ public:
         Vector<T> DataList;
         size_t dataListSize = vulkanBuffer.BufferSize / sizeof(T);
 
-        void* data = Buffer_MapBufferMemory(renderSystem.renderer, vulkanBuffer.BufferMemory, vulkanBuffer.BufferSize, &vulkanBuffer.IsMapped);
+        void* data = Buffer_MapBufferMemory(renderer, vulkanBuffer.BufferMemory, vulkanBuffer.BufferSize, &vulkanBuffer.IsMapped);
         if (data == nullptr)
         {
             std::cerr << "Failed to map buffer memory\n";
@@ -115,21 +114,20 @@ public:
             DataList.emplace_back(*reinterpret_cast<T*>(newPtr));
             newPtr += sizeof(T);
         }
-        Buffer_UnmapBufferMemory(renderSystem.renderer, vulkanBuffer.BufferMemory, &vulkanBuffer.IsMapped);
+        Buffer_UnmapBufferMemory(renderer, vulkanBuffer.BufferMemory, &vulkanBuffer.IsMapped);
 
         return DataList;
     }
 
-    VulkanBuffer& FindVulkanBuffer(int id);
-    const Vector<VulkanBuffer>& VulkanBufferList();
+    DLL_EXPORT VulkanBuffer& FindVulkanBuffer(int id);
+    DLL_EXPORT const Vector<VulkanBuffer>& VulkanBufferList();
 
-    void DestroyBuffer(const GraphicsRenderer& renderer, int vulkanBufferId);
-    void DestroyAllBuffers();
+    DLL_EXPORT void DestroyBuffer(const GraphicsRenderer& renderer, int vulkanBufferId);
+    DLL_EXPORT void DestroyAllBuffers(const GraphicsRenderer& renderer);
 
     static VkResult CopyBuffer(const GraphicsRenderer& renderer, VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size)
     {
         return Buffer_CopyBuffer(renderer, srcBuffer, dstBuffer, size);
     }
 };
-
-extern VulkanBufferSystem bufferSystem;
+DLL_EXPORT VulkanBufferSystem bufferSystem;

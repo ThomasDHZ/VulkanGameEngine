@@ -173,7 +173,6 @@
     <ClCompile Include="SpriteSystem.cpp" />
     <ClCompile Include="SystemClock.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
-    <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -202,7 +201,6 @@
     <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="SystemClock.h" />
     <ClInclude Include="TextureSystem.h" />
-    <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -78,9 +78,6 @@
     <ClCompile Include="TextureSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="BufferSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="MeshSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -190,9 +187,6 @@
     </ClInclude>
     <ClInclude Include="SystemClock.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BufferSystem.h">
-      <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="MeshSystem.h">
       <Filter>Header Files\Systems</Filter>

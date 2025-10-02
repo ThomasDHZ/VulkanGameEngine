@@ -65,7 +65,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
         return materialId;
     }
 
-    int bufferIndex = ++bufferSystem.NextBufferId;
+    int bufferIndex = ++NextBufferId;
     VulkanBuffer& vulkanBuffer = bufferSystem.VulkanBufferMap[bufferIndex];
     shaderSystem.PipelineShaderStructMap[bufferIndex] = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
     MaterialMap[materialId] = Material_CreateMaterial(renderSystem.renderer, bufferIndex, vulkanBuffer, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, materialPath.c_str());

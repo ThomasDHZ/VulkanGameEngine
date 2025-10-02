@@ -1,8 +1,8 @@
 #include "BufferSystem.h"
 
-int VulkanBufferSystem::NextBufferId = 0;
-
 VulkanBufferSystem bufferSystem = VulkanBufferSystem();
+int NextBufferId = 0;
+
 
 VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
 {
@@ -24,10 +24,10 @@ void VulkanBufferSystem::DestroyBuffer(const GraphicsRenderer& renderer, int vul
     VulkanBuffer_DestroyBuffer(renderer, VulkanBufferMap[vulkanBufferId]);
 }
 
-void VulkanBufferSystem::DestroyAllBuffers()
+void VulkanBufferSystem::DestroyAllBuffers(const GraphicsRenderer& renderer)
 {
     for (auto& buffer : VulkanBufferMap)
     {
-        VulkanBuffer_DestroyBuffer(renderSystem.renderer, buffer.second);
+        VulkanBuffer_DestroyBuffer(renderer, buffer.second);
     }
 }

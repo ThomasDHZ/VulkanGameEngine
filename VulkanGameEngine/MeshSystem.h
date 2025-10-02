@@ -2,7 +2,7 @@
 
 #include "Vertex.h"
 #include <Mesh.h>
-#include "BufferSystem.h"
+#include <BufferSystem.h>
 #include "GameObjectSystem.h"
 #include "MaterialSystem.h"
 #include "LevelSystem.h"
@@ -41,27 +41,27 @@ public:
 			.MaterialId = materialId,
 			.VertexLoader = VertexLoaderStruct
 			{
-				.MeshVertexBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+				.MeshVertexBufferId = static_cast<uint32>(++NextBufferId),
 				.SizeofVertex = sizeof(T),
 				.VertexCount = static_cast<uint32>(vertexList.size()),
 				.VertexData = static_cast<void*>(vertexList.data()),
 			},
 			.IndexLoader = IndexLoaderStruct
 			{
-				.MeshIndexBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+				.MeshIndexBufferId = static_cast<uint32>(++NextBufferId),
 				.SizeofIndex = sizeof(uint),
 				.IndexCount = static_cast<uint32>(indexList.size()),
 				.IndexData = static_cast<void*>(indexList.data()),
 			},
 			.TransformLoader = TransformLoaderStruct
 			{
-				.MeshTransformBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+				.MeshTransformBufferId = static_cast<uint32>(++NextBufferId),
 				.SizeofTransform = sizeof(mat4),
 				.TransformData = static_cast<void*>(&meshMatrix),
 			},
 			.MeshPropertiesLoader = MeshPropertiesLoaderStruct
 			{
-				.PropertiesBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+				.PropertiesBufferId = static_cast<uint32>(++NextBufferId),
 				.SizeofMeshProperties = sizeof(MeshPropertiesStruct),
 				.MeshPropertiesData = static_cast<void*>(&MeshMap[meshId].MeshProperties)
 			}

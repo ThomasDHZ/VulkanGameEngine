@@ -141,6 +141,8 @@
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GPUSystem.h" />
     <ClInclude Include="InputEnum.h" />
+    <ClInclude Include="VulkanBuffer.h" />
+    <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="CTypedef.h" />
@@ -167,7 +169,6 @@
     <ClInclude Include="vertex.h" />
     <ClInclude Include="VkGuid.h" />
     <ClInclude Include="VRAM.h" />
-    <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanPipeline.h" />
     <ClInclude Include="VulkanRenderPass.h" />
   </ItemGroup>
@@ -176,12 +177,13 @@
     <ClCompile Include="File.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
+    <ClCompile Include="VulkanBuffer.cpp" />
+    <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="VulkanError.c" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="CVulkanRenderer.c" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="GameLevel.cpp" />
-    <ClCompile Include="JsonFunc.cpp" />
     <ClCompile Include="JsonLoader.cpp" />
     <ClCompile Include="Level2D.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -190,9 +192,7 @@
     <ClCompile Include="VulkanShader.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="Vector.cpp" />
     <ClCompile Include="VRAM.cpp" />
-    <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />
   </ItemGroup>

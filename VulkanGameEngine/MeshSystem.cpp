@@ -32,27 +32,27 @@ uint MeshSystem::CreateSpriteLayerMesh(Vector<Vertex2D>& vertexList, Vector<uint
         .VertexLoader = VertexLoaderStruct
         {
             .VertexType = BufferTypeEnum::BufferType_Vector2D,
-            .MeshVertexBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .MeshVertexBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofVertex = sizeof(Vertex2D),
             .VertexCount = static_cast<uint32>(vertexList.size()),
             .VertexData = static_cast<void*>(vertexList.data()),
         },
         .IndexLoader = IndexLoaderStruct
         {
-            .MeshIndexBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .MeshIndexBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofIndex = sizeof(uint),
             .IndexCount = static_cast<uint32>(indexList.size()),
             .IndexData = static_cast<void*>(indexList.data()),
         },
         .TransformLoader = TransformLoaderStruct
         {
-            .MeshTransformBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .MeshTransformBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofTransform = sizeof(mat4),
             .TransformData = static_cast<void*>(&meshMatrix),
         },
         .MeshPropertiesLoader = MeshPropertiesLoaderStruct
         {
-            .PropertiesBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .PropertiesBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofMeshProperties = sizeof(MeshPropertiesStruct),
             .MeshPropertiesData = static_cast<void*>(&MeshMap[meshId].MeshProperties)
         }
@@ -90,27 +90,27 @@ uint MeshSystem::CreateLevelLayerMesh(const VkGuid& levelId, Vector<Vertex2D>& v
         .VertexLoader = VertexLoaderStruct
         {
             .VertexType = BufferTypeEnum::BufferType_Vector2D,
-            .MeshVertexBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .MeshVertexBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofVertex = sizeof(Vertex2D),
             .VertexCount = static_cast<uint32>(vertexList.size()),
             .VertexData = static_cast<void*>(vertexList.data()),
         },
         .IndexLoader = IndexLoaderStruct
         {
-            .MeshIndexBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .MeshIndexBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofIndex = sizeof(uint),
             .IndexCount = static_cast<uint32>(indexList.size()),
             .IndexData = static_cast<void*>(indexList.data()),
         },
         .TransformLoader = TransformLoaderStruct
         {
-            .MeshTransformBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .MeshTransformBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofTransform = sizeof(mat4),
             .TransformData = static_cast<void*>(&meshMatrix),
         },
         .MeshPropertiesLoader = MeshPropertiesLoaderStruct
         {
-            .PropertiesBufferId = static_cast<uint32>(++bufferSystem.NextBufferId),
+            .PropertiesBufferId = static_cast<uint32>(++NextBufferId),
             .SizeofMeshProperties = sizeof(MeshPropertiesStruct),
             .MeshPropertiesData = static_cast<void*>(&MeshMap[meshId].MeshProperties)
         }
