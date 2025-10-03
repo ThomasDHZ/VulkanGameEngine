@@ -11,16 +11,6 @@
 class MeshSystem
 {
 private:
-    static uint NextMeshId;
-    static uint NextSpriteMeshId;
-    static uint NextLevelLayerMeshId;
-
-    UnorderedMap<uint, Mesh>                           MeshMap;
-    UnorderedMap<UM_SpriteBatchID, Mesh>               SpriteMeshMap;
-    UnorderedMap<LevelGuid, Vector<Mesh>>              LevelLayerMeshListMap;
-    UnorderedMap<uint, Vector<Vertex2D>>               Vertex2DListMap;
-    UnorderedMap<uint, Vector<uint>>                   IndexListMap;
-
 public:
     MeshSystem();
     ~MeshSystem();
@@ -30,8 +20,8 @@ public:
 	{
 		uint meshId = NextMeshId++;
 		mat4 meshMatrix = mat4(1.0f);
-		Vertex2DListMap[meshId] = vertexList;
-		IndexListMap[meshId] = indexList;
+		meshArchive.Vertex2DListMap[meshId] = vertexList;
+		meshArchive.IndexListMap[meshId] = indexList;
 
 		MeshLoader meshLoader =
 		{
@@ -63,7 +53,7 @@ public:
 			{
 				.PropertiesBufferId = static_cast<uint32>(++NextBufferId),
 				.SizeofMeshProperties = sizeof(MeshPropertiesStruct),
-				.MeshPropertiesData = static_cast<void*>(&MeshMap[meshId].MeshProperties)
+				.MeshPropertiesData = static_cast<void*>(&meshArchive.MeshMap[meshId].MeshProperties)
 			}
 		};
 

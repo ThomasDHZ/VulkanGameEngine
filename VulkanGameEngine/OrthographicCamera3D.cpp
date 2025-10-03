@@ -1,5 +1,4 @@
 #include "OrthographicCamera3D.h"
-#include "SceneDataBuffer.h"
 
 OrthographicCamera3D::OrthographicCamera3D()
 {

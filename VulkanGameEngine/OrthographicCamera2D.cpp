@@ -1,5 +1,4 @@
 #include "OrthographicCamera2D.h"
-#include "SceneDataBuffer.h"
 #include "ShaderSystem.h"
 
 OrthographicCamera2D::OrthographicCamera2D()

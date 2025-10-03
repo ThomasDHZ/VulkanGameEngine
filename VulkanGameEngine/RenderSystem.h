@@ -3,19 +3,9 @@
 #include <VulkanRenderer.h>
 #include <VulkanRenderPass.h>
 #include "ImGuiRenderer.h"
-#include "SceneDataBuffer.h"
 #include <nlohmann/json.hpp>
 #include "ShaderSystem.h"
 #include <VulkanPipeline.h>
-
-// Type definitions
-typedef uint UM_SpriteID;
-typedef uint UM_SpriteBatchID;
-typedef uint UM_RenderPassID;
-typedef uint UM_RenderPipelineID;
-typedef uint UM_LevelID;
-typedef VkGuid RenderPassGuid;
-typedef VkGuid LevelGuid;
 
 class RenderSystem
 {

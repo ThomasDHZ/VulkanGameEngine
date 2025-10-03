@@ -151,8 +151,6 @@
     <ClInclude Include="DLLStructs.h" />
     <ClInclude Include="ECSid.h" />
     <ClInclude Include="from_json.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="InputComponent.h" />
     <ClInclude Include="JsonLoader.h" />
     <ClInclude Include="JsonStruct.h" />
     <ClInclude Include="Level2D.h" />
@@ -162,7 +160,6 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Pixel.h" />
     <ClInclude Include="VulkanShader.h" />
-    <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform2DComponent.h" />
     <ClInclude Include="Typedef.h" />
@@ -190,7 +187,6 @@
     <ClCompile Include="MemorySystem.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="VulkanShader.cpp" />
-    <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VRAM.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />

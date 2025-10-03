@@ -196,7 +196,6 @@
     <ClInclude Include="OrthographicCamera3D.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SceneDataBuffer.h" />
     <ClInclude Include="ShaderSystem.h" />
     <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="SystemClock.h" />

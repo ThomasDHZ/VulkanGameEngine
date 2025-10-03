@@ -70,12 +70,12 @@ void GameObjectSystem::LoadTransformComponent(const nlohmann::json& json, GameOb
     transform2D.GameObjectPosition = gameObjectPosition;
     transform2D.GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] };
     transform2D.GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] };
-    Transform2DComponentMap[id] = transform2D;
+    gameObjectArchive.Transform2DComponentMap[id] = transform2D;
 }
 
 void GameObjectSystem::LoadInputComponent(const nlohmann::json& json, GameObjectID id)
 {
-    InputComponentMap[id] = InputComponent(id);
+    gameObjectArchive.InputComponentMap[id] = InputComponent(id);
 }
 
 void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, GameObjectID id)
@@ -86,23 +86,23 @@ void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, GameObjec
 
 const GameObject& GameObjectSystem::FindGameObject(const GameObjectID& id)
 {
-    return GameObjectMap.at(id);
+    return gameObjectArchive.GameObjectMap.at(id);
 }
 
 Transform2DComponent& GameObjectSystem::FindTransform2DComponent(const GameObjectID& id)
 {
-    return Transform2DComponentMap.at(id);
+    return gameObjectArchive.Transform2DComponentMap.at(id);
 }
 
 const InputComponent& GameObjectSystem::FindInputComponent(const GameObjectID& id)
 {
-    return InputComponentMap.at(id);
+    return gameObjectArchive.InputComponentMap.at(id);
 }
 
 const Vector<GameObject> GameObjectSystem::GameObjectList()
 {
     Vector<GameObject> list;
-    for (const auto& pair : GameObjectMap)
+    for (const auto& pair : gameObjectArchive.GameObjectMap)
     {
         list.emplace_back(pair.second);
     }
@@ -112,7 +112,7 @@ const Vector<GameObject> GameObjectSystem::GameObjectList()
 const Vector<Transform2DComponent> GameObjectSystem::Transform2DComponentList()
 {
     Vector<Transform2DComponent> list;
-    for (const auto& pair : Transform2DComponentMap)
+    for (const auto& pair : gameObjectArchive.Transform2DComponentMap)
     {
         list.emplace_back(pair.second);
     }
@@ -122,7 +122,7 @@ const Vector<Transform2DComponent> GameObjectSystem::Transform2DComponentList()
 const Vector<InputComponent> GameObjectSystem::InputComponentList()
 {
     Vector<InputComponent> list;
-    for (const auto& pair : InputComponentMap)
+    for (const auto& pair : gameObjectArchive.InputComponentMap)
     {
         list.emplace_back(pair.second);
     }
@@ -131,14 +131,14 @@ const Vector<InputComponent> GameObjectSystem::InputComponentList()
 
 void GameObjectSystem::DestroyGameObject(const GameObjectID& gameObjectId)
 {
-    GameObjectMap.erase(gameObjectId);
-    Transform2DComponentMap.erase(gameObjectId);
-    InputComponentMap.erase(gameObjectId);
+    gameObjectArchive.GameObjectMap.erase(gameObjectId);
+    gameObjectArchive.Transform2DComponentMap.erase(gameObjectId);
+    gameObjectArchive.InputComponentMap.erase(gameObjectId);
 }
 
 void GameObjectSystem::DestroyGameObjects()
 {
-    GameObjectMap.clear();
-    Transform2DComponentMap.clear();
-    InputComponentMap.clear();
+    gameObjectArchive.GameObjectMap.clear();
+    gameObjectArchive.Transform2DComponentMap.clear();
+    gameObjectArchive.InputComponentMap.clear();
 }

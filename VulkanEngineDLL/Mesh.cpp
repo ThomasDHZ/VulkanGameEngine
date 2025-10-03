@@ -1,5 +1,10 @@
 #include "Mesh.h"
+#include "BufferSystem.h"
 
+uint NextMeshId = 0;
+uint NextSpriteMeshId = 0;
+uint NextLevelLayerMeshId = 0;
+MeshArchive meshArchive = MeshArchive();
 Mesh Mesh_CreateMesh(const GraphicsRenderer& renderer, const MeshLoader& meshLoader, VulkanBuffer& outVertexBuffer, VulkanBuffer& outIndexBuffer, VulkanBuffer& outTransformBuffer, VulkanBuffer& outMeshPropertiesBuffer)
 {
 	Mesh mesh;
@@ -83,4 +88,243 @@ int Mesh_CreateMeshPropertiesBuffer(const GraphicsRenderer& renderer, const Mesh
 {
 	outMeshPropertiesBuffer = VulkanBuffer_CreateVulkanBuffer2(renderer, meshPropertiesLoader.PropertiesBufferId, meshPropertiesLoader.MeshPropertiesData, meshPropertiesLoader.SizeofMeshProperties, 1, BufferType_MeshPropertiesStruct, MeshBufferUsageSettings, MeshBufferPropertySettings, false);
 	return outMeshPropertiesBuffer.BufferId;
+}
+
+uint Mesh_CreateSpriteLayerMesh(const GraphicsRenderer& renderer, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
+{
+    uint meshId = ++NextSpriteMeshId;
+    mat4 meshMatrix = mat4(1.0f);
+
+    meshArchive.Vertex2DListMap[meshId] = vertexList;
+    meshArchive.IndexListMap[meshId] = indexList;
+
+    MeshLoader meshLoader =
+    {
+        .ParentGameObjectID = 0,
+        .MeshId = meshId,
+        .MaterialId = VkGuid(),
+        .VertexLoader = VertexLoaderStruct
+        {
+            .VertexType = BufferTypeEnum::BufferType_Vector2D,
+            .MeshVertexBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofVertex = sizeof(Vertex2D),
+            .VertexCount = static_cast<uint32>(vertexList.size()),
+            .VertexData = static_cast<void*>(vertexList.data()),
+        },
+        .IndexLoader = IndexLoaderStruct
+        {
+            .MeshIndexBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofIndex = sizeof(uint),
+            .IndexCount = static_cast<uint32>(indexList.size()),
+            .IndexData = static_cast<void*>(indexList.data()),
+        },
+        .TransformLoader = TransformLoaderStruct
+        {
+            .MeshTransformBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofTransform = sizeof(mat4),
+            .TransformData = static_cast<void*>(&meshMatrix),
+        },
+        .MeshPropertiesLoader = MeshPropertiesLoaderStruct
+        {
+            .PropertiesBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofMeshProperties = sizeof(MeshPropertiesStruct),
+            .MeshPropertiesData = static_cast<void*>(&meshArchive.MeshMap[meshId].MeshProperties)
+        }
+    };
+
+    Mesh mesh = Mesh_CreateMesh(
+        renderer,
+        meshLoader,
+        bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
+        bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+        bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+        bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]
+    );
+
+    shaderArchive.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = Shader_CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderArchive.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderStructBufferId = meshLoader.MeshPropertiesLoader.PropertiesBufferId;
+
+    meshArchive.SpriteMeshMap[meshId] = mesh;
+    return meshId;
+}
+
+uint Mesh_CreateLevelLayerMesh(const GraphicsRenderer& renderer, const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
+{
+    uint meshId = ++NextLevelLayerMeshId;
+    mat4 meshMatrix = mat4(1.0f);
+
+    meshArchive.Vertex2DListMap[meshId] = vertexList;
+    meshArchive.IndexListMap[meshId] = indexList;
+
+    MeshLoader meshLoader =
+    {
+        .ParentGameObjectID = 0,
+        .MeshId = meshId,
+        .MaterialId = VkGuid(),
+        .VertexLoader = VertexLoaderStruct
+        {
+            .VertexType = BufferTypeEnum::BufferType_Vector2D,
+            .MeshVertexBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofVertex = sizeof(Vertex2D),
+            .VertexCount = static_cast<uint32>(vertexList.size()),
+            .VertexData = static_cast<void*>(vertexList.data()),
+        },
+        .IndexLoader = IndexLoaderStruct
+        {
+            .MeshIndexBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofIndex = sizeof(uint),
+            .IndexCount = static_cast<uint32>(indexList.size()),
+            .IndexData = static_cast<void*>(indexList.data()),
+        },
+        .TransformLoader = TransformLoaderStruct
+        {
+            .MeshTransformBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofTransform = sizeof(mat4),
+            .TransformData = static_cast<void*>(&meshMatrix),
+        },
+        .MeshPropertiesLoader = MeshPropertiesLoaderStruct
+        {
+            .PropertiesBufferId = static_cast<uint32>(++NextBufferId),
+            .SizeofMeshProperties = sizeof(MeshPropertiesStruct),
+            .MeshPropertiesData = static_cast<void*>(&meshArchive.MeshMap[meshId].MeshProperties)
+        }
+    };
+
+    Vector<Mesh> meshList = { Mesh_CreateMesh(
+        renderer,
+        meshLoader,
+        bufferSystem.VulkanBufferMap[meshLoader.VertexLoader.MeshVertexBufferId],
+        bufferSystem.VulkanBufferMap[meshLoader.IndexLoader.MeshIndexBufferId],
+        bufferSystem.VulkanBufferMap[meshLoader.TransformLoader.MeshTransformBufferId],
+        bufferSystem.VulkanBufferMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId]
+    ) };
+
+    shaderArchive.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId] = Shader_CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderArchive.PipelineShaderStructMap[meshLoader.MeshPropertiesLoader.PropertiesBufferId].ShaderStructBufferId = meshLoader.MeshPropertiesLoader.PropertiesBufferId;
+    meshArchive.LevelLayerMeshListMap[levelId] = meshList;
+    return meshId;
+}
+
+void Mesh_Update(const GraphicsRenderer& renderer, const float& deltaTime)
+{
+    for (auto& meshPair : meshArchive.SpriteMeshMap)
+    {
+        VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[meshPair.second.PropertiesBufferId];
+        uint32 shaderMaterialBufferIndex = (meshPair.second.MaterialId != VkGuid()) ? Material_FindMaterial(meshPair.second.MaterialId).ShaderMaterialBufferIndex : 0;
+        Mesh_UpdateMesh(renderer, meshPair.second, shaderArchive.PipelineShaderStructMap[meshPair.second.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
+    }
+}
+
+void Mesh_Destroy(const GraphicsRenderer& renderer, uint meshId)
+{
+    Mesh& mesh = meshArchive.MeshMap[meshId];
+    VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+    VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+    VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
+    VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
+
+    Mesh_DestroyMesh(renderer, mesh, vertexBuffer, indexBuffer, transformBuffer, propertiesBuffer);
+
+    bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+    bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+    bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
+    bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+}
+
+void Mesh_DestroyAllGameObjects(const GraphicsRenderer& renderer)
+{
+    for (auto& meshPair : meshArchive.MeshMap)
+    {
+        Mesh& mesh = meshPair.second;
+        VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+        VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+        VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
+        VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
+
+        Mesh_DestroyMesh(renderer, mesh, vertexBuffer, indexBuffer, transformBuffer, propertiesBuffer);
+
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+    }
+
+    for (auto& meshPair : meshArchive.SpriteMeshMap)
+    {
+        Mesh& mesh = meshPair.second;
+        VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+        VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+        VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
+        VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
+
+        Mesh_DestroyMesh(renderer, mesh, vertexBuffer, indexBuffer, transformBuffer, propertiesBuffer);
+
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+    }
+
+    for (auto& meshListPair : meshArchive.LevelLayerMeshListMap)
+    {
+        for (auto& mesh : meshListPair.second)
+        {
+            VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+            VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+            VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
+            VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
+
+            Mesh_DestroyMesh(renderer, mesh, vertexBuffer, indexBuffer, transformBuffer, propertiesBuffer);
+
+            bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+            bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+            bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
+            bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+        }
+    }
+}
+
+const Mesh& Mesh_FindMesh(const uint& id)
+{
+    return meshArchive.MeshMap.at(id);
+}
+
+const Mesh& Mesh_FindSpriteMesh(const uint& id)
+{
+    return meshArchive.SpriteMeshMap.at(id);
+}
+
+const Vector<Mesh>& Mesh_FindLevelLayerMeshList(const LevelGuid& guid)
+{
+    return meshArchive.LevelLayerMeshListMap.at(guid);
+}
+
+const Vector<Vertex2D>& Mesh_FindVertex2DList(const uint& id)
+{
+    return meshArchive.Vertex2DListMap.at(id);
+}
+
+const Vector<uint>& Mesh_FindIndexList(const uint& id)
+{
+    return meshArchive.IndexListMap.at(id);
+}
+
+const Vector<Mesh> Mesh_MeshList()
+{
+    Vector<Mesh> meshList;
+    for (const auto& pair : meshArchive.MeshMap)
+    {
+        meshList.emplace_back(pair.second);
+    }
+    return meshList;
+}
+
+const Vector<Mesh> Mesh_SpriteMeshList()
+{
+    Vector<Mesh> spriteMeshList;
+    for (const auto& pair : meshArchive.SpriteMeshMap)
+    {
+        spriteMeshList.emplace_back(pair.second);
+    }
+    return spriteMeshList;
 }

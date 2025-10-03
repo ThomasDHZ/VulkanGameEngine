@@ -5,9 +5,10 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Vertex.h"
-#include "Sprite.h"
 
 DLL_EXPORT int NextBufferId;
+
+struct SpriteInstance;
 class VulkanBufferSystem
 {
 public:

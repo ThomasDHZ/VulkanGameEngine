@@ -1,5 +1,4 @@
 #include "VulkanRenderPass.h"
-#include "../VulkanGameEngine/SceneDataBuffer.h"
 #include "GPUSystem.h"
 #include "File.h"
 

@@ -35,5 +35,14 @@ template <typename T> using SharedPtr = std::shared_ptr<T>;
 template <typename T> using UniquePtr = std::unique_ptr<T>;
 template <typename T> using WeakPtr = std::weak_ptr<T>;
 
-typedef VkGuid RenderPassGuid;
+typedef VkGuid LevelGuid;
 typedef VkGuid TextureGuid;
+typedef VkGuid VramSpriteGuid;
+typedef VkGuid RenderPassGuid;
+
+typedef uint UM_SpriteID;
+typedef uint UM_SpriteBatchID;
+typedef uint UM_RenderPassID;
+typedef uint UM_RenderPipelineID;
+typedef uint UM_LevelID;
+

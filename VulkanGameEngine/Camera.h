@@ -1,7 +1,6 @@
 #pragma once
 #include "CVulkanRenderer.h"
 #include "Typedef.h"
-#include "SceneDataBuffer.h"
 #include "ShaderSystem.h"
 
 class Camera

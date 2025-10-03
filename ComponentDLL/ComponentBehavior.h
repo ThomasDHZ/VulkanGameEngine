@@ -1,5 +1,5 @@
 #pragma once
-#include <Sprite.h>
+#include "Sprite.h"
 #include <Transform2DComponent.h>
 enum ObjectEnum
 {

@@ -6,7 +6,6 @@
 #include "InputComponent.h"
 #include "Transform2DComponent.h"
 #include "GameObject.h"
-#include "SceneDataBuffer.h"
 #include <Level2D.h>
 
 class GameObjectSystem
@@ -20,19 +19,6 @@ private:
 
 public:
     UnorderedMap<GameObjectID, ComponentBehavior> ComponentBehaviorMap;
-    Vector<Vertex2D> SpriteVertexList =
-    {
-        Vertex2D(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
-        Vertex2D(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
-        Vertex2D(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
-        Vertex2D(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
-    };
-
-    Vector<uint32> SpriteIndexList =
-    {
-        0, 3, 1,
-        1, 3, 2
-    };
 
     GameObjectSystem();
     ~GameObjectSystem();

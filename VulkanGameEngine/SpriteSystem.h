@@ -5,13 +5,11 @@
 #include "Transform2DComponent.h"
 #include "RenderSystem.h"
 
-static uint32 NextSpriteId;
-static uint32 NextSpriteLayerID;
 
 class SpriteSystem
 {
 private:
-    SpriteContainer* spriteContainerPtr;
+    SpriteArchive* spriteContainerPtr;
 
     void UpdateSprites(const float& deltaTime);
     void UpdateSpriteBatchLayers(const float& deltaTime);

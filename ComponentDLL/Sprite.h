@@ -1,11 +1,13 @@
 #pragma once
-#include "DLL.h"
-#include "Typedef.h"
-#include "VkGuid.h"
-#include "ECSid.h"
-#include "Material.h"
-#include "VRAM.h"
-#include "Transform2DComponent.h"
+#include <DLL.h>
+#include <Typedef.h>
+#include <VkGuid.h>
+#include <ECSid.h>
+#include <Material.h>
+#include <VRAM.h>
+#include <vertex.h>
+#include <Mesh.h>
+#include <Transform2DComponent.h>
 
 struct Sprite
 {
@@ -100,8 +102,11 @@ struct SpriteLayer
     uint SpriteLayerMeshId = 0;
     uint SpriteLayerBufferId = 0;
 };
-typedef VkGuid VramSpriteGuid;
-struct SpriteContainer
+
+DLL_EXPORT uint32 NextSpriteId;
+DLL_EXPORT uint32 NextSpriteLayerID;
+
+struct SpriteArchive
 {
     Vector<Sprite>										      SpriteList;
     Vector<SpriteInstance>                                    SpriteInstanceList;
@@ -109,7 +114,7 @@ struct SpriteContainer
     Vector<SpriteVram>                                        SpriteVramList;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>>         SpriteAnimationMap;
 };
-DLL_EXPORT SpriteContainer spriteContainer;
+DLL_EXPORT SpriteArchive spriteArchive;
 
 #ifdef __cplusplus
 extern "C" {
@@ -119,4 +124,21 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-    DLL_EXPORT SpriteInstance Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);
+
+DLL_EXPORT void Sprite_AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId);
+DLL_EXPORT void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId);
+DLL_EXPORT VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath);
+
+DLL_EXPORT void Sprite_Update(const GraphicsRenderer& renderer, const float& deltaTime);
+DLL_EXPORT void Sprite_Destroy();
+
+DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
+
+DLL_EXPORT Sprite* Sprite_FindSprite(GameObjectID gameObjectId);
+DLL_EXPORT Vector<SpriteLayer> Sprite_FindSpriteLayer(RenderPassGuid& guid);
+DLL_EXPORT Vector<std::reference_wrapper<Sprite>> Sprite_FindSpritesByLayer(const SpriteLayer& spriteLayer);
+
+DLL_EXPORT SpriteVram& Sprite_FindSpriteVram(VkGuid VramSpriteID);
+DLL_EXPORT Vector<SpriteInstance> Sprite_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer);
+DLL_EXPORT Animation2D& Sprite_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
+DLL_EXPORT SpriteInstance Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);
