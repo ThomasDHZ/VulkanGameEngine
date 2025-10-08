@@ -1,15 +1,16 @@
 #include "pch.h"
+#include "GameObject.h"
 #include "MegaManObject.h"
 
-void MegaMan_Behaviors(ComponentBehavior& componentBehavior)
+void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)
 {
     componentBehavior.KeyBoardInput = MegaMan_KeyBoardInput;
     componentBehavior.ControllerInput = MegaMan_ControllerInput;
-    componentBehavior.Movement = nullptr;
+    componentBehavior.Update = nullptr;
     componentBehavior.Destroy = nullptr;
 }
 
-void MegaMan_KeyBoardInput(const float& deltaTime, const KeyState* keyBoardStateArray, Sprite& sprite, Transform2DComponent& transform)
+void MegaMan_KeyBoardInput(GameObjectID gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray)
 {
     //Span<KeyState> keyBoardState(const_cast<KeyState*>(keyBoardStateArray), MAXKEYBOARDKEY);
     //if ((keyBoardState[KEY_A] == KS_PRESSED || keyBoardState[KEY_A] == KS_HELD) &&
@@ -57,44 +58,53 @@ void MegaMan_KeyBoardInput(const float& deltaTime, const KeyState* keyBoardState
     //}
 }
 
-void MegaMan_ControllerInput(const float& deltaTime, const GLFWgamepadstate& controllerState, Sprite& sprite, Transform2DComponent& transform)
+void MegaMan_ControllerInput(GameObjectID gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
 {
-    //Sprite* sprite = Sprite_Find/// indSprite(input.GameObjectId);
+    Sprite* sprite = Sprite_FindSprite(gameObjectId);
+    Transform2DComponent& transform = GameObject_FindTransform2DComponent(gameObjectId);
     if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
         controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
-        sprite.FlipSprite.x = 0;
+        sprite->FlipSprite.x = 0;
         transform.GameObjectPosition.x -= 200.0f * deltaTime;
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kShootWalk);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT])
     {
-        sprite.FlipSprite.x = 0;
+        sprite->FlipSprite.x = 0;
         transform.GameObjectPosition.x -= 200.0f * deltaTime;
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kWalking);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] &&
              controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
-        sprite.FlipSprite.x = 1;
+        sprite->FlipSprite.x = 1;
         transform.GameObjectPosition.x += 200.0f * deltaTime;
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kShootWalk);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT])
     {
-        sprite.FlipSprite.x = 1;
+        sprite->FlipSprite.x = 1;
         transform.GameObjectPosition.x += 200.0f * deltaTime;
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kWalking);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] &&
              controllerState.buttons[GLFW_GAMEPAD_BUTTON_CROSS])
     {
-        sprite.FlipSprite.x == 1 ? transform.GameObjectPosition.x += 200.0f * deltaTime : transform.GameObjectPosition.x -= 200.0f * deltaTime;
+        sprite->FlipSprite.x == 1 ? transform.GameObjectPosition.x += 200.0f * deltaTime : transform.GameObjectPosition.x -= 200.0f * deltaTime;
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kSlide);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kShoot);
+
+        Vector<ComponentTypeEnum> components = Vector<ComponentTypeEnum>
+        {
+            kTransform2DComponent,
+            kSpriteComponent
+        };
+        String a = "Shot";
+        GameObject_CreateGameObject(a, GameObjectTypeEnum::kGameObjectMegaManShot, components, VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition);
     }
     else
     {

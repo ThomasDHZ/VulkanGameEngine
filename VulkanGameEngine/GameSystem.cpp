@@ -31,6 +31,7 @@ void GameSystem::Update(const float& deltaTime)
 {
     inputSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
+    gameObjectSystem.Update(deltaTime);
     textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);
     renderSystem.Update(levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);

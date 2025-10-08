@@ -9,8 +9,10 @@
 
 // add headers that you want to pre-compile here
 #include <glfw/include/GLFW/glfw3.h>
+#include <memory.h>
 #include <DLL.h>
 #include <Typedef.h>
 #include <InputEnum.h>
-#include "ComponentBehavior.h"
+#include <ECSid.h>
+#include "GameObjectBehavior.h"
 #endif //PCH_H

@@ -145,8 +145,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ComponentBehavior.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameObjectBehavior.h" />
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="MegaManObject.h" />
     <ClInclude Include="MegaManShot.h" />
@@ -154,8 +154,8 @@
     <ClInclude Include="Sprite.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ComponentBehavior.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObjectBehavior.cpp" />
     <ClCompile Include="MegaManObject.cpp" />
     <ClCompile Include="MegaManShot.cpp" />
     <ClCompile Include="pch.cpp">

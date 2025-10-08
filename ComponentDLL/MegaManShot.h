@@ -1,10 +1,8 @@
 #pragma once
 #include "pch.h"
+#include "DLL.h"
+#include "GameObject.h"
 
-class MegaManShot
-{
-};
-
-DLL_EXPORT void MegaManShot_Behaviors(ComponentBehavior& componentBehavior);
-DLL_EXPORT void MegaManShot_Movement(const float& deltaTime, Transform2DComponent& transform2D, bool direction);
+DLL_EXPORT void MegaManShot_Behaviors(GameObjectBehavior& componentBehavior);
+DLL_EXPORT void MegaManShot_Update(GameObjectID gameObjectId, const float& deltaTime);
 DLL_EXPORT void MegaManShot_Destroy();

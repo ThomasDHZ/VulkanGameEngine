@@ -18,10 +18,8 @@ void InputSystem::Update(const float& deltaTime)
     int joy = GLFW_JOYSTICK_1;
     for (auto& input : gameObjectSystem.InputComponentList())
     {
-        Sprite* sprite = spriteSystem.FindSprite(input.GameObjectId);
-        Transform2DComponent& transform = gameObjectSystem.FindTransform2DComponent(input.GameObjectId);
-
-        if (gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].ControllerInput)
+        const GameObject& gameObject = GameObject_FindGameObjectById(input.GameObjectId);
+        if (gameObjectArchive.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput)
         {
             int joy = GLFW_JOYSTICK_1;
             if (glfwJoystickPresent(GLFW_JOYSTICK_1))
@@ -30,7 +28,7 @@ void InputSystem::Update(const float& deltaTime)
                 {
                     GLFWgamepadstate state;
                     glfwGetGamepadState(joy, &state);
-                    gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].ControllerInput(deltaTime, state, *sprite, transform);
+                    gameObjectArchive.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput(input.GameObjectId, deltaTime, state);
                 }
             }
             else 
@@ -45,9 +43,11 @@ void InputSystem::Update(const float& deltaTime)
                 }
             }
         }
-        if (gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].ControllerInput)
+        if (gameObjectArchive.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput)
         {
-            gameObjectSystem.ComponentBehaviorMap[input.GameObjectId].KeyBoardInput(deltaTime, keyboard.GetKeyBoardState(), *sprite, transform);
+            gameObjectArchive.ComponentBehaviorMap[gameObject.GameObjectType].KeyBoardInput(input.GameObjectId, deltaTime, keyboard.GetKeyBoardState());
         }
     }
+
+
 }

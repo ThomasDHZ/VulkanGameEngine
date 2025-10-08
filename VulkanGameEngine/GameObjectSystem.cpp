@@ -16,129 +16,77 @@ GameObjectSystem::~GameObjectSystem()
 
 }
 
-void GameObjectSystem::LoadComponentBehavior(GameObjectID gameObjectId, ObjectEnum objectEnum)
+void GameObjectSystem::LoadComponentBehavior(GameObjectID gameObjectId, GameObjectTypeEnum objectEnum)
 {
-    ComponentBehavior componentBehavior;
-    switch (objectEnum)
-    {
-        case kMegaMan: MegaMan_Behaviors(componentBehavior); break;
-    }
-    ComponentBehaviorMap[gameObjectId] = componentBehavior;
+    GameObject_LoadComponentBehavior(gameObjectId, objectEnum);
 }
 
-void GameObjectSystem::CreateGameObject(const String& name, ObjectEnum objectEnum, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition)
+void GameObjectSystem::CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition)
 {
-    GameObjectID id;
-    id.id = static_cast<uint>(GameObjectMap.size() + 1);
-    GameObjectMap[id] = GameObject(id);
-
-    for (auto component : gameObjectComponentTypeList)
-    {
-        switch (component)
-        {
-            case kTransform2DComponent: Transform2DComponentMap[id] = Transform2DComponent(objectPosition); break;
-            case kInputComponent: InputComponentMap[id] = InputComponent(id); break;
-            case kSpriteComponent: spriteSystem.AddSprite(id, vramId); break;
-        }
-    }
-    LoadComponentBehavior(id, objectEnum);
+    GameObject_CreateGameObject(name, objectEnum, gameObjectComponentTypeList, vramId, objectPosition);
 }
 
 void GameObjectSystem::CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
 {
-    GameObjectID id;
-    id.id = static_cast<uint>(GameObjectMap.size() + 1);
-    GameObjectMap[id] = GameObject(id);
+    GameObject_CreateGameObject(gameObjectPath, gameObjectPosition);
+}
 
-    nlohmann::json json = vulkanFileSystem.LoadJsonFile(gameObjectPath);
-    for (size_t x = 0; x < json["GameObjectComponentList"].size(); x++)
-    {
-        int componentType = json["GameObjectComponentList"][x]["ComponentType"];
-        switch (componentType)
-        {
-            case kTransform2DComponent: LoadTransformComponent(json["GameObjectComponentList"][x], id, gameObjectPosition); break;
-            case kInputComponent: LoadInputComponent(json["GameObjectComponentList"][x], id); break;
-            case kSpriteComponent: LoadSpriteComponent(json["GameObjectComponentList"][x], id); break;
-        }
-    }
-    LoadComponentBehavior(id, json["GameObjectType"]);
+void GameObjectSystem::Update(const float deltaTime)
+{
+    GameObject_Update(deltaTime);
 }
 
 void GameObjectSystem::LoadTransformComponent(const nlohmann::json& json, GameObjectID id, const vec2& gameObjectPosition)
 {
-    Transform2DComponent transform2D;
-    transform2D.GameObjectPosition = gameObjectPosition;
-    transform2D.GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] };
-    transform2D.GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] };
-    gameObjectArchive.Transform2DComponentMap[id] = transform2D;
+    GameObject_LoadTransformComponent(json, id, gameObjectPosition);
 }
 
 void GameObjectSystem::LoadInputComponent(const nlohmann::json& json, GameObjectID id)
 {
-    gameObjectArchive.InputComponentMap[id] = InputComponent(id);
+    GameObject_LoadInputComponent(json, id);
 }
 
 void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, GameObjectID id)
 {
-    VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
-    spriteSystem.AddSprite(id, vramId);
+    GameObject_LoadSpriteComponent(json, id);
 }
 
 const GameObject& GameObjectSystem::FindGameObject(const GameObjectID& id)
 {
-    return gameObjectArchive.GameObjectMap.at(id);
+    return GameObject_FindGameObject(id);
 }
 
 Transform2DComponent& GameObjectSystem::FindTransform2DComponent(const GameObjectID& id)
 {
-    return gameObjectArchive.Transform2DComponentMap.at(id);
+    return GameObject_FindTransform2DComponent(id);
 }
 
 const InputComponent& GameObjectSystem::FindInputComponent(const GameObjectID& id)
 {
-    return gameObjectArchive.InputComponentMap.at(id);
+    return GameObject_FindInputComponent(id);
 }
 
 const Vector<GameObject> GameObjectSystem::GameObjectList()
 {
-    Vector<GameObject> list;
-    for (const auto& pair : gameObjectArchive.GameObjectMap)
-    {
-        list.emplace_back(pair.second);
-    }
-    return list;
+    return GameObject_GameObjectList();
 }
 
 const Vector<Transform2DComponent> GameObjectSystem::Transform2DComponentList()
 {
-    Vector<Transform2DComponent> list;
-    for (const auto& pair : gameObjectArchive.Transform2DComponentMap)
-    {
-        list.emplace_back(pair.second);
-    }
-    return list;
+    return GameObject_Transform2DComponentList();
 }
 
 const Vector<InputComponent> GameObjectSystem::InputComponentList()
 {
-    Vector<InputComponent> list;
-    for (const auto& pair : gameObjectArchive.InputComponentMap)
-    {
-        list.emplace_back(pair.second);
-    }
-    return list;
+    return GameObject_InputComponentList();
 }
 
 void GameObjectSystem::DestroyGameObject(const GameObjectID& gameObjectId)
 {
-    gameObjectArchive.GameObjectMap.erase(gameObjectId);
-    gameObjectArchive.Transform2DComponentMap.erase(gameObjectId);
-    gameObjectArchive.InputComponentMap.erase(gameObjectId);
+    GameObject_DestroyGameObject(gameObjectId);
 }
 
 void GameObjectSystem::DestroyGameObjects()
 {
-    gameObjectArchive.GameObjectMap.clear();
-    gameObjectArchive.Transform2DComponentMap.clear();
-    gameObjectArchive.InputComponentMap.clear();
+    GameObject_DestroyGameObjects();
 }

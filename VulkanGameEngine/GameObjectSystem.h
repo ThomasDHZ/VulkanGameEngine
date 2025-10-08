@@ -1,7 +1,6 @@
 #pragma once
 #include "VulkanWindow.h"
 #include <VkGuid.h>
-#include <ComponentBehavior.h>
 #include "Vertex.h"
 #include "InputComponent.h"
 #include "Transform2DComponent.h"
@@ -11,21 +10,16 @@
 class GameObjectSystem
 {
 private:
-    UnorderedMap<GameObjectID, GameObject> GameObjectMap;
-    UnorderedMap<GameObjectID, Transform2DComponent> Transform2DComponentMap;
-    UnorderedMap<GameObjectID, InputComponent> InputComponentMap;
-
-    void LoadComponentBehavior(GameObjectID gameObjectId, ObjectEnum objectEnum);
+    void LoadComponentBehavior(GameObjectID gameObjectId, GameObjectTypeEnum objectEnum);
 
 public:
-    UnorderedMap<GameObjectID, ComponentBehavior> ComponentBehaviorMap;
 
     GameObjectSystem();
     ~GameObjectSystem();
 
-    void CreateGameObject(const String& name, ObjectEnum objectEnum, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition);
+    void CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition);
     void CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition);
-
+    void Update(const float deltaTime);
     void LoadTransformComponent(const nlohmann::json& json, GameObjectID id, const vec2& gameObjectPosition);
     void LoadInputComponent(const nlohmann::json& json, GameObjectID id);
     void LoadSpriteComponent(const nlohmann::json& json, GameObjectID id);

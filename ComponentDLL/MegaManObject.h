@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include <glfw/include/GLFW/glfw3.h>
+#include "GameObject.h"
 
 enum MegaManAnimationEnum
 {
@@ -17,7 +18,14 @@ enum MegaManAnimationEnum
     kClimbShoot
 };
 
-DLL_EXPORT void MegaMan_Behaviors(ComponentBehavior& componentBehavior);
-DLL_EXPORT void MegaMan_KeyBoardInput(const float& deltaTime, const KeyState* keyBoardStateArray, Sprite& sprite, Transform2DComponent& transform);
-DLL_EXPORT void MegaMan_ControllerInput(const float& deltaTime, const GLFWgamepadstate& controlelrState, Sprite& sprite, Transform2DComponent& transform);
+struct MegaManObject
+{
+    const uint MaxShotCount = 3;
+    const float MaxShotCoolDownTime = 1.0f;
+
+};
+
+DLL_EXPORT void MegaMan_Behaviors(GameObjectBehavior& componentBehavior);
+DLL_EXPORT void MegaMan_KeyBoardInput(GameObjectID gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray);
+DLL_EXPORT void MegaMan_ControllerInput(GameObjectID gameObjectId, const float& deltaTime, const GLFWgamepadstate& controlelrState);
 
