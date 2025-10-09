@@ -19,7 +19,7 @@ public:
     SpriteSystem();
     ~SpriteSystem();
 
-    void AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId);
+    void AddSprite(uint gameObjectId, VkGuid& spriteVramId);
     void AddSpriteBatchLayer(RenderPassGuid& renderPassId);
     VkGuid LoadSpriteVRAM(const String& spriteVramPath);
 
@@ -28,7 +28,7 @@ public:
 
     void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
 
-    Sprite* FindSprite(GameObjectID gameObjectId);
+    Sprite* FindSprite(uint gameObjectId);
     Vector<SpriteLayer> FindSpriteLayer(RenderPassGuid& guid);
     Vector<std::reference_wrapper<Sprite>> FindSpritesByLayer(const SpriteLayer& spriteLayer);
     

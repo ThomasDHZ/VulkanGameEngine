@@ -10,7 +10,7 @@ void MegaManShot_Behaviors(GameObjectBehavior& componentBehavior)
     componentBehavior.Destroy = MegaManShot_Destroy;
 }
 
-void MegaManShot_Update(GameObjectID gameObjectId, const float& deltaTime)
+void MegaManShot_Update(uint gameObjectId, const float& deltaTime)
 {
    Transform2DComponent& spriteTransform =  GameObject_FindTransform2DComponent(gameObjectId);
    spriteTransform.GameObjectPosition.x += 1;

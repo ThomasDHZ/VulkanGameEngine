@@ -48,7 +48,7 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
     }
 }
 
-void SpriteSystem::AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId)
+void SpriteSystem::AddSprite(uint gameObjectId, VkGuid& spriteVramId)
 {
     Sprite_AddSprite(gameObjectId, spriteVramId);
 }
@@ -68,7 +68,7 @@ void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
     Sprite_SetSpriteAnimation(*sprite, spriteAnimationEnum);
 }
 
-Sprite* SpriteSystem::FindSprite(GameObjectID gameObjectId)
+Sprite* SpriteSystem::FindSprite(uint gameObjectId)
 {
     return Sprite_FindSprite(gameObjectId);
 }

@@ -24,18 +24,23 @@ enum ComponentTypeEnum
 
 struct GameObject
 {
-    GameObjectID GameObjectId;
-    GameObjectID ParentGameObjectId;
+    uint32 GameObjectId = UINT32_MAX;
+    uint32 ParentGameObjectId = UINT32_MAX;
+    uint32 Transform2DComponentId = UINT32_MAX;
+    uint32 InputComponentId = UINT32_MAX;
+    uint32 SpriteComponentId = UINT32_MAX;
+
     GameObjectTypeEnum GameObjectType;
+    void* GameObjectData = VK_NULL_HANDLE;
 };
 
 struct GameObjectArchive
 {
-    UnorderedMap<GameObjectID, GameObject> GameObjectMap;
+    Vector<GameObject> GameObjectList;
+    Vector<uint32> FreeGameObjectIndices;
+    Vector<InputComponent> InputComponentList;
+    Vector<Transform2DComponent> Transform2DComponentList;
     UnorderedMap<GameObjectTypeEnum, GameObjectBehavior> ComponentBehaviorMap;
-
-    UnorderedMap<GameObjectID, InputComponent> InputComponentMap;
-    UnorderedMap<GameObjectID, Transform2DComponent> Transform2DComponentMap;
 };
 DLL_EXPORT GameObjectArchive gameObjectArchive;
 
@@ -45,28 +50,29 @@ DLL_EXPORT void GameObject_CreateGameObject(const String& name, GameObjectID par
 
 DLL_EXPORT void GameObject_Update(const float deltaTime);
 
-DLL_EXPORT void GameObject_LoadComponentBehavior(GameObjectID gameObjectId, GameObjectTypeEnum objectEnum);
-DLL_EXPORT void GameObject_LoadTransformComponent(const nlohmann::json& json, GameObjectID id, const vec2& gameObjectPosition);
-DLL_EXPORT void GameObject_LoadInputComponent(const nlohmann::json& json, GameObjectID id);
-DLL_EXPORT void GameObject_LoadSpriteComponent(const nlohmann::json& json, GameObjectID id);
-DLL_EXPORT void GameObject_LoadMegaManShotComponent(GameObjectID id, const vec2& gameObjectPosition);
+DLL_EXPORT void GameObject_LoadComponentBehavior(uint32 gameObjectId, GameObjectTypeEnum objectEnum);
+DLL_EXPORT void GameObject_LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition);
+DLL_EXPORT void GameObject_LoadInputComponent(const nlohmann::json& json, uint gameObjectId);
+DLL_EXPORT void GameObject_LoadSpriteComponent(const nlohmann::json& json, uint gameObjectId);
+DLL_EXPORT void GameObject_LoadMegaManShotComponent(uint gameObjectId, const vec2& gameObjectPosition);
 
-DLL_EXPORT const GameObject& GameObject_FindGameObject(const GameObjectID& id);
+DLL_EXPORT const GameObject& GameObject_FindGameObject(uint gameObjectId);
 DLL_EXPORT const GameObjectBehavior& GameObject_FindGameObjectBehavior(const GameObjectTypeEnum& id);
-DLL_EXPORT Transform2DComponent& GameObject_FindTransform2DComponent(const GameObjectID& id);
-DLL_EXPORT const InputComponent& GameObject_FindInputComponent(const GameObjectID& id);
+DLL_EXPORT Transform2DComponent& GameObject_FindTransform2DComponent(uint gameObjectId);
+DLL_EXPORT const InputComponent& GameObject_FindInputComponent(uint gameObjectId);
 
-DLL_EXPORT const bool GameObjectExists(const GameObjectID& id);
+DLL_EXPORT const bool GameObjectExists(uint gameObjectId);
 DLL_EXPORT const bool GameObjectBehaviorExists(const GameObjectTypeEnum objectEnum);
 
-DLL_EXPORT GameObject& GameObject_FindGameObjectById(const GameObjectID& id);
-DLL_EXPORT Vector<std::reference_wrapper<GameObject>> GameObject_FindGameObjectByType(const GameObjectTypeEnum& gameObjectType);
+//DLL_EXPORT GameObject& GameObject_FindGameObjectById(uint id);
+DLL_EXPORT Vector<GameObject> GameObject_FindGameObjectByType(const GameObjectTypeEnum& gameObjectType);
 
 DLL_EXPORT const Vector<GameObject> GameObject_GameObjectList();
 DLL_EXPORT const Vector<Transform2DComponent> GameObject_Transform2DComponentList();
 DLL_EXPORT const Vector<InputComponent> GameObject_InputComponentList();
 
-DLL_EXPORT void GameObject_DestroyGameObject(const GameObjectID& gameObjectId);
+DLL_EXPORT void GameObject_DestroyGameObject(uint gameObjectId);
 DLL_EXPORT void GameObject_DestroyGameObjects();
 
-void GameObject_LoadComponentTable(GameObjectID gameObjectId, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, vec2& objectPosition, VkGuid& vramId);
+uint32 GetNextGameObjectIndex();
+void GameObject_LoadComponentTable(uint gameObjectId, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, vec2& objectPosition, VkGuid& vramId);

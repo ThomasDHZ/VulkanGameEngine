@@ -10,7 +10,7 @@ void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)
     componentBehavior.Destroy = nullptr;
 }
 
-void MegaMan_KeyBoardInput(GameObjectID gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray)
+void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray)
 {
     //Span<KeyState> keyBoardState(const_cast<KeyState*>(keyBoardStateArray), MAXKEYBOARDKEY);
     //if ((keyBoardState[KEY_A] == KS_PRESSED || keyBoardState[KEY_A] == KS_HELD) &&
@@ -58,7 +58,7 @@ void MegaMan_KeyBoardInput(GameObjectID gameObjectId, const float& deltaTime, co
     //}
 }
 
-void MegaMan_ControllerInput(GameObjectID gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
+void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
 {
     Sprite* sprite = Sprite_FindSprite(gameObjectId);
     Transform2DComponent& transform = GameObject_FindTransform2DComponent(gameObjectId);

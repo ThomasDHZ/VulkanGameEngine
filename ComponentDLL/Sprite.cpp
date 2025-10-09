@@ -130,7 +130,7 @@ void Sprite_UpdateSpriteBatchLayers(const GraphicsRenderer& renderer, const floa
     }
 }
 
-void Sprite_AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId)
+void Sprite_AddSprite(uint gameObjectId, VkGuid& spriteVramId)
 {
     Sprite sprite;
     sprite.SpriteID = NextSpriteId++;
@@ -182,7 +182,7 @@ void Sprite_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
     Sprite_SetSpriteAnimation(*sprite, spriteAnimationEnum);
 }
 
-Sprite* Sprite_FindSprite(GameObjectID gameObjectId)
+Sprite* Sprite_FindSprite(uint gameObjectId)
 {
     auto it = std::find_if(spriteArchive.SpriteList.begin(), spriteArchive.SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
     return it != spriteArchive.SpriteList.end() ? &(*it) : nullptr;

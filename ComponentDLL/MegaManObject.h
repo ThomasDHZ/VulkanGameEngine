@@ -26,6 +26,6 @@ struct MegaManObject
 };
 
 DLL_EXPORT void MegaMan_Behaviors(GameObjectBehavior& componentBehavior);
-DLL_EXPORT void MegaMan_KeyBoardInput(GameObjectID gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray);
-DLL_EXPORT void MegaMan_ControllerInput(GameObjectID gameObjectId, const float& deltaTime, const GLFWgamepadstate& controlelrState);
+DLL_EXPORT void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray);
+DLL_EXPORT void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controlelrState);
 

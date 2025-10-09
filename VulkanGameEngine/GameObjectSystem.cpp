@@ -16,7 +16,7 @@ GameObjectSystem::~GameObjectSystem()
 
 }
 
-void GameObjectSystem::LoadComponentBehavior(GameObjectID gameObjectId, GameObjectTypeEnum objectEnum)
+void GameObjectSystem::LoadComponentBehavior(uint gameObjectId, GameObjectTypeEnum objectEnum)
 {
     GameObject_LoadComponentBehavior(gameObjectId, objectEnum);
 }
@@ -36,34 +36,34 @@ void GameObjectSystem::Update(const float deltaTime)
     GameObject_Update(deltaTime);
 }
 
-void GameObjectSystem::LoadTransformComponent(const nlohmann::json& json, GameObjectID id, const vec2& gameObjectPosition)
+void GameObjectSystem::LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition)
 {
-    GameObject_LoadTransformComponent(json, id, gameObjectPosition);
+    GameObject_LoadTransformComponent(json, gameObjectId, gameObjectPosition);
 }
 
-void GameObjectSystem::LoadInputComponent(const nlohmann::json& json, GameObjectID id)
+void GameObjectSystem::LoadInputComponent(const nlohmann::json& json, uint gameObjectId)
 {
-    GameObject_LoadInputComponent(json, id);
+    GameObject_LoadInputComponent(json, gameObjectId);
 }
 
-void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, GameObjectID id)
+void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, uint gameObjectId)
 {
-    GameObject_LoadSpriteComponent(json, id);
+    GameObject_LoadSpriteComponent(json, gameObjectId);
 }
 
-const GameObject& GameObjectSystem::FindGameObject(const GameObjectID& id)
+const GameObject& GameObjectSystem::FindGameObject(uint gameObjectId)
 {
-    return GameObject_FindGameObject(id);
+    return GameObject_FindGameObject(gameObjectId);
 }
 
-Transform2DComponent& GameObjectSystem::FindTransform2DComponent(const GameObjectID& id)
+Transform2DComponent& GameObjectSystem::FindTransform2DComponent(uint gameObjectId)
 {
-    return GameObject_FindTransform2DComponent(id);
+    return GameObject_FindTransform2DComponent(gameObjectId);
 }
 
-const InputComponent& GameObjectSystem::FindInputComponent(const GameObjectID& id)
+const InputComponent& GameObjectSystem::FindInputComponent(uint gameObjectId)
 {
-    return GameObject_FindInputComponent(id);
+    return GameObject_FindInputComponent(gameObjectId);
 }
 
 const Vector<GameObject> GameObjectSystem::GameObjectList()
@@ -81,7 +81,7 @@ const Vector<InputComponent> GameObjectSystem::InputComponentList()
     return GameObject_InputComponentList();
 }
 
-void GameObjectSystem::DestroyGameObject(const GameObjectID& gameObjectId)
+void GameObjectSystem::DestroyGameObject(uint gameObjectId)
 {
     GameObject_DestroyGameObject(gameObjectId);
 }

@@ -11,7 +11,7 @@
 
 struct Sprite
 {
-    GameObjectID GameObjectId;
+    uint GameObjectId;
     uint SpriteID = 0;
     uint CurrentAnimationID = 0;
     uint CurrentFrame = 0;
@@ -125,7 +125,7 @@ extern "C" {
 }
 #endif
 
-DLL_EXPORT void Sprite_AddSprite(GameObjectID gameObjectId, VkGuid& spriteVramId);
+DLL_EXPORT void Sprite_AddSprite(uint gameObjectId, VkGuid& spriteVramId);
 DLL_EXPORT void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId);
 DLL_EXPORT VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath);
 
@@ -134,7 +134,7 @@ DLL_EXPORT void Sprite_Destroy();
 
 DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
 
-DLL_EXPORT Sprite* Sprite_FindSprite(GameObjectID gameObjectId);
+DLL_EXPORT Sprite* Sprite_FindSprite(uint gameObjectId);
 DLL_EXPORT Vector<SpriteLayer> Sprite_FindSpriteLayer(RenderPassGuid& guid);
 DLL_EXPORT Vector<std::reference_wrapper<Sprite>> Sprite_FindSpritesByLayer(const SpriteLayer& spriteLayer);
 
