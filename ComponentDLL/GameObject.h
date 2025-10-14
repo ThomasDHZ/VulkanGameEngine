@@ -24,7 +24,7 @@ enum ComponentTypeEnum
 struct GameObject
 {
     GameObjectTypeEnum GameObjectType = kGameObjectNone;
-    uint64  GameObjectComponentMask = kUndefined;
+    uint64 GameObjectComponentMask = kUndefined;
     uint32 GameObjectId = UINT32_MAX;
     uint32 ParentGameObjectId = UINT32_MAX;
     uint32 Transform2DComponentId = UINT32_MAX;
@@ -45,10 +45,10 @@ struct GameObjectArchive
 DLL_EXPORT GameObjectArchive gameObjectArchive;
 
 DLL_EXPORT void GameObject_CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition);
-DLL_EXPORT void GameObject_CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
 DLL_EXPORT void GameObject_CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
 
 DLL_EXPORT void GameObject_Update(const float deltaTime);
+DLL_EXPORT void GameObject_UpdateVectorIndexes(bool addIndex);
 
 DLL_EXPORT void GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
 DLL_EXPORT void GameObject_LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition);

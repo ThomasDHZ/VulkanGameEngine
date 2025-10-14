@@ -107,19 +107,9 @@ void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GL
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
+        MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kShoot);
-        uint64 components = kTransform2DComponent | kSpriteComponent;
-        if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaMan)
-        {
-            MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
-            if (objectData->CurrentShotTime >= objectData->CoolDownTime &&
-                objectData->CurrentShotCount <= objectData->MaxShotCount)
-            {
-                GameObject_CreateGameObject("Shot", gameObject.GameObjectId, GameObjectTypeEnum::kGameObjectMegaManShot, components, VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset);
-                objectData->CurrentShotCount += 1;
-                objectData->CurrentShotTime = 0.0f;
-            }
-        }
+        MegaManShot_CreateObject("Shot", VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset, gameObject.GameObjectId);
     }
     else
     {

@@ -20,9 +20,9 @@ enum MegaManAnimationEnum
 
 struct MegaManObject
 {
-    static constexpr uint MaxShotCount = 3;
+    static constexpr uint MaxShotCount = 2;
     static constexpr float CoolDownTime = 0.08f;
-    static constexpr vec2  ShotPostionOffset = vec2(100, 30);
+    static constexpr vec2  ShotPostionOffset = vec2(30 * 5, 9 * 5);
 
     uint CurrentShotCount = 0;
     float CurrentShotTime = 0.0f;

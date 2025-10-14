@@ -16,11 +16,10 @@ void GameObject_CreateGameObject(const String& gameObjectPath, const vec2& gameO
     GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
         {
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
-            .GameObjectId = GetNextGameObjectIndex(),
+            .GameObjectId = static_cast<uint32>(gameObjectArchive.GameObjectList.size()),
             .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
         });
 
-    MegaManObject* megaManObject = static_cast<MegaManObject*>(gameObjectArchive.GameObjectList.back().GameObjectData);
     for (size_t x = 0; x < json["GameObjectComponentList"].size(); x++)
     {
         uint64 componentType = json["GameObjectComponentList"][x]["ComponentType"];
@@ -35,26 +34,13 @@ void GameObject_CreateGameObject(const String& gameObjectPath, const vec2& gameO
     GameObject_LoadComponentBehavior(gameObject, json["GameObjectType"]);
 }
 
-void GameObject_CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
-{
-    GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
-    {
-        .GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot,
-        .GameObjectComponentMask = gameObjectComponentMask,
-        .GameObjectId = GetNextGameObjectIndex(),
-        .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaManShot)
-    });
-    GameObject_LoadComponentTable(gameObject, objectPosition, vramId);
-    GameObject_LoadComponentBehavior(gameObject, objectEnum);
-}
-
 void GameObject_CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
 {
     GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
     {
         .GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot,
         .GameObjectComponentMask = gameObjectComponentMask,
-        .GameObjectId = GetNextGameObjectIndex(),
+        .GameObjectId = static_cast<uint32>(gameObjectArchive.GameObjectList.size()),
         .ParentGameObjectId = parentGameObjectId,
         .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaManShot)
     });
@@ -73,6 +59,11 @@ void GameObject_Update(const float deltaTime)
         }
     }
 }
+
+//DLL_EXPORT void GameObject_UpdateVectorIndexes(bool addIndex)
+//{
+//    return DLL_EXPORT void();
+//}
 
 void GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum)
 {
@@ -205,7 +196,7 @@ const Vector<InputComponent> GameObject_InputComponentList()
 
 void GameObject_DestroyGameObject(uint gameObjectId)
 {
-    if (gameObjectId == 0 || gameObjectId > gameObjectArchive.GameObjectList.size()) 
+    if (gameObjectId == 0 || gameObjectId > gameObjectArchive.GameObjectList.size())
     {
         return;
     }
@@ -250,12 +241,11 @@ void GameObject_DestroyGameObject(uint gameObjectId)
         {
             gameObjectArchive.GameObjectList[x].ParentGameObjectId--;
         }
-        if (gameObjectArchive.GameObjectList[x].InputComponentId != UINT64_MAX) gameObjectArchive.GameObjectList[x].InputComponentId--;
-        if (gameObjectArchive.GameObjectList[x].SpriteComponentId != UINT64_MAX) gameObjectArchive.GameObjectList[x].SpriteComponentId--;
-        if (gameObjectArchive.GameObjectList[x].Transform2DComponentId != UINT64_MAX) gameObjectArchive.GameObjectList[x].Transform2DComponentId--;
+        if (gameObjectArchive.GameObjectList[x].InputComponentId != UINT32_MAX) gameObjectArchive.GameObjectList[x].InputComponentId--;
+        if (gameObjectArchive.GameObjectList[x].SpriteComponentId != UINT32_MAX) gameObjectArchive.GameObjectList[x].SpriteComponentId--;
+        if (gameObjectArchive.GameObjectList[x].Transform2DComponentId != UINT32_MAX) gameObjectArchive.GameObjectList[x].Transform2DComponentId--;
         gameObjectArchive.GameObjectList[x].GameObjectId--;
     }
-    gameObjectArchive.FreeGameObjectIndices.push_back(gameObjectId);
 }
 
 void GameObject_DestroyGameObjects()
@@ -293,6 +283,36 @@ uint32 GetNextGameObjectIndex()
     {
         uint index = gameObjectArchive.FreeGameObjectIndices.back();
         gameObjectArchive.FreeGameObjectIndices.pop_back();
+
+        for (int x = index; x < gameObjectArchive.GameObjectList.size(); x++)
+        {
+            GameObject& gameObject = GameObject_FindGameObject(index);
+
+            if (gameObject.GameObjectComponentMask & kTransform2DComponent)
+            {
+                gameObjectArchive.Transform2DComponentList[x].GameObjectId++;
+            }
+
+            if (gameObject.GameObjectComponentMask & kSpriteComponent)
+            {
+                spriteArchive.SpriteList[x].GameObjectId++;
+            }
+
+            if (gameObject.GameObjectComponentMask & kInputComponent)
+            {
+                gameObjectArchive.InputComponentList[x].GameObjectId++;
+            }
+
+            if (gameObjectArchive.GameObjectList[x].ParentGameObjectId > index)
+            {
+                gameObjectArchive.GameObjectList[x].ParentGameObjectId++;
+            }
+            if (gameObjectArchive.GameObjectList[x].InputComponentId != UINT64_MAX) gameObjectArchive.GameObjectList[x].InputComponentId++;
+            if (gameObjectArchive.GameObjectList[x].SpriteComponentId != UINT64_MAX) gameObjectArchive.GameObjectList[x].SpriteComponentId++;
+            if (gameObjectArchive.GameObjectList[x].Transform2DComponentId != UINT64_MAX) gameObjectArchive.GameObjectList[x].Transform2DComponentId++;
+            gameObjectArchive.GameObjectList[x].GameObjectId++;
+        }
+
         return index;
     }
     return gameObjectArchive.GameObjectList.size();
@@ -331,7 +351,6 @@ void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition,
                 .GameObjectScale = vec2()
             });
     }
-
     if (mask & kInputComponent)
     {
         gameObject.InputComponentId = gameObjectArchive.InputComponentList.size();
@@ -340,7 +359,6 @@ void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition,
                 .GameObjectId = gameObject.GameObjectId
             });
     }
-
     if (mask & kSpriteComponent)
     {
         gameObject.SpriteComponentId = spriteArchive.SpriteList.size();

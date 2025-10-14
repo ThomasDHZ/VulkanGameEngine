@@ -16,9 +16,9 @@ GameObjectSystem::~GameObjectSystem()
 
 }
 
-void GameObjectSystem::CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
+void GameObjectSystem::CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
 {
-    GameObject_CreateGameObject(name, objectEnum, gameObjectComponentMask, vramId, objectPosition);
+    GameObject_CreateGameObject(name, parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition);
 }
 
 void GameObjectSystem::CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
