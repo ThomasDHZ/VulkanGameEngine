@@ -30,8 +30,8 @@ void GameSystem::StartUp(WindowType windowType, void* windowHandle)
 void GameSystem::Update(const float& deltaTime)
 {
     inputSystem.Update(deltaTime);
-    levelSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
+    levelSystem.Update(deltaTime);
     textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);
     renderSystem.Update(levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);
@@ -39,6 +39,7 @@ void GameSystem::Update(const float& deltaTime)
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
     meshSystem.Update(deltaTime);
     renderSystem.EndSingleTimeCommands(commandBuffer);
+    GameObject_DestroyDeadGameObjects();
 }
 
 void GameSystem::DebugUpdate(const float& deltaTime)

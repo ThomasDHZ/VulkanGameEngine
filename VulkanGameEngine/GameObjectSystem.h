@@ -10,19 +10,18 @@
 class GameObjectSystem
 {
 private:
-    void LoadComponentBehavior(uint gameObjectId, GameObjectTypeEnum objectEnum);
 
 public:
 
     GameObjectSystem();
     ~GameObjectSystem();
 
-    void CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition);
+    void CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
     void CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition);
     void Update(const float deltaTime);
     void LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition);
     void LoadInputComponent(const nlohmann::json& json, uint gameObjectId);
-    void LoadSpriteComponent(const nlohmann::json& json, uint gameObjectId);
+    void LoadSpriteComponent(const nlohmann::json& json, GameObject& gameObject);
 
     const GameObject& FindGameObject(uint gameObjectId);
     Transform2DComponent& FindTransform2DComponent(uint gameObjectId);

@@ -19,7 +19,7 @@ public:
     SpriteSystem();
     ~SpriteSystem();
 
-    void AddSprite(uint gameObjectId, VkGuid& spriteVramId);
+    void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
     void AddSpriteBatchLayer(RenderPassGuid& renderPassId);
     VkGuid LoadSpriteVRAM(const String& spriteVramPath);
 

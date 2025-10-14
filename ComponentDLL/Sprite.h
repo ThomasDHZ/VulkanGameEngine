@@ -7,6 +7,7 @@
 #include <VRAM.h>
 #include <vertex.h>
 #include <Mesh.h>
+#include "GameObject.h"
 #include <Transform2DComponent.h>
 
 struct Sprite
@@ -38,28 +39,6 @@ struct SpriteInstance
     vec4  Color;
     mat4  InstanceTransform;
     uint  MaterialID;
-
-    SpriteInstance()
-    {
-        SpritePosition = vec2(0.0f);
-        UVOffset = vec4(0.0f);
-        SpriteSize = vec2(0.0f);
-        FlipSprite = ivec2(0);
-        Color = vec4(0.0f);
-        MaterialID = 0;
-        InstanceTransform = mat4(1.0f);
-    }
-
-    SpriteInstance(vec2 spritePosition, vec4 uv, vec2 spriteSize, ivec2 flipSprite, vec4 color, uint materialID, mat4 instanceTransform, uint spriteLayer)
-    {
-        SpritePosition = spritePosition;
-        UVOffset = uv;
-        SpriteSize = spriteSize;
-        FlipSprite = flipSprite;
-        Color = color;
-        MaterialID = materialID;
-        InstanceTransform = instanceTransform;
-    }
 };
 
 struct SpriteInstanceVertex2D
@@ -71,28 +50,6 @@ struct SpriteInstanceVertex2D
     vec4 Color;
     mat4 InstanceTransform;
     uint MaterialID;
-
-    SpriteInstanceVertex2D()
-    {
-        SpritePosition = vec2(0.0f);
-        UVOffset = vec4(0.0f);
-        SpriteSize = vec2(0.0f);
-        FlipSprite = ivec2(0);
-        Color = vec4(0.0f);
-        MaterialID = 0;
-        InstanceTransform = mat4(1.0f);
-    }
-
-    SpriteInstanceVertex2D(vec2 spritePosition, vec4 uv, vec2 spriteSize, ivec2 flipSprite, vec4 color, uint materialID, mat4 instanceTransform, uint spriteLayer)
-    {
-        SpritePosition = spritePosition;
-        UVOffset = uv;
-        SpriteSize = spriteSize;
-        FlipSprite = flipSprite;
-        Color = color;
-        MaterialID = materialID;
-        InstanceTransform = instanceTransform;
-    }
 };
 
 struct SpriteLayer
@@ -125,20 +82,21 @@ extern "C" {
 }
 #endif
 
-DLL_EXPORT void Sprite_AddSprite(uint gameObjectId, VkGuid& spriteVramId);
+DLL_EXPORT void Sprite_AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
 DLL_EXPORT void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId);
 DLL_EXPORT VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath);
 
+DLL_EXPORT void Sprite_UpdateSprites(const float& deltaTime);
 DLL_EXPORT void Sprite_Update(const GraphicsRenderer& renderer, const float& deltaTime);
 DLL_EXPORT void Sprite_Destroy();
 
 DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
 
 DLL_EXPORT Sprite* Sprite_FindSprite(uint gameObjectId);
+DLL_EXPORT uint32 Sprite_FindSpriteComponentIndex(uint gameObjectId);
 DLL_EXPORT Vector<SpriteLayer> Sprite_FindSpriteLayer(RenderPassGuid& guid);
 DLL_EXPORT Vector<std::reference_wrapper<Sprite>> Sprite_FindSpritesByLayer(const SpriteLayer& spriteLayer);
 
 DLL_EXPORT SpriteVram& Sprite_FindSpriteVram(VkGuid VramSpriteID);
 DLL_EXPORT Vector<SpriteInstance> Sprite_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer);
 DLL_EXPORT Animation2D& Sprite_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
-DLL_EXPORT SpriteInstance Sprite_UpdateSprites(const Transform2DComponent& transform2D, const SpriteVram& vram, const Animation2D& animation, const Material& material, const ivec2& currentFrame, Sprite& sprite, size_t frameCount, float deltaTime);

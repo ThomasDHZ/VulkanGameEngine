@@ -37,40 +37,52 @@ public:
     }
 
     template <class T>
-    T* AddPtrBuffer(size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-    }
-
-
-    template <class T>
-    T* AddPtrBuffer(T elementData, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, typeid(T).name(), func, notes);
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-    }
-
-    template <class T>
-    T* AddPtrBuffer(T* elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
+    T* AddPtrBuffer(size_t elementCount, const char* file, int line, const char* func, const char* notes = "") 
     {
         std::lock_guard<std::mutex> lock(Mutex);
         MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
-        if (!memoryLeakPtr.PtrAddress)
+        if (!memoryLeakPtr.PtrAddress) 
         {
-            std::cerr << "Failed to allocate memory for " << notes << " at " << file << ":" << line << std::endl;
+            return nullptr; 
+        }
+
+        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
+        for (size_t x = 0; x < elementCount; ++x) 
+        {
+            new (&buffer[x]) T(); 
+        }
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
+    template <class T>
+    T* AddPtrBuffer(T elementData, const char* file, int line, const char* func, const char* notes = "") 
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, typeid(T).name(), func, notes);
+        if (!memoryLeakPtr.PtrAddress) 
+        {
+            return nullptr;
+        }
+
+        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
+        new (buffer) T(elementData);  
+        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        return buffer;
+    }
+
+    template <class T>
+    T* AddPtrBuffer(T* elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "") 
+    {
+        std::lock_guard<std::mutex> lock(Mutex);
+        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
+        if (!memoryLeakPtr.PtrAddress) {
             return nullptr;
         }
         T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-        for (size_t x = 0; x < elementCount; ++x)
+        for (size_t x = 0; x < elementCount; ++x) 
         {
-            new (&buffer[x]) T(elementData[x]);
+            new (&buffer[x]) T(elementData[x]);  
         }
         PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
         return buffer;

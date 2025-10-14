@@ -18,7 +18,7 @@ void InputSystem::Update(const float& deltaTime)
     int joy = GLFW_JOYSTICK_1;
     for (auto& input : gameObjectSystem.InputComponentList())
     {
-        const GameObject& gameObject = GameObject_FindGameObject(input.GameObjectId);
+        const GameObject& gameObject = gameObjectArchive.GameObjectList[input.GameObjectId];
         if (gameObjectArchive.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput)
         {
             int joy = GLFW_JOYSTICK_1;

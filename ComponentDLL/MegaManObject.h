@@ -20,12 +20,16 @@ enum MegaManAnimationEnum
 
 struct MegaManObject
 {
-    const uint MaxShotCount = 3;
-    const float MaxShotCoolDownTime = 1.0f;
+    static constexpr uint MaxShotCount = 3;
+    static constexpr float CoolDownTime = 0.08f;
+    static constexpr vec2  ShotPostionOffset = vec2(100, 30);
 
+    uint CurrentShotCount = 0;
+    float CurrentShotTime = 0.0f;
 };
 
 DLL_EXPORT void MegaMan_Behaviors(GameObjectBehavior& componentBehavior);
+DLL_EXPORT void MegaMan_Update(uint gameObjectId, const float& deltaTime);
 DLL_EXPORT void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray);
 DLL_EXPORT void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controlelrState);
 

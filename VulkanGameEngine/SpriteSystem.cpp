@@ -16,9 +16,9 @@ SpriteSystem spriteSystem = SpriteSystem();
 SpriteSystem::SpriteSystem()
 {
     spriteContainerPtr = &spriteArchive;
-    spriteContainerPtr->SpriteList.reserve(10000);
-    spriteContainerPtr->SpriteInstanceList.reserve(10000);
-    spriteContainerPtr->SpriteLayerList.reserve(10000);
+    spriteContainerPtr->SpriteList.reserve(5);
+    spriteContainerPtr->SpriteInstanceList.reserve(5);
+    spriteContainerPtr->SpriteLayerList.reserve(5);
 }
 
 SpriteSystem::~SpriteSystem()
@@ -28,15 +28,7 @@ SpriteSystem::~SpriteSystem()
 
 void SpriteSystem::UpdateSprites(const float& deltaTime)
 {
-    for (auto& sprite : spriteContainerPtr->SpriteList)
-    {
-        const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
-        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
-        const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
-        const auto& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
-        const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
-        spriteContainerPtr->SpriteInstanceList[sprite.SpriteInstance] = Sprite_UpdateSprites(transform2D, vram, animation, material, currentFrame, sprite, animation.FrameCount, deltaTime);
-    }
+    Sprite_UpdateSprites(deltaTime);
 }
 
 void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
@@ -48,9 +40,9 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
     }
 }
 
-void SpriteSystem::AddSprite(uint gameObjectId, VkGuid& spriteVramId)
+void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 {
-    Sprite_AddSprite(gameObjectId, spriteVramId);
+    Sprite_AddSprite(gameObject, spriteVramId);
 }
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)

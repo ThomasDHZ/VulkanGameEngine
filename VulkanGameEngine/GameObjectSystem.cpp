@@ -16,14 +16,9 @@ GameObjectSystem::~GameObjectSystem()
 
 }
 
-void GameObjectSystem::LoadComponentBehavior(uint gameObjectId, GameObjectTypeEnum objectEnum)
+void GameObjectSystem::CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
 {
-    GameObject_LoadComponentBehavior(gameObjectId, objectEnum);
-}
-
-void GameObjectSystem::CreateGameObject(const String& name, GameObjectTypeEnum objectEnum, const Vector<ComponentTypeEnum>& gameObjectComponentTypeList, VkGuid vramId, vec2 objectPosition)
-{
-    GameObject_CreateGameObject(name, objectEnum, gameObjectComponentTypeList, vramId, objectPosition);
+    GameObject_CreateGameObject(name, objectEnum, gameObjectComponentMask, vramId, objectPosition);
 }
 
 void GameObjectSystem::CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
@@ -46,9 +41,9 @@ void GameObjectSystem::LoadInputComponent(const nlohmann::json& json, uint gameO
     GameObject_LoadInputComponent(json, gameObjectId);
 }
 
-void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, uint gameObjectId)
+void GameObjectSystem::LoadSpriteComponent(const nlohmann::json& json, GameObject& gameObject)
 {
-    GameObject_LoadSpriteComponent(json, gameObjectId);
+    GameObject_LoadSpriteComponent(json, gameObject);
 }
 
 const GameObject& GameObjectSystem::FindGameObject(uint gameObjectId)

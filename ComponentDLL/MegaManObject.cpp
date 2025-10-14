@@ -1,13 +1,23 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "Sprite.h"
 #include "MegaManObject.h"
 
 void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)
 {
     componentBehavior.KeyBoardInput = MegaMan_KeyBoardInput;
     componentBehavior.ControllerInput = MegaMan_ControllerInput;
-    componentBehavior.Update = nullptr;
+    componentBehavior.Update = MegaMan_Update;
     componentBehavior.Destroy = nullptr;
+}
+
+void MegaMan_Update(uint gameObjectId, const float& deltaTime)
+{
+    GameObject& gameObject = GameObject_FindGameObject(gameObjectId);
+    if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaMan)
+    {
+        static_cast<MegaManObject*>(gameObject.GameObjectData)->CurrentShotTime += deltaTime;
+    }
 }
 
 void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray)
@@ -61,6 +71,7 @@ void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyS
 void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
 {
     Sprite* sprite = Sprite_FindSprite(gameObjectId);
+    const GameObject& gameObject = GameObject_FindGameObject(gameObjectId);
     Transform2DComponent& transform = GameObject_FindTransform2DComponent(gameObjectId);
     if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
         controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
@@ -97,14 +108,18 @@ void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GL
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
         Sprite_SetSpriteAnimation(sprite, MegaManAnimationEnum::kShoot);
-
-        Vector<ComponentTypeEnum> components = Vector<ComponentTypeEnum>
+        uint64 components = kTransform2DComponent | kSpriteComponent;
+        if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaMan)
         {
-            kTransform2DComponent,
-            kSpriteComponent
-        };
-        String a = "Shot";
-        GameObject_CreateGameObject(a, GameObjectTypeEnum::kGameObjectMegaManShot, components, VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition);
+            MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
+            if (objectData->CurrentShotTime >= objectData->CoolDownTime &&
+                objectData->CurrentShotCount <= objectData->MaxShotCount)
+            {
+                GameObject_CreateGameObject("Shot", gameObject.GameObjectId, GameObjectTypeEnum::kGameObjectMegaManShot, components, VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset);
+                objectData->CurrentShotCount += 1;
+                objectData->CurrentShotTime = 0.0f;
+            }
+        }
     }
     else
     {
