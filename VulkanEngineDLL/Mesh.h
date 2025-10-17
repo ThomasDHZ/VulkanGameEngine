@@ -9,6 +9,7 @@
 
 
 DLL_EXPORT uint NextMeshId;
+DLL_EXPORT uint NextLineMeshId;
 DLL_EXPORT uint NextSpriteMeshId;
 DLL_EXPORT uint NextLevelLayerMeshId;
 
@@ -106,21 +107,15 @@ DLL_EXPORT MeshArchive meshArchive;
 #ifdef __cplusplus
 extern "C" {
 #endif
-DLL_EXPORT Mesh Mesh_CreateMesh(const GraphicsRenderer& renderer, const MeshLoader& meshLoader, VulkanBuffer& outVertexBuffer, VulkanBuffer& outIndexBuffer, VulkanBuffer& outTransformBuffer, VulkanBuffer& outPropertiesBuffer);
-DLL_EXPORT void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
-DLL_EXPORT void Mesh_DestroyMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer);
 DLL_EXPORT uint Mesh_CreateSpriteLayerMesh(const GraphicsRenderer& renderer, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
 DLL_EXPORT uint Mesh_CreateLevelLayerMesh(const GraphicsRenderer& renderer, const VkGuid& levelId, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+DLL_EXPORT void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
+DLL_EXPORT void Mesh_DestroyMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer);
 DLL_EXPORT void Mesh_Update(const GraphicsRenderer& renderer, const float& deltaTime);
 DLL_EXPORT void Mesh_Destroy(const GraphicsRenderer& renderer, uint meshId);
 DLL_EXPORT void Mesh_DestroyAllGameObjects(const GraphicsRenderer& renderer);
 DLL_EXPORT const Mesh& Mesh_FindMesh(const uint& id);
 DLL_EXPORT const Mesh& Mesh_FindSpriteMesh(const uint& id);
-
-int Mesh_CreateVertexBuffer(const GraphicsRenderer& renderer, const VertexLoaderStruct& vertexLoader, VulkanBuffer& outVertexBuffer);
-int Mesh_CreateIndexBuffer(const GraphicsRenderer& renderer, const IndexLoaderStruct& indexLoader, VulkanBuffer& outIndexBuffer);
-int Mesh_CreateTransformBuffer(const GraphicsRenderer& renderer, const TransformLoaderStruct& transformLoader, VulkanBuffer& outTransformBuffer);
-int Mesh_CreateMeshPropertiesBuffer(const GraphicsRenderer& renderer, const MeshPropertiesLoaderStruct& meshProperties, VulkanBuffer& outPropertiesBufferId);
 #ifdef __cplusplus
 }
 #endif

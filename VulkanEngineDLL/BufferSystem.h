@@ -36,7 +36,7 @@ private:
         }
         else if constexpr (std::is_same_v<T, Vertex2D>)
         {
-            return BufferType_Vector2D;
+            return BufferType_Vertex2D;
         }
         else {
             throw std::runtime_error("Buffer type doesn't match");
@@ -52,7 +52,7 @@ public:
         uint bufferElementCount = 1;
 
         int nextBufferId = ++NextBufferId;
-        VulkanBufferMap[nextBufferId] = VulkanBuffer_CreateVulkanBuffer(renderer, nextBufferId, static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
+        VulkanBufferMap[nextBufferId] = VulkanBuffer_CreateVulkanBuffer2(renderer, nextBufferId, static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
         return nextBufferId;
     }
 

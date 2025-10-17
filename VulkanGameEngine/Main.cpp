@@ -8,8 +8,8 @@
 #include "GameSystem.h"
 #include "MaterialSystem.h"
 #include "EngineConfigSystem.h"
+#include <RigidBody.h>
 
-int joystick_id = -1;
 int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();

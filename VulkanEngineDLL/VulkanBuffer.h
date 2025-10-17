@@ -20,7 +20,7 @@ enum BufferTypeEnum
 	BufferType_SpriteMesh,
 	BufferType_LevelLayerMesh,
 	BufferType_Material,
-	BufferType_Vector2D
+	BufferType_Vertex2D
 };
 
 struct VulkanBuffer

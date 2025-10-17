@@ -17,7 +17,6 @@ layout (location = 5) in flat uint  PS_MaterialID;
 layout (location = 6) in flat vec4  PS_UVOffset;
 
 layout(location = 0) out vec4 OutputColor;
-layout(location = 1) out vec4 OutputBloom;
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -60,27 +59,5 @@ layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer mater
 
 void main() 
 {
-	MaterialProperitiesBuffer material = materialBuffer[PS_MaterialID].materialProperties;
-
-	vec2 UV = PS_UV;
-    if (PS_FlipSprite.x == 1) 
-	{
-		UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
-    }
-    if (PS_FlipSprite.y == 1) 
-	{
-		UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
-    }
-
-	vec4 albedoColor = texture(TextureMap[material.AlbedoMap], UV);
-	material.Albedo = albedoColor.rgb;
-	material.Alpha = albedoColor.a;
-	
-	if(material.Alpha == 0.0f)
-	{
-		discard;
-	}
-  
-    OutputColor = vec4(material.Albedo.rgb, 1.0f);
-	OutputBloom = vec4(material.Albedo.rgb, 1.0f);
+    OutputColor = vec4(1.0f);
 }

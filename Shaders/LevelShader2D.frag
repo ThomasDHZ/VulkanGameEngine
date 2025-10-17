@@ -62,8 +62,6 @@ void main()
     if (Alpha == 0.0)
         discard;
 
-    float gamma = 2.2;
-    vec3 color = pow(Albedo, vec3(1.0 / gamma));
-    OutputColor = vec4(color, Alpha);
-	OutputBloom = vec4(color, Alpha);
+    OutputColor = vec4(Albedo, Alpha);
+	OutputBloom = vec4(Albedo, Alpha);
 }
