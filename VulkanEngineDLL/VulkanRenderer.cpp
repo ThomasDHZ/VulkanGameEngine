@@ -9,6 +9,7 @@
 
 HWND editorRichTextBoxCallback;
 LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
+GraphicsRenderer renderer = GraphicsRenderer();
 
 void Debug_SetRichTextBoxHandle(HWND hwnd)
 {

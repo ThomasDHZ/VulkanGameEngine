@@ -187,8 +187,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
     const VulkanRenderPass& renderPass = FindRenderPass(renderPassId);
     const VulkanPipeline& spritePipeline = FindRenderPipelineList(renderPassId)[0];
     const VulkanPipeline& levelPipeline = FindRenderPipelineList(renderPassId)[1];
-    const Vector<SpriteLayer>& spriteLayerList = spriteSystem.FindSpriteLayer(renderPassId);
-    const Vector<Mesh>& levelLayerList = meshSystem.FindLevelLayerMeshList(levelId);
+    const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
     const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
     ShaderPushConstant pushConstant = *shaderSystem.GetGlobalShaderPushConstant("sceneData");
 
@@ -207,25 +206,26 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     for (auto& levelLayer : levelLayerList)
     {
+        const Vector<uint32>& indiceList = meshArchive.IndexList[levelLayer.IndexIndex];
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-        uint meshIndex = 0;
         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &meshIndex, sizeof(meshIndex));
         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetCount, levelPipeline.DescriptorSetList, 0, nullptr);
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, levelLayer.IndexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
     }
-    for (auto& spriteLayer : spriteLayerList)
+    for (auto& spriteLayer : spriteArchive.SpriteLayerList)
     {
-        const Mesh& spriteMesh = meshSystem.FindSpriteMesh(spriteLayer.SpriteLayerMeshId);
+        const Mesh& spriteMesh = Mesh_FindMesh(spriteLayer.second.SpriteLayerMeshId);
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshVertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
-        const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
-        const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.SpriteLayerBufferId).Buffer;
+        const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
+        const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
+        const Vector<uint32>& indiceList = meshArchive.IndexList[spriteMesh.IndexIndex];
 
         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &spriteLayer.SpriteLayerMeshId, sizeof(spriteLayer.SpriteLayerMeshId));
         vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer);
@@ -233,7 +233,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetCount, spritePipeline.DescriptorSetList, 0, nullptr);
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, meshArchive.IndexListMap[spriteLayer.SpriteLayerMeshId].size(), spriteInstanceList.size(), 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
     VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
@@ -350,37 +350,37 @@ void RenderSystem::Destroy()
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    Renderer_DestroyFrameBuffers(renderSystem.renderer.Device, frameBufferList.data(), frameBufferList.size());
+    Renderer_DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size());
 }
 
 void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
 {
-    Renderer_DestroyCommandBuffers(renderSystem.renderer.Device, &renderSystem.renderer.CommandPool, &commandBuffer, 1);
+    Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
-    Renderer_DestroyBuffer(renderSystem.renderer.Device, &buffer);
+    Renderer_DestroyBuffer(renderer.Device, &buffer);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleTimeCommands()
 {
-    return Renderer_BeginSingleTimeCommands(renderSystem.renderer.Device, renderSystem.renderer.CommandPool);
+    return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleTimeCommands(VkCommandPool& commandPool)
 {
-    return Renderer_BeginSingleTimeCommands(renderSystem.renderer.Device, renderSystem.renderer.CommandPool);
+    return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
 }
 
 VkResult RenderSystem::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 {
-    return Renderer_EndSingleTimeCommands(renderSystem.renderer.Device, renderSystem.renderer.CommandPool, renderSystem.renderer.GraphicsQueue, commandBuffer);
+    return Renderer_EndSingleTimeCommands(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 VkResult RenderSystem::EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
 {
-    return Renderer_EndSingleTimeCommands(renderSystem.renderer.Device, commandPool, renderSystem.renderer.GraphicsQueue, commandBuffer);
+    return Renderer_EndSingleTimeCommands(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 VkResult RenderSystem::StartFrame()
@@ -396,7 +396,7 @@ VkResult RenderSystem::StartFrame()
 
 VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
 {
-    return Renderer_EndFrame(renderSystem.renderer.Swapchain,
+    return Renderer_EndFrame(renderer.Swapchain,
         renderer.AcquireImageSemaphores,
         renderer.PresentImageSemaphores,
         renderer.InFlightFences,
@@ -519,7 +519,7 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const
     Vector<Mesh> meshList;
     if (levelLayerId == VkGuid())
     {
-        for (auto& sprite : meshSystem.SpriteMeshList())
+        for (auto& sprite : meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh))
         {
             meshList.emplace_back(sprite);
 
@@ -527,7 +527,7 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const
     }
     else
     {
-        for (auto& layer : meshSystem.FindLevelLayerMeshList(levelLayerId))
+        for (auto& layer : meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh))
         {
             meshList.emplace_back(layer);
         }
@@ -564,7 +564,7 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const
 const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const VkGuid& renderPassId)
 {
     Vector<Texture> textureList;
-    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
+    const VulkanRenderPass& renderPass = FindRenderPass(renderPassId);
     if (renderPass.InputTextureIdListCount > 0)
     {
         Vector<VkGuid> inputTextureList = Vector<VkGuid>(renderPass.InputTextureIdList, renderPass.InputTextureIdList + renderPass.InputTextureIdListCount);
@@ -602,7 +602,7 @@ const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(con
         };
 
         VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(renderSystem.renderer.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        if (vkCreateSampler(renderer.Device, &NullSamplerInfo, nullptr, &nullSampler))
         {
             throw std::runtime_error("Failed to create Sampler.");
         }

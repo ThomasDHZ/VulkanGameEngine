@@ -16,12 +16,12 @@ MaterialSystem::~MaterialSystem()
 
 void MaterialSystem::Update(const float& deltaTime)
 {
-    Material_Update(renderSystem.renderer, deltaTime);
+    Material_Update(renderer, deltaTime);
 }
 
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 {
-    return Material_LoadMaterial(renderSystem.renderer, materialPath);
+    return Material_LoadMaterial(renderer, materialPath);
 }
 
 const bool MaterialSystem::MaterialMapExists(const VkGuid& renderPassId)  const

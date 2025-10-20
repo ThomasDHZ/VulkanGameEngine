@@ -35,8 +35,8 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
     for (auto& spriteLayer : spriteContainerPtr->SpriteLayerList)
     {
-        Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer);
-        bufferSystem.UpdateBufferMemory(renderSystem.renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceList);
+        Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer.second);
+        bufferSystem.UpdateBufferMemory(renderer, spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
     }
 }
 
@@ -45,14 +45,9 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
     Sprite_AddSprite(gameObject, spriteVramId);
 }
 
-void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId)
-{
-    Sprite_AddSpriteBatchLayer(renderSystem.renderer, renderPassId);
-}
-
 void SpriteSystem::Update(const float& deltaTime)
 {
-    Sprite_Update(renderSystem.renderer, deltaTime);
+    Sprite_Update(renderer, deltaTime);
 }
 
 void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
@@ -83,11 +78,6 @@ const SpriteVram& SpriteSystem::FindSpriteVram(VkGuid vramSpriteId)
 const Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId)
 {
     return Sprite_FindSpriteAnimation(vramId, animationId);
-}
-
-Vector<SpriteLayer> SpriteSystem::FindSpriteLayer(RenderPassGuid& guid)
-{
-    return Sprite_FindSpriteLayer(guid);
 }
 
 VkGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)

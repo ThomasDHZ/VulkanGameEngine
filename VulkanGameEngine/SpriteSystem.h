@@ -20,7 +20,6 @@ public:
     ~SpriteSystem();
 
     void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
-    void AddSpriteBatchLayer(RenderPassGuid& renderPassId);
     VkGuid LoadSpriteVRAM(const String& spriteVramPath);
 
     void Update(const float& deltaTime);

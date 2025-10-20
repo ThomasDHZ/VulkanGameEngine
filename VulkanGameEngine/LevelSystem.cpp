@@ -24,7 +24,7 @@ LevelSystem::~LevelSystem()
 
 void LevelSystem::LoadLevel(const String& levelPath)
 {
-    OrthographicCamera = std::make_shared<OrthographicCamera2D>(OrthographicCamera2D(vec2((float)renderSystem.renderer.SwapChainResolution.width, (float)renderSystem.renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+    OrthographicCamera = std::make_shared<OrthographicCamera2D>(OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
@@ -68,13 +68,11 @@ void LevelSystem::LoadLevel(const String& levelPath)
     LoadLevelLayout(json["LoadLevelLayout"]);
     LoadLevelMesh(tileSetId);
 
-    spriteSystem.AddSpriteBatchLayer(spriteRenderPass2DId);
-
     VkGuid LevelId = VkGuid(json["LevelID"].get<String>().c_str());
-    spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-//    levelWireFrameRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-    gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/GaussianBlurRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
-    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderSystem.renderer.SwapChainResolution.width, renderSystem.renderer.SwapChainResolution.height));
+    spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+//    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+    gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
 }
 
 
@@ -166,7 +164,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
 
         Vector<Vertex2D> vertexList(LevelLayerList[x].VertexList, LevelLayerList[x].VertexList + LevelLayerList[x].VertexListCount);
         Vector<uint> indexList(LevelLayerList[x].IndexList, LevelLayerList[x].IndexList + LevelLayerList[x].IndexListCount);
-        meshSystem.CreateLevelLayerMesh(levelLayout.LevelLayoutId, vertexList, indexList);
+        meshSystem.CreateSpriteLayerMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
     }
 }
 

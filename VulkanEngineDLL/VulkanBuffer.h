@@ -9,6 +9,13 @@
 #include "Typedef.h"
 #include "VulkanRenderer.h"
 
+enum MeshTypeEnum
+{
+	Mesh_SpriteMesh,
+	Mesh_LevelMesh,
+	Mesh_LineMesh
+};
+
 enum BufferTypeEnum
 {
 	BufferType_Undefined,

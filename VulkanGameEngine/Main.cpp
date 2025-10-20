@@ -30,7 +30,7 @@ int main(int argc, char** argv)
         gameSystem.Draw(frameTime);
         deltaTime.EndFrameTime();
     }
-    vkDeviceWaitIdle(renderSystem.renderer.Device);
+    vkDeviceWaitIdle(renderer.Device);
     gameSystem.Destroy();
     vulkanWindow->DestroyWindow(vulkanWindow);
     return 0;

@@ -8,9 +8,19 @@
 #include "Mesh.h"
 #include "GameObject.h"
 
-uint32 NextSpriteId = 0;
-uint32 NextSpriteLayerID = 0;
 SpriteArchive spriteArchive = SpriteArchive();
+
+uint32 GetNextSpriteIndex()
+{
+    if (!spriteArchive.FreeSpriteIndicesList.empty())
+    {
+        uint index = spriteArchive.FreeSpriteIndicesList.back();
+        spriteArchive.FreeSpriteIndicesList.pop_back();
+        return index;
+    }
+    return spriteArchive.SpriteList.size();
+}
+
 void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
 {
     Span<ivec2> frameList(animationList->FrameList, animationList->FrameList + animationList->FrameCount);
@@ -64,7 +74,6 @@ void Sprite_SetSpriteAnimation(Sprite& sprite, uint spriteAnimationEnum)
     sprite.CurrentFrame = 0;
     sprite.CurrentFrameTime = 0.0f;
 }
-
 
 void Sprite_UpdateSprites(const float& deltaTime)
 {
@@ -121,25 +130,40 @@ void Sprite_UpdateSpriteBatchLayers(const GraphicsRenderer& renderer, const floa
 {
     for (auto& spriteLayer : spriteArchive.SpriteLayerList)
     {
-        Vector<SpriteInstance> spriteInstanceList = Sprite_FindSpriteInstancesByLayer(spriteLayer);
-        bufferSystem.UpdateBufferMemory(renderer, spriteLayer.SpriteLayerBufferId, spriteInstanceList);
+        Vector<SpriteInstance> spriteInstanceList = Sprite_FindSpriteInstancesByLayer(spriteLayer.second);
+        bufferSystem.UpdateBufferMemory(renderer, spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
     }
 }
 
 void Sprite_AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 {
     Sprite sprite;
-    sprite.SpriteID = NextSpriteId++;
+    sprite.SpriteID = GetNextSpriteIndex();
     sprite.GameObjectId = gameObject.GameObjectId;
     sprite.SpriteVramId = spriteVramId;
-    sprite.SpriteLayer = Sprite_FindSpriteVram(spriteVramId).SpriteLayer + 1;
+    sprite.SpriteLayer = Sprite_FindSpriteVram(spriteVramId).SpriteLayer;
     sprite.SpriteInstance = spriteArchive.SpriteInstanceList.size();
     spriteArchive.SpriteList.emplace_back(sprite);
     spriteArchive.SpriteInstanceList.emplace_back(SpriteInstance());
+    if (!Sprite_SpriteLayerExists(sprite.SpriteLayer))
+    {
+        VkGuid guid = VkGuid("de78235b-3c69-4298-99da-acd8c6622ece");
+        Sprite_AddSpriteBatchLayer(renderer, guid, sprite.SpriteLayer);
+    }
 }
 
-void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId)
+void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
 {
+    const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    const VkMemoryPropertyFlags MeshBufferPropertySettings = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
     Vector<Vertex2D> SpriteVertexList =
     {
         Vertex2D(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
@@ -157,12 +181,13 @@ void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid
     SpriteLayer spriteLayer = SpriteLayer
     {
         .RenderPassId = renderPassId,
-        .SpriteLayerId = ++NextSpriteLayerID,
-        .SpriteLayerMeshId = Mesh_CreateSpriteLayerMesh(renderer, SpriteVertexList, SpriteIndexList)
+        .SpriteDrawLayer = spriteDrawLayer,
+        .SpriteLayerMeshId = Mesh_CreateMesh(renderer, MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList, SpriteIndexList)
     };
+
     Vector<SpriteInstance> spriteInstanceList = Sprite_FindSpriteInstancesByLayer(spriteLayer);
     spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderer, spriteInstanceList, MeshBufferUsageSettings, MeshBufferPropertySettings, false);
-    spriteArchive.SpriteLayerList.emplace_back(spriteLayer);
+    spriteArchive.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
 
 void Sprite_Update(const GraphicsRenderer& renderer, const float& deltaTime)
@@ -184,29 +209,23 @@ Sprite* Sprite_FindSprite(uint gameObjectId)
     return it != spriteArchive.SpriteList.end() ? &(*it) : nullptr;
 }
 
-//uint32 Sprite_FindSpriteComponentIndex(uint gameObjectId)
-//{
-//    auto it = std::find(spriteArchive.SpriteList.begin(), spriteArchive.SpriteList.end(), [gameObjectId](const Sprite& sprite)
-//        {
-//            return sprite.GameObjectId == gameObjectId;
-//        });
-//    return std::distance(spriteArchive.SpriteList.begin(), it);
-//
-//}
-
 Vector<std::reference_wrapper<Sprite>> Sprite_FindSpritesByLayer(const SpriteLayer& spriteLayer)
 {
     Vector<std::reference_wrapper<Sprite>> matches;
-    auto predicate = [spriteLayer](const Sprite& sprite)
-        {
-            return sprite.SpriteLayer == spriteLayer.SpriteLayerId;
-        };
     auto it = spriteArchive.SpriteList.begin();
-    while ((it = std::find_if(it, spriteArchive.SpriteList.end(), predicate)) != spriteArchive.SpriteList.end()) {
+    while ((it = std::find_if(it, spriteArchive.SpriteList.end(), [spriteLayer](const Sprite& sprite)
+        {
+            return sprite.SpriteLayer == spriteLayer.SpriteDrawLayer;
+        })) != spriteArchive.SpriteList.end()) {
         matches.emplace_back(std::ref(*it));
         ++it;
     }
     return matches;
+}
+
+const Vector<Mesh>& Sprite_FindSpriteLayerMeshList()
+{
+    return Mesh_FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh);
 }
 
 Vector<SpriteInstance> Sprite_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer)
@@ -230,18 +249,8 @@ Animation2D& Sprite_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_A
     return spriteArchive.SpriteAnimationMap.at(vramId)[animationId];
 }
 
-Vector<SpriteLayer> Sprite_FindSpriteLayer(RenderPassGuid& guid)
-{
-    Vector<SpriteLayer> matchingLayers;
-    std::copy_if(spriteArchive.SpriteLayerList.begin(), spriteArchive.SpriteLayerList.end(),
-        std::back_inserter(matchingLayers),
-        [guid](const SpriteLayer& sprite) { return sprite.RenderPassId == guid; });
-    return matchingLayers;
-}
-
 VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath)
 {
-
     nlohmann::json json = File_LoadJsonFile(spriteVramPath.c_str());
     VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
 
@@ -269,4 +278,9 @@ VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath)
 void Sprite_Destroy()
 {
 
+}
+
+const bool Sprite_SpriteLayerExists(const uint32 spriteDrawLayer)
+{
+    return spriteArchive.SpriteLayerList.contains(spriteDrawLayer);
 }

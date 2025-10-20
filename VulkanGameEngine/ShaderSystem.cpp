@@ -47,12 +47,12 @@ ShaderVariable* ShaderSystem::SearchShaderStruct(ShaderStruct& shaderStruct, con
 
 void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
 {
-    Shader_UpdateGlobalShaderBuffer(renderSystem.renderer, pushConstantName);
+    Shader_UpdateGlobalShaderBuffer(renderer, pushConstantName);
 }
 
 void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
 {
-    Shader_UpdateShaderBuffer(renderSystem.renderer, vulkanBufferId);
+    Shader_UpdateShaderBuffer(renderer, vulkanBufferId);
 }
 
 ShaderPushConstant* ShaderSystem::GetGlobalShaderPushConstant(const String& pushConstantName)
@@ -113,5 +113,5 @@ const bool ShaderSystem::ShaderStructExists(uint vulkanBufferKey) const
 
 void ShaderSystem::CompileShaders(const char* shaderFilePath)
 {
-    Shader_CompileShaders(renderSystem.renderer.Device, shaderFilePath, configSystem.CompiledShaderOutputDirectory.c_str());
+    Shader_CompileShaders(renderer.Device, shaderFilePath, configSystem.CompiledShaderOutputDirectory.c_str());
 }

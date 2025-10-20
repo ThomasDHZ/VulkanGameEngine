@@ -25,7 +25,7 @@ VkGuid TextureSystem::LoadTexture(const String& texturePath)
     VkGuid textureId = VkGuid(json["TextureId"].get<String>().c_str());
 
     if(TextureExists(textureId)) return textureId;
-    textureArchivePtr->TextureMap[textureId] = Texture_LoadTexture(renderSystem.renderer, texturePath.c_str());
+    textureArchivePtr->TextureMap[textureId] = Texture_LoadTexture(renderer, texturePath.c_str());
     return textureId;
 }
 
@@ -43,17 +43,17 @@ void TextureSystem::Update(const float& deltaTime)
 // Create Texture
 //Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 //{
-//    return Texture_CreateTexture(renderSystem.renderer, textureId, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
+//    return Texture_CreateTexture(renderer, textureId, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
 //}
 //
 //Texture TextureSystem::CreateTexture(const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 //{
-//    return Texture_CreateTexture(renderSystem.renderer, texturePath, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
+//    return Texture_CreateTexture(renderer, texturePath, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
 //}
 //
 //Texture TextureSystem::CreateTexture(Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 //{
-//    return Texture_CreateTexture(renderSystem.renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
+//    return Texture_CreateTexture(renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
 //}
 
 // Texture Update & Layouts
@@ -64,7 +64,7 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 
 void TextureSystem::UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution)
 {
-    Texture_UpdateTextureSize(renderSystem.renderer, texture, imageType, TextureResolution);
+    Texture_UpdateTextureSize(renderer, texture, imageType, TextureResolution);
 }
 
 void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
@@ -74,47 +74,47 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateTextureLayout(renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateTextureLayout(renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateTextureLayout(renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateTextureLayout(renderSystem.renderer, texture, oldImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateTextureLayout(renderer, texture, oldImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
 {
-    Texture_UpdateCmdTextureLayout(renderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
+    Texture_UpdateCmdTextureLayout(renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
 }
 
 void TextureSystem::DestroyTexture(Texture& texture)
 {
-    Texture_DestroyTexture(renderSystem.renderer, texture);
+    Texture_DestroyTexture(renderer, texture);
 }
 
 void TextureSystem::AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList)
@@ -189,5 +189,5 @@ const Vector<Texture> TextureSystem::DepthTextureList()
 
 void TextureSystem::DestroyAllTextures()
 {
-    Texture_DestroyAllTextures(renderSystem.renderer);
+    Texture_DestroyAllTextures(renderer);
 }

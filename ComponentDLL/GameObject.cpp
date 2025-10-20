@@ -60,11 +60,6 @@ void GameObject_Update(const float deltaTime)
     }
 }
 
-//DLL_EXPORT void GameObject_UpdateVectorIndexes(bool addIndex)
-//{
-//    return DLL_EXPORT void();
-//}
-
 void GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum)
 {
     GameObjectBehavior componentBehavior;

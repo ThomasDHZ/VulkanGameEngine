@@ -45,7 +45,7 @@ private:
 
 public:
     template <typename T>
-    int CreateVulkanBuffer(const GraphicsRenderer& renderer, T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+    uint32 CreateVulkanBuffer(const GraphicsRenderer& renderer, T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
     {
         BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
         VkDeviceSize bufferElementSize = sizeof(T);
@@ -57,7 +57,7 @@ public:
     }
 
     template <typename T>
-    int CreateVulkanBuffer(const GraphicsRenderer& renderer, Vector<T>& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+    uint32 CreateVulkanBuffer(const GraphicsRenderer& renderer, Vector<T>& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
     {
         BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
         VkDeviceSize bufferElementSize = sizeof(T);
@@ -69,7 +69,7 @@ public:
     }
 
     template <typename T>
-    void UpdateBufferMemory(const GraphicsRenderer& renderer, int bufferId, T& bufferData)
+    void UpdateBufferMemory(const GraphicsRenderer& renderer, uint32 bufferId, T& bufferData)
     {
         BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
         if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
@@ -82,7 +82,7 @@ public:
     }
 
     template <typename T>
-    void UpdateBufferMemory(const GraphicsRenderer& renderer, int bufferId, Vector<T>& bufferData)
+    void UpdateBufferMemory(const GraphicsRenderer& renderer, uint32 bufferId, Vector<T>& bufferData)
     {
         BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
         if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
@@ -95,7 +95,7 @@ public:
     }
 
     template <typename T>
-    std::vector<T> CheckBufferMemory(GraphicsRenderer& renderer, int vulkanBufferId)
+    Vector<T> CheckBufferMemory(GraphicsRenderer& renderer, uint32 vulkanBufferId)
     {
         VulkanBuffer& vulkanBuffer = FindVulkanBuffer(vulkanBufferId);
 

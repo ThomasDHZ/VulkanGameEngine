@@ -4,6 +4,7 @@
 #include <Transform2DComponent.h>
 #include "InputComponent.h"
 #include "MegaManShot.h"
+#include "VulkanRenderer.h"
 
 enum GameObjectTypeEnum
 {
@@ -48,7 +49,6 @@ DLL_EXPORT void GameObject_CreateGameObject(const String& gameObjectPath, const 
 DLL_EXPORT void GameObject_CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
 
 DLL_EXPORT void GameObject_Update(const float deltaTime);
-DLL_EXPORT void GameObject_UpdateVectorIndexes(bool addIndex);
 
 DLL_EXPORT void GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
 DLL_EXPORT void GameObject_LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition);
@@ -60,9 +60,6 @@ DLL_EXPORT GameObject& GameObject_FindGameObject(uint gameObjectId);
 DLL_EXPORT const GameObjectBehavior& GameObject_FindGameObjectBehavior(const GameObjectTypeEnum& id);
 DLL_EXPORT Transform2DComponent& GameObject_FindTransform2DComponent(uint gameObjectId);
 DLL_EXPORT const InputComponent& GameObject_FindInputComponent(uint gameObjectId);
-
-DLL_EXPORT uint32 Component_RemoveTransform2DComponent(uint gameObjectId);
-DLL_EXPORT uint32 Component_RemoveInputComponent(uint gameObjectId);
 
 DLL_EXPORT Vector<GameObject> GameObject_FindGameObjectByType(const GameObjectTypeEnum& gameObjectType);
 
