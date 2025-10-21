@@ -4,17 +4,31 @@
 
 MaterialSystem materialSystem = MaterialSystem();
 
-Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString)
+VkGuid Material_CreateMaterial(const char* materialPath)
 {
-    materialBuffer = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderStructBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                                                                                                                                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | 
-                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
-                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-                                                                                                                                                                    VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
-    nlohmann::json json = File_LoadJsonFile(jsonString);
-    return Material
+    if (materialPath == nullptr)
+    {
+        return VkGuid();
+    }
+
+    nlohmann::json json = File_LoadJsonFile(materialPath);
+    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
+
+    if (Material_MaterialMapExists(materialId))
+    {
+        return materialId;
+    }
+
+    int bufferIndex = ++NextBufferId;
+    bufferSystem.VulkanBufferMap[bufferIndex] = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                                                                                                                                                                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+                                                                                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+                                                                                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                                                                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+                                                                                                                                                                                                                                    VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
+    shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
+    materialSystem.MaterialMap[materialId] = Material
     {
         .materialGuid = VkGuid(json["MaterialId"].get<String>().c_str()),
         .ShaderMaterialBufferIndex = 0,
@@ -38,12 +52,12 @@ Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferInd
     };
 }
 
-void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer)
+void Material_DestroyBuffer(VulkanBuffer& materialBuffer)
 {
     VulkanBuffer_DestroyBuffer(renderer, materialBuffer);
 }
 
-void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime)
+void Material_Update(const float& deltaTime)
 {
     uint x = 0;
     for (auto& materialPair : materialSystem.MaterialMap)
@@ -78,28 +92,6 @@ void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime)
     }
 }
 
-VkGuid Material_LoadMaterial(const GraphicsRenderer& renderer, const String& materialPath)
-{
-    if (materialPath.empty() ||
-        materialPath == "")
-    {
-        return VkGuid();
-    }
-
-    nlohmann::json json = File_LoadJsonFile(materialPath.c_str());
-    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
-
-    if (Material_MaterialMapExists(materialId))
-    {
-        return materialId;
-    }
-
-    int bufferIndex = ++NextBufferId;
-    VulkanBuffer& vulkanBuffer = bufferSystem.VulkanBufferMap[bufferIndex];
-    shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
-    materialSystem.MaterialMap[materialId] = Material_CreateMaterial(renderer, bufferIndex, vulkanBuffer, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, materialPath.c_str());
-    return materialId;
-}
 
 const bool Material_MaterialMapExists(const VkGuid& renderPassId)
 {

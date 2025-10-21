@@ -6,6 +6,7 @@
 #include "TextureSystem.h"
 #include "VulkanShaderSystem.h"
 
+
 struct Material
 {
 	int VectorMapKey;
@@ -35,14 +36,13 @@ struct Material
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT Material Material_CreateMaterial(const GraphicsRenderer& renderer, int bufferIndex, VulkanBuffer& materialBuffer, size_t shaderStructBufferSize, const char* jsonString);
-	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer);
+	DLL_EXPORT VkGuid Material_CreateMaterial(const char* materialPath);
+	DLL_EXPORT void Material_DestroyBuffer(VulkanBuffer& materialBuffer);
 #ifdef __cplusplus
 }
 #endif
 
-DLL_EXPORT void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime);
-DLL_EXPORT VkGuid Material_LoadMaterial(const GraphicsRenderer& renderer, const String& materialPath);
+DLL_EXPORT void Material_Update(const float& deltaTime);
 DLL_EXPORT const bool Material_MaterialMapExists(const VkGuid& renderPassId);
 DLL_EXPORT const Material& Material_FindMaterial(const RenderPassGuid& guid);
 DLL_EXPORT const Vector<Material>& Material_MaterialList();
@@ -58,8 +58,8 @@ class MaterialSystem
 		MaterialSystem() { }
 		~MaterialSystem() { }
 
-		void Update(const float& deltaTime) { Material_Update(renderer, deltaTime); }
-		VkGuid LoadMaterial(const String& materialPath) { return Material_LoadMaterial(renderer, materialPath); }
+		void Update(const float& deltaTime) { Material_Update(deltaTime); }
+		VkGuid LoadMaterial(const String& materialPath) { return Material_CreateMaterial(materialPath.c_str()); }
 		const bool MaterialMapExists(const VkGuid& renderPassId)  const { return Material_MaterialMapExists(renderPassId); }
 		const Material& FindMaterial(const RenderPassGuid& guid) { return Material_FindMaterial(guid); }
 		const Vector<Material>& MaterialList() { return Material_MaterialList(); }

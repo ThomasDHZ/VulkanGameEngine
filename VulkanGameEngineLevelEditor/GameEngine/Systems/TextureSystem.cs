@@ -29,8 +29,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static Guid LoadTexture(string texturePath)
         {
             Guid guid = Texture_LoadTexture(RenderSystem.renderer, texturePath);
-            bool s = Texture_TextureExists(guid);
-            Texture texture = Texture_FindTexture(guid);
             return guid;
         }
 
