@@ -11,23 +11,15 @@
 #include "MemorySystem.h"
 #include "JsonStruct.h"
 
-struct ShaderArchive
-{
-    UnorderedMap<String, ShaderPipelineData> ShaderModuleMap;
-    UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
-    UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
-    UnorderedMap<int, ShaderStruct>  PipelineShaderStructMap;
-};
-DLL_EXPORT ShaderArchive shaderArchive;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
     DLL_EXPORT void Shader_StartUp();
+    DLL_EXPORT void Shader_LoadShaderPipelineStructPrototypes(const char** renderPassJsonList, size_t renderPassJsonCount);
+    
     DLL_EXPORT ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount);
     DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
     DLL_EXPORT void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct);
-    DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
     DLL_EXPORT ShaderStruct Shader_CopyShaderStructPrototype(const ShaderStruct& shaderStructToCopy);
     DLL_EXPORT ShaderVariable* Shader_SearchShaderConstStructVar(ShaderPushConstant* pushConstant, const char* varName);
     DLL_EXPORT ShaderVariable* Shader_SearchShaderStructVar(ShaderStruct* shaderStruct, const char* varName);
@@ -42,7 +34,7 @@ extern "C" {
 }
 #endif
 
-DLL_EXPORT void Shader_LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList);
+DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
 DLL_EXPORT void Shader_CompileShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory);
 DLL_EXPORT void Shader_UpdateGlobalShaderBuffer(const GraphicsRenderer& renderer, const String& pushConstantName);
 DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, uint vulkanBufferId);
@@ -96,3 +88,53 @@ const char* Renderer_GetShaderReflectError(SpvReflectResult result);
                 #call, __FILE__, __LINE__, __func__, Renderer_GetShaderReflectError(result)); \
     } \
 }
+
+class ShaderSystem
+{
+private:
+	Microsoft::WRL::ComPtr<IDxcUtils> dxc_utils;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxc_compiler;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> DefaultIncludeHandler;
+
+public:
+    UnorderedMap<String, ShaderPipelineData> ShaderModuleMap;
+	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
+	UnorderedMap<String, ShaderStruct>  PipelineShaderStructPrototypeMap;
+	UnorderedMap<int, ShaderStruct>  PipelineShaderStructMap;
+
+    ShaderSystem() { }
+    ~ShaderSystem() { }
+
+    void StartUp() { Shader_StartUp(); }
+    ShaderPipelineData LoadShaderPipelineData(Vector<String> shaderPathList) { return Shader_LoadShaderPipelineData(shaderPathList); }
+    const ShaderVariable* SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName) { return Shader_SearchShaderConstStructVar(pushConstant, varName); }
+    ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName) { return Shader_SearchShaderStructVar(&shaderStruct, varName.c_str()); }
+    void UpdateGlobalShaderBuffer(const String& pushConstantName) { Shader_UpdateGlobalShaderBuffer(renderer, pushConstantName); }
+    void UpdateShaderBuffer(uint vulkanBufferId) { Shader_UpdateShaderBuffer(renderer, vulkanBufferId); }
+    ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName) { return Shader_GetGlobalShaderPushConstant(pushConstantName); }
+    void LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList)
+    {
+        Vector<const char*> c_strs;
+        c_strs.reserve(renderPassJsonList.size());
+
+        for (const auto& str : renderPassJsonList)
+        {
+            c_strs.push_back(str.c_str());
+        }
+
+        const char** cStringArray = c_strs.data();
+        Shader_LoadShaderPipelineStructPrototypes(cStringArray, renderPassJsonList.size());
+    }
+    ShaderPipelineData& FindShaderModule(const String& shaderFile) { return Shader_FindShaderModule(shaderFile); }
+    ShaderPushConstant& FindShaderPushConstant(const String& shaderFile) { return Shader_FindShaderPushConstant(shaderFile); }
+    ShaderStruct FindShaderProtoTypeStruct(const String& shaderKey) { return Shader_FindShaderProtoTypeStruct(shaderKey); }
+    ShaderStruct& FindShaderStruct(int vulkanBufferId) { return Shader_FindShaderStruct(vulkanBufferId); }
+    ShaderStruct CopyShaderStructProtoType(const String& structName) { ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName); return Shader_CopyShaderStructPrototype(shaderStructCopy); }
+    void CompileShaders(const char* shaderFilePath, const char* shaderOutPutPirectory) { Shader_CompileShaders(renderer.Device, shaderFilePath, shaderOutPutPirectory); }
+    const bool ShaderPushConstantExists(const String& pushConstantName) const { return Shader_ShaderPushConstantExists(pushConstantName); }
+    const bool ShaderModuleExists(const String& shaderFile) const { return Shader_ShaderModuleExists(shaderFile); }
+    const bool ShaderStructPrototypeExists(const String& structKey) const { return Shader_ShaderStructPrototypeExists(structKey); }
+    const bool ShaderStructExists(uint vulkanBufferKey) const { return Shader_ShaderStructExists(vulkanBufferKey); }
+    void Destroy() { Shader_Destroy(); }
+};
+DLL_EXPORT ShaderSystem shaderSystem;

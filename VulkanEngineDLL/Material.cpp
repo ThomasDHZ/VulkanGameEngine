@@ -1,5 +1,5 @@
 #include "Material.h"
-#include "File.h"
+#include "FileSystem.h"
 #include "BufferSystem.h"
 
 MaterialArchive materialArchive = MaterialArchive();
@@ -95,8 +95,8 @@ VkGuid Material_LoadMaterial(const GraphicsRenderer& renderer, const String& mat
 
     int bufferIndex = ++NextBufferId;
     VulkanBuffer& vulkanBuffer = bufferSystem.VulkanBufferMap[bufferIndex];
-    shaderArchive.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
-    materialArchive.MaterialMap[materialId] = Material_CreateMaterial(renderer, bufferIndex, vulkanBuffer, shaderArchive.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, materialPath.c_str());
+    shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
+    materialArchive.MaterialMap[materialId] = Material_CreateMaterial(renderer, bufferIndex, vulkanBuffer, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, materialPath.c_str());
     return materialId;
 }
 

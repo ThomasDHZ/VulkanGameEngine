@@ -62,7 +62,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
             string pipelineJsonContent = File.ReadAllText(Path.Combine(levelDirectory, renderPassLoaderModel.RenderPipelineList[0]));
             PipelineShader pipelineLoaderModel = JsonConvert.DeserializeObject<PipelineShader>(pipelineJsonContent);
-            ShaderSystem.LoadShaderPipelineStructPrototypes(pipelineLoaderModel.ShaderList);
+            ShaderSystem.LoadShaderPipelineStructPrototypes(levelLoader.LoadRenderPasses);
 
             Guid tileSetId = new Guid();
             foreach (var texturePath in levelLoader.LoadTextures)

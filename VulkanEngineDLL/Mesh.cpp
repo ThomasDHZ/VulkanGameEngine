@@ -57,8 +57,8 @@ uint Mesh_CreateMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshType, Ve
     meshArchive.Vertex2DList.emplace_back(vertexList);
     meshArchive.IndexList.emplace_back(indexList);
 
-    shaderArchive.PipelineShaderStructMap[mesh.PropertiesBufferId] = Shader_CopyShaderStructProtoType("MeshProperitiesBuffer");
-    shaderArchive.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = Shader_CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
     return meshId;
 }
 
@@ -68,7 +68,7 @@ void Mesh_Update(const GraphicsRenderer& renderer, const float& deltaTime)
     {
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
         uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? Material_FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
-        Mesh_UpdateMesh(renderer, mesh, shaderArchive.PipelineShaderStructMap[mesh.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
+        Mesh_UpdateMesh(renderer, mesh, shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
     }
 }
 

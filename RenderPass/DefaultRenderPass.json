@@ -50,8 +50,8 @@
     }
   ],
   "RenderPipelineList": [
-    "../Pipelines/Default2DPipeline.json",
-    "../Pipelines/LevelShader2DPipeline.json"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine/Pipelines/Default2DPipeline.json",
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine/Pipelines/LevelShader2DPipeline.json"
   ],
   "InputTextureList": [],
   "SubpassDependencyList": [

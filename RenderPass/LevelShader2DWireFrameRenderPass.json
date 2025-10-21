@@ -1,7 +1,7 @@
 {
   "Name": "LevelShader2DRenderPass",
   "RenderPassId": "e26ff327-9a80-45b9-9ec1-6654d930f789",
-  "RenderPipelineList": [ "../Pipelines/SpriteInstanceWireFramePipeline.json", "../Pipelines/LevelShader2DWireframePipeline.json" ],
+  "RenderPipelineList": [ "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine//Pipelines/SpriteInstanceWireFramePipeline.json", "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine//Pipelines/LevelShader2DWireframePipeline.json" ],
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderedTextureInfoModelList": [

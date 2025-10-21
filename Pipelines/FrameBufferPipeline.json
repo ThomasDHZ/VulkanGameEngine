@@ -2,8 +2,8 @@
   "Name": "FrameBufferPipeline",
   "PipelineId": "6eee6e25-9bf7-49b4-b8b6-05434ce300f6",
   "ShaderList": [
-    "..\\Assets\\Shaders\\FrameBufferShaderVert.spv",
-    "..\\Assets\\Shaders\\FrameBufferShaderFrag.spv"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\FrameBufferShaderVert.spv",
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\FrameBufferShaderFrag.spv"
   ],
   "VertexType": 0,
   "ViewportList": [],

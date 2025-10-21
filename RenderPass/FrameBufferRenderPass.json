@@ -2,7 +2,7 @@
   "Name": "BasicRenderPass",
   "RenderPassId": "76db13ab-75ab-4fb1-ae02-0c6dfb447856",
   "RenderPipelineList": [
-    "../Pipelines/FrameBufferPipeline.json"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine/Pipelines/FrameBufferPipeline.json"
   ],
   "IsRenderedToSwapchain": true,
   "InputTextureList": [ "ca62ddec-30ff-49e2-b168-3cfeddcedb8e" ],

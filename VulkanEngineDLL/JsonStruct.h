@@ -2,7 +2,7 @@
 #include "Typedef.h"
 #include "VulkanBuffer.h"
 #include <SPIRV-Reflect/spirv_reflect.h>
-#include "Texture.h"
+#include "TextureSystem.h"
 #include "enum.h"
 
 

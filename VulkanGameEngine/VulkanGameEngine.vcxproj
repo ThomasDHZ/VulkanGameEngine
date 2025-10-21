@@ -156,7 +156,6 @@
     <ClCompile Include="ImGuiRenderer.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="VulkanFileSystem.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
     <ClCompile Include="GameSystem.cpp" />
@@ -172,7 +171,6 @@
     <ClCompile Include="ShaderSystem.cpp" />
     <ClCompile Include="SpriteSystem.cpp" />
     <ClCompile Include="SystemClock.cpp" />
-    <ClCompile Include="TextureSystem.cpp" />
     <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -182,7 +180,6 @@
     <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
-    <ClInclude Include="VulkanFileSystem.h" />
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameObjectSystem.h" />
     <ClInclude Include="GameSystem.h" />
@@ -199,7 +196,6 @@
     <ClInclude Include="ShaderSystem.h" />
     <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="SystemClock.h" />
-    <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="VulkanWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

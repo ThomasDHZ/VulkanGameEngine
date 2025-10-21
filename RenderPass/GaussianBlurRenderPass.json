@@ -2,7 +2,7 @@
   "Name": "GaussianBlurRenderPass",
   "RenderPassId": "44d22120-d385-4cbb-86d0-55afd870ce50",
   "RenderPipelineList": [
-    "../Pipelines/GaussianBlurPipeline.json"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine/Pipelines/GaussianBlurPipeline.json"
   ],
   "IsRenderedToSwapchain": false,
   "InputTextureList": [ "5b937f79-d0de-4d22-b95e-ee6627de88f4" ],

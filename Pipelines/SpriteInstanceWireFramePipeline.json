@@ -2,8 +2,8 @@
   "Name": "SpriteInstancePipeline",
   "PipelineId": "9217c608-426d-419e-873a-a6dfa8fc1500",
   "ShaderList": [
-    "..\\Assets\\Shaders\\SpriteInstanceWireFrameShaderVert.spv",
-    "..\\Assets\\Shaders\\SpriteInstanceWireFrameShaderFrag.spv"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\SpriteInstanceWireFrameShaderVert.spv",
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\SpriteInstanceWireFrameShaderFrag.spv"
   ],
   "VertexType": 1,
   "ViewportList": [

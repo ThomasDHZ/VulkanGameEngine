@@ -2,8 +2,8 @@
   "Name": "LevelShader2DPipeline",
   "PipelineId": "a183b621-a8c3-46f1-bdbb-7f4a234f210e",
   "ShaderList": [
-    "..\\Assets\\Shaders\\LevelShader2DVert.spv",
-    "..\\Assets\\Shaders\\LevelShader2DFrag.spv"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\LevelShader2DVert.spv",
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\LevelShader2DFrag.spv"
   ],
   "VertexType": 1,
   "ViewportList": [

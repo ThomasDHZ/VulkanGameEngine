@@ -8,7 +8,7 @@
 #include "MeshSystem.h"
 #include <limits>
 #include <algorithm>
-#include "VulkanFileSystem.h"
+#include <FileSystem.h>
 
 
 SpriteSystem spriteSystem = SpriteSystem();

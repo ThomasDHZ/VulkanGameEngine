@@ -137,7 +137,7 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="enum.h" />
-    <ClInclude Include="File.h" />
+    <ClInclude Include="FileSystem.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GPUSystem.h" />
     <ClInclude Include="InputEnum.h" />
@@ -160,7 +160,7 @@
     <ClInclude Include="Pixel.h" />
     <ClInclude Include="VulkanRendererArchive.h" />
     <ClInclude Include="VulkanShader.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="Transform2DComponent.h" />
     <ClInclude Include="Typedef.h" />
     <ClInclude Include="vertex.h" />
@@ -171,7 +171,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
-    <ClCompile Include="File.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
@@ -187,7 +187,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="VulkanRendererArchive.cpp" />
     <ClCompile Include="VulkanShader.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureSystem.cpp" />
     <ClCompile Include="VRAM.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />

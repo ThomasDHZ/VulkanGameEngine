@@ -10,7 +10,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Structs
     public class LevelLoader
     {
         public string LevelID { get; set; }
-        public List<string> RenderPipelineList { get; set; }
+        public List<string> LoadRenderPasses { get; set; }
         public List<string> LoadTextures { get; set; }
         public List<string> LoadMaterials { get; set; }
         public List<string> LoadSpriteVRAM { get; set; }

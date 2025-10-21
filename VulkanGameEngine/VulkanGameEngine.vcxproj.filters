@@ -75,9 +75,6 @@
     <ClCompile Include="RenderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="TextureSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="MeshSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -94,9 +91,6 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanFileSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="EngineConfigSystem.cpp">
@@ -170,9 +164,6 @@
     <ClInclude Include="LevelLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureSystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="GameSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -220,9 +211,6 @@
     </ClInclude>
     <ClInclude Include="GameController.h">
       <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanFileSystem.h">
-      <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

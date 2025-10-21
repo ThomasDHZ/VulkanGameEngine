@@ -1,7 +1,7 @@
 #pragma once
 #include "CVulkanRenderer.h"
 #include "Typedef.h"
-#include "ShaderSystem.h"
+#include "VulkanShader.h"
 
 class Camera
 {

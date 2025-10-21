@@ -29,11 +29,6 @@ public:
     RenderSystem();
     ~RenderSystem();
 
-    void DestroyRenderPasses();
-    void DestroyRenderPipelines();
-    void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
-    void DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
-    void DestroyBuffer(VkBuffer& buffer);
 
     void StartUp(WindowType windowType, void* windowHandle);
     void Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
@@ -49,7 +44,13 @@ public:
 
     VkResult StartFrame();
     VkResult EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList);
+
     void Destroy();
+    void DestroyRenderPasses();
+    void DestroyRenderPipelines();
+    void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
+    void DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
+    void DestroyBuffer(VkBuffer& buffer);
 
     static VkCommandBuffer BeginSingleTimeCommands();
     static VkCommandBuffer BeginSingleTimeCommands(VkCommandPool& commandPool);

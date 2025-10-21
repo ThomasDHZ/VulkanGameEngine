@@ -4,7 +4,7 @@
 #include "JsonLoader.h"
 #include "MemorySystem.h"
 #include "VulkanRenderer.h"
-#include "Texture.h"
+#include "TextureSystem.h"
 
 #ifdef __cplusplus
 extern "C" {

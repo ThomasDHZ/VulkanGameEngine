@@ -3,8 +3,8 @@
   "PipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
   "RenderPipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
   "ShaderList": [
-    "..\\Assets\\Shaders\\SpriteInstanceShaderVert.spv",
-    "..\\Assets\\Shaders\\SpriteInstanceShaderFrag.spv"
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\SpriteInstanceShaderVert.spv",
+    "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Shaders\\SpriteInstanceShaderFrag.spv"
   ],
   "VertexType": 1,
   "ViewportList": [
