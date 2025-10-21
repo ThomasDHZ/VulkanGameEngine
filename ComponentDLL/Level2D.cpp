@@ -1,6 +1,6 @@
+#include "pch.h"
 #include "Level2D.h"
 #include "MemorySystem.h"
-#include "vertex.h"
 
 LevelLayer Level2D_LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
 {
@@ -23,10 +23,10 @@ LevelLayer Level2D_LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, u
 
             const uint VertexCount = vertexList.size();
             const vec2 TilePixelSize = tileSet.TilePixelSize * tileSet.TileScale;
-            const Vertex2D BottomLeftVertex =  { { x * TilePixelSize.x,                         y * TilePixelSize.y},                     {LeftSideUV, BottomSideUV} };
+            const Vertex2D BottomLeftVertex = { { x * TilePixelSize.x,                         y * TilePixelSize.y},                     {LeftSideUV, BottomSideUV} };
             const Vertex2D BottomRightVertex = { {(x * TilePixelSize.x) + TilePixelSize.x,      y * TilePixelSize.y},                     {RightSideUV, BottomSideUV} };
-            const Vertex2D TopRightVertex =    { {(x * TilePixelSize.x) + TilePixelSize.x,     (y * TilePixelSize.y) + TilePixelSize.y},  {RightSideUV, TopSideUV} };
-            const Vertex2D TopLeftVertex =     { { x * TilePixelSize.x,                        (y * TilePixelSize.y) + TilePixelSize.y},  {LeftSideUV, TopSideUV} };
+            const Vertex2D TopRightVertex = { {(x * TilePixelSize.x) + TilePixelSize.x,     (y * TilePixelSize.y) + TilePixelSize.y},  {RightSideUV, TopSideUV} };
+            const Vertex2D TopLeftVertex = { { x * TilePixelSize.x,                        (y * TilePixelSize.y) + TilePixelSize.y},  {LeftSideUV, TopSideUV} };
 
             vertexList.emplace_back(BottomLeftVertex);
             vertexList.emplace_back(BottomRightVertex);
@@ -60,7 +60,7 @@ LevelLayer Level2D_LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, u
         .VertexListCount = vertexList.size(),
         .IndexListCount = indexList.size()
     };
-    
+
     std::memcpy(levelLayout.TileMap, tileMap.data(), tileMap.size() * sizeof(Tile));
     std::memcpy(levelLayout.TileIdMap, tileIdMapList.data(), tileIdMapList.size() * sizeof(uint));
     std::memcpy(levelLayout.VertexList, vertexList.data(), vertexList.size() * sizeof(Vertex2D));

@@ -3,12 +3,11 @@
 #include <Typedef.h>
 #include <VkGuid.h>
 #include <ECSid.h>
-#include <Material.h>
-#include <VRAM.h>
-#include <vertex.h>
+#include <MaterialSystem.h>
 #include <Mesh.h>
-#include "GameObject.h"
 #include <Transform2DComponent.h>
+#include "VRAM.h"
+#include "GameObject.h"
 
 struct Sprite
 {
@@ -41,17 +40,6 @@ struct SpriteInstance
     uint  MaterialID;
 };
 
-struct SpriteInstanceVertex2D
-{
-    vec2 SpritePosition;
-    vec4 UVOffset;
-    vec2 SpriteSize;
-    ivec2 FlipSprite;
-    vec4 Color;
-    mat4 InstanceTransform;
-    uint MaterialID;
-};
-
 struct SpriteLayer
 {
     VkGuid RenderPassId;
@@ -59,6 +47,7 @@ struct SpriteLayer
     uint SpriteLayerMeshId = UINT32_MAX;
     uint SpriteLayerBufferId = UINT32_MAX;
 };
+
 
 typedef uint32 SpriteLayerId;
 struct SpriteArchive

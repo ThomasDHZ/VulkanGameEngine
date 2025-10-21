@@ -1,7 +1,6 @@
 #pragma once
 #include "VulkanWindow.h"
 #include <VkGuid.h>
-#include "Vertex.h"
 #include "InputComponent.h"
 #include "Transform2DComponent.h"
 #include "GameObject.h"

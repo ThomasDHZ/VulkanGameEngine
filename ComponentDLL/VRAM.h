@@ -2,7 +2,7 @@
 #include "DLL.h"
 #include "VkGuid.h"
 #include "Typedef.h"
-#include "Material.h"
+#include <MaterialSystem.h>
 
 struct SpriteVram
 {
@@ -35,7 +35,7 @@ struct LevelTileSet
     ivec2			  TileSetBounds = ivec2();
     vec2			  TileScale = vec2(5.0f);
     vec2			  TileUVSize = vec2();
-    Tile*             LevelTileListPtr = nullptr;
+    Tile* LevelTileListPtr = nullptr;
     size_t            LevelTileCount = 0;
 };
 
@@ -48,10 +48,10 @@ struct LevelLayout
 
 struct Animation2D
 {
-	uint   AnimationId;
+    uint   AnimationId;
     ivec2* FrameList;
     size_t FrameCount;
-	float  FrameHoldTime;
+    float  FrameHoldTime;
 };
 typedef Vector<ivec2> AnimationFrames;
 

@@ -33,9 +33,6 @@
     <ClInclude Include="Macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CVulkanRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CTypedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -66,7 +63,7 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="MaterialSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JsonLoader.h">
@@ -78,13 +75,7 @@
     <ClInclude Include="from_json.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
-    <ClInclude Include="Animation2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ECSid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Level2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MemorySystem.h">
@@ -94,15 +85,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Transform2DComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VRAM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CHelper.h">
@@ -126,14 +108,14 @@
     <ClInclude Include="VulkanBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanRendererArchive.h">
+    <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CVulkanRenderer.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CVulkanRenderer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -152,7 +134,7 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
+    <ClCompile Include="MaterialSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JsonLoader.cpp">
@@ -161,19 +143,10 @@
     <ClCompile Include="from_json.cpp">
       <Filter>Source Files\Json</Filter>
     </ClCompile>
-    <ClCompile Include="Level2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MemorySystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VRAM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanError.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CHelper.cpp">
@@ -191,7 +164,10 @@
     <ClCompile Include="VulkanBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanRendererArchive.cpp">
+    <ClCompile Include="VulkanError.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CVulkanRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "MemorySystem.h"
 #include "VRAM.h"
 #include "FileSystem.h"
@@ -8,7 +9,7 @@ SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material,
     ivec2 spritePixelSize = ivec2{ json["SpritePixelSize"][0], json["SpritePixelSize"][1] };
     ivec2 spriteCells = ivec2(texture.width / spritePixelSize.x, texture.height / spritePixelSize.y);
     ivec2 spriteScale = ivec2{ json["SpriteScale"][0], json["SpriteScale"][1] };
-    
+
     return SpriteVram
     {
         .VramSpriteID = VkGuid(json["VramSpriteId"].get<String>().c_str()),

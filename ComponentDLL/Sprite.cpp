@@ -4,9 +4,10 @@
 #include "VulkanBuffer.h"
 #include "BufferSystem.h"
 #include "TextureSystem.h"
-#include "Material.h"
+#include "MaterialSystem.h"
 #include "Mesh.h"
 #include "GameObject.h"
+#include "Vertex.h"
 
 SpriteArchive spriteArchive = SpriteArchive();
 

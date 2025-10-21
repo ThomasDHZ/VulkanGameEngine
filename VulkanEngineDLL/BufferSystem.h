@@ -3,11 +3,11 @@
 #include "Typedef.h"
 #include "VulkanBuffer.h"
 #include "Mesh.h"
-#include "Material.h"
-#include "Vertex.h"
+#include "MaterialSystem.h"
 
 DLL_EXPORT int NextBufferId;
 
+struct Vertex2D;
 struct SpriteInstance;
 class VulkanBufferSystem
 {

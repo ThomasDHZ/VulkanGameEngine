@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
+#include <math.h>
 #include "DLL.h"
 #include "Typedef.h"
 #include "VkGuid.h"
