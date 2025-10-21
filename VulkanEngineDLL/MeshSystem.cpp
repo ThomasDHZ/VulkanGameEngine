@@ -1,20 +1,21 @@
-#include "Mesh.h"
+#include "MeshSystem.h"
 #include "BufferSystem.h"
+
 
 uint NextMeshId = 0;
 uint NextSpriteMeshId = 0;
 uint NextLevelLayerMeshId = 0;
-MeshArchive meshArchive = MeshArchive();
+MeshSystem meshSystem = MeshSystem();
 
 uint32 GetNextMeshIndex()
 {
-    if (!meshArchive.FreeMeshIndicesList.empty())
+    if (!meshSystem.FreeMeshIndicesList.empty())
     {
-        uint index = meshArchive.FreeMeshIndicesList.back();
-        meshArchive.FreeMeshIndicesList.pop_back();
+        uint index = meshSystem.FreeMeshIndicesList.back();
+        meshSystem.FreeMeshIndicesList.pop_back();
         return index;
     }
-    return meshArchive.MeshList.size();
+    return meshSystem.MeshList.size();
 }
 
 uint Mesh_CreateMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshType, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
@@ -52,10 +53,10 @@ uint Mesh_CreateMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshType, Ve
         .MeshExtension = nullptr
     };
 
-    meshArchive.MeshList.emplace_back(mesh);
-    meshArchive.MeshPropertiesList.emplace_back(meshProperties);
-    meshArchive.Vertex2DList.emplace_back(vertexList);
-    meshArchive.IndexList.emplace_back(indexList);
+    meshSystem.MeshList.emplace_back(mesh);
+    meshSystem.MeshPropertiesList.emplace_back(meshProperties);
+    meshSystem.Vertex2DList.emplace_back(vertexList);
+    meshSystem.IndexList.emplace_back(indexList);
 
     shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = Shader_CopyShaderStructProtoType("MeshProperitiesBuffer");
     shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
@@ -64,7 +65,7 @@ uint Mesh_CreateMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshType, Ve
 
 void Mesh_Update(const GraphicsRenderer& renderer, const float& deltaTime)
 {
-    for (auto& mesh : meshArchive.MeshList)
+    for (auto& mesh : meshSystem.MeshList)
     {
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
         uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? Material_FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
@@ -116,7 +117,7 @@ void Mesh_DestroyMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer
 
 void Mesh_Destroy(const GraphicsRenderer& renderer, uint meshId)
 {
-    Mesh& mesh = meshArchive.MeshList[meshId];
+    Mesh& mesh = meshSystem.MeshList[meshId];
     VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
     VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
     VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
@@ -132,7 +133,7 @@ void Mesh_Destroy(const GraphicsRenderer& renderer, uint meshId)
 
 void Mesh_DestroyAllGameObjects(const GraphicsRenderer& renderer)
 {
-    for (auto& mesh : meshArchive.MeshList)
+    for (auto& mesh : meshSystem.MeshList)
     {
         VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
         VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
@@ -150,13 +151,13 @@ void Mesh_DestroyAllGameObjects(const GraphicsRenderer& renderer)
 
 const Mesh& Mesh_FindMesh(const uint& meshId)
 {
-    return meshArchive.MeshList[meshId];
+    return meshSystem.MeshList[meshId];
 }
 
 const Vector<Mesh> Mesh_FindMeshByMeshType(MeshTypeEnum meshType)
 {
     Vector<Mesh> meshList;
-    std::copy_if(meshArchive.MeshList.begin(), meshArchive.MeshList.end(), std::back_inserter(meshList),
+    std::copy_if(meshSystem.MeshList.begin(), meshSystem.MeshList.end(), std::back_inserter(meshList),
         [meshType](const Mesh& mesh) 
         { 
             return mesh.MeshTypeId == static_cast<uint32>(meshType);
@@ -167,7 +168,7 @@ const Vector<Mesh> Mesh_FindMeshByMeshType(MeshTypeEnum meshType)
 const Vector<Mesh>& Mesh_FindMeshByVertexType(VertexTypeEnum vertexType)
 {
     Vector<Mesh> meshList;
-    std::copy_if(meshArchive.MeshList.begin(), meshArchive.MeshList.end(), std::back_inserter(meshList),
+    std::copy_if(meshSystem.MeshList.begin(), meshSystem.MeshList.end(), std::back_inserter(meshList),
         [vertexType](const Mesh& mesh)
         {
             return mesh.VertexTypeId == static_cast<uint32>(vertexType);
@@ -177,5 +178,5 @@ const Vector<Mesh>& Mesh_FindMeshByVertexType(VertexTypeEnum vertexType)
 
 const Vector<Mesh> Mesh_MeshList()
 {
-    return meshArchive.MeshList;
+    return meshSystem.MeshList;
 }

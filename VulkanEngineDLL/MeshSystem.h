@@ -5,7 +5,7 @@
 #include "Typedef.h"
 #include "VkGuid.h"
 #include "VulkanBuffer.h"
-#include "VulkanShader.h"
+#include "VulkanShaderSystem.h"
 #include "vertex.h"
 
 struct MeshPropertiesStruct
@@ -34,16 +34,6 @@ struct Mesh
 	void* MeshExtension = nullptr;
 };
 
-struct MeshArchive
-{
-	Vector<uint32>				 FreeMeshIndicesList;
-	Vector<Mesh>                 MeshList;
-	Vector<MeshPropertiesStruct> MeshPropertiesList;
-	Vector<Vector<Vertex2D>>     Vertex2DList;
-	Vector<Vector<uint>>         IndexList;
-};
-DLL_EXPORT MeshArchive meshArchive;
-
 #ifdef __cplusplus
 extern "C" 
 	{
@@ -63,3 +53,25 @@ extern "C"
 DLL_EXPORT const Vector<Mesh> Mesh_FindMeshByMeshType(MeshTypeEnum meshType);
 DLL_EXPORT const Vector<Mesh>& Mesh_FindMeshByVertexType(VertexTypeEnum vertexType);
 DLL_EXPORT const Vector<Mesh>& Mesh_FindMeshList(const uint32& meshTypeId);
+
+class MeshSystem
+{
+private:
+public:
+	Vector<uint32>				 FreeMeshIndicesList;
+	Vector<Mesh>                 MeshList;
+	Vector<MeshPropertiesStruct> MeshPropertiesList;
+	Vector<Vector<Vertex2D>>     Vertex2DList;
+	Vector<Vector<uint>>         IndexList;
+
+	MeshSystem() { }
+	~MeshSystem() { }
+
+	uint CreateSpriteLayerMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList) { return Mesh_CreateMesh(renderer, meshtype, vertexList, indexList); }
+	void Update(const float& deltaTime) { Mesh_Update(renderer, deltaTime); }
+	void Destroy(uint meshId) { Mesh_Destroy(renderer, meshId); }
+	void DestroyAllGameObjects() { Mesh_DestroyAllGameObjects(renderer); }
+	const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType) { return Mesh_FindMeshByMeshType(meshType); }
+	const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType) { return Mesh_FindMeshByVertexType(vertexType); }
+};
+DLL_EXPORT MeshSystem meshSystem;

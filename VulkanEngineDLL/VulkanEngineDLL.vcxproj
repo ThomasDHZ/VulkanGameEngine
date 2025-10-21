@@ -154,9 +154,9 @@
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="MemorySystem.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshSystem.h" />
     <ClInclude Include="Pixel.h" />
-    <ClInclude Include="VulkanShader.h" />
+    <ClInclude Include="VulkanShaderSystem.h" />
     <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="Transform2DComponent.h" />
     <ClInclude Include="Typedef.h" />
@@ -178,8 +178,8 @@
     <ClCompile Include="JsonLoader.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="MemorySystem.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="VulkanShader.cpp" />
+    <ClCompile Include="MeshSystem.cpp" />
+    <ClCompile Include="VulkanShaderSystem.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />

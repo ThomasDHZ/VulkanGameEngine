@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <FileSystem.h>
 #include <Transform2DComponent.h>
-#include "Sprite.h"
+#include "SpriteSystem.h"
 #include "GameObject.h"
 #include "MegaManObject.h"
 #include "MemorySystem.h"
@@ -208,10 +208,10 @@ void GameObject_DestroyGameObject(uint gameObjectId)
 
     if (obj.GameObjectComponentMask & kSpriteComponent)
     {
-        spriteArchive.SpriteList.erase(spriteArchive.SpriteList.begin() + gameObjectId);
-        for (int x = gameObjectId; x < spriteArchive.SpriteList.size(); x++)
+        spriteSystem.SpriteList.erase(spriteSystem.SpriteList.begin() + gameObjectId);
+        for (int x = gameObjectId; x < spriteSystem.SpriteList.size(); x++)
         {
-            spriteArchive.SpriteList[x].GameObjectId--;
+            spriteSystem.SpriteList[x].GameObjectId--;
         }
     }
 
@@ -290,7 +290,7 @@ uint32 GetNextGameObjectIndex()
 
             if (gameObject.GameObjectComponentMask & kSpriteComponent)
             {
-                spriteArchive.SpriteList[x].GameObjectId++;
+                spriteSystem.SpriteList[x].GameObjectId++;
             }
 
             if (gameObject.GameObjectComponentMask & kInputComponent)
@@ -356,7 +356,7 @@ void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition,
     }
     if (mask & kSpriteComponent)
     {
-        gameObject.SpriteComponentId = spriteArchive.SpriteList.size();
+        gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
         Sprite_AddSprite(gameObject, vramId);
     }
 }

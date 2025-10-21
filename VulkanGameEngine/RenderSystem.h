@@ -4,8 +4,9 @@
 #include <VulkanRenderPass.h>
 #include "ImGuiRenderer.h"
 #include <nlohmann/json.hpp>
-#include "ShaderSystem.h"
+#include <VulkanShaderSystem.h>
 #include <VulkanPipeline.h>
+#include "VulkanWindow.h"
 
 class RenderSystem
 {

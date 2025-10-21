@@ -1,12 +1,12 @@
 #include "renderSystem.h"
 #include "TextureSystem.h"
-#include <VulkanShader.h>
+#include <VulkanShaderSystem.h>
 #include <BufferSystem.h>
-#include "MeshSystem.h"
+#include <MeshSystem.h>
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
-#include "ShaderSystem.h"
 #include "FileSystem.h"
+#include "LevelSystem.h"
 
 RenderSystem renderSystem = RenderSystem();
 
@@ -206,7 +206,7 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     for (auto& levelLayer : levelLayerList)
     {
-        const Vector<uint32>& indiceList = meshArchive.IndexList[levelLayer.IndexIndex];
+        const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
@@ -218,14 +218,14 @@ VkCommandBuffer RenderSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId,
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
     }
-    for (auto& spriteLayer : spriteArchive.SpriteLayerList)
+    for (auto& spriteLayer : spriteSystem.SpriteLayerList)
     {
         const Mesh& spriteMesh = Mesh_FindMesh(spriteLayer.second.SpriteLayerMeshId);
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshVertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
         const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
         const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
-        const Vector<uint32>& indiceList = meshArchive.IndexList[spriteMesh.IndexIndex];
+        const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &spriteLayer.SpriteLayerMeshId, sizeof(spriteLayer.SpriteLayerMeshId));
         vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer);

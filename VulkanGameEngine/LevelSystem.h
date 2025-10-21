@@ -1,5 +1,5 @@
 #pragma once
-#include "Sprite.h"
+#include <SpriteSystem.h>
 #include "Level2D.h"
 #include "RenderSystem.h"
 #include "OrthographicCamera2D.h"
@@ -56,5 +56,4 @@ public:
     void LoadLevel(const String& levelPath);
     void DestroyLevel();
 };
-
 extern LevelSystem levelSystem;

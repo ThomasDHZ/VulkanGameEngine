@@ -1,7 +1,7 @@
 #pragma once
 #include "VulkanRenderer.h"
 #include "JsonStruct.h"
-#include "VulkanShader.h"
+#include "VulkanShaderSystem.h"
 
 
 struct VulkanPipeline

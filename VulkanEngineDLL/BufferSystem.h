@@ -2,7 +2,7 @@
 #include "DLL.h"
 #include "Typedef.h"
 #include "VulkanBuffer.h"
-#include "Mesh.h"
+#include "MeshSystem.h"
 #include "MaterialSystem.h"
 
 DLL_EXPORT int NextBufferId;

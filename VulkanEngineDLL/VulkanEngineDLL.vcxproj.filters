@@ -25,6 +25,12 @@
     <Filter Include="Source Files\spirv">
       <UniqueIdentifier>{6e7cf11a-ca1e-4d76-b2d5-9d09da5013d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Systems">
+      <UniqueIdentifier>{b0409ff5-6189-4028-979f-f510acea2542}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Systems">
+      <UniqueIdentifier>{1442de37-efdf-4cc5-841a-2c622b231bd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLL.h">
@@ -42,12 +48,6 @@
     <ClInclude Include="Typedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Pixel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,12 +58,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanRenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="JsonLoader.h">
@@ -78,19 +72,10 @@
     <ClInclude Include="ECSid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MemorySystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Transform2DComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GPUSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
@@ -102,9 +87,6 @@
     <ClInclude Include="enum.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
-    <ClInclude Include="BufferSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -114,15 +96,33 @@
     <ClInclude Include="CVulkanRenderer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="BufferSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="MemorySystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanShaderSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VulkanRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanPipeline.cpp">
@@ -131,35 +131,17 @@
     <ClCompile Include="VulkanRenderPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="JsonLoader.cpp">
       <Filter>Source Files\Json</Filter>
     </ClCompile>
     <ClCompile Include="from_json.cpp">
       <Filter>Source Files\Json</Filter>
     </ClCompile>
-    <ClCompile Include="MemorySystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPUSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Source Files\spirv</Filter>
-    </ClCompile>
-    <ClCompile Include="BufferSystem.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanBuffer.cpp">
       <Filter>Source Files</Filter>
@@ -169,6 +151,30 @@
     </ClCompile>
     <ClCompile Include="CVulkanRenderer.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanShaderSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="MemorySystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="BufferSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="GPUSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

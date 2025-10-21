@@ -1,5 +1,5 @@
 #include "OrthographicCamera2D.h"
-#include "ShaderSystem.h"
+#include <VulkanShaderSystem.h>
 
 OrthographicCamera2D::OrthographicCamera2D()
 {

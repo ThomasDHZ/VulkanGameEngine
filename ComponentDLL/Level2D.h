@@ -1,7 +1,7 @@
 #pragma once
 #include "DLL.h"
 #include "Typedef.h"
-#include "Mesh.h"
+#include <MeshSystem.h>
 #include "VkGuid.h"
 #include "VRAM.h"
 #include <Vertex.h>
@@ -14,10 +14,10 @@ struct LevelLayer
 	VkGuid				TileSetId;
 	int					LevelLayerIndex;
 	ivec2				LevelBounds;
-	uint* TileIdMap;
-	Tile* TileMap;
-	Vertex2D* VertexList;
-	uint32* IndexList;
+	uint*				TileIdMap;
+	Tile*				TileMap;
+	Vertex2D*			VertexList;
+	uint32*				IndexList;
 	size_t				TileIdMapCount;
 	size_t				TileMapCount;
 	size_t				VertexListCount;

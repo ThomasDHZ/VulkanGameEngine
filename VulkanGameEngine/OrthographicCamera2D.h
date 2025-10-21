@@ -1,6 +1,6 @@
 #pragma once
 #include "Camera.h"
-#include "ShaderSystem.h"
+#include <VulkanShaderSystem.h>
 
 class OrthographicCamera2D : public Camera
 {

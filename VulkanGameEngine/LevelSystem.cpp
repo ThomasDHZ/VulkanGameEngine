@@ -5,10 +5,9 @@
 #include "MeshSystem.h"
 #include "VRAM.h"
 #include "SpriteSystem.h"
-#include "ShaderSystem.h"
+#include <VulkanShaderSystem.h>
 #include "EngineConfigSystem.h"
 #include <FileSystem.h>
-#include <VulkanShader.h>
 
 LevelSystem levelSystem = LevelSystem();
 

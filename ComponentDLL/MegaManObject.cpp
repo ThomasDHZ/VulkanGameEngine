@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameObject.h"
-#include "Sprite.h"
+#include "SpriteSystem.h"
 #include "MegaManObject.h"
 
 void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)

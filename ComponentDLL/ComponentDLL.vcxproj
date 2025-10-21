@@ -149,18 +149,20 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectBehavior.h" />
+    <ClInclude Include="GameObjectSystem.h" />
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="Level2D.h" />
     <ClInclude Include="MegaManObject.h" />
     <ClInclude Include="MegaManShot.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VRAM.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObjectSystem.cpp" />
     <ClCompile Include="Level2D.cpp" />
     <ClCompile Include="MegaManObject.cpp" />
     <ClCompile Include="MegaManShot.cpp" />
@@ -170,7 +172,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="SpriteSystem.cpp" />
     <ClCompile Include="VRAM.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
