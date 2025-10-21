@@ -32,12 +32,6 @@ struct Material
 	float Alpha = 1.0f;
 };
 
-struct MaterialArchive
-{
-	UnorderedMap<RenderPassGuid, Material> MaterialMap;
-};
-DLL_EXPORT MaterialArchive materialArchive;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -55,3 +49,22 @@ DLL_EXPORT const Vector<Material>& Material_MaterialList();
 DLL_EXPORT const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer();
 DLL_EXPORT void Material_Destroy(const VkGuid& guid);
 DLL_EXPORT void Material_DestroyAllMaterials();
+
+class MaterialSystem
+{
+	private:
+	public:
+		UnorderedMap<RenderPassGuid, Material> MaterialMap;
+		MaterialSystem() { }
+		~MaterialSystem() { }
+
+		void Update(const float& deltaTime) { Material_Update(renderer, deltaTime); }
+		VkGuid LoadMaterial(const String& materialPath) { return Material_LoadMaterial(renderer, materialPath); }
+		const bool MaterialMapExists(const VkGuid& renderPassId)  const { return Material_MaterialMapExists(renderPassId); }
+		const Material& FindMaterial(const RenderPassGuid& guid) { return Material_FindMaterial(guid); }
+		const Vector<Material>& MaterialList() { return Material_MaterialList(); }
+		const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer() { return Material_GetMaterialPropertiesBuffer(); }
+		void Destroy(const VkGuid& guid) { Material_Destroy(guid); }
+		void DestroyAllMaterials() { Material_DestroyAllMaterials(); }
+};
+DLL_EXPORT MaterialSystem materialSystem;
