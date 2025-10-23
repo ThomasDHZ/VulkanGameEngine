@@ -61,7 +61,7 @@ void LevelSystem::LoadLevel(const String& levelPath)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
-        gameObjectSystem.CreateGameObject(objectJson, positionOverride);
+        gameObjectSystem.CreateGameObject(renderer, objectJson, positionOverride);
     }
 
     LoadLevelLayout(json["LoadLevelLayout"]);
@@ -112,17 +112,17 @@ void LevelSystem::DestroyDeadGameObjects()
 
 VkGuid LevelSystem::LoadTileSetVRAM(const String& tileSetPath)
 {
-    return Level_LoadTileSetVRAM(tileSetPath);
+    return Level_LoadTileSetVRAM(tileSetPath.c_str());
 }
 
 void LevelSystem::LoadLevelLayout(const String& levelLayoutPath)
 {
-    Level_LoadLevelLayout(levelLayoutPath);
+    Level_LoadLevelLayout(renderer, levelLayoutPath.c_str());
 }
 
 void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
 {
-    Level_LoadLevelMesh(tileSetId);
+    Level_LoadLevelMesh(renderer, tileSetId);
 }
 
 void LevelSystem::DestroyLevel()

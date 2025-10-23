@@ -141,6 +141,7 @@
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GPUSystem.h" />
     <ClInclude Include="InputEnum.h" />
+    <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanError.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
+    <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="VulkanError.cpp" />

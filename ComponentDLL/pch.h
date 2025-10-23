@@ -12,6 +12,7 @@
 #include <memory.h>
 #include <DLL.h>
 #include <Typedef.h>
+#include <VulkanRenderer.h>
 #include <InputEnum.h>
 #include <ECSid.h>
 #include "GameObjectBehavior.h"

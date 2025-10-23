@@ -19,12 +19,12 @@ public:
 
     void CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
     {
-        GameObject_CreateGameObject(name, parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition);
+        GameObject_CreateGameObject(name.c_str(), parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition);
     }
 
-    void CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
+    void CreateGameObject(const GraphicsRenderer& renderer, const String& gameObjectPath, const vec2& gameObjectPosition)
     {
-        GameObject_CreateGameObject(gameObjectPath, gameObjectPosition);
+        GameObject_CreateGameObjectFromJson(renderer, gameObjectPath.c_str(), gameObjectPosition);
     }
 
     void Update(const float deltaTime)
@@ -42,9 +42,9 @@ public:
         GameObject_LoadInputComponent(json, gameObjectId);
     }
 
-    void LoadSpriteComponent(const nlohmann::json& json, GameObject& gameObject)
+    void LoadSpriteComponent(const GraphicsRenderer& renderer, const nlohmann::json& json, GameObject& gameObject)
     {
-        GameObject_LoadSpriteComponent(json, gameObject);
+        GameObject_LoadSpriteComponent(renderer, json, gameObject);
     }
 
     const GameObject& FindGameObject(uint gameObjectId)

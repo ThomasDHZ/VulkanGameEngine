@@ -123,32 +123,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             SpriteIdToListIndexMap[gameObjectId] = SpriteList.Count();
         }
 
-        public static void AddSpriteBatchLayer(Guid renderPassId)
-        {
-            var spriteBatchLayer = new SpriteBatchLayer
-            {
-                SpriteBatchLayerId = ++NextSpriteBatchLayerID,
-                RenderPassId = renderPassId
-            };
-
-            var spriteBatchObjectList = new ListPtr<uint>();
-            for (int x = 0; x < SpriteList.Count(); x++)
-            {
-                spriteBatchObjectList.Add((uint)(x + 1));
-            }
-
-            AddSpriteBatchObjectList(spriteBatchLayer.SpriteBatchLayerId, spriteBatchObjectList);
-
-            spriteBatchLayer.SpriteLayerMeshId = (uint)MeshSystem.CreateSpriteLayerMesh(
-                GameObjectSystem.SpriteVertexList, GameObjectSystem.SpriteIndexList
-            );
-
-            var spriteBatchInstanceLayer = new ListPtr<SpriteInstanceStruct>(FindSpriteBatchObjectListMap((int)spriteBatchLayer.SpriteBatchLayerId).Count());
-            AddSpriteInstanceLayerList(spriteBatchLayer.SpriteBatchLayerId, spriteBatchInstanceLayer);
-            AddSpriteInstanceBufferId(spriteBatchLayer.SpriteBatchLayerId, BufferSystem.CreateVulkanBuffer(RenderSystem.renderer, FindSpriteInstanceList(spriteBatchLayer.SpriteBatchLayerId).ToList(), MeshSystem.MeshBufferUsageSettings, MeshSystem.MeshBufferPropertySettings, false));
-            SpriteBatchLayerList.Add(spriteBatchLayer);
-        }
-
         public static void AddSpriteInstanceBufferId(uint spriteInstanceBufferId, uint BufferId)
         {
             SpriteInstanceBufferIdMap[spriteInstanceBufferId] = BufferId;
@@ -166,7 +140,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static Guid LoadSpriteVRAM(string spriteVramPath)
         {
-            return VRAM_LoadSpriteVRAM(spriteVramPath);
+            return Sprite_LoadSpriteVRAM(spriteVramPath);
         }
 
         // Find functions
@@ -225,9 +199,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             return (uint)SpriteList.ToList().IndexOf(sprite);
         }
 
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern Guid VRAM_LoadSpriteVRAM([MarshalAs(UnmanagedType.LPStr)] string spritePath);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern Animation2D* VRAM_LoadSpriteAnimations([MarshalAs(UnmanagedType.LPStr)] string spritePath, out size_t animationListCount);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern vec2* VRAM_LoadSpriteAnimationFrames([MarshalAs(UnmanagedType.LPStr)] string spritePath, out size_t animationFrameCount);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern Guid Sprite_LoadSpriteVRAM([MarshalAs(UnmanagedType.LPStr)] string spritePath);
         [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] public static extern void Sprite_UpdateBatchSprites(SpriteInstanceStruct* spriteInstanceList, Sprite* spriteList, Transform2DComponent* transform2DList, SpriteVram* vramList, Animation2D* animationList, vec2* frameList, Material* materialList, size_t spriteCount, float deltaTime);
         [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)]public static extern SpriteInstanceStruct Sprite_UpdateSprites(ref Transform2DComponent transform2D, ref SpriteVram vram, ref Animation2D animation, ref Material material, ivec2 currentFrame, ref Sprite sprite, size_t frameCount, float deltaTime);
         [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] public static extern void Sprite_SetSpriteAnimation(Sprite* sprite, Sprite.SpriteAnimationEnum spriteAnimation);

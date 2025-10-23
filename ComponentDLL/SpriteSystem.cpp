@@ -136,7 +136,7 @@ void Sprite_UpdateSpriteBatchLayers(const GraphicsRenderer& renderer, const floa
     }
 }
 
-void Sprite_AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
+void Sprite_AddSprite(const GraphicsRenderer& renderer, GameObject& gameObject, VkGuid& spriteVramId)
 {
     Sprite sprite;
     sprite.SpriteID = GetNextSpriteIndex();
@@ -250,9 +250,9 @@ Animation2D& Sprite_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_A
     return spriteSystem.SpriteAnimationMap.at(vramId)[animationId];
 }
 
-VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath)
+VkGuid Sprite_LoadSpriteVRAM(const char* spriteVramPath)
 {
-    nlohmann::json json = File_LoadJsonFile(spriteVramPath.c_str());
+    nlohmann::json json = File_LoadJsonFile(spriteVramPath);
     VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
     if (VRAM_SpriteVramExists(vramId))
     {
@@ -263,9 +263,9 @@ VkGuid Sprite_LoadSpriteVRAM(const String& spriteVramPath)
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
     const Material& material = Material_FindMaterial(materialId);
     const Texture& texture = Texture_FindTexture(material.AlbedoMapId);
-    Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath.c_str(), animationListCount);
+    Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath, animationListCount);
     spriteSystem.SpriteAnimationMap[vramId] = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
-    spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
+    spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath, material, texture));
     memorySystem.RemovePtrBuffer(animationListPtr);
     return vramId;
 }

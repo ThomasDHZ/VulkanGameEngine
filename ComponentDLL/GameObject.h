@@ -45,15 +45,21 @@ struct GameObjectArchive
 };
 DLL_EXPORT GameObjectArchive gameObjectArchive;
 
-DLL_EXPORT void GameObject_CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition);
-DLL_EXPORT void GameObject_CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
+#ifdef __cplusplus
+extern "C" {
+#endif
+    DLL_EXPORT void GameObject_CreateGameObjectFromJson(const GraphicsRenderer& renderer, const char* gameObjectPath, vec2 gameObjectPosition);
+    DLL_EXPORT void GameObject_CreateGameObject(const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
+#ifdef __cplusplus
+}
+#endif
 
 DLL_EXPORT void GameObject_Update(const float deltaTime);
 
 DLL_EXPORT void GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
 DLL_EXPORT void GameObject_LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition);
 DLL_EXPORT void GameObject_LoadInputComponent(const nlohmann::json& json, uint gameObjectId);
-DLL_EXPORT void GameObject_LoadSpriteComponent(const nlohmann::json& json, GameObject& gameObject);
+DLL_EXPORT void GameObject_LoadSpriteComponent(const GraphicsRenderer& renderer, const nlohmann::json& json, GameObject& gameObject);
 DLL_EXPORT void GameObject_LoadMegaManShotComponent(uint gameObjectId, const vec2& gameObjectPosition);
 
 DLL_EXPORT GameObject& GameObject_FindGameObject(uint gameObjectId);
@@ -77,4 +83,4 @@ DLL_EXPORT void GameObject_DestroyDeadGameObjects();
 
 uint32 GetNextGameObjectIndex();
 void* GameObject_LoadObjectData(GameObjectTypeEnum gameObjectType);
-void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);
+void GameObject_LoadComponentTable(const GraphicsRenderer& renderer, GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);

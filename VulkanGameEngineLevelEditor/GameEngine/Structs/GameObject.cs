@@ -14,7 +14,7 @@ namespace VulkanGameEngineLevelEditor.GameEngineAPI
         [ReadOnly(true)]
         [IgnoreProperty]
         public int GameObjectId { get; set; }
-        public List<ComponentTypeEnum> GameObjectComponentTypeList { get; set; } = new List<ComponentTypeEnum>();
+        //public List<ComponentTypeEnum> GameObjectComponentTypeList { get; set; } = new List<ComponentTypeEnum>();
         public GameObject()
         {
         }

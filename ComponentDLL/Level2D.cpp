@@ -81,7 +81,7 @@ void Level2D_DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, u
 
 VkGuid Level_LoadTileSetVRAM(const char* tileSetPath)
 {
-    if (tileSetPath)
+    if (!tileSetPath)
     {
         return VkGuid();
     }
@@ -102,9 +102,9 @@ VkGuid Level_LoadTileSetVRAM(const char* tileSetPath)
     return tileSetId;
 }
 
-void Level_LoadLevelLayout(const char* levelLayoutPath)
+void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLayoutPath)
 {
-    if (levelLayoutPath)
+    if (!levelLayoutPath)
     {
         return;
     }
@@ -127,7 +127,7 @@ void Level_LoadLevelLayout(const char* levelLayoutPath)
     VRAM_DeleteLevelLayerPtr(levelLayerList);
 }
 
-void Level_LoadLevelMesh(VkGuid& tileSetId)
+void Level_LoadLevelMesh(const GraphicsRenderer& renderer, VkGuid& tileSetId)
 {
     for (size_t x = 0; x < levelArchive.LevelTileMapList.size(); x++)
     {
@@ -136,7 +136,7 @@ void Level_LoadLevelMesh(VkGuid& tileSetId)
 
         Vector<Vertex2D> vertexList(levelArchive.LevelLayerList[x].VertexList, levelArchive.LevelLayerList[x].VertexList + levelArchive.LevelLayerList[x].VertexListCount);
         Vector<uint> indexList(levelArchive.LevelLayerList[x].IndexList, levelArchive.LevelLayerList[x].IndexList + levelArchive.LevelLayerList[x].IndexListCount);
-        meshSystem.CreateSpriteLayerMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
+        meshSystem.CreateSpriteLayerMesh(renderer, MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
     }
 }
 

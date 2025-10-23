@@ -134,37 +134,37 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     DropDownStyle = ComboBoxStyle.DropDownList,
                     Enabled = !readOnly
                 };
-                comboBox.Items.AddRange(Enum.GetNames(typeof(ComponentTypeEnum)));
+                //comboBox.Items.AddRange(Enum.GetNames(typeof(ComponentTypeEnum)));
                 comboBox.SelectedIndexChanged += (s, e) =>
                 {
                     if (comboBox.SelectedItem == null) return;
 
-                    var selectedComponent = (ComponentTypeEnum)Enum.Parse(typeof(ComponentTypeEnum), comboBox.SelectedItem.ToString());
-                    switch (selectedComponent)
-                    {
-                        case ComponentTypeEnum.kTransform2DComponent:
-                            if (GameObjectSystem.Transform2DComponentMap.TryGetValue(gameObject.GameObjectId, out var transform))
-                            {
-                                var panelView = comboBox.FindForm()?.Controls.OfType<DynamicControlPanelView>().FirstOrDefault();
-                                panelView?.CreatePropertyControl(parentObj, transform);
-                            }
-                            break;
-                        case ComponentTypeEnum.kInputComponent:
-                            if (GameObjectSystem.InputComponentMap.TryGetValue(gameObject.GameObjectId, out var input))
-                            {
-                                var panelView = comboBox.FindForm()?.Controls.OfType<DynamicControlPanelView>().FirstOrDefault();
-                                panelView?.CreatePropertyControl(parentObj, input);
-                            }
-                            break;
-                        case ComponentTypeEnum.kSpriteComponent:
-                            var sprite = SpriteSystem.FindSprite(gameObject.GameObjectId);
-                            //if (sprite != null)
-                            //{
-                            //    var panelView = comboBox.FindForm()?.Controls.OfType<DynamicControlPanelView>().FirstOrDefault();
-                            //    panelView?.CreatePropertyControl(parentObj, sprite);
-                            //}
-                            break;
-                    }
+                    //var selectedComponent = (ComponentTypeEnum)Enum.Parse(typeof(ComponentTypeEnum), comboBox.SelectedItem.ToString());
+                    //switch (selectedComponent)
+                    //{
+                    //    case ComponentTypeEnum.kTransform2DComponent:
+                    //        if (GameObjectSystem.Transform2DComponentMap.TryGetValue(gameObject.GameObjectId, out var transform))
+                    //        {
+                    //            var panelView = comboBox.FindForm()?.Controls.OfType<DynamicControlPanelView>().FirstOrDefault();
+                    //            panelView?.CreatePropertyControl(parentObj, transform);
+                    //        }
+                    //        break;
+                    //    case ComponentTypeEnum.kInputComponent:
+                    //        if (GameObjectSystem.InputComponentMap.TryGetValue(gameObject.GameObjectId, out var input))
+                    //        {
+                    //            var panelView = comboBox.FindForm()?.Controls.OfType<DynamicControlPanelView>().FirstOrDefault();
+                    //            panelView?.CreatePropertyControl(parentObj, input);
+                    //        }
+                    //        break;
+                    //    case ComponentTypeEnum.kSpriteComponent:
+                    //        var sprite = SpriteSystem.FindSprite(gameObject.GameObjectId);
+                    //        //if (sprite != null)
+                    //        //{
+                    //        //    var panelView = comboBox.FindForm()?.Controls.OfType<DynamicControlPanelView>().FirstOrDefault();
+                    //        //    panelView?.CreatePropertyControl(parentObj, sprite);
+                    //        //}
+                    //        break;
+                    //}
                 };
                 return comboBox;
             }

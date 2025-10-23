@@ -75,7 +75,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             foreach (var levelLayoutPath in levelLoader.LoadTileSetVRAM)
             {
                 string fullLevelLayoutPath = Path.GetFullPath(Path.Combine(levelDirectory, levelLayoutPath));
-                tileSetId = LoadTileSetVRAM(fullLevelLayoutPath);
+                tileSetId = Level_LoadTileSetVRAM(fullLevelLayoutPath);
             }
             foreach (var gameObjectLoader in levelLoader.GameObjectList)
             {
@@ -84,8 +84,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
             {
                 string fullLevelLayoutPath = Path.GetFullPath(Path.Combine(levelDirectory, levelLoader.LoadLevelLayout));
-                LoadLevelLayout(fullLevelLayoutPath);
-                LoadLevelMesh(tileSetId);
+                Level_LoadLevelLayout(RenderSystem.renderer, fullLevelLayoutPath);
+                Level_LoadLevelMesh(RenderSystem.renderer, tileSetId);
             }
             {
                 Guid dummyGuid = new Guid();
@@ -96,7 +96,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 RenderPassLoaderModel renderPassId = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
                 spriteRenderPass2DId = new Guid("aa18e942-497b-4981-b917-d93a5b1de6eb");
 
-                SpriteSystem.AddSpriteBatchLayer(spriteRenderPass2DId);
                 ivec2 renderPassResultion = new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height);
                 spriteRenderPass2DId = RenderSystem.LoadRenderPass(levelLayout.LevelLayoutId, @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json", renderPassResultion);
                 frameBufferId = RenderSystem.LoadRenderPass(dummyGuid, @$"{ConstConfig.BaseDirectoryPath}RenderPass/FrameBufferRenderPass.json", renderPassResultion);
@@ -119,27 +118,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             commandBufferList.Add(RenderSystem.RenderFrameBuffer(frameBufferId));
         }
 
-        private static Guid LoadTileSetVRAM(string levelTileSetPath)
-        {
-            return Level_LoadTileSetVRAM(levelTileSetPath);
-        }
-
-        public static void LoadLevelLayout(string levelLayoutPath)
-        {
-
-             Level_LoadLevelLayout(levelLayoutPath);
-        }
-
-        public static void LoadLevelMesh(Guid tileSetId)
-        {
-            Level_LoadLevelMesh(tileSetId);
-        }
-
-
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern LevelLayer Level2D_LoadLevelInfo(Guid levelId, LevelTileSet tileSet, uint* tileIdMapList, size_t tileIdMapCount, ref ivec2 levelBounds, int levelLayerIndex);
         [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern Guid Level_LoadTileSetVRAM([MarshalAs(UnmanagedType.LPStr)] string tileSetPath);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_LoadLevelLayout([MarshalAs(UnmanagedType.LPStr)] string tileSetPath);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_LoadLevelMesh(Guid tileSetId);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_LoadLevelLayout(GraphicsRenderer renderer, [MarshalAs(UnmanagedType.LPStr)] string tileSetPath);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_LoadLevelMesh(GraphicsRenderer renderer, Guid tileSetId);
         [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_DestroyLevel();
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void VRAM_DeleteLevelVRAM(Tile* levelTileList);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level2D_DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, uint* IndexList);

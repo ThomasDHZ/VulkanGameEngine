@@ -67,7 +67,7 @@ public:
 	MeshSystem() { }
 	~MeshSystem() { }
 
-	uint CreateSpriteLayerMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList) { return Mesh_CreateMesh(renderer, meshtype, vertexList, indexList); }
+	uint CreateSpriteLayerMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList) { return Mesh_CreateMesh(renderer, meshtype, vertexList, indexList); }
 	void Update(const float& deltaTime) { Mesh_Update(renderer, deltaTime); }
 	void Destroy(uint meshId) { Mesh_Destroy(renderer, meshId); }
 	void DestroyAllGameObjects() { Mesh_DestroyAllGameObjects(renderer); }

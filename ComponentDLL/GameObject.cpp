@@ -10,9 +10,9 @@
 GameObjectArchive gameObjectArchive = GameObjectArchive();
 
 
-void GameObject_CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
+void GameObject_CreateGameObjectFromJson(const GraphicsRenderer& renderer, const char* gameObjectPath, vec2 gameObjectPosition)
 {
-    nlohmann::json json = File_LoadJsonFile(gameObjectPath.c_str());
+    nlohmann::json json = File_LoadJsonFile(gameObjectPath);
     GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
         {
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
@@ -28,13 +28,13 @@ void GameObject_CreateGameObject(const String& gameObjectPath, const vec2& gameO
         {
             case kTransform2DComponent: GameObject_LoadTransformComponent(json["GameObjectComponentList"][x], gameObject.GameObjectId, gameObjectPosition); break;
             case kInputComponent: GameObject_LoadInputComponent(json["GameObjectComponentList"][x], gameObject.GameObjectId); break;
-            case kSpriteComponent: GameObject_LoadSpriteComponent(json["GameObjectComponentList"][x], gameObject); break;
+            case kSpriteComponent: GameObject_LoadSpriteComponent(renderer, json["GameObjectComponentList"][x], gameObject); break;
         }
     }
     GameObject_LoadComponentBehavior(gameObject, json["GameObjectType"]);
 }
 
-void GameObject_CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
+void GameObject_CreateGameObject(const GraphicsRenderer& renderer, const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
 {
     GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
     {
@@ -44,7 +44,7 @@ void GameObject_CreateGameObject(const String& name, uint parentGameObjectId, Ga
         .ParentGameObjectId = parentGameObjectId,
         .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaManShot)
     });
-    GameObject_LoadComponentTable(gameObject, objectPosition, vramId);
+    GameObject_LoadComponentTable(renderer, gameObject, objectPosition, vramId);
     GameObject_LoadComponentBehavior(gameObject, objectEnum);
 }
 
@@ -93,10 +93,10 @@ void GameObject_LoadInputComponent(const nlohmann::json& json, uint gameObjectId
         });
 }
 
-void GameObject_LoadSpriteComponent(const nlohmann::json& json, GameObject& gameObject)
+void GameObject_LoadSpriteComponent(const GraphicsRenderer& renderer, const nlohmann::json& json, GameObject& gameObject)
 {
     VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
-    Sprite_AddSprite(gameObject, vramId);
+    Sprite_AddSprite(renderer, gameObject, vramId);
 }
 
 GameObject& GameObject_FindGameObject(uint gameObjectId)
@@ -332,7 +332,7 @@ void* GameObject_LoadObjectData(GameObjectTypeEnum gameObjectType)
     }
 }
 
-void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId)
+void GameObject_LoadComponentTable(const GraphicsRenderer& renderer, GameObject& gameObject, vec2& objectPosition, VkGuid& vramId)
 {
     uint64 mask = gameObject.GameObjectComponentMask;
     if (mask & kTransform2DComponent)
@@ -357,6 +357,6 @@ void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition,
     if (mask & kSpriteComponent)
     {
         gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
-        Sprite_AddSprite(gameObject, vramId);
+        Sprite_AddSprite(renderer, gameObject, vramId);
     }
 }

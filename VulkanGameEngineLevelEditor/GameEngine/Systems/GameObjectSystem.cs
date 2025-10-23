@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using VulkanGameEngineLevelEditor.GameEngine.GameObjectComponents;
@@ -14,6 +15,22 @@ using VulkanGameEngineLevelEditor.GameEngineAPI;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
+    public enum GameObjectTypeEnum
+    {
+        kGameObjectNone,
+        kGameObjectMegaMan,
+        kGameObjectMegaManShot
+    };
+
+    public enum ComponentTypeEnum : ulong
+    {
+        kUndefined = 0,
+        kInputComponent = 1 << 0,
+        kSpriteComponent = 1 << 1,
+        kTransform2DComponent = 1 << 2,
+        kTransform3DComponent = 1 << 3,
+    }
+
     public static class GameObjectSystem
     {
         public static ListPtr<Vertex2D> SpriteVertexList = new ListPtr<Vertex2D>()
@@ -34,47 +51,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static Dictionary<int, Transform2DComponent> Transform2DComponentMap { get; set; } = new Dictionary<int, Transform2DComponent>();
         public static Dictionary<int, InputComponent> InputComponentMap { get; private set; } = new Dictionary<int, InputComponent>();
 
-        public static void CreateGameObject(string name, List<ComponentTypeEnum> gameObjectComponentTypeList, Guid vramId, vec2 objectPosition)
+        public static void CreateGameObject(string name, GameObjectTypeEnum gameObjectType, ComponentTypeEnum componentTypeEnum, Guid vramId, vec2 objectPosition)
         {
-            int id = GameObjectMap.Count() + 1;
-            GameObjectMap[id] = new GameObject(@$"GameObject-{id}", id);
-            GameObjectMap[id].GameObjectComponentTypeList = gameObjectComponentTypeList;
-
-            foreach (var component in gameObjectComponentTypeList)
-            {
-                switch (component)
-                {
-                    case ComponentTypeEnum.kTransform2DComponent: Transform2DComponentMap[id] = new Transform2DComponent(objectPosition); break;
-                    case ComponentTypeEnum.kInputComponent: InputComponentMap[id] = new InputComponent(id); break;
-                    case ComponentTypeEnum.kSpriteComponent: SpriteSystem.AddSprite((uint)id, vramId); break;
-                }
-            }
+            GameObject_CreateGameObject(RenderSystem.renderer, name, uint.MaxValue, gameObjectType, componentTypeEnum, vramId, objectPosition);
         }
 
         public static void CreateGameObject(string gameObjectPath, vec2 positionOverride)
         {
-            int id = GameObjectMap.Count() + 1;
-            GameObjectMap[id] = new GameObject(@$"GameObject-{id}", id);
-
-            string jsonContent = File.ReadAllText(gameObjectPath);
-            LoadGameObjectComponents spriteVramJson = JsonConvert.DeserializeObject<LoadGameObjectComponents>(jsonContent);
-            foreach (var component in spriteVramJson.GameObjectComponentList)
-            {
-                if (positionOverride.x != 0.0f ||
-                    positionOverride.y != 0.0f)
-                {
-                    component.GameObjectPosition = positionOverride;
-                }
-
-                int componentType = component.ComponentType;
-                GameObjectMap[id].GameObjectComponentTypeList.Add((ComponentTypeEnum)componentType);
-                switch ((ComponentTypeEnum)componentType)
-                {
-                    case ComponentTypeEnum.kTransform2DComponent: LoadTransformComponent(component, id, component.GameObjectPosition); break;
-                    case ComponentTypeEnum.kInputComponent: LoadInputComponent(component, id); break;
-                    case ComponentTypeEnum.kSpriteComponent: LoadSpriteComponent(component, (uint)id); break;
-                }
-            }
+            GameObject_CreateGameObjectFromJson(RenderSystem.renderer, gameObjectPath, positionOverride);
         }
 
         public static void LoadTransformComponent(GameObjectComponentLoader loader, int gameObjectId, vec2 gameObjectPosition)
@@ -110,5 +94,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             //    DestroyGameObject(gameObject.second.GameObjectId);
             //}
         }
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObjectFromJson(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, vec2 positionOverride);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObject(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] String name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, ComponentTypeEnum gameObjectComponentMask, Guid vramId, vec2 objectPosition);
     }
 }

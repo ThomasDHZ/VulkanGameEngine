@@ -28,7 +28,7 @@ void MegaManShot_CreateObject(const String& name, VkGuid vramId, vec2 objectPosi
                 .ParentGameObjectId = parentGameObjectId,
                 .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaManShot)
             });
-        GameObject_LoadComponentTable(gameObject, objectPosition, vramId);
+        GameObject_LoadComponentTable(renderer, gameObject, objectPosition, vramId);
         GameObject_LoadComponentBehavior(gameObject, GameObjectTypeEnum::kGameObjectMegaManShot);
         objectData->CurrentShotCount += 1;
         objectData->CurrentShotTime = 0.0f;
