@@ -15,5 +15,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
     public unsafe class GameEngineImport
     {
         public const string DLLPath = "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\x64\\Debug\\VulkanEngineDLL.dll";
+        public const string Game2DPath = "C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\x64\\Debug\\ComponentDLL.dll";
     }
 }

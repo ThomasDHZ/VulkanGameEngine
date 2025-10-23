@@ -109,6 +109,11 @@
     <Folder Include="Vulkan\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ComponentDLL\ComponentDLL.vcxproj" />
+    <ProjectReference Include="..\Physics2DDLL\Physics2DDLL.vcxproj" />
+    <ProjectReference Include="..\VulkanEngineDLL\VulkanEngineDLL.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="VulkanCS">
       <HintPath>..\..\VulkanCS\VulkanCS\bin\Release\net8.0\VulkanCS.dll</HintPath>
     </Reference>

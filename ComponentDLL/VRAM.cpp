@@ -2,6 +2,7 @@
 #include "MemorySystem.h"
 #include "VRAM.h"
 #include "FileSystem.h"
+#include "SpriteSystem.h"
 
 SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture)
 {
@@ -68,6 +69,11 @@ LevelTileSet VRAM_LoadTileSetVRAM(const char* tileSetPath, const Material& mater
     tileSet.TileUVSize = vec2(1.0f / (float)tileSet.TileSetBounds.x, 1.0f / (float)tileSet.TileSetBounds.y);
 
     return tileSet;
+}
+
+bool VRAM_SpriteVramExists(const VkGuid& vramId)
+{
+    return std::any_of(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramId; });
 }
 
 void VRAM_LoadTileSets(const char* tileSetPath, LevelTileSet& tileSet)

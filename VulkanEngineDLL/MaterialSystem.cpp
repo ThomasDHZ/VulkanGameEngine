@@ -4,7 +4,7 @@
 
 MaterialSystem materialSystem = MaterialSystem();
 
-VkGuid Material_CreateMaterial(const char* materialPath)
+VkGuid Material_CreateMaterial(const GraphicsRenderer& renderer, const char* materialPath)
 {
     if (materialPath == nullptr)
     {
@@ -13,13 +13,13 @@ VkGuid Material_CreateMaterial(const char* materialPath)
 
     nlohmann::json json = File_LoadJsonFile(materialPath);
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
-
     if (Material_MaterialMapExists(materialId))
     {
         return materialId;
     }
 
     int bufferIndex = ++NextBufferId;
+    shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
     bufferSystem.VulkanBufferMap[bufferIndex] = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
                                                                                                                                                                                                                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
                                                                                                                                                                                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
@@ -27,7 +27,6 @@ VkGuid Material_CreateMaterial(const char* materialPath)
                                                                                                                                                                                                                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                                                                                                                                                                                                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
                                                                                                                                                                                                                                     VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
-    shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
     materialSystem.MaterialMap[materialId] = Material
     {
         .materialGuid = VkGuid(json["MaterialId"].get<String>().c_str()),
@@ -52,12 +51,7 @@ VkGuid Material_CreateMaterial(const char* materialPath)
     };
 }
 
-void Material_DestroyBuffer(VulkanBuffer& materialBuffer)
-{
-    VulkanBuffer_DestroyBuffer(renderer, materialBuffer);
-}
-
-void Material_Update(const float& deltaTime)
+void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime)
 {
     uint x = 0;
     for (auto& materialPair : materialSystem.MaterialMap)
@@ -92,6 +86,10 @@ void Material_Update(const float& deltaTime)
     }
 }
 
+void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer)
+{
+    VulkanBuffer_DestroyBuffer(renderer, materialBuffer);
+}
 
 const bool Material_MaterialMapExists(const VkGuid& renderPassId)
 {

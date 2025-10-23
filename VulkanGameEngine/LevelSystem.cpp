@@ -112,71 +112,20 @@ void LevelSystem::DestroyDeadGameObjects()
 
 VkGuid LevelSystem::LoadTileSetVRAM(const String& tileSetPath)
 {
-    if (tileSetPath.empty() || tileSetPath == "")
-        return VkGuid();
-
-    auto json = nlohmann::json::parse(File_Read(tileSetPath.c_str()).Data);
-    VkGuid tileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
-    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
-
-    if (LevelTileSetMap.find(tileSetId) != LevelTileSetMap.end())
-        return tileSetId;
-
-    const Material& material = materialSystem.FindMaterial(materialId);
-    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoMapId);
-
-    LevelTileSetMap[tileSetId] = VRAM_LoadTileSetVRAM(tileSetPath.c_str(), material, tileSetTexture);
-    VRAM_LoadTileSets(tileSetPath.c_str(), LevelTileSetMap[tileSetId]);
-
-    return tileSetId;
+    return Level_LoadTileSetVRAM(tileSetPath);
 }
 
 void LevelSystem::LoadLevelLayout(const String& levelLayoutPath)
 {
-    if (levelLayoutPath.empty() || levelLayoutPath == "")
-        return;
-
-    size_t levelLayerCount = 0;
-    size_t levelLayerMapCount = 0;
-    levelLayout = VRAM_LoadLevelInfo(levelLayoutPath.c_str());
-
-    size_t levelLayerCountTemp = 0;
-    size_t levelLayerMapCountTemp = 0;
-    uint** levelLayerList = VRAM_LoadLevelLayout(levelLayoutPath.c_str(), levelLayerCountTemp, levelLayerMapCountTemp);
-
-    Vector<uint*> levelMapPtrList(levelLayerList, levelLayerList + levelLayerCountTemp);
-    for (size_t x = 0; x < levelLayerCountTemp; x++)
-    {
-        Vector<uint> mapLayer(levelMapPtrList[x], levelMapPtrList[x] + levelLayerMapCountTemp);
-        LevelTileMapList.emplace_back(mapLayer);
-        VRAM_DeleteLevelLayerMapPtr(levelMapPtrList[x]);
-    }
-    VRAM_DeleteLevelLayerPtr(levelLayerList);
+    Level_LoadLevelLayout(levelLayoutPath);
 }
 
 void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
 {
-    for (size_t x = 0; x < LevelTileMapList.size(); x++)
-    {
-        const LevelTileSet& levelTileSet = LevelTileSetMap[tileSetId];
-        LevelLayerList.emplace_back(Level2D_LoadLevelInfo(levelLayout.LevelLayoutId, levelTileSet, LevelTileMapList[x].data(), LevelTileMapList[x].size(), levelLayout.LevelBounds, x));
-
-        Vector<Vertex2D> vertexList(LevelLayerList[x].VertexList, LevelLayerList[x].VertexList + LevelLayerList[x].VertexListCount);
-        Vector<uint> indexList(LevelLayerList[x].IndexList, LevelLayerList[x].IndexList + LevelLayerList[x].IndexListCount);
-        meshSystem.CreateSpriteLayerMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
-    }
+    Level_LoadLevelMesh(tileSetId);
 }
 
 void LevelSystem::DestroyLevel()
 {
-    spriteSystem.Destroy();
-    for (auto& tileMap : LevelTileSetMap)
-    {
-        VRAM_DeleteLevelVRAM(tileMap.second.LevelTileListPtr);
-    }
-
-    for (auto& levelLayer : LevelLayerList)
-    {
-        Level2D_DeleteLevel(levelLayer.TileIdMap, levelLayer.TileMap, levelLayer.VertexList, levelLayer.IndexList);
-    }
+    Level_DestroyLevel();
 }
