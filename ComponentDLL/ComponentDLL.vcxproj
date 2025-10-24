@@ -154,6 +154,7 @@
     <ClInclude Include="Level2D.h" />
     <ClInclude Include="MegaManObject.h" />
     <ClInclude Include="MegaManShot.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="Vertex.h" />
@@ -166,6 +167,7 @@
     <ClCompile Include="Level2D.cpp" />
     <ClCompile Include="MegaManObject.cpp" />
     <ClCompile Include="MegaManShot.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

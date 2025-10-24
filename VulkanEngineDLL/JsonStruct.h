@@ -194,13 +194,13 @@ struct ShaderDescriptorBinding
 
 struct ShaderPushConstant
 {
-    const char* PushConstantName;
-    size_t			PushConstantSize = 0;
-    size_t			PushConstantVariableCount = 0;
+    const char*        PushConstantName;
+    size_t			   PushConstantSize = 0;
+    size_t			   PushConstantVariableCount = 0;
     VkShaderStageFlags ShaderStageFlags;
-    ShaderVariable* PushConstantVariableList;
-    void* PushConstantBuffer = nullptr;
-    bool			GlobalPushContant = false;
+    ShaderVariable*    PushConstantVariableList;
+    void*              PushConstantBuffer = nullptr;
+    bool			   GlobalPushContant = false;
 };
 
 struct ShaderPipelineData

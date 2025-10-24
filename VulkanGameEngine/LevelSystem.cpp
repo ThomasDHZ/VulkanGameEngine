@@ -24,7 +24,7 @@ LevelSystem::~LevelSystem()
 
 void LevelSystem::LoadLevel(const String& levelPath)
 {
-    OrthographicCamera = std::make_shared<OrthographicCamera2D>(OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+    OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
@@ -78,7 +78,7 @@ void LevelSystem::LoadLevel(const String& levelPath)
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    OrthographicCamera->Update(*shaderSystem.GetGlobalShaderPushConstant("sceneData"));
+    Camera_Update(*OrthographicCamera.get(), *shaderSystem.GetGlobalShaderPushConstant("sceneData"));
     spriteSystem.Update(deltaTime);
     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
 }

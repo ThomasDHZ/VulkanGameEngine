@@ -2,7 +2,7 @@
 #include <SpriteSystem.h>
 #include "Level2D.h"
 #include <RenderSystem.h>
-#include "OrthographicCamera2D.h"
+#include <Camera.h>
 #include <VRAM.h>
 #include <Level2D.h>
 
@@ -39,7 +39,7 @@ public:
     Vector<LevelLayer> LevelLayerList;
     Vector<Vector<uint>> LevelTileMapList;
     UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
-    SharedPtr<OrthographicCamera2D> OrthographicCamera;
+    SharedPtr<Camera> OrthographicCamera;
 
     RenderPassGuid levelRenderPass2DId;
     RenderPassGuid spriteRenderPass2DId;

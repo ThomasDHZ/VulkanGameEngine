@@ -2,7 +2,7 @@
 #include "GameObjectSystem.h"
 #include <RenderSystem.h>
 #include "InputSystem.h"
-#include "OrthographicCamera2D.h"
+#include <Camera.h>
 #include "Level2D.h"
 
 class MeshSystem;
