@@ -1,8 +1,9 @@
 #include "pch.h"
-#include "Level2D.h"
-#include "MemorySystem.h"
+#include "LevelSystem.h"
+#include <RenderSystem.h>
+#include "GameObjectSystem.h"
 
-LevelArchive levelArchive = LevelArchive();
+LevelSystem levelSystem = LevelSystem();
 
 LevelLayer Level2D_LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
 {
@@ -90,14 +91,14 @@ VkGuid Level_LoadTileSetVRAM(const char* tileSetPath)
     VkGuid tileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
 
-    if (levelArchive.LevelTileSetMap.find(tileSetId) != levelArchive.LevelTileSetMap.end())
+    if (levelSystem.LevelTileSetMap.find(tileSetId) != levelSystem.LevelTileSetMap.end())
         return tileSetId;
 
     const Material& material = materialSystem.FindMaterial(materialId);
     const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoMapId);
 
-    levelArchive.LevelTileSetMap[tileSetId] = VRAM_LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
-    VRAM_LoadTileSets(tileSetPath, levelArchive.LevelTileSetMap[tileSetId]);
+    levelSystem.LevelTileSetMap[tileSetId] = VRAM_LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
+    VRAM_LoadTileSets(tileSetPath, levelSystem.LevelTileSetMap[tileSetId]);
 
     return tileSetId;
 }
@@ -111,7 +112,7 @@ void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLa
 
     size_t levelLayerCount = 0;
     size_t levelLayerMapCount = 0;
-    levelArchive.levelLayout = VRAM_LoadLevelInfo(levelLayoutPath);
+    levelSystem.levelLayout = VRAM_LoadLevelInfo(levelLayoutPath);
 
     size_t levelLayerCountTemp = 0;
     size_t levelLayerMapCountTemp = 0;
@@ -121,7 +122,7 @@ void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLa
     for (size_t x = 0; x < levelLayerCountTemp; x++)
     {
         Vector<uint> mapLayer(levelMapPtrList[x], levelMapPtrList[x] + levelLayerMapCountTemp);
-        levelArchive.LevelTileMapList.emplace_back(mapLayer);
+        levelSystem.LevelTileMapList.emplace_back(mapLayer);
         VRAM_DeleteLevelLayerMapPtr(levelMapPtrList[x]);
     }
     VRAM_DeleteLevelLayerPtr(levelLayerList);
@@ -129,13 +130,13 @@ void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLa
 
 void Level_LoadLevelMesh(const GraphicsRenderer& renderer, VkGuid& tileSetId)
 {
-    for (size_t x = 0; x < levelArchive.LevelTileMapList.size(); x++)
+    for (size_t x = 0; x < levelSystem.LevelTileMapList.size(); x++)
     {
-        const LevelTileSet& levelTileSet = levelArchive.LevelTileSetMap[tileSetId];
-        levelArchive.LevelLayerList.emplace_back(Level2D_LoadLevelInfo(levelArchive.levelLayout.LevelLayoutId, levelTileSet, levelArchive.LevelTileMapList[x].data(), levelArchive.LevelTileMapList[x].size(), levelArchive.levelLayout.LevelBounds, x));
+        const LevelTileSet& levelTileSet = levelSystem.LevelTileSetMap[tileSetId];
+        levelSystem.LevelLayerList.emplace_back(Level2D_LoadLevelInfo(levelSystem.levelLayout.LevelLayoutId, levelTileSet, levelSystem.LevelTileMapList[x].data(), levelSystem.LevelTileMapList[x].size(), levelSystem.levelLayout.LevelBounds, x));
 
-        Vector<Vertex2D> vertexList(levelArchive.LevelLayerList[x].VertexList, levelArchive.LevelLayerList[x].VertexList + levelArchive.LevelLayerList[x].VertexListCount);
-        Vector<uint> indexList(levelArchive.LevelLayerList[x].IndexList, levelArchive.LevelLayerList[x].IndexList + levelArchive.LevelLayerList[x].IndexListCount);
+        Vector<Vertex2D> vertexList(levelSystem.LevelLayerList[x].VertexList, levelSystem.LevelLayerList[x].VertexList + levelSystem.LevelLayerList[x].VertexListCount);
+        Vector<uint> indexList(levelSystem.LevelLayerList[x].IndexList, levelSystem.LevelLayerList[x].IndexList + levelSystem.LevelLayerList[x].IndexListCount);
         meshSystem.CreateSpriteLayerMesh(renderer, MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
     }
 }
@@ -143,13 +144,83 @@ void Level_LoadLevelMesh(const GraphicsRenderer& renderer, VkGuid& tileSetId)
 void Level_DestroyLevel()
 {
     spriteSystem.Destroy();
-    for (auto& tileMap : levelArchive.LevelTileSetMap)
+    for (auto& tileMap : levelSystem.LevelTileSetMap)
     {
         VRAM_DeleteLevelVRAM(tileMap.second.LevelTileListPtr);
     }
 
-    for (auto& levelLayer : levelArchive.LevelLayerList)
+    for (auto& levelLayer : levelSystem.LevelLayerList)
     {
         Level2D_DeleteLevel(levelLayer.TileIdMap, levelLayer.TileMap, levelLayer.VertexList, levelLayer.IndexList);
     }
+}
+
+void LevelSystem_Update(const float& deltaTime)
+{
+    Camera_Update(*levelSystem.OrthographicCamera.get(), *shaderSystem.GetGlobalShaderPushConstant("sceneData"));
+    spriteSystem.Update(deltaTime);
+    shaderSystem.UpdateGlobalShaderBuffer("sceneData");
+}
+
+ void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, const float& deltaTime)
+{
+
+}
+
+ void LevelSystem_LoadLevel(const char* levelPath)
+{
+     levelSystem.OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+
+     VkGuid dummyGuid = VkGuid();
+     VkGuid tileSetId = VkGuid();
+
+     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
+
+     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
+     nlohmann::json shaderJson = fileSystem.LoadJsonFile("../RenderPass/LevelShader2DRenderPass.json");
+     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("../RenderPass/LevelShader2DWireFrameRenderPass.json");
+     levelSystem.spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
+     levelSystem.levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
+     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+
+     for (size_t x = 0; x < json["LoadTextures"].size(); x++)
+     {
+         textureSystem.LoadTexture(json["LoadTextures"][x]);
+     }
+
+     for (size_t x = 0; x < json["LoadMaterials"].size(); x++)
+     {
+         materialSystem.LoadMaterial(json["LoadMaterials"][x]);
+     }
+
+     for (size_t x = 0; x < json["LoadSpriteVRAM"].size(); x++)
+     {
+         spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
+     }
+
+     for (size_t x = 0; x < json["LoadTileSetVRAM"].size(); x++)
+     {
+         tileSetId = Level_LoadTileSetVRAM(json["LoadTileSetVRAM"][x].get<String>().c_str());
+     }
+
+     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
+     {
+         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
+         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
+         gameObjectSystem.CreateGameObject(renderer, objectJson, positionOverride);
+     }
+
+     Level_LoadLevelLayout(renderer, json["LoadLevelLayout"].get<String>().c_str());
+     Level_LoadLevelMesh(renderer, tileSetId);
+
+     VkGuid LevelId = VkGuid(json["LevelID"].get<String>().c_str());
+     levelSystem.spriteRenderPass2DId = renderSystem.LoadRenderPass(levelSystem.levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     levelSystem.gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     levelSystem.frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+
+}
+
+ void LevelSystem_DestroyLevel()
+{
 }

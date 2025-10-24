@@ -3,7 +3,7 @@
 #include <RenderSystem.h>
 #include "InputSystem.h"
 #include <Camera.h>
-#include "Level2D.h"
+#include <LevelSystem.h>
 
 class MeshSystem;
 class GameSystem

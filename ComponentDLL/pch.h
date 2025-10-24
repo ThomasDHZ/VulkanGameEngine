@@ -13,6 +13,7 @@
 #include <DLL.h>
 #include <Typedef.h>
 #include <VulkanRenderer.h>
+#include <EngineConfigSystem.h>
 #include <InputEnum.h>
 #include <ECSid.h>
 #include "GameObjectBehavior.h"

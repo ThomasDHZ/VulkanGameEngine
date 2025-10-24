@@ -18,11 +18,11 @@ public:
     const String CompiledShaderOutputDirectory;
 
     ConfigSystem();
-	ConfigSystem(const nlohmann::json& j);
+    ConfigSystem(const nlohmann::json& j);
     ~ConfigSystem();
 
     static ConfigSystem LoadConfig(const String& configPath) {
-       std::ifstream file(configPath);
+        std::ifstream file(configPath);
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open " + configPath);
         }
@@ -31,5 +31,5 @@ public:
         return ConfigSystem(j);
     }
 };
-extern ConfigSystem configSystem;
+DLL_EXPORT ConfigSystem configSystem;
 

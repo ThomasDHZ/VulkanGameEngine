@@ -150,7 +150,6 @@
     <ClCompile Include="..\External\ImPlot\implot.cpp" />
     <ClCompile Include="..\External\ImPlot\implot_demo.cpp" />
     <ClCompile Include="..\External\ImPlot\implot_items.cpp" />
-    <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="ImGuiRenderer.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -159,14 +158,11 @@
     <ClCompile Include="GameSystem.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="LevelLayer.cpp" />
-    <ClCompile Include="LevelSystem.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="SystemClock.cpp" />
     <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="Keyboard.h" />
@@ -175,9 +171,7 @@
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="LevelLayer.h" />
-    <ClInclude Include="LevelSystem.h" />
     <ClInclude Include="MemoryPool.h" />
-    <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SystemClock.h" />
     <ClInclude Include="VulkanWindow.h" />
