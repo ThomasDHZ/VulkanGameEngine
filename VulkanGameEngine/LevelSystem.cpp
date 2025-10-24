@@ -8,6 +8,7 @@
 #include <VulkanShaderSystem.h>
 #include "EngineConfigSystem.h"
 #include <FileSystem.h>
+#include "RenderSystem.h"
 
 LevelSystem levelSystem = LevelSystem();
 
@@ -84,9 +85,9 @@ void LevelSystem::Update(const float& deltaTime)
 
 void LevelSystem::Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime)
 {
-    commandBufferList.emplace_back(renderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime));
-    commandBufferList.emplace_back(renderSystem.RenderBloomPass(gaussianBlurRenderPassId));
-    commandBufferList.emplace_back(renderSystem.RenderFrameBuffer(frameBufferId));
+    commandBufferList.emplace_back(RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime));
+    commandBufferList.emplace_back(RenderBloomPass(gaussianBlurRenderPassId));
+    commandBufferList.emplace_back(RenderFrameBuffer(frameBufferId));
 }
 
 void LevelSystem::DestroyDeadGameObjects()

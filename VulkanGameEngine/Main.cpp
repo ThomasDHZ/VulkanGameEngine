@@ -17,7 +17,12 @@ int main(int argc, char** argv)
 
     vulkanWindow = new GameEngineWindow();
     vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-    gameSystem.StartUp(WindowType::GLFW, vulkanWindow->WindowHandle);
+
+    renderer.Instance = Renderer_CreateVulkanInstance();
+    renderer.DebugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
+    glfwCreateWindowSurface(renderer.Instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &renderer.Surface);
+    gameSystem.StartUp(vulkanWindow->WindowHandle);
+    //imGuiRenderer = ImGui_StartUp(renderer);
     while (!vulkanWindow->WindowShouldClose(vulkanWindow))
     {
         const float frameTime = deltaTime.GetFrameTime();

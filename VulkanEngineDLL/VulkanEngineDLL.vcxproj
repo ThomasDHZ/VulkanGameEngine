@@ -142,6 +142,7 @@
     <ClInclude Include="GPUSystem.h" />
     <ClInclude Include="InputEnum.h" />
     <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="vertex.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanError.h" />

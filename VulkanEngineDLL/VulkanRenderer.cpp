@@ -29,7 +29,7 @@ void LogVulkanMessage(const char* message, int severity)
     }
 }
 
-GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
+GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, GraphicsRenderer& renderer)
 {
     renderer.ImageIndex = 0;
     renderer.CommandIndex = 0;
@@ -39,7 +39,7 @@ GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandl
     renderer.RebuildRendererFlag = false;
     renderer.PhysicalDevice = Renderer_SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     renderer.Device = Renderer_SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
-    VULKAN_RESULT(Renderer_SetUpSwapChain(windowType, windowHandle, renderer));
+    VULKAN_RESULT(Renderer_SetUpSwapChain(windowHandle, renderer));
     renderer.CommandPool = Renderer_SetUpCommandPool(renderer.Device, renderer.GraphicsFamily);
     VULKAN_RESULT(Renderer_SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount));
     VULKAN_RESULT(Renderer_GetDeviceQueue(renderer.Device, renderer.GraphicsFamily, renderer.PresentFamily, renderer.GraphicsQueue, renderer.PresentQueue));
@@ -47,17 +47,17 @@ GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandl
     return renderer;
 }
 
-GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
+GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 {
     vkDeviceWaitIdle(renderer.Device);
     Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], MAX_FRAMES_IN_FLIGHT);
     Renderer_DestroySwapChain(renderer.Device, &renderer.Swapchain);
 
-    Renderer_SetUpSwapChain(windowType, windowHandle, renderer);
+    Renderer_SetUpSwapChain(windowHandle, renderer);
     return renderer;
 }
 
-VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer)
+VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities = SwapChain_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = SwapChain_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);

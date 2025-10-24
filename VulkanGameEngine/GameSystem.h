@@ -1,6 +1,6 @@
 #pragma once
 #include "GameObjectSystem.h"
-#include "RenderSystem.h"
+#include <RenderSystem.h>
 #include "InputSystem.h"
 #include "OrthographicCamera2D.h"
 #include "Level2D.h"
@@ -15,7 +15,7 @@ public:
 	GameSystem();
 	~GameSystem();
 
-	void StartUp(WindowType windowType, void* windowHandle);
+	void StartUp(void* windowHandle);
 	void Update(const float& deltaTime);
 	void DebugUpdate(const float& deltaTime);
 	void Draw(const float& deltaTime);

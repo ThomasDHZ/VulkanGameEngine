@@ -1,7 +1,7 @@
 #pragma once
 #include <SpriteSystem.h>
 #include "Level2D.h"
-#include "RenderSystem.h"
+#include <RenderSystem.h>
 #include "OrthographicCamera2D.h"
 #include <VRAM.h>
 #include <Level2D.h>

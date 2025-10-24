@@ -86,8 +86,8 @@ extern "C" {
 	DLL_EXPORT VkInstance Renderer_CreateVulkanInstance();
 	DLL_EXPORT VkDebugUtilsMessengerEXT Renderer_SetupDebugMessenger(VkInstance instance);
 	DLL_EXPORT VkSurfaceKHR Renderer_CreateVulkanSurface(void* windowHandle, VkInstance instance);
-	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer);
-	DLL_EXPORT GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer);
+	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, GraphicsRenderer& renderer);
+	DLL_EXPORT GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer& renderer);
 	DLL_EXPORT VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 	DLL_EXPORT VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
 	DLL_EXPORT void Renderer_DestroyRenderer(GraphicsRenderer& renderer);
@@ -118,5 +118,5 @@ extern "C" {
 	VkImageView* SwapChain_SetUpSwapChainImageViews(VkDevice device, VkImage* swapChainImageList, size_t swapChainImageCount, VkSurfaceFormatKHR swapChainImageFormat);
 	VkSurfaceFormatKHR SwapChain_FindSwapSurfaceFormat(Vector<VkSurfaceFormatKHR>&availableFormats);
 	VkPresentModeKHR SwapChain_FindSwapPresentMode(Vector<VkPresentModeKHR>&availablePresentModes);
-	VkResult Renderer_SetUpSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer& renderer);
+	VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer);
 
