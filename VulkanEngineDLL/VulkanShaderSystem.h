@@ -16,6 +16,7 @@ extern "C" {
 #endif
     DLL_EXPORT void Shader_StartUp();
     DLL_EXPORT void Shader_LoadShaderPipelineStructPrototypes(const char** renderPassJsonList, size_t renderPassJsonCount);
+    DLL_EXPORT const ShaderVariable* Shader_SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
     
     DLL_EXPORT ShaderPipelineData Shader_LoadPipelineShaderData(const char** pipelineShaderPaths, size_t pipelineShaderCount);
     DLL_EXPORT void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& vulkanBuffer, ShaderStruct* shaderStruct, size_t shaderCount);
@@ -34,6 +35,7 @@ extern "C" {
 }
 #endif
 
+DLL_EXPORT ShaderPushConstant* Shader_GetGlobalShaderPushConstant(const char* pushConstantName);
 DLL_EXPORT ShaderStruct* Shader_LoadProtoTypeStructs(const char** pipelineShaderPaths, size_t pipelineShaderCount, size_t& outProtoTypeStructCount);
 DLL_EXPORT void Shader_CompileShaders(VkDevice device, const char* fileDirectory, const char* outputDirectory);
 DLL_EXPORT void Shader_UpdateGlobalShaderBuffer(const GraphicsRenderer& renderer, const String& pushConstantName);
@@ -51,9 +53,7 @@ DLL_EXPORT ShaderPushConstant& Shader_FindShaderPushConstant(const String& shade
 DLL_EXPORT ShaderStruct Shader_FindShaderProtoTypeStruct(const String& structKey);
 DLL_EXPORT ShaderStruct& Shader_FindShaderStruct(int vulkanBufferId);
 DLL_EXPORT ShaderStruct Shader_CopyShaderStructProtoType(const String& structName);
-DLL_EXPORT ShaderPushConstant* Shader_GetGlobalShaderPushConstant(const String& pushConstantName);
 DLL_EXPORT ShaderVariable* Shader_SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName);
-DLL_EXPORT const ShaderVariable* Shader_SearchGlobalShaderConstantVar(ShaderPushConstant* pushConstant, const char* varName);
 
 //ShaderDescriptorBinding* Shader_SearchDescriptorBindings(ShaderDescriptorBinding* shaderDescriptorBindingList, size_t shaderDescriptorBindingsCount, const char* descriptorBindingName);
 ShaderStruct* Shader_SearchShaderStructs(ShaderStruct* shaderStructList, size_t shaderStructCount, const char* structName);
@@ -111,7 +111,7 @@ public:
     ShaderVariable* SearchShaderStruct(ShaderStruct& shaderStruct, const String& varName) { return Shader_SearchShaderStructVar(&shaderStruct, varName.c_str()); }
     void UpdateGlobalShaderBuffer(const String& pushConstantName) { Shader_UpdateGlobalShaderBuffer(renderer, pushConstantName); }
     void UpdateShaderBuffer(uint vulkanBufferId) { Shader_UpdateShaderBuffer(renderer, vulkanBufferId); }
-    ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName) { return Shader_GetGlobalShaderPushConstant(pushConstantName); }
+    ShaderPushConstant* GetGlobalShaderPushConstant(const String& pushConstantName) { return Shader_GetGlobalShaderPushConstant(pushConstantName.c_str()); }
     void LoadShaderPipelineStructPrototypes(const Vector<String>& renderPassJsonList)
     {
         Vector<const char*> c_strs;

@@ -1265,7 +1265,7 @@ void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, uint vulkanBuff
     Shader_UpdateShaderBuffer(renderer, vulkanBuffer, &shaderStruct, 1);
 }
 
-ShaderPushConstant* Shader_GetGlobalShaderPushConstant(const String& pushConstantName)
+ShaderPushConstant* Shader_GetGlobalShaderPushConstant(const char* pushConstantName)
 {
     return Shader_ShaderPushConstantExists(pushConstantName) ? &shaderSystem.ShaderPushConstantMap[pushConstantName] : nullptr;
 }

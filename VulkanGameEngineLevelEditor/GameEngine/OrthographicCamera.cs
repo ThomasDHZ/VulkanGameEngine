@@ -54,7 +54,7 @@ public unsafe class OrthographicCamera : Camera
 
         ViewScreenSize = new vec2((Aspect * Zoom) * 2, (1.0f * Zoom) * 2);
 
-        var shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "CameraPosition");
+        var shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "CameraPosition");
         if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
         {
             float* ptr = (float*)shaderVar->Value;
@@ -63,7 +63,7 @@ public unsafe class OrthographicCamera : Camera
             ptr[2] = Position.z;
         }
 
-        shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "ViewMatrix");
+        shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "ViewMatrix");
         if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
         {
             float* matrixPtr = (float*)shaderVar->Value;
@@ -73,7 +73,7 @@ public unsafe class OrthographicCamera : Camera
             }
         }
 
-        shaderVar = ShaderSystem.SearchGlobalShaderPushConstantVar(sceneDataBuffer, "Projection");
+        shaderVar = ShaderSystem.SearchGlobalShaderConstantVar(sceneDataBuffer, "Projection");
         if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
         {
             float* matrixPtr = (float*)shaderVar->Value;
