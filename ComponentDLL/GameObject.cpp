@@ -95,6 +95,7 @@ void GameObject_LoadInputComponent(const nlohmann::json& json, uint gameObjectId
 
 void GameObject_LoadSpriteComponent(const GraphicsRenderer& renderer, const nlohmann::json& json, GameObject& gameObject)
 {
+    String asdf = json["VramId"];
     VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
     Sprite_AddSprite(renderer, gameObject, vramId);
 }

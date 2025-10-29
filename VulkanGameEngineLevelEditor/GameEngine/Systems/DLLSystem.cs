@@ -11,9 +11,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
     {
         private static bool _sharedDirSet = false;
         private static string ExeDirectory => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        private static string EngineRoot => Path.GetFullPath(Path.Combine(ExeDirectory, @"..\..\..\..\VulkanGameEngine"));
-        private static string GameEnginePath => Path.Combine(EngineRoot, @"x64\Debug\VulkanEngineDLL.dll");
-        private static string Game2DPath => Path.Combine(EngineRoot, @"x64\Debug\ComponentDLL.dll");
+        private static string EngineRoot => Path.GetFullPath(Path.Combine(ExeDirectory, @"..\..\..\..\"));
+        public static string GameEnginePath => Path.Combine(EngineRoot, @"x64\Debug\VulkanEngineDLL.dll");
+        public static string Game2DPath => Path.Combine(EngineRoot, @"x64\Debug\ComponentDLL.dll");
         public const string GameEngineDLL = @"..\..\..\..\x64\Debug\VulkanEngineDLL.dll";
         public const string Game2DDLL = @"..\..\..\..\x64\Debug\ComponentDLL.dll";
         public static void SetSharedDllDirectory()
@@ -27,6 +27,13 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
 
             Directory.SetCurrentDirectory(dllDir);
+            IntPtr gameEngineDLLPtr = LoadLibrary(GameEnginePath);
+            IntPtr game2DDLLPtr = LoadLibrary(Game2DPath);
+            if (gameEngineDLLPtr == IntPtr.Zero || 
+                game2DDLLPtr == IntPtr.Zero)
+            {
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            }
             _sharedDirSet = true;
         }
 

@@ -94,7 +94,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             //    DestroyGameObject(gameObject.second.GameObjectId);
             //}
         }
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObjectFromJson(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, vec2 positionOverride);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObject(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] String name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, ComponentTypeEnum gameObjectComponentMask, Guid vramId, vec2 objectPosition);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObjectFromJson(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, vec2 positionOverride);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObject(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] String name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, ComponentTypeEnum gameObjectComponentMask, Guid vramId, vec2 objectPosition);
     }
 }

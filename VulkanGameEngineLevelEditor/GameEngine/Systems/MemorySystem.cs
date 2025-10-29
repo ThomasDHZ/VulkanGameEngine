@@ -107,8 +107,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, [MarshalAs(UnmanagedType.LPStr)] string file, int line, [MarshalAs(UnmanagedType.LPStr)] string func, [MarshalAs(UnmanagedType.LPStr)] string notes);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void MemoryLeakPtr_DeletePtr(IntPtr ptr);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, [MarshalAs(UnmanagedType.LPStr)] string file, int line, [MarshalAs(UnmanagedType.LPStr)] string func, [MarshalAs(UnmanagedType.LPStr)] string notes);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void MemoryLeakPtr_DeletePtr(IntPtr ptr);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr);
     }
 }

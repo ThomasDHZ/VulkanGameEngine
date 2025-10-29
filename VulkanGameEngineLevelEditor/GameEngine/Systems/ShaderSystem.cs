@@ -165,10 +165,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
       
 
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_LoadShaderPipelineStructPrototypes(IntPtr[] pipelineShaderPaths, nuint pipelineShaderCount);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderPushConstStructVarCS(ShaderPushConstantDLL* pushConstant, [MarshalAs(UnmanagedType.LPStr)] string varName);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVarCS(ShaderStructDLL* shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchGlobalShaderConstantVar(ShaderPushConstantDLL* pushConstant,[MarshalAs(UnmanagedType.LPStr)] string pushConstantName);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void Shader_LoadShaderPipelineStructPrototypes(IntPtr[] pipelineShaderPaths, nuint pipelineShaderCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderPushConstStructVarCS(ShaderPushConstantDLL* pushConstant, [MarshalAs(UnmanagedType.LPStr)] string varName);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchShaderStructVarCS(ShaderStructDLL* shaderStruct, [MarshalAs(UnmanagedType.LPStr)] string varName);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern ShaderVariable* Shader_SearchGlobalShaderConstantVar(ShaderPushConstantDLL* pushConstant,[MarshalAs(UnmanagedType.LPStr)] string pushConstantName);
     }
 }
 
