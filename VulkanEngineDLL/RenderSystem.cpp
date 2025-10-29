@@ -5,9 +5,9 @@
 
 RenderSystem renderSystem = RenderSystem();
 
-void Renderer_StartUp(void* windowHandle)
+void Renderer_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
-    Renderer_RendererSetUp(windowHandle, renderer);
+    Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);
     shaderSystem.StartUp();
 }
 

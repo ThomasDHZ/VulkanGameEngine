@@ -3,10 +3,11 @@
 ConfigSystem configSystem = ConfigSystem::LoadConfig("../EngineConfig.json");
 
 ConfigSystem::ConfigSystem() : WindowResolution(glm::ivec2(1280, 720)),
-ShaderSourceDirectory("..\\Shaders"),
-CompilerLocation("C:/VulkanSDK/1.4.313.0/Bin/glslc.exe"),
+EngineBasePath(),
+ShaderSourceDirectory(EngineBasePath + "../Shaders"),
+CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
 CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
-CompiledShaderOutputDirectory("..\\Assets\\Shaders\\")
+CompiledShaderOutputDirectory("../Assets/Shaders/")
 {
 }
 

@@ -29,7 +29,7 @@ void LogVulkanMessage(const char* message, int severity)
     }
 }
 
-GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, GraphicsRenderer& renderer)
+GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
     renderer.ImageIndex = 0;
     renderer.CommandIndex = 0;
@@ -37,6 +37,9 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, GraphicsRenderer& re
     renderer.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
     renderer.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
     renderer.RebuildRendererFlag = false;
+    renderer.Instance = instance;
+    renderer.Surface = surface;
+    renderer.DebugMessenger = debugMessenger;
     renderer.PhysicalDevice = Renderer_SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     renderer.Device = Renderer_SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
     VULKAN_RESULT(Renderer_SetUpSwapChain(windowHandle, renderer));

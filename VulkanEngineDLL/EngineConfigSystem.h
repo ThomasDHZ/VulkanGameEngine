@@ -4,6 +4,9 @@
 #include <vulkan/vulkan.h>
 #include "JsonStruct.h"
 #include <fstream>
+#include <iostream>
+#include <filesystem>  // Include this header
+#include <string>
 
 class ConfigSystem
 {
@@ -12,6 +15,7 @@ private:
 
 public:
     const ivec2 WindowResolution;
+    const String EngineBasePath;
     const String ShaderSourceDirectory;
     const String CompilerLocation;
     const String CompilerBuildParams;

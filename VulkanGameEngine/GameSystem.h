@@ -15,7 +15,7 @@ public:
 	GameSystem();
 	~GameSystem();
 
-	void StartUp(void* windowHandle);
+	void StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
 	void Update(const float& deltaTime);
 	void DebugUpdate(const float& deltaTime);
 	void Draw(const float& deltaTime);

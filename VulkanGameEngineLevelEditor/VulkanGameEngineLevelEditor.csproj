@@ -106,6 +106,7 @@
     <Compile Remove="GameEngine\RenderMesh2DComponent.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Resources\" />
     <Folder Include="Vulkan\" />
   </ItemGroup>
   <ItemGroup>

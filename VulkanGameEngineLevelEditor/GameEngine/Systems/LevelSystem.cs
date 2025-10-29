@@ -41,89 +41,27 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void LoadLevel(string levelPath)
         {
-            var res = new vec2(RenderSystem.renderer.SwapChainResolution.width, RenderSystem.renderer.SwapChainResolution.height);
-            var pos = new vec2(0.0f, 0.0f);
-            OrthographicCamera = new OrthographicCamera2D(res, pos);
-
-            string levelDirectory = Path.GetDirectoryName(levelPath);
-            string jsonContent = File.ReadAllText(levelPath);
-            LevelLoader levelLoader = JsonConvert.DeserializeObject<LevelLoader>(jsonContent);
-
-            string renderPassJsonContent = File.ReadAllText(Path.Combine(levelDirectory, "../RenderPass/LevelShader2DRenderPass.json"));
-            RenderPassLoaderModel renderPassLoaderModel = JsonConvert.DeserializeObject<RenderPassLoaderModel>(renderPassJsonContent);
-
-            string pipelineJsonContent = File.ReadAllText(Path.Combine(levelDirectory, renderPassLoaderModel.RenderPipelineList[0]));
-            PipelineShader pipelineLoaderModel = JsonConvert.DeserializeObject<PipelineShader>(pipelineJsonContent);
-            ShaderSystem.LoadShaderPipelineStructPrototypes(levelLoader.LoadRenderPasses);
-
-            Guid tileSetId = new Guid();
-            foreach (var texturePath in levelLoader.LoadTextures)
-            {
-                string fullTexturePath = Path.GetFullPath(Path.Combine(levelDirectory, texturePath));
-                TextureSystem.LoadTexture(fullTexturePath);
-            }
-            foreach (var materialPath in levelLoader.LoadMaterials)
-            {
-                string fullMaterialPath = Path.GetFullPath(Path.Combine(levelDirectory, materialPath));
-                MaterialSystem.CreateMaterial(fullMaterialPath);
-            }
-            foreach (var spriteVRAMPath in levelLoader.LoadSpriteVRAM)
-            {
-                string fullSpriteVRAMPath = Path.GetFullPath(Path.Combine(levelDirectory, spriteVRAMPath));
-                SpriteSystem.LoadSpriteVRAM(fullSpriteVRAMPath);
-            }
-            foreach (var levelLayoutPath in levelLoader.LoadTileSetVRAM)
-            {
-                string fullLevelLayoutPath = Path.GetFullPath(Path.Combine(levelDirectory, levelLayoutPath));
-                tileSetId = Level_LoadTileSetVRAM(fullLevelLayoutPath);
-            }
-            foreach (var gameObjectLoader in levelLoader.GameObjectList)
-            {
-                string gameObjectPath = Path.GetFullPath(Path.Combine(levelDirectory, gameObjectLoader.GameObjectPath));
-                GameObjectSystem.CreateGameObject(gameObjectPath, new vec2((float)gameObjectLoader.GameObjectPositionOverride[0], (float)gameObjectLoader.GameObjectPositionOverride[1]));
-            }
-            {
-                string fullLevelLayoutPath = Path.GetFullPath(Path.Combine(levelDirectory, levelLoader.LoadLevelLayout));
-                Level_LoadLevelLayout(RenderSystem.renderer, fullLevelLayoutPath);
-                Level_LoadLevelMesh(RenderSystem.renderer, tileSetId);
-            }
-            {
-                Guid dummyGuid = new Guid();
-                string fullRenderPassPath = @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json";
-                string gameObjectPath = Path.GetFullPath(Path.Combine(levelDirectory, fullRenderPassPath));
-
-                string jsonContent2 = File.ReadAllText(gameObjectPath);
-                RenderPassLoaderModel renderPassId = JsonConvert.DeserializeObject<RenderPassLoaderModel>(jsonContent);
-                spriteRenderPass2DId = new Guid("aa18e942-497b-4981-b917-d93a5b1de6eb");
-
-                ivec2 renderPassResultion = new ivec2((int)RenderSystem.renderer.SwapChainResolution.width, (int)RenderSystem.renderer.SwapChainResolution.height);
-                spriteRenderPass2DId = RenderSystem.LoadRenderPass(levelLayout.LevelLayoutId, @$"{ConstConfig.BaseDirectoryPath}RenderPass/LevelShader2DRenderPass.json", renderPassResultion);
-                frameBufferId = RenderSystem.LoadRenderPass(dummyGuid, @$"{ConstConfig.BaseDirectoryPath}RenderPass/FrameBufferRenderPass.json", renderPassResultion);
-            }
+            DLLSystem.CallDLLFunc(() => LevelSystem_LoadLevel(levelPath));
         }
 
         public static void Update(float deltaTime)
         {
-            OrthographicCamera.Update(ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
-          //  SpriteSystem.Update(deltaTime);
-            foreach (var levelLayer in LevelLayerList)
-            {
-                // levelLayer.Update(deltaTime);
-            }
+            LevelSystem_Update(deltaTime);
         }
 
         public static void Draw(ListPtr<VkCommandBuffer> commandBufferList, float deltaTime)
         {
-            commandBufferList.Add(RenderSystem.RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime, ShaderSystem.GetGlobalShaderPushConstant("sceneData")));
-            commandBufferList.Add(RenderSystem.RenderFrameBuffer(frameBufferId));
+            LevelSystem_Draw(commandBufferList.Ptr, commandBufferList.Count, deltaTime);
         }
 
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern LevelLayer Level2D_LoadLevelInfo(Guid levelId, LevelTileSet tileSet, uint* tileIdMapList, size_t tileIdMapCount, ref ivec2 levelBounds, int levelLayerIndex);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern Guid Level_LoadTileSetVRAM([MarshalAs(UnmanagedType.LPStr)] string tileSetPath);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_LoadLevelLayout(GraphicsRenderer renderer, [MarshalAs(UnmanagedType.LPStr)] string tileSetPath);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_LoadLevelMesh(GraphicsRenderer renderer, Guid tileSetId);
-        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level_DestroyLevel();
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void VRAM_DeleteLevelVRAM(Tile* levelTileList);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] private static extern void Level2D_DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, uint* IndexList);
+        public static void DestroyLevel()
+        {
+            LevelSystem_DestroyLevel();
+        }
+
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Update(float deltaTime);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, float deltaTime);
+        [DllImport(GameEngineImport.Game2DPath, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_DestroyLevel();
     }
 }

@@ -86,7 +86,7 @@ extern "C" {
 	DLL_EXPORT VkInstance Renderer_CreateVulkanInstance();
 	DLL_EXPORT VkDebugUtilsMessengerEXT Renderer_SetupDebugMessenger(VkInstance instance);
 	DLL_EXPORT VkSurfaceKHR Renderer_CreateVulkanSurface(void* windowHandle, VkInstance instance);
-	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, GraphicsRenderer& renderer);
+	DLL_EXPORT GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
 	DLL_EXPORT GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer& renderer);
 	DLL_EXPORT VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 	DLL_EXPORT VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);

@@ -54,14 +54,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             VkInstance instance = Renderer_CreateVulkanInstance();
             VkDebugUtilsMessengerEXT debugMessenger = Renderer_SetupDebugMessenger(instance);
             VkSurfaceKHR surface = Renderer_CreateVulkanSurface(renderAreaHandle, instance);
-            renderer = new GraphicsRenderer()
-            {
-                Instance = instance,
-                DebugMessenger = debugMessenger,
-                Surface = surface
-            };
-            GraphicsRenderer gRenderer = renderer;
-            renderer = Renderer_RendererSetUp(renderAreaHandle, ref gRenderer);
+            renderer = DLLSystem.CallDLLFunc(() => Renderer_RendererSetUp(renderAreaHandle, ref instance, ref surface, ref debugMessenger));
         }
 
         public static unsafe Guid LoadRenderPass(Guid levelId, string jsonPath, ivec2 renderPassResolution)
@@ -610,7 +603,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkInstance Renderer_CreateVulkanInstance();
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkDebugUtilsMessengerEXT Renderer_SetupDebugMessenger(VkInstance instance);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkSurfaceKHR Renderer_CreateVulkanSurface(void* windowHandle, VkInstance instance);
-        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, ref GraphicsRenderer renderer);
+        [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, ref VkInstance instance, ref VkSurfaceKHR surface, ref VkDebugUtilsMessengerEXT debugMessenger);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer Renderer_RebuildSwapChain(WindowType windowType, void* windowHandle, GraphicsRenderer* renderer);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_StartFrame(VkDevice device, VkSwapchainKHR swapChain, VkFence* fenceList, VkSemaphore* acquireImageSemaphoreList, size_t* pImageIndex, size_t* pCommandIndex, bool* pRebuildRendererFlag);
         [DllImport(GameEngineImport.DLLPath, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_EndFrame(VkSwapchainKHR swapChain, VkSemaphore* acquireImageSemaphoreList, VkSemaphore* presentImageSemaphoreList, VkFence* fenceList, VkQueue graphicsQueue, VkQueue presentQueue, size_t commandIndex, size_t imageIndex, VkCommandBuffer* pCommandBufferSubmitList, size_t commandBufferCount, bool* rebuildRendererFlag);

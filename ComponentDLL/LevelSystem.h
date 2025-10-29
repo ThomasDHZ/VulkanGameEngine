@@ -49,9 +49,9 @@ struct LevelLayer
     extern "C" 
     {
         #endif
+            DLL_EXPORT void LevelSystem_LoadLevel(const char* levelPath);
             DLL_EXPORT void LevelSystem_Update(const float& deltaTime);
             DLL_EXPORT void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, const float& deltaTime);
-            DLL_EXPORT void LevelSystem_LoadLevel(const char* levelPath);
             DLL_EXPORT void LevelSystem_DestroyLevel();
         #ifdef __cplusplus
     }

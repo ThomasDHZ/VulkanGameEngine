@@ -9,7 +9,7 @@
     extern "C"
     {
         #endif
-        DLL_EXPORT void Renderer_StartUp(WindowType windowType, void* windowHandle);
+        DLL_EXPORT void Renderer_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
         DLL_EXPORT void Renderer_Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
         DLL_EXPORT VkGuid Renderer_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
         DLL_EXPORT void Renderer_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
@@ -51,9 +51,9 @@ public:
     RenderSystem() {}
     ~RenderSystem() {}
 
-    void StartUp(void* windowHandle)
+    void StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
     {
-        Renderer_RendererSetUp(windowHandle, renderer);
+        Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);
         shaderSystem.StartUp();
     }
 

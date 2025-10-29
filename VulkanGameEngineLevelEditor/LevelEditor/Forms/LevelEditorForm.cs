@@ -79,6 +79,8 @@ namespace VulkanGameEngineLevelEditor
 
             GlobalMessenger.AddMessenger(_messenger);
 
+            string originalDir = Directory.GetCurrentDirectory();
+     
             LogVulkanMessageDelegate callback = LogVulkanMessage;
             _callbackHandle = GCHandle.Alloc(callback);
             SetLogVulkanMessageCallback(callback);

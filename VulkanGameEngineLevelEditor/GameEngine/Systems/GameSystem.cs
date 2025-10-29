@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
@@ -31,7 +32,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static unsafe void StartUp(void* renderAreaHandle, void* debuggerHandle)
         {
             RenderSystem.CreateVulkanRenderer(WindowType.Win32, renderAreaHandle, debuggerHandle);
-            LevelSystem.LoadLevel(@$"{ConstConfig.BaseDirectoryPath}Levels/TestLevel.json");
+            LevelSystem.LoadLevel(@$"../Levels/TestLevel.json");
         }
 
         public static void Update(float deltaTime)

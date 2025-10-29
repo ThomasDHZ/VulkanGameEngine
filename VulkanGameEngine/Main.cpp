@@ -18,10 +18,11 @@ int main(int argc, char** argv)
     vulkanWindow = new GameEngineWindow();
     vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 
-    renderer.Instance = Renderer_CreateVulkanInstance();
-    renderer.DebugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
-    glfwCreateWindowSurface(renderer.Instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &renderer.Surface);
-    gameSystem.StartUp(vulkanWindow->WindowHandle);
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkInstance instance = Renderer_CreateVulkanInstance();
+    VkDebugUtilsMessengerEXT debugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
+    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
+    gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface, debugMessenger);
     //imGuiRenderer = ImGui_StartUp(renderer);
     while (!vulkanWindow->WindowShouldClose(vulkanWindow))
     {
