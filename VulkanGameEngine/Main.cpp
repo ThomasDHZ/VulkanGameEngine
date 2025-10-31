@@ -15,6 +15,7 @@ int main(int argc, char** argv)
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
+    Engine_SetRootDirectory("../Assets");
     vulkanWindow = new GameEngineWindow();
     vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 

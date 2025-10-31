@@ -12,10 +12,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         private static bool _sharedDirSet = false;
         private static string ExeDirectory => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private static string EngineRoot => Path.GetFullPath(Path.Combine(ExeDirectory, @"..\..\..\..\"));
-        public static string GameEnginePath => Path.Combine(EngineRoot, @"x64\Debug\VulkanEngineDLL.dll");
-        public static string Game2DPath => Path.Combine(EngineRoot, @"x64\Debug\ComponentDLL.dll");
-        public const string GameEngineDLL = @"..\..\..\..\x64\Debug\VulkanEngineDLL.dll";
-        public const string Game2DDLL = @"..\..\..\..\x64\Debug\ComponentDLL.dll";
+        public static string GameEnginePath => Path.Combine(EngineRoot, @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll");
+        public static string Game2DPath => Path.Combine(EngineRoot, @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll");
+        public const string GameEngineDLL = @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll";
+        public const string Game2DDLL = @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll";
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)] private static extern IntPtr LoadLibrary(string lpFileName);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Engine_SetRootDirectory([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string engineRoot);
+
         public static void SetSharedDllDirectory()
         {
             if (_sharedDirSet) return;
@@ -26,14 +30,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 throw new DirectoryNotFoundException($"DLL folder missing: {dllDir}");
             }
 
-            Directory.SetCurrentDirectory(dllDir);
+            Engine_SetRootDirectory("..\\..\\..\\..\\Assets");
             IntPtr gameEngineDLLPtr = LoadLibrary(GameEnginePath);
-            IntPtr game2DDLLPtr = LoadLibrary(Game2DPath);
-            if (gameEngineDLLPtr == IntPtr.Zero || 
-                game2DDLLPtr == IntPtr.Zero)
-            {
-                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
-            }
+            IntPtr game2DDLLPtr = LoadLibrary(Game2DDLL);
+            //if (gameEngineDLLPtr == IntPtr.Zero || 
+            //    game2DDLLPtr == IntPtr.Zero)
+            //{
+            //    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            //}
             _sharedDirSet = true;
         }
 
@@ -75,10 +79,5 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             }
         }
 
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)] private static extern IntPtr LoadLibrary(string lpFileName);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)] private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetModuleFileName(IntPtr hModule, StringBuilder lpFilename, uint nSize);
     }
 }

@@ -1,0 +1,387 @@
+{
+  "LevelID": "1c963fa4-06c2-49c5-8fcb-1e0083604b64",
+  "LevelName": "TestLevel",
+  "GameObjectList": [
+    {
+      "Name": "Obj1",
+      "GameObjectComponentList": [
+        {
+          "GameObjectPosition": [
+            960.0,
+            540.0
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "Name": "Obj1",
+          "ComponentType": 2
+        },
+        {
+          "SpriteObj": {
+            "SpriteSize": [
+              160.0,
+              160.0
+            ],
+            "SpriteColor": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "SpritePosition": [
+              0.0,
+              0.0
+            ],
+            "SpriteRotation": [
+              0.0,
+              0.0
+            ],
+            "SpriteScale": [
+              1.0,
+              1.0
+            ],
+            "SpriteLayer": 0,
+            "SpriteMaterial": {
+              "MaterialID": "cc10c585-6f73-4e06-ae9f-8f76baf36b00",
+              "Name": "Material1",
+              "AlbedoMapPath": "Textures\\MegaMan_diffuse.bmp",
+              "MetallicRoughnessMapPath": null,
+              "MetallicMapPath": null,
+              "RoughnessMapPath": null,
+              "AmbientOcclusionMapPath": null,
+              "NormalMapPath": null,
+              "DepthMapPath": null,
+              "AlphaMapPath": null,
+              "EmissionMapPath": null,
+              "HeightMapPath": null,
+              "Albedo": [
+                0.0,
+                0.35,
+                0.45
+              ],
+              "Metallic": 0.0,
+              "Roughness": 0.0,
+              "AmbientOcclusion": 1.0,
+              "Emission": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Alpha": 1.0
+            },
+            "Spritesheet": {
+              "SpritePixelSize": [
+                32,
+                32
+              ],
+              "SpriteScale": [
+                5.0,
+                5.0
+              ]
+            },
+            "AnimationList": [
+              {
+                "AnimationName": "Standing",
+                "FrameHoldTime": 0.2,
+                "FrameList": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              {
+                "AnimationName": "Walking",
+                "FrameHoldTime": 0.5,
+                "FrameList": [
+                  [
+                    3,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ],
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ]
+                ]
+              }
+            ]
+          },
+          "Name": "Obj1",
+          "ComponentType": 4
+        }
+      ]
+    },
+    {
+      "Name": "Obj2",
+      "GameObjectComponentList": [
+        {
+          "GameObjectPosition": [
+            300.0,
+            20.0
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "Name": "Obj2",
+          "ComponentType": 2
+        },
+        {
+          "SpriteObj": {
+            "SpriteSize": [
+              160.0,
+              160.0
+            ],
+            "SpriteColor": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "SpritePosition": [
+              0.0,
+              0.0
+            ],
+            "SpriteRotation": [
+              0.0,
+              0.0
+            ],
+            "SpriteScale": [
+              1.0,
+              1.0
+            ],
+            "SpriteLayer": 0,
+            "SpriteMaterial": {
+              "MaterialID": "cc10c585-6f73-4e06-ae9f-8f76baf36b00",
+              "Name": "Material1",
+              "AlbedoMapPath": "Textures\\MegaMan_diffuse.bmp",
+              "MetallicRoughnessMapPath": null,
+              "MetallicMapPath": null,
+              "RoughnessMapPath": null,
+              "AmbientOcclusionMapPath": null,
+              "NormalMapPath": null,
+              "DepthMapPath": null,
+              "AlphaMapPath": null,
+              "EmissionMapPath": null,
+              "HeightMapPath": null,
+              "Albedo": [
+                0.0,
+                0.35,
+                0.45
+              ],
+              "Metallic": 0.0,
+              "Roughness": 0.0,
+              "AmbientOcclusion": 1.0,
+              "Emission": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Alpha": 1.0
+            },
+            "Spritesheet": {
+              "SpritePixelSize": [
+                32,
+                32
+              ],
+              "SpriteScale": [
+                5.0,
+                5.0
+              ]
+            },
+            "AnimationList": [
+              {
+                "AnimationName": "Standing",
+                "FrameHoldTime": 0.2,
+                "FrameList": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              {
+                "AnimationName": "Walking",
+                "FrameHoldTime": 0.5,
+                "FrameList": [
+                  [
+                    3,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ],
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ]
+                ]
+              }
+            ]
+          },
+          "Name": "Obj2",
+          "ComponentType": 4
+        }
+      ]
+    },
+    {
+      "Name": "Obj3",
+      "GameObjectComponentList": [
+        {
+          "GameObjectPosition": [
+            300.0,
+            80.0
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "Name": "Obj3",
+          "ComponentType": 2
+        },
+        {
+          "SpriteObj": {
+            "SpriteSize": [
+              160.0,
+              160.0
+            ],
+            "SpriteColor": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "SpritePosition": [
+              0.0,
+              0.0
+            ],
+            "SpriteRotation": [
+              0.0,
+              0.0
+            ],
+            "SpriteScale": [
+              1.0,
+              1.0
+            ],
+            "SpriteLayer": 0,
+            "SpriteMaterial": {
+              "MaterialID": "cc10c585-6f73-4e06-ae9f-8f76baf36b00",
+              "Name": "Material1",
+              "AlbedoMapPath": "Textures\\MegaMan_diffuse.bmp",
+              "MetallicRoughnessMapPath": null,
+              "MetallicMapPath": null,
+              "RoughnessMapPath": null,
+              "AmbientOcclusionMapPath": null,
+              "NormalMapPath": null,
+              "DepthMapPath": null,
+              "AlphaMapPath": null,
+              "EmissionMapPath": null,
+              "HeightMapPath": null,
+              "Albedo": [
+                0.0,
+                0.35,
+                0.45
+              ],
+              "Metallic": 0.0,
+              "Roughness": 0.0,
+              "AmbientOcclusion": 1.0,
+              "Emission": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Alpha": 1.0
+            },
+            "Spritesheet": {
+              "SpritePixelSize": [
+                32,
+                32
+              ],
+              "SpriteScale": [
+                5.0,
+                5.0
+              ]
+            },
+            "AnimationList": [
+              {
+                "AnimationName": "Standing",
+                "FrameHoldTime": 0.2,
+                "FrameList": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              {
+                "AnimationName": "Walking",
+                "FrameHoldTime": 0.5,
+                "FrameList": [
+                  [
+                    3,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ],
+                  [
+                    5,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ]
+                ]
+              }
+            ]
+          },
+          "Name": "Obj3",
+          "ComponentType": 4
+        }
+      ]
+    }
+  ],
+  "MaterialIDs": [
+    "cc10c585-6f73-4e06-ae9f-8f76baf36b00"
+  ]
+}

@@ -177,7 +177,8 @@ int File_Write(void* buffer, size_t size, const char* path)
 
 nlohmann::json File_LoadJsonFile(const char* filePath)
 {
-    return nlohmann::json::parse(File_Read(filePath).Data);
+    String rawJson = File_Read(filePath).Data;
+    return nlohmann::json::parse(rawJson);
 }
 
 const char** File_GetFilesFromDirectory(const char* fileDirectory, const char** fileExtensions, size_t fileExtensionCount, size_t& returnFileCount)

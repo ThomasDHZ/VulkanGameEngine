@@ -12,7 +12,6 @@ GameObjectArchive gameObjectArchive = GameObjectArchive();
 
 void GameObject_CreateGameObjectFromJson(const GraphicsRenderer& renderer, const char* gameObjectPath, vec2 gameObjectPosition)
 {
-    nlohmann::json json = File_LoadJsonFile(gameObjectPath);
     GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
         {
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
@@ -20,15 +19,16 @@ void GameObject_CreateGameObjectFromJson(const GraphicsRenderer& renderer, const
             .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
         });
 
-    for (size_t x = 0; x < json["GameObjectComponentList"].size(); x++)
+    nlohmann::json json = File_LoadJsonFile(gameObjectPath);
+    for (const auto& componentJson : json["GameObjectComponentList"])
     {
-        uint64 componentType = json["GameObjectComponentList"][x]["ComponentType"];
-        gameObject.GameObjectComponentMask |= componentType;
+        uint64 componentType = componentJson["ComponentType"].get<uint64>();
+        gameObject.GameObjectComponentMask |= (1ULL << componentType);
         switch (componentType)
         {
-            case kTransform2DComponent: GameObject_LoadTransformComponent(json["GameObjectComponentList"][x], gameObject.GameObjectId, gameObjectPosition); break;
-            case kInputComponent: GameObject_LoadInputComponent(json["GameObjectComponentList"][x], gameObject.GameObjectId); break;
-            case kSpriteComponent: GameObject_LoadSpriteComponent(renderer, json["GameObjectComponentList"][x], gameObject); break;
+            case kInputComponent: GameObject_LoadInputComponent(componentJson, gameObject.GameObjectId); break;
+            case kSpriteComponent: GameObject_LoadSpriteComponent(renderer, componentJson, gameObject); break;
+            case kTransform2DComponent: GameObject_LoadTransformComponent(componentJson, gameObject.GameObjectId, gameObjectPosition); break;
         }
     }
     GameObject_LoadComponentBehavior(gameObject, json["GameObjectType"]);

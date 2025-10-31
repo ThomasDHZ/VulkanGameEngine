@@ -177,8 +177,8 @@ void LevelSystem_Update(const float& deltaTime)
   //   shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 
      nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-     nlohmann::json shaderJson = fileSystem.LoadJsonFile("../RenderPass/LevelShader2DRenderPass.json");
-     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("../RenderPass/LevelShader2DWireFrameRenderPass.json");
+     nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
+     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
      levelSystem.spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
      levelSystem.levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
      shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
@@ -214,10 +214,10 @@ void LevelSystem_Update(const float& deltaTime)
      Level_LoadLevelMesh(renderer, tileSetId);
 
      VkGuid LevelId = VkGuid(json["LevelID"].get<String>().c_str());
-     levelSystem.spriteRenderPass2DId = renderSystem.LoadRenderPass(levelSystem.levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "../RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-     levelSystem.gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-     levelSystem.frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "../RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     levelSystem.spriteRenderPass2DId = renderSystem.LoadRenderPass(levelSystem.levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     levelSystem.gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     levelSystem.frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
 
 }
 

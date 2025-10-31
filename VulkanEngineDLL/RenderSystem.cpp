@@ -2,8 +2,26 @@
 #include "MaterialSystem.h"
 #include "MeshSystem.h"
 #include "BufferSystem.h"
+#include <windows.h>
+#include <direct.h>
+#include <iostream>
 
 RenderSystem renderSystem = RenderSystem();
+
+void Engine_SetRootDirectory(const char* engineRoot)
+{
+    if (_chdir(engineRoot) != 0)
+    {
+        std::cerr << "Failed to set CWD to: " << engineRoot << std::endl;
+        return;
+    }
+
+    char cwd[MAX_PATH];
+    if (_getcwd(cwd, MAX_PATH))
+    {
+        std::cout << "C++ CWD SET TO: " << cwd << std::endl;
+    }
+}
 
 void Renderer_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {

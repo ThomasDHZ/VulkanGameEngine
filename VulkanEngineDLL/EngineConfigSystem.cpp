@@ -1,10 +1,10 @@
 #include "EngineConfigSystem.h"
 
-ConfigSystem configSystem = ConfigSystem::LoadConfig("../EngineConfig.json");
+ConfigSystem configSystem = ConfigSystem::LoadConfig("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/EngineConfig.json");
 
 ConfigSystem::ConfigSystem() : WindowResolution(glm::ivec2(1280, 720)),
 EngineBasePath(),
-ShaderSourceDirectory(EngineBasePath + "../Shaders"),
+ShaderSourceDirectory(EngineBasePath + "../Assets/Shaders"),
 CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
 CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
 CompiledShaderOutputDirectory("../Assets/Shaders/")
