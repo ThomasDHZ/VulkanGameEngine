@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "GameObject.h"
+#include "GameObjectSystem.h"
 #include "MegaManShot.h"
 #include "MegaManObject.h"
 
@@ -14,17 +14,17 @@ void MegaManShot_Behaviors(GameObjectBehavior& componentBehavior)
 
 void MegaManShot_CreateObject(const String& name, VkGuid vramId, vec2 objectPosition, uint parentGameObjectId)
 {
-    const GameObject& gameObject = GameObject_FindGameObject(parentGameObjectId);
-    const Transform2DComponent& transform = GameObject_FindTransform2DComponent(gameObject.GameObjectId);
+    const GameObject& gameObject = GameObjectSystem_FindGameObject(parentGameObjectId);
+    const Transform2DComponent& transform = GameObjectSystem_FindTransform2DComponent(gameObject.GameObjectId);
     MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
     if (objectData->CurrentShotTime >= objectData->CoolDownTime &&
         objectData->CurrentShotCount <= objectData->MaxShotCount)
     {
-        GameObject& gameObject = gameObjectArchive.GameObjectList.emplace_back(GameObject
+        GameObject& gameObject = gameObjectSystem.GameObjectList.emplace_back(GameObject
             {
                 .GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot,
                 .GameObjectComponentMask = kTransform2DComponent | kSpriteComponent,
-                .GameObjectId = GetNextGameObjectIndex(),
+                .GameObjectId = GameObject_GetNextGameObjectIndex(),
                 .ParentGameObjectId = parentGameObjectId,
                 .GameObjectData = GameObject_LoadObjectData(GameObjectTypeEnum::kGameObjectMegaManShot)
             });
@@ -37,7 +37,7 @@ void MegaManShot_CreateObject(const String& name, VkGuid vramId, vec2 objectPosi
 
 void MegaManShot_Update(uint gameObjectId, const float& deltaTime)
 {
-   GameObject& gameObject = GameObject_FindGameObject(gameObjectId);
+   GameObject& gameObject = GameObjectSystem_FindGameObject(gameObjectId);
    if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaManShot)
    {
        MegaManShot* objectData = static_cast<MegaManShot*>(gameObject.GameObjectData);
@@ -49,7 +49,7 @@ void MegaManShot_Update(uint gameObjectId, const float& deltaTime)
        {
            objectData->MegaManShotDistanceTraveled += 1;
 
-           Transform2DComponent& spriteTransform = GameObject_FindTransform2DComponent(gameObjectId);
+           Transform2DComponent& spriteTransform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
            spriteTransform.GameObjectPosition.x += 1;
        }
    }
@@ -57,8 +57,8 @@ void MegaManShot_Update(uint gameObjectId, const float& deltaTime)
 
 void MegaManShot_Destroy(uint gameObjectId)
 {
-    GameObject& gameObject = GameObject_FindGameObject(gameObjectId);
-    GameObject& parentGameObject = GameObject_FindGameObject(gameObject.ParentGameObjectId);
+    GameObject& gameObject = GameObjectSystem_FindGameObject(gameObjectId);
+    GameObject& parentGameObject = GameObjectSystem_FindGameObject(gameObject.ParentGameObjectId);
     MegaManObject* objectData = static_cast<MegaManObject*>(parentGameObject.GameObjectData);
     objectData->CurrentShotCount--;
 }

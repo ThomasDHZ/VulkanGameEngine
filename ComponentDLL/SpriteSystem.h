@@ -7,7 +7,7 @@
 #include <MeshSystem.h>
 #include <Transform2DComponent.h>
 #include "VRAM.h"
-#include "GameObject.h"
+#include "GameObjectSystem.h"
 #include <BufferSystem.h>
 
 struct SpriteInstance

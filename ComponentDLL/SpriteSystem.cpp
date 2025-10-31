@@ -6,7 +6,7 @@
 #include "TextureSystem.h"
 #include "MaterialSystem.h"
 #include <MeshSystem.h>
-#include "GameObject.h"
+#include "GameObjectSystem.h"
 #include "Vertex.h"
 
 SpriteSystem spriteSystem = SpriteSystem();
@@ -80,10 +80,10 @@ void Sprite_UpdateSprites(const float& deltaTime)
 {
     for (auto& sprite : spriteSystem.SpriteList)
     {
-        const auto& transform2D = GameObject_FindTransform2DComponent(sprite.GameObjectId);
+        const auto& transform2D = GameObjectSystem_FindTransform2DComponent(sprite.GameObjectId);
         const auto& vram = Sprite_FindSpriteVram(sprite.SpriteVramId);
         const auto& animation = Sprite_FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
-        const auto& material = Material_FindMaterial(vram.SpriteMaterialID);
+        const auto& material = MaterialSystem_FindMaterial(vram.SpriteMaterialID);
         const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
         
         mat4 spriteMatrix = mat4(1.0f);
@@ -183,7 +183,7 @@ void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid
     {
         .RenderPassId = renderPassId,
         .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = Mesh_CreateMesh(renderer, MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList, SpriteIndexList)
+        .SpriteLayerMeshId = MeshSystem_CreateMesh(renderer, MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList, SpriteIndexList)
     };
 
     Vector<SpriteInstance> spriteInstanceList = Sprite_FindSpriteInstancesByLayer(spriteLayer);
@@ -261,8 +261,8 @@ VkGuid Sprite_LoadSpriteVRAM(const char* spriteVramPath)
 
     size_t animationListCount = 0;
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
-    const Material& material = Material_FindMaterial(materialId);
-    const Texture& texture = Texture_FindTexture(material.AlbedoMapId);
+    const Material& material = MaterialSystem_FindMaterial(materialId);
+    const Texture& texture = TextureSystem_FindTexture(material.AlbedoMapId);
     Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath, animationListCount);
     spriteSystem.SpriteAnimationMap[vramId] = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
     spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath, material, texture));

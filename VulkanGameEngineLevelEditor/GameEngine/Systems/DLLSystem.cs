@@ -33,11 +33,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             Engine_SetRootDirectory("..\\..\\..\\..\\Assets");
             IntPtr gameEngineDLLPtr = LoadLibrary(GameEnginePath);
             IntPtr game2DDLLPtr = LoadLibrary(Game2DDLL);
-            //if (gameEngineDLLPtr == IntPtr.Zero || 
-            //    game2DDLLPtr == IntPtr.Zero)
-            //{
-            //    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
-            //}
+            if (gameEngineDLLPtr == IntPtr.Zero ||
+                game2DDLLPtr == IntPtr.Zero)
+            {
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            }
             _sharedDirSet = true;
         }
 

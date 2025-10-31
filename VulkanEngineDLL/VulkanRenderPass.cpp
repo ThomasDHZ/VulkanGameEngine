@@ -101,7 +101,7 @@ void VulkanRenderPass_DestoryRenderPassSwapChainTextures(GraphicsRenderer& rende
     Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
     for (auto& renderedTexture : renderedTextureList)
     {
-        Texture_DestroyTexture(renderer, renderedTexture);
+        TextureSystem_DestroyTexture(renderer, renderedTexture);
     }
     std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
     renderedTextureCount = 0;

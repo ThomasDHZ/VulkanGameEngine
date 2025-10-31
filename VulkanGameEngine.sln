@@ -33,13 +33,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"
-	ProjectSection(SolutionItems) = preProject
-		RenderPass\DefaultRenderPass.json = RenderPass\DefaultRenderPass.json
-		RenderPass\FrameBufferRenderPass.json = RenderPass\FrameBufferRenderPass.json
-		RenderPass\GaussianBlurRenderPass.json = RenderPass\GaussianBlurRenderPass.json
-		RenderPass\LevelShader2DRenderPass.json = RenderPass\LevelShader2DRenderPass.json
-		RenderPass\LevelShader2DWireFrameRenderPass.json = RenderPass\LevelShader2DWireFrameRenderPass.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"
 	ProjectSection(SolutionItems) = preProject
@@ -77,6 +70,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Texture", "Texture", "{8770
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
 	ProjectSection(ProjectDependencies) = postProject
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
 		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
@@ -101,10 +95,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEn
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComponentDLL", "ComponentDLL\ComponentDLL.vcxproj", "{7A95B5E9-9F85-4981-A621-FEF118C3A650}"
 	ProjectSection(ProjectDependencies) = postProject
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics2DDLL", "Physics2DDLL\Physics2DDLL.vcxproj", "{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FragmentShader", "FragmentShader", "{B0C61FFF-2328-4636-BDAB-E18C896CB385}"
 	ProjectSection(SolutionItems) = preProject

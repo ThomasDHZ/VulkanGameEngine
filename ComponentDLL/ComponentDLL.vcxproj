@@ -147,7 +147,6 @@
   <ItemGroup>
     <ClInclude Include="Animation2D.h" />
     <ClInclude Include="Component.h" />
-    <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectBehavior.h" />
     <ClInclude Include="GameObjectSystem.h" />
     <ClInclude Include="InputComponent.h" />
@@ -162,7 +161,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Component.cpp" />
-    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
     <ClCompile Include="LevelSystem.cpp" />
     <ClCompile Include="MegaManObject.cpp" />

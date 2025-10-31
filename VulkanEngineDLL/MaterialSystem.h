@@ -36,35 +36,73 @@ struct Material
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT VkGuid Material_CreateMaterial(const GraphicsRenderer& renderer, const char* materialPath);
-	DLL_EXPORT void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer);
+	DLL_EXPORT VkGuid MaterialSystem_CreateMaterial(const GraphicsRenderer& renderer, const char* materialPath);
+	DLL_EXPORT void MaterialSystem_Update(const GraphicsRenderer& renderer, const float& deltaTime);
+	DLL_EXPORT const bool MaterialSystem_MaterialMapExists(const VkGuid& renderPassId);
+	DLL_EXPORT const Material& MaterialSystem_FindMaterial(const VkGuid& renderPassId);
+	DLL_EXPORT void MaterialSystem_Destroy(const VkGuid& guid);
+	DLL_EXPORT void MaterialSystem_DestroyAllMaterials();
 #ifdef __cplusplus
 }
 #endif
 
-DLL_EXPORT void Material_Update(const GraphicsRenderer& renderer, const float& deltaTime);
-DLL_EXPORT const bool Material_MaterialMapExists(const VkGuid& renderPassId);
-DLL_EXPORT const Material& Material_FindMaterial(const VkGuid& renderPassId);
-DLL_EXPORT const Vector<Material>& Material_MaterialList();
-DLL_EXPORT const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer();
-DLL_EXPORT void Material_Destroy(const VkGuid& guid);
-DLL_EXPORT void Material_DestroyAllMaterials();
+ const Vector<Material>& Material_MaterialList();
+ const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer();
+ void Material_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer);
 
 class MaterialSystem
 {
 	private:
 	public:
 		UnorderedMap<RenderPassGuid, Material> MaterialMap;
-		MaterialSystem() { }
-		~MaterialSystem() { }
+		MaterialSystem() 
+		{ 
+		
+		}
 
-		void Update(const float& deltaTime) { Material_Update(renderer, deltaTime); }
-		VkGuid LoadMaterial(const String& materialPath) { return Material_CreateMaterial(renderer, materialPath.c_str()); }
-		const bool MaterialMapExists(const VkGuid& renderPassId)  const { return Material_MaterialMapExists(renderPassId); }
-		const Material& FindMaterial(const RenderPassGuid& guid) { return Material_FindMaterial(guid); }
-		const Vector<Material>& MaterialList() { return Material_MaterialList(); }
-		const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer() { return Material_GetMaterialPropertiesBuffer(); }
-		void Destroy(const VkGuid& guid) { Material_Destroy(guid); }
-		void DestroyAllMaterials() { Material_DestroyAllMaterials(); }
+		~MaterialSystem() 
+		{
+
+		}
+
+		void Update(const float& deltaTime) 
+		{ 
+			MaterialSystem_Update(renderer, deltaTime);
+		}
+
+		VkGuid LoadMaterial(const String& materialPath) 
+		{ 
+			return MaterialSystem_CreateMaterial(renderer, materialPath.c_str());
+		}
+
+		const bool MaterialMapExists(const VkGuid& renderPassId) const 
+		{ 
+			return MaterialSystem_MaterialMapExists(renderPassId);
+		}
+
+		const Material& FindMaterial(const RenderPassGuid& guid)
+		{ 
+			return MaterialSystem_FindMaterial(guid);
+		}
+
+		const Vector<Material>& MaterialList() 
+		{ 
+			return Material_MaterialList();
+		}
+
+		const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer() 
+		{ 
+			return Material_GetMaterialPropertiesBuffer();
+		}
+
+		void Destroy(const VkGuid& guid) 
+		{ 
+			MaterialSystem_Destroy(guid);
+		}
+
+		void DestroyAllMaterials() 
+		{ 
+			MaterialSystem_DestroyAllMaterials();
+		}
 };
 DLL_EXPORT MaterialSystem materialSystem;
