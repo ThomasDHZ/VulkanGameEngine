@@ -38,7 +38,7 @@ ImGuiRenderer ImGui_StartUp(const GraphicsRenderer& renderer)
         .poolSizeCount = (uint32)IM_ARRAYSIZE(poolSizes),
         .pPoolSizes = poolSizes
     };
-    VULKAN_RESULT(Renderer_CreateDescriptorPool(renderer.Device, &imGui.ImGuiDescriptorPool, &pool_info));
+    vkCreateDescriptorPool(renderer.Device, &pool_info, nullptr, &imGui.ImGuiDescriptorPool);
 
     for (size_t x = 0; x < renderer.SwapChainImageCount; x++)
     {
