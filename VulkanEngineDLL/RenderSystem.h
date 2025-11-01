@@ -100,8 +100,8 @@ public:
             renderer.InFlightFences,
             renderer.GraphicsQueue,
             renderer.PresentQueue,
-            renderer.CommandIndex,
             renderer.ImageIndex,
+            renderer.CommandIndex,
             commandBufferSubmitList.data(),
             commandBufferSubmitList.size(),
             &renderer.RebuildRendererFlag);
