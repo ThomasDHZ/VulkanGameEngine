@@ -23,22 +23,22 @@ void Engine_SetRootDirectory(const char* engineRoot)
     }
 }
 
-void Renderer_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
+void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
     Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);
     shaderSystem.StartUp();
 }
 
-void Renderer_Update(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
+void RenderSystem_Update(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
 {
     if (renderer.RebuildRendererFlag)
     {
-        Renderer_RecreateSwapChain(windowHandle, spriteRenderPass2DId, levelId, deltaTime);
+        RenderSystem_RecreateSwapChain(windowHandle, spriteRenderPass2DId, levelId, deltaTime);
         renderer.RebuildRendererFlag = false;
     }
 }
 
-VkGuid Renderer_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution)
+VkGuid RenderSystem_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution)
 {
     const char* renderPassJson = File_Read(jsonPath.c_str()).Data;
     RenderPassLoader renderPassLoader = nlohmann::json::parse(renderPassJson).get<RenderPassLoader>();
@@ -107,7 +107,7 @@ VkGuid Renderer_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 re
     return renderPassLoader.RenderPassId;
 }
 
-void Renderer_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
+void RenderSystem_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
 {
     vkDeviceWaitIdle(renderer.Device);
     Renderer_RebuildSwapChain(windowHandle, renderer);
@@ -130,17 +130,17 @@ void Renderer_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId
    // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
 
- VulkanRenderPass& Renderer_FindRenderPass(const RenderPassGuid& guid)
+ VulkanRenderPass& RenderSystem_FindRenderPass(const RenderPassGuid& guid)
 {
     return renderSystem.RenderPassMap.at(guid);
 }
 
- Vector<VulkanPipeline>& Renderer_FindRenderPipelineList(const RenderPassGuid& guid)
+ Vector<VulkanPipeline>& RenderSystem_FindRenderPipelineList(const RenderPassGuid& guid)
 {
     return renderSystem.RenderPipelineMap.at(guid);
 }
 
-void Renderer_DestroyRenderPasses()
+void RenderSystem_DestroyRenderPasses()
 {
     for (auto& renderPass : renderSystem.RenderPassMap)
     {
@@ -149,7 +149,7 @@ void Renderer_DestroyRenderPasses()
     renderSystem.RenderPassMap.clear();
 }
 
-void Renderer_DestroyRenderPipelines()
+void RenderSystem_DestroyRenderPipelines()
 {
     for (auto& renderPipelineList : renderSystem.RenderPipelineMap)
     {
@@ -161,10 +161,10 @@ void Renderer_DestroyRenderPipelines()
     renderSystem.RenderPipelineMap.clear();
 }
 
-void Renderer_Destroy()
+void RenderSystem_Destroy()
 {
-    Renderer_DestroyRenderPasses();
-    Renderer_DestroyRenderPipelines();
+    RenderSystem_DestroyRenderPasses();
+    RenderSystem_DestroyRenderPipelines();
     Renderer_DestroyRenderer(renderer);
 }
 
@@ -323,7 +323,7 @@ const Vector<VkDescriptorBufferInfo> Renderer_GetMeshPropertiesBuffer(const VkGu
 const Vector<VkDescriptorImageInfo> Renderer_GetTexturePropertiesBuffer(const VkGuid& renderPassId)
 {
     Vector<Texture> textureList;
-    const VulkanRenderPass& renderPass = Renderer_FindRenderPass(renderPassId);
+    const VulkanRenderPass& renderPass = RenderSystem_FindRenderPass(renderPassId);
     if (renderPass.InputTextureIdListCount > 0)
     {
         Vector<VkGuid> inputTextureList = Vector<VkGuid>(renderPass.InputTextureIdList, renderPass.InputTextureIdList + renderPass.InputTextureIdListCount);

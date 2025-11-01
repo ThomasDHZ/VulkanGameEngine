@@ -10,15 +10,15 @@
     {
         #endif
         DLL_EXPORT void Engine_SetRootDirectory(const char* engineRoot);
-        DLL_EXPORT void Renderer_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
-        DLL_EXPORT void Renderer_Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
-        DLL_EXPORT VkGuid Renderer_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
-        DLL_EXPORT void Renderer_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
-        DLL_EXPORT VulkanRenderPass& Renderer_FindRenderPass(const RenderPassGuid& guid);
-        DLL_EXPORT Vector<VulkanPipeline>& Renderer_FindRenderPipelineList(const RenderPassGuid& guid);
-        DLL_EXPORT void Renderer_DestroyRenderPasses();
-        DLL_EXPORT void Renderer_DestroyRenderPipelines();
-        DLL_EXPORT void Renderer_Destroy();
+        DLL_EXPORT void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
+        DLL_EXPORT void RenderSystem_Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
+        DLL_EXPORT VkGuid RenderSystem_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
+        DLL_EXPORT void RenderSystem_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
+        DLL_EXPORT VulkanRenderPass& RenderSystem_FindRenderPass(const RenderPassGuid& guid);
+        DLL_EXPORT Vector<VulkanPipeline>& RenderSystem_FindRenderPipelineList(const RenderPassGuid& guid);
+        DLL_EXPORT void RenderSystem_DestroyRenderPasses();
+        DLL_EXPORT void RenderSystem_DestroyRenderPipelines();
+        DLL_EXPORT void RenderSystem_Destroy();
         #ifdef __cplusplus
     }
 #endif
@@ -66,13 +66,13 @@ public:
             renderer.RebuildRendererFlag = false;
         }
     }
-    VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution) { return Renderer_LoadRenderPass(levelId, jsonPath, renderPassResolution); }
+    VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution) { return RenderSystem_LoadRenderPass(levelId, jsonPath, renderPassResolution); }
     const VulkanRenderPass& FindRenderPass(const RenderPassGuid& guid) { return RenderPassMap.at(guid); }
     const Vector<VulkanPipeline>& FindRenderPipelineList(const RenderPassGuid& guid) { return RenderPipelineMap.at(guid); }
 
-    void DestroyRenderPasses() { Renderer_DestroyRenderPasses(); }
-    void DestroyRenderPipelines() { Renderer_DestroyRenderPipelines(); }
-    void Destroy() { Renderer_Destroy(); }
+    void DestroyRenderPasses() { RenderSystem_DestroyRenderPasses(); }
+    void DestroyRenderPipelines() { RenderSystem_DestroyRenderPipelines(); }
+    void Destroy() { RenderSystem_Destroy(); }
     void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList) { Renderer_DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size()); }
     void DestroyCommandBuffers(VkCommandBuffer& commandBuffer) { Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1); }
     void DestroyBuffer(VkBuffer& buffer) { Renderer_DestroyBuffer(renderer.Device, &buffer); }

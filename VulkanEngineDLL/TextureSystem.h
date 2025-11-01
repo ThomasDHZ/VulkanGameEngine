@@ -84,6 +84,7 @@ public:
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
+
     TextureSystem()
     {
 
@@ -91,6 +92,7 @@ public:
 
     ~TextureSystem()
     {
+
     }
 
     VkGuid LoadTexture(const String& texturePath)
@@ -102,21 +104,6 @@ public:
     {
         TextureSystem_Update(deltaTime);
     }
-
-    //Texture CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
-    //{
-    //    return Texture_CreateTexture(renderer, textureId, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
-    //}
-    //
-    //Texture CreateTexture(const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
-    //{
-    //    return Texture_CreateTexture(renderer, texturePath, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
-    //}
-    //
-    //Texture CreateTexture(Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
-    //{
-    //    return Texture_CreateTexture(renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
-    //}
 
     void UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution)
     {
@@ -249,5 +236,20 @@ public:
     {
         TextureSystem_DestroyAllTextures(renderer);
     }
+
+    //Texture CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
+    //{
+    //    return Texture_CreateTexture(renderer, textureId, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
+    //}
+    //
+    //Texture CreateTexture(const String& texturePath, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
+    //{
+    //    return Texture_CreateTexture(renderer, texturePath, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
+    //}
+    //
+    //Texture CreateTexture(Pixel& clearColor, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
+    //{
+    //    return Texture_CreateTexture(renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
+    //}
 };
 DLL_EXPORT TextureSystem textureSystem;

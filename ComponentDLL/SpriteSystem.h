@@ -10,6 +10,7 @@
 #include "GameObjectSystem.h"
 #include <BufferSystem.h>
 
+typedef uint32 SpriteLayerId;
 struct SpriteInstance
 {
     vec2  SpritePosition;
@@ -49,51 +50,32 @@ struct Sprite
     vec2 SpriteScale = vec2(1.0f);
 };
 
-
-
-typedef uint32 SpriteLayerId;
-struct SpriteArchive
-{
-    Vector<uint32>				                      FreeSpriteIndicesList;
-    Vector<Sprite>									  SpriteList;
-    Vector<SpriteInstance>                            SpriteInstanceList;
-    Vector<SpriteVram>                                SpriteVramList;
-    UnorderedMap<SpriteLayerId, SpriteLayer>          SpriteLayerList;
-    UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
-};
-DLL_EXPORT SpriteArchive spriteArchive;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-    DLL_EXPORT VkGuid Sprite_LoadSpriteVRAM(const char* spriteVramPath);
-    DLL_EXPORT void Sprite_AddSprite(const GraphicsRenderer& renderer, GameObject& gameObject, VkGuid& spriteVramId);
-    DLL_EXPORT void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime);
-    DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite& sprite, uint spriteAnimationEnum);
+    DLL_EXPORT void         SpriteSystem_AddSprite(const GraphicsRenderer& renderer, GameObject& gameObject, VkGuid& spriteVramId);
+    DLL_EXPORT VkGuid       SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath);
+    DLL_EXPORT void         SpriteSystem_Update(const GraphicsRenderer& renderer, const float& deltaTime);
+    DLL_EXPORT void         SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
+    DLL_EXPORT Sprite*      SpriteSystem_FindSprite(uint gameObjectId);
+    DLL_EXPORT SpriteVram&  SpriteSystem_FindSpriteVram(VkGuid VramSpriteID);
+    DLL_EXPORT Animation2D& SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
+    DLL_EXPORT void         SpriteSystem_Destroy();
 #ifdef __cplusplus
 }
 #endif
 
-uint32 GetNextSpriteIndex();
-uint32 GetNextSpriteLayerIndex();
+    DLL_EXPORT Vector<SpriteInstance> SpriteSystem_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer);
+    DLL_EXPORT Vector<std::reference_wrapper<Sprite>> SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer);
 
-DLL_EXPORT void Sprite_UpdateSprites(const float& deltaTime);
-DLL_EXPORT void Sprite_Update(const GraphicsRenderer& renderer, const float& deltaTime);
-DLL_EXPORT void Sprite_Destroy();
-
-DLL_EXPORT void Sprite_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-
-DLL_EXPORT Sprite* Sprite_FindSprite(uint gameObjectId);
-DLL_EXPORT uint32 Sprite_FindSpriteComponentIndex(uint gameObjectId);
-DLL_EXPORT Vector<std::reference_wrapper<Sprite>> Sprite_FindSpritesByLayer(const SpriteLayer& spriteLayer);
-DLL_EXPORT const Vector<Mesh>& Sprite_FindSpriteLayerMeshList();
-
-DLL_EXPORT SpriteVram& Sprite_FindSpriteVram(VkGuid VramSpriteID);
-DLL_EXPORT Vector<SpriteInstance> Sprite_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer);
-DLL_EXPORT Animation2D& Sprite_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
-DLL_EXPORT const bool Sprite_SpriteLayerExists(const uint32 spriteDrawLayer);
-
-DLL_EXPORT void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId, uint32 spriteDrawLayer);
+    uint32 GetNextSpriteIndex();
+    uint32 GetNextSpriteLayerIndex();
+    void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime);
+    void Sprite_UpdateSprites(const float& deltaTime);
+    uint32 Sprite_FindSpriteComponentIndex(uint gameObjectId);
+    const Vector<Mesh>& Sprite_FindSpriteLayerMeshList(); 
+    const bool Sprite_SpriteLayerExists(const uint32 spriteDrawLayer);
+    void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId, uint32 spriteDrawLayer);
 
 class SpriteSystem
 {
@@ -127,15 +109,53 @@ public:
     ~SpriteSystem() { }
 
 
-    void AddSprite(GameObject& gameObject, VkGuid& spriteVramId) { Sprite_AddSprite(renderer, gameObject, spriteVramId); }
-    void Update(const float& deltaTime) { Sprite_Update(renderer, deltaTime); }
-    void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum) { Sprite_SetSpriteAnimation(*sprite, spriteAnimationEnum); }
-    Sprite* FindSprite(uint gameObjectId) { return Sprite_FindSprite(gameObjectId); }
-    Vector<std::reference_wrapper<Sprite>> FindSpritesByLayer(const SpriteLayer& spriteLayer) { return Sprite_FindSpritesByLayer(spriteLayer); }
-    const Vector<SpriteInstance> FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer) { return Sprite_FindSpriteInstancesByLayer(spriteLayer); }
-    const SpriteVram& FindSpriteVram(VkGuid vramSpriteId) { return Sprite_FindSpriteVram(vramSpriteId); }
-    const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId) { return Sprite_FindSpriteAnimation(vramId, animationId); }
-    VkGuid LoadSpriteVRAM(const String& spriteVramPath) { return Sprite_LoadSpriteVRAM(spriteVramPath.c_str()); }
-    void Destroy() { Sprite_Destroy(); }
+    void AddSprite(GameObject& gameObject, VkGuid& spriteVramId) 
+    { 
+        SpriteSystem_AddSprite(renderer, gameObject, spriteVramId);
+    }
+
+    void Update(const float& deltaTime) 
+    { 
+        SpriteSystem_Update(renderer, deltaTime);
+    }
+
+    void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum) 
+    { 
+        SpriteSystem_SetSpriteAnimation(sprite, spriteAnimationEnum); 
+    }
+
+    Sprite* FindSprite(uint gameObjectId) 
+    { 
+        return SpriteSystem_FindSprite(gameObjectId);
+    }
+
+    Vector<std::reference_wrapper<Sprite>> FindSpritesByLayer(const SpriteLayer& spriteLayer) 
+    {
+        return SpriteSystem_FindSpritesByLayer(spriteLayer); 
+    }
+    const Vector<SpriteInstance> FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer) 
+    { 
+        return SpriteSystem_FindSpriteInstancesByLayer(spriteLayer); 
+    }
+
+    const SpriteVram& FindSpriteVram(VkGuid vramSpriteId) 
+    { 
+        return SpriteSystem_FindSpriteVram(vramSpriteId); 
+    }
+
+    const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId) 
+    { 
+        return SpriteSystem_FindSpriteAnimation(vramId, animationId); 
+    }
+
+    VkGuid LoadSpriteVRAM(const String& spriteVramPath) 
+    { 
+        return SpriteSystem_LoadSpriteVRAM(spriteVramPath.c_str()); 
+    }
+
+    void Destroy() 
+    { 
+        SpriteSystem_Destroy(); 
+    }
 };
 DLL_EXPORT SpriteSystem spriteSystem;
