@@ -4,7 +4,7 @@
 
 #include "DLL.h"
 #include "Macro.h"
-#include "CTypedef.h"
+#include "Typedef.h"
 #include "VulkanError.h"
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_win32.h>

@@ -1,6 +1,6 @@
 #pragma once
 #include "DLL.h"
-#include "CTypedef.h"
+#include "Typedef.h"
 #include "VulkanRenderer.h"
 #include <glfw/include/GLFW/glfw3.h>
 #include <ImGui/backends/imgui_impl_glfw.h>

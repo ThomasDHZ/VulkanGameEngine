@@ -135,7 +135,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
-    <ClInclude Include="CVulkanRenderer.h" />
     <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="enum.h" />
     <ClInclude Include="FileSystem.h" />
@@ -148,7 +147,6 @@
     <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
-    <ClInclude Include="CTypedef.h" />
     <ClInclude Include="DLL.h" />
     <ClInclude Include="ECSid.h" />
     <ClInclude Include="from_json.h" />
@@ -169,7 +167,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
-    <ClCompile Include="CVulkanRenderer.c" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />

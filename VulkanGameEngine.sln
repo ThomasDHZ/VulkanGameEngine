@@ -19,53 +19,60 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{0EDEA954-1D78-4E87-B6E9-6AD004194688}"
 	ProjectSection(SolutionItems) = preProject
-		Pipelines\Default2DPipeline.json = Pipelines\Default2DPipeline.json
-		Pipelines\DefaultPipeline.json = Pipelines\DefaultPipeline.json
-		Pipelines\FrameBufferPipeline.json = Pipelines\FrameBufferPipeline.json
-		Pipelines\GaussianBlurPipeline.json = Pipelines\GaussianBlurPipeline.json
-		LevelObjectPickerPipeline.json = LevelObjectPickerPipeline.json
-		Pipelines\LevelObjectPickerPipeline.json = Pipelines\LevelObjectPickerPipeline.json
-		Pipelines\LevelShader2DPipeline.json = Pipelines\LevelShader2DPipeline.json
-		Pipelines\LevelShader2DWireframePipeline.json = Pipelines\LevelShader2DWireframePipeline.json
-		Pipelines\SpriteInstancePipeline.json = Pipelines\SpriteInstancePipeline.json
-		Pipelines\SpriteInstanceWireFramePipeline.json = Pipelines\SpriteInstanceWireFramePipeline.json
-		Pipelines\SpriteObjectPickerPipeline.json = Pipelines\SpriteObjectPickerPipeline.json
+		Assets\Pipelines\FrameBufferPipeline.json = Assets\Pipelines\FrameBufferPipeline.json
+		Assets\Pipelines\GaussianBlurPipeline.json = Assets\Pipelines\GaussianBlurPipeline.json
+		Assets\Pipelines\LevelObjectPickerPipeline.json = Assets\Pipelines\LevelObjectPickerPipeline.json
+		Assets\Pipelines\LevelShader2DPipeline.json = Assets\Pipelines\LevelShader2DPipeline.json
+		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
+		Assets\Pipelines\SpriteInstancePipeline.json = Assets\Pipelines\SpriteInstancePipeline.json
+		Assets\Pipelines\SpriteInstanceWireFramePipeline.json = Assets\Pipelines\SpriteInstanceWireFramePipeline.json
+		Assets\Pipelines\SpriteObjectPickerPipeline.json = Assets\Pipelines\SpriteObjectPickerPipeline.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\RenderPass\DefaultRenderPass.json = Assets\RenderPass\DefaultRenderPass.json
+		Assets\RenderPass\FrameBufferRenderPass.json = Assets\RenderPass\FrameBufferRenderPass.json
+		Assets\RenderPass\GaussianBlurRenderPass.json = Assets\RenderPass\GaussianBlurRenderPass.json
+		Assets\RenderPass\LevelShader2DMultiSampledRenderPass.json = Assets\RenderPass\LevelShader2DMultiSampledRenderPass.json
+		Assets\RenderPass\LevelShader2DRenderPass.json = Assets\RenderPass\LevelShader2DRenderPass.json
+		Assets\RenderPass\LevelShader2DWireFrameRenderPass.json = Assets\RenderPass\LevelShader2DWireFrameRenderPass.json
+		Assets\RenderPass\ObjectPickerRenderPass.json = Assets\RenderPass\ObjectPickerRenderPass.json
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"
 	ProjectSection(SolutionItems) = preProject
-		Levels\TestLevel.json = Levels\TestLevel.json
+		Assets\Levels\TestLevel.json = Assets\Levels\TestLevel.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{4CCF9A80-6215-4938-8BF7-38F42B25CDFB}"
 	ProjectSection(SolutionItems) = preProject
-		Materials\Material1.json = Materials\Material1.json
-		Materials\MegaManShotMaterial.json = Materials\MegaManShotMaterial.json
-		Materials\SparkManTileSetMaterial.json = Materials\SparkManTileSetMaterial.json
+		Assets\Materials\Material1.json = Assets\Materials\Material1.json
+		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
+		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sprites", "Sprites", "{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A}"
 	ProjectSection(SolutionItems) = preProject
-		Sprites\MegaManShotSprite.json = Sprites\MegaManShotSprite.json
-		Sprites\TestSprite.json = Sprites\TestSprite.json
+		Assets\Sprites\MegaManShot.json = Assets\Sprites\MegaManShot.json
+		Assets\Sprites\MegaManShotSprite.json = Assets\Sprites\MegaManShotSprite.json
+		Assets\Sprites\TestSprite.json = Assets\Sprites\TestSprite.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{9352A260-EB46-4E2B-AD94-08F0665C8B63}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0}"
 	ProjectSection(SolutionItems) = preProject
-		Textures\MegaManShotTexture.json = Textures\MegaManShotTexture.json
-		Textures\SparkManTexture.json = Textures\SparkManTexture.json
-		Textures\TestTexture.json = Textures\TestTexture.json
+		Assets\TextureLoader\MegaManShotTexture.json = Assets\TextureLoader\MegaManShotTexture.json
+		Assets\TextureLoader\SparkManTexture.json = Assets\TextureLoader\SparkManTexture.json
+		Assets\TextureLoader\TestTexture.json = Assets\TextureLoader\TestTexture.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Texture", "Texture", "{877021B2-F222-4B9F-BEBF-7C9A223DD6B0}"
 	ProjectSection(SolutionItems) = preProject
-		Textures\MegaManShot.png = Textures\MegaManShot.png
-		Textures\MegaMan_diffuse.bmp = Textures\MegaMan_diffuse.bmp
-		Textures\SparkMan.png = Textures\SparkMan.png
+		Assets\Textures\MegaManShot.png = Assets\Textures\MegaManShot.png
+		Assets\Textures\MegaMan_diffuse.bmp = Assets\Textures\MegaMan_diffuse.bmp
+		Assets\Textures\SparkMan.png = Assets\Textures\SparkMan.png
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
@@ -77,18 +84,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanG
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TileSets", "TileSets", "{12565B15-EF6B-4DAF-8552-844EE28936D7}"
 	ProjectSection(SolutionItems) = preProject
-		TileSets\SparkManTileSet.json = TileSets\SparkManTileSet.json
+		Assets\TileSets\SparkManTileSet.json = Assets\TileSets\SparkManTileSet.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelMapLevelLayout", "LevelMapLevelLayout", "{740E1C1F-320C-4A8F-A58D-B46058521506}"
 	ProjectSection(SolutionItems) = preProject
-		LevelMapLevelLayout\TestMapLevelLayout.json = LevelMapLevelLayout\TestMapLevelLayout.json
+		Assets\LevelMapLevelLayout\TestMapLevelLayout.json = Assets\LevelMapLevelLayout\TestMapLevelLayout.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects", "{21F6500D-6E92-4717-815C-AB3C6E100B64}"
 	ProjectSection(SolutionItems) = preProject
-		GameObjects\MegaManShotObject.json = GameObjects\MegaManShotObject.json
-		GameObjects\TestGameObject.json = GameObjects\TestGameObject.json
+		Assets\GameObjects\MegaManShotObject.json = Assets\GameObjects\MegaManShotObject.json
+		Assets\GameObjects\TestGameObject.json = Assets\GameObjects\TestGameObject.json
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEngineDLL\VulkanEngineDLL.vcxproj", "{D22B29FB-1F02-471C-81AC-A352862F6951}"

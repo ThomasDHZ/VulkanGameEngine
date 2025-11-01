@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include "CTypedef.h"
 #include <objbase.h>
 #include <stdexcept>
 #include <array>
@@ -14,9 +13,9 @@
 class VkGuid
 {
 private:
-    uint32 Data1;
-    uint16 Data2;
-    uint16 Data3;
+    uint32_t Data1;
+    uint16_t Data2;
+    uint16_t Data3;
     std::array<uint8_t, 8> Data4;
 
 public:

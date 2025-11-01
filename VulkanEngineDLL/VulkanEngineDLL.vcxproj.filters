@@ -39,9 +39,6 @@
     <ClInclude Include="Macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CTypedef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Typedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -89,9 +86,6 @@
     </ClInclude>
     <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CVulkanRenderer.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="BufferSystem.h">
       <Filter>Header Files\Systems</Filter>
@@ -156,9 +150,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanError.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CVulkanRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanShaderSystem.cpp">

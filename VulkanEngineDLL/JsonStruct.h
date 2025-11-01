@@ -129,17 +129,6 @@ struct RenderPassAttachementTextures
     Texture* DepthTexture;
 };
 
-struct TextureLoader
-{
-    String TextureFilePath;
-    VkGuid TextureId;
-    VkImageAspectFlags ImageType;
-    TextureTypeEnum TextureType;
-    bool UseMipMaps;
-    VkImageCreateInfo ImageCreateInfo;
-    VkSamplerCreateInfo SamplerCreateInfo;
-};
-
 struct RenderPassLoader
 {
     VkGuid RenderPassId;

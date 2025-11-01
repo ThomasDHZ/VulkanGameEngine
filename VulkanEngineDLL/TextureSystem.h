@@ -1,8 +1,11 @@
 #pragma once
-extern "C"
-{
-#include "CVulkanRenderer.h"
-}
+#include <windows.h>
+#include <stdbool.h>
+
+#include "DLL.h"
+#include "Macro.h"
+#include "Typedef.h"
+#include "VulkanError.h"
 #include "pixel.h"
 #include "Typedef.h"
 #include "VkGuid.h"
@@ -11,7 +14,17 @@ extern "C"
 #include "enum.h"
 #include "FileSystem.h"
 
-struct TextureLoader;
+struct TextureLoader
+{
+    String TextureFilePath;
+    VkGuid TextureId;
+    VkImageAspectFlags ImageType;
+    TextureTypeEnum TextureType;
+    bool UseMipMaps;
+    VkImageCreateInfo ImageCreateInfo;
+    VkSamplerCreateInfo SamplerCreateInfo;
+};
+
 struct Texture
 {
     TextureGuid textureId;

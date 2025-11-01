@@ -1,9 +1,5 @@
 #pragma once
-extern "C"
-{
-#include "CTypedef.h"
-}
-
+#include <inttypes.h>
 #include <ctype.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,6 +8,15 @@ extern "C"
 #include <vector>
 #include "VkGuid.h"
 
+typedef uint32_t uint;
+typedef uint8_t  uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+typedef int8_t  int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
 typedef glm::vec1 vec1;
 typedef glm::vec2 vec2;
 typedef glm::vec3 vec3;
@@ -25,6 +30,8 @@ typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
 typedef std::string String;
 
+typedef unsigned char byte;
+typedef unsigned char MemoryBlock;
 typedef uint8_t MemoryAddress;
 
 template <typename T, typename P> using Map = std::map<T, P>;
