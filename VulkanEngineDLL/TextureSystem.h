@@ -52,42 +52,42 @@ struct Texture
 extern "C"
 {
 #endif
-    DLL_EXPORT VkGuid   TextureSystem_LoadTexture(const GraphicsRenderer& renderer, const char* texturePath);
-    DLL_EXPORT void     TextureSystem_AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList);
-    DLL_EXPORT void     TextureSystem_AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTexture);
+    DLL_EXPORT VkGuid   TextureSystem_LoadTexture(const char* texturePath);
+    DLL_EXPORT void     TextureSystem_AddRenderedTexture(RenderPassGuid& renderPassGuid, Texture* renderedTextureListPtr, size_t renderTextureCount);
+    DLL_EXPORT void     TextureSystem_AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
     DLL_EXPORT void     TextureSystem_Update(const float& deltaTime);
-    DLL_EXPORT void     TextureSystem_UpdateTextureLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipmapLevel);
-    DLL_EXPORT void     TextureSystem_UpdateCmdTextureLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& oldImageLayout, VkImageLayout& newImageLayout, uint32 mipmapLevel);
-    DLL_EXPORT void     TextureSystem_UpdateTextureSize(const GraphicsRenderer& renderer, Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution);
-    DLL_EXPORT Texture  TextureSystem_FindTexture(const RenderPassGuid& guid); 
-    DLL_EXPORT Texture& TextureSystem_FindDepthTexture(const RenderPassGuid& guid);
+    DLL_EXPORT void     TextureSystem_UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipmapLevel);
+    DLL_EXPORT void     TextureSystem_UpdateCmdTextureLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& oldImageLayout, VkImageLayout& newImageLayout, uint32 mipmapLevel);
+    DLL_EXPORT void     TextureSystem_UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution);
+    DLL_EXPORT Texture  TextureSystem_FindTexture(const RenderPassGuid& textureGuid); 
+    DLL_EXPORT Texture& TextureSystem_FindDepthTexture(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT Texture& TextureSystem_FindRenderedTexture(const TextureGuid& textureGuid);
-    DLL_EXPORT bool     TextureSystem_TextureExists(const RenderPassGuid& guid);
-    DLL_EXPORT bool     TextureSystem_DepthTextureExists(const RenderPassGuid& guid);
-    DLL_EXPORT bool     TextureSystem_RenderedTextureExists(const RenderPassGuid& guid, const TextureGuid& textureGuid);
-    DLL_EXPORT bool     TextureSystem_RenderedTextureListExists(const RenderPassGuid& guid);
+    DLL_EXPORT bool     TextureSystem_TextureExists(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT bool     TextureSystem_DepthTextureExists(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT bool     TextureSystem_RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid);
+    DLL_EXPORT bool     TextureSystem_RenderedTextureListExists(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT void     TextureSystem_GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
-    DLL_EXPORT void     TextureSystem_DestroyTexture(const GraphicsRenderer& renderer, Texture& texture);
-    DLL_EXPORT void     TextureSystem_DestroyAllTextures(const GraphicsRenderer& renderer);
+    DLL_EXPORT void     TextureSystem_DestroyTexture(Texture& texture);
+    DLL_EXPORT void     TextureSystem_DestroyAllTextures();
 #ifdef __cplusplus
 }
 #endif
 
     DLL_EXPORT Vector<Texture>& TextureSystem_FindRenderedTextureList(const RenderPassGuid& guid);
     void Texture_UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
-    Texture  Texture_CreateTexture(const GraphicsRenderer& renderer, VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
-    VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& createImageInfo);
-    VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
-    VkResult Texture_CreateTextureImage(const GraphicsRenderer& renderer, const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType);
-    VkResult Texture_UpdateImage(const GraphicsRenderer& renderer, Texture& texture);
-    VkResult Texture_CreateImage(const GraphicsRenderer& renderer, Texture& texture, VkImageCreateInfo& imageCreateInfo);
-    VkResult Texture_CreateTextureView(const GraphicsRenderer& renderer, Texture& texture, VkImageAspectFlags imageAspectFlags);
-    VkResult Texture_CreateTextureSampler(const GraphicsRenderer& renderer, Texture& texture, VkSamplerCreateInfo& sampleCreateInfo);
-    VkResult Texture_TransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
-    VkResult Texture_QuickTransitionImageLayout(const GraphicsRenderer& renderer, Texture& texture, VkImageLayout newLayout);
-    VkResult Texture_CommandBufferTransitionImageLayout(const GraphicsRenderer& renderer, VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel);
-    VkResult Texture_CopyBufferToTexture(const GraphicsRenderer& renderer, Texture& texture, VkBuffer buffer);
-    VkResult Texture_GenerateMipmaps(const GraphicsRenderer& renderer, Texture& texture);
+    Texture  Texture_CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
+    VkResult Texture_CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo);
+    VkResult Texture_CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
+    VkResult Texture_CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType);
+    VkResult Texture_UpdateImage(Texture& texture);
+    VkResult Texture_CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo);
+    VkResult Texture_CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
+    VkResult Texture_CreateTextureSampler(Texture& texture, VkSamplerCreateInfo& sampleCreateInfo);
+    VkResult Texture_TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
+    VkResult Texture_QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout);
+    VkResult Texture_CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel);
+    VkResult Texture_CopyBufferToTexture(Texture& texture, VkBuffer buffer);
+    VkResult Texture_GenerateMipmaps(Texture& texture);
 
 class TextureSystem
 {
@@ -110,7 +110,7 @@ public:
 
     VkGuid LoadTexture(const String& texturePath)
     {
-        return TextureSystem_LoadTexture(renderer, texturePath.c_str());
+        return TextureSystem_LoadTexture(texturePath.c_str());
     }
 
     void Update(const float& deltaTime)
@@ -120,7 +120,7 @@ public:
 
     void UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution)
     {
-        TextureSystem_UpdateTextureSize(renderer, texture, imageType, TextureResolution);
+        TextureSystem_UpdateTextureSize(texture, imageType, TextureResolution);
     }
 
     void GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
@@ -130,52 +130,53 @@ public:
 
     void UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout)
     {
-        TextureSystem_UpdateTextureLayout(renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        TextureSystem_UpdateTextureLayout(texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
     }
 
     void UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout, uint32 mipLevels)
     {
-        TextureSystem_UpdateTextureLayout(renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+        TextureSystem_UpdateTextureLayout(texture, texture.textureImageLayout, newImageLayout, mipLevels);
     }
 
     void UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
     {
-        TextureSystem_UpdateTextureLayout(renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        TextureSystem_UpdateTextureLayout(texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
     }
 
     void UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
     {
-        TextureSystem_UpdateTextureLayout(renderer, texture, oldImageLayout, newImageLayout, mipLevels);
+        TextureSystem_UpdateTextureLayout(texture, oldImageLayout, newImageLayout, mipLevels);
     }
 
     void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout)
     {
-        TextureSystem_UpdateCmdTextureLayout(renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
     }
 
     void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout, uint32 mipLevels)
     {
-        TextureSystem_UpdateCmdTextureLayout(renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+        TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
     }
 
     void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
     {
-        TextureSystem_UpdateCmdTextureLayout(renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+        TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
     }
 
     void UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
     {
-        TextureSystem_UpdateCmdTextureLayout(renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
+        TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
     }
 
     void DestroyTexture(Texture& texture)
     {
-        TextureSystem_DestroyTexture(renderer, texture);
+        TextureSystem_DestroyTexture(texture);
     }
 
     void AddRenderedTexture(RenderPassGuid& vkGuid, Vector<Texture>& renderedTextureList)
     {
-        TextureSystem_AddRenderedTexture(vkGuid, renderedTextureList);
+        size_t renderedTextureCount = renderedTextureList.size();
+        TextureSystem_AddRenderedTexture(vkGuid, renderedTextureList.data(), renderedTextureCount);
     }
 
     void AddDepthTexture(RenderPassGuid& vkGuid, Texture& depthTexture)
@@ -247,7 +248,7 @@ public:
 
     void DestroyAllTextures()
     {
-        TextureSystem_DestroyAllTextures(renderer);
+        TextureSystem_DestroyAllTextures();
     }
 
     //Texture CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)

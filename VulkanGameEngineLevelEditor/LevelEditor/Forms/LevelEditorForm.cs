@@ -125,13 +125,13 @@ namespace VulkanGameEngineLevelEditor
                 //levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
                 //levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
 
-                List<GameObject> gameObjectList = new List<GameObject>();
-                foreach (var gameObject in GameObjectSystem.GameObjectMap)
-                {
-                    gameObjectList.Add(gameObject.Value);
-                }
-                    levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
-                    levelEditorTreeView1.PopulateTreeView(gameObjectList);
+                //List<GameObject> gameObjectList = new List<GameObject>();
+                //foreach (var gameObject in GameObjectSystem.GameObjectMap)
+                //{
+                //    gameObjectList.Add(gameObject.Value);
+                //}
+                //    levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+                //    levelEditorTreeView1.PopulateTreeView(gameObjectList);
             }));
 
             Stopwatch stopwatch = new Stopwatch();
@@ -231,7 +231,7 @@ namespace VulkanGameEngineLevelEditor
                 {
                     isResizing = true;
                     RenderSystem.RebuildRendererFlag = true;
-                    RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(RendererBox.Width, RendererBox.Height));
+                   // RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(RendererBox.Width, RendererBox.Height));
                     isResizing = false;
                 }
             }
@@ -273,7 +273,7 @@ namespace VulkanGameEngineLevelEditor
                         {
                             isResizing = true;
                             RenderSystem.RebuildRendererFlag = true;
-                            RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap, ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
+                           // RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap, ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
                             isResizing = false;
                         }
                     }

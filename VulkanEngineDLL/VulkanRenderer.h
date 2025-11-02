@@ -138,9 +138,9 @@ extern "C" {
 	Vector<VkSurfaceFormatKHR> Renderer_GetSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkPresentModeKHR> Renderer_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	bool Renderer_GetRayTracingSupport();
-	void Renderer_GetRendererFeatures(VkPhysicalDeviceVulkan11Features * physicalDeviceVulkan11Features);
+	void Renderer_GetRendererFeatures(VkPhysicalDeviceVulkan11Features* physicalDeviceVulkan11Features);
 	VkPhysicalDeviceFeatures Renderer_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
-	Vector<VkPhysicalDevice> Renderer_GetPhysicalDeviceList(VkInstance & instance);
+	Vector<VkPhysicalDevice> Renderer_GetPhysicalDeviceList(VkInstance& instance);
 	VkPhysicalDevice Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32 & graphicsFamily, uint32 & presentFamily);
 	VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
 	VkCommandPool Renderer_SetUpCommandPool(VkDevice device, uint32 graphicsFamily);

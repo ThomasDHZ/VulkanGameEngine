@@ -109,7 +109,7 @@ namespace VulkanGameEngineLevelEditor
                 
                     isResizing = true;
                     RenderSystem.RebuildRendererFlag = true;
-                    RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(pictureBox1.Width, pictureBox1.Height));
+                   // RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(pictureBox1.Width, pictureBox1.Height));
                     isResizing = false;
                 
             }

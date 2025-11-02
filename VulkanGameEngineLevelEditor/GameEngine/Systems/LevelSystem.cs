@@ -46,17 +46,17 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void Update(float deltaTime)
         {
-            LevelSystem_Update(deltaTime);
+            DLLSystem.CallDLLFunc(() => LevelSystem_Update(deltaTime));
         }
 
         public static void Draw(ListPtr<VkCommandBuffer> commandBufferList, float deltaTime)
         {
-            LevelSystem_Draw(commandBufferList.Ptr, commandBufferList.Count, deltaTime);
+            DLLSystem.CallDLLFunc(() => LevelSystem_Draw(commandBufferList.Ptr, commandBufferList.Count, deltaTime));
         }
 
         public static void DestroyLevel()
         {
-            LevelSystem_DestroyLevel();
+            DLLSystem.CallDLLFunc(() => LevelSystem_DestroyLevel());
         }
 
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);

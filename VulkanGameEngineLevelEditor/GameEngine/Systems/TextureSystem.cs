@@ -17,140 +17,112 @@ using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 
+
 namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
     public unsafe static class TextureSystem
     {
-     
-        public static Dictionary<Guid, Texture> TextureList { get; set; } = new Dictionary<Guid, Texture>();
-        public static Dictionary<Guid, Texture> DepthTextureList { get; set; } = new Dictionary<Guid, Texture>();
-        public static Dictionary<Guid, ListPtr<Texture>> RenderedTextureListMap { get; set; } = new Dictionary<Guid, ListPtr<Texture>>();
-
         public static Guid LoadTexture(string texturePath)
         {
-            Guid guid = Texture_LoadTexture(RenderSystem.renderer, texturePath);
-            return guid;
+            return DLLSystem.CallDLLFunc(() => TextureSystem_LoadTexture(texturePath));
+        }
+
+        public static void AddRenderedTexture(RenderPassGuid renderPassGuid, ListPtr<Texture> textureList)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_AddRenderedTexture(renderPassGuid, textureList.Ptr, textureList.Count));
+        }
+
+        public static void AddDepthTexture(RenderPassGuid renderPassGuid, Texture depthTexture)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_AddDepthTexture(renderPassGuid, depthTexture));
         }
 
         public static void Update(float deltaTime)
         {
-            uint x = 0;
-            foreach (var texture in TextureList)
-            {
-                Texture_UpdateTextureBufferIndex(texture.Value, x);
-                x++;
-            }
+            DLLSystem.CallDLLFunc(() => TextureSystem_Update(deltaTime));
         }
 
-        public static void GetTexturePropertiesBuffer(Texture texture, ref ListPtr<VkDescriptorImageInfo> textureDescriptorList)
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipmapLevel)
         {
-            VkDescriptorImageInfo textureDescriptor = new VkDescriptorImageInfo
-            {
-                sampler = texture.textureSampler,
-                imageView = texture.textureView,
-                imageLayout = VkImageLayout.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            };
-            textureDescriptorList.Add(textureDescriptor);
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureLayout(texture, oldImageLayout, newImageLayout, mipmapLevel));
         }
 
-        public static void AddRenderedTexture(Guid vkGuid, ListPtr<Texture> renderedTextureList)
+        public static void UpdateCmdTextureLayout(VkCommandBuffer commandBuffer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipmapLevel)
         {
-            RenderedTextureListMap[vkGuid] = renderedTextureList;
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, oldImageLayout, newImageLayout, mipmapLevel));
         }
 
-        public static void AddDepthTexture(Guid vkGuid, Texture depthTexture)
+        public static void UpdateTextureSize(Texture texture, VkImageAspectFlagBits imageType, vec2 TextureResolution)
         {
-            DepthTextureList[vkGuid] = depthTexture;
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureSize(texture, imageType, TextureResolution));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkImageLayout newImageLayout)
+        public static Texture FindTexture(RenderPassGuid renderPassGuid)
         {
-            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_FindTexture(renderPassGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkImageLayout newImageLayout, uint mipLevels)
+        public static Texture FindDepthTexture(RenderPassGuid renderPassGuid)
         {
-            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_FindDepthTexture(renderPassGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+        public static Texture FindRenderedTexture(TextureGuid textureGuid)
         {
-            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_FindRenderedTexture(textureGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipLevels)
+        public static bool TextureExists(RenderPassGuid renderPassGuid)
         {
-            Texture_UpdateTextureLayout(RenderSystem.renderer, texture, oldImageLayout, newImageLayout, mipLevels);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_TextureExists(renderPassGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout newImageLayout)
+        public static bool DepthTextureExists(RenderPassGuid renderPassGuid)
         {
-            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_DepthTextureExists(renderPassGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout newImageLayout, uint mipLevels) 
+        public static bool RenderedTextureExists(RenderPassGuid renderPassGuid, TextureGuid textureGuid)
         {
-            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_RenderedTextureExists(renderPassGuid, textureGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+        public static bool RenderedTextureListExists(RenderPassGuid renderPassGuid)
         {
-            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
+            return DLLSystem.CallDLLFunc(() => TextureSystem_RenderedTextureListExists(renderPassGuid));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipLevels)
+        public static void GetTexturePropertiesBuffer(Texture texture, List<VkDescriptorImageInfo> textureDescriptorList)
         {
-            Texture_UpdateCmdTextureLayout(RenderSystem.renderer, commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels);
+            DLLSystem.CallDLLFunc(() => TextureSystem_GetTexturePropertiesBuffer(texture, textureDescriptorList));
         }
 
-        public static bool TextureExists(Guid guid)
+        public static void DestroyTexture(Texture texture)
         {
-            return TextureList.Where(x => x.Value.textureId == guid).Any();
+            DLLSystem.CallDLLFunc(() => TextureSystem_DestroyTexture(texture));
         }
 
-        public static bool DepthTextureExists(Guid guid)
+        public static void DestroyAllTextures()
         {
-            return DepthTextureList.Where(x => x.Value.textureId == guid).Any();
+            DLLSystem.CallDLLFunc(() => TextureSystem_DestroyAllTextures());
         }
 
-        public static bool RenderedTextureExists(Guid guid, Guid textureGuid)
-        {
-            return RenderedTextureListMap[guid].Where(x => x.textureId == textureGuid).Any();
-        }
-
-        public static bool RenderedTextureListExists(Guid guid)
-        {
-            return RenderedTextureListMap[guid].Any();
-        }
-
-        public static Texture FindTexture(Guid textureGuid)
-        {
-            return TextureList[textureGuid];
-        }
-
-        public static Texture FindRenderedTexture(Guid textureGuid)
-        {
-            foreach (var pair in RenderedTextureListMap)
-            {
-                return pair.Value.Where(x => x.textureId == textureGuid).First();
-            }
-            return new Texture();
-        }
-
-        public static ListPtr<Texture> FindRenderedTextureList(Guid textureGuid)
-        {
-            return RenderedTextureListMap[textureGuid];
-        }
-
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern Guid Texture_LoadTexture(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern Texture Texture_CreateTexture(GraphicsRenderer renderer, Guid textureId, VkImageAspectFlagBits imageType, VkImageCreateInfo createImageInfo, VkSamplerCreateInfo samplerCreateInfo, bool useMipMaps);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureSize(GraphicsRenderer renderer, Texture texture, VkImageAspectFlagBits imageType, vec2 TextureResolution);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureBufferIndex(Texture texture, uint bufferIndex);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern bool Texture_TextureExists(Guid guid);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern Texture Texture_FindTexture(Guid guid);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_GetTexturePropertiesBuffer(Texture texture, List<VkDescriptorImageInfo> textureDescriptorList);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_DestroyTexture(GraphicsRenderer renderer, Texture texture);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateCmdTextureLayout(GraphicsRenderer renderer, VkCommandBuffer commandBuffer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipmapLevel);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Texture_UpdateTextureLayout(GraphicsRenderer renderer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint mipmapLevel);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Guid TextureSystem_LoadTexture([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string texturePath);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_AddRenderedTexture(RenderPassGuid renderPassGuid, Texture* renderedTextureListPtr, size_t renderTextureCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_AddDepthTexture(RenderPassGuid renderPassGuid, Texture depthTexture);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_Update(float deltaTime);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipmapLevel);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_UpdateCmdTextureLayout(VkCommandBuffer commandBuffer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipmapLevel);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_UpdateTextureSize(Texture texture, VkImageAspectFlagBits imageType, vec2 TextureResolution);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Texture TextureSystem_FindTexture(RenderPassGuid renderPassGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Texture TextureSystem_FindDepthTexture(RenderPassGuid renderPassGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Texture TextureSystem_FindRenderedTexture(TextureGuid textureGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_TextureExists(RenderPassGuid renderPassGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_DepthTextureExists(RenderPassGuid renderPassGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_RenderedTextureExists(RenderPassGuid renderPassGuid, TextureGuid textureGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_RenderedTextureListExists(RenderPassGuid renderPassGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_GetTexturePropertiesBuffer(Texture texture, List<VkDescriptorImageInfo> textureDescriptorList);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_DestroyTexture(Texture texture);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void TextureSystem_DestroyAllTextures();
     }
 }

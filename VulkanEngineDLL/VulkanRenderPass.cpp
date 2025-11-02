@@ -101,7 +101,7 @@ void VulkanRenderPass_DestoryRenderPassSwapChainTextures(GraphicsRenderer& rende
     Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
     for (auto& renderedTexture : renderedTextureList)
     {
-        TextureSystem_DestroyTexture(renderer, renderedTexture);
+        TextureSystem_DestroyTexture(renderedTexture);
     }
     std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
     renderedTextureCount = 0;
@@ -257,10 +257,10 @@ void RenderPass_BuildRenderPassAttachments(const GraphicsRenderer& renderer, con
         VkSamplerCreateInfo samplerCreateInfo = texture.SamplerCreateInfo;
         switch (texture.TextureType)
         {
-        case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderer, renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap); break;
+        case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap); break;
         };
     }
 }
