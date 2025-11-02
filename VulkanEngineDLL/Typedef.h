@@ -46,6 +46,7 @@ typedef VkGuid LevelGuid;
 typedef VkGuid TextureGuid;
 typedef VkGuid VramSpriteGuid;
 typedef VkGuid RenderPassGuid;
+typedef VkGuid MaterialGuid;
 
 typedef uint UM_SpriteID;
 typedef uint UM_SpriteBatchID;

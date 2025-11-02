@@ -38,18 +38,18 @@ struct Mesh
 extern "C" 
 	{
 		#endif
-			DLL_EXPORT uint MeshSystem_CreateMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshType, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
-			DLL_EXPORT void MeshSystem_Update(const GraphicsRenderer& renderer, const float& deltaTime);
-			DLL_EXPORT void MeshSystem_Destroy(const GraphicsRenderer& renderer, uint meshId);
-			DLL_EXPORT void MeshSystem_DestroyMesh(const GraphicsRenderer& renderer, Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer);
-			DLL_EXPORT void MeshSystem_DestroyAllGameObjects(const GraphicsRenderer& renderer);
-			DLL_EXPORT const Mesh& MeshSystem_FindMesh(const uint& id);
+			DLL_EXPORT uint MeshSystem_CreateMesh(MeshTypeEnum meshType, Vertex2D* vertexListPtr, uint32* indexListPtr, size_t vertexListCount, size_t indexListCount);
+			DLL_EXPORT void MeshSystem_Update( const float& deltaTime);
+			DLL_EXPORT void MeshSystem_Destroy(uint meshId);
+			DLL_EXPORT void MeshSystem_DestroyMesh(Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer);
+			DLL_EXPORT void MeshSystem_DestroyAllGameObjects();
+			DLL_EXPORT const Mesh& MeshSystem_FindMesh(const uint& meshId);
 		#ifdef __cplusplus
 	}
 #endif
 
 uint32 Mesh_GetNextMeshIndex();
-void Mesh_UpdateMesh(const GraphicsRenderer& renderer, Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
+void Mesh_UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
 DLL_EXPORT const Vector<Mesh> Mesh_FindMeshByMeshType(MeshTypeEnum meshType);
 DLL_EXPORT const Vector<Mesh>& Mesh_FindMeshByVertexType(VertexTypeEnum vertexType);
 DLL_EXPORT const Vector<Mesh>& Mesh_FindMeshList(const uint32& meshTypeId);
@@ -74,24 +74,24 @@ public:
 	
 	}
 
-	uint CreateSpriteLayerMesh(const GraphicsRenderer& renderer, MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList) 
+	uint CreateSpriteLayerMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList) 
 	{ 
-		return MeshSystem_CreateMesh(renderer, meshtype, vertexList, indexList);
+		return MeshSystem_CreateMesh(meshtype, vertexList.data(), indexList.data(), vertexList.size(), indexList.size());
 	}
 
 	void Update(const float& deltaTime) 
 	{ 
-		MeshSystem_Update(renderer, deltaTime);
+		MeshSystem_Update(deltaTime);
 	}
 
 	void Destroy(uint meshId) 
 	{ 
-		MeshSystem_Destroy(renderer, meshId);
+		MeshSystem_Destroy(meshId);
 	}
 
 	void DestroyAllGameObjects() 
 	{ 
-		MeshSystem_DestroyAllGameObjects(renderer);
+		MeshSystem_DestroyAllGameObjects();
 	}
 
 	const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType) 

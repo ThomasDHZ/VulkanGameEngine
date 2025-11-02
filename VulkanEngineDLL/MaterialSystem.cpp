@@ -4,7 +4,7 @@
 
 MaterialSystem materialSystem = MaterialSystem();
 
-VkGuid MaterialSystem_CreateMaterial(const GraphicsRenderer& renderer, const char* materialPath)
+VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
 {
     if (materialPath == nullptr)
     {
@@ -51,7 +51,7 @@ VkGuid MaterialSystem_CreateMaterial(const GraphicsRenderer& renderer, const cha
     };
 }
 
-void MaterialSystem_Update(const GraphicsRenderer& renderer, const float& deltaTime)
+void MaterialSystem_Update(const float& deltaTime)
 {
     uint x = 0;
     for (auto& materialPair : materialSystem.MaterialMap)
@@ -86,14 +86,14 @@ void MaterialSystem_Update(const GraphicsRenderer& renderer, const float& deltaT
     }
 }
 
-void MaterialSystem_DestroyBuffer(const GraphicsRenderer& renderer, VulkanBuffer& materialBuffer)
+void MaterialSystem_DestroyBuffer(VulkanBuffer& materialBuffer)
 {
     VulkanBuffer_DestroyBuffer(renderer, materialBuffer);
 }
 
-const bool MaterialSystem_MaterialMapExists(const VkGuid& renderPassId)
+const bool MaterialSystem_MaterialMapExists(const MaterialGuid& materialGuid)
 {
-    return materialSystem.MaterialMap.contains(renderPassId);
+    return materialSystem.MaterialMap.contains(materialGuid);
 }
 
 const Material& MaterialSystem_FindMaterial(const RenderPassGuid& guid)
@@ -140,9 +140,9 @@ const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer()
 }
 
 
-void MaterialSystem_Destroy(const VkGuid& guid)
+void MaterialSystem_Destroy(const MaterialGuid& materialGuid)
 {
-    Material& material = materialSystem.MaterialMap[guid];
+    Material& material = materialSystem.MaterialMap[materialGuid];
 
     VulkanBuffer& materialBuffer = bufferSystem.VulkanBufferMap[material.MaterialBufferId];
     //Material_DestroyBuffer(renderSystem.renderer, materialBuffer);

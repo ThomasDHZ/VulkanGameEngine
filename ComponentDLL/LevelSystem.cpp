@@ -137,7 +137,7 @@ void Level_LoadLevelMesh(const GraphicsRenderer& renderer, VkGuid& tileSetId)
 
         Vector<Vertex2D> vertexList(levelSystem.LevelLayerList[x].VertexList, levelSystem.LevelLayerList[x].VertexList + levelSystem.LevelLayerList[x].VertexListCount);
         Vector<uint> indexList(levelSystem.LevelLayerList[x].IndexList, levelSystem.LevelLayerList[x].IndexList + levelSystem.LevelLayerList[x].IndexListCount);
-        meshSystem.CreateSpriteLayerMesh(renderer, MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
+        meshSystem.CreateSpriteLayerMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
     }
 }
 
@@ -167,7 +167,7 @@ void LevelSystem_Update(const float& deltaTime)
 
 }
 
- void LevelSystem_LoadLevel(const char* levelPath)
+ LevelGuid LevelSystem_LoadLevel(const char* levelPath)
 {
      levelSystem.OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
@@ -213,12 +213,13 @@ void LevelSystem_Update(const float& deltaTime)
      Level_LoadLevelLayout(renderer, json["LoadLevelLayout"].get<String>().c_str());
      Level_LoadLevelMesh(renderer, tileSetId);
 
-     VkGuid LevelId = VkGuid(json["LevelID"].get<String>().c_str());
+     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
      levelSystem.spriteRenderPass2DId = renderSystem.LoadRenderPass(levelSystem.levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
      //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
      levelSystem.gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
      levelSystem.frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
 
+     return levelId;
 }
 
  void LevelSystem_DestroyLevel()

@@ -183,7 +183,7 @@ void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid
     {
         .RenderPassId = renderPassId,
         .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = MeshSystem_CreateMesh(renderer, MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList, SpriteIndexList)
+        .SpriteLayerMeshId = MeshSystem_CreateMesh(MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList.data(), SpriteIndexList.data(), SpriteVertexList.size(), SpriteIndexList.size())
     };
 
     Vector<SpriteInstance> spriteInstanceList = SpriteSystem_FindSpriteInstancesByLayer(spriteLayer);

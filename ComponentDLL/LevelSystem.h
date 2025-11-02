@@ -18,7 +18,7 @@ struct GameObjectLoader
 
 struct LevelLoader
 {
-    VkGuid LevelID;
+    LevelGuid LevelID;
     Vector<String> LoadTextures;
     Vector<String> LoadMaterials;
     Vector<String> LoadSpriteVRAM;
@@ -29,7 +29,7 @@ struct LevelLoader
 
 struct LevelLayer
 {
-    VkGuid				LevelId;
+    LevelGuid		    LevelId;
     uint				MeshId;
     VkGuid				MaterialId;
     VkGuid				TileSetId;
@@ -49,7 +49,7 @@ struct LevelLayer
     extern "C" 
     {
         #endif
-            DLL_EXPORT void LevelSystem_LoadLevel(const char* levelPath);
+            DLL_EXPORT LevelGuid LevelSystem_LoadLevel(const char* levelPath);
             DLL_EXPORT void LevelSystem_Update(const float& deltaTime);
             DLL_EXPORT void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, const float& deltaTime);
             DLL_EXPORT void LevelSystem_DestroyLevel();
@@ -59,10 +59,10 @@ struct LevelLayer
 
     DLL_EXPORT VkCommandBuffer RenderBloomPass(VkGuid& renderPassId);
     DLL_EXPORT VkCommandBuffer RenderFrameBuffer(VkGuid& renderPassId);
-    DLL_EXPORT  VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
+    DLL_EXPORT VkCommandBuffer RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
     DLL_EXPORT LevelLayer Level2D_LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
     DLL_EXPORT void Level2D_DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, uint32* IndexList);
-    DLL_EXPORT  VkGuid Level_LoadTileSetVRAM(const char* tileSetPath);
+    DLL_EXPORT VkGuid Level_LoadTileSetVRAM(const char* tileSetPath);
     DLL_EXPORT void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLayoutPath);
     DLL_EXPORT void Level_LoadLevelMesh(const GraphicsRenderer& renderer, VkGuid& tileSetId);
     DLL_EXPORT void Level_DestroyLevel();
@@ -94,14 +94,27 @@ public:
     LevelSystem() {}
     ~LevelSystem() {}
 
-    void Update(const float& deltaTime) { LevelSystem_Update(deltaTime); };
-    void Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime) {
+    void Update(const float& deltaTime) 
+    { 
+        LevelSystem_Update(deltaTime); 
+    }
+
+    void Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime) 
+    {
         commandBufferList.emplace_back(RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime));
         commandBufferList.emplace_back(RenderBloomPass(gaussianBlurRenderPassId));
         commandBufferList.emplace_back(RenderFrameBuffer(frameBufferId));
     }
-    void LoadLevel(const String& levelPath) { LevelSystem_LoadLevel(levelPath.c_str()); }
-    void DestroyLevel() { LevelSystem_DestroyLevel(); }
+
+    void LoadLevel(const String& levelPath) 
+    { 
+        LevelSystem_LoadLevel(levelPath.c_str()); 
+    }
+
+    void DestroyLevel() 
+    { 
+        LevelSystem_DestroyLevel(); 
+    }
 
     VkCommandBuffer RenderBloomPass(VkGuid& renderPassId)
     {

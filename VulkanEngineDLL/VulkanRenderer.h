@@ -47,29 +47,29 @@ static Vector<VkValidationFeatureDisableEXT> disabledList =
 
 struct GraphicsRenderer
 {
-	VkInstance         Instance;
-	VkDevice           Device;
-	VkPhysicalDevice   PhysicalDevice;
-	VkSurfaceKHR       Surface;
-	VkCommandPool      CommandPool;
-	VkDebugUtilsMessengerEXT DebugMessenger;
+	VkInstance         Instance = VK_NULL_HANDLE;
+	VkDevice           Device = VK_NULL_HANDLE;
+	VkPhysicalDevice   PhysicalDevice = VK_NULL_HANDLE;
+	VkSurfaceKHR       Surface = VK_NULL_HANDLE;
+	VkCommandPool      CommandPool = VK_NULL_HANDLE;
+	VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 
-	VkFence* InFlightFences;
-	VkSemaphore* AcquireImageSemaphores;
-	VkSemaphore* PresentImageSemaphores;
-	VkImage* SwapChainImages;
-	VkImageView* SwapChainImageViews;
+	VkFence* InFlightFences = VK_NULL_HANDLE;
+	VkSemaphore* AcquireImageSemaphores = VK_NULL_HANDLE;
+	VkSemaphore* PresentImageSemaphores = VK_NULL_HANDLE;
+	VkImage* SwapChainImages = VK_NULL_HANDLE;
+	VkImageView* SwapChainImageViews = VK_NULL_HANDLE;
+	VkSwapchainKHR     Swapchain = VK_NULL_HANDLE;
 	VkExtent2D         SwapChainResolution;
-	VkSwapchainKHR     Swapchain;
 
-	size_t			   SwapChainImageCount;
-	uint32			   ImageIndex;
-	uint32			   CommandIndex;
-	uint32			   GraphicsFamily;
-	uint32			   PresentFamily;
+	size_t			   SwapChainImageCount = UINT64_MAX;
+	uint32			   ImageIndex = UINT32_MAX;
+	uint32			   CommandIndex = UINT32_MAX;
+	uint32			   GraphicsFamily = UINT32_MAX;
+	uint32			   PresentFamily = UINT32_MAX;
 
-	VkQueue			   GraphicsQueue;
-	VkQueue			   PresentQueue;
+	VkQueue			   GraphicsQueue = VK_NULL_HANDLE;
+	VkQueue			   PresentQueue = VK_NULL_HANDLE;
 	VkFormat           Format;
 	VkColorSpaceKHR    ColorSpace;
 	VkPresentModeKHR   PresentMode;
@@ -118,8 +118,6 @@ extern "C" {
 	DLL_EXPORT VkResult Renderer_AllocateCommandBuffers(VkDevice device, VkCommandBuffer* commandBuffer, VkCommandBufferAllocateInfo* commandBufferAllocateInfo);
 	DLL_EXPORT VkResult Renderer_CreateCommandPool(VkDevice device, VkCommandPool* commandPool, VkCommandPoolCreateInfo* commandPoolInfo);
 	DLL_EXPORT VkResult Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight);
-	DLL_EXPORT VkResult Renderer_StartFrame(VkDevice device, VkSwapchainKHR swapChain, VkFence* fenceList, VkSemaphore* acquireImageSemaphoreList, uint32* pImageIndex, uint32* pCommandIndex, bool* pRebuildRendererFlag);
-	DLL_EXPORT VkResult Renderer_EndFrame(VkSwapchainKHR swapChain, VkSemaphore* acquireImageSemaphoreList, VkSemaphore* presentImageSemaphoreList, VkFence* fenceList, VkQueue graphicsQueue, VkQueue presentQueue, uint32 imageIndex, uint32 commandIndex, VkCommandBuffer* pCommandBufferSubmitList, uint32_t commandBufferCount, bool* rebuildRendererFlag);
 	DLL_EXPORT uint32 Renderer_GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	DLL_EXPORT VkCommandBuffer Renderer_BeginSingleUseCommandBuffer(VkDevice device, VkCommandPool commandPool);
 	DLL_EXPORT VkResult Renderer_EndSingleUseCommandBuffer(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);

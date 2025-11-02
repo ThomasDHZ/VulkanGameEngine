@@ -42,14 +42,44 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             DLLSystem.CallDLLFunc(() => TextureSystem_Update(deltaTime));
         }
 
-        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipmapLevel)
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout newImageLayout)
         {
-            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureLayout(texture, oldImageLayout, newImageLayout, mipmapLevel));
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureLayout(texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1));
         }
 
-        public static void UpdateCmdTextureLayout(VkCommandBuffer commandBuffer, Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipmapLevel)
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout newImageLayout, UInt32 mipLevels)
         {
-            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, oldImageLayout, newImageLayout, mipmapLevel));
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureLayout(texture, texture.textureImageLayout, newImageLayout, mipLevels));
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureLayout(texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1));
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipLevels)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateTextureLayout(texture, oldImageLayout, newImageLayout, mipLevels));
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout newImageLayout)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1));
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout newImageLayout, UInt32 mipLevels)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, texture.textureImageLayout, newImageLayout, mipLevels));
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1));
+        }
+
+        public static void UpdateTextureLayout(Texture texture, VkCommandBuffer commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, UInt32 mipLevels)
+        {
+            DLLSystem.CallDLLFunc(() => TextureSystem_UpdateCmdTextureLayout(commandBuffer, texture, oldImageLayout, newImageLayout, mipLevels));
         }
 
         public static void UpdateTextureSize(Texture texture, VkImageAspectFlagBits imageType, vec2 TextureResolution)

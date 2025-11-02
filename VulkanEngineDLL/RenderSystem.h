@@ -10,12 +10,14 @@
     {
         #endif
         DLL_EXPORT void Engine_SetRootDirectory(const char* engineRoot);
-        DLL_EXPORT void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
-        DLL_EXPORT void RenderSystem_Update(VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
+        DLL_EXPORT GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
+        DLL_EXPORT void RenderSystem_Update(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
         DLL_EXPORT VkGuid RenderSystem_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
         DLL_EXPORT void RenderSystem_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
         DLL_EXPORT VulkanRenderPass& RenderSystem_FindRenderPass(const RenderPassGuid& guid);
         DLL_EXPORT Vector<VulkanPipeline>& RenderSystem_FindRenderPipelineList(const RenderPassGuid& guid);
+        DLL_EXPORT VkResult RenderSystem_StartFrame();
+        DLL_EXPORT VkResult RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount);
         DLL_EXPORT void RenderSystem_DestroyRenderPasses();
         DLL_EXPORT void RenderSystem_DestroyRenderPipelines();
         DLL_EXPORT void RenderSystem_Destroy();
@@ -66,45 +68,79 @@ public:
             renderer.RebuildRendererFlag = false;
         }
     }
-    VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution) { return RenderSystem_LoadRenderPass(levelId, jsonPath, renderPassResolution); }
-    const VulkanRenderPass& FindRenderPass(const RenderPassGuid& guid) { return RenderPassMap.at(guid); }
-    const Vector<VulkanPipeline>& FindRenderPipelineList(const RenderPassGuid& guid) { return RenderPipelineMap.at(guid); }
+    VkGuid LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution) 
+    { 
+        return RenderSystem_LoadRenderPass(levelId, jsonPath, renderPassResolution); 
+    }
 
-    void DestroyRenderPasses() { RenderSystem_DestroyRenderPasses(); }
-    void DestroyRenderPipelines() { RenderSystem_DestroyRenderPipelines(); }
-    void Destroy() { RenderSystem_Destroy(); }
-    void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList) { Renderer_DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size()); }
-    void DestroyCommandBuffers(VkCommandBuffer& commandBuffer) { Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1); }
-    void DestroyBuffer(VkBuffer& buffer) { Renderer_DestroyBuffer(renderer.Device, &buffer); }
-    VkCommandBuffer BeginSingleTimeCommands() { return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool); }
-    VkCommandBuffer BeginSingleTimeCommands(VkCommandPool& commandPool) { return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool); }
-    VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer) { return Renderer_EndSingleTimeCommands(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer); }
-    VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool) { return Renderer_EndSingleTimeCommands(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer); }
+    const VulkanRenderPass& FindRenderPass(const RenderPassGuid& guid) 
+    { 
+        return RenderPassMap.at(guid); 
+    }
+
+    const Vector<VulkanPipeline>& FindRenderPipelineList(const RenderPassGuid& guid) 
+    { 
+        return RenderPipelineMap.at(guid); 
+    }
+
+    void DestroyRenderPasses() 
+    { 
+        RenderSystem_DestroyRenderPasses(); 
+    }
+
+    void DestroyRenderPipelines() 
+    { 
+        RenderSystem_DestroyRenderPipelines(); 
+    }
+
+    void Destroy() 
+    { 
+        RenderSystem_Destroy(); 
+    }
+
+    void DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList) 
+    { 
+        Renderer_DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size()); 
+    }
+
+    void DestroyCommandBuffers(VkCommandBuffer& commandBuffer) 
+    { 
+        Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1); 
+    }
+
+    void DestroyBuffer(VkBuffer& buffer) 
+    { 
+        Renderer_DestroyBuffer(renderer.Device, &buffer); 
+    }
+
+    VkCommandBuffer BeginSingleTimeCommands() 
+    { 
+        return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool); 
+    }
+
+    VkCommandBuffer BeginSingleTimeCommands(VkCommandPool& commandPool) 
+    { 
+        return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool); 
+    }
+
+    VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer) 
+    { 
+        return Renderer_EndSingleTimeCommands(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer); 
+    }
+
+    VkResult EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool) 
+    { 
+        return Renderer_EndSingleTimeCommands(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer); 
+    }
 
     VkResult StartFrame()
     {
-        return Renderer_StartFrame(renderer.Device,
-            renderer.Swapchain,
-            renderer.InFlightFences,
-            renderer.AcquireImageSemaphores,
-            &renderer.ImageIndex,
-            &renderer.CommandIndex,
-            &renderer.RebuildRendererFlag);
+        return RenderSystem_StartFrame();
     }
 
     VkResult EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     {
-        return Renderer_EndFrame(renderer.Swapchain,
-            renderer.AcquireImageSemaphores,
-            renderer.PresentImageSemaphores,
-            renderer.InFlightFences,
-            renderer.GraphicsQueue,
-            renderer.PresentQueue,
-            renderer.ImageIndex,
-            renderer.CommandIndex,
-            commandBufferSubmitList.data(),
-            commandBufferSubmitList.size(),
-            &renderer.RebuildRendererFlag);
+        return RenderSystem_EndFrame(commandBufferSubmitList.data(), commandBufferSubmitList.size());
     }
 };
 DLL_EXPORT RenderSystem renderSystem;

@@ -23,10 +23,12 @@ void Engine_SetRootDirectory(const char* engineRoot)
     }
 }
 
-void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
+GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
     Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);
     shaderSystem.StartUp();
+
+    return renderer;
 }
 
 void RenderSystem_Update(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
@@ -128,6 +130,94 @@ void RenderSystem_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass
         renderPass = VulkanRenderPass_RebuildSwapChain(renderer, renderPass, renderSystem.RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, *renderedTextureList.data(), size, depthTexture);
     }
    // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
+}
+
+VkResult RenderSystem_StartFrame()
+{
+    renderer.CommandIndex = (renderer.CommandIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+
+    VkResult waitResult = vkWaitForFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex], VK_TRUE, UINT64_MAX);
+    if (waitResult != VK_SUCCESS)
+    {
+        fprintf(stderr, "Error: vkWaitForFences failed with error code: %s\n", Renderer_GetError(waitResult));
+        return waitResult;
+    }
+
+    VkResult resetResult = vkResetFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex]);
+    if (resetResult != VK_SUCCESS)
+    {
+        fprintf(stderr, "Error: vkResetFences failed with error code: %s\n", Renderer_GetError(resetResult));
+        return resetResult;
+    }
+
+    VkResult result = vkAcquireNextImageKHR(renderer.Device, renderer.Swapchain, UINT64_MAX, renderer.AcquireImageSemaphores[renderer.CommandIndex], VK_NULL_HANDLE, &renderer.ImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        renderer.RebuildRendererFlag = true;
+        return result;
+    }
+    else if (result != VK_SUCCESS)
+    {
+        fprintf(stderr, "Error: vkAcquireNextImageKHR failed with error code: %s\n", Renderer_GetError(result));
+        return result;
+    }
+
+    return result;
+}
+
+VkResult RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount)
+{
+    VkPipelineStageFlags waitStages[] =
+    {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
+
+    VkSubmitInfo submitInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &renderer.AcquireImageSemaphores[renderer.CommandIndex],
+        .pWaitDstStageMask = waitStages,
+        .commandBufferCount = static_cast<uint32>(commandBufferCount),
+        .pCommandBuffers = commandBufferListPtr,
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &renderer.PresentImageSemaphores[renderer.ImageIndex]
+    };
+
+    VkResult submitResult = vkQueueSubmit(renderer.GraphicsQueue, 1, &submitInfo, renderer.InFlightFences[renderer.CommandIndex]);
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        submitResult == VK_SUBOPTIMAL_KHR)
+    {
+        renderer.RebuildRendererFlag = true;
+    }
+    else if (submitResult != VK_SUCCESS)
+    {
+        fprintf(stderr, "Error: vkQueueSubmit failed with error code: %s\n", Renderer_GetError(submitResult));
+        return submitResult;
+    }
+
+    VkPresentInfoKHR presentInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &renderer.PresentImageSemaphores[renderer.ImageIndex],
+        .swapchainCount = 1,
+        .pSwapchains = &renderer.Swapchain,
+        .pImageIndices = &renderer.ImageIndex
+    };
+
+    VkResult result = vkQueuePresentKHR(renderer.PresentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+        result == VK_SUBOPTIMAL_KHR)
+    {
+        renderer.RebuildRendererFlag = true;
+    }
+    else if (result != VK_SUCCESS)
+    {
+        fprintf(stderr, "Error: vkQueuePresentKHR failed with error code: %s\n", Renderer_GetError(result));
+    }
+
+    return result;
 }
 
  VulkanRenderPass& RenderSystem_FindRenderPass(const RenderPassGuid& guid)

@@ -103,9 +103,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 var transform2D = GameObjectSystem.Transform2DComponentMap[(int)sprite.GameObjectId];
                 var vram = FindVramSprite(sprite.SpriteVramId);
                 var animation = FindSpriteAnimation(vram.VramSpriteId, sprite.CurrentAnimationID);
-                var material = MaterialSystem.MaterialMap[vram.MaterialId];
+               // var material = MaterialSystem.MaterialMap[vram.MaterialId];
                 var currentFrame = animation.FrameList[sprite.CurrentFrame];
-                SpriteInstanceList[x] = Sprite_UpdateSprites(ref transform2D, ref vram, ref animation, ref material, currentFrame, ref sprite, animation.FrameCount, deltaTime);
+               // SpriteInstanceList[x] = Sprite_UpdateSprites(ref transform2D, ref vram, ref animation, ref material, currentFrame, ref sprite, animation.FrameCount, deltaTime);
                 SpriteList[x] = sprite;
             }
         }

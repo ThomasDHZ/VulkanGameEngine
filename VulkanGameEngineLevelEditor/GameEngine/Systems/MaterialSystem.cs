@@ -20,139 +20,43 @@ using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
-
     public static unsafe class MaterialSystem
     {
-        private static uint NextBufferID = 0;
-        public static Dictionary<Guid, Material> MaterialMap { get; private set; } = new Dictionary<Guid, Material>();
-
         public static Guid CreateMaterial(string materialPath)
         {
-            return Material_CreateMaterial(RenderSystem.renderer, materialPath);
-        }
-
-        public static ListPtr<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer()
-        {
-            ListPtr<VkDescriptorBufferInfo> materialPropertiesBuffer = new ListPtr<VkDescriptorBufferInfo>();
-            if (!MaterialMap.Any())
-            {
-                materialPropertiesBuffer.Add(new VkDescriptorBufferInfo
-                {
-                    buffer = VulkanCSConst.VK_NULL_HANDLE,
-                    offset = 0,
-                    range = VulkanCSConst.VK_WHOLE_SIZE
-                });
-            }
-            else
-            {
-                foreach (var material in MaterialMap)
-                {
-                    VkDescriptorBufferInfo meshBufferInfo = new VkDescriptorBufferInfo
-                    {
-                        buffer = BufferSystem.VulkanBufferMap[(uint)material.Value.MaterialBufferId].Buffer,
-                        offset = 0,
-                        range = VulkanCSConst.VK_WHOLE_SIZE
-                    };
-                    materialPropertiesBuffer.Add(meshBufferInfo);
-                }
-            }
-            return materialPropertiesBuffer;
+            return DLLSystem.CallDLLFunc(() => MaterialSystem_CreateMaterial(materialPath));
         }
 
         public static void Update(float deltaTime)
         {
-            uint x = 0;
-            foreach (var materialPair in MaterialMap)
-            {
-                Material material = materialPair.Value;
-                uint AlbedoMapId = material.AlbedoMapId != Guid.Empty ? TextureSystem.FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
-                uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != Guid.Empty ? TextureSystem.FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
-                uint MetallicMapId = material.MetallicMapId != Guid.Empty ? TextureSystem.FindTexture(material.MetallicMapId).textureBufferIndex : 0;
-                uint RoughnessMapId = material.RoughnessMapId != Guid.Empty ? TextureSystem.FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
-                uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != Guid.Empty ? TextureSystem.FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
-                uint NormalMapId = material.NormalMapId != Guid.Empty ? TextureSystem.FindTexture(material.NormalMapId).textureBufferIndex : 0;
-                uint DepthMapId = material.DepthMapId != Guid.Empty ? TextureSystem.FindTexture(material.DepthMapId).textureBufferIndex : 0;
-                uint AlphaMapId = material.AlphaMapId != Guid.Empty ? TextureSystem.FindTexture(material.AlphaMapId).textureBufferIndex : 0;
-                uint EmissionMapId = material.EmissionMapId != Guid.Empty ? TextureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : 0;
-                uint HeightMapId = material.HeightMapId != Guid.Empty ? TextureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
-
-
-                ShaderStruct shaderStruct = ShaderSystem.FindShaderStruct(material.MaterialBufferId);
-                var shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "AlbedoMap");
-                if (shaderVar != null &&
-                    (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = AlbedoMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "MetallicRoughnessMap");
-                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = MetallicRoughnessMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "MetallicMap");
-                if (shaderVar != null &&
-                    (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = MetallicMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "RoughnessMap");
-                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = RoughnessMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "AmbientOcclusionMap");
-                if (shaderVar != null &&
-                    (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = AmbientOcclusionMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "NormalMap");
-                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = NormalMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "DepthMap");
-                if (shaderVar != null &&
-                    (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = DepthMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "AlphaMap");
-                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = AlphaMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "EmissionMap");
-                if (shaderVar != null &&
-                    (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = EmissionMapId;
-                }
-
-                shaderVar = ShaderSystem.SearchShaderStruct(shaderStruct, "HeightMap");
-                if (shaderVar != null && (IntPtr)shaderVar->Value != IntPtr.Zero)
-                {
-                    *(uint*)shaderVar->Value = HeightMapId;
-                }
-                ShaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
-                x++;
-            }
+            DLLSystem.CallDLLFunc(() => MaterialSystem_Update(deltaTime));
         }
 
-        public static Material FindMaterial(Guid renderPassGuid)
+        public static bool MaterialMapExists(MaterialGuid materialGuid)
         {
-            return MaterialMap.Where(x => x.Key == renderPassGuid).First().Value;
+            return DLLSystem.CallDLLFunc(() => MaterialSystem_MaterialMapExists(materialGuid));
         }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern Guid Material_CreateMaterial(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Material_DestroyBuffer(GraphicsRenderer renderer, VulkanBuffer materialBuffer);
+        public static Material FindMaterial(MaterialGuid materialGuid)
+        {
+            return DLLSystem.CallDLLFunc(() => MaterialSystem_FindMaterial(materialGuid));
+        }
+
+        public static void Destroy(MaterialGuid materialGuid)
+        {
+            DLLSystem.CallDLLFunc(() => MaterialSystem_Destroy(materialGuid));
+        }
+
+        public static void DestroyAllMaterials()
+        {
+            DLLSystem.CallDLLFunc(() => MaterialSystem_DestroyAllMaterials());
+        }
+
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Guid MaterialSystem_CreateMaterial([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string materialPath);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_Update(float deltaTime);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool MaterialSystem_MaterialMapExists(MaterialGuid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Material MaterialSystem_FindMaterial(MaterialGuid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_Destroy(MaterialGuid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_DestroyAllMaterials();
     }
 }

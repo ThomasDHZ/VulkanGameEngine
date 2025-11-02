@@ -40,7 +40,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             LevelSystem.Update(deltaTime);
             TextureSystem.Update(deltaTime);
             MaterialSystem.Update(deltaTime);
-            RenderSystem.Update(SpriteRenderPass2DId, LevelRendererId, deltaTime);
+            RenderSystem.Update(LevelSystem.SpriteRenderPass2DId, LevelSystem.LevelId, deltaTime);
 
             VkCommandBuffer commandBuffer = RenderSystem.BeginSingleTimeCommands();
             MeshSystem.Update(deltaTime);
