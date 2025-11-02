@@ -18,7 +18,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public const string Game2DDLL = @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll";
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)] private static extern IntPtr LoadLibrary(string lpFileName);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Engine_SetRootDirectory([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string engineRoot);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void Debug_SetRootDirectory([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string engineRoot);
 
         public static void SetSharedDllDirectory()
         {
@@ -30,7 +30,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 throw new DirectoryNotFoundException($"DLL folder missing: {dllDir}");
             }
 
-            Engine_SetRootDirectory("..\\..\\..\\..\\Assets");
+            Debug_SetRootDirectory("..\\..\\..\\..\\Assets");
             IntPtr gameEngineDLLPtr = LoadLibrary(GameEnginePath);
             IntPtr game2DDLLPtr = LoadLibrary(Game2DDLL);
             if (gameEngineDLLPtr == IntPtr.Zero ||

@@ -53,14 +53,14 @@ struct Sprite
 #ifdef __cplusplus
 extern "C" {
 #endif
-    DLL_EXPORT void         SpriteSystem_AddSprite(const GraphicsRenderer& renderer, GameObject& gameObject, VkGuid& spriteVramId);
-    DLL_EXPORT VkGuid       SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath);
-    DLL_EXPORT void         SpriteSystem_Update(const GraphicsRenderer& renderer, const float& deltaTime);
-    DLL_EXPORT void         SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-    DLL_EXPORT Sprite*      SpriteSystem_FindSprite(uint gameObjectId);
-    DLL_EXPORT SpriteVram&  SpriteSystem_FindSpriteVram(VkGuid VramSpriteID);
-    DLL_EXPORT Animation2D& SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
-    DLL_EXPORT void         SpriteSystem_Destroy();
+    DLL_EXPORT void             SpriteSystem_AddSprite(GameObject& gameObject, VramSpriteGuid& spriteVramId);
+    DLL_EXPORT VramSpriteGuid   SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath);
+    DLL_EXPORT void             SpriteSystem_Update(const float& deltaTime);
+    DLL_EXPORT void             SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
+    DLL_EXPORT Sprite*          SpriteSystem_FindSprite(uint gameObjectId);
+    DLL_EXPORT SpriteVram&      SpriteSystem_FindSpriteVram(VramSpriteGuid VramSpriteID);
+    DLL_EXPORT Animation2D&     SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
+    DLL_EXPORT void             SpriteSystem_Destroy();
 #ifdef __cplusplus
 }
 #endif
@@ -75,7 +75,7 @@ extern "C" {
     uint32 Sprite_FindSpriteComponentIndex(uint gameObjectId);
     const Vector<Mesh>& Sprite_FindSpriteLayerMeshList(); 
     const bool Sprite_SpriteLayerExists(const uint32 spriteDrawLayer);
-    void Sprite_AddSpriteBatchLayer(const GraphicsRenderer& renderer, RenderPassGuid& renderPassId, uint32 spriteDrawLayer);
+    void Sprite_AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer);
 
 class SpriteSystem
 {
@@ -111,12 +111,12 @@ public:
 
     void AddSprite(GameObject& gameObject, VkGuid& spriteVramId) 
     { 
-        SpriteSystem_AddSprite(renderer, gameObject, spriteVramId);
+        SpriteSystem_AddSprite(gameObject, spriteVramId);
     }
 
     void Update(const float& deltaTime) 
     { 
-        SpriteSystem_Update(renderer, deltaTime);
+        SpriteSystem_Update(deltaTime);
     }
 
     void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum) 

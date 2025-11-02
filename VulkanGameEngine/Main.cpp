@@ -10,13 +10,18 @@
 #include "EngineConfigSystem.h"
 #include <RigidBody.h>
 #include "ImGuiRenderer.h"
+#include <DebugSystem.h>
 
 int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
-    Engine_SetRootDirectory("../Assets");
+    if(!debugSystem.IsRenderDocInjected())
+    {
+        debugSystem.SetRootDirectory("../Assets");
+    }
+    
     vulkanWindow = new GameEngineWindow();
     vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 

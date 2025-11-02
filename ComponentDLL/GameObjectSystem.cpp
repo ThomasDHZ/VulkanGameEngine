@@ -92,7 +92,7 @@ void GameObject_LoadComponentTable(const GraphicsRenderer& renderer, GameObject&
     if (mask & kSpriteComponent)
     {
         gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
-        SpriteSystem_AddSprite(renderer, gameObject, vramId);
+        SpriteSystem_AddSprite(gameObject, vramId);
     }
 }
 
@@ -183,7 +183,7 @@ void GameObjectSystem_LoadSpriteComponent(const GraphicsRenderer& renderer, cons
 {
     String asdf = json["VramId"];
     VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
-    SpriteSystem_AddSprite(renderer, gameObject, vramId);
+    SpriteSystem_AddSprite(gameObject, vramId);
 }
 
 GameObject& GameObjectSystem_FindGameObject(uint gameObjectId)

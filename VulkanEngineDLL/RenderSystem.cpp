@@ -8,21 +8,6 @@
 
 RenderSystem renderSystem = RenderSystem();
 
-void Engine_SetRootDirectory(const char* engineRoot)
-{
-    if (_chdir(engineRoot) != 0)
-    {
-        std::cerr << "Failed to set CWD to: " << engineRoot << std::endl;
-        return;
-    }
-
-    char cwd[MAX_PATH];
-    if (_getcwd(cwd, MAX_PATH))
-    {
-        std::cout << "C++ CWD SET TO: " << cwd << std::endl;
-    }
-}
-
 GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
     Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);

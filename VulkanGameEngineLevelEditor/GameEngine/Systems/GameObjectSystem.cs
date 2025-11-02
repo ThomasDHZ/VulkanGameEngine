@@ -77,7 +77,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void LoadSpriteComponent(GameObjectComponentLoader loader, uint gameObjectId)
         {
-            SpriteSystem.AddSprite(gameObjectId, loader.VramId);
+            //SpriteSystem.AddSprite(gameObjectId, loader.VramId);
         }
 
         public static void DestroyGameObject(int gameObjectId)

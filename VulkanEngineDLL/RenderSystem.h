@@ -9,7 +9,6 @@
     extern "C"
     {
         #endif
-        DLL_EXPORT void Engine_SetRootDirectory(const char* engineRoot);
         DLL_EXPORT GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
         DLL_EXPORT void RenderSystem_Update(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime);
         DLL_EXPORT VkGuid RenderSystem_LoadRenderPass(VkGuid& levelId, const String& jsonPath, ivec2 renderPassResolution);
