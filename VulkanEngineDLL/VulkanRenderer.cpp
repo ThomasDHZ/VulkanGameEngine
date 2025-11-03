@@ -347,13 +347,15 @@ VkInstance Renderer_CreateVulkanInstance()
         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     debugInfo.pfnUserCallback = Vulkan_DebugCallBack;
 
-    VkValidationFeaturesEXT validationFeatures = {};
-    validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-    validationFeatures.pNext = &debugInfo;
-    validationFeatures.enabledValidationFeatureCount = static_cast<uint32_t>(enabledList.size());
-    validationFeatures.pEnabledValidationFeatures = enabledList.data();
-    validationFeatures.disabledValidationFeatureCount = static_cast<uint32_t>(disabledList.size());
-    validationFeatures.pDisabledValidationFeatures = disabledList.data();
+    VkValidationFeaturesEXT validationFeatures =
+    {
+        .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+        .pNext = &debugInfo,
+        .enabledValidationFeatureCount = static_cast<uint32_t>(enabledList.size()),
+        .pEnabledValidationFeatures = enabledList.data(),
+        .disabledValidationFeatureCount = static_cast<uint32_t>(disabledList.size()),
+        .pDisabledValidationFeatures = disabledList.data(),
+    };
 
     int enableValidationLayers = 1;
 #ifdef NDEBUG
@@ -371,26 +373,31 @@ VkInstance Renderer_CreateVulkanInstance()
     }
 
     extensionNamesPointers.reserve(extensionCount);
-    for (const auto& name : extensionNames) {
+    for (const auto& name : extensionNames) 
+    {
         extensionNamesPointers.push_back(name.c_str());
     }
 
-    VkApplicationInfo applicationInfo = {};
-    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    applicationInfo.pApplicationName = "Vulkan Application";
-    applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    applicationInfo.pEngineName = "No Engine";
-    applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    applicationInfo.apiVersion = VK_API_VERSION_1_4;
+    VkApplicationInfo applicationInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName = "Vulkan Application",
+        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+        .pEngineName = "No Engine",
+        .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+        .apiVersion = VK_API_VERSION_1_4
+    };
 
-    VkInstanceCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pNext = enableValidationLayers ? &validationFeatures : nullptr;
-    createInfo.pApplicationInfo = &applicationInfo;
-    createInfo.enabledLayerCount = enableValidationLayers ? 1 : 0;
-    createInfo.ppEnabledLayerNames = enableValidationLayers ? ValidationLayers : nullptr;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensionNamesPointers.size());
-    createInfo.ppEnabledExtensionNames = extensionNamesPointers.data();
+    VkInstanceCreateInfo createInfo = 
+    {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pNext = enableValidationLayers ? &validationFeatures : nullptr,
+        .pApplicationInfo = &applicationInfo,
+        .enabledLayerCount = enableValidationLayers ? (uint32)1 : (uint32)0,
+        .ppEnabledLayerNames = enableValidationLayers ? ValidationLayers : nullptr,
+        .enabledExtensionCount = static_cast<uint32_t>(extensionNamesPointers.size()),
+        .ppEnabledExtensionNames = extensionNamesPointers.data()
+    };
 
     result = vkCreateInstance(&createInfo, nullptr, &instance);
     if (result != VK_SUCCESS) {

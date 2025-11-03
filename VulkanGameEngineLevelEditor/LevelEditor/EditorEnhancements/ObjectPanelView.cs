@@ -414,16 +414,16 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         switch (component)
                         {
                             case ComponentTypeEnum.kTransform2DComponent:
-                                object transformComponent = GameObjectSystem.Transform2DComponentMap[gameObject.GameObjectId];
-                                AddPropertyControls(transformComponent, componentPanel, ChildObjectPanels);
+                            //    object transformComponent = GameObjectSystem.Transform2DComponentMap[gameObject.GameObjectId];
+                             //   AddPropertyControls(transformComponent, componentPanel, ChildObjectPanels);
                                 break;
                             case ComponentTypeEnum.kInputComponent:
-                                object inputComponent = GameObjectSystem.InputComponentMap[gameObject.GameObjectId];
-                                AddPropertyControls(inputComponent, componentPanel, ChildObjectPanels);
+                           //     object inputComponent = GameObjectSystem.InputComponentMap[gameObject.GameObjectId];
+                            //    AddPropertyControls(inputComponent, componentPanel, ChildObjectPanels);
                                 break;
                             case ComponentTypeEnum.kSpriteComponent:
-                                Sprite componentObject = SpriteSystem.FindSprite(gameObject.GameObjectId);
-                                AddPropertyControls(componentObject, componentPanel, ChildObjectPanels);
+                             //   Sprite componentObject = SpriteSystem.FindSprite(gameObject.GameObjectId);
+                            //    AddPropertyControls(componentObject, componentPanel, ChildObjectPanels);
                                 break;
                             default:
                                 MessageBox.Show(@$"Component type not implemented: {component}");

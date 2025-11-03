@@ -39,7 +39,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void LoadLevel(string levelPath)
         {
-            LevelId = DLLSystem.CallDLLFunc(() => LevelSystem_LoadLevel(levelPath));
+            LevelId = LevelSystem_LoadLevel(levelPath);
         }
 
         public static void Update(float deltaTime)

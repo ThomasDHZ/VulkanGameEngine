@@ -20,7 +20,7 @@ enum ShaderMemberType
 };
 
 
-typedef enum ColorChannelUsed
+enum ColorChannelUsed
 {
     ChannelR = 1,
     ChannelRG,
@@ -28,7 +28,7 @@ typedef enum ColorChannelUsed
     ChannelRGBA
 };
 
-typedef enum TextureUsageEnum
+enum TextureUsageEnum
 {
     kUse_Undefined,
     kUse_2DImageTexture,
@@ -43,7 +43,7 @@ typedef enum TextureUsageEnum
     kUse_CubeMapDepthTexture
 };
 
-typedef enum TextureTypeEnum
+enum TextureTypeEnum
 {
     kType_UndefinedTexture,
     kType_TextureAtlas,
