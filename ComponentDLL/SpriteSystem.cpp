@@ -261,7 +261,7 @@ SpriteVram& SpriteSystem_FindSpriteVram(VramSpriteGuid vramSpriteId)
     return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }
 
-Animation2D& SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId)
+Animation2D& SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
 {
     return spriteSystem.SpriteAnimationMap.at(vramId)[animationId];
 }

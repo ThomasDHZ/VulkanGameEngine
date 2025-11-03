@@ -2,7 +2,6 @@
 #include <DLL.h>
 #include <Typedef.h>
 #include <VkGuid.h>
-#include <ECSid.h>
 #include <MaterialSystem.h>
 #include <MeshSystem.h>
 #include <Transform2DComponent.h>
@@ -59,7 +58,7 @@ extern "C" {
     DLL_EXPORT void             SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
     DLL_EXPORT Sprite*          SpriteSystem_FindSprite(uint gameObjectId);
     DLL_EXPORT SpriteVram&      SpriteSystem_FindSpriteVram(VramSpriteGuid VramSpriteID);
-    DLL_EXPORT Animation2D&     SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId);
+    DLL_EXPORT Animation2D&     SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
     DLL_EXPORT void             SpriteSystem_Destroy();
 #ifdef __cplusplus
 }
@@ -143,7 +142,7 @@ public:
         return SpriteSystem_FindSpriteVram(vramSpriteId); 
     }
 
-    const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const UM_AnimationListID& animationId) 
+    const Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
     { 
         return SpriteSystem_FindSpriteAnimation(vramId, animationId); 
     }

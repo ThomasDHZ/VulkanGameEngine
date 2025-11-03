@@ -207,7 +207,7 @@ void LevelSystem_Update(const float& deltaTime)
      {
          String objectJson = json["GameObjectList"][x]["GameObjectPath"];
          vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
-         gameObjectSystem.CreateGameObject(renderer, objectJson, positionOverride);
+         gameObjectSystem.CreateGameObject(objectJson, positionOverride);
      }
 
      Level_LoadLevelLayout(renderer, json["LoadLevelLayout"].get<String>().c_str());

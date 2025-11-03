@@ -31,70 +31,118 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         kTransform3DComponent = 1 << 3,
     }
 
-    public static class GameObjectSystem
+    namespace VulkanGameEngineLevelEditor.GameEngine.Systems
     {
-        public static ListPtr<Vertex2D> SpriteVertexList = new ListPtr<Vertex2D>()
+        public static unsafe class GameObjectSystem
         {
-            new Vertex2D(new vec2(0.0f, 1.0f), new vec2(0.0f, 0.0f)),
-            new Vertex2D(new vec2(1.0f, 1.0f), new vec2(1.0f, 0.0f)),
-            new Vertex2D(new vec2(1.0f, 0.0f), new vec2(1.0f, 1.0f)),
-            new Vertex2D(new vec2(0.0f, 0.0f), new vec2(0.0f, 1.0f)),
-        };
+            public static void CreateGameObjectFromJson(string gameObjectPath, vec2 gameObjectPosition)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObjectFromJson(gameObjectPath, gameObjectPosition));
+            }
 
-        public static ListPtr<uint> SpriteIndexList = new ListPtr<uint>()
-        {
-            0, 3, 1,
-            1, 3, 2
-        };
+            public static void CreateGameObject(string name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, UInt16 gameObjectComponentMask, Guid vramId, vec2 objectPosition)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(name, parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition));
+            }
 
-        public static Dictionary<int, GameObject> GameObjectMap { get; private set; } = new Dictionary<int, GameObject>();
-        public static Dictionary<int, Transform2DComponent> Transform2DComponentMap { get; set; } = new Dictionary<int, Transform2DComponent>();
-        public static Dictionary<int, InputComponent> InputComponentMap { get; private set; } = new Dictionary<int, InputComponent>();
+            public static void Update(float deltaTime)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_Update(deltaTime));
+            }
 
-        public static void CreateGameObject(string name, GameObjectTypeEnum gameObjectType, ComponentTypeEnum componentTypeEnum, Guid vramId, vec2 objectPosition)
-        {
-            GameObject_CreateGameObject(RenderSystem.renderer, name, uint.MaxValue, gameObjectType, componentTypeEnum, vramId, objectPosition);
-        }
+            public static void LoadTransformComponent(string jsonString, uint gameObjectId, vec2 gameObjectPosition)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_LoadTransformComponent(jsonString, gameObjectId, gameObjectPosition));
+            }
 
-        public static void CreateGameObject(string gameObjectPath, vec2 positionOverride)
-        {
-            GameObject_CreateGameObjectFromJson(RenderSystem.renderer, gameObjectPath, positionOverride);
-        }
+            public static void LoadInputComponent(string jsonString, uint gameObjectId)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_LoadInputComponent(jsonString, gameObjectId));
+            }
 
-        public static void LoadTransformComponent(GameObjectComponentLoader loader, int gameObjectId, vec2 gameObjectPosition)
-        {
-            Transform2DComponent transform2D = new Transform2DComponent();
-            transform2D.GameObjectPosition = gameObjectPosition;
-            transform2D.GameObjectRotation = loader.GameObjectRotation;
-            transform2D.GameObjectScale = loader.GameObjectScale;
-            Transform2DComponentMap[gameObjectId] = transform2D;
-        }
+            public static void LoadSpriteComponent(string jsonString, GameObject gameObject)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_LoadSpriteComponent(jsonString, gameObject));
+            }
 
-        public static void LoadInputComponent(GameObjectComponentLoader loader, int gameObjectId)
-        {
-            InputComponentMap[gameObjectId] = new InputComponent();
-        }
+            public static void DestroyGameObject(uint gameObjectId)
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyGameObject(gameObjectId));
+            }
 
-        public static void LoadSpriteComponent(GameObjectComponentLoader loader, uint gameObjectId)
-        {
-            //SpriteSystem.AddSprite(gameObjectId, loader.VramId);
-        }
+            public static void DestroyGameObjects()
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyGameObjects());
+            }
 
-        public static void DestroyGameObject(int gameObjectId)
-        {
-            //	GameObjectMap.erase(gameObjectId);
-            //  Transform2DComponentMap.erase(gameObjectId);
-            // InputComponentMap.erase(gameObjectId);
-        }
+            public static void DestroyDeadGameObjects()
+            {
+                DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyDeadGameObjects());
+            }
 
-        public static void DestroyGameObjects()
-        {
-            //for (auto & gameObject : GameObjectMap)
+            public static GameObject FindGameObject(uint gameObjectId)
+            {
+                return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindGameObject(gameObjectId));
+            }
+
+            public static Transform2DComponent FindTransform2DComponent(uint gameObjectId)
+            {
+                return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindTransform2DComponent(gameObjectId));
+            }
+
+            public static InputComponent FindInputComponent(uint gameObjectId)
+            {
+                return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindInputComponent(gameObjectId));
+            }
+
+            //public static List<GameObject> GameObjectList()
             //{
-            //    DestroyGameObject(gameObject.second.GameObjectId);
+            //    int count = DLLSystem.CallDLLFunc(() => GameObjectSystem_GameObjectList(0));
+            //    var list = new List<GameObject>((int)count);
+            //    for (size_t i = 0; i < count; i++)
+            //    {
+            //        list.Add(DLLSystem.CallDLLFunc(() => GameObjectSystem_GameObjectList(i)));
+            //    }
+            //    return list;
             //}
+
+            //public static List<Transform2DComponent> Transform2DComponentList()
+            //{
+            //    var count = DLLSystem.CallDLLFunc(() => GameObjectSystem_Transform2DComponentList(0));
+            //    var list = new List<Transform2DComponent>((int)count);
+            //    for (size_t i = 0; i < count; i++)
+            //    {
+            //        list.Add(DLLSystem.CallDLLFunc(() => GameObjectSystem_Transform2DComponentList(i)));
+            //    }
+            //    return list;
+            //}
+
+            //public static List<InputComponent> InputComponentList()
+            //{
+            //    var count = DLLSystem.CallDLLFunc(() => GameObjectSystem_InputComponentList(0));
+            //    var list = new List<InputComponent>((int)count);
+            //    for (size_t i = 0; i < count; i++)
+            //    {
+            //        list.Add(DLLSystem.CallDLLFunc(() => GameObjectSystem_InputComponentList(i)));
+            //    }
+            //    return list;
+            //}
+
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObjectFromJson([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string gameObjectPath, vec2 gameObjectPosition);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObject([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, UInt16 gameObjectComponentMask, Guid vramId, vec2 objectPosition);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_Update(float deltaTime);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_LoadTransformComponent([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, uint gameObjectId, vec2 gameObjectPosition);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_LoadInputComponent([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, uint gameObjectId);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_LoadSpriteComponent([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, GameObject gameObject);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObjects();
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyDeadGameObjects();
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject GameObjectSystem_FindGameObject(uint gameObjectId);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject GameObjectSystem_GameObjectList(size_t returnListCount);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent GameObjectSystem_Transform2DComponentList(size_t returnListCount);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent GameObjectSystem_InputComponentList(size_t returnListCount);
         }
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObjectFromJson(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, vec2 positionOverride);
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] public static extern void GameObject_CreateGameObject(GraphicsRenderer renderer, [MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] String name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, ComponentTypeEnum gameObjectComponentMask, Guid vramId, vec2 objectPosition);
     }
 }

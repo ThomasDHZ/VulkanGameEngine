@@ -37,12 +37,12 @@ struct GameObject
 #ifdef __cplusplus
 extern "C" {
 #endif
-    DLL_EXPORT void GameObjectSystem_CreateGameObjectFromJson(const GraphicsRenderer& renderer, const char* gameObjectPath, vec2 gameObjectPosition);
+    DLL_EXPORT void GameObjectSystem_CreateGameObjectFromJson(const char* gameObjectPath, vec2 gameObjectPosition);
     DLL_EXPORT void GameObjectSystem_CreateGameObject(const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
     DLL_EXPORT void GameObjectSystem_Update(const float& deltaTime);
-    DLL_EXPORT void GameObjectSystem_LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition);
-    DLL_EXPORT void GameObjectSystem_LoadInputComponent(const nlohmann::json& json, uint gameObjectId);
-    DLL_EXPORT void GameObjectSystem_LoadSpriteComponent(const GraphicsRenderer& renderer, const nlohmann::json& json, GameObject& gameObject);
+    DLL_EXPORT void GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
+    DLL_EXPORT void GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId);
+    DLL_EXPORT void GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
     DLL_EXPORT void GameObjectSystem_DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void GameObjectSystem_DestroyGameObjects();
     DLL_EXPORT void GameObjectSystem_DestroyDeadGameObjects(); 
@@ -58,7 +58,7 @@ extern "C" {
 
   uint32 GameObject_GetNextGameObjectIndex();
   void*  GameObject_LoadObjectData(GameObjectTypeEnum gameObjectType);
-  void   GameObject_LoadComponentTable(const GraphicsRenderer& renderer, GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);
+  void   GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);
   void   GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
   void   GameObject_LoadMegaManShotComponent(uint gameObjectId, const vec2& gameObjectPosition);
   bool   GameObject_GameObjectBehaviorExists(const GameObjectTypeEnum objectEnum);
@@ -91,9 +91,9 @@ public:
         GameObjectSystem_CreateGameObject(name.c_str(), parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition);
     }
 
-    void CreateGameObject(const GraphicsRenderer& renderer, const String& gameObjectPath, const vec2& gameObjectPosition)
+    void CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
     {
-        GameObjectSystem_CreateGameObjectFromJson(renderer, gameObjectPath.c_str(), gameObjectPosition);
+        GameObjectSystem_CreateGameObjectFromJson(gameObjectPath.c_str(), gameObjectPosition);
     }
 
     void Update(const float& deltaTime)
@@ -101,19 +101,19 @@ public:
         GameObjectSystem_Update(deltaTime);
     }
 
-    void LoadTransformComponent(const nlohmann::json& json, uint gameObjectId, const vec2& gameObjectPosition)
+    void LoadTransformComponent(const String& json, uint gameObjectId, const vec2& gameObjectPosition)
     {
-        GameObjectSystem_LoadTransformComponent(json, gameObjectId, gameObjectPosition);
+        GameObjectSystem_LoadTransformComponent(json.c_str(), gameObjectId, gameObjectPosition);
     }
 
-    void LoadInputComponent(const nlohmann::json& json, uint gameObjectId)
+    void LoadInputComponent(const String& json, uint gameObjectId)
     {
-        GameObjectSystem_LoadInputComponent(json, gameObjectId);
+        GameObjectSystem_LoadInputComponent(json.c_str(), gameObjectId);
     }
 
-    void LoadSpriteComponent(const GraphicsRenderer& renderer, const nlohmann::json& json, GameObject& gameObject)
+    void LoadSpriteComponent(const String& json, GameObject& gameObject)
     {
-        GameObjectSystem_LoadSpriteComponent(renderer, json, gameObject);
+        GameObjectSystem_LoadSpriteComponent(json.c_str(), gameObject);
     }
 
     const GameObject& FindGameObject(uint gameObjectId)

@@ -48,9 +48,10 @@ typedef VkGuid VramSpriteGuid;
 typedef VkGuid RenderPassGuid;
 typedef VkGuid MaterialGuid;
 
-typedef uint UM_SpriteID;
-typedef uint UM_SpriteBatchID;
-typedef uint UM_RenderPassID;
-typedef uint UM_RenderPipelineID;
-typedef uint UM_LevelID;
+typedef uint SpriteId;
+typedef uint SpriteBatchId;
+typedef uint RenderPassId;
+typedef uint RenderPipelineId;
+typedef uint LevelId;
+typedef uint AnimationListId;
 

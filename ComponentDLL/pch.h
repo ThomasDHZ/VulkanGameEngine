@@ -15,6 +15,5 @@
 #include <VulkanRenderer.h>
 #include <EngineConfigSystem.h>
 #include <InputEnum.h>
-#include <ECSid.h>
 #include "GameObjectBehavior.h"
 #endif //PCH_H

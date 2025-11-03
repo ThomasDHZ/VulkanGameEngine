@@ -63,9 +63,6 @@
     <ClInclude Include="from_json.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
-    <ClInclude Include="ECSid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Transform2DComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
