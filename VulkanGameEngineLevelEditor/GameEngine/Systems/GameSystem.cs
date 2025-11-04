@@ -32,6 +32,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static unsafe void StartUp(void* renderAreaHandle, void* debuggerHandle)
         {
             RenderSystem.CreateVulkanRenderer(WindowType.Win32, renderAreaHandle, debuggerHandle);
+            GPUSystem.StartUp();
             LevelSystem.LoadLevel(@$"Levels/TestLevel.json");
         }
 

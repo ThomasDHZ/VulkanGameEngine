@@ -32,14 +32,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
     public static unsafe class LevelSystem
     {
-        public static LevelGuid LevelId { get; set; }
+        public static LevelGuid LevelId { get; set; } = new LevelGuid("a4ff0086-0069-4265-9a81-b38fb9e6b5be");
         public static Guid SpriteRenderPass2DId { get; set; } = new Guid("aa18e942-497b-4981-b917-d93a5b1de6eb");
         public static Guid GaussianBlurRenderPassId { get; set; } = new Guid("44d22120-d385-4cbb-86d0-55afd870ce50");
         public static Guid FrameBufferId { get; set; } = new Guid("76db13ab-75ab-4fb1-ae02-0c6dfb447856");
 
         public static void LoadLevel(string levelPath)
         {
-            LevelId = LevelSystem_LoadLevel(levelPath);
+            LevelSystem_LoadLevel(levelPath);
         }
 
         public static void Update(float deltaTime)
@@ -49,7 +49,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void Draw(ListPtr<VkCommandBuffer> commandBufferList, float deltaTime)
         {
-            DLLSystem.CallDLLFunc(() => LevelSystem_Draw(commandBufferList.Ptr, commandBufferList.Count, deltaTime));
+            commandBufferList.Add(DLLSystem.CallDLLFunc(() => LevelSystem_RenderLevel(SpriteRenderPass2DId, SpriteRenderPass2DId, deltaTime)));
+            commandBufferList.Add(DLLSystem.CallDLLFunc(() => LevelSystem_RenderFrameBuffer(FrameBufferId)));
         }
 
         public static void DestroyLevel()
@@ -57,9 +58,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             DLLSystem.CallDLLFunc(() => LevelSystem_DestroyLevel());
         }
 
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelGuid LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderFrameBuffer(Guid renderPassId);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderLevel(Guid renderPassId, Guid levelId, float deltaTime);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Update(float deltaTime);
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, float deltaTime);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_DestroyLevel();
     }
 }

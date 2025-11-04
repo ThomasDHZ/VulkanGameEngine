@@ -40,7 +40,7 @@ namespace VulkanGameEngineLevelEditor
         private volatile bool levelEditorRunning;
         private volatile bool isResizing;
         private Stopwatch stopwatch = new Stopwatch();
-        public SystemMessenger textBoxWriter;
+      //  public SystemMessenger textBoxWriter;
         private Thread renderThread { get; set; }
         private MessengerModel _messenger;
         private GCHandle _callbackHandle;
@@ -61,23 +61,21 @@ namespace VulkanGameEngineLevelEditor
         {
             InitializeComponent();
             AllocConsole();
-
-            this.Load += Form1_Load;
-
-            Thread.CurrentThread.Name = "LevelEditor";
-
-            textBoxWriter = new SystemMessenger(richTextBox2);
-            ShaderCompiler.systemMessenger = textBoxWriter;
-
-            _messenger = new MessengerModel
+            GlobalMessenger.AddMessenger(new MessengerModel
             {
                 richTextBox = richTextBox2,
                 TextBoxName = richTextBox2.Name,
                 ThreadId = Thread.CurrentThread.ManagedThreadId,
                 IsActive = true
-            };
+            });
 
-            GlobalMessenger.AddMessenger(_messenger);
+            this.Load += Form1_Load;
+
+            Thread.CurrentThread.Name = "LevelEditor";
+
+        //    textBoxWriter = new SystemMessenger(richTextBox2);
+       //     ShaderCompiler.systemMessenger = textBoxWriter;
+
 
             string originalDir = Directory.GetCurrentDirectory();
      
@@ -95,6 +93,7 @@ namespace VulkanGameEngineLevelEditor
 
         public static void LogVulkanMessage(string message, int severity)
         {
+            Console.WriteLine(message);
             GlobalMessenger.LogMessage(message, (DebugUtilsMessageSeverityFlagsEXT)severity);
         }
 
@@ -244,7 +243,7 @@ namespace VulkanGameEngineLevelEditor
 
         private void buildShadersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ShaderCompiler.CompileAllShaders($@"{ConstConfig.BaseDirectoryPath}Shaders");
+            //ShaderCompiler.CompileAllShaders($@"{ConstConfig.BaseDirectoryPath}Shaders");
         }
 
         public void QuickUpdateRenderPass()

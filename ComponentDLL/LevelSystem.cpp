@@ -162,16 +162,6 @@ void LevelSystem_Update(const float& deltaTime)
     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
 }
 
-void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, const float& deltaTime)
-{
-    Vector<VkCommandBuffer> commandBufferList(commandBufferListPtr, commandBufferListPtr + commandBufferCount);
-    commandBufferList.emplace_back(LevelSystem_RenderLevel(levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime));
-    commandBufferList.emplace_back(LevelSystem_RenderBloomPass(levelSystem.gaussianBlurRenderPassId));
-    commandBufferList.emplace_back(LevelSystem_RenderFrameBuffer(levelSystem.frameBufferId));
-
-    memorySystem.AddPtrBuffer<VkCommandBuffer>(commandBufferList.data(), commandBufferList.size(), __FILE__, __LINE__, __func__);
-}
-
  void LevelSystem_LoadLevel(const char* levelPath)
 {
      levelSystem.OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
@@ -221,7 +211,7 @@ void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBuffe
      VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
      levelSystem.spriteRenderPass2DId = renderSystem.LoadRenderPass(levelSystem.levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
      //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-     levelSystem.gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+   //  levelSystem.gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
      levelSystem.frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
 }
 

@@ -50,17 +50,16 @@ struct LevelLayer
     extern "C" 
     {
         #endif
+            DLL_EXPORT VkCommandBuffer LevelSystem_RenderBloomPass(VkGuid& renderPassId);
+            DLL_EXPORT VkCommandBuffer LevelSystem_RenderFrameBuffer(VkGuid& renderPassId);
+            DLL_EXPORT VkCommandBuffer LevelSystem_RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
             DLL_EXPORT void LevelSystem_LoadLevel(const char* levelPath);
             DLL_EXPORT void LevelSystem_Update(const float& deltaTime);
-            DLL_EXPORT void LevelSystem_Draw(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount, const float& deltaTime);
             DLL_EXPORT void LevelSystem_DestroyLevel();
         #ifdef __cplusplus
     }
 #endif
 
-    DLL_EXPORT VkCommandBuffer LevelSystem_RenderBloomPass(VkGuid& renderPassId);
-    DLL_EXPORT VkCommandBuffer LevelSystem_RenderFrameBuffer(VkGuid& renderPassId);
-    DLL_EXPORT  VkCommandBuffer LevelSystem_RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
     DLL_EXPORT LevelLayer Level2D_LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
     DLL_EXPORT void Level2D_DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, uint32* IndexList);
     DLL_EXPORT  VkGuid Level_LoadTileSetVRAM(const char* tileSetPath);
@@ -102,7 +101,9 @@ public:
 
     void Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime) 
     {
-        LevelSystem_Draw(commandBufferList.data(), commandBufferList.size(), deltaTime);
+        commandBufferList.emplace_back(LevelSystem_RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime));
+        //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
+        commandBufferList.emplace_back(LevelSystem_RenderFrameBuffer(frameBufferId));
     }
 
     void LoadLevel(const String& levelPath) 

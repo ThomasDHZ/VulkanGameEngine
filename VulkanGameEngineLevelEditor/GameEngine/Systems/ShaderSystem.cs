@@ -24,7 +24,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
     public unsafe static class ShaderSystem
     {
-        public static SystemMessenger systemMessenger { get; set; }
+      //  public static SystemMessenger systemMessenger { get; set; }
         public static Dictionary<string, ShaderPipelineData> ShaderModuleMap { get; private set; } = new Dictionary<string, ShaderPipelineData>();
         public static Dictionary<string, ShaderPushConstant> ShaderPushConstantMap { get; private set; } = new Dictionary<string, ShaderPushConstant>();
         public static Dictionary<string, ShaderStruct> PipelineShaderStructPrototypeMap { get; private set; } = new Dictionary<string, ShaderStruct>();
