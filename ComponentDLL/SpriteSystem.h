@@ -54,7 +54,7 @@ extern "C" {
 #endif
     DLL_EXPORT void             SpriteSystem_AddSprite(GameObject& gameObject, VramSpriteGuid& spriteVramId);
     DLL_EXPORT VramSpriteGuid   SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath);
-    DLL_EXPORT void             SpriteSystem_Update(const float& deltaTime);
+    DLL_EXPORT void             SpriteSystem_Update(float deltaTime);
     DLL_EXPORT void             SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
     DLL_EXPORT Sprite*          SpriteSystem_FindSprite(uint gameObjectId);
     DLL_EXPORT SpriteVram&      SpriteSystem_FindSpriteVram(VramSpriteGuid VramSpriteID);
@@ -113,7 +113,7 @@ public:
         SpriteSystem_AddSprite(gameObject, spriteVramId);
     }
 
-    void Update(const float& deltaTime) 
+    void Update(float deltaTime) 
     { 
         SpriteSystem_Update(deltaTime);
     }

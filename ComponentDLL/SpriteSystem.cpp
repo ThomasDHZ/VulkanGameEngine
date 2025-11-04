@@ -211,7 +211,7 @@ void SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
     sprite->CurrentFrameTime = 0.0f;
 }
 
-void SpriteSystem_Update(const float& deltaTime)
+void SpriteSystem_Update(float deltaTime)
 {
     VkCommandBuffer commandBuffer = Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
     Sprite_UpdateSprites(deltaTime);

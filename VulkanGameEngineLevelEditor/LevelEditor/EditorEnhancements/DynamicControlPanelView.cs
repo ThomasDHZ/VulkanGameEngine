@@ -125,8 +125,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             try
             {
-                var gameObject = parentObj as GameObject;
-                if (gameObject == null) return null;
+              //  var gameObject = parentObj as GameObject;
+             //   if (gameObject == null) return null;
 
                 var comboBox = new ComboBox
                 {

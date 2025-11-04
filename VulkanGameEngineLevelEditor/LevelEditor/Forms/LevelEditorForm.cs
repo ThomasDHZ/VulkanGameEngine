@@ -17,6 +17,7 @@ using Vulkan;
 using VulkanGameEngineLevelEditor.Compilers;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
+using VulkanGameEngineLevelEditor.GameEngine.Systems.VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
@@ -115,22 +116,22 @@ namespace VulkanGameEngineLevelEditor
                 void* afds = this.RendererBox.Handle.ToPointer();
                 GameSystem.StartUp(this.RendererBox.Handle.ToPointer(), this.richTextBox2.Handle.ToPointer());
 
-                //List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
-                //foreach (var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
-                //{
-                //    renderPassLoaderList.Add(renderPassPair.Value);
-                //}
+                List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
+                foreach (var renderPassPair in RenderSystem.RenderPassEditor_RenderPass)
+                {
+                    renderPassLoaderList.Add(renderPassPair.Value);
+                }
 
-                //levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
-                //levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
+                levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+                levelEditorTreeView1.PopulateTreeView(renderPassLoaderList);
 
-                //List<GameObject> gameObjectList = new List<GameObject>();
-                //foreach (var gameObject in GameObjectSystem.GameObjectMap)
-                //{
-                //    gameObjectList.Add(gameObject.Value);
-                //}
-                //    levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
-                //    levelEditorTreeView1.PopulateTreeView(gameObjectList);
+                List<GameObject> gameObjectList = new List<GameObject>();
+                foreach (var gameObject in GameObjectSystem.GameObjectList())
+                {
+                    gameObjectList.Add(gameObject);
+                }
+                levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
+                levelEditorTreeView1.PopulateTreeView(gameObjectList);
             }));
 
             Stopwatch stopwatch = new Stopwatch();

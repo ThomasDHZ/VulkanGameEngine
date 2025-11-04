@@ -61,7 +61,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderFrameBuffer(Guid renderPassId);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderLevel(Guid renderPassId, Guid levelId, float deltaTime);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Update(float deltaTime);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_DestroyLevel();
     }
 }

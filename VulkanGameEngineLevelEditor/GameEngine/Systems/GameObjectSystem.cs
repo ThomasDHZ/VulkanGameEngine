@@ -22,13 +22,30 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         kGameObjectMegaManShot
     };
 
-    public enum ComponentTypeEnum : ulong
+    public enum ComponentTypeEnum : UInt64
     {
         kUndefined = 0,
         kInputComponent = 1 << 0,
         kSpriteComponent = 1 << 1,
         kTransform2DComponent = 1 << 2,
         kTransform3DComponent = 1 << 3,
+    }
+
+    public unsafe struct GameObject
+    {
+        public GameObjectTypeEnum GameObjectType { get; set; } = GameObjectTypeEnum.kGameObjectNone;
+        public UInt64 GameObjectComponentMask { get; set; } = (ulong)ComponentTypeEnum.kUndefined;
+        public UInt32 GameObjectId { get; set; } = UInt32.MaxValue;
+        public UInt32 ParentGameObjectId { get; set; } = UInt32.MaxValue;
+        public UInt32 Transform2DComponentId { get; set; } = UInt32.MaxValue;
+        public UInt32 InputComponentId { get; set; } = UInt32.MaxValue;
+        public UInt32 SpriteComponentId { get; set; } = UInt32.MaxValue;
+        public void* GameObjectData { get; set; } = null;
+        public bool GameObjectAlive { get; set; } = true;
+
+        public GameObject()
+        {
+        }
     }
 
     namespace VulkanGameEngineLevelEditor.GameEngine.Systems
@@ -95,16 +112,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindInputComponent(gameObjectId));
             }
 
-            //public static List<GameObject> GameObjectList()
-            //{
-            //    int count = DLLSystem.CallDLLFunc(() => GameObjectSystem_GameObjectList(0));
-            //    var list = new List<GameObject>((int)count);
-            //    for (size_t i = 0; i < count; i++)
-            //    {
-            //        list.Add(DLLSystem.CallDLLFunc(() => GameObjectSystem_GameObjectList(i)));
-            //    }
-            //    return list;
-            //}
+            public static List<GameObject> GameObjectList()
+            {
+                GameObject* gameObjectListPtr = GameObjectSystem_GameObjectList(out int outCount);
+                List<GameObject> gameObjectList = new ListPtr<GameObject>(gameObjectListPtr, 1).ToList();
+                return gameObjectList;
+            }
 
             //public static List<Transform2DComponent> Transform2DComponentList()
             //{
@@ -140,9 +153,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject GameObjectSystem_FindGameObject(uint gameObjectId);
             [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
             [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject GameObjectSystem_GameObjectList(size_t returnListCount);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent GameObjectSystem_Transform2DComponentList(size_t returnListCount);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent GameObjectSystem_InputComponentList(size_t returnListCount);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject* GameObjectSystem_GameObjectList(out int returnListCount);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent* GameObjectSystem_Transform2DComponentList(out int returnListCount);
+            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent* GameObjectSystem_InputComponentList(out int returnListCount);
         }
     }
 }

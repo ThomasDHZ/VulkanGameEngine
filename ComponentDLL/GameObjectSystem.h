@@ -49,7 +49,7 @@ extern "C" {
     DLL_EXPORT GameObject& GameObjectSystem_FindGameObject(uint gameObjectId);
     DLL_EXPORT Transform2DComponent& GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
     DLL_EXPORT InputComponent& GameObjectSystem_FindInputComponent(uint gameObjectId);
-    DLL_EXPORT GameObject* GameObjectSystem_GameObjectList(size_t& returnListCount);
+    DLL_EXPORT GameObject* GameObjectSystem_GameObjectList(int& outCount);
     DLL_EXPORT Transform2DComponent* GameObjectSystem_Transform2DComponentList(size_t& returnListCount);
     DLL_EXPORT InputComponent* GameObjectSystem_InputComponentList(size_t& returnListCount);
 #ifdef __cplusplus
@@ -133,7 +133,7 @@ public:
 
     Vector<GameObject> GetGameObjectList()
     {
-        size_t count = 0;
+        int count = INT32_MAX;
         GameObject* gameObjectList = GameObjectSystem_GameObjectList(count);
         return Vector<GameObject>(gameObjectList, gameObjectList + count);
     }

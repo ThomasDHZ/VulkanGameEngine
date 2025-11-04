@@ -26,7 +26,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public Guid RenderPassId { get; set; }
         public IntPtr RenderPass { get; set; } // VkRenderPass is an opaque handle
         public ivec2 RenderPassResolution { get; set; }
-        public GPUIncludes gpuIncludes { get; set; }
+       // public GPUIncludes gpuIncludes { get; set; }
         public ShaderPipelineData ShaderPiplineInfo { get; set; }
         public size_t ViewportCount { get; set; }
         public size_t ScissorCount { get; set; }
@@ -131,7 +131,7 @@ namespace VulkanGameEngineLevelEditor.Models
         public Guid RenderPassId { get; set; } = Guid.Empty;
         public VkRenderPass RenderPass { get; set; } = VulkanCSConst.VK_NULL_HANDLE;
         public ivec2 RenderPassResolution { get; set; } = new ivec2();
-        public GPUIncludes gpuIncludes { get; set; } = new GPUIncludes();
+      //  public GPUIncludes gpuIncludes { get; set; } = new GPUIncludes();
         public ShaderPipelineData ShaderPiplineInfo { get; set; } = new ShaderPipelineData();
         public size_t ViewportCount { get; set; } = 0;
         public size_t ScissorCount { get; set; } = 0;

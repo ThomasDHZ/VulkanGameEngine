@@ -240,10 +240,10 @@ Vector<GameObject> GameObject_FindGameObjectByType(const GameObjectTypeEnum& gam
     return gameObjectList;
 }
 
-GameObject* GameObject_GameObjectList(size_t& returnListCount)
+GameObject* GameObjectSystem_GameObjectList(int& outCount)
 {
-    returnListCount = gameObjectSystem.GameObjectList.size();
-    return gameObjectSystem.GameObjectList.data();
+    outCount = static_cast<int>(gameObjectSystem.GameObjectList.size());
+    return memorySystem.AddPtrBuffer<GameObject>(gameObjectSystem.GameObjectList.data(), gameObjectSystem.GameObjectList.size(), __FILE__, __LINE__, __func__);
 }
 
 Transform2DComponent* GameObject_Transform2DComponentList(size_t& returnListCount)

@@ -155,7 +155,7 @@ void Level_DestroyLevel()
     }
 }
 
-void LevelSystem_Update(const float& deltaTime)
+void LevelSystem_Update(float deltaTime)
 {
     Camera_Update(*levelSystem.OrthographicCamera.get(), *shaderSystem.GetGlobalShaderPushConstant("sceneData"));
     spriteSystem.Update(deltaTime);

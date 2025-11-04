@@ -31,13 +31,13 @@ namespace VulkanGameEngineLevelEditor.GameEngine
                     if (strings[i] == null)
                     {
                         Console.WriteLine($"CHelper.VectorToConstCharPtrPtr: String at index {i} is null.");
-                        return null; // Or handle differently, e.g., skip or throw
+                        return null; 
                     }
                     result[i] = Marshal.StringToHGlobalAnsi(strings[i]);
                     if (result[i] == IntPtr.Zero)
                     {
                         Console.WriteLine($"CHelper.VectorToConstCharPtrPtr: Failed to allocate memory for string at index {i}.");
-                        // Free previously allocated pointers
+
                         for (int j = 0; j < i; j++)
                             Marshal.FreeHGlobal(result[j]);
                         return null;

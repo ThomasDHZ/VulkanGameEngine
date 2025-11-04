@@ -36,10 +36,10 @@ struct LevelLayer
     VkGuid				TileSetId;
     int					LevelLayerIndex;
     ivec2				LevelBounds;
-    uint* TileIdMap;
-    Tile* TileMap;
-    Vertex2D* VertexList;
-    uint32* IndexList;
+    uint*               TileIdMap;
+    Tile*               TileMap;
+    Vertex2D*           VertexList;
+    uint32*             IndexList;
     size_t				TileIdMapCount;
     size_t				TileMapCount;
     size_t				VertexListCount;
@@ -54,7 +54,7 @@ struct LevelLayer
             DLL_EXPORT VkCommandBuffer LevelSystem_RenderFrameBuffer(VkGuid& renderPassId);
             DLL_EXPORT VkCommandBuffer LevelSystem_RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
             DLL_EXPORT void LevelSystem_LoadLevel(const char* levelPath);
-            DLL_EXPORT void LevelSystem_Update(const float& deltaTime);
+            DLL_EXPORT void LevelSystem_Update(float deltaTime);
             DLL_EXPORT void LevelSystem_DestroyLevel();
         #ifdef __cplusplus
     }
