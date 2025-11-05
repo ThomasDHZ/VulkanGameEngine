@@ -21,7 +21,7 @@ using VulkanGameEngineLevelEditor.Models;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
-   public struct PipelineShader
+    public struct PipelineShader
     {
         public List<string> ShaderList = new List<string>();
 
@@ -58,10 +58,37 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             DLLSystem.CallDLLFunc(() => LevelSystem_DestroyLevel());
         }
 
+        public static LevelLayout GetLevelLayout()
+        {
+            return LevelSystem_GetLevelLayout();
+        }
+        public static List<LevelLayer> GetLevelLayerList()
+        {
+            LevelLayer* gameObjectListPtr = LevelSystem_GetLevelLayerList(out int outCount);
+            List<LevelLayer> gameObjectList = new ListPtr<LevelLayer>(gameObjectListPtr, outCount).ToList();
+            return gameObjectList;
+        }
+
+        //public static void List<List<uint>> GetLevelTileMapList()
+        //{
+        //    [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint** LevelSystem_GetLevelTileMapList(out int outCount);
+        //}
+
+        public static List<LevelTileSet> GetLevelTileSetList()
+        {
+            LevelTileSet* levelTileSetPtr = LevelSystem_GetLevelTileSetList(out int outCount);
+            List<LevelTileSet> levelTileSetList = new ListPtr<LevelTileSet>(levelTileSetPtr, outCount).ToList();
+            return levelTileSetList;
+        }
+
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderFrameBuffer(Guid renderPassId);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderLevel(Guid renderPassId, Guid levelId, float deltaTime);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_DestroyLevel();
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelLayout LevelSystem_GetLevelLayout();
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelLayer* LevelSystem_GetLevelLayerList(out int outCount);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint** LevelSystem_GetLevelTileMapList(out int outCount);
+        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelTileSet* LevelSystem_GetLevelTileSetList(out int outCount);
     }
 }

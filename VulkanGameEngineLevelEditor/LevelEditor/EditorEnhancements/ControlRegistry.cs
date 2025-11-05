@@ -19,7 +19,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             { typeof(bool), (obj, member, height, readOnly, parentPanel) => new TypeOfBool(parentPanel, obj, member, height, readOnly).CreateControl() },
             { typeof(Guid), (obj, member, height, readOnly, parentPanel) => new TypeOfGuidForm(parentPanel, obj, member, height, readOnly).CreateControl() },
             { typeof(vec2), (obj, member, height, readOnly, parentPanel) => new TypeOfVec2Form(parentPanel, obj, member, height, readOnly).CreateControl() }
-            // Add other types as needed
         };
 
         public static Control CreateControl(ObjectPanelView parentPanel, Type type, object obj, MemberInfo member, int height, bool readOnly)

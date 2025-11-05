@@ -35,6 +35,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         public ToolTip ToolTip { get; private set; }
         private ObjectPanelView _parentPanel;
         public List<ObjectPanelView> ChildObjectPanels { get; } = new List<ObjectPanelView>();
+
         private TableLayoutPanel _propTable;
         private Panel _headerPanel;
         private Panel _contentPanel;
@@ -170,45 +171,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             contentPanel.Controls.Add(addComponentButton);
         }
 
-        private void AddPropertyPanel(MemberInfo member, object targetObject, Panel controlPanel)
-        {
-            try
-            {
-                object instance = member is PropertyInfo p ? p.GetValue(targetObject) : ((FieldInfo)member).GetValue(targetObject);
-                if (instance == null)
-                {
-                    Console.WriteLine($"Null instance for member {member.Name} in {targetObject.GetType().Name}");
-                    return;
-                }
-
-                var instanceType = instance.GetType();
-                Console.WriteLine($"Creating property panel for {member.Name} of type {instanceType.Name} in {targetObject.GetType().Name}");
-
-                var structPanel = new TableLayoutPanel
-                {
-                    Dock = DockStyle.Fill,
-                    AutoSize = true,
-                    BackColor = Color.FromArgb(30, 30, 30),
-                    ColumnCount = 1,
-                    ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
-                };
-                controlPanel.Controls.Add(structPanel);
-
-                int rowIndex = structPanel.RowCount;
-                structPanel.RowCount += 1;
-                structPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-                var childPanelView = new ObjectPanelView(levelEditorForm, instance, ToolTip, this);
-                ChildObjectPanels.Add(childPanelView);
-                structPanel.Controls.Add(childPanelView, 0, rowIndex);
-                childPanelView.PropertyChanged += (s, e) => NotifyPropertyChanged();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error adding property panel for {member.Name} in {targetObject.GetType().Name}: {ex.Message}");
-            }
-        }
-
+   
         private void PopulateProperties()
         {
             try
@@ -230,157 +193,53 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             try
             {
-                var properties = targetObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                var fields = targetObject.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-                var members = properties.Cast<MemberInfo>().Concat(fields).ToList();
+                var members = targetObject.GetType()
+                    .GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(m => m.MemberType == MemberTypes.Property || m.MemberType == MemberTypes.Field);
 
                 foreach (var member in members)
                 {
                     if (GetCustomAttribute<IgnorePropertyAttribute>(member) != null) continue;
+                    if (GetCustomAttribute<GameObjectComponentAttribute>(member) != null) continue;
 
-                    var propertyDisplayNameAttr = GetCustomAttribute<DisplayNameAttribute>(member);
-                    string propertyDisplayName = propertyDisplayNameAttr?.DisplayName ?? member.Name;
+                    Type type = member.MemberType == MemberTypes.Property
+                        ? ((PropertyInfo)member).PropertyType
+                        : ((FieldInfo)member).FieldType;
 
-                    var readOnlyAttr = GetCustomAttribute<ReadOnlyAttribute>(member);
-                    bool isReadOnly = readOnlyAttr?.IsReadOnly ?? false;
+                    if (type == typeof(UInt64) || type == typeof(void*) || type.IsPointer) continue;
 
-                    var controlTypeAttr = GetCustomAttribute<ControlTypeAttribute>(member);
-                    var toolTipAttr = GetCustomAttribute<TooltipAttribute>(member);
+                    var displayName = GetCustomAttribute<DisplayNameAttribute>(member)?.DisplayName ?? member.Name;
+                    var readOnly = GetCustomAttribute<ReadOnlyAttribute>(member)?.IsReadOnly ?? false;
 
-                    int propRowIndex = targetTable.RowCount;
-                    targetTable.RowCount += 1;
+                    int row = targetTable.RowCount++;
                     targetTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
-
-                    var labelPanel = new Panel
-                    {
-                        Dock = DockStyle.Fill,
-                        BackColor = Color.FromArgb(50, 50, 50),
-                        Margin = new Padding(2),
-                        Height = RowHeight
-                    };
-                    targetTable.Controls.Add(labelPanel, 0, propRowIndex);
 
                     var label = new Label
                     {
-                        Text = propertyDisplayName,
+                        Text = displayName,
                         Dock = DockStyle.Fill,
                         TextAlign = ContentAlignment.MiddleLeft,
                         ForeColor = Color.White,
-                        BackColor = Color.FromArgb(50, 50, 50),
                         Margin = new Padding(5)
                     };
-                    if (toolTipAttr != null)
-                    {
-                        ToolTip.SetToolTip(label, toolTipAttr.Tooltip);
-                    }
-                    labelPanel.Controls.Add(label);
+                    targetTable.Controls.Add(label, 0, row);
 
-                    var controlPanel = new Panel
-                    {
-                        Dock = DockStyle.Fill,
-                        BackColor = Color.FromArgb(50, 50, 50),
-                        Margin = new Padding(2),
-                        AutoSize = true
-                    };
-                    targetTable.Controls.Add(controlPanel, 1, propRowIndex);
-
-                    Control control = null;
-                    Type type = member is PropertyInfo prop ? prop.PropertyType : ((FieldInfo)member).FieldType;
-
-                    if (controlTypeAttr != null && controlTypeAttr.ControlType == typeof(TypeOfFileLoader))
-                    {
-                        control = new TypeOfFileLoader("Shader Files (*.spv, *.vert, *.frag)|*.spv;*.vert;*.frag|All Files (*.*)|*.*");
-                    }
-                    else if (typeof(IList).IsAssignableFrom(type))
-                    {
-                        HandleList(member, targetObject, controlPanel, propertyDisplayName);
-                        continue;
-                    }
-                    else if (type == typeof(GlmSharp.vec2))
-                    {
-                        control = ControlRegistry.CreateControl(this, type, targetObject, member, RowHeight, isReadOnly);
-                    }
-                    else if (type.IsClass && type != typeof(string))
-                    {
-                        AddPropertyPanel(member, targetObject, controlPanel);
-                        continue;
-                    }
-                    else if (type.IsValueType && !type.IsPrimitive && !type.IsEnum)
-                    {
-                        AddPropertyPanel(member, targetObject, controlPanel);
-                        continue;
-                    }
-                    else
-                    {
-                        control = ControlRegistry.CreateControl(this, type, targetObject, member, RowHeight, isReadOnly);
-                    }
-
+                    Control control = ControlRegistry.CreateControl(this, type, targetObject, member, RowHeight, readOnly);
                     if (control != null)
                     {
                         control.Dock = DockStyle.Fill;
                         control.Margin = new Padding(5);
-                        controlPanel.Controls.Add(control);
+                        targetTable.Controls.Add(control, 1, row);
                     }
                     else
                     {
-                        Console.WriteLine($"No control created for member {member.Name} of type {type.Name} in {targetObject.GetType().Name}");
+                        Console.WriteLine($"[WARN] No control for {member.Name} ({type.Name})");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding property controls for {targetObject.GetType().Name}: {ex.Message}");
-            }
-        }
-
-        private void HandleList(MemberInfo member, object obj, Panel controlPanel, string propertyDisplayName)
-        {
-            try
-            {
-                IList list = null;
-                Type elementType = null;
-                if (member is PropertyInfo prop)
-                {
-                    list = prop.GetValue(obj) as IList;
-                    elementType = prop.PropertyType;
-                }
-                else if (member is FieldInfo field)
-                {
-                    list = field.GetValue(obj) as IList;
-                    elementType = field.FieldType;
-                }
-                
-                if (list != null)
-                {
-                    if (typeof(IEnumerable<string>).IsAssignableFrom(elementType))
-                    {
-                        var control = new TypeOfStringForm(this, obj, member, RowHeight, false).CreateControl();
-                        if (control != null)
-                        {
-                            control.Dock = DockStyle.Fill;
-                            control.Margin = new Padding(5);
-                            controlPanel.Controls.Add(control);
-                        }
-                    }
-                    else
-                    {
-                        var listPanel = new TableLayoutPanel
-                        {
-                            Dock = DockStyle.Fill,
-                            AutoSize = true,
-                            BackColor = Color.FromArgb(30, 30, 30),
-                            ColumnCount = 1,
-                            ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
-                        };
-                        controlPanel.Controls.Add(listPanel);
-
-                        UpdateListPanel(listPanel, list, member, obj, elementType);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error handling list for {member.Name}: {ex.Message}");
+                Console.WriteLine($"[AddPropertyControls] ERROR: {ex}");
             }
         }
 
@@ -590,23 +449,19 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         public void NotifyPropertyChanged()
         {
-            try
+            levelEditorForm.BeginInvoke((System.Windows.Forms.MethodInvoker)delegate
             {
-                UpdateObjectHierarchy(this);
-
-                if (PanelObject is RenderAreaModel renderArea)
+                try
                 {
-                    var extentPanel = DynamicControlPanelView.ObjectPanelViewMap[renderArea.RenderArea];
-                    extentPanel.Visible = !extentPanel.Visible;
+                    UpdateObjectHierarchy(this);
+                    AdjustPanelHeight();
+                    levelEditorForm.QuickUpdateRenderPass();
                 }
-                AdjustPanelHeight();
-
-                levelEditorForm.QuickUpdateRenderPass();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error notifying property changed for {PanelObject?.GetType().Name ?? "null"}: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[NotifyPropertyChanged] {ex.Message}");
+                }
+            });
         }
 
         private void UpdateObjectHierarchy(ObjectPanelView objPanel)

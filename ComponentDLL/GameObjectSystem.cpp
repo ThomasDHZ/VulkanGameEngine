@@ -112,9 +112,9 @@ void GameObjectSystem_CreateGameObjectFromJson(const char* gameObjectPath, vec2 
         gameObject.GameObjectComponentMask |= (1ULL << componentType);
         switch (componentType)
         {
-        case kInputComponent: GameObjectSystem_LoadInputComponent(componentJson.dump().c_str(), gameObject.GameObjectId); break;
-        case kSpriteComponent: GameObjectSystem_LoadSpriteComponent(componentJson.dump().c_str(), gameObject); break;
-        case kTransform2DComponent: GameObjectSystem_LoadTransformComponent(componentJson.dump().c_str(), gameObject.GameObjectId, gameObjectPosition); break;
+            case kInputComponent: gameObject.InputComponentId = GameObjectSystem_LoadInputComponent(componentJson.dump().c_str(), gameObject.GameObjectId); break;
+            case kSpriteComponent: gameObject.SpriteComponentId = GameObjectSystem_LoadSpriteComponent(componentJson.dump().c_str(), gameObject); break;
+            case kTransform2DComponent: gameObject.Transform2DComponentId = GameObjectSystem_LoadTransformComponent(componentJson.dump().c_str(), gameObject.GameObjectId, gameObjectPosition); break;
         }
     }
     GameObject_LoadComponentBehavior(gameObject, json["GameObjectType"]);
@@ -160,7 +160,7 @@ void GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum
     }
 }
 
-void GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition)
+uint GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition)
 {
     nlohmann::json json = json.parse(jsonString);
     gameObjectSystem.Transform2DComponentList.emplace_back(Transform2DComponent
@@ -170,22 +170,25 @@ void GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameOb
             .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
             .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
         });
+    return gameObjectId;
 }
 
-void GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId)
+uint GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId)
 {
     nlohmann::json json = json.parse(jsonString);
     gameObjectSystem.InputComponentList.emplace_back(InputComponent
         {
             .GameObjectId = gameObjectId
         });
+    return gameObjectId;
 }
 
-void GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject)
+uint GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject)
 {
     nlohmann::json json = json.parse(jsonString);
     VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
-    SpriteSystem_AddSprite(gameObject, vramId);
+    spriteSystem.AddSprite(gameObject, vramId);
+    return gameObject.GameObjectId;
 }
 
 GameObject& GameObjectSystem_FindGameObject(uint gameObjectId)
@@ -208,7 +211,7 @@ GameObjectBehavior& GameObject_FindGameObjectBehavior(const GameObjectTypeEnum& 
     return gameObjectSystem.ComponentBehaviorMap.at(id);
 }
 
-Transform2DComponent& GameObjectSystem_FindTransform2DComponent(uint gameObjectId)
+Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId)
 {
     auto it = std::find_if(gameObjectSystem.Transform2DComponentList.begin(), gameObjectSystem.Transform2DComponentList.end(),
         [gameObjectId](const Transform2DComponent& transformComponent) {
@@ -218,7 +221,7 @@ Transform2DComponent& GameObjectSystem_FindTransform2DComponent(uint gameObjectI
     return *it;
 }
 
-InputComponent& GameObjectSystem_FindInputComponent(uint gameObjectId)
+InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId)
 {
     auto it = std::find_if(gameObjectSystem.InputComponentList.begin(), gameObjectSystem.InputComponentList.end(),
         [gameObjectId](const InputComponent& inputComponent) {
@@ -336,7 +339,7 @@ void GameObjectSystem_DestroyDeadGameObjects()
     }
     while (!deadGameObjects.empty())
     {
-        GameObjectSystem_DestroyGameObject(deadGameObjects[0]->GameObjectId);
+        gameObjectSystem.DestroyGameObject(deadGameObjects[0]->GameObjectId);
         deadGameObjects.erase(deadGameObjects.begin());
     }
 }

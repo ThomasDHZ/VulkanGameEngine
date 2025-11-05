@@ -72,7 +72,7 @@ void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GL
 {
     Sprite* sprite = SpriteSystem_FindSprite(gameObjectId);
     const GameObject& gameObject = GameObjectSystem_FindGameObject(gameObjectId);
-    Transform2DComponent& transform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
+    Transform2DComponent transform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
     if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
         controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {

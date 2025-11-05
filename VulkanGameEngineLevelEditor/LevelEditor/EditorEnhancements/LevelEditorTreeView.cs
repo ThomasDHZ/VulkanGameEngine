@@ -7,7 +7,10 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Vulkan;
+using VulkanGameEngineLevelEditor.GameEngine.Systems;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
+using MethodInvoker = System.Windows.Forms.MethodInvoker;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor
 {
@@ -133,32 +136,65 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
                     parentNode.Nodes.Add(complexNode);
                 }
             }
+
+            if (parentObject is GameObject go)
+            {
+                var members = go.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                .Cast<MemberInfo>()
+                                .Concat(go.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
+                                .Where(m => m.GetCustomAttribute<GameObjectComponentAttribute>() != null);
+
+                foreach (var member in members)
+                {
+                    var attr = member.GetCustomAttribute<GameObjectComponentAttribute>();
+                    uint id = 0;
+                    try { id = (uint)(member is PropertyInfo p ? p.GetValue(go) : ((FieldInfo)member).GetValue(go)); }
+                    catch { continue; }
+
+                    if (id == uint.MaxValue) continue;
+
+                    if (ComponentRegistry.Finders.TryGetValue(attr.ComponentType, out var finder))
+                    {
+                        try
+                        {
+                            var comp = finder(id);
+                            if (comp != null)
+                            {
+                                TreeNode node = new TreeNode($"{attr.ComponentType} (ID: {id})") { Tag = comp };
+                                PopulateNode(node, comp);
+                                parentNode.Nodes.Add(node);
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
         }
 
         private void LevelEditorTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (DynamicControlPanel != null && e.Node.Tag != null)
+            if (e.Node?.Tag == null)
             {
-                DynamicControlPanel.SelectedObject = e.Node.Tag;
+                Console.WriteLine("[AfterSelect] Node.Tag is null");
+                return;
             }
-        }
 
-        private bool IsSimpleType(Type type)
-        {
-            return type == typeof(string)
-                   || type == typeof(decimal)
-                   || type == typeof(int)
-                   || type == typeof(uint)
-                   || type == typeof(float)
-                   || type == typeof(double)
-                   || type == typeof(bool)
-                   || type == typeof(byte)
-                   || type == typeof(sbyte)
-                   || type == typeof(short)
-                   || type == typeof(ushort)
-                   || type == typeof(long)
-                   || type == typeof(ulong)
-                   || type == typeof(char);
+            Console.WriteLine($"[AfterSelect] Selecting: {e.Node.Tag.GetType().Name} (Hash: {e.Node.Tag.GetHashCode()})");
+
+            if (DynamicControlPanel != null)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    try
+                    {
+                        DynamicControlPanel.SelectedObject = e.Node.Tag;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[AfterSelect] CRASH in SelectedObject: {ex}");
+                    }
+                });
+            }
         }
 
         private static bool IgnoreTypes(Type type)

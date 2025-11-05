@@ -49,7 +49,7 @@ void MegaManShot_Update(uint gameObjectId, const float& deltaTime)
        {
            objectData->MegaManShotDistanceTraveled += 1;
 
-           Transform2DComponent& spriteTransform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
+           Transform2DComponent spriteTransform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
            spriteTransform.GameObjectPosition.x += 1;
        }
    }

@@ -40,15 +40,15 @@ extern "C" {
     DLL_EXPORT void GameObjectSystem_CreateGameObjectFromJson(const char* gameObjectPath, vec2 gameObjectPosition);
     DLL_EXPORT void GameObjectSystem_CreateGameObject(const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
     DLL_EXPORT void GameObjectSystem_Update(const float& deltaTime);
-    DLL_EXPORT void GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
-    DLL_EXPORT void GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId);
-    DLL_EXPORT void GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
+    DLL_EXPORT uint GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
+    DLL_EXPORT uint GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId);
+    DLL_EXPORT uint GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
     DLL_EXPORT void GameObjectSystem_DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void GameObjectSystem_DestroyGameObjects();
     DLL_EXPORT void GameObjectSystem_DestroyDeadGameObjects(); 
     DLL_EXPORT GameObject& GameObjectSystem_FindGameObject(uint gameObjectId);
-    DLL_EXPORT Transform2DComponent& GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
-    DLL_EXPORT InputComponent& GameObjectSystem_FindInputComponent(uint gameObjectId);
+    DLL_EXPORT Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
+    DLL_EXPORT InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId);
     DLL_EXPORT GameObject* GameObjectSystem_GameObjectList(int& outCount);
     DLL_EXPORT Transform2DComponent* GameObjectSystem_Transform2DComponentList(int& outCount);
     DLL_EXPORT InputComponent* GameObjectSystem_InputComponentList(int& outCount);
@@ -121,12 +121,12 @@ public:
         return GameObjectSystem_FindGameObject(gameObjectId);
     }
 
-    Transform2DComponent& FindTransform2DComponent(uint gameObjectId)
+    Transform2DComponent FindTransform2DComponent(uint gameObjectId)
     {
         return GameObjectSystem_FindTransform2DComponent(gameObjectId);
     }
 
-    const InputComponent& FindInputComponent(uint gameObjectId)
+    const InputComponent FindInputComponent(uint gameObjectId)
     {
         return GameObjectSystem_FindInputComponent(gameObjectId);
     }

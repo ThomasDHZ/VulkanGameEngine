@@ -1,6 +1,4 @@
 ﻿using System;
 
-[AttributeUsage(AttributeTargets.Property)]
-public class IgnorePropertyAttribute : Attribute
-{
-}
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+public sealed class IgnorePropertyAttribute : Attribute { }
