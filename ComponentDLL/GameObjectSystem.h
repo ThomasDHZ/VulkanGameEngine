@@ -50,8 +50,8 @@ extern "C" {
     DLL_EXPORT Transform2DComponent& GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
     DLL_EXPORT InputComponent& GameObjectSystem_FindInputComponent(uint gameObjectId);
     DLL_EXPORT GameObject* GameObjectSystem_GameObjectList(int& outCount);
-    DLL_EXPORT Transform2DComponent* GameObjectSystem_Transform2DComponentList(size_t& returnListCount);
-    DLL_EXPORT InputComponent* GameObjectSystem_InputComponentList(size_t& returnListCount);
+    DLL_EXPORT Transform2DComponent* GameObjectSystem_Transform2DComponentList(int& outCount);
+    DLL_EXPORT InputComponent* GameObjectSystem_InputComponentList(int& outCount);
 #ifdef __cplusplus
 }
 #endif
@@ -140,14 +140,14 @@ public:
 
     Vector<Transform2DComponent> GetTransform2DComponentList()
     {
-        size_t count = 0;
+        int count = INT32_MAX;
         Transform2DComponent* transform2DComponentList = GameObjectSystem_Transform2DComponentList(count);
         return Vector<Transform2DComponent>(transform2DComponentList, transform2DComponentList + count);
     }
 
     Vector<InputComponent> GetInputComponentList()
     {
-        size_t count = 0;
+        int count = INT32_MAX;
         InputComponent* inputComponentComponentList = GameObjectSystem_InputComponentList(count);
         return Vector<InputComponent>(inputComponentComponentList, inputComponentComponentList + count);
     }

@@ -23,11 +23,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
     public struct Texture
     {
         public Guid textureId { get; set; } = Guid.Empty;
-        public int width { get; set; } = 1;
-        public int height { get; set; } = 1;
-        public int depth { get; set; } = 1;
-        public uint mipMapLevels { get; set; } = 1;
-        public uint textureBufferIndex { get; set; } = 0;
+        public int width { get; set; } = Int32.MaxValue;
+        public int height { get; set; } = Int32.MaxValue;
+        public int depth { get; set; } = Int32.MaxValue;
+        public uint mipMapLevels { get; set; } = Int32.MaxValue;
+        public uint textureBufferIndex { get; set; } = Int32.MaxValue;
 
         public VkImage textureImage { get; set; } = VulkanCSConst.VK_NULL_HANDLE;
         public VkDeviceMemory textureMemory { get; set; } = VulkanCSConst.VK_NULL_HANDLE;

@@ -246,16 +246,16 @@ GameObject* GameObjectSystem_GameObjectList(int& outCount)
     return memorySystem.AddPtrBuffer<GameObject>(gameObjectSystem.GameObjectList.data(), gameObjectSystem.GameObjectList.size(), __FILE__, __LINE__, __func__);
 }
 
-Transform2DComponent* GameObject_Transform2DComponentList(size_t& returnListCount)
+Transform2DComponent* GameObject_Transform2DComponentList(int& outCount)
 {
-    returnListCount = gameObjectSystem.Transform2DComponentList.size();
-    return gameObjectSystem.Transform2DComponentList.data();
+    outCount = static_cast<int>(gameObjectSystem.Transform2DComponentList.size());
+    return memorySystem.AddPtrBuffer<Transform2DComponent>(gameObjectSystem.Transform2DComponentList.data(), gameObjectSystem.Transform2DComponentList.size(), __FILE__, __LINE__, __func__);
 }
 
-InputComponent* GameObject_InputComponentList(size_t& returnListCount)
+InputComponent* GameObject_InputComponentList(int& outCount)
 {
-    returnListCount = gameObjectSystem.InputComponentList.size();
-    return gameObjectSystem.InputComponentList.data();
+    outCount = static_cast<int>(gameObjectSystem.InputComponentList.size());
+    return memorySystem.AddPtrBuffer<InputComponent>(gameObjectSystem.InputComponentList.data(), gameObjectSystem.InputComponentList.size(), __FILE__, __LINE__, __func__);
 }
 
 void GameObjectSystem_DestroyGameObject(uint gameObjectId)

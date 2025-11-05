@@ -72,7 +72,7 @@ void Sprite_AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawL
         .SpriteLayerMeshId = MeshSystem_CreateMesh(MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList.data(), SpriteIndexList.data(), SpriteVertexList.size(), SpriteIndexList.size())
     };
 
-    Vector<SpriteInstance> spriteInstanceList = SpriteSystem_FindSpriteInstancesByLayer(spriteLayer);
+    Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
     spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(renderer, spriteInstanceList, MeshBufferUsageSettings, MeshBufferPropertySettings, false);
     spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
@@ -152,7 +152,7 @@ void Sprite_UpdateSpriteBatchLayers(const float& deltaTime)
 {
     for (auto& spriteLayer : spriteSystem.SpriteLayerList)
     {
-        Vector<SpriteInstance> spriteInstanceList = SpriteSystem_FindSpriteInstancesByLayer(spriteLayer.second);
+        Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
         bufferSystem.UpdateBufferMemory(renderer, spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
     }
 }
@@ -226,9 +226,9 @@ Sprite* SpriteSystem_FindSprite(uint gameObjectId)
     return it != spriteSystem.SpriteList.end() ? &(*it) : nullptr;
 }
 
-Vector<std::reference_wrapper<Sprite>> SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer)
+Sprite* SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer, int& outCount)
 {
-    Vector<std::reference_wrapper<Sprite>> matches;
+    Vector<Sprite> matches;
     auto it = spriteSystem.SpriteList.begin();
     while ((it = std::find_if(it, spriteSystem.SpriteList.end(), [spriteLayer](const Sprite& sprite)
         {
@@ -237,7 +237,9 @@ Vector<std::reference_wrapper<Sprite>> SpriteSystem_FindSpritesByLayer(const Spr
         matches.emplace_back(std::ref(*it));
         ++it;
     }
-    return matches;
+
+    outCount = static_cast<int>(matches.size());
+    return memorySystem.AddPtrBuffer<Sprite>(matches.data(), matches.size(), __FILE__, __LINE__, __func__);
 }
 
 const Vector<Mesh>& Sprite_FindSpriteLayerMeshList()
@@ -245,15 +247,20 @@ const Vector<Mesh>& Sprite_FindSpriteLayerMeshList()
     return Mesh_FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh);
 }
 
-Vector<SpriteInstance> SpriteSystem_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer)
+SpriteInstance* SpriteSystem_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer, int& outCount)
 {
+    int layerCount = INT32_MAX;
     Vector<SpriteInstance> spriteInstanceList;
-    Vector<std::reference_wrapper<Sprite>> spriteList = SpriteSystem_FindSpritesByLayer(spriteLayer);
+    Sprite* spriteListPtr = SpriteSystem_FindSpritesByLayer(spriteLayer, layerCount);
+
+    Span<Sprite> spriteList(spriteListPtr, spriteListPtr + layerCount);
     for (auto& sprite : spriteList)
     {
-        spriteInstanceList.emplace_back(spriteSystem.SpriteInstanceList[sprite.get().SpriteInstance]);
+        spriteInstanceList.emplace_back(spriteSystem.SpriteInstanceList[sprite.SpriteInstance]);
     }
-    return spriteInstanceList;
+
+    outCount = static_cast<int>(spriteInstanceList.size());
+    return memorySystem.AddPtrBuffer<SpriteInstance>(spriteInstanceList.data(), spriteInstanceList.size(), __FILE__, __LINE__, __func__);
 }
 
 SpriteVram& SpriteSystem_FindSpriteVram(VramSpriteGuid vramSpriteId)

@@ -103,7 +103,7 @@ VkGuid Level_LoadTileSetVRAM(const char* tileSetPath)
     return tileSetId;
 }
 
-void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLayoutPath)
+void Level_LoadLevelLayout(const char* levelLayoutPath)
 {
     if (!levelLayoutPath)
     {
@@ -128,7 +128,7 @@ void Level_LoadLevelLayout(const GraphicsRenderer& renderer, const char* levelLa
     VRAM_DeleteLevelLayerPtr(levelLayerList);
 }
 
-void Level_LoadLevelMesh(const GraphicsRenderer& renderer, VkGuid& tileSetId)
+void Level_LoadLevelMesh(VkGuid& tileSetId)
 {
     for (size_t x = 0; x < levelSystem.LevelTileMapList.size(); x++)
     {
@@ -205,8 +205,8 @@ void LevelSystem_Update(float deltaTime)
          gameObjectSystem.CreateGameObject(objectJson, positionOverride);
      }
 
-     Level_LoadLevelLayout(renderer, json["LoadLevelLayout"].get<String>().c_str());
-     Level_LoadLevelMesh(renderer, tileSetId);
+     Level_LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
+     Level_LoadLevelMesh(tileSetId);
 
      VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
      levelSystem.spriteRenderPass2DId = renderSystem.LoadRenderPass(levelSystem.levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
@@ -218,6 +218,34 @@ void LevelSystem_Update(float deltaTime)
  void LevelSystem_DestroyLevel()
 {
 }
+
+  LevelLayout LevelSystem_GetLevelLayout()
+ {
+      return levelSystem.levelLayout;
+ }
+
+  LevelLayer* LevelSystem_GetLevelLayerList(int& outCount)
+ {
+      outCount = static_cast<int>(levelSystem.LevelLayerList.size());
+      return memorySystem.AddPtrBuffer<LevelLayer>(levelSystem.LevelLayerList.data(), levelSystem.LevelLayerList.size(), __FILE__, __LINE__, __func__);
+ }
+
+  uint** LevelSystem_GetLevelTileMapList(int& outCount)
+ {
+//      outCount = static_cast<int>(gameObjectSystem.Transform2DComponentList.size());
+      return nullptr;
+ }
+
+  LevelTileSet* LevelSystem_GetLevelTileSetList(int& outCount)
+ {
+      Vector<LevelTileSet> levelTileSetList;
+      for (auto& levelTile : levelSystem.LevelTileSetMap)
+      {
+          levelTileSetList.push_back(levelTile.second);
+      }
+      outCount = static_cast<int>(levelTileSetList.size());
+      return memorySystem.AddPtrBuffer<LevelTileSet>(levelTileSetList.data(), levelTileSetList.size(), __FILE__, __LINE__, __func__);
+ }
 
  VkCommandBuffer LevelSystem_RenderBloomPass(VkGuid& renderPassId)
  {
