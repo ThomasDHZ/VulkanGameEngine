@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "SpriteSystem.h"
 #include "FileSystem.h"
-#include "VulkanBuffer.h"
+#include <VulkanBuffer.h>
+#include "RenderSystem.h"
 #include "BufferSystem.h"
 #include "TextureSystem.h"
 #include "MaterialSystem.h"
@@ -24,19 +25,7 @@ uint32 GetNextSpriteIndex()
 
 void SpriteSystem_AddSprite(GameObject& gameObject, VramSpriteGuid& spriteVramId)
 {
-    Sprite sprite;
-    sprite.SpriteID = GetNextSpriteIndex();
-    sprite.GameObjectId = gameObject.GameObjectId;
-    sprite.SpriteVramId = spriteVramId;
-    sprite.SpriteLayer = SpriteSystem_FindSpriteVram(spriteVramId).SpriteLayer;
-    sprite.SpriteInstance = spriteSystem.SpriteInstanceList.size();
-    spriteSystem.SpriteList.emplace_back(sprite);
-    spriteSystem.SpriteInstanceList.emplace_back(SpriteInstance());
-    if (!Sprite_SpriteLayerExists(sprite.SpriteLayer))
-    {
-        VkGuid guid = VkGuid("de78235b-3c69-4298-99da-acd8c6622ece");
-        Sprite_AddSpriteBatchLayer(guid, sprite.SpriteLayer);
-    }
+    spriteSystem.AddSprite(gameObject, spriteVramId);
 }
 
 void Sprite_AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
@@ -201,45 +190,25 @@ void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* sprit
 
 void SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
 {
-    if (sprite->CurrentAnimationID == spriteAnimationEnum)
-    {
-        return;
-    }
-
-    sprite->CurrentAnimationID = spriteAnimationEnum;
-    sprite->CurrentFrame = 0;
-    sprite->CurrentFrameTime = 0.0f;
+    spriteSystem.SetSpriteAnimation(sprite, spriteAnimationEnum);
 }
 
 void SpriteSystem_Update(float deltaTime)
 {
-    VkCommandBuffer commandBuffer = Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
-    Sprite_UpdateSprites(deltaTime);
-    Sprite_UpdateSpriteBatchLayers(deltaTime);
-    Renderer_EndSingleTimeCommands(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    spriteSystem.Update(deltaTime);
 }
 
-
-Sprite* SpriteSystem_FindSprite(uint gameObjectId)
+Sprite SpriteSystem_FindSprite(uint gameObjectId)
 {
-    auto it = std::find_if(spriteSystem.SpriteList.begin(), spriteSystem.SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
-    return it != spriteSystem.SpriteList.end() ? &(*it) : nullptr;
+    return spriteSystem.FindSprite(gameObjectId);
 }
 
 Sprite* SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer, int& outCount)
 {
-    Vector<Sprite> matches;
-    auto it = spriteSystem.SpriteList.begin();
-    while ((it = std::find_if(it, spriteSystem.SpriteList.end(), [spriteLayer](const Sprite& sprite)
-        {
-            return sprite.SpriteLayer == spriteLayer.SpriteDrawLayer;
-        })) != spriteSystem.SpriteList.end()) {
-        matches.emplace_back(std::ref(*it));
-        ++it;
-    }
+    Vector<Sprite> spriteList = spriteSystem.FindSpritesByLayer(spriteLayer);
 
-    outCount = static_cast<int>(matches.size());
-    return memorySystem.AddPtrBuffer<Sprite>(matches.data(), matches.size(), __FILE__, __LINE__, __func__);
+    outCount = static_cast<int>(spriteList.size());
+    return memorySystem.AddPtrBuffer<Sprite>(spriteList.data(), spriteList.size(), __FILE__, __LINE__, __func__);
 }
 
 const Vector<Mesh>& Sprite_FindSpriteLayerMeshList()
@@ -281,4 +250,68 @@ void SpriteSystem_Destroy()
 const bool Sprite_SpriteLayerExists(const uint32 spriteDrawLayer)
 {
     return spriteSystem.SpriteLayerList.contains(spriteDrawLayer);
+}
+
+void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
+{
+    Sprite sprite;
+    sprite.SpriteID = GetNextSpriteIndex();
+    sprite.GameObjectId = gameObject.GameObjectId;
+    sprite.SpriteVramId = spriteVramId;
+    sprite.SpriteLayer = SpriteSystem_FindSpriteVram(spriteVramId).SpriteLayer;
+    sprite.SpriteInstance = spriteSystem.SpriteInstanceList.size();
+    spriteSystem.SpriteList.emplace_back(sprite);
+    spriteSystem.SpriteInstanceList.emplace_back(SpriteInstance());
+    if (!Sprite_SpriteLayerExists(sprite.SpriteLayer))
+    {
+        VkGuid guid = VkGuid("de78235b-3c69-4298-99da-acd8c6622ece");
+        Sprite_AddSpriteBatchLayer(guid, sprite.SpriteLayer);
+    }
+}
+
+void SpriteSystem::Update(float deltaTime)
+{
+    VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands(renderer.CommandPool);
+    Sprite_UpdateSprites(deltaTime);
+    Sprite_UpdateSpriteBatchLayers(deltaTime);
+    renderSystem.EndSingleTimeCommands(commandBuffer);
+}
+
+void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
+{
+    if (sprite->CurrentAnimationID == spriteAnimationEnum)
+    {
+        return;
+    }
+
+    sprite->CurrentAnimationID = spriteAnimationEnum;
+    sprite->CurrentFrame = 0;
+    sprite->CurrentFrameTime = 0.0f;
+}
+
+Sprite SpriteSystem::FindSprite(uint gameObjectId)
+{
+    auto it = std::find_if(spriteSystem.SpriteList.begin(), spriteSystem.SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
+    if (it != spriteSystem.SpriteList.end()) 
+    {
+        return *it; 
+    }
+    else 
+    {
+        return Sprite{};
+    }
+}
+
+Vector<Sprite> SpriteSystem::FindSpritesByLayer(const SpriteLayer& spriteLayer)
+{
+    Vector<Sprite> matches;
+    auto it = spriteSystem.SpriteList.begin();
+    while ((it = std::find_if(it, spriteSystem.SpriteList.end(), [spriteLayer](const Sprite& sprite)
+        {
+            return sprite.SpriteLayer == spriteLayer.SpriteDrawLayer;
+        })) != spriteSystem.SpriteList.end()) {
+        matches.emplace_back(std::ref(*it));
+        ++it;
+    }
+    return matches;
 }

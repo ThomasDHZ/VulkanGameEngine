@@ -56,7 +56,7 @@ extern "C" {
     DLL_EXPORT VramSpriteGuid   SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath);
     DLL_EXPORT void             SpriteSystem_Update(float deltaTime);
     DLL_EXPORT void             SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-    DLL_EXPORT Sprite*          SpriteSystem_FindSprite(uint gameObjectId);
+    DLL_EXPORT Sprite           SpriteSystem_FindSprite(uint gameObjectId);
     DLL_EXPORT SpriteVram&      SpriteSystem_FindSpriteVram(VramSpriteGuid VramSpriteID);
     DLL_EXPORT Animation2D&     SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
     DLL_EXPORT void             SpriteSystem_Destroy();
@@ -108,32 +108,12 @@ public:
     ~SpriteSystem() { }
 
 
-    void AddSprite(GameObject& gameObject, VkGuid& spriteVramId) 
-    { 
-        SpriteSystem_AddSprite(gameObject, spriteVramId);
-    }
+    void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
+    void Update(float deltaTime);
+    void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
 
-    void Update(float deltaTime) 
-    { 
-        SpriteSystem_Update(deltaTime);
-    }
-
-    void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum) 
-    { 
-        SpriteSystem_SetSpriteAnimation(sprite, spriteAnimationEnum); 
-    }
-
-    Sprite* FindSprite(uint gameObjectId) 
-    { 
-        return SpriteSystem_FindSprite(gameObjectId);
-    }
-
-    Vector<Sprite> FindSpritesByLayer(const SpriteLayer& spriteLayer) 
-    {
-        int layerCount = INT32_MAX;
-        Sprite* spriteListPtr = SpriteSystem_FindSpritesByLayer(spriteLayer, layerCount);
-        return Vector<Sprite>(spriteListPtr, spriteListPtr + layerCount); 
-    }
+    Sprite FindSprite(uint gameObjectId);
+    Vector<Sprite> FindSpritesByLayer(const SpriteLayer& spriteLayer);
 
     const Vector<SpriteInstance> FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer) 
     { 

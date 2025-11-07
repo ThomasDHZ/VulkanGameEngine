@@ -156,18 +156,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
         }
 
-        private static bool IsDefaultStruct(object obj)
-        {
-            foreach (var f in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
-            {
-                var v = f.GetValue(obj);
-                if (v is float fVal && fVal != 0) return false;
-                if (v is int i && i != 0) return false;
-                if (v is uint u && u != 0) return false;
-            }
-            return true;
-        }
-
         private void AdjustHeight()
         {
             int h = _contentPanel.Controls.Cast<Control>().Sum(c => c.Height + c.Margin.Vertical);

@@ -7,100 +7,95 @@ using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 public class TypeOfVec2Form : PropertyEditorForm
 {
-    public TypeOfVec2Form(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly)
+    private const int RowHeight = 32;    
+    private const int BufferHeight = 4;  
+
+    public TypeOfVec2Form(ObjectPanelView rootPanel, object obj, MemberInfo member,
+                          int minimumPanelSize, bool readOnly)
         : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
 
     public override Control CreateControl()
     {
-        var vec2Value = (vec2)GetValue();
-        int rowIndex = 0;
-
-        var vec2Panel = new TableLayoutPanel
+        var table = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
+            AutoSize = true,
             AutoScroll = true,
             BackColor = Color.FromArgb(70, 70, 70),
             ColumnCount = 2,
-            ColumnStyles =
+            RowCount = 0,
+            Padding = new Padding(0) 
+        };
+        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+
+        void AddRow(string axis, float value, bool addDivider = false)
+        {
+            int row = table.RowCount++;
+            table.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
+
+            var lblPanel = new Panel { Dock = DockStyle.Fill, Margin = new Padding(2) };
+            var lbl = new Label
             {
-                new ColumnStyle(SizeType.Percent, 50F),
-                new ColumnStyle(SizeType.Percent, 50F)
-            },
-            RowStyles = { new RowStyle(SizeType.AutoSize, _minimumPanelSize + BufferHeight) }
-        };
-        CreateBaseControl(vec2Panel);
+                Text = axis,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = Color.White,
+                Margin = new Padding(5, 0, 0, 0)
+            };
+            lblPanel.Controls.Add(lbl);
+            table.Controls.Add(lblPanel, 0, row);
 
-        var xLabelPanel = AddPanel();
-        var xLabel = new Label { Text = "X", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
-        xLabelPanel.Controls.Add(xLabel);
-        vec2Panel.Controls.Add(xLabelPanel, 0, rowIndex);
+            var numPanel = new Panel { Dock = DockStyle.Fill, Margin = new Padding(2) };
+            var num = new NumericUpDown
+            {
+                Dock = DockStyle.Fill,
+                Minimum = decimal.MinValue,
+                Maximum = decimal.MaxValue,
+                DecimalPlaces = 6,
+                Increment = 0.1m,
+                Value = (decimal)value,
+                BackColor = Color.FromArgb(60, 60, 60),
+                ForeColor = Color.White,
+                Margin = new Padding(0),
+                ReadOnly = _readOnly,
+                Enabled = !_readOnly,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            numPanel.Controls.Add(num);
+            table.Controls.Add(numPanel, 1, row);
 
-        var xControlPanel = AddPanel();
-        var numericX = new NumericUpDown
-        {
-            Dock = DockStyle.Fill,
-            Minimum = decimal.MinValue,
-            Maximum = decimal.MaxValue,
-            BackColor = Color.FromArgb(60, 60, 60),
-            ForeColor = Color.White,
-            Value = (decimal)vec2Value.x,
-            MinimumSize = new Size(0, _minimumPanelSize),
-            Margin = new Padding(5)
-        };
-        xControlPanel.Controls.Add(numericX);
-        vec2Panel.Controls.Add(xControlPanel, 1, rowIndex);
+            num.ValueChanged += (s, e) =>
+            {
+                var vec = GetCurrentVec2();
+                if (axis == "X") vec.x = (float)num.Value;
+                else vec.y = (float)num.Value;
+                SetValue(vec);
+            };
 
-        rowIndex++;
-        vec2Panel.RowCount += 1;
-        vec2Panel.RowStyles.Add(new RowStyle(SizeType.AutoSize, _minimumPanelSize + BufferHeight));
+            if (addDivider)
+            {
+                int divRow = table.RowCount++;
+                table.RowStyles.Add(new RowStyle(SizeType.Absolute, 1));
+                var line = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.FromArgb(40, 40, 40),
+                    Margin = new Padding(0, 0, 0, 4)
+                };
+                table.Controls.Add(line, 0, divRow);
+                table.SetColumnSpan(line, 2);
+            }
+        }
 
-        var yLabelPanel = AddPanel();
-        var yLabel = new Label { Text = "Y", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.White, Margin = new Padding(5) };
-        yLabelPanel.Controls.Add(yLabel);
-        vec2Panel.Controls.Add(yLabelPanel, 0, rowIndex);
+        var vec = (vec2)GetValue();
 
-        var yControlPanel = AddPanel();
-        var numericY = new NumericUpDown
-        {
-            Dock = DockStyle.Fill,
-            Minimum = decimal.MinValue,
-            Maximum = decimal.MaxValue,
-            BackColor = Color.FromArgb(60, 60, 60),
-            ForeColor = Color.White,
-            Value = (decimal)vec2Value.y,
-            MinimumSize = new Size(0, _minimumPanelSize),
-            Margin = new Padding(5)
-        };
-        yControlPanel.Controls.Add(numericY);
-        vec2Panel.Controls.Add(yControlPanel, 1, rowIndex);
+        AddRow("X", vec.x, addDivider: true); 
+        AddRow("Y", vec.y, addDivider: true); 
 
-        numericX.ValueChanged += (s, e) =>
-        {
-            var newX = (float)((NumericUpDown)s).Value;
-            var newVec2 = new vec2(newX, vec2Value.y);
-            SetValue(newVec2);
-            // UpdatePropertiesList.Add(new UpdateProperty { ParentObj = _parentObject, Obj = _obj });
-        };
-
-        numericY.ValueChanged += (s, e) =>
-        {
-            var newY = (float)((NumericUpDown)s).Value;
-            var newVec2 = new vec2(vec2Value.x, newY);
-            SetValue(newVec2);
-            // UpdatePropertiesList.Add(new UpdateProperty { ParentObj = _parentObject, Obj = _obj });
-        };
-
-        return vec2Panel;
+        return table;
     }
 
-    private Panel AddPanel()
-    {
-        return new Panel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(60, 60, 60),
-            Margin = new Padding(2),
-            Height = RowHeight
-        };
-    }
+    private vec2 GetCurrentVec2()
+        => (vec2)GetValue();
 }
