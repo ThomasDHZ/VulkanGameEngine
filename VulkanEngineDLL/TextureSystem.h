@@ -5,7 +5,6 @@
 #include "Macro.h"
 #include "Typedef.h"
 #include "pixel.h"
-#include "Typedef.h"
 #include "VkGuid.h"
 #include "VulkanRenderer.h"
 #include "VulkanBuffer.h"

@@ -1,6 +1,5 @@
 #pragma once
-#include "DLL.h"
-#include "TypeDef.h"
+#include "Platform.h"
 #include <mutex>
 
 struct MemoryLeakPtr

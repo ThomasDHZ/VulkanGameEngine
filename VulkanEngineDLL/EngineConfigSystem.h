@@ -1,11 +1,6 @@
 #pragma once
-#include <nlohmann/json.hpp>
-#include "Typedef.h"
-#include <vulkan/vulkan.h>
-#include "JsonStruct.h"
+#include "Platform.h"
 #include <fstream>
-#include <iostream>
-#include <filesystem>  // Include this header
 #include <string>
 
 class ConfigSystem

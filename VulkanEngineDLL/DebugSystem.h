@@ -1,7 +1,5 @@
 #pragma once
-#include <vulkan/vulkan_core.h>
-#include "DLL.h"
-#include "Typedef.h"
+#include "Platform.h"
 #include <C:\Program Files\RenderDoc\renderdoc_app.h>
 
 #ifdef __cplusplus

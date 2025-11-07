@@ -1,8 +1,5 @@
 #pragma once
-#include <vulkan/vulkan_core.h>
-#include <math.h>
-#include "DLL.h"
-#include "Typedef.h"
+#include "Platform.h"
 #include "VkGuid.h"
 #include "VulkanBuffer.h"
 #include "VulkanShaderSystem.h"

@@ -1,6 +1,5 @@
 #pragma once
-#include "DLL.h"
-#include "Typedef.h"
+#include "Platform.h"
 #include "VulkanRenderer.h"
 #include "VulkanBuffer.h"
 #include "TextureSystem.h"

@@ -1,6 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
-#include "Typedef.h"
+#include "Platform.h"
 #include "VulkanRenderer.h"
 
 #ifdef __cplusplus

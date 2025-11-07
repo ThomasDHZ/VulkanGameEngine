@@ -1,11 +1,5 @@
 #pragma once
-#include "DLL.h"
-#include "Typedef.h"
-#include <iostream>
-#include <filesystem>
-#include <chrono>
-#include <iomanip>
-#include <nlohmann/json.hpp>
+#include "Platform.h"
 #include "MemorySystem.h"
 
 typedef struct fileState
