@@ -142,11 +142,11 @@
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GPUSystem.h" />
     <ClInclude Include="InputEnum.h" />
+    <ClInclude Include="Platform.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="vertex.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="BufferSystem.h" />
-    <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="DLL.h" />
     <ClInclude Include="from_json.h" />
@@ -172,10 +172,10 @@
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GPUSystem.cpp" />
+    <ClCompile Include="Platform.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
-    <ClCompile Include="VulkanError.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="JsonLoader.cpp" />

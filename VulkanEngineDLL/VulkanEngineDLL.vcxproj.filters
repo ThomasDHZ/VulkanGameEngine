@@ -81,9 +81,6 @@
     <ClInclude Include="VulkanBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BufferSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -123,6 +120,9 @@
     <ClInclude Include="DebugSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="Platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VulkanRenderer.cpp">
@@ -147,9 +147,6 @@
       <Filter>Source Files\spirv</Filter>
     </ClCompile>
     <ClCompile Include="VulkanBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanShaderSystem.cpp">
@@ -184,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="DebugSystem.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

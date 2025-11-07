@@ -1,15 +1,6 @@
 #pragma once
-#include <windows.h>
-#include <stdbool.h>
-
-#include "DLL.h"
-#include "Macro.h"
-#include "Typedef.h"
-#include "VulkanError.h"
-#include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_win32.h>
+#include "Platform.h"
 #include "InputEnum.h"
-#include "Typedef.h"
 
 static const char* ValidationLayers[] = { "VK_LAYER_KHRONOS_validation" };
 

@@ -1,11 +1,9 @@
 #pragma once
 #include <windows.h>
 #include <stdbool.h>
-
-#include "DLL.h"
+#include "Platform.h"
 #include "Macro.h"
 #include "Typedef.h"
-#include "VulkanError.h"
 #include "pixel.h"
 #include "Typedef.h"
 #include "VkGuid.h"

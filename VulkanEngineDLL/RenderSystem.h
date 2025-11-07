@@ -1,6 +1,5 @@
 #pragma once
-#include "DLL.h"
-#include "VulkanError.h"
+#include "Platform.h"
 #include "VulkanRenderer.h"
 #include "VulkanRenderPass.h"
 #include "VulkanPipeline.h"
