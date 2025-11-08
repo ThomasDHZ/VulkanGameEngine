@@ -1,13 +1,7 @@
 #pragma once
 #include <windows.h>
-#include <stdbool.h>
 #include "Platform.h"
-#include "Macro.h"
-#include "Typedef.h"
 #include "pixel.h"
-#include "VkGuid.h"
-#include "VulkanRenderer.h"
-#include "VulkanBuffer.h"
 #include "enum.h"
 #include "FileSystem.h"
 
