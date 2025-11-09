@@ -1,14 +1,12 @@
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "TextureSystem.h"
 #include "VulkanRenderer.h"
-#include "VulkanBuffer.h"
-#include <stb/stb_image.h>
-#include "GPUSystem.h"
-#include "from_json.h"
-#include "JsonStruct.h"
 #include "FileSystem.h"
+#include "BufferSystem.h"
+#include "GPUSystem.h"
+#include "JsonStruct.h"
+#include "from_json.h"
 #include <algorithm>
+#include <cmath>
 
 TextureSystem textureSystem = TextureSystem();
 

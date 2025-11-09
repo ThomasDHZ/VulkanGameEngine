@@ -10,13 +10,14 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include <string>      // for std::string, std::to_string
-#include <iostream>    // for std::cout, std::cerr, std::endl
-#include <algorithm>   // for std::find, std::copy, std::begin, std::end
-#include <iterator>    // for std::begin, std::end
-#include <sstream>     // for std::ostringstream
-#include <iomanip>     // for std::setw, std::setfill
+#include <string>
+#include <iostream>
+#include <algorithm>
+#include <iterator>
+#include <sstream>
+#include <iomanip>
 #include <filesystem>
+#include <stb/stb_image.h>
 #include "Macro.h"
 #include "Typedef.h"
 
