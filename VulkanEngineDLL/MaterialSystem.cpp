@@ -28,26 +28,27 @@ VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
                                                                                                                                                                                                                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
                                                                                                                                                                                                                                     VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
 
-    materialSystem.MaterialMap[materialId] = Material{
-    .materialGuid = VkGuid(json["MaterialId"].get<std::string>()),
-    .ShaderMaterialBufferIndex = 0,
-    .MaterialBufferId = bufferIndex,
-    .AlbedoMapId = json["AlbedoMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["AlbedoMapId"].get<std::string>()),
-    .MetallicRoughnessMapId = json["MetallicRoughnessMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["MetallicRoughnessMapId"].get<std::string>()),
-    .MetallicMapId = json["MetallicMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["MetallicMapId"].get<std::string>()),
-    .RoughnessMapId = json["RoughnessMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["RoughnessMapId"].get<std::string>()),
-    .AmbientOcclusionMapId = json["AmbientOcclusionMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["AmbientOcclusionMapId"].get<std::string>()),
-    .NormalMapId = json["NormalMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["NormalMapId"].get<std::string>()),
-    .DepthMapId = json["DepthMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["DepthMapId"].get<std::string>()),
-    .AlphaMapId = json["AlphaMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["AlphaMapId"].get<std::string>()),
-    .EmissionMapId = json["EmissionMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["EmissionMapId"].get<std::string>()),
-    .HeightMapId = json["HeightMapId"].get<std::string>().empty() ? VkGuid::Empty() : VkGuid(json["HeightMapId"].get<std::string>()),
-    .Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]),
-    .Emission = vec3(json["Emission"][0], json["Emission"][1], json["Emission"][2]),
-    .Metallic = json["Metallic"],
-    .Roughness = json["Roughness"],
-    .AmbientOcclusion = json["AmbientOcclusion"],
-    .Alpha = json["Alpha"],
+    materialSystem.MaterialMap[materialId] = Material
+    {
+        .materialGuid = VkGuid(json["MaterialId"].get<std::string>()),
+        .ShaderMaterialBufferIndex = 0,
+        .MaterialBufferId = bufferIndex,
+        .AlbedoMapId = json["AlbedoMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["AlbedoMapId"].get<std::string>()),
+        .MetallicRoughnessMapId = json["MetallicRoughnessMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["MetallicRoughnessMapId"].get<std::string>()),
+        .MetallicMapId = json["MetallicMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["MetallicMapId"].get<std::string>()),
+        .RoughnessMapId = json["RoughnessMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["RoughnessMapId"].get<std::string>()),
+        .AmbientOcclusionMapId = json["AmbientOcclusionMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["AmbientOcclusionMapId"].get<std::string>()),
+        .NormalMapId = json["NormalMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["NormalMapId"].get<std::string>()),
+        .DepthMapId = json["DepthMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["DepthMapId"].get<std::string>()),
+        .AlphaMapId = json["AlphaMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["AlphaMapId"].get<std::string>()),
+        .EmissionMapId = json["EmissionMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["EmissionMapId"].get<std::string>()),
+        .HeightMapId = json["HeightMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["HeightMapId"].get<std::string>()),
+        .Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]),
+        .Emission = vec3(json["Emission"][0], json["Emission"][1], json["Emission"][2]),
+        .Metallic = json["Metallic"],
+        .Roughness = json["Roughness"],
+        .AmbientOcclusion = json["AmbientOcclusion"],
+        .Alpha = json["Alpha"],
     };
 }
 
