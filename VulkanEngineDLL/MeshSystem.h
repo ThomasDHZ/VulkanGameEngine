@@ -31,6 +31,35 @@ struct Mesh
 	void* MeshExtension = nullptr;
 };
 
+
+
+class MeshSystem
+{
+private:
+	Vector<uint32>				 FreeMeshIndicesList;
+	Vector<Mesh>                 MeshList;
+	Vector<MeshPropertiesStruct> MeshPropertiesList;
+
+	uint32 GetNextMeshIndex();
+	void   UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
+
+public:
+	Vector<Vector<Vertex2D>>     Vertex2DList;
+	Vector<Vector<uint>>         IndexList;
+
+	MeshSystem();
+	~MeshSystem();
+
+	DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+	DLL_EXPORT void Update(const float& deltaTime);
+	DLL_EXPORT void Destroy(uint meshId);
+	DLL_EXPORT void DestroyAllGameObjects();
+	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
+	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
+	DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType);
+};
+DLL_EXPORT MeshSystem meshSystem;
+
 #ifdef __cplusplus
 extern "C" 
 	{
@@ -44,61 +73,3 @@ extern "C"
 		#ifdef __cplusplus
 	}
 #endif
-
-uint32 Mesh_GetNextMeshIndex();
-void Mesh_UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
-DLL_EXPORT const Vector<Mesh> Mesh_FindMeshByMeshType(MeshTypeEnum meshType);
-DLL_EXPORT const Vector<Mesh>& Mesh_FindMeshByVertexType(VertexTypeEnum vertexType);
-DLL_EXPORT const Vector<Mesh>& Mesh_FindMeshList(const uint32& meshTypeId);
-
-class MeshSystem
-{
-private:
-public:
-	Vector<uint32>				 FreeMeshIndicesList;
-	Vector<Mesh>                 MeshList;
-	Vector<MeshPropertiesStruct> MeshPropertiesList;
-	Vector<Vector<Vertex2D>>     Vertex2DList;
-	Vector<Vector<uint>>         IndexList;
-
-	MeshSystem() 
-	{ 
-	
-	}
-
-	~MeshSystem() 
-	{ 
-	
-	}
-
-	uint CreateSpriteLayerMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList) 
-	{ 
-		return MeshSystem_CreateMesh(meshtype, vertexList.data(), indexList.data(), vertexList.size(), indexList.size());
-	}
-
-	void Update(const float& deltaTime) 
-	{ 
-		MeshSystem_Update(deltaTime);
-	}
-
-	void Destroy(uint meshId) 
-	{ 
-		MeshSystem_Destroy(meshId);
-	}
-
-	void DestroyAllGameObjects() 
-	{ 
-		MeshSystem_DestroyAllGameObjects();
-	}
-
-	const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType) 
-	{
-		return Mesh_FindMeshByMeshType(meshType); 
-	}
-
-	const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType) 
-	{ 
-		return Mesh_FindMeshByVertexType(vertexType); 
-	}
-};
-DLL_EXPORT MeshSystem meshSystem;

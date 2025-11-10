@@ -213,7 +213,7 @@ Sprite* SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer, int& out
 
 const Vector<Mesh>& Sprite_FindSpriteLayerMeshList()
 {
-    return Mesh_FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh);
+    return meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh);
 }
 
 SpriteInstance* SpriteSystem_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer, int& outCount)

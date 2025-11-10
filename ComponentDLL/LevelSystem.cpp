@@ -137,7 +137,7 @@ void Level_LoadLevelMesh(VkGuid& tileSetId)
 
         Vector<Vertex2D> vertexList(levelSystem.LevelLayerList[x].VertexList, levelSystem.LevelLayerList[x].VertexList + levelSystem.LevelLayerList[x].VertexListCount);
         Vector<uint> indexList(levelSystem.LevelLayerList[x].IndexList, levelSystem.LevelLayerList[x].IndexList + levelSystem.LevelLayerList[x].IndexListCount);
-        meshSystem.CreateSpriteLayerMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
+        meshSystem.CreateMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList);
     }
 }
 
@@ -180,7 +180,7 @@ void LevelSystem_Update(float deltaTime)
 
      for (size_t x = 0; x < json["LoadTextures"].size(); x++)
      {
-         textureSystem.LoadTexture(json["LoadTextures"][x]);
+         textureSystem.CreateTexture(json["LoadTextures"][x]);
      }
 
      for (size_t x = 0; x < json["LoadMaterials"].size(); x++)

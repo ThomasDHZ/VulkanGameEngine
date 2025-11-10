@@ -32,6 +32,28 @@ struct Material
 	float Alpha = 1.0f;
 };
 
+class MaterialSystem
+{
+	private:
+		UnorderedMap<MaterialGuid, Material> MaterialMap;
+		
+		void Material_DestroyBuffer(VulkanBuffer& materialBuffer);
+
+	public:
+		MaterialSystem();
+		~MaterialSystem();
+
+		DLL_EXPORT void Update(const float& deltaTime);
+		DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
+		DLL_EXPORT const bool MaterialMapExists(const MaterialGuid& materialGuid) const;
+		DLL_EXPORT const Material& FindMaterial(const MaterialGuid& materialGuid);
+		DLL_EXPORT const Vector<Material>& MaterialList();
+		DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer();
+		DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
+		DLL_EXPORT void DestroyAllMaterials();
+};
+DLL_EXPORT MaterialSystem materialSystem;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,64 +66,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
- const Vector<Material>& Material_MaterialList();
- const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer();
- void Material_DestroyBuffer(VulkanBuffer& materialBuffer);
-
-class MaterialSystem
-{
-	private:
-	public:
-		UnorderedMap<MaterialGuid, Material> MaterialMap;
-		MaterialSystem() 
-		{ 
-		
-		}
-
-		~MaterialSystem() 
-		{
-
-		}
-
-		void Update(const float& deltaTime) 
-		{ 
-			MaterialSystem_Update(deltaTime);
-		}
-
-		VkGuid LoadMaterial(const String& materialPath) 
-		{ 
-			return MaterialSystem_CreateMaterial(materialPath.c_str());
-		}
-
-		const bool MaterialMapExists(const MaterialGuid& materialGuid) const
-		{ 
-			return MaterialSystem_MaterialMapExists(materialGuid);
-		}
-
-		const Material& FindMaterial(const MaterialGuid& materialGuid)
-		{ 
-			return MaterialSystem_FindMaterial(materialGuid);
-		}
-
-		const Vector<Material>& MaterialList() 
-		{ 
-			return Material_MaterialList();
-		}
-
-		const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer() 
-		{ 
-			return Material_GetMaterialPropertiesBuffer();
-		}
-
-		void Destroy(const MaterialGuid& materialGuid)
-		{ 
-			MaterialSystem_Destroy(materialGuid);
-		}
-
-		void DestroyAllMaterials() 
-		{ 
-			MaterialSystem_DestroyAllMaterials();
-		}
-};
-DLL_EXPORT MaterialSystem materialSystem;

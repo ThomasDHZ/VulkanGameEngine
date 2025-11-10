@@ -4,14 +4,22 @@
 
 MaterialSystem materialSystem = MaterialSystem();
 
-VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
+MaterialSystem::MaterialSystem()
 {
-    if (materialPath == nullptr)
+}
+
+MaterialSystem::~MaterialSystem()
+{
+}
+
+VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
+{
+    if (materialPath.c_str() == nullptr)
     {
         return VkGuid();
     }
 
-    nlohmann::json json = File_LoadJsonFile(materialPath);
+    nlohmann::json json = File_LoadJsonFile(materialPath.c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
     if (MaterialSystem_MaterialMapExists(materialId))
     {
@@ -21,12 +29,12 @@ VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
     int bufferIndex = ++NextBufferId;
     shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
     bufferSystem.VulkanBufferMap[bufferIndex] = VulkanBuffer_CreateVulkanBuffer(renderer, bufferIndex, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                                                                                                                                                                                                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-                                                                                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
-                                                                                                                                                                                                                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                                                                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                                                                                                                                                                                                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-                                                                                                                                                                                                                                    VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+        VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, false);
 
     materialSystem.MaterialMap[materialId] = Material
     {
@@ -52,7 +60,7 @@ VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
     };
 }
 
-void MaterialSystem_Update(const float& deltaTime)
+void MaterialSystem::Update(const float& deltaTime)
 {
     uint x = 0;
     for (auto& materialPair : materialSystem.MaterialMap)
@@ -87,22 +95,17 @@ void MaterialSystem_Update(const float& deltaTime)
     }
 }
 
-void MaterialSystem_DestroyBuffer(VulkanBuffer& materialBuffer)
-{
-    VulkanBuffer_DestroyBuffer(renderer, materialBuffer);
-}
-
-const bool MaterialSystem_MaterialMapExists(const MaterialGuid& materialGuid)
+const bool MaterialSystem::MaterialMapExists(const MaterialGuid& materialGuid) const
 {
     return materialSystem.MaterialMap.contains(materialGuid);
 }
 
-const Material& MaterialSystem_FindMaterial(const RenderPassGuid& guid)
+const Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
 {
-    return materialSystem.MaterialMap.at(guid);
+    return materialSystem.MaterialMap.at(materialGuid);
 }
 
-const Vector<Material>& Material_MaterialList()
+const Vector<Material>& MaterialSystem::MaterialList()
 {
     Vector<Material> materialList;
     for (const auto& material : materialSystem.MaterialMap)
@@ -112,9 +115,9 @@ const Vector<Material>& Material_MaterialList()
     return materialList;
 }
 
-const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer()
+const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialPropertiesBuffer()
 {
-    std::vector<VkDescriptorBufferInfo>	materialPropertiesBuffer;
+    Vector<VkDescriptorBufferInfo>	materialPropertiesBuffer;
     if (materialSystem.MaterialMap.empty())
     {
         materialPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
@@ -140,8 +143,7 @@ const Vector<VkDescriptorBufferInfo> Material_GetMaterialPropertiesBuffer()
     return materialPropertiesBuffer;
 }
 
-
-void MaterialSystem_Destroy(const MaterialGuid& materialGuid)
+void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
 {
     Material& material = materialSystem.MaterialMap[materialGuid];
 
@@ -150,10 +152,45 @@ void MaterialSystem_Destroy(const MaterialGuid& materialGuid)
     bufferSystem.VulkanBufferMap.erase(material.MaterialBufferId);
 }
 
-void MaterialSystem_DestroyAllMaterials()
+void MaterialSystem::DestroyAllMaterials()
 {
     for (auto& materialPair : materialSystem.MaterialMap)
     {
         MaterialSystem_Destroy(materialPair.second.materialGuid);
     }
+}
+
+VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
+{
+    return materialSystem.LoadMaterial(materialPath);
+}
+
+void MaterialSystem_Update(const float& deltaTime)
+{
+    materialSystem.Update(deltaTime);
+}
+
+const bool MaterialSystem_MaterialMapExists(const MaterialGuid& materialGuid)
+{
+    return materialSystem.MaterialMapExists(materialGuid);
+}
+
+const Material& MaterialSystem_FindMaterial(const RenderPassGuid& guid)
+{
+    return materialSystem.FindMaterial(guid);
+}
+
+const Vector<Material>& Material_MaterialList()
+{
+    return materialSystem.MaterialList();
+}
+
+void MaterialSystem_Destroy(const MaterialGuid& materialGuid)
+{
+    materialSystem.Destroy(materialGuid);
+}
+
+void MaterialSystem_DestroyAllMaterials()
+{
+    materialSystem.DestroyAllMaterials();
 }

@@ -257,10 +257,10 @@ void RenderPass_BuildRenderPassAttachments(const GraphicsRenderer& renderer, con
         VkSamplerCreateInfo samplerCreateInfo = texture.SamplerCreateInfo;
         switch (texture.TextureType)
         {
-        case ColorRenderedTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case InputAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case ResolveAttachmentTexture: renderedTextureList.emplace_back(Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case DepthRenderedTexture: depthTexture = Texture_CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap); break;
+        case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case DepthRenderedTexture: depthTexture = textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap); break;
         };
     }
 }
