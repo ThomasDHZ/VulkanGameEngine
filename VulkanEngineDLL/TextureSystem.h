@@ -1,4 +1,5 @@
 #pragma once
+#include <windows.h>
 #include "Platform.h"
 #include "pixel.h"
 #include "enum.h"

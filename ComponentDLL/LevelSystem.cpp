@@ -325,7 +325,7 @@ void LevelSystem_Update(float deltaTime)
  VkCommandBuffer LevelSystem_RenderFrameBuffer(VkGuid& renderPassId)
  {
      const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-     const VulkanPipeline& pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+     VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
      VkCommandBuffer commandBuffer = renderPass.CommandBuffer;
      Vector renderPassTexture = textureSystem.FindRenderedTextureList(levelSystem.spriteRenderPass2DId);
 
@@ -370,8 +370,8 @@ void LevelSystem_Update(float deltaTime)
  VkCommandBuffer LevelSystem_RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
  {
      const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-     const VulkanPipeline& spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-     const VulkanPipeline& levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
+      VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+      VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
      const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
      ShaderPushConstant pushConstant = *shaderSystem.GetGlobalShaderPushConstant("sceneData");
