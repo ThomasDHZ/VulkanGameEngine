@@ -37,7 +37,7 @@ struct Sprite
     uint CurrentFrame = 0;
     uint SpriteLayer = 0;
     uint SpriteInstance = 0;
-    VkGuid SpriteVramId;
+    VkGuid SpriteVramId = VkGuid();
     float CurrentFrameTime = 0.0f;
     bool SpriteAlive = true;
     ivec2 FlipSprite = ivec2(0);
@@ -52,6 +52,11 @@ struct Sprite
 class SpriteSystem
 {
 private:
+
+    Vector<uint32>				                      FreeSpriteIndicesList;
+    Vector<SpriteInstance>                            SpriteInstanceList;
+    UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
+
     uint32     GetNextSpriteIndex();
     void       AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer);
     void       UpdateSprites(const float& deltaTime);
@@ -62,12 +67,9 @@ private:
  
 public:
 
-    Vector<uint32>				                      FreeSpriteIndicesList;
     Vector<Sprite>									  SpriteList;
-    Vector<SpriteInstance>                            SpriteInstanceList;
     Vector<SpriteVram>                                SpriteVramList;
     UnorderedMap<SpriteLayerId, SpriteLayer>          SpriteLayerList;
-    UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
     SpriteSystem();
     ~SpriteSystem();

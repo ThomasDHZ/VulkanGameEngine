@@ -33,7 +33,7 @@ struct VulkanBuffer
 	VkDeviceSize BufferSize = 0;
 	VkBufferUsageFlags BufferUsage = 0;
 	VkMemoryPropertyFlags BufferProperties = 0;
-	uint64_t BufferDeviceAddress = 0;
+	uint64 BufferDeviceAddress = 0;
 	VkAccelerationStructureKHR BufferHandle = VK_NULL_HANDLE;
 	BufferTypeEnum  BufferType;
 	void* BufferData = nullptr;

@@ -98,7 +98,7 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
 {
     for (auto& sprite : spriteSystem.SpriteList)
     {
-        const auto& transform2D = GameObjectSystem_FindTransform2DComponent(sprite.GameObjectId);
+        const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
         const auto& material = MaterialSystem_FindMaterial(vram.SpriteMaterialID);

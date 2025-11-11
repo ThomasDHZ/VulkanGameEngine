@@ -40,7 +40,7 @@ void GameSystem::Update(const float& deltaTime)
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
     meshSystem.Update(deltaTime);
     renderSystem.EndSingleTimeCommands(commandBuffer);
-    GameObjectSystem_DestroyDeadGameObjects();
+    gameObjectSystem.DestroyDeadGameObjects();
 }
 
 void GameSystem::DebugUpdate(const float& deltaTime)

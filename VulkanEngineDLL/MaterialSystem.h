@@ -9,20 +9,20 @@
 struct Material
 {
 	int VectorMapKey;
-	VkGuid materialGuid;
+	VkGuid materialGuid = VkGuid();
 	uint ShaderMaterialBufferIndex;
 	int MaterialBufferId;
 
-	VkGuid AlbedoMapId;
-	VkGuid MetallicRoughnessMapId;
-	VkGuid MetallicMapId;
-	VkGuid RoughnessMapId;
-	VkGuid AmbientOcclusionMapId;
-	VkGuid NormalMapId;
-	VkGuid DepthMapId;
-	VkGuid AlphaMapId;
-	VkGuid EmissionMapId;
-	VkGuid HeightMapId;
+	VkGuid AlbedoMapId = VkGuid();
+	VkGuid MetallicRoughnessMapId = VkGuid();
+	VkGuid MetallicMapId = VkGuid();
+	VkGuid RoughnessMapId = VkGuid();
+	VkGuid AmbientOcclusionMapId = VkGuid();
+	VkGuid NormalMapId = VkGuid();
+	VkGuid DepthMapId = VkGuid();
+	VkGuid AlphaMapId = VkGuid();
+	VkGuid EmissionMapId = VkGuid();
+	VkGuid HeightMapId = VkGuid();
 
 	vec3 Albedo = vec3(0.0f, 0.35f, 0.45f);
 	vec3 Emission = vec3(0.0f);

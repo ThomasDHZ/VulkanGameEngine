@@ -13,7 +13,7 @@ void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)
 
 void MegaMan_Update(uint gameObjectId, const float& deltaTime)
 {
-    GameObject& gameObject = GameObjectSystem_FindGameObject(gameObjectId);
+    GameObject& gameObject = gameObjectSystem.FindGameObject(gameObjectId);
     if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaMan)
     {
         static_cast<MegaManObject*>(gameObject.GameObjectData)->CurrentShotTime += deltaTime;
@@ -71,8 +71,8 @@ void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyS
 void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
 {
     Sprite sprite = spriteSystem.FindSprite(gameObjectId);
-    const GameObject& gameObject = GameObjectSystem_FindGameObject(gameObjectId);
-    Transform2DComponent transform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
+    const GameObject& gameObject = gameObjectSystem.FindGameObject(gameObjectId);
+    Transform2DComponent transform = gameObjectSystem.FindTransform2DComponent(gameObjectId);
     if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
         controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {

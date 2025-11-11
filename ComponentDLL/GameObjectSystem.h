@@ -34,37 +34,6 @@ struct GameObject
     bool  GameObjectAlive = true;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-    DLL_EXPORT void GameObjectSystem_CreateGameObjectFromJson(const char* gameObjectPath, vec2 gameObjectPosition);
-    DLL_EXPORT void GameObjectSystem_CreateGameObject(const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
-    DLL_EXPORT void GameObjectSystem_Update(const float& deltaTime);
-    DLL_EXPORT uint GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
-    DLL_EXPORT uint GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId);
-    DLL_EXPORT uint GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
-    DLL_EXPORT void GameObjectSystem_DestroyGameObject(uint gameObjectId);
-    DLL_EXPORT void GameObjectSystem_DestroyGameObjects();
-    DLL_EXPORT void GameObjectSystem_DestroyDeadGameObjects(); 
-    DLL_EXPORT GameObject& GameObjectSystem_FindGameObject(uint gameObjectId);
-    DLL_EXPORT Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
-    DLL_EXPORT InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId);
-    DLL_EXPORT GameObject* GameObjectSystem_GameObjectList(int& outCount);
-    DLL_EXPORT Transform2DComponent* GameObjectSystem_Transform2DComponentList(int& outCount);
-    DLL_EXPORT InputComponent* GameObjectSystem_InputComponentList(int& outCount);
-#ifdef __cplusplus
-}
-#endif
-
-  uint32 GameObject_GetNextGameObjectIndex();
-  void*  GameObject_LoadObjectData(GameObjectTypeEnum gameObjectType);
-  void   GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);
-  void   GameObject_LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
-  void   GameObject_LoadMegaManShotComponent(uint gameObjectId, const vec2& gameObjectPosition);
-  bool   GameObject_GameObjectBehaviorExists(const GameObjectTypeEnum objectEnum);
-  GameObjectBehavior& GameObject_FindGameObjectBehavior(const GameObjectTypeEnum& id);
-  Vector<GameObject> GameObject_FindGameObjectByType(const GameObjectTypeEnum& gameObjectType);
-
 class GameObjectSystem
 {
 private:
@@ -76,95 +45,54 @@ public:
     Vector<Transform2DComponent> Transform2DComponentList;
     UnorderedMap<GameObjectTypeEnum, GameObjectBehavior> ComponentBehaviorMap;
 
-    GameObjectSystem()
-    {
+    GameObjectSystem();
+    ~GameObjectSystem();
 
-    }
+    DLL_EXPORT uint32 GetNextGameObjectIndex();
+  DLL_EXPORT void*  LoadObjectData(GameObjectTypeEnum gameObjectType);
+  DLL_EXPORT void   LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);
+  DLL_EXPORT void   LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
+  DLL_EXPORT void   LoadMegaManShotComponent(uint gameObjectId, const vec2& gameObjectPosition);
+  DLL_EXPORT bool   GameObjectBehaviorExists(const GameObjectTypeEnum objectEnum);
+  DLL_EXPORT GameObjectBehavior& FindGameObjectBehavior(const GameObjectTypeEnum& id);
+  DLL_EXPORT Vector<GameObject> FindGameObjectByType(const GameObjectTypeEnum& gameObjectType);
 
-    ~GameObjectSystem()
-    {
-
-    }
-
-    void CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
-    {
-        GameObjectSystem_CreateGameObject(name.c_str(), parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition);
-    }
-
-    void CreateGameObject(const String& gameObjectPath, const vec2& gameObjectPosition)
-    {
-        GameObjectSystem_CreateGameObjectFromJson(gameObjectPath.c_str(), gameObjectPosition);
-    }
-
-    void Update(const float& deltaTime)
-    {
-        GameObjectSystem_Update(deltaTime);
-    }
-
-    void LoadTransformComponent(const String& json, uint gameObjectId, const vec2& gameObjectPosition)
-    {
-        GameObjectSystem_LoadTransformComponent(json.c_str(), gameObjectId, gameObjectPosition);
-    }
-
-    void LoadInputComponent(const String& json, uint gameObjectId)
-    {
-        GameObjectSystem_LoadInputComponent(json.c_str(), gameObjectId);
-    }
-
-    void LoadSpriteComponent(const String& json, GameObject& gameObject)
-    {
-        GameObjectSystem_LoadSpriteComponent(json.c_str(), gameObject);
-    }
-
-    const GameObject& FindGameObject(uint gameObjectId)
-    {
-        return GameObjectSystem_FindGameObject(gameObjectId);
-    }
-
-    Transform2DComponent FindTransform2DComponent(uint gameObjectId)
-    {
-        return GameObjectSystem_FindTransform2DComponent(gameObjectId);
-    }
-
-    const InputComponent FindInputComponent(uint gameObjectId)
-    {
-        return GameObjectSystem_FindInputComponent(gameObjectId);
-    }
-
-    Vector<GameObject> GetGameObjectList()
-    {
-        int count = INT32_MAX;
-        GameObject* gameObjectList = GameObjectSystem_GameObjectList(count);
-        return Vector<GameObject>(gameObjectList, gameObjectList + count);
-    }
-
-    Vector<Transform2DComponent> GetTransform2DComponentList()
-    {
-        int count = INT32_MAX;
-        Transform2DComponent* transform2DComponentList = GameObjectSystem_Transform2DComponentList(count);
-        return Vector<Transform2DComponent>(transform2DComponentList, transform2DComponentList + count);
-    }
-
-    Vector<InputComponent> GetInputComponentList()
-    {
-        int count = INT32_MAX;
-        InputComponent* inputComponentComponentList = GameObjectSystem_InputComponentList(count);
-        return Vector<InputComponent>(inputComponentComponentList, inputComponentComponentList + count);
-    }
-
-    void DestroyGameObject(uint gameObjectId)
-    {
-        GameObjectSystem_DestroyGameObject(gameObjectId);
-    }
-
-    void DestroyGameObjects()
-    {
-        GameObjectSystem_DestroyGameObjects();
-    }
-
-    void DestroyDeadGameObjects()
-    {
-        GameObjectSystem_DestroyDeadGameObjects();
-    }
+    DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition);
+    DLL_EXPORT void CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
+    DLL_EXPORT void Update(const float& deltaTime);
+    DLL_EXPORT uint LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
+    DLL_EXPORT uint LoadInputComponent(const char* jsonString, uint gameObjectId);
+    DLL_EXPORT uint LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
+    DLL_EXPORT void DestroyGameObject(uint gameObjectId);
+    DLL_EXPORT void DestroyGameObjects();
+    DLL_EXPORT void DestroyDeadGameObjects(); 
+    DLL_EXPORT GameObject& FindGameObject(uint gameObjectId);
+    DLL_EXPORT Transform2DComponent FindTransform2DComponent(uint gameObjectId);
+    DLL_EXPORT InputComponent FindInputComponent(uint gameObjectId);
+    DLL_EXPORT Vector<GameObject> GetGameObjectList();
+    DLL_EXPORT Vector<Transform2DComponent> GetTransform2DComponentList();
+    DLL_EXPORT Vector<InputComponent> GetInputComponentList();
 };
 DLL_EXPORT GameObjectSystem gameObjectSystem;
+
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+//    DLL_EXPORT void GameObjectSystem_CreateGameObjectFromJson(const char* gameObjectPath, vec2 gameObjectPosition);
+//    DLL_EXPORT void GameObjectSystem_CreateGameObject(const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
+//    DLL_EXPORT void GameObjectSystem_Update(const float& deltaTime);
+//    DLL_EXPORT uint GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
+//    DLL_EXPORT uint GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId);
+//    DLL_EXPORT uint GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
+//    DLL_EXPORT void GameObjectSystem_DestroyGameObject(uint gameObjectId);
+//    DLL_EXPORT void GameObjectSystem_DestroyGameObjects();
+//    DLL_EXPORT void GameObjectSystem_DestroyDeadGameObjects(); 
+//    DLL_EXPORT GameObject& GameObjectSystem_FindGameObject(uint gameObjectId);
+//    DLL_EXPORT Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
+//    DLL_EXPORT InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId);
+//    DLL_EXPORT GameObject* GameObjectSystem_GetGameObjectList(int& outCount);
+//    DLL_EXPORT Transform2DComponent* GameObjectSystem_GetTransform2DComponentList(int& outCount);
+//    DLL_EXPORT InputComponent* GameObjectSystem_GetInputComponentList(int& outCount);
+//#ifdef __cplusplus
+//}
+//#endif
