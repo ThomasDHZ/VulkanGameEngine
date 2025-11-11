@@ -92,7 +92,7 @@ void GameObject_LoadComponentTable(GameObject& gameObject, vec2& objectPosition,
     if (mask & kSpriteComponent)
     {
         gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
-        SpriteSystem_AddSprite(gameObject, vramId);
+        spriteSystem.AddSprite(gameObject, vramId);
     }
 }
 

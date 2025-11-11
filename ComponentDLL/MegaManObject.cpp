@@ -70,7 +70,7 @@ void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyS
 
 void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
 {
-    Sprite sprite = SpriteSystem_FindSprite(gameObjectId);
+    Sprite sprite = spriteSystem.FindSprite(gameObjectId);
     const GameObject& gameObject = GameObjectSystem_FindGameObject(gameObjectId);
     Transform2DComponent transform = GameObjectSystem_FindTransform2DComponent(gameObjectId);
     if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
@@ -78,41 +78,41 @@ void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GL
     {
         sprite.FlipSprite.x = 0;
         transform.GameObjectPosition.x -= 200.0f * deltaTime;
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShootWalk);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShootWalk);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT])
     {
         sprite.FlipSprite.x = 0;
         transform.GameObjectPosition.x -= 200.0f * deltaTime;
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kWalking);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kWalking);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] &&
              controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
         sprite.FlipSprite.x = 1;
         transform.GameObjectPosition.x += 200.0f * deltaTime;
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShootWalk);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShootWalk);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT])
     {
         sprite.FlipSprite.x = 1;
         transform.GameObjectPosition.x += 200.0f * deltaTime;
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kWalking);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kWalking);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] &&
              controllerState.buttons[GLFW_GAMEPAD_BUTTON_CROSS])
     {
         sprite.FlipSprite.x == 1 ? transform.GameObjectPosition.x += 200.0f * deltaTime : transform.GameObjectPosition.x -= 200.0f * deltaTime;
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kSlide);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kSlide);
     }
     else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
     {
         MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShoot);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShoot);
         MegaManShot_CreateObject("Shot", VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset, gameObject.GameObjectId);
     }
     else
     {
-        SpriteSystem_SetSpriteAnimation(&sprite, MegaManAnimationEnum::kStanding);
+        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kStanding);
     }
 }

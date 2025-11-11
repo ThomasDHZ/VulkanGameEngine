@@ -240,7 +240,7 @@ public:
         }
         else
         {
-            std::cerr << "Warning: Attempted to remove unregistered pointer: " << ptr << std::endl;
+           // std::cerr << "Warning: Attempted to remove unregistered pointer: " << ptr << std::endl;
         }
     }
 

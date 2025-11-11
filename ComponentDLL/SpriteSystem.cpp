@@ -5,6 +5,7 @@
 #include "RenderSystem.h"
 #include "BufferSystem.h"
 #include "TextureSystem.h"
+#include <MeshSystem.h>
 #include "MaterialSystem.h"
 #include <MeshSystem.h>
 #include "GameObjectSystem.h"
@@ -12,7 +13,19 @@
 
 SpriteSystem spriteSystem = SpriteSystem();
 
-uint32 GetNextSpriteIndex()
+SpriteSystem::SpriteSystem()
+{
+    SpriteList.reserve(5);
+    SpriteInstanceList.reserve(5);
+    SpriteLayerList.reserve(5);
+}
+
+SpriteSystem::~SpriteSystem()
+{
+
+}
+
+uint32 SpriteSystem::GetNextSpriteIndex()
 {
     if (!spriteSystem.FreeSpriteIndicesList.empty())
     {
@@ -23,12 +36,7 @@ uint32 GetNextSpriteIndex()
     return spriteSystem.SpriteList.size();
 }
 
-void SpriteSystem_AddSprite(GameObject& gameObject, VramSpriteGuid& spriteVramId)
-{
-    spriteSystem.AddSprite(gameObject, spriteVramId);
-}
-
-void Sprite_AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
+void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
 {
     const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
         VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
@@ -66,9 +74,9 @@ void Sprite_AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawL
     spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
 
-VramSpriteGuid SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath)
+VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 {
-    nlohmann::json json = File_LoadJsonFile(spriteVramPath);
+    nlohmann::json json = File_LoadJsonFile(spriteVramPath.c_str());
     VramSpriteGuid vramId = VramSpriteGuid(json["VramSpriteId"].get<String>().c_str());
     if (VRAM_SpriteVramExists(vramId))
     {
@@ -79,20 +87,20 @@ VramSpriteGuid SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath)
     VramSpriteGuid materialId = VramSpriteGuid(json["MaterialId"].get<String>().c_str());
     const Material& material = MaterialSystem_FindMaterial(materialId);
     const Texture& texture = TextureSystem_FindTexture(material.AlbedoMapId);
-    Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath, animationListCount);
+    Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath.c_str(), animationListCount);
     spriteSystem.SpriteAnimationMap[vramId] = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
-    spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath, material, texture));
+    spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
     memorySystem.RemovePtrBuffer(animationListPtr);
     return vramId;
 }
 
-void Sprite_UpdateSprites(const float& deltaTime)
+void SpriteSystem::UpdateSprites(const float& deltaTime)
 {
     for (auto& sprite : spriteSystem.SpriteList)
     {
         const auto& transform2D = GameObjectSystem_FindTransform2DComponent(sprite.GameObjectId);
-        const auto& vram = SpriteSystem_FindSpriteVram(sprite.SpriteVramId);
-        const auto& animation = SpriteSystem_FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
+        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
+        const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
         const auto& material = MaterialSystem_FindMaterial(vram.SpriteMaterialID);
         const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
 
@@ -137,16 +145,16 @@ void Sprite_UpdateSprites(const float& deltaTime)
     }
 }
 
-void Sprite_UpdateSpriteBatchLayers(const float& deltaTime)
+void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 {
-    for (auto& spriteLayer : spriteSystem.SpriteLayerList)
+    for (auto& spriteLayer : SpriteLayerList)
     {
-        Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
+        Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer.second);
         bufferSystem.UpdateBufferMemory(spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
     }
 }
 
-void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
+void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
 {
     Span<ivec2> frameList(animationList->FrameList, animationList->FrameList + animationList->FrameCount);
     for (size_t x = 0; x < spriteCount; x++)
@@ -188,66 +196,34 @@ void Sprite_UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* sprit
     }
 }
 
-void SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
+Vector<SpriteInstance> SpriteSystem::FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer)
 {
-    spriteSystem.SetSpriteAnimation(sprite, spriteAnimationEnum);
-}
-
-void SpriteSystem_Update(float deltaTime)
-{
-    spriteSystem.Update(deltaTime);
-}
-
-Sprite SpriteSystem_FindSprite(uint gameObjectId)
-{
-    return spriteSystem.FindSprite(gameObjectId);
-}
-
-Sprite* SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer, int& outCount)
-{
-    Vector<Sprite> spriteList = spriteSystem.FindSpritesByLayer(spriteLayer);
-
-    outCount = static_cast<int>(spriteList.size());
-    return memorySystem.AddPtrBuffer<Sprite>(spriteList.data(), spriteList.size(), __FILE__, __LINE__, __func__);
-}
-
-const Vector<Mesh>& Sprite_FindSpriteLayerMeshList()
-{
-    return meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh);
-}
-
-SpriteInstance* SpriteSystem_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer, int& outCount)
-{
-    int layerCount = INT32_MAX;
     Vector<SpriteInstance> spriteInstanceList;
-    Sprite* spriteListPtr = SpriteSystem_FindSpritesByLayer(spriteLayer, layerCount);
-
-    Span<Sprite> spriteList(spriteListPtr, spriteListPtr + layerCount);
+    Vector<Sprite> spriteList = FindSpritesByLayer(spriteLayer);
     for (auto& sprite : spriteList)
     {
         spriteInstanceList.emplace_back(spriteSystem.SpriteInstanceList[sprite.SpriteInstance]);
     }
 
-    outCount = static_cast<int>(spriteInstanceList.size());
-    return memorySystem.AddPtrBuffer<SpriteInstance>(spriteInstanceList.data(), spriteInstanceList.size(), __FILE__, __LINE__, __func__);
+    return spriteInstanceList;
 }
 
-SpriteVram& SpriteSystem_FindSpriteVram(VramSpriteGuid vramSpriteId)
+SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
 {
     return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }
 
-Animation2D& SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
+Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
 {
     return spriteSystem.SpriteAnimationMap.at(vramId)[animationId];
 }
 
-void SpriteSystem_Destroy()
+void SpriteSystem::Destroy()
 {
 
 }
 
-const bool Sprite_SpriteLayerExists(const uint32 spriteDrawLayer)
+const bool SpriteSystem::SpriteLayerExists(const uint32 spriteDrawLayer)
 {
     return spriteSystem.SpriteLayerList.contains(spriteDrawLayer);
 }
@@ -258,22 +234,22 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
     sprite.SpriteID = GetNextSpriteIndex();
     sprite.GameObjectId = gameObject.GameObjectId;
     sprite.SpriteVramId = spriteVramId;
-    sprite.SpriteLayer = SpriteSystem_FindSpriteVram(spriteVramId).SpriteLayer;
+    sprite.SpriteLayer = FindSpriteVram(spriteVramId).SpriteLayer;
     sprite.SpriteInstance = spriteSystem.SpriteInstanceList.size();
     spriteSystem.SpriteList.emplace_back(sprite);
     spriteSystem.SpriteInstanceList.emplace_back(SpriteInstance());
-    if (!Sprite_SpriteLayerExists(sprite.SpriteLayer))
+    if (!SpriteLayerExists(sprite.SpriteLayer))
     {
         VkGuid guid = VkGuid("de78235b-3c69-4298-99da-acd8c6622ece");
-        Sprite_AddSpriteBatchLayer(guid, sprite.SpriteLayer);
+        AddSpriteBatchLayer(guid, sprite.SpriteLayer);
     }
 }
 
 void SpriteSystem::Update(float deltaTime)
 {
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands(renderer.CommandPool);
-    Sprite_UpdateSprites(deltaTime);
-    Sprite_UpdateSpriteBatchLayers(deltaTime);
+    UpdateSprites(deltaTime);
+    UpdateSpriteBatchLayers(deltaTime);
     renderSystem.EndSingleTimeCommands(commandBuffer);
 }
 
@@ -314,4 +290,60 @@ Vector<Sprite> SpriteSystem::FindSpritesByLayer(const SpriteLayer& spriteLayer)
         ++it;
     }
     return matches;
+}
+
+void SpriteSystem_AddSprite(GameObject& gameObject, VramSpriteGuid& spriteVramId)
+{
+    return spriteSystem.AddSprite(gameObject, spriteVramId);
+}
+
+VramSpriteGuid SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath)
+{
+    return spriteSystem.LoadSpriteVRAM(spriteVramPath);
+}
+
+void SpriteSystem_Update(float deltaTime)
+{
+    return spriteSystem.Update(deltaTime);
+}
+
+void SpriteSystem_SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
+{
+    return spriteSystem.SetSpriteAnimation(sprite, spriteAnimationEnum);
+}
+
+Sprite SpriteSystem_FindSprite(uint gameObjectId)
+{
+    return spriteSystem.FindSprite(gameObjectId);
+}
+
+SpriteVram& SpriteSystem_FindSpriteVram(VramSpriteGuid VramSpriteID)
+{
+    return spriteSystem.FindSpriteVram(VramSpriteID);
+}
+
+Animation2D& SpriteSystem_FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
+{
+    return spriteSystem.FindSpriteAnimation(vramId, animationId);
+}
+
+void SpriteSystem_Destroy()
+{
+    spriteSystem.Destroy();
+}
+
+SpriteInstance* SpriteSystem_FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer, int& outCount)
+{
+    Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
+
+    outCount = static_cast<int>(spriteInstanceList.size());
+    return memorySystem.AddPtrBuffer<SpriteInstance>(spriteInstanceList.data(), spriteInstanceList.size(), __FILE__, __LINE__, __func__);
+}
+
+Sprite* SpriteSystem_FindSpritesByLayer(const SpriteLayer& spriteLayer, int& outCount)
+{
+    Vector<Sprite> spriteList = spriteSystem.FindSpritesByLayer(spriteLayer);
+
+    outCount = static_cast<int>(spriteList.size());
+    return memorySystem.AddPtrBuffer<Sprite>(spriteList.data(), spriteList.size(), __FILE__, __LINE__, __func__);
 }
