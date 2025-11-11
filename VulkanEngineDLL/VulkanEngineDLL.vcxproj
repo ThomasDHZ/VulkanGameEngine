@@ -156,7 +156,7 @@
     <ClInclude Include="MemorySystem.h" />
     <ClInclude Include="MeshSystem.h" />
     <ClInclude Include="Pixel.h" />
-    <ClInclude Include="VulkanShaderSystem.h" />
+    <ClInclude Include="ShaderSystem.h" />
     <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="Transform2DComponent.h" />
     <ClInclude Include="Typedef.h" />
@@ -180,7 +180,7 @@
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="MemorySystem.cpp" />
     <ClCompile Include="MeshSystem.cpp" />
-    <ClCompile Include="VulkanShaderSystem.cpp" />
+    <ClCompile Include="ShaderSystem.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
     <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanRenderPass.cpp" />

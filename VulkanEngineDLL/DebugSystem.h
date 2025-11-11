@@ -2,6 +2,25 @@
 #include "Platform.h"
 #include <C:\Program Files\RenderDoc\renderdoc_app.h>
 
+
+class DebugSystem
+{
+	private:
+		bool TryLoadRenderDocAPI();
+
+	public:
+		RENDERDOC_API_1_6_0* RenderDocAPI = nullptr;
+		bool UsingRenderDoc = false;
+
+		DebugSystem();
+		~DebugSystem();
+
+		DLL_EXPORT void SetRootDirectory(const String& engineRoot);
+		DLL_EXPORT bool IsRenderDocInjected();
+};
+DLL_EXPORT DebugSystem debugSystem;
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -10,34 +29,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-	bool Debug_TryLoadRenderDocAPI();
-
-class DebugSystem
-{
-private:
-public:
-	RENDERDOC_API_1_6_0* RenderDocAPI = nullptr;
-	bool UsingRenderDoc = false;
-
-	DebugSystem()
-	{
-
-	}
-
-	~DebugSystem()
-	{
-
-	}
-
-	void SetRootDirectory(const String& engineRoot)
-	{
-		Debug_SetRootDirectory(engineRoot.c_str());
-	}
-
-	bool IsRenderDocInjected()
-	{
-		return Debug_IsRenderDocInjected();
-	}
-};
-DLL_EXPORT DebugSystem debugSystem;
-

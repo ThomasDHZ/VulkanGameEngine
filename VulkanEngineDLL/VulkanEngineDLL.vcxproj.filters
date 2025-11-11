@@ -93,7 +93,7 @@
     <ClInclude Include="MemorySystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanShaderSystem.h">
+    <ClInclude Include="ShaderSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="TextureSystem.h">
@@ -143,7 +143,7 @@
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Source Files\spirv</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanShaderSystem.cpp">
+    <ClCompile Include="ShaderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="TextureSystem.cpp">

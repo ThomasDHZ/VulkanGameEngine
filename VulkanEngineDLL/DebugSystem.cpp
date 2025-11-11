@@ -5,9 +5,44 @@
 
 DebugSystem debugSystem = DebugSystem();
 
-void Debug_SetRootDirectory(const char* engineRoot)
+DebugSystem::DebugSystem()
 {
-    if (_chdir(engineRoot) != 0)
+}
+
+DebugSystem::~DebugSystem()
+{
+}
+
+bool DebugSystem::TryLoadRenderDocAPI()
+{
+    HMODULE rd = GetModuleHandleA("renderdoc.dll");
+    if (!rd)
+    {
+        UsingRenderDoc = false;
+        return UsingRenderDoc;
+    }
+
+    auto GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(rd, "RENDERDOC_GetAPI");
+    if (!GetAPI)
+    {
+        UsingRenderDoc = false;
+        return UsingRenderDoc;
+    }
+
+    RENDERDOC_API_1_6_0* api = nullptr;
+    if (GetAPI(eRENDERDOC_API_Version_1_6_0, (void**)&api) == 1)
+    {
+        RenderDocAPI = api;
+        UsingRenderDoc = true;
+        return UsingRenderDoc;
+    }
+    UsingRenderDoc = false;
+    return UsingRenderDoc;
+}
+
+void DebugSystem::SetRootDirectory(const String& engineRoot)
+{
+    if (_chdir(engineRoot.c_str()) != 0)
     {
         std::cerr << "Failed to set CWD to: " << engineRoot << std::endl;
         return;
@@ -20,46 +55,30 @@ void Debug_SetRootDirectory(const char* engineRoot)
     }
 }
 
-bool Debug_TryLoadRenderDocAPI()
+bool DebugSystem::IsRenderDocInjected()
 {
-    HMODULE rd = GetModuleHandleA("renderdoc.dll"); 
-    if (!rd) 
-    { 
-        debugSystem.UsingRenderDoc = false;
-        return debugSystem.UsingRenderDoc;
+    if (TryLoadRenderDocAPI())
+    {
+        return UsingRenderDoc;
     }
 
-    auto GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(rd, "RENDERDOC_GetAPI");
-    if (!GetAPI)
+    if (GetModuleHandleA("renderdoc.dll") != nullptr)
     {
-        debugSystem.UsingRenderDoc = false;
-        return debugSystem.UsingRenderDoc;
+        UsingRenderDoc = true;
+        return UsingRenderDoc;
     }
 
-    RENDERDOC_API_1_6_0* api = nullptr;
-    if (GetAPI(eRENDERDOC_API_Version_1_6_0, (void**)&api) == 1) 
-    {
-        debugSystem.RenderDocAPI = api;
-        debugSystem.UsingRenderDoc = true;
-        return debugSystem.UsingRenderDoc;
-    }
-    debugSystem.UsingRenderDoc = false;
-    return debugSystem.UsingRenderDoc;
+    UsingRenderDoc = false;
+    RenderDocAPI = nullptr;
+    return UsingRenderDoc;
+}
+
+void Debug_SetRootDirectory(const char* engineRoot)
+{
+    debugSystem.SetRootDirectory(String(engineRoot));
 }
 
 bool Debug_IsRenderDocInjected()
 {
-    if (Debug_TryLoadRenderDocAPI())
-    {
-        return debugSystem.UsingRenderDoc;
-    }
-    
-    if (GetModuleHandleA("renderdoc.dll") != nullptr) 
-    {
-        debugSystem.UsingRenderDoc = true;
-        return debugSystem.UsingRenderDoc;
-    }
-
-    debugSystem.UsingRenderDoc = false;
-    debugSystem.RenderDocAPI = nullptr;
+    return debugSystem.IsRenderDocInjected();
 }

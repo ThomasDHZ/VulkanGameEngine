@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <stb/stb_image.h>
+#include <mutex>
 #include "Macro.h"
 #include "Typedef.h"
 

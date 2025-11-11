@@ -1,6 +1,6 @@
 #pragma once
 #include "Typedef.h"
-#include <VulkanShaderSystem.h>
+#include <ShaderSystem.h>
 
 struct Camera
 {

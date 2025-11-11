@@ -1,5 +1,4 @@
 #include "MemorySystem.h"
-#include <iostream>
 
 MemorySystem memorySystem = MemorySystem();
 

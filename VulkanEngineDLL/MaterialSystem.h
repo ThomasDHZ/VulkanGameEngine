@@ -3,7 +3,7 @@
 #include "VulkanRenderer.h"
 #include "BufferSystem.h"
 #include "TextureSystem.h"
-#include "VulkanShaderSystem.h"
+#include "ShaderSystem.h"
 
 
 struct Material
