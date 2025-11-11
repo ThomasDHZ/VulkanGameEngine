@@ -1,7 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "VulkanRenderer.h"
-#include "VulkanBuffer.h"
+#include "BufferSystem.h"
 #include "TextureSystem.h"
 #include "VulkanShaderSystem.h"
 

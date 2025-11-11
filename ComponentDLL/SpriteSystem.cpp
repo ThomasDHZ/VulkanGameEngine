@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SpriteSystem.h"
 #include "FileSystem.h"
-#include <VulkanBuffer.h>
+#include <BufferSystem.h>
 #include "RenderSystem.h"
 #include "BufferSystem.h"
 #include "TextureSystem.h"

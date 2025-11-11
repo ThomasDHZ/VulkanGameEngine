@@ -1,7 +1,6 @@
 #pragma once
 #include "Platform.h"
 #include "VkGuid.h"
-#include "VulkanBuffer.h"
 #include "VulkanShaderSystem.h"
 #include "vertex.h"
 

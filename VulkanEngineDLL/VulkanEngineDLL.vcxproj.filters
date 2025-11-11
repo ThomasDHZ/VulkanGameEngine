@@ -78,9 +78,6 @@
     <ClInclude Include="enum.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BufferSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -145,9 +142,6 @@
     </ClCompile>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Source Files\spirv</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanBuffer.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanShaderSystem.cpp">
       <Filter>Source Files\Systems</Filter>

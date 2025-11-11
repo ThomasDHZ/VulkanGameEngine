@@ -10,6 +10,7 @@
 #include "TypeDef.h"
 #include "MemorySystem.h"
 #include "JsonStruct.h"
+#include "BufferSystem.h"
 
 #ifdef __cplusplus
 extern "C" {

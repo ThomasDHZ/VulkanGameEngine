@@ -1,5 +1,6 @@
 #include "MeshSystem.h"
 #include "BufferSystem.h"
+#include "MaterialSystem.h"
 
 MeshSystem meshSystem = MeshSystem();
 

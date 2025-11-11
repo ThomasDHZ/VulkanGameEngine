@@ -1,6 +1,6 @@
 #pragma once
 #include "Typedef.h"
-#include "VulkanBuffer.h"
+#include "BufferSystem.h"
 #include <SPIRV-Reflect/spirv_reflect.h>
 #include "TextureSystem.h"
 #include "enum.h"

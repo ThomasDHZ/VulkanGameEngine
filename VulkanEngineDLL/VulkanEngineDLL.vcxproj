@@ -145,7 +145,6 @@
     <ClInclude Include="Platform.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="vertex.h" />
-    <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="DLL.h" />
@@ -174,7 +173,6 @@
     <ClCompile Include="GPUSystem.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
-    <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="from_json.cpp" />

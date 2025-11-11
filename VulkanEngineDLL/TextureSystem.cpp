@@ -1,5 +1,5 @@
 #include "TextureSystem.h"
-#include "VulkanRenderer.h"
+#include "RenderSystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
 #include "GPUSystem.h"
@@ -27,7 +27,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	ColorChannelUsed colorChannels;
 
 	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath);
-	if (TextureSystem_TextureExists(textureLoader.TextureId))
+	if (TextureExists(textureLoader.TextureId))
 	{
 		return textureLoader.TextureId;
 	}
@@ -61,7 +61,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	textureLoader.ImageCreateInfo.extent.depth = 1;
 	VULKAN_RESULT(CreateTextureImage(texture, textureLoader.ImageCreateInfo, data, bufferSize));
 	VULKAN_RESULT(CreateTextureView(texture, textureLoader.ImageType));
-	VULKAN_RESULT(CreateTextureSampler(texture, textureLoader.SamplerCreateInfo));
+	VULKAN_RESULT(vkCreateSampler(renderer.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 	VULKAN_RESULT(GenerateMipmaps(texture));
 	stbi_image_free(data);
 
@@ -94,7 +94,7 @@ Texture  TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imag
 	createImageInfo.mipLevels = texture.mipMapLevels;
 	VULKAN_RESULT(CreateTextureImage(texture, createImageInfo));
 	VULKAN_RESULT(CreateTextureView(texture, imageType));
-	VULKAN_RESULT(CreateTextureSampler(texture, samplerCreateInfo));
+	VULKAN_RESULT(vkCreateSampler(renderer.Device, &samplerCreateInfo, NULL, &texture.textureSampler));
 	VULKAN_RESULT(GenerateMipmaps(texture));
 	return texture;
 }
@@ -307,7 +307,7 @@ VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& 
 	VkBufferUsageFlags bufferUsage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 	VkMemoryPropertyFlags bufferProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-	VULKAN_RESULT(Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, bufferUsage, bufferProperties));
+	VULKAN_RESULT(bufferSystem.Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, bufferUsage, bufferProperties));
 	VULKAN_RESULT(CreateImage(texture, imageCreateInfo));
 	VULKAN_RESULT(QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));
 	VULKAN_RESULT(CopyBufferToTexture(texture, buffer));
@@ -449,11 +449,6 @@ VkResult TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags i
 	return vkCreateImageView(renderer.Device, &TextureImageViewInfo, NULL, &texture.textureView);
 }
 
-VkResult TextureSystem::CreateTextureSampler(Texture& texture, VkSamplerCreateInfo& sampleCreateInfo)
-{
-	return vkCreateSampler(renderer.Device, &sampleCreateInfo, NULL, &texture.textureSampler);
-}
-
 VkResult TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout)
 {
 	VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
@@ -501,9 +496,9 @@ VkResult TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Te
 
 VkResult TextureSystem::QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout)
 {
-	VkCommandBuffer commandBuffer = Renderer_BeginSingleUseCommandBuffer(renderer.Device, renderer.CommandPool);
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
 	TransitionImageLayout(commandBuffer, texture, newLayout);
-	VkResult result = Renderer_EndSingleUseCommandBuffer(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+	VkResult result = renderSystem.EndSingleTimeCommands(commandBuffer);
 	if (result == VK_SUCCESS)
 	{
 		texture.textureImageLayout = newLayout;
@@ -543,9 +538,9 @@ VkResult TextureSystem::CopyBufferToTexture(Texture& texture, VkBuffer buffer)
 			.depth = static_cast<uint>(texture.depth),
 		}
 	};
-	VkCommandBuffer commandBuffer = Renderer_BeginSingleUseCommandBuffer(renderer.Device, renderer.CommandPool);
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
 	vkCmdCopyBufferToImage(commandBuffer, buffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &BufferImage);
-	return Renderer_EndSingleUseCommandBuffer(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+	return renderSystem.EndSingleTimeCommands(commandBuffer);
 }
 
 VkResult TextureSystem::GenerateMipmaps(Texture& texture)
@@ -565,7 +560,7 @@ VkResult TextureSystem::GenerateMipmaps(Texture& texture)
 		RENDERER_ERROR("Texture image format does not support linear blitting.");
 	}
 
-	VkCommandBuffer commandBuffer = Renderer_BeginSingleUseCommandBuffer(renderer.Device, renderer.CommandPool);
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
 	VkImageMemoryBarrier ImageMemoryBarrier =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -662,7 +657,7 @@ VkResult TextureSystem::GenerateMipmaps(Texture& texture)
 	ImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &ImageMemoryBarrier);
-	return Renderer_EndSingleUseCommandBuffer(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+	return renderSystem.EndSingleTimeCommands(commandBuffer);
 }
 
 Texture TextureSystem::FindTexture(const RenderPassGuid& renderPassGuid)
