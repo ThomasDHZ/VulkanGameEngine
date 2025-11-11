@@ -47,10 +47,10 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList,
         .MeshTypeId = static_cast<uint32>(meshType),
         .VertexTypeId = BufferTypeEnum::BufferType_Vertex2D,
         .MeshPropertiesId = meshId,
-        .MeshVertexBufferId = bufferSystem.CreateVulkanBuffer<Vertex2D>(renderer, vertexList, MeshBufferUsageSettings, MeshBufferPropertySettings, true),
-        .MeshIndexBufferId = bufferSystem.CreateVulkanBuffer<uint32>(renderer, indexList, MeshBufferUsageSettings, MeshBufferPropertySettings, true),
-        .MeshTransformBufferId = bufferSystem.CreateVulkanBuffer<mat4>(renderer, meshMatrix, MeshBufferUsageSettings, MeshBufferPropertySettings, false),
-        .PropertiesBufferId = bufferSystem.CreateVulkanBuffer<MeshPropertiesStruct>(renderer, meshProperties, MeshBufferUsageSettings, MeshBufferPropertySettings, false),
+        .MeshVertexBufferId = bufferSystem.CreateVulkanBuffer<Vertex2D>(vertexList, MeshBufferUsageSettings, MeshBufferPropertySettings, true),
+        .MeshIndexBufferId = bufferSystem.CreateVulkanBuffer<uint32>(indexList, MeshBufferUsageSettings, MeshBufferPropertySettings, true),
+        .MeshTransformBufferId = bufferSystem.CreateVulkanBuffer<mat4>(meshMatrix, MeshBufferUsageSettings, MeshBufferPropertySettings, false),
+        .PropertiesBufferId = bufferSystem.CreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, MeshBufferUsageSettings, MeshBufferPropertySettings, false),
         .VertexIndex = meshId,
         .IndexIndex = meshId,
         .MeshPosition = vec3(0.0f),
@@ -123,10 +123,10 @@ void MeshSystem::Destroy(uint meshId)
     VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
     VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-    VulkanBuffer_DestroyBuffer(renderer, vertexBuffer);
-    VulkanBuffer_DestroyBuffer(renderer, indexBuffer);
-    VulkanBuffer_DestroyBuffer(renderer, transformBuffer);
-    VulkanBuffer_DestroyBuffer(renderer, propertiesBuffer);
+    VulkanBuffer_DestroyBuffer(vertexBuffer);
+    VulkanBuffer_DestroyBuffer(indexBuffer);
+    VulkanBuffer_DestroyBuffer(transformBuffer);
+    VulkanBuffer_DestroyBuffer(propertiesBuffer);
 
     bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
     bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
@@ -143,10 +143,10 @@ void MeshSystem::DestroyAllGameObjects()
         VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-        VulkanBuffer_DestroyBuffer(renderer, vertexBuffer);
-        VulkanBuffer_DestroyBuffer(renderer, indexBuffer);
-        VulkanBuffer_DestroyBuffer(renderer, transformBuffer);
-        VulkanBuffer_DestroyBuffer(renderer, propertiesBuffer);
+        VulkanBuffer_DestroyBuffer(vertexBuffer);
+        VulkanBuffer_DestroyBuffer(indexBuffer);
+        VulkanBuffer_DestroyBuffer(transformBuffer);
+        VulkanBuffer_DestroyBuffer(propertiesBuffer);
 
         bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
         bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);

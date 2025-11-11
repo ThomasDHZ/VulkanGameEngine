@@ -307,7 +307,7 @@ VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& 
 	VkBufferUsageFlags bufferUsage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 	VkMemoryPropertyFlags bufferProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-	VULKAN_RESULT(bufferSystem.Buffer_CreateStagingBuffer(renderer, &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, bufferUsage, bufferProperties));
+	VULKAN_RESULT(bufferSystem.Buffer_CreateStagingBuffer(&stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, bufferUsage, bufferProperties));
 	VULKAN_RESULT(CreateImage(texture, imageCreateInfo));
 	VULKAN_RESULT(QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));
 	VULKAN_RESULT(CopyBufferToTexture(texture, buffer));

@@ -85,7 +85,7 @@ private:
         for (auto& spriteLayer : SpriteLayerList)
         {
             Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer.second);
-            bufferSystem.UpdateBufferMemory(renderer, spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
+            bufferSystem.UpdateBufferMemory(spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
         }
     }
 

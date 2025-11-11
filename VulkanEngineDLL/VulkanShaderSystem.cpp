@@ -239,7 +239,7 @@ void Shader_UpdateShaderBuffer(const GraphicsRenderer& renderer, VulkanBuffer& v
         memcpy(dest, shaderStrucVar.Value, shaderStrucVar.Size);
         offset += shaderStrucVar.Size;
     }
-    bufferSystem.VulkanBuffer_UpdateBufferMemory(renderer, vulkanBuffer, shaderStruct->ShaderStructBuffer, shaderStruct->ShaderBufferSize, shaderCount);
+    bufferSystem.VulkanBuffer_UpdateBufferMemory(vulkanBuffer, shaderStruct->ShaderStructBuffer, shaderStruct->ShaderBufferSize, shaderCount);
 }
 
 void Shader_UpdatePushConstantBuffer(const GraphicsRenderer& renderer, ShaderPushConstant& pushConstantStruct)
