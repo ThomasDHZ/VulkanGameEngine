@@ -1,7 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "VkGuid.h"
-#include "VulkanShaderSystem.h"
+#include "ShaderSystem.h"
 #include "vertex.h"
 
 struct MeshPropertiesStruct
