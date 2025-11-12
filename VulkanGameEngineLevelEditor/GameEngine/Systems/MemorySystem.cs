@@ -78,9 +78,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             lock (lockObject)
             {
+                    MemoryLeakPtr_DeletePtr(ptr);
                 if (PtrAddressMap.ContainsKey(ptr))
                 {
-                    MemoryLeakPtr_DeletePtr(ptr);
                     PtrAddressMap.Remove(ptr);
                     ptr = IntPtr.Zero;
                 }

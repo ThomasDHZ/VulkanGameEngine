@@ -20,6 +20,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         Mesh_LineMesh
     };
 
+    struct Temp
+    {  // Anonymous temp struct
+        int Age { get; set; }
+        int Score { get; set; }
+    }
+
     public unsafe static class MeshSystem
     {
         public static uint CreateMesh(MeshTypeEnum meshType, ListPtr<Vertex2D> vertexList, ListPtr<UInt32> indexList)
@@ -44,7 +50,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         }
         public static Mesh FindMesh(uint meshId)
         {
-            return DLLSystem.CallDLLFunc(() => MeshSystem_FindMesh(meshId));
+            Temp temp = Marshal.PtrToStructure<Temp>(DLLSystem.CallDLLFunc(() => MeshSystem_FindMesh(meshId)));
+            return new Mesh();
         }
 
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint MeshSystem_CreateMesh(MeshTypeEnum meshType, Vertex2D* vertexListPtr, UInt32* indexListPtr, size_t vertexListCount, size_t indexListCount);
@@ -52,6 +59,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 		[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_Destroy(uint meshId);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_DestroyMesh(Mesh mesh, VulkanBuffer vertexBuffer, VulkanBuffer indexBuffer, VulkanBuffer transformBuffer, VulkanBuffer propertiesBuffer);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_DestroyAllGameObjects();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Mesh MeshSystem_FindMesh(uint meshId);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern IntPtr MeshSystem_FindMesh(uint meshId);
     }
 }

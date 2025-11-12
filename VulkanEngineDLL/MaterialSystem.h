@@ -1,10 +1,6 @@
 #pragma once
 #include "Platform.h"
-#include "VulkanRenderer.h"
 #include "BufferSystem.h"
-#include "TextureSystem.h"
-#include "ShaderSystem.h"
-
 
 struct Material
 {

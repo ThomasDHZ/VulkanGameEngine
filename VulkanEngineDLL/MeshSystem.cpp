@@ -204,7 +204,14 @@ void MeshSystem_DestroyAllGameObjects()
     meshSystem.DestroyAllGameObjects();
 }
 
-const Mesh& MeshSystem_FindMesh(const uint& meshId)
+void* MeshSystem_FindMesh(const uint& meshId)
 {
-    return meshSystem.FindMesh(meshId);
+    struct TempDLL
+    {
+        int Age = 34;
+        int Score = 32;
+    } temp;
+
+    TempDLL* tempPtr = memorySystem.AddPtrBuffer<TempDLL>(temp, __FILE__, __LINE__, __func__);
+    return static_cast<void*>(tempPtr);
 }

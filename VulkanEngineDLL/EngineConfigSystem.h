@@ -1,7 +1,5 @@
 #pragma once
 #include "Platform.h"
-#include <fstream>
-#include <string>
 
 class ConfigSystem
 {

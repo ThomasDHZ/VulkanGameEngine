@@ -406,7 +406,7 @@ void LevelSystem::Update(const float& deltaTime)
      }
      for (auto& spriteLayer : spriteSystem.SpriteLayerList)
      {
-         const Mesh& spriteMesh = MeshSystem_FindMesh(spriteLayer.second.SpriteLayerMeshId);
+         const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshVertexBufferId).Buffer;
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
          const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);

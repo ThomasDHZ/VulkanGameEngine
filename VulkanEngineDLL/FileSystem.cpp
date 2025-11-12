@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include "Macro.h"
 #include "MemorySystem.h"
 
 FileSystem fileSystem = FileSystem();

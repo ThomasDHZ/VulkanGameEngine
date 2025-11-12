@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -68,8 +69,19 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
             try
             {
-                return func();
-
+                TResult result = func();
+                if (typeof(TResult) == typeof(IntPtr))
+                {
+                    IntPtr ptr = (IntPtr)(object)result;
+                    if (ptr == IntPtr.Zero)
+                    {
+                        return default;
+                    }
+                    TResult copyResult = Marshal.PtrToStructure<TResult>(ptr);
+                    MemorySystem.RemovePtrBuffer(ptr);
+                    return copyResult;
+                }
+                return result;
             }
             catch (Exception ex)
             {

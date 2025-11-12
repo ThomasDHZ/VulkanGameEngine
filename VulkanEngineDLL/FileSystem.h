@@ -9,7 +9,6 @@ typedef struct fileState
 	bool Valid;
 }FileState;
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

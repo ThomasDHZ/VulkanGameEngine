@@ -10,6 +10,7 @@ struct MeshPropertiesStruct
 	alignas(16) mat4   MeshTransform = mat4(1.0f);
 };
 
+struct MeshDLL;
 struct Mesh
 {
 	uint32 MeshId = UINT32_MAX;
@@ -30,32 +31,30 @@ struct Mesh
 	void* MeshExtension = nullptr;
 };
 
-
-
 class MeshSystem
 {
-private:
-	Vector<uint32>				 FreeMeshIndicesList;
-	Vector<Mesh>                 MeshList;
-	Vector<MeshPropertiesStruct> MeshPropertiesList;
+	private:
+		Vector<uint32>				 FreeMeshIndicesList;
+		Vector<Mesh>                 MeshList;
+		Vector<MeshPropertiesStruct> MeshPropertiesList;
 
-	uint32 GetNextMeshIndex();
-	void   UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
+		uint32 GetNextMeshIndex();
+		void   UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
 
-public:
-	Vector<Vector<Vertex2D>>     Vertex2DList;
-	Vector<Vector<uint>>         IndexList;
+	public:
+		Vector<Vector<Vertex2D>>     Vertex2DList;
+		Vector<Vector<uint>>         IndexList;
 
-	MeshSystem();
-	~MeshSystem();
+		MeshSystem();
+		~MeshSystem();
 
-	DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
-	DLL_EXPORT void Update(const float& deltaTime);
-	DLL_EXPORT void Destroy(uint meshId);
-	DLL_EXPORT void DestroyAllGameObjects();
-	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
-	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-	DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+		DLL_EXPORT void Update(const float& deltaTime);
+		DLL_EXPORT void Destroy(uint meshId);
+		DLL_EXPORT void DestroyAllGameObjects();
+		DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
+		DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
+		DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType);
 };
 DLL_EXPORT MeshSystem meshSystem;
 
@@ -68,7 +67,7 @@ extern "C"
 			DLL_EXPORT void MeshSystem_Destroy(uint meshId);
 			DLL_EXPORT void MeshSystem_DestroyMesh(Mesh& mesh, VulkanBuffer& vertexBuffer, VulkanBuffer& indexBuffer, VulkanBuffer& transformBuffer, VulkanBuffer& propertiesBuffer);
 			DLL_EXPORT void MeshSystem_DestroyAllGameObjects();
-			DLL_EXPORT const Mesh& MeshSystem_FindMesh(const uint& meshId);
+			DLL_EXPORT void* MeshSystem_FindMesh(const uint& meshId);
 		#ifdef __cplusplus
 	}
 #endif

@@ -2,12 +2,10 @@
 #include "SpriteSystem.h"
 #include "FileSystem.h"
 #include <BufferSystem.h>
+#include <MeshSystem.h>
 #include "RenderSystem.h"
-#include "BufferSystem.h"
 #include "TextureSystem.h"
-#include <MeshSystem.h>
 #include "MaterialSystem.h"
-#include <MeshSystem.h>
 #include "GameObjectSystem.h"
 #include "Vertex.h"
 
@@ -66,7 +64,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     {
         .RenderPassId = renderPassId,
         .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = MeshSystem_CreateMesh(MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList.data(), SpriteIndexList.data(), SpriteVertexList.size(), SpriteIndexList.size())
+        .SpriteLayerMeshId = meshSystem.CreateMesh(MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList, SpriteIndexList)
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);

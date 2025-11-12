@@ -1,8 +1,7 @@
 #pragma once
-#include "DLL.h"
-#include "VkGuid.h"
-#include "Typedef.h"
+#include <Platform.h>
 #include <MaterialSystem.h>
+#include <TextureSystem.h>
 
 struct SpriteVram
 {

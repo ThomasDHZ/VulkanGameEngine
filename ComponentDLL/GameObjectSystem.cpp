@@ -3,7 +3,6 @@
 #include "SpriteSystem.h"
 #include "MemorySystem.h"
 #include "MegaManObject.h"
-#include "Component.h"
 
 GameObjectSystem gameObjectSystem = GameObjectSystem();
 

@@ -1,13 +1,9 @@
 #pragma once
-#include <DLL.h>
-#include <Typedef.h>
-#include <VkGuid.h>
+#include <Platform.h>
 #include <MaterialSystem.h>
-#include <MeshSystem.h>
-#include <Transform2DComponent.h>
+#include "Transform2DComponent.h"
 #include "VRAM.h"
 #include "GameObjectSystem.h"
-#include <BufferSystem.h>
 
 typedef uint32 SpriteLayerId;
 struct SpriteInstance

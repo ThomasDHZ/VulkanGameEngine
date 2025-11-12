@@ -1,14 +1,10 @@
 #pragma once
 #include "pch.h"
-#include <vulkan/vulkan_core.h>
-#include <Vertex.h>
+#include <Platform.h>
 #include <MeshSystem.h>
 #include "VRAM.h"
 #include "Camera.h"
 #include "SpriteSystem.h"
-#include "VulkanRenderPass.h"
-#include "VulkanPipeline.h"
-#include <RenderSystem.h>
 #pragma comment(lib, "vulkan-1.lib")
 
 struct GameObjectLoader
@@ -74,7 +70,6 @@ class LevelSystem
         LevelSystem() {}
         ~LevelSystem() {}
 
-        DLL_EXPORT void                 LoadLevel(const String& levelPath);
         DLL_EXPORT void                 Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime);
         DLL_EXPORT VkCommandBuffer      RenderBloomPass(VkGuid& renderPassId);
         DLL_EXPORT VkCommandBuffer      RenderFrameBuffer(VkGuid& renderPassId);

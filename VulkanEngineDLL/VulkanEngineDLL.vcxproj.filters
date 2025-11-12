@@ -36,9 +36,6 @@
     <ClInclude Include="DLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Macro.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Typedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>

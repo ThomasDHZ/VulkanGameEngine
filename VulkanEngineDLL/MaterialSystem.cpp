@@ -1,6 +1,7 @@
 #include "MaterialSystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
+#include "ShaderSystem.h"
 
 MaterialSystem materialSystem = MaterialSystem();
 

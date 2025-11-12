@@ -1,9 +1,9 @@
 #pragma once
+#include <Platform.h>
 #include "Typedef.h"
 #include <InputEnum.h>
 #include <vulkan/vulkan_core.h>
 #include <stdbool.h>
-#include "Macro.h"
 #include <glfw/include/GLFW/glfw3.h>
 
 class GameEngineWindow

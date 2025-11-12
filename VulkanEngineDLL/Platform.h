@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <assert.h>
-
+#include <fstream>
 #include <string>
 #include <iostream>
 #include <algorithm>
@@ -19,7 +19,6 @@
 #include <filesystem>
 #include <stb/stb_image.h>
 #include <mutex>
-#include "Macro.h"
 #include "Typedef.h"
 
 // Platform detection
