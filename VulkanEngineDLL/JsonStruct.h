@@ -141,28 +141,12 @@ struct RenderPassLoader
     RenderAreaModel RenderArea;
 };
 
-struct GPUIncludes
-{
-    size_t VertexPropertiesCount = 0;
-    size_t IndexPropertiesCount = 0;
-    size_t TransformPropertiesCount = 0;
-    size_t MeshPropertiesCount = 0;
-    size_t TexturePropertiesCount = 0;
-    size_t MaterialPropertiesCount = 0;
-    VkDescriptorBufferInfo* VertexProperties = nullptr;
-    VkDescriptorBufferInfo* IndexProperties = nullptr;
-    VkDescriptorBufferInfo* TransformProperties = nullptr;
-    VkDescriptorBufferInfo* MeshProperties = nullptr;
-    VkDescriptorImageInfo* TextureProperties = nullptr;
-    VkDescriptorBufferInfo* MaterialProperties = nullptr;
-};
-
 struct ShaderVariableDLL
 {
     String                          Name;
     size_t                          Size = 0;
     size_t                          ByteAlignment = 0;
-    void* Value = nullptr;
+    void* Value =                   nullptr;
     ShaderMemberType                MemberTypeEnum = shaderUnknown;
 };
 
@@ -200,8 +184,8 @@ struct ShaderPushConstantDLL
     String                          PushConstantName;
     size_t			                PushConstantSize = 0;
     VkShaderStageFlags              ShaderStageFlags;
-    Vector<ShaderVariableDLL>          PushConstantVariableList;
-    void* PushConstantBuffer = nullptr;
+    Vector<ShaderVariableDLL>       PushConstantVariableList;
+    void* PushConstantBuffer =      nullptr;
     bool			                GlobalPushContsant = false;
 };
 

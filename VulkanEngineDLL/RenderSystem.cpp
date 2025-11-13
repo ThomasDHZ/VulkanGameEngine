@@ -61,34 +61,11 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
         textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, *renderPassAttachments.DepthTexture);
     }
 
-    Vector<VkDescriptorBufferInfo> vertexPropertiesList = renderSystem.GetVertexPropertiesBuffer();
-    Vector<VkDescriptorBufferInfo> indexPropertiesList = renderSystem.GetIndexPropertiesBuffer();
-    Vector<VkDescriptorBufferInfo> transformPropertiesList = renderSystem.GetGameObjectTransformBuffer();
-    Vector<VkDescriptorBufferInfo> meshPropertiesList = renderSystem.GetMeshPropertiesBuffer(levelGuid);
-    Vector<VkDescriptorImageInfo> texturePropertiesList = renderSystem.GetTexturePropertiesBuffer(renderPassLoader.RenderPassId);
-    Vector<VkDescriptorBufferInfo> materialPropertiesList = materialSystem.GetMaterialPropertiesBuffer();
-
-    GPUIncludes gpuIncludes =
-    {
-        .VertexPropertiesCount = vertexPropertiesList.size(),
-        .IndexPropertiesCount = indexPropertiesList.size(),
-        .TransformPropertiesCount = transformPropertiesList.size(),
-        .MeshPropertiesCount = meshPropertiesList.size(),
-        .TexturePropertiesCount = texturePropertiesList.size(),
-        .MaterialPropertiesCount = materialPropertiesList.size(),
-        .VertexProperties = vertexPropertiesList.data(),
-        .IndexProperties = indexPropertiesList.data(),
-        .TransformProperties = transformPropertiesList.data(),
-        .MeshProperties = meshPropertiesList.data(),
-        .TextureProperties = texturePropertiesList.data(),
-        .MaterialProperties = materialPropertiesList.data()
-    };
-
     for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
     {
         nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList[x]);
         ShaderPipelineDataDLL shaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), gpuIncludes, shaderPiplineInfo));
+        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), shaderPiplineInfo));
     }
     memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
     memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);

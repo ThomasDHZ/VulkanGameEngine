@@ -1,12 +1,14 @@
 #include "VulkanPipeline.h"
 #include "MemorySystem.h"
+#include "RenderSystem.h"
+#include "MaterialSystem.h"
 #include "ShaderSystem.h"
 #include "JsonLoader.h"
 #include "GPUSystem.h"
 #include "JsonStruct.h"
 #include "FileSystem.h"
 
-VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineDataDLL& shaderPipelineData)
+VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
 {
     nlohmann::json pipelineJson = File_LoadJsonFile(pipelineJsonFilePath);
     RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
@@ -40,10 +42,10 @@ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRender
     };
 }
 
-VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, GPUIncludes& gpuIncludes, ShaderPipelineDataDLL& shaderPipelineData)
+VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
 {
     VulkanPipeline_Destroy(device, oldPipeline);
-    return VulkanPipeline_CreateRenderPipeline(device, vulkanRenderPass, pipelineJsonFilePath, gpuIncludes, shaderPipelineData);
+    return VulkanPipeline_CreateRenderPipeline(device, vulkanRenderPass, pipelineJsonFilePath, shaderPipelineData);
 }
 
 void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)
@@ -294,21 +296,51 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
 
 void Pipeline_PipelineBindingData(RenderPipelineLoader& renderPipelineLoader)
 {
-    //Vector<ShaderDescriptorBinding> bindingList;
-    //for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
-    //{
-    //    switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
-    //    {
-    //        case kVertexDescsriptor: renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetVertexPropertiesBuffer(); break;
-    //        case kIndexDescriptor: renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetIndexPropertiesBuffer(); break;
-    //        case kTransformDescriptor: renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetGameObjectTransformBuffer(); break;
-    //        case kMeshPropertiesDescriptor: renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId); break;
-    //        case kTextureDescriptor: renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId); break;
-    //        case kMaterialDescriptor: renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = materialSystem.GetMaterialPropertiesBuffer(); break;
-    //        default:
-    //        {
-    //            throw std::runtime_error("Binding case hasn't been handled yet");
-    //        }
-    //    }
-    //}
+    Vector<ShaderDescriptorBinding> bindingList;
+    for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
+    {
+        switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
+        {
+            case kVertexDescsriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetVertexPropertiesBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetVertexPropertiesBuffer();
+                break;
+            }
+            case kIndexDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIndexPropertiesBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetIndexPropertiesBuffer();
+                break;
+            }
+            case kTransformDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetGameObjectTransformBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetGameObjectTransformBuffer();
+                break;
+            }
+            case kMeshPropertiesDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId).size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId);
+                break;
+            }
+            case kTextureDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId).size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId);
+                break;
+            }
+            case kMaterialDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = materialSystem.GetMaterialPropertiesBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = materialSystem.GetMaterialPropertiesBuffer();
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("Binding case hasn't been handled yet");
+            }
+        }
+    }
 }
