@@ -65,7 +65,7 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList,
     meshSystem.Vertex2DList.emplace_back(vertexList);
     meshSystem.IndexList.emplace_back(indexList);
 
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = Shader_CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
     shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
     return meshId;
 }
@@ -80,7 +80,7 @@ void MeshSystem::Update(const float& deltaTime)
     }
 }
 
-void MeshSystem::UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime)
+void MeshSystem::UpdateMesh(Mesh& mesh, ShaderStructDLL& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime)
 {
 
     const vec3 LastMeshPosition = mesh.MeshPosition;
@@ -110,9 +110,9 @@ void MeshSystem::UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer
         MeshMatrix = glm::scale(MeshMatrix, mesh.MeshScale);
     }
 
-    memcpy(Shader_SearchShaderStructVar(&shaderStruct, "MaterialIndex")->Value, &shaderMaterialBufferIndex, sizeof(uint));
-    memcpy(Shader_SearchShaderStructVar(&shaderStruct, "MeshTransform")->Value, &GameObjectMatrix, sizeof(mat4));
-    Shader_UpdateShaderBuffer(renderer, meshPropertiesBuffer, &shaderStruct, 1);
+    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MaterialIndex").Value, &shaderMaterialBufferIndex, sizeof(uint));
+    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MeshTransform").Value, &GameObjectMatrix, sizeof(mat4));
+    shaderSystem.UpdateShaderBuffer(meshPropertiesBuffer.BufferId);
 }
 
 void MeshSystem::Destroy(uint meshId)

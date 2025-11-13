@@ -24,7 +24,6 @@ extern "C" {
 #endif
 
 DLL_EXPORT nlohmann::json File_LoadJsonFile(const char* filePath); 
-DLL_EXPORT const char** File_GetFilesFromDirectory(const char* fileDirectory, const char** fileExtensions, size_t fileExtenstionCount, size_t& returnFileCount);
 
 class FileSystem
 {
@@ -41,14 +40,7 @@ public:
 	String RemoveFileExtention(const String& filePath) { return File_RemoveFileExtention(filePath.c_str()); }
 	bool FileExists(const String& filePath) { return File_Exists(filePath.c_str()); }
 	nlohmann::json LoadJsonFile(const String& filePath) { return File_LoadJsonFile(filePath.c_str()); }
-	Vector<String> GetFilesFromDirectory(const String& fileDirectory, Vector<const char*> fileExtenstionList) 
-	{
-		size_t returnFileCount = 0;
-		size_t extenstionListCount = fileExtenstionList.size();
-		const char** extenstionList = memorySystem.AddPtrBuffer<const char*>(fileExtenstionList.data(), fileExtenstionList.size(), __FILE__, __LINE__, __func__, "Directory List String");
-		const char** fileList = File_GetFilesFromDirectory(fileDirectory.c_str(), extenstionList, extenstionListCount, returnFileCount);
-		return Vector<String>(fileList, fileList + returnFileCount);
-	}
+	Vector<String> GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
 };
 DLL_EXPORT FileSystem fileSystem;
 

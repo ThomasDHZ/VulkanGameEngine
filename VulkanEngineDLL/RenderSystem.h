@@ -7,18 +7,13 @@
 class RenderSystem
 {
     friend class JsonRenderPass;
-
 private:
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
 
     void RecreateSwapchain(void* windowHandle, RenderPassGuid& renderPassGuid, LevelGuid& levelGuid, const float& deltaTime);
-    const Vector<VkDescriptorBufferInfo>    GetVertexPropertiesBuffer();
-    const Vector<VkDescriptorBufferInfo>    GetIndexPropertiesBuffer();
-    const Vector<VkDescriptorBufferInfo>    GetGameObjectTransformBuffer();
-    const Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
-    const Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
+
 
 public:
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
@@ -43,6 +38,12 @@ public:
     DLL_EXPORT void                          DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
     DLL_EXPORT void                          DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                          DestroyBuffer(VkBuffer& buffer);
+
+    Vector<VkDescriptorBufferInfo>    GetVertexPropertiesBuffer();
+    Vector<VkDescriptorBufferInfo>    GetIndexPropertiesBuffer();
+    Vector<VkDescriptorBufferInfo>    GetGameObjectTransformBuffer();
+    Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
+    Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
 };
 DLL_EXPORT RenderSystem renderSystem;
 

@@ -158,7 +158,7 @@ void LevelSystem::DestroyLevel()
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    Camera_Update(*OrthographicCamera.get(), *shaderSystem.GetGlobalShaderPushConstant("sceneData"));
+    Camera_Update(*OrthographicCamera.get(), shaderSystem.FindShaderPushConstant("sceneData"));
     spriteSystem.Update(deltaTime);
     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
 }
@@ -254,7 +254,7 @@ void LevelSystem::Update(const float& deltaTime)
      const VulkanPipeline& pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
      VkCommandBuffer commandBuffer = renderPass.CommandBuffer;
      Texture blurTexture = textureSystem.FindRenderedTextureList(spriteRenderPass2DId)[0];
-     ShaderPushConstant pushConstant = *shaderSystem.GetGlobalShaderPushConstant("bloomSettings");
+     ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
 
      uint mipWidth = renderer.SwapChainResolution.width;
      uint mipHeight = renderer.SwapChainResolution.height;
@@ -305,8 +305,8 @@ void LevelSystem::Update(const float& deltaTime)
 
          float blurStrength = 1.0f + x * 0.5f;
          float lodLevel = static_cast<float>(x);
-         memcpy(shaderSystem.SearchGlobalShaderConstantVar(&pushConstant, "blurScale")->Value, &lodLevel, sizeof(lodLevel));
-         memcpy(shaderSystem.SearchGlobalShaderConstantVar(&pushConstant, "blurStrength")->Value, &blurStrength, sizeof(blurStrength));
+         memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurScale").Value, &lodLevel, sizeof(lodLevel));
+         memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurStrength").Value, &blurStrength, sizeof(blurStrength));
 
          VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
          //vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -375,7 +375,7 @@ void LevelSystem::Update(const float& deltaTime)
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
      const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
-     ShaderPushConstant pushConstant = *shaderSystem.GetGlobalShaderPushConstant("sceneData");
+     ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {

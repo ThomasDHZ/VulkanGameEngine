@@ -17,4 +17,4 @@ struct Camera
 
 DLL_EXPORT Camera Camera_OrthographicCamera2D(const vec2& viewScreenSize);
 DLL_EXPORT Camera Camera_OrthographicCamera2D(const vec2& viewScreenSize, const vec2& position);
-DLL_EXPORT void Camera_Update(Camera& camera, ShaderPushConstant& sceneDataBuffer);
+DLL_EXPORT void Camera_Update(Camera& camera, ShaderPushConstantDLL sceneDataBuffer);

@@ -21,8 +21,6 @@ RenderSystem::~RenderSystem()
 GraphicsRenderer RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
     Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);
-    shaderSystem.StartUp();
-
     return renderer;
 }
 
@@ -89,15 +87,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
     {
         nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList[x]);
-        ShaderPipelineData shaderPiplineInfo = shaderSystem.LoadShaderPipelineData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+        ShaderPipelineDataDLL shaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
         renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), gpuIncludes, shaderPiplineInfo));
-
-        Span<const char*> shaderListPtr(shaderPiplineInfo.ShaderList, shaderPiplineInfo.ShaderCount);
-        for (auto& shaderString : shaderListPtr)
-        {
-            memorySystem.RemovePtrBuffer(shaderString);
-        }
-        memorySystem.RemovePtrBuffer(shaderPiplineInfo.ShaderList);
     }
     memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
     memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
@@ -288,7 +279,7 @@ VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     return result;
 }
 
-const Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer() 
+Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer() 
 { 
     //Vector<MeshStruct> meshList;
         //meshList.reserve(meshSystem.SpriteMeshList.size());
@@ -323,7 +314,8 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer()
 
     return vertexPropertiesBuffer;
 };
-const Vector<VkDescriptorBufferInfo> RenderSystem::GetIndexPropertiesBuffer() 
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetIndexPropertiesBuffer() 
 { 
     //Vector<MeshStruct> meshList;
     //meshList.reserve(meshSystem.SpriteMeshList.size());
@@ -356,7 +348,8 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetIndexPropertiesBuffer()
     //}
     return indexPropertiesBuffer;
 };
-const Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer() 
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer() 
 { 
     //Vector<MeshStruct> meshList;
     //meshList.reserve(meshSystem.SpriteMeshList.size());
@@ -390,7 +383,8 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer(
 
     return transformPropertiesBuffer;
 };
-const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId) 
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId) 
 { 
     Vector<Mesh> meshList;
     if (levelLayerId == LevelGuid())
@@ -435,7 +429,8 @@ const Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const
 
     return meshPropertiesBuffer;
 };
-const Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid) 
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid) 
 { 
     Vector<Texture> textureList;
     const VulkanRenderPass& renderPass = RenderSystem_FindRenderPass(renderPassGuid);

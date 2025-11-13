@@ -31,11 +31,11 @@ Camera Camera_OrthographicCamera2D(const vec2& viewScreenSize, const vec2& posit
 	};
 }
 
-void Camera_Update(Camera& camera, ShaderPushConstant& sceneDataBuffer)
+void Camera_Update(Camera& camera, ShaderPushConstantDLL sceneDataBuffer)
 {
 	mat4 view = mat4(1.0f);
 	camera.ProjectionMatrix = glm::ortho(0.0f, camera.Width, camera.Height, 0.0f);
-	memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "Projection")->Value, &camera.ProjectionMatrix, sizeof(camera.ProjectionMatrix));
-	memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "View")->Value, &view, sizeof(view));
-	memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "CameraPosition")->Value, &camera.Position, sizeof(camera.Position));
+	memcpy(shaderSystem.FindShaderPushConstantStructVariable(sceneDataBuffer, "Projection").Value, &camera.ProjectionMatrix, sizeof(camera.ProjectionMatrix));
+	memcpy(shaderSystem.FindShaderPushConstantStructVariable(sceneDataBuffer, "View").Value, &view, sizeof(view));
+	memcpy(shaderSystem.FindShaderPushConstantStructVariable(sceneDataBuffer, "CameraPosition").Value, &camera.Position, sizeof(camera.Position));
 }

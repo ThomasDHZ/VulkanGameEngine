@@ -70,6 +70,7 @@
 extern "C" {
 #endif
     DLL_EXPORT const char* Renderer_GetError(VkResult result);
+    DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
 #ifdef __cplusplus
 }
 #endif
@@ -108,7 +109,7 @@ extern "C" {
 #define SPV_VULKAN_RESULT(call) { \
     SpvReflectResult result = (call); \
     if (result != SPV_REFLECT_RESULT_SUCCESS) { \
-        fprintf(stderr, "Error in %s at %s:%d (%s): %d\n", \
-                #call, __FILE__, __LINE__, __func__, (int)result); \
+        fprintf(stderr, "Error in %s at %s:%d (%s): %s\n", \
+                #call, __FILE__, __LINE__, __func__, Renderer_GetShaderReflectError(result)); \
     } \
 }

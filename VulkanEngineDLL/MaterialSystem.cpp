@@ -28,7 +28,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     }
 
     int bufferIndex = ++NextBufferId;
-    shaderSystem.PipelineShaderStructMap[bufferIndex] = Shader_CopyShaderStructProtoType("MaterialProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[bufferIndex] = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
     bufferSystem.VulkanBufferMap[bufferIndex] = bufferSystem.CreateVulkanBuffer(bufferIndex, shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize, 1, BufferTypeEnum::BufferType_MaterialProperitiesBuffer, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
@@ -80,18 +80,18 @@ void MaterialSystem::Update(const float& deltaTime)
         const uint EmissionMapId = material.EmissionMapId != VkGuid() ? TextureSystem_FindTexture(material.EmissionMapId).textureBufferIndex : 0;
         const uint HeightMapId = material.HeightMapId != VkGuid() ? TextureSystem_FindTexture(material.HeightMapId).textureBufferIndex : 0;
 
-        ShaderStruct& shaderStruct = Shader_FindShaderStruct(material.MaterialBufferId);
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "AlbedoMap")->Value, &AlbedoMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "MetallicRoughnessMap")->Value, &MetallicRoughnessMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "MetallicMap")->Value, &MetallicMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "RoughnessMap")->Value, &RoughnessMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "AmbientOcclusionMap")->Value, &AmbientOcclusionMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "NormalMap")->Value, &NormalMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "DepthMap")->Value, &DepthMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "AlphaMap")->Value, &AlphaMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "EmissionMap")->Value, &EmissionMapId, sizeof(uint));
-        memcpy(Shader_SearchShaderStruct(shaderStruct, "HeightMap")->Value, &HeightMapId, sizeof(uint));
-        Shader_UpdateShaderBuffer(renderer, material.MaterialBufferId);
+        ShaderStructDLL shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AlbedoMap").Value, &AlbedoMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MetallicRoughnessMap").Value, &MetallicRoughnessMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MetallicMap").Value, &MetallicMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "RoughnessMap").Value, &RoughnessMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AmbientOcclusionMap").Value, &AmbientOcclusionMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "NormalMap").Value, &NormalMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "DepthMap").Value, &DepthMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AlphaMap").Value, &AlphaMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "EmissionMap").Value, &EmissionMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "HeightMap").Value, &HeightMapId, sizeof(uint));
+        shaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
         x++;
     }
 }

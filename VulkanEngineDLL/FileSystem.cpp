@@ -180,12 +180,10 @@ nlohmann::json File_LoadJsonFile(const char* filePath)
     return nlohmann::json::parse(rawJson);
 }
 
-const char** File_GetFilesFromDirectory(const char* fileDirectory, const char** fileExtensions, size_t fileExtensionCount, size_t& returnFileCount)
+Vector<String> FileSystem::GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList)
 {
-    Vector<const char*> fileList;
-    String fileDirectoryString(fileDirectory);
-    Vector<String> fileExtensionList(fileExtensions, fileExtensions + fileExtensionCount);
 
+    Vector<String> fileList;
     try
     {
         if (std::filesystem::exists(fileDirectory) && std::filesystem::is_directory(fileDirectory))
@@ -196,14 +194,15 @@ const char** File_GetFilesFromDirectory(const char* fileDirectory, const char** 
                 {
                     auto ext = entry.path().extension().string();
                     if (!ext.empty() && ext.front() == '.')
+                    {
                         ext.erase(0, 1);
+                    }
 
                     for (const auto& allowedExt : fileExtensionList)
                     {
                         if (ext == allowedExt)
                         {
-                            const char* pathStr = memorySystem.AddPtrBuffer(entry.path().string().c_str(), __FILE__, __LINE__, __func__, entry.path().string().c_str());
-                            fileList.push_back(pathStr);
+                            fileList.push_back(entry.path().string());
                             break;
                         }
                     }
@@ -216,6 +215,5 @@ const char** File_GetFilesFromDirectory(const char* fileDirectory, const char** 
         std::cerr << "Filesystem error: " << ex.what() << std::endl;
     }
 
-    returnFileCount = fileList.size();
-    return memorySystem.AddPtrBuffer<const char*>(fileList.data(), fileList.size(), __FILE__, __LINE__, __func__, "Directory List String");;
+    return fileList;
 }

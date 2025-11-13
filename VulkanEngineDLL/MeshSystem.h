@@ -39,7 +39,7 @@ class MeshSystem
 		Vector<MeshPropertiesStruct> MeshPropertiesList;
 
 		uint32 GetNextMeshIndex();
-		void   UpdateMesh(Mesh& mesh, ShaderStruct& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
+		void   UpdateMesh(Mesh& mesh, ShaderStructDLL& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
 
 	public:
 		Vector<Vector<Vertex2D>>     Vertex2DList;
