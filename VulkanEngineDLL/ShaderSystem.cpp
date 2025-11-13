@@ -277,12 +277,13 @@ bool Shader_BuildGLSLShaders(const char* command)
          if (!SearchShaderConstantBufferExists(shaderPushConstantList, pushConstantName))
          {
              size_t bufferSize = 0;
+             Vector<ShaderVariableDLL> shaderStructVariableList = LoadShaderStructVariables(*pushConstant->type_description, bufferSize);
              shaderSystem.ShaderPushConstantMap[pushConstantName] = ShaderPushConstantDLL
              {
                 .PushConstantName = pushConstantName,
                 .PushConstantSize = bufferSize,
                 .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
-                .PushConstantVariableList = LoadShaderStructVariables(*pushConstant->type_description, bufferSize),
+                .PushConstantVariableList = shaderStructVariableList,
                 .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(bufferSize, __FILE__, __LINE__, __func__, pushConstantName.c_str())
              };
              for (auto& shaderVariable : shaderSystem.ShaderPushConstantMap[pushConstantName].PushConstantVariableList)
@@ -632,6 +633,7 @@ bool Shader_BuildGLSLShaders(const char* command)
      size_t offset = 0;
      for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
      {
+         mat4* matrixPtr = static_cast<mat4*>(pushConstantVar.Value);
          offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
          void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer) + offset;
          memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
