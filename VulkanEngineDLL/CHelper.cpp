@@ -24,5 +24,5 @@ Vector<String> CHelper_ConstCharPtrPtrToVector(const char** stringList, size_t s
 
 void CHelper_DestroyConstCharPtrPtr(const char** stringList)
 {
-	memorySystem.RemovePtrBuffer<const char*>(stringList);
+	memorySystem.DeletePtr<const char*>(stringList);
 }

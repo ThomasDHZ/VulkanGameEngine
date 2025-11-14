@@ -114,9 +114,9 @@ void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRender
     Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &renderPass.CommandBuffer, 1);
     Renderer_DestroyFrameBuffers(renderer.Device, &renderPass.FrameBufferList[0], renderer.SwapChainImageCount);
 
-    memorySystem.RemovePtrBuffer<VkGuid>(renderPass.InputTextureIdList);
-    memorySystem.RemovePtrBuffer<VkFramebuffer>(renderPass.FrameBufferList);
-    memorySystem.RemovePtrBuffer<VkClearValue>(renderPass.ClearValueList);
+    memorySystem.DeletePtr<VkGuid>(renderPass.InputTextureIdList);
+    memorySystem.DeletePtr<VkFramebuffer>(renderPass.FrameBufferList);
+    memorySystem.DeletePtr<VkClearValue>(renderPass.ClearValueList);
 
     renderPass.RenderPassId = VkGuid();
     renderPass.SampleCount = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;

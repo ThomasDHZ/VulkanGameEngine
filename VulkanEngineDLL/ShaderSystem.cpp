@@ -824,14 +824,14 @@ bool Shader_BuildGLSLShaders(const char* command)
                  if (shaderVar.Value != nullptr)
                  {
                      byte* value = static_cast<byte*>(shaderVar.Value);
-                     memorySystem.RemovePtrBuffer(value);
+                     memorySystem.DeletePtr(value);
                  }
              }
          }
          if (shaderStruct.ShaderStructBuffer != nullptr)
          {
              byte* value = static_cast<byte*>(shaderStruct.ShaderStructBuffer);
-             memorySystem.RemovePtrBuffer(value);
+             memorySystem.DeletePtr(value);
          }
      }
  }
@@ -847,14 +847,14 @@ bool Shader_BuildGLSLShaders(const char* command)
                  if (shaderVar.Value != nullptr)
                  {
                      byte* value = static_cast<byte*>(shaderVar.Value);
-                     memorySystem.RemovePtrBuffer(value);
+                     memorySystem.DeletePtr(value);
                  }
              }
          }
          if (shaderStruct.PushConstantBuffer != nullptr)
          {
              byte* value = static_cast<byte*>(shaderStruct.PushConstantBuffer);
-             memorySystem.RemovePtrBuffer(value);
+             memorySystem.DeletePtr(value);
          }
      }
  }

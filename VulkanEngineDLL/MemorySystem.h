@@ -1,266 +1,135 @@
+// MemorySystem.h
 #pragma once
 #include "Platform.h"
 #include <mutex>
+#include <unordered_map>
+#include <string>
+#include <iostream>
+#include <cstring>
 
-struct MemoryLeakPtr
-{
-    void* PtrAddress;
-    size_t PtrElements;
-    bool isArray;
-    const char* File;
-    const char* Line;
-    const char* Type;
-    const char* Function;
-    const char* Notes;
+struct MemoryLeakPtr {
+    void* PtrAddress = nullptr;
+    size_t PtrElements = 0;
+    bool isArray = false;
+    std::string File;
+    std::string Line;
+    std::string Type;
+    std::string Function;
+    std::string Notes;
 };
 
-extern "C"
-{
-    DLL_EXPORT MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes);
-    DLL_EXPORT void MemoryLeakPtr_DeletePtr(void* ptr);
-    DLL_EXPORT void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr);
-    DLL_EXPORT void MemoryLeakPtr_Free(MemoryLeakPtr* ptr);
-}
-
-class MemorySystem
-{
+class MemorySystem {
 private:
     std::mutex Mutex;
-    UnorderedMap<void*, MemoryLeakPtr> PtrAddressMap;
+    std::unordered_map<void*, MemoryLeakPtr> PtrAddressMap;
 
-public:
-    MemorySystem()
+    void FreeMemory(MemoryLeakPtr& ptr) 
     {
-#ifdef _DEBUG
-        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
+        ptr = MemoryLeakPtr{};
     }
 
-    template <class T>
+    void DeletePtrImpl(void* ptr) {
+        std::lock_guard<std::mutex> lock(Mutex);
+        auto it = PtrAddressMap.find(ptr);
+        if (it == PtrAddressMap.end()) {
+            std::cerr << "Warning: Double free or unregistered pointer: " << ptr << std::endl;
+            return;
+        }
+
+        MemoryLeakPtr& info = it->second;
+        if (info.isArray) {
+            char* bytes = static_cast<char*>(info.PtrAddress);
+        }
+
+        ::operator delete(info.PtrAddress);
+        FreeMemory(it->second);
+        PtrAddressMap.erase(it);
+    }
+
+public:
+    MemorySystem();
+    ~MemorySystem();
+
+    template <typename T>
     T* AddPtrBuffer(size_t elementCount, const char* file, int line, const char* func, const char* notes = "") 
     {
         std::lock_guard<std::mutex> lock(Mutex);
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
-        if (!memoryLeakPtr.PtrAddress) 
-        {
-            return nullptr; 
+        size_t size = sizeof(T) * elementCount;
+        void* memory = ::operator new(size);
+        if (!memory) return nullptr;
+
+        T* buffer = static_cast<T*>(memory);
+        for (size_t i = 0; i < elementCount; ++i) {
+            new (&buffer[i]) T();
         }
 
-        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-        for (size_t x = 0; x < elementCount; ++x) 
-        {
-            new (&buffer[x]) T(); 
-        }
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
+        MemoryLeakPtr info;
+        info.PtrAddress = memory;
+        info.PtrElements = elementCount;
+        info.isArray = elementCount > 1;
+        info.File = file ? file : "unknown";
+        info.Line = std::to_string(line);
+        info.Type = typeid(T).name();
+        info.Function = func ? func : "unknown";
+        info.Notes = notes ? notes : "";
+
+        PtrAddressMap[memory] = std::move(info);
         return buffer;
     }
 
-    template <class T>
-    T* AddPtrBuffer(T elementData, const char* file, int line, const char* func, const char* notes = "") 
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, typeid(T).name(), func, notes);
-        if (!memoryLeakPtr.PtrAddress) 
-        {
-            return nullptr;
-        }
-
-        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-        new (buffer) T(elementData);  
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
+    template <typename T>
+    T* AddPtrBuffer(T elementData, const char* file, int line, const char* func, const char* notes = "") {
+        T* ptr = AddPtrBuffer<T>(1, file, line, func, notes);
+        if (ptr) *ptr = elementData;
+        return ptr;
     }
 
-    template <class T>
-    T* AddPtrBuffer(T* elementData, size_t elementCount, const char* file, int line, const char* func, const char* notes = "") 
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
-        if (!memoryLeakPtr.PtrAddress) {
-            return nullptr;
-        }
-        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-        for (size_t x = 0; x < elementCount; ++x) 
-        {
-            new (&buffer[x]) T(elementData[x]);  
-        }
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
-    }
-
-    const char* AddPtrBuffer(const char* elementData, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        if (!elementData)
-        {
-            std::cerr << "Null string data for " << notes << " at " << file << ":" << line << " in " << func << std::endl;
-            return nullptr;
-        }
-
-        size_t strLen = std::strlen(elementData) + 1;
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(strLen, 1, file, line, "const char*", func, notes);
-        if (!memoryLeakPtr.PtrAddress)
-        {
-            std::cerr << "Failed to allocate memory for string, length " << strLen << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
-            return nullptr;
-        }
-
-        char* buffer = reinterpret_cast<char*>(memoryLeakPtr.PtrAddress);
-        std::strcpy(buffer, elementData);
-
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
-    }
-
-    const char* ReplacePtrBuffer(const char* srcString, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        if (!srcString)
-        {
-            std::cerr << "Null string data for " << notes << " at " << file << ":" << line << " in " << func << std::endl;
-            return nullptr;
-        }
-
-        size_t strLen = std::strlen(srcString) + 1;
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(strLen, 1, file, line, "const char*", func, notes);
-        if (!memoryLeakPtr.PtrAddress)
-        {
-            std::cerr << "Failed to allocate memory for string, length " << strLen << " (" << notes << ") at " << file << ":" << line << " in " << func << std::endl;
-            return nullptr;
-        }
-
-        char* buffer = reinterpret_cast<char*>(memoryLeakPtr.PtrAddress);
-        std::strcpy(buffer, srcString);
-        void* voidPtr = const_cast<void*>(reinterpret_cast<const void*>(srcString));
-
-        auto it = PtrAddressMap.find(voidPtr);
-        if (it != PtrAddressMap.end())
-        {
-            MemoryLeakPtr& memoryLeakPtr = it->second;
-            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
-            PtrAddressMap.erase(it);
-            srcString = nullptr;
-        }
-
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
-    }
-
-    template <class T>
-    T* ReplacePtrBuffer(T*& obj, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), 1, file, line, typeid(T).name(), func, notes);
-        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-
-        void* voidPtr = reinterpret_cast<void*>(obj);
-        auto it = PtrAddressMap.find(voidPtr);
-        if (it != PtrAddressMap.end())
-        {
-            MemoryLeakPtr& memoryLeakPtr = it->second;
-            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
-            MemoryLeakPtr_Free(&memoryLeakPtr);
-            PtrAddressMap.erase(it);
-            obj = nullptr;
-        }
-        else
-        {
-            std::cerr << "Warning: Attempted to remove unregistered pointer: " << obj << std::endl;
-        }
-
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
-    }
-
-    template <class T>
-    T* ReplacePtrBuffer(T*& obj, size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        MemoryLeakPtr memoryLeakPtr = MemoryLeakPtr_NewPtr(sizeof(T), elementCount, file, line, typeid(T).name(), func, notes);
-        if (!memoryLeakPtr.PtrAddress)
-        {
-            std::cerr << "Failed to allocate memory for " << notes << " at " << file << ":" << line << std::endl;
-            return nullptr;
-        }
-        T* buffer = reinterpret_cast<T*>(memoryLeakPtr.PtrAddress);
-        for (size_t x = 0; x < elementCount; ++x)
-        {
-            new (&buffer[x]) T(obj[x]);
-        }
-
-        void* voidPtr = reinterpret_cast<void*>(obj);
-        auto it = PtrAddressMap.find(voidPtr);
-        if (it != PtrAddressMap.end())
-        {
-            MemoryLeakPtr& memoryLeakPtr = it->second;
-            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
-            MemoryLeakPtr_Free(&memoryLeakPtr);
-            PtrAddressMap.erase(it);
-            obj = nullptr;
-        }
-        else
-        {
-            std::cerr << "Warning: Attempted to remove unregistered pointer: " << obj << std::endl;
-        }
-
-        PtrAddressMap[memoryLeakPtr.PtrAddress] = memoryLeakPtr;
-        return buffer;
-    }
-
-    template <class T>
-    void RemovePtrBuffer(T*& ptr)
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        void* voidPtr = reinterpret_cast<void*>(ptr);
-
-        auto it = PtrAddressMap.find(voidPtr);
-        if (it != PtrAddressMap.end())
-        {
-            MemoryLeakPtr& memoryLeakPtr = it->second;
-            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
-            MemoryLeakPtr_Free(&memoryLeakPtr);
-            PtrAddressMap.erase(it);
-            ptr = nullptr;
-        }
-        else
-        {
-            std::cerr << "Warning: Attempted to remove unregistered pointer: " << ptr << std::endl;
-        }
-    }
-
-    void RemovePtrBuffer(const char*& ptr)
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-        void* voidPtr = const_cast<void*>(reinterpret_cast<const void*>(ptr));
-
-        auto it = PtrAddressMap.find(voidPtr);
-        if (it != PtrAddressMap.end())
-        {
-            MemoryLeakPtr& memoryLeakPtr = it->second;
-            MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
-            MemoryLeakPtr_Free(&memoryLeakPtr);
-            PtrAddressMap.erase(it);
-            ptr = nullptr;
-        }
-        else
-        {
-           // std::cerr << "Warning: Attempted to remove unregistered pointer: " << ptr << std::endl;
-        }
-    }
-
-    void ReportLeaks()
-    {
-        std::lock_guard<std::mutex> lock(Mutex);
-
-        if (!PtrAddressMap.empty())
-        {
-            std::cout << ("\nMemory leaks detected:" + std::to_string(PtrAddressMap.size()) + " Memory leaks found.") << std::endl;
-            for (auto& ptr : PtrAddressMap)
-            {
-                MemoryLeakPtr_DanglingPtrMessage(&ptr.second);
+    template <typename T>
+    T* AddPtrBuffer(T* src, size_t count, const char* file, int line, const char* func, const char* notes = "") {
+        T* ptr = AddPtrBuffer<T>(count, file, line, func, notes);
+        if (ptr && src) {
+            for (size_t i = 0; i < count; ++i) {
+                ptr[i] = src[i];
             }
         }
+        return ptr;
     }
+
+    template <typename T>
+    T* ReplacePtrBuffer(T*& oldPtr, size_t count, const char* file, int line, const char* func, const char* notes = "") {
+        T* newPtr = AddPtrBuffer<T>(count, file, line, func, notes);
+        if (newPtr && oldPtr) {
+            for (size_t i = 0; i < count; ++i) {
+                newPtr[i] = std::move(oldPtr[i]);
+            }
+            DeletePtr(oldPtr);
+        }
+        oldPtr = newPtr;
+        return newPtr;
+    }
+
+    template <typename T>
+    void DeletePtr(T*& ptr) {
+        if (!ptr) return;
+        DeletePtrImpl(ptr);
+        ptr = nullptr;
+    }
+
+    void DeletePtr(const char*& ptr) {
+        if (!ptr) return;
+        DeletePtrImpl(const_cast<char*>(ptr));
+        ptr = nullptr;
+    }
+
+    DLL_EXPORT const char* AddPtrBuffer(const char* str, const char* file, int line, const char* func, const char* notes = "");
+    DLL_EXPORT MemoryLeakPtr NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);
+    DLL_EXPORT void DeletePtr(void* ptr);
+    DLL_EXPORT void ReportLeaks();
 };
-DLL_EXPORT MemorySystem memorySystem;
+DLL_EXPORT extern MemorySystem memorySystem;
+
+extern "C" {
+    DLL_EXPORT MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);
+    DLL_EXPORT void MemoryLeakPtr_DeletePtr(void* ptr);
+    DLL_EXPORT void MemoryLeakPtr_ReportLeaks();
+}

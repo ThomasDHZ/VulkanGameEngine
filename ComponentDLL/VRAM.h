@@ -51,22 +51,51 @@ struct Animation2D
     Vector<ivec2> FrameList;
     float         FrameHoldTime;
 };
+
+struct Animation2DDLL
+{
+    uint   AnimationId;
+    ivec2* FrameList;
+    size_t FrameCount;
+    float  FrameHoldTime;
+};
+
 typedef Vector<ivec2> AnimationFrames;
 
-    DLL_EXPORT Vector<Animation2D> VRAM_LoadSpriteAnimations(const char* spritePath);
-#ifdef __cplusplus
-extern "C" {
-#endif
-    DLL_EXPORT SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture);
-    DLL_EXPORT LevelTileSet VRAM_LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture);
-    DLL_EXPORT bool VRAM_SpriteVramExists(const VkGuid& vramId);
-    DLL_EXPORT void VRAM_LoadTileSets(const char* tileSetPath, LevelTileSet& levelTileSet);
-    DLL_EXPORT LevelLayout VRAM_LoadLevelInfo(const char* levelLayoutPath);
-    DLL_EXPORT uint** VRAM_LoadLevelLayout(const char* levelLayoutPath, size_t& levelLayerCount, size_t& levelLayerMapCount);
-    DLL_EXPORT void VRAM_DeleteSpriteVRAM(Animation2D* animationListPtr, ivec2* animationFrameListPtr);
-    DLL_EXPORT void VRAM_DeleteLevelVRAM(Tile* levelTileList);
-    DLL_EXPORT void VRAM_DeleteLevelLayerPtr(uint** levelLayerPtr);
-    DLL_EXPORT void VRAM_DeleteLevelLayerMapPtr(uint* levelLayerMapPtr);
-#ifdef __cplusplus
-}
-#endif
+class VramSystem
+{
+public:
+    VramSystem();
+    ~VramSystem();
+
+    DLL_EXPORT SpriteVram           LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture);
+    DLL_EXPORT Vector<Animation2D>  LoadSpriteAnimations(const char* spritePath);
+    DLL_EXPORT LevelTileSet         LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture);
+    DLL_EXPORT bool                 SpriteVramExists(const VkGuid& vramId);
+    DLL_EXPORT void                 LoadTileSets(const char* tileSetPath, LevelTileSet& levelTileSet);
+    DLL_EXPORT LevelLayout          LoadLevelInfo(const char* levelLayoutPath);
+    DLL_EXPORT Vector<Vector<uint>> LoadLevelLayout(const String& levelLayoutPath);
+    DLL_EXPORT void                 DeleteSpriteVRAM(Animation2D* animationListPtr, ivec2* animationFrameListPtr);
+    DLL_EXPORT void                 DeleteLevelVRAM(Tile* levelTileList);
+    DLL_EXPORT void                 DeleteLevelLayerPtr(uint** levelLayerPtr);
+    DLL_EXPORT void                 DeleteLevelLayerMapPtr(uint* levelLayerMapPtr);
+};
+DLL_EXPORT VramSystem vramSystem;
+
+//#ifdef __cplusplus
+//    extern "C" {
+//#endif
+//        DLL_EXPORT SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture);
+//        DLL_EXPORT Animation2D* VRAM_LoadSpriteAnimations(const char* spritePath, size_t& animationListCount);
+//        DLL_EXPORT LevelTileSet VRAM_LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture);
+//        DLL_EXPORT bool VRAM_SpriteVramExists(const VkGuid& vramId);
+//        DLL_EXPORT void VRAM_LoadTileSets(const char* tileSetPath, LevelTileSet& levelTileSet);
+//        DLL_EXPORT LevelLayout VRAM_LoadLevelInfo(const char* levelLayoutPath);
+//        DLL_EXPORT uint** VRAM_LoadLevelLayout(const char* levelLayoutPath, size_t& levelLayerCount, size_t& levelLayerMapCount);
+//        DLL_EXPORT void VRAM_DeleteSpriteVRAM(Animation2D* animationListPtr, ivec2* animationFrameListPtr);
+//        DLL_EXPORT void VRAM_DeleteLevelVRAM(Tile* levelTileList);
+//        DLL_EXPORT void VRAM_DeleteLevelLayerPtr(uint** levelLayerPtr);
+//        DLL_EXPORT void VRAM_DeleteLevelLayerMapPtr(uint* levelLayerMapPtr);
+//#ifdef __cplusplus
+//    }
+//#endif

@@ -125,11 +125,11 @@ VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPo
      Renderer_DestroySurface(renderer.Instance, &renderer.Surface);
      Renderer_DestroyInstance(&renderer.Instance);
 
-     memorySystem.RemovePtrBuffer(renderer.InFlightFences);
-     memorySystem.RemovePtrBuffer(renderer.AcquireImageSemaphores);
-     memorySystem.RemovePtrBuffer(renderer.PresentImageSemaphores);
-     memorySystem.RemovePtrBuffer(renderer.SwapChainImages);
-     memorySystem.RemovePtrBuffer(renderer.SwapChainImageViews);
+     memorySystem.DeletePtr(renderer.InFlightFences);
+     memorySystem.DeletePtr(renderer.AcquireImageSemaphores);
+     memorySystem.DeletePtr(renderer.PresentImageSemaphores);
+     memorySystem.DeletePtr(renderer.SwapChainImages);
+     memorySystem.DeletePtr(renderer.SwapChainImageViews);
  }
 
   VkSurfaceKHR Renderer_CreateVulkanSurface(void* windowHandle, VkInstance instance)

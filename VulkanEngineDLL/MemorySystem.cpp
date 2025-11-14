@@ -1,142 +1,228 @@
 #include "MemorySystem.h"
+#include <algorithm>
 
 MemorySystem memorySystem = MemorySystem();
 
-extern "C"
+MemorySystem::MemorySystem() 
 {
-    void MemoryLeakPtr_Free(MemoryLeakPtr* ptr)
+    #ifdef _DEBUG
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
+}
+
+MemorySystem::~MemorySystem()
+{
+
+}
+
+const char* MemorySystem::AddPtrBuffer(const char* str, const char* file, int line, const char* func, const char* notes) 
+{
+    if (!str) return nullptr;
+    size_t len = std::strlen(str) + 1;
+    char* buffer = static_cast<char*>(::operator new(len));
+    if (!buffer) return nullptr;
+    std::strcpy(buffer, str);
+
+    MemoryLeakPtr info;
+    info.PtrAddress = buffer;
+    info.PtrElements = 1;
+    info.isArray = false;
+    info.File = file ? file : "unknown";
+    info.Line = std::to_string(line);
+    info.Type = "const char*";
+    info.Function = func ? func : "unknown";
+    info.Notes = notes ? notes : "";
+
+    std::lock_guard<std::mutex> lock(Mutex);
+    PtrAddressMap[buffer] = std::move(info);
+    return buffer;
+}
+
+MemoryLeakPtr MemorySystem::NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes)
+{
+    void* memory = nullptr;
+    const char* fileStr = file ? _strdup(file) : nullptr;
+    const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
+    const char* typeStr = type ? _strdup(type) : nullptr;
+    const char* funcStr = func ? _strdup(func) : nullptr;
+    const char* notesStr = notes ? _strdup(notes) : nullptr;
+    try
     {
-        if (ptr->File) free(const_cast<char*>(ptr->File));
-        if (ptr->Line) free(const_cast<char*>(ptr->Line));
-        if (ptr->Type) free(const_cast<char*>(ptr->Type));
-        if (ptr->Function) free(const_cast<char*>(ptr->Function));
-        if (ptr->Notes) free(const_cast<char*>(ptr->Notes));
+        memory = new byte[memorySize * elementCount];
     }
-
-    MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes)
+    catch (const std::bad_alloc&)
     {
-        void* memory = nullptr;
-        try
-        {
-            memory = new byte[memorySize * elementCount];
-        }
-        catch (const std::bad_alloc&)
-        {
-            fprintf(stderr, "Allocation failed: %s\n", notes ? notes : "Unknown");
-            return MemoryLeakPtr
-            {
-                .PtrAddress = nullptr,
-                .PtrElements = 0,
-                .isArray = false,
-
-            };
-        }
-
-        const char* fileStr = file ? _strdup(file) : nullptr;
-        const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
-        const char* typeStr = type ? _strdup(type) : nullptr;
-        const char* funcStr = func ? _strdup(func) : nullptr;
-        const char* notesStr = notes ? _strdup(notes) : nullptr;
-
+        fprintf(stderr, "Allocation failed: %s\n", notes ? notes : "Unknown");
         return MemoryLeakPtr
         {
-            .PtrAddress = memory,
-            .PtrElements = elementCount,
-            .isArray = elementCount > 1,
-            .File = fileStr,
-            .Line = lineStr,
-            .Type = typeStr,
-            .Function = funcStr,
-            .Notes = notesStr
+            .PtrAddress = nullptr,
+            .PtrElements = 0,
+            .isArray = false,
+
         };
+    }
+
+    return MemoryLeakPtr
+    {
+        .PtrAddress = memory,
+        .PtrElements = elementCount,
+        .isArray = elementCount > 1,
+        .File = fileStr,
+        .Line = lineStr,
+        .Type = typeStr,
+        .Function = funcStr,
+        .Notes = notesStr
+    };
+}
+
+void MemorySystem::DeletePtr(void* ptr)
+{
+    std::lock_guard<std::mutex> lock(Mutex);
+
+    auto it = PtrAddressMap.find(ptr);
+    if (it != PtrAddressMap.end())
+    {
+        MemoryLeakPtr memoryLeakPtr = it->second;
+        delete[] static_cast<byte*>(memoryLeakPtr.PtrAddress);
+        FreeMemory(memoryLeakPtr);
+        PtrAddressMap.erase(it);
+        ptr = nullptr;
+    }
+    else
+    {
+        std::cerr << "Warning: Attempted to remove unregistered pointer: " << ptr << std::endl;
+    }
+}
+
+void MemorySystem::ReportLeaks() 
+{
+    std::lock_guard<std::mutex> lock(Mutex);
+
+    if (PtrAddressMap.empty()) {
+        std::cout << "No memory leaks detected.\n";
+        return;
+    }
+
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    WORD originalAttributes = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+    if (hConsole != INVALID_HANDLE_VALUE) {
+        GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+        originalAttributes = consoleInfo.wAttributes;
+    }
+#endif
+
+    size_t maxAddr = 6;
+    size_t maxSize = 4;
+    size_t maxArray = 5; 
+    size_t maxFile = 4; 
+    size_t maxLine = 4; 
+    size_t maxFunc = 4; 
+    size_t maxNotes = 5;
+
+    for (const auto& [addr, info] : PtrAddressMap) {
+        std::ostringstream oss;
+        oss << "0x" << std::hex << std::uppercase << addr;
+        maxAddr = std::max(maxAddr, oss.str().length());
+
+        std::string sizeStr = std::to_string(info.PtrElements);
+        maxSize = std::max(maxSize, sizeStr.length());
+
+        std::string arrayStr = info.isArray ? "Yes" : "No";
+        maxArray = std::max(maxArray, arrayStr.length());
+
+        std::string fileBase = info.File.substr(info.File.find_last_of("\\/") + 1);
+        maxFile = std::max(maxFile, fileBase.length());
+
+        maxLine = std::max(maxLine, info.Line.length());
+        maxFunc = std::max(maxFunc, info.Function.length());
+        maxNotes = std::max(maxNotes, info.Notes.length());
+    }
+
+    std::cout << "\nMEMORY LEAKS DETECTED: " << PtrAddressMap.size() << "\n";
+    std::cout << String(119, '-') << "\n";
+
+    for (const auto& [addr, info] : PtrAddressMap) {
+        std::ostringstream addrStream;
+        addrStream << "0x" << std::hex << std::uppercase << addr;
+        String addrStr = addrStream.str();
+
+        String sizeStr = std::to_string(info.PtrElements);
+        String arrayStr = info.isArray ? "Yes" : "No";
+        String fileBase = info.File.substr(info.File.find_last_of("\\/") + 1);
+        String lineStr = info.Line;
+        String funcStr = info.Function;
+        String noteStr = info.Notes.empty() ? "None" : info.Notes;
+
+        #ifdef _WIN32
+                if (hConsole != INVALID_HANDLE_VALUE) 
+                {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                    std::cout << std::left << std::setw(7) << "Error: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << "Memory Leak at: " << std::setw(maxAddr) << addrStr;
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    std::cout << " Size: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << std::setw(maxSize) << sizeStr;
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    std::cout << " IsArray: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << std::setw(maxArray) << arrayStr;
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    std::cout << " File: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << std::setw(maxFile) << fileBase;
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    std::cout << " Line: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << std::setw(maxLine) << lineStr;
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    std::cout << " Function: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << std::setw(maxFunc) << funcStr;
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    std::cout << " Notes: ";
+                    SetConsoleTextAttribute(hConsole, originalAttributes);
+                    std::cout << noteStr << "\n";
+                }
+                else
+        #endif
+        {
+            std::cout << "Error: Memory Leak at: " << addrStr
+                << " Size: " << sizeStr
+                << " IsArray: " << arrayStr
+                << " File: " << fileBase
+                << " Line: " << lineStr
+                << " Function: " << funcStr
+                << " Notes: " << noteStr << "\n";
+        }
+    }
+
+    std::cout << std::string(119, '-') << "\n";
+}
+
+extern "C"
+{
+    MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes)
+    {
+        return memorySystem.NewPtr(memorySize, elementCount, file, line, type, func, notes);
     }
 
     void MemoryLeakPtr_DeletePtr(void* memoryLeakPtr)
     {
-        delete[] static_cast<byte*>(memoryLeakPtr);
-    }
-
-    void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr)
-    {
-        if (ptr)
-        {
-            String fileStr(ptr->File);
-            String lineStr(ptr->Line);
-            String typeStr(ptr->Type);
-            String functionStr(ptr->Function);
-            String noteStr(ptr->Notes);
-
-            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (hConsole != INVALID_HANDLE_VALUE)
-            {
-                CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-                GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-                WORD originalAttributes = consoleInfo.wAttributes;
-
-
-                size_t pos = fileStr.find_last_of("\\/");
-                String filename = (pos == String::npos) ? fileStr : fileStr.substr(pos + 1);
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-                std::cout << "Error: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-
-                std::cout << "Memory Leak at: 0x" << ptr->PtrAddress;
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " Size: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << ptr->PtrElements * sizeof(byte);
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " IsArray: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (ptr->isArray ? "Yes" : "No");
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " File: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (fileStr.empty() ? "Unknown" : filename);
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " Line: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (lineStr.empty() ? "Unknown" : lineStr);
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " Type: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (typeStr.empty() ? "Unknown" : typeStr);
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " Function: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (functionStr.empty() ? "Unknown" : functionStr);
-
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-                std::cout << " Notes: ";
-                SetConsoleTextAttribute(hConsole, originalAttributes);
-                std::cout << (noteStr.empty() ? "None" : noteStr) << std::endl;
-            }
-            else
-            {
-                std::cerr << "Memory Leak at: Pointer: " << ptr->PtrAddress
-                    << " Size: " << ptr->PtrElements * sizeof(byte)
-                    << " IsArray: " << (ptr->isArray ? "Yes" : "No")
-                    << " File: " << (fileStr.empty() ? "Unknown" : fileStr)
-                    << " Line: " << (lineStr.empty() ? "Unknown" : lineStr)
-                    << " Function: " << (functionStr.empty() ? "Unknown" : functionStr)
-                    << " Notes: " << (noteStr.empty() ? "None" : noteStr) << std::endl;
-            }
-        }
+        memorySystem.DeletePtr(memoryLeakPtr);
     }
 
     void MemoryLeakPtr_ReportLeaks()
     {
         memorySystem.ReportLeaks();
-#ifdef _DEBUG
-        _CrtDumpMemoryLeaks();
-#endif
     }
-
 }

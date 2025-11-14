@@ -58,7 +58,7 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize 
         RENDERER_ERROR("Failed to create Vulkan buffer");
     }
 
-    memorySystem.RemovePtrBuffer(bufferData);
+    memorySystem.DeletePtr(bufferData);
     return vulkanBuffer;
 }
 

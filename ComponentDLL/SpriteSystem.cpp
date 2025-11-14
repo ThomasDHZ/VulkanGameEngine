@@ -76,7 +76,7 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 {
     nlohmann::json json = File_LoadJsonFile(spriteVramPath.c_str());
     VramSpriteGuid vramId = VramSpriteGuid(json["VramSpriteId"].get<String>().c_str());
-    if (VRAM_SpriteVramExists(vramId))
+    if (vramSystem.SpriteVramExists(vramId))
     {
         return vramId;
     }
@@ -84,8 +84,8 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
     VramSpriteGuid materialId = VramSpriteGuid(json["MaterialId"].get<String>().c_str());
     const Material& material = MaterialSystem_FindMaterial(materialId);
     const Texture& texture = TextureSystem_FindTexture(material.AlbedoMapId);
-    spriteSystem.SpriteAnimationMap[vramId] = VRAM_LoadSpriteAnimations(spriteVramPath.c_str());
-    spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
+    spriteSystem.SpriteAnimationMap[vramId] = vramSystem.LoadSpriteAnimations(spriteVramPath.c_str());
+    spriteSystem.SpriteVramList.emplace_back(vramSystem.LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
     return vramId;
 }
 

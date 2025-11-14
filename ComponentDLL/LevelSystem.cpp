@@ -75,10 +75,10 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
 
 void LevelSystem::DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, uint32* IndexList)
 {
-    memorySystem.RemovePtrBuffer<uint>(TileIdMap);
-    memorySystem.RemovePtrBuffer<Tile>(TileMap);
-    memorySystem.RemovePtrBuffer<Vertex2D>(VertexList);
-    memorySystem.RemovePtrBuffer<uint32>(IndexList);
+    memorySystem.DeletePtr<uint>(TileIdMap);
+    memorySystem.DeletePtr<Tile>(TileMap);
+    memorySystem.DeletePtr<Vertex2D>(VertexList);
+    memorySystem.DeletePtr<uint32>(IndexList);
 }
 
 VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
@@ -98,8 +98,8 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
     const Material& material = materialSystem.FindMaterial(materialId);
     const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoMapId);
 
-    LevelTileSetMap[tileSetId] = VRAM_LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
-    VRAM_LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);
+    LevelTileSetMap[tileSetId] = vramSystem.LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
+    vramSystem.LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);
 
     return tileSetId;
 }
@@ -113,20 +113,8 @@ void LevelSystem::LoadLevelLayout(const char* levelLayoutPath)
 
     size_t levelLayerCount = 0;
     size_t levelLayerMapCount = 0;
-    levelLayout = VRAM_LoadLevelInfo(levelLayoutPath);
-
-    size_t levelLayerCountTemp = 0;
-    size_t levelLayerMapCountTemp = 0;
-    uint** levelLayerList = VRAM_LoadLevelLayout(levelLayoutPath, levelLayerCountTemp, levelLayerMapCountTemp);
-
-    Vector<uint*> levelMapPtrList(levelLayerList, levelLayerList + levelLayerCountTemp);
-    for (size_t x = 0; x < levelLayerCountTemp; x++)
-    {
-        Vector<uint> mapLayer(levelMapPtrList[x], levelMapPtrList[x] + levelLayerMapCountTemp);
-        LevelTileMapList.emplace_back(mapLayer);
-        VRAM_DeleteLevelLayerMapPtr(levelMapPtrList[x]);
-    }
-    VRAM_DeleteLevelLayerPtr(levelLayerList);
+    levelLayout = vramSystem.LoadLevelInfo(levelLayoutPath);
+    LevelTileMapList = vramSystem.LoadLevelLayout(levelLayoutPath);
 }
 
 void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
@@ -147,7 +135,7 @@ void LevelSystem::DestroyLevel()
     spriteSystem.Destroy();
     for (auto& tileMap : LevelTileSetMap)
     {
-        VRAM_DeleteLevelVRAM(tileMap.second.LevelTileListPtr);
+        vramSystem.DeleteLevelVRAM(tileMap.second.LevelTileListPtr);
     }
 
     for (auto& levelLayer : LevelLayerList)
@@ -321,7 +309,6 @@ void LevelSystem::Update(const float& deltaTime)
      }
      return commandBuffer;
  }
-
 
  VkCommandBuffer LevelSystem::RenderFrameBuffer(VkGuid& renderPassId)
  {
