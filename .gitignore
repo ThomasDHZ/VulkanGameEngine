@@ -143,6 +143,45 @@ AutoTest.Net/
 # Installshield output folder
 [Ee]xpress/
 
+# === Build Directories ===
+build-linux/
+build-win/
+build-android/
+build-ios/
+build-web/
+build-*/
+
+# === CMake Files ===
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# === Compiled Objects ===
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+*.pdb
+*.ilk
+*.exp
+
+# === IDE/Editor ===
+.vscode/
+.idea/
+*.sln
+*.vcxproj.user
+*.suo
+*.sdf
+
+# === OS Junk ===
+.DS_Store
+Thumbs.db
+
 # DocProject is a documentation generator add-in
 DocProject/buildhelp/
 DocProject/Help/*.HxT

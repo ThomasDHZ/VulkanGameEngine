@@ -173,6 +173,7 @@
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
+    <ClCompile Include="VkGuid.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="JsonLoader.cpp" />
