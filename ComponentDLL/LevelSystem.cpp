@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "LevelSystem.h"
 #include "GameObjectSystem.h"
-#include <MemorySystem.h>
-#include <RenderSystem.h>
 
 LevelSystem levelSystem = LevelSystem();
 

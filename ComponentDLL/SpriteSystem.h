@@ -1,9 +1,8 @@
 #pragma once
-#include <Platform.h>
-#include <MaterialSystem.h>
+#include "pch.h"
+#include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
 #include "VRAM.h"
-#include "GameObjectSystem.h"
 
 typedef uint32 SpriteLayerId;
 struct SpriteInstance

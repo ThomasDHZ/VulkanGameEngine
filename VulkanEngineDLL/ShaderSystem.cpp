@@ -1,8 +1,6 @@
 #include "ShaderSystem.h"
 #include "Platform.h"
-#include <regex>
 #include "MemorySystem.h"
-#include "CHelper.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
 

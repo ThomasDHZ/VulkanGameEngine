@@ -8,10 +8,16 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
+#include <Platform.h>
+#include <BufferSystem.h>
+#include <FileSystem.h>
+#include <MaterialSystem.h>
+#include <MeshSystem.h>
+#include <RenderSystem.h>
+#include <ShaderSystem.h>
+#include <TextureSystem.h>
+#include <InputEnum.h>
 #include <glfw/include/GLFW/glfw3.h>
-#include <memory.h>
-#include <limits>
-#include <DLL.h>
-#include <Typedef.h>
+#include <EngineConfigSystem.h>
 
 #endif //PCH_H

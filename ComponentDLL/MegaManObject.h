@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <glfw/include/GLFW/glfw3.h>
 #include "GameObjectSystem.h"
 
 enum MegaManAnimationEnum

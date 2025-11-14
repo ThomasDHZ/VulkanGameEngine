@@ -1,6 +1,5 @@
 #pragma once
-#include "Typedef.h"
-#include <ShaderSystem.h>
+#include "pch.h"
 
 struct Camera
 {

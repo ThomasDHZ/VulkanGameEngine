@@ -1,12 +1,5 @@
 #include "pch.h"
 #include "SpriteSystem.h"
-#include "FileSystem.h"
-#include <BufferSystem.h>
-#include <MeshSystem.h>
-#include "RenderSystem.h"
-#include "TextureSystem.h"
-#include "MaterialSystem.h"
-#include "GameObjectSystem.h"
 #include "Vertex.h"
 
 SpriteSystem spriteSystem = SpriteSystem();

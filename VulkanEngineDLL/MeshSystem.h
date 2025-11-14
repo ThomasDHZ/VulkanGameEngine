@@ -1,6 +1,5 @@
 #pragma once
 #include "Platform.h"
-#include "VkGuid.h"
 #include "ShaderSystem.h"
 #include "vertex.h"
 

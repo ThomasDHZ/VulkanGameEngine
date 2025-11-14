@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
-#include "MemorySystem.h"
 #include "MegaManObject.h"
 
 GameObjectSystem gameObjectSystem = GameObjectSystem();

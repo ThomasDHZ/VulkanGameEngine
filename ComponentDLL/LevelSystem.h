@@ -1,7 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <Platform.h>
-#include <MeshSystem.h>
 #include "VRAM.h"
 #include "Camera.h"
 #include "SpriteSystem.h"

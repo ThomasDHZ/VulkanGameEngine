@@ -1,5 +1,5 @@
 #pragma once
-#include "Typedef.h"
+#include "Platform.h"
 #include "JsonStruct.h"
 #include "JsonLoader.h"
 #include "MemorySystem.h"

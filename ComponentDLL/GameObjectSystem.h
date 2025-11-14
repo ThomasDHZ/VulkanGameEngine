@@ -1,8 +1,7 @@
 #pragma once
 #include "pch.h"
-#include <Platform.h>
-#include <Transform2DComponent.h>
 #include "InputComponent.h"
+#include "Transform2DComponent.h"
 #include "MegaManShot.h"
 #include "VulkanRenderer.h"
 

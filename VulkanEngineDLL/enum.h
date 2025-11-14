@@ -67,3 +67,46 @@ enum TextureTypeEnum
     kType_RenderedCubeMap,
     kType_BakedTexture
 };
+
+enum RenderedTextureType
+{
+    ColorRenderedTexture,
+    DepthRenderedTexture,
+    InputAttachmentTexture,
+    ResolveAttachmentTexture
+};
+
+enum DescriptorBindingPropertiesEnum
+{
+    kMeshPropertiesDescriptor,
+    kTextureDescriptor,
+    kMaterialDescriptor,
+    kBRDFMapDescriptor,
+    kIrradianceMapDescriptor,
+    kPrefilterMapDescriptor,
+    kCubeMapDescriptor,
+    kEnvironmentDescriptor,
+    kSunLightDescriptor,
+    kDirectionalLightDescriptor,
+    kPointLightDescriptor,
+    kSpotLightDescriptor,
+    kReflectionViewDescriptor,
+    kDirectionalShadowDescriptor,
+    kPointShadowDescriptor,
+    kSpotShadowDescriptor,
+    kViewTextureDescriptor,
+    kViewDepthTextureDescriptor,
+    kCubeMapSamplerDescriptor,
+    kRotatingPaletteTextureDescriptor,
+    kMathOpperation1Descriptor,
+    kMathOpperation2Descriptor,
+    kVertexDescsriptor,
+    kIndexDescriptor,
+    kTransformDescriptor
+};
+
+enum VertexTypeEnum
+{
+    NullVertex = 0,
+    SpriteInstanceVertex = 1,
+};

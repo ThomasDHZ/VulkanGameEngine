@@ -1,15 +1,7 @@
 #pragma once
-#include <Windows.h>
-#include <dxcapi.h>
-#include <wrl/client.h>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <vulkan/vulkan.h>
-#include "TypeDef.h"
-#include "MemorySystem.h"
+#include "Platform.h"
 #include "JsonStruct.h"
+#include "MemorySystem.h"
 #include "BufferSystem.h"
 
 
