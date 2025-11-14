@@ -19,6 +19,7 @@ extern "C"
     DLL_EXPORT MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes);
     DLL_EXPORT void MemoryLeakPtr_DeletePtr(void* ptr);
     DLL_EXPORT void MemoryLeakPtr_DanglingPtrMessage(MemoryLeakPtr* ptr);
+    DLL_EXPORT void MemoryLeakPtr_Free(MemoryLeakPtr* ptr);
 }
 
 class MemorySystem
@@ -159,6 +160,7 @@ public:
         {
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            MemoryLeakPtr_Free(&memoryLeakPtr);
             PtrAddressMap.erase(it);
             obj = nullptr;
         }
@@ -193,6 +195,7 @@ public:
         {
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            MemoryLeakPtr_Free(&memoryLeakPtr);
             PtrAddressMap.erase(it);
             obj = nullptr;
         }
@@ -216,6 +219,7 @@ public:
         {
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            MemoryLeakPtr_Free(&memoryLeakPtr);
             PtrAddressMap.erase(it);
             ptr = nullptr;
         }
@@ -235,6 +239,7 @@ public:
         {
             MemoryLeakPtr& memoryLeakPtr = it->second;
             MemoryLeakPtr_DeletePtr(memoryLeakPtr.PtrAddress);
+            MemoryLeakPtr_Free(&memoryLeakPtr);
             PtrAddressMap.erase(it);
             ptr = nullptr;
         }

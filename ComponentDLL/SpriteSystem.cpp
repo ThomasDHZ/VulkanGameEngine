@@ -81,14 +81,11 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
         return vramId;
     }
 
-    size_t animationListCount = 0;
     VramSpriteGuid materialId = VramSpriteGuid(json["MaterialId"].get<String>().c_str());
     const Material& material = MaterialSystem_FindMaterial(materialId);
     const Texture& texture = TextureSystem_FindTexture(material.AlbedoMapId);
-    Animation2D* animationListPtr = VRAM_LoadSpriteAnimations(spriteVramPath.c_str(), animationListCount);
-    spriteSystem.SpriteAnimationMap[vramId] = Vector<Animation2D>(animationListPtr, animationListPtr + animationListCount);
+    spriteSystem.SpriteAnimationMap[vramId] = VRAM_LoadSpriteAnimations(spriteVramPath.c_str());
     spriteSystem.SpriteVramList.emplace_back(VRAM_LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
-    memorySystem.RemovePtrBuffer(animationListPtr);
     return vramId;
 }
 
@@ -125,7 +122,7 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
         if (sprite.CurrentFrameTime >= animation.FrameHoldTime) {
             sprite.CurrentFrame += 1;
             sprite.CurrentFrameTime = 0.0f;
-            if (sprite.CurrentFrame >= animation.FrameCount)
+            if (sprite.CurrentFrame >= animation.FrameList.size())
             {
                 sprite.CurrentFrame = 0;
             }
@@ -154,7 +151,6 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
 
 void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
 {
-    Span<ivec2> frameList(animationList->FrameList, animationList->FrameList + animationList->FrameCount);
     for (size_t x = 0; x < spriteCount; x++)
     {
         glm::mat4 spriteMatrix = glm::mat4(1.0f);
@@ -184,7 +180,7 @@ void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite
             }
         }
 
-        const ivec2& currentFrame = frameList[spriteList[x].CurrentFrame];
+        const ivec2& currentFrame = animationList->FrameList[spriteList[x].CurrentFrame];
         spriteInstanceList[x].SpritePosition = transform2DList[x].GameObjectPosition;
         spriteInstanceList[x].SpriteSize = vramList[x].SpriteSize;
         spriteInstanceList[x].MaterialID = materialList[x].ShaderMaterialBufferIndex;

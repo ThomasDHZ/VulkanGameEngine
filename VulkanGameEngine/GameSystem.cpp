@@ -92,7 +92,7 @@ void GameSystem::Destroy()
     textureSystem.DestroyAllTextures(); 
     bufferSystem.DestroyAllBuffers();
     shaderSystem.Destroy();
-    Destroy(); 
     levelSystem.DestroyLevel(); 
+    renderSystem.Destroy();
     memorySystem.ReportLeaks();
 }

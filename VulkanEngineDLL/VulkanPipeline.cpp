@@ -8,7 +8,7 @@
 #include "JsonStruct.h"
 #include "FileSystem.h"
 
-VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
+VulkanPipeline VulkanPipeline_CreateRenderPipeline(VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
 {
     nlohmann::json pipelineJson = File_LoadJsonFile(pipelineJsonFilePath);
     RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
@@ -21,52 +21,42 @@ VulkanPipeline VulkanPipeline_CreateRenderPipeline(VkDevice device, VulkanRender
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
     Pipeline_PipelineBindingData(renderPipelineLoader);
-    VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(device, renderPipelineLoader);
-    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(device, renderPipelineLoader);
-    Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(device, renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-    Pipeline_UpdatePipelineDescriptorSets(device, renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
-    VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(device, renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-    VkPipeline pipeline = Pipeline_CreatePipeline(device, renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+    VkDescriptorPool descriptorPool = Pipeline_CreatePipelineDescriptorPool(renderPipelineLoader);
+    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Pipeline_CreatePipelineDescriptorSetLayout(renderPipelineLoader);
+    Vector<VkDescriptorSet> descriptorSetList = Pipeline_AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+    Pipeline_UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
+    VkPipelineLayout pipelineLayout = Pipeline_CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+    VkPipeline pipeline = Pipeline_CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
     return VulkanPipeline
     {
         .RenderPipelineId = renderPipelineLoader.PipelineId,
-        .DescriptorSetLayoutCount = descriptorSetLayoutList.size(),
-        .DescriptorSetCount = descriptorSetList.size(),
         .DescriptorPool = descriptorPool,
-        .DescriptorSetLayoutList = memorySystem.AddPtrBuffer<VkDescriptorSetLayout>(descriptorSetLayoutList.data(), descriptorSetLayoutList.size(), __FILE__, __LINE__, __func__),
-        .DescriptorSetList = memorySystem.AddPtrBuffer<VkDescriptorSet>(descriptorSetList.data(), descriptorSetList.size(), __FILE__, __LINE__, __func__),
+        .DescriptorSetLayoutList = descriptorSetLayoutList,
+        .DescriptorSetList = descriptorSetList,
         .Pipeline = pipeline,
         .PipelineLayout = pipelineLayout,
         .PipelineCache = pipelineCache
     };
 }
 
-VulkanPipeline VulkanPipeline_RebuildSwapChain(VkDevice device, VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
+VulkanPipeline VulkanPipeline_RebuildSwapChain(VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
 {
-    VulkanPipeline_Destroy(device, oldPipeline);
-    return VulkanPipeline_CreateRenderPipeline(device, vulkanRenderPass, pipelineJsonFilePath, shaderPipelineData);
+    VulkanPipeline_Destroy(oldPipeline);
+    return VulkanPipeline_CreateRenderPipeline(vulkanRenderPass, pipelineJsonFilePath, shaderPipelineData);
 }
 
-void VulkanPipeline_Destroy(VkDevice device, VulkanPipeline& vulkanPipeline)
+void VulkanPipeline_Destroy(VulkanPipeline& vulkanPipeline)
 {
     vulkanPipeline.RenderPipelineId = VkGuid();
-    Renderer_DestroyPipeline(device, &vulkanPipeline.Pipeline);
-    Renderer_DestroyPipelineLayout(device, &vulkanPipeline.PipelineLayout);
-    Renderer_DestroyPipelineCache(device, &vulkanPipeline.PipelineCache);
-    Renderer_DestroyDescriptorPool(device, &vulkanPipeline.DescriptorPool);
-
-    for (size_t x = 0; x < vulkanPipeline.DescriptorSetLayoutCount; x++)
-    {
-        Renderer_DestroyDescriptorSetLayout(device, &vulkanPipeline.DescriptorSetLayoutList[x]);
-    }
-
-    memorySystem.RemovePtrBuffer<VkDescriptorSetLayout>(vulkanPipeline.DescriptorSetLayoutList);
-    memorySystem.RemovePtrBuffer<VkDescriptorSet>(vulkanPipeline.DescriptorSetList);
+    Renderer_DestroyPipeline(renderer.Device, &vulkanPipeline.Pipeline);
+    Renderer_DestroyPipelineLayout(renderer.Device, &vulkanPipeline.PipelineLayout);
+    Renderer_DestroyPipelineCache(renderer.Device, &vulkanPipeline.PipelineCache);
+    Renderer_DestroyDescriptorPool(renderer.Device, &vulkanPipeline.DescriptorPool);
 }
 
 
-VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPipelineLoader& renderPipelineLoader)
+VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
     for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
@@ -88,11 +78,11 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(VkDevice device, RenderPi
         .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
         .pPoolSizes = descriptorPoolSizeList.data()
     };
-    VULKAN_RESULT(vkCreateDescriptorPool(device, &poolCreateInfo, nullptr, &descriptorPool));
+    VULKAN_RESULT(vkCreateDescriptorPool(renderer.Device, &poolCreateInfo, nullptr, &descriptorPool));
     return descriptorPool;
 }
 
-Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevice device, RenderPipelineLoader& renderPipelineLoader)
+Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
     for (auto& descriptorBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
@@ -119,13 +109,13 @@ Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(VkDevic
     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(1);
     for (auto& descriptorSetLayout : descriptorSetLayoutList)
     {
-        VULKAN_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
+        VULKAN_RESULT(vkCreateDescriptorSetLayout(renderer.Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
     }
 
     return descriptorSetLayoutList;
 }
 
-Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
+Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {
     VkDescriptorSetAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -138,12 +128,12 @@ Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(VkDevice device,
     Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(1);
     for (auto& descriptorSet : descriptorSetList)
     {
-        VULKAN_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+        VULKAN_RESULT(vkAllocateDescriptorSets(renderer.Device, &allocInfo, &descriptorSet));
     }
     return descriptorSetList;
 }
 
-void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
+void Pipeline_UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
     Span<VkDescriptorSet> descriptorSetLayouts(descriptorSetList, descriptorSetCount);
     for (auto& descriptorSet : descriptorSetLayouts)
@@ -165,11 +155,11 @@ void Pipeline_UpdatePipelineDescriptorSets(VkDevice device, RenderPipelineLoader
                     .pTexelBufferView = nullptr
                 });
         }
-        vkUpdateDescriptorSets(device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
+        vkUpdateDescriptorSets(renderer.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
     }
 }
 
-VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
+VkPipelineLayout Pipeline_CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     Vector<VkPushConstantRange> pushConstantRangeList = Vector<VkPushConstantRange>();
@@ -193,11 +183,11 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(VkDevice device, RenderPipelineLo
         .pushConstantRangeCount = static_cast<uint32>(pushConstantRangeList.size()),
         .pPushConstantRanges = pushConstantRangeList.data()
     };
-    VULKAN_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+    VULKAN_RESULT(vkCreatePipelineLayout(renderer.Device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
     return pipelineLayout;
 }
 
-VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
+VkPipeline Pipeline_CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
     VkPipeline pipeline = VK_NULL_HANDLE;
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo
@@ -211,15 +201,13 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .pVertexAttributeDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList.data()
     };
 
-    Vector<VkViewport> viewPortList(renderPipelineLoader.ViewportList, renderPipelineLoader.ViewportList + renderPipelineLoader.ViewportCount);
-    for (auto& viewPort : viewPortList)
+    for (auto& viewPort : renderPipelineLoader.ViewportList)
     {
         viewPort.width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x);
         viewPort.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
     }
 
-    Vector<VkRect2D> scissorList(renderPipelineLoader.ScissorList, renderPipelineLoader.ScissorList + renderPipelineLoader.ScissorCount);
-    for (auto& scissor : scissorList)
+    for (auto& scissor : renderPipelineLoader.ScissorList)
     {
         scissor.extent.width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x);
         scissor.extent.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
@@ -230,13 +218,13 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .viewportCount = static_cast<uint32>(viewPortList.size() + (viewPortList.empty() ? 1 : 0)),
-        .pViewports = viewPortList.data(),
-        .scissorCount = static_cast<uint32>(scissorList.size() + (scissorList.empty() ? 1 : 0)),
-        .pScissors = scissorList.data()
+        .viewportCount = static_cast<uint32>(renderPipelineLoader.ViewportList.size() + (renderPipelineLoader.ViewportList.empty() ? 1 : 0)),
+        .pViewports = renderPipelineLoader.ViewportList.data(),
+        .scissorCount = static_cast<uint32>(renderPipelineLoader.ScissorList.size() + (renderPipelineLoader.ScissorList.empty() ? 1 : 0)),
+        .pScissors = renderPipelineLoader.ScissorList.data()
     };
 
-    Vector<VkDynamicState> dynamicStateList = viewPortList.empty() ? Vector<VkDynamicState> { VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT, VkDynamicState::VK_DYNAMIC_STATE_SCISSOR} : Vector<VkDynamicState>();
+    Vector<VkDynamicState> dynamicStateList = renderPipelineLoader.ViewportList.empty() ? Vector<VkDynamicState> { VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT, VkDynamicState::VK_DYNAMIC_STATE_SCISSOR} : Vector<VkDynamicState>();
     VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = VkPipelineDynamicStateCreateInfo
     {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
@@ -248,14 +236,13 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
 
     Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
     {
-        shaderSystem.LoadShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[0].c_str(), VK_SHADER_STAGE_VERTEX_BIT),
-        shaderSystem.LoadShader(device, renderPipelineLoader.ShaderPiplineInfo.ShaderList[1].c_str(), VK_SHADER_STAGE_FRAGMENT_BIT)
+        shaderSystem.LoadShader(renderPipelineLoader.ShaderPiplineInfo.ShaderList[0].c_str(), VK_SHADER_STAGE_VERTEX_BIT),
+        shaderSystem.LoadShader(renderPipelineLoader.ShaderPiplineInfo.ShaderList[1].c_str(), VK_SHADER_STAGE_FRAGMENT_BIT)
     };
 
-    Span<VkPipelineColorBlendAttachmentState> attachments(renderPipelineLoader.PipelineColorBlendAttachmentStateList, renderPipelineLoader.PipelineColorBlendAttachmentStateList + renderPipelineLoader.PipelineColorBlendAttachmentStateCount);
-    VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = renderPipelineLoader.PipelineColorBlendStateCreateInfoModel;
-    pipelineColorBlendStateCreateInfoModel.attachmentCount = renderPipelineLoader.PipelineColorBlendAttachmentStateCount;
-    pipelineColorBlendStateCreateInfoModel.pAttachments = renderPipelineLoader.PipelineColorBlendAttachmentStateList;
+     VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = renderPipelineLoader.PipelineColorBlendStateCreateInfoModel;
+    pipelineColorBlendStateCreateInfoModel.attachmentCount = renderPipelineLoader.PipelineColorBlendAttachmentStateList.size();
+    pipelineColorBlendStateCreateInfoModel.pAttachments = renderPipelineLoader.PipelineColorBlendAttachmentStateList.data();
 
     VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = renderPipelineLoader.PipelineMultisampleStateCreateInfo;
     pipelineMultisampleStateCreateInfo.rasterizationSamples = pipelineMultisampleStateCreateInfo.rasterizationSamples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : pipelineMultisampleStateCreateInfo.rasterizationSamples;
@@ -285,10 +272,10 @@ VkPipeline Pipeline_CreatePipeline(VkDevice device, RenderPipelineLoader& render
         .basePipelineIndex = 0,
     };
 
-    VULKAN_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
+    VULKAN_RESULT(vkCreateGraphicsPipelines(renderer.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
     for (auto& shader : pipelineShaderStageCreateInfoList)
     {
-        vkDestroyShaderModule(device, shader.module, nullptr);
+        vkDestroyShaderModule(renderer.Device, shader.module, nullptr);
     }
 
     return pipeline;

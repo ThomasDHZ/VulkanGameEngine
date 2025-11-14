@@ -96,7 +96,6 @@ private:
     Vector<SpvReflectSpecializationConstant*>   LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
     void                                        CompileGLSLShaders(const String& fileDirectory, const String& outputDirectory);
     Vector<SpvReflectSpecializationConstant*>   FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
-    void                                        ShaderDestroy(ShaderPipelineDataDLL& shader);
     void                                        DestroyShaderStructData(Vector<ShaderStructDLL>& shaderStructList);
     void                                        DestroyPushConstantBufferData(Vector<ShaderPushConstantDLL>& pushConstant);
     void                                        SetVariableDefaults(ShaderVariableDLL& shaderVariable);
@@ -108,7 +107,7 @@ public:
     ShaderSystem();
     ~ShaderSystem();
     
-    DLL_EXPORT VkPipelineShaderStageCreateInfo  LoadShader(VkDevice device, const char* filename, VkShaderStageFlagBits shaderStages);
+    DLL_EXPORT VkPipelineShaderStageCreateInfo  LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
     DLL_EXPORT ShaderPipelineDataDLL            LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths);
     DLL_EXPORT void                             LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
     DLL_EXPORT void                             UpdateGlobalShaderBuffer(const String& pushConstantName);

@@ -4,6 +4,15 @@ MemorySystem memorySystem = MemorySystem();
 
 extern "C"
 {
+    void MemoryLeakPtr_Free(MemoryLeakPtr* ptr)
+    {
+        if (ptr->File) free(const_cast<char*>(ptr->File));
+        if (ptr->Line) free(const_cast<char*>(ptr->Line));
+        if (ptr->Type) free(const_cast<char*>(ptr->Type));
+        if (ptr->Function) free(const_cast<char*>(ptr->Function));
+        if (ptr->Notes) free(const_cast<char*>(ptr->Notes));
+    }
+
     MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes)
     {
         void* memory = nullptr;
@@ -129,4 +138,5 @@ extern "C"
         _CrtDumpMemoryLeaks();
 #endif
     }
+
 }

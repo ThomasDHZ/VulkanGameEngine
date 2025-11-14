@@ -44,7 +44,7 @@ bool Shader_BuildGLSLShaders(const char* command)
  {
  }
 
- VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(VkDevice device, const char* filename, VkShaderStageFlagBits shaderStages)
+ VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, VkShaderStageFlagBits shaderStages)
  {
      FileState file = File_Read(filename);
      VkShaderModuleCreateInfo shaderModuleCreateInfo =
@@ -55,7 +55,10 @@ bool Shader_BuildGLSLShaders(const char* command)
      };
 
      VkShaderModule shaderModule = VK_NULL_HANDLE;
-     VULKAN_RESULT(vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shaderModule));
+     VULKAN_RESULT(vkCreateShaderModule(renderer.Device, &shaderModuleCreateInfo, NULL, &shaderModule));
+     free(file.Data);
+     file.Data = nullptr;
+
      return VkPipelineShaderStageCreateInfo
      {
          .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -175,58 +178,58 @@ bool Shader_BuildGLSLShaders(const char* command)
 
          switch (inputs[x]->type_description->op)
          {
-             case SpvOpTypeInt:
-             {
-                 vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                     {
-                         .location = inputs[x]->location,
-                         .binding = binding,
-                         .format = static_cast<VkFormat>(inputs[x]->format),
-                         .offset = offset
-                     });
-                 offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
-                 break;
-             }
-             case SpvOpTypeFloat:
-             {
-                 vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                     {
-                         .location = inputs[x]->location,
-                         .binding = binding,
-                         .format = static_cast<VkFormat>(inputs[x]->format),
-                         .offset = offset
-                     });
-                 offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
-                 break;
-             }
-             case SpvOpTypeVector:
-             {
-                 vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                     {
-                         .location = inputs[x]->location,
-                         .binding = binding,
-                         .format = static_cast<VkFormat>(inputs[x]->format),
-                         .offset = offset
-                     });
-                 offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
-                 break;
-             }
-             case SpvOpTypeMatrix:
-             {
-                 for (int y = 0; y < inputs[x]->type_description->traits.numeric.vector.component_count; y++)
+         case SpvOpTypeInt:
+         {
+             vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
                  {
-                     vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                         {
-                             .location = inputs[x]->location,
-                             .binding = binding,
-                             .format = static_cast<VkFormat>(inputs[x]->format),
-                             .offset = offset
-                         });
-                     inputs[x]->location += 1;
-                     offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
-                 }
-                 break;
+                     .location = inputs[x]->location,
+                     .binding = binding,
+                     .format = static_cast<VkFormat>(inputs[x]->format),
+                     .offset = offset
+                 });
+             offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
+             break;
+         }
+         case SpvOpTypeFloat:
+         {
+             vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                 {
+                     .location = inputs[x]->location,
+                     .binding = binding,
+                     .format = static_cast<VkFormat>(inputs[x]->format),
+                     .offset = offset
+                 });
+             offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
+             break;
+         }
+         case SpvOpTypeVector:
+         {
+             vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                 {
+                     .location = inputs[x]->location,
+                     .binding = binding,
+                     .format = static_cast<VkFormat>(inputs[x]->format),
+                     .offset = offset
+                 });
+             offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
+             break;
+         }
+         case SpvOpTypeMatrix:
+         {
+             for (int y = 0; y < inputs[x]->type_description->traits.numeric.vector.component_count; y++)
+             {
+                 vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                     {
+                         .location = inputs[x]->location,
+                         .binding = binding,
+                         .format = static_cast<VkFormat>(inputs[x]->format),
+                         .offset = offset
+                     });
+                 inputs[x]->location += 1;
+                 offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
              }
+             break;
+         }
          }
 
          if (inputs.size() == 0 ||
@@ -236,7 +239,7 @@ bool Shader_BuildGLSLShaders(const char* command)
                                                     .binding = vertexInputAttributeList[x].binding,
                                                     .stride = offset,
                                                     .inputRate = static_cast<VkVertexInputRate>(inputRate)
-                                                 });
+                 });
          }
          else
          {
@@ -248,7 +251,7 @@ bool Shader_BuildGLSLShaders(const char* command)
                                                      .binding = vertexInputAttributeList[x - 1].binding,
                                                      .stride = offset,
                                                      .inputRate = static_cast<VkVertexInputRate>(inputRate)
-                                                     });
+                     });
                  offset = 0;
              }
          }
@@ -489,6 +492,8 @@ bool Shader_BuildGLSLShaders(const char* command)
          SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
          LoadShaderDescriptorSetInfo(spvModule, shaderStructs);
          spvReflectDestroyShaderModule(&spvModule);
+         free(file.Data);
+         file.Data = nullptr;
      }
      return shaderStructs;
  }
@@ -633,7 +638,6 @@ bool Shader_BuildGLSLShaders(const char* command)
      size_t offset = 0;
      for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
      {
-         mat4* matrixPtr = static_cast<mat4*>(pushConstantVar.Value);
          offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
          void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer) + offset;
          memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
@@ -809,52 +813,50 @@ bool Shader_BuildGLSLShaders(const char* command)
      return shaderSystem.PipelineShaderStructMap.contains(vulkanBufferKey);
  }
 
- void ShaderSystem::ShaderDestroy(ShaderPipelineDataDLL& shader)
- {
-     //Shader_DestroyShaderBindingData(shader.DescriptorBindingsList, shader.DescriptorBindingCount);
-     //memorySystem.RemovePtrBuffer<ShaderPushConstant>(shader.PushConstantList);
-     //memorySystem.RemovePtrBuffer<ShaderDescriptorBinding>(shader.DescriptorBindingsList);
-     //memorySystem.RemovePtrBuffer<VkVertexInputBindingDescription>(shader.VertexInputBindingList);
-     //memorySystem.RemovePtrBuffer<VkVertexInputAttributeDescription>(shader.VertexInputAttributeList);
- }
-
  void ShaderSystem::DestroyShaderStructData(Vector<ShaderStructDLL>& shaderStructList)
  {
- ///*    for (auto& shaderStruct : shaderStructList)
- //    {
- //        if (shaderStruct.ShaderBufferVariableList != nullptr)
- //        {
- //            Span<ShaderVariable> shaderVarList(shaderStruct.ShaderBufferVariableList, shaderStruct.ShaderBufferVariableListCount);
- //            for (auto& shaderVar : shaderVarList)
- //            {
- //                if (shaderVar.Name != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Name);
- //                if (shaderVar.Value != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Value);
- //            }
- //        }
- //        if (shaderStruct.Name != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.Name);
- //        if (shaderStruct.ShaderBufferVariableList != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.ShaderBufferVariableList);
- //        if (shaderStruct.ShaderStructBuffer != nullptr) memorySystem.RemovePtrBuffer(shaderStruct.ShaderStructBuffer);
- //    }*/
+     for (auto& shaderStruct : shaderStructList)
+     {
+         if (!shaderStruct.ShaderBufferVariableList.empty())
+         {
+             for (auto& shaderVar : shaderStruct.ShaderBufferVariableList)
+             {
+                 if (shaderVar.Value != nullptr)
+                 {
+                     byte* value = static_cast<byte*>(shaderVar.Value);
+                     memorySystem.RemovePtrBuffer(value);
+                 }
+             }
+         }
+         if (shaderStruct.ShaderStructBuffer != nullptr)
+         {
+             byte* value = static_cast<byte*>(shaderStruct.ShaderStructBuffer);
+             memorySystem.RemovePtrBuffer(value);
+         }
+     }
  }
 
- void ShaderSystem::DestroyPushConstantBufferData(Vector<ShaderPushConstantDLL>& pushConstant)
+ void ShaderSystem::DestroyPushConstantBufferData(Vector<ShaderPushConstantDLL>& pushConstantList)
  {
-     //Span<ShaderPushConstant> shaderPushConstantList(pushConstant, pushConstant + pushConstantCount);
-     //for (auto& shaderPushConstant : shaderPushConstantList)
-     //{
-     //    if (shaderPushConstant.PushConstantVariableList != nullptr)
-     //    {
-     //        Span<ShaderVariable> shaderVarList(shaderPushConstant.PushConstantVariableList, shaderPushConstant.PushConstantVariableCount);
-     //        for (auto& shaderVar : shaderVarList)
-     //        {
-     //            if (shaderVar.Name != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Name);
-     //            if (shaderVar.Value != nullptr) memorySystem.RemovePtrBuffer(shaderVar.Value);
-     //        }
-     //    }
-     //    if (shaderPushConstant.PushConstantName != nullptr) memorySystem.RemovePtrBuffer(shaderPushConstant.PushConstantName);
-     //    if (shaderPushConstant.PushConstantVariableList != nullptr) memorySystem.RemovePtrBuffer(shaderPushConstant.PushConstantVariableList);
-     //    if (shaderPushConstant.PushConstantBuffer != nullptr) memorySystem.RemovePtrBuffer(shaderPushConstant.PushConstantBuffer);
-     //}
+     for (auto& shaderStruct : pushConstantList)
+     {
+         if (!shaderStruct.PushConstantVariableList.empty())
+         {
+             for (auto& shaderVar : shaderStruct.PushConstantVariableList)
+             {
+                 if (shaderVar.Value != nullptr)
+                 {
+                     byte* value = static_cast<byte*>(shaderVar.Value);
+                     memorySystem.RemovePtrBuffer(value);
+                 }
+             }
+         }
+         if (shaderStruct.PushConstantBuffer != nullptr)
+         {
+             byte* value = static_cast<byte*>(shaderStruct.PushConstantBuffer);
+             memorySystem.RemovePtrBuffer(value);
+         }
+     }
  }
 
  void ShaderSystem::Destroy()
@@ -879,18 +881,6 @@ bool Shader_BuildGLSLShaders(const char* command)
          shaderStructList.push_back(pair.second);
      }
      DestroyShaderStructData(shaderStructList);
-
-     Vector<String> shaderModuleKeys;
-     for (const auto& pair : shaderSystem.ShaderModuleMap)
-     {
-         shaderModuleKeys.push_back(pair.first);
-     }
-     for (const auto& key : shaderModuleKeys)
-     {
-         auto& pipelineData = shaderSystem.ShaderModuleMap[key];
-         ShaderDestroy(pipelineData);
-     }
-
      shaderSystem.ShaderModuleMap.clear();
  }
 

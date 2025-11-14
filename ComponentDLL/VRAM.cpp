@@ -25,7 +25,7 @@ SpriteVram VRAM_LoadSpriteVRAM(const char* spritePath, const Material& material,
     };
 }
 
-Animation2D* VRAM_LoadSpriteAnimations(const char* spritePath, size_t& animationListCount)
+Vector<Animation2D> VRAM_LoadSpriteAnimations(const char* spritePath)
 {
     Vector<Animation2D> animationList;
     nlohmann::json json = File_LoadJsonFile(spritePath);
@@ -45,16 +45,13 @@ Animation2D* VRAM_LoadSpriteAnimations(const char* spritePath, size_t& animation
         Animation2D animation =
         {
             .AnimationId = json["AnimationList"][x]["AnimationId"].get<uint>(),
-            .FrameList = memorySystem.AddPtrBuffer<ivec2>(spriteFrameList.data(), spriteFrameList.size(), __FILE__, __LINE__, __func__, ("Sprite animation frame list: " + String(spritePath)).c_str()),
-            .FrameCount = json["AnimationList"][x]["FrameList"].size(),
+            .FrameList = spriteFrameList,
             .FrameHoldTime = json["AnimationList"][x]["FrameHoldTime"].get<float>(),
         };
         animationList.emplace_back(animation);
     }
 
-    animationListCount = animationList.size();
-    Animation2D* animationListPtr = memorySystem.AddPtrBuffer<Animation2D>(animationList.data(), animationList.size(), __FILE__, __LINE__, __func__, ("Sprite animation: " + String(spritePath)).c_str());
-    return animationListPtr;
+    return animationList;
 }
 
 LevelTileSet VRAM_LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)

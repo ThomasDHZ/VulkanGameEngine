@@ -65,7 +65,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     {
         nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList[x]);
         ShaderPipelineDataDLL shaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderer.Device, renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), shaderPiplineInfo));
+        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), shaderPiplineInfo));
     }
     memorySystem.RemovePtrBuffer(renderPassAttachments.RenderPassTexture);
     memorySystem.RemovePtrBuffer(renderPassAttachments.DepthTexture);
@@ -120,7 +120,7 @@ void RenderSystem::DestroyRenderPipelines()
     {
         for (auto& renderPipeline : renderPipelineList.second)
         {
-            VulkanPipeline_Destroy(renderer.Device, renderPipeline);
+            VulkanPipeline_Destroy(renderPipeline);
         }
     }
     renderSystem.RenderPipelineMap.clear();

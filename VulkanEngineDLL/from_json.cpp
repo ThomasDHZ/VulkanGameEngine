@@ -374,26 +374,17 @@ namespace nlohmann
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
         j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
         j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
-
-        model.PipelineColorBlendAttachmentStateCount = j.at("PipelineColorBlendAttachmentStateList").size();
-        model.PipelineColorBlendAttachmentStateList = memorySystem.AddPtrBuffer<VkPipelineColorBlendAttachmentState>(model.PipelineColorBlendAttachmentStateCount, __FILE__, __LINE__, __func__);
-        for (int x = 0; x < model.PipelineColorBlendAttachmentStateCount; x++)
+        for (auto& pipelineColorBlendAttachmentState : j.at("PipelineColorBlendAttachmentStateList"))
         {
-            model.PipelineColorBlendAttachmentStateList[x] = j.at("PipelineColorBlendAttachmentStateList")[x];
+            model.PipelineColorBlendAttachmentStateList.emplace_back(pipelineColorBlendAttachmentState);
         }
-
-        model.ViewportCount = j.at("ViewportList").size();
-        model.ViewportList = memorySystem.AddPtrBuffer<VkViewport>(model.ViewportCount, __FILE__, __LINE__, __func__);
-        for (int x = 0; x < model.ViewportCount; x++)
+        for (auto& viewPort : j.at("ViewportList"))
         {
-            model.ViewportList[x] = j.at("ViewportList")[x];
+            model.ViewportList.emplace_back(viewPort);
         }
-
-        model.ScissorCount = j.at("ScissorList").size();
-        model.ScissorList = memorySystem.AddPtrBuffer<VkRect2D>(model.ScissorCount, __FILE__, __LINE__, __func__);
-        for (int x = 0; x < model.ScissorCount; x++)
+        for (auto& scissor : j.at("ScissorList"))
         {
-            model.ScissorList[x] = j.at("ScissorList")[x];
+            model.ScissorList.emplace_back(scissor);
         }
     }
 
