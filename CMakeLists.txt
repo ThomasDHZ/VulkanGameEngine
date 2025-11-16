@@ -19,6 +19,9 @@ set(GLFW_INCLUDE_DIR "${EXTERNAL_DIR}/glfw/include")
 set(SDL2_INCLUDE_DIR "${EXTERNAL_DIR}/sdl/include")
 set(GLFW_LIB_DIR "${EXTERNAL_DIR}/glfw/lib-vc2022")
 set(SDL2_LIB_DIR "${EXTERNAL_DIR}/sdl/lib/x64")
+set(VulkanEngineDLL_DIR "VulkanEngineDLL")
+set(ComponentDLL_DIR "ComponentDLL")
+set(Physics2DDLL_DIR "Physics2DDLL")
 
 # ComponentDLL
 add_library(ComponentDLL SHARED
@@ -41,6 +44,7 @@ target_include_directories(ComponentDLL PRIVATE
     ${NLOHMANN_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
+    ${VulkanEngineDLL_DIR}
 )
 target_link_libraries(ComponentDLL Vulkan::Vulkan ${GLFW_LIB_DIR}/glfw3.lib ${SDL2_LIB_DIR}/SDL2.lib ${SDL2_LIB_DIR}/SDL2main.lib stdc++fs)
 
@@ -55,7 +59,11 @@ add_library(Physics2DDLL SHARED
     Physics2DDLL/pch.cpp
 )
 target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
-target_include_directories(Physics2DDLL PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL ${Vulkan_INCLUDE_DIRS})
+target_include_directories(Physics2DDLL PRIVATE 
+${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL 
+${Vulkan_INCLUDE_DIRS}
+${VulkanEngineDLL_DIR}
+)
 
 # VulkanEngineDLL
 add_library(VulkanEngineDLL SHARED
@@ -88,13 +96,20 @@ target_include_directories(VulkanEngineDLL PRIVATE
     ${NLOHMANN_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
+    ${VulkanEngineDLL_DIR}
+    ${ComponentDLL_DIR}
+    ${Physics2DDLL_DIR}
+
 )
 target_link_libraries(VulkanEngineDLL Vulkan::Vulkan ${GLFW_LIB_DIR}/glfw3.lib ${SDL2_LIB_DIR}/SDL2.lib ${SDL2_LIB_DIR}/SDL2main.lib stdc++fs)
 
 # Main
 add_executable(VulkanGameEngine main.cpp pch.cpp)
 target_precompile_headers(VulkanGameEngine PRIVATE pch.h)
-target_include_directories(VulkanGameEngine PRIVATE ${Vulkan_INCLUDE_DIRS} ${NLOHMANN_INCLUDE_DIR})
+target_include_directories(VulkanGameEngine PRIVATE 
+${Vulkan_INCLUDE_DIRS} 
+${NLOHMANN_INCLUDE_DIR}
+)
 target_link_libraries(VulkanGameEngine VulkanEngineDLL ComponentDLL Physics2DDLL Vulkan::Vulkan ${GLFW_LIB_DIR}/glfw3.lib ${SDL2_LIB_DIR}/SDL2.lib ${SDL2_LIB_DIR}/SDL2main.lib)
 
 # Platform

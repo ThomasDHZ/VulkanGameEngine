@@ -1,4 +1,5 @@
-// Headless Vulkan for VM
+#include <Vulkan/vulkan.h>
+
 VkInstance instance;
 VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
 appInfo.pApplicationName = "VulkanGameEngine";
