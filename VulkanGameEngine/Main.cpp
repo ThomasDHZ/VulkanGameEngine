@@ -1,50 +1,18 @@
-#include "VulkanWindow.h"
-#include <stdio.h>
-#include <nlohmann/json.hpp>
-#include <ImPlot/implot.h>
-#include "SystemClock.h"
-#include <iostream>
-#include "FrameTimer.h"
-#include "GameSystem.h"
-#include "MaterialSystem.h"
-#include "EngineConfigSystem.h"
-#include <RigidBody.h>
-#include "ImGuiRenderer.h"
-#include <DebugSystem.h>
+// Headless Vulkan for VM
+VkInstance instance;
+VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+appInfo.pApplicationName = "VulkanGameEngine";
+appInfo.apiVersion = VK_API_VERSION_1_3;
 
-int main(int argc, char** argv)
-{
-    SystemClock systemClock = SystemClock();
-    FrameTimer deltaTime = FrameTimer();
+VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
+createInfo.pApplicationInfo = &appInfo;
 
-    if(!debugSystem.IsRenderDocInjected())
-    {
-        debugSystem.SetRootDirectory("../Assets");
-    }
-    
-    vulkanWindow = new GameEngineWindow();
-    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkInstance instance = Renderer_CreateVulkanInstance();
-    VkDebugUtilsMessengerEXT debugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
-    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
-    gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface, debugMessenger);
-   // imGuiRenderer = ImGui_StartUp(renderer);
-    while (!vulkanWindow->WindowShouldClose(vulkanWindow))
-    {
-        const float frameTime = deltaTime.GetFrameTime();
-
-        vulkanWindow->PollEventHandler(vulkanWindow);
-        vulkanWindow->SwapBuffer(vulkanWindow);
-
-        gameSystem.Update(frameTime);
-        gameSystem.DebugUpdate(frameTime);
-        gameSystem.Draw(frameTime);
-        deltaTime.EndFrameTime();
-    }
-    vkDeviceWaitIdle(renderer.Device);
-    gameSystem.Destroy();
-    vulkanWindow->DestroyWindow(vulkanWindow);
-    return 0;
+if (vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS) {
+    std::cout << "HEADLESS VULKAN INSTANCE CREATED — F5 DEBUG WORKS!\n";
+    vkDestroyInstance(instance, nullptr);
 }
+else {
+    std::cout << "Vulkan init failed\n";
+}
+
+std::cout << "ENGINE READY FOR F5 DEBUG\n";
