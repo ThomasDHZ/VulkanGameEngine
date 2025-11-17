@@ -176,11 +176,5 @@
     <ClCompile Include="Platform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkGuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputEnum.cpp">
-      <Filter>Source Files\Json</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
