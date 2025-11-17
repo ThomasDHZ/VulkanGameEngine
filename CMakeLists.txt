@@ -12,67 +12,32 @@ set(ENV{VULKAN_SDK} ${VULKAN_SDK})
 find_package(Vulkan REQUIRED)
 
 # ========================================
-# External Libraries — FULL PATHS + DEBUG
+# Paths
 # ========================================
 set(EXTERNAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/External")
+set(GAME_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/VulkanGameEngine")
 
-# GLFW — IN /lib/
+# ========================================
+# External Libraries — NO SDL2
+# ========================================
+# GLFW
 set(GLFW_INCLUDE_DIR "${EXTERNAL_DIR}/glfw/include")
 set(GLFW_LIB_DIR     "${EXTERNAL_DIR}/glfw/lib")
 set(GLFW3_LIB        "${GLFW_LIB_DIR}/glfw3.lib")
 
-# SDL3 — NOW IN /Debug/
-set(SDL3_INCLUDE_DIR "${EXTERNAL_DIR}/sdl/include")
-set(SDL3_LIB_DIR     "${EXTERNAL_DIR}/sdl/Debug")       # ← YOUR SDL3.lib IS HERE
-set(SDL3_LIB         "${SDL3_LIB_DIR}/SDL3.lib")
-set(SDL3MAIN_LIB     "${SDL3_LIB_DIR}/SDL3main.lib")
-
-# Others
+# nlohmann JSON
 set(NLOHMANN_INCLUDE_DIR "${EXTERNAL_DIR}/nlohmann/include")
-set(STB_INCLUDE_DIR      "${EXTERNAL_DIR}/stb")
+
+# SPIRV-Reflect
 set(SPIRV_REFLECT_INCLUDE_DIR "${EXTERNAL_DIR}/SPIRV-Reflect/include")
 set(SPIRV_REFLECT_SOURCE      "${EXTERNAL_DIR}/SPIRV-Reflect/spirv_reflect.cpp")
 
-# IMGUI
+# ImGui
 set(IMGUI_DIR           "${EXTERNAL_DIR}/imgui")
 set(IMGUI_BACKENDS_DIR  "${IMGUI_DIR}/backends")
 
 # ========================================
-# DEBUG: VERIFY
-# ========================================
-message(STATUS "GLFW3_LIB = ${GLFW3_LIB}")
-message(STATUS "SDL3_LIB = ${SDL3_LIB}")
-message(STATUS "SDL3MAIN_LIB = ${SDL3MAIN_LIB}")
-
-if(NOT EXISTS "${GLFW3_LIB}")
-    message(FATAL_ERROR "GLFW3.LIB NOT FOUND! Check path: ${GLFW3_LIB}")
-endif()
-if(NOT EXISTS "${SDL3_LIB}")
-    message(FATAL_ERROR "SDL3.LIB NOT FOUND! Check path: ${SDL3_LIB}")
-endif()
-if(NOT EXISTS "${SDL3MAIN_LIB}")
-    message(FATAL_ERROR "SDL3MAIN.LIB NOT FOUND! Check path: ${SDL3MAIN_LIB}")
-endif()
-
-# ========================================
-# DEBUG: VERIFY LIBS EXIST
-# ========================================
-message(STATUS "GLFW3_LIB = ${GLFW3_LIB}")
-message(STATUS "SDL3_LIB = ${SDL3_LIB}")
-message(STATUS "SDL3MAIN_LIB = ${SDL3MAIN_LIB}")
-
-if(NOT EXISTS "${GLFW3_LIB}")
-    message(FATAL_ERROR "GLFW3.LIB NOT FOUND! Check path: ${GLFW3_LIB}")
-endif()
-if(NOT EXISTS "${SDL3_LIB}")
-    message(FATAL_ERROR "SDL3.LIB NOT FOUND! Check path: ${SDL3_LIB}")
-endif()
-if(NOT EXISTS "${SDL3MAIN_LIB}")
-    message(FATAL_ERROR "SDL3MAIN.LIB NOT FOUND! Check path: ${SDL3MAIN_LIB}")
-endif()
-
-# ========================================
-# Output Directories
+# Output
 # ========================================
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/x64/Debug)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/x64/Debug)
@@ -96,17 +61,13 @@ target_include_directories(ComponentDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${Vulkan_INCLUDE_DIRS}
     ${GLFW_INCLUDE_DIR}
-    ${SDL3_INCLUDE_DIR}
     ${NLOHMANN_INCLUDE_DIR}
-    ${STB_INCLUDE_DIR}
     ${SPIRV_REFLECT_INCLUDE_DIR}
 )
+target_compile_definitions(ComponentDLL PRIVATE COMPONENTDLL_EXPORTS)
 target_link_libraries(ComponentDLL
     Vulkan::Vulkan
     "${GLFW3_LIB}"
-    "${SDL3_LIB}"
-    "${SDL3MAIN_LIB}"
-    stdc++fs
 )
 
 # ========================================
@@ -159,54 +120,47 @@ target_include_directories(VulkanEngineDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${Vulkan_INCLUDE_DIRS}
     ${GLFW_INCLUDE_DIR}
-    ${SDL3_INCLUDE_DIR}
     ${NLOHMANN_INCLUDE_DIR}
-    ${STB_INCLUDE_DIR}
     ${SPIRV_REFLECT_INCLUDE_DIR}
     ${IMGUI_DIR}
     ${IMGUI_BACKENDS_DIR}
 )
+target_compile_definitions(VulkanEngineDLL PRIVATE VULKANENGINEDLL_EXPORTS)
 target_link_libraries(VulkanEngineDLL
     Vulkan::Vulkan
     "${GLFW3_LIB}"
-    "${SDL3_LIB}"
-    "${SDL3MAIN_LIB}"
-    stdc++fs
 )
 
 # ========================================
-# MAIN EXECUTABLE — ALL FILES IN ROOT
+# MAIN EXECUTABLE — IN VulkanGameEngine/
 # ========================================
 add_executable(VulkanGameEngine
-    main.cpp
-    GameController.cpp
-    ImGuiRenderer.cpp
-    Keyboard.cpp
-    Mouse.cpp
-    FrameTimer.cpp
-    GameSystem.cpp
-    InputSystem.cpp
-    SystemClock.cpp
-    VulkanWindow.cpp
-    # IMGUI CORE
+    ${GAME_SRC_DIR}/main.cpp
+    ${GAME_SRC_DIR}/GameController.cpp
+    ${GAME_SRC_DIR}/ImGuiRenderer.cpp
+    ${GAME_SRC_DIR}/Keyboard.cpp
+    ${GAME_SRC_DIR}/Mouse.cpp
+    ${GAME_SRC_DIR}/FrameTimer.cpp
+    ${GAME_SRC_DIR}/GameSystem.cpp
+    ${GAME_SRC_DIR}/InputSystem.cpp
+    ${GAME_SRC_DIR}/SystemClock.cpp
+    ${GAME_SRC_DIR}/VulkanWindow.cpp
+    # ImGui
     ${IMGUI_DIR}/imgui.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
     ${IMGUI_DIR}/imgui_tables.cpp
-    # IMGUI BACKENDS
     ${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.cpp
     ${IMGUI_BACKENDS_DIR}/imgui_impl_vulkan.cpp
 )
 
 target_include_directories(VulkanGameEngine PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GAME_SRC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${Vulkan_INCLUDE_DIRS}
     ${GLFW_INCLUDE_DIR}
-    ${SDL3_INCLUDE_DIR}
     ${NLOHMANN_INCLUDE_DIR}
-    ${STB_INCLUDE_DIR}
     ${SPIRV_REFLECT_INCLUDE_DIR}
     ${IMGUI_DIR}
     ${IMGUI_BACKENDS_DIR}
@@ -218,9 +172,6 @@ target_link_libraries(VulkanGameEngine
     Physics2DDLL
     Vulkan::Vulkan
     "${GLFW3_LIB}"
-    "${SDL3_LIB}"
-    "${SDL3MAIN_LIB}"
-    stdc++fs
 )
 
 # ========================================
