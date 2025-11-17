@@ -8,7 +8,7 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
-#include "../VulkanEngineDLL/Platform.h" 
+#include "Platform.h" 
 #include <BufferSystem.h>
 #include <FileSystem.h>
 #include <MaterialSystem.h>

@@ -12,81 +12,28 @@ set(ENV{VULKAN_SDK} ${VULKAN_SDK})
 find_package(Vulkan REQUIRED)
 
 # ========================================
-# Paths
+# External Paths — FIXED TO MATCH YOUR CURRENT SOURCE INCLUDES
 # ========================================
 set(EXTERNAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/External")
-set(GAME_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/VulkanGameEngine")
+
+set(GLFW_INCLUDE_DIR            "${EXTERNAL_DIR}/glfw/include")                    # for #include <GLFW/glfw3.h> and "../GLFW/glfw3.h"
+set(GLFW_LIB                    "${EXTERNAL_DIR}/glfw/lib/glfw3.lib")
+
+set(NLOHMANN_INCLUDE_DIR        "${EXTERNAL_DIR}/nlohmann/include")
+
+set(SPIRV_REFLECT_INCLUDE_DIR   "${EXTERNAL_DIR}/SPIRV-Reflect/include")
+set(SPIRV_REFLECT_SOURCE        "${EXTERNAL_DIR}/SPIRV-Reflect/spirv_reflect.cpp")
+
+set(IMGUI_ROOT_DIR              "${EXTERNAL_DIR}/imgui")                           # for #include "imgui.h"
+set(IMGUI_BACKENDS_DIR          "${EXTERNAL_DIR}/imgui/backends")                 # for #include "imgui/backends/imgui_impl_*.h"
+
+set(IMPLOT_INCLUDE_DIR          "${EXTERNAL_DIR}/ImPlot")
 
 # ========================================
-# External Libraries — NO SDL2
-# ========================================
-# GLFW
-set(GLFW_INCLUDE_DIR "${EXTERNAL_DIR}/glfw/include")
-set(GLFW_LIB_DIR     "${EXTERNAL_DIR}/glfw/lib")
-set(GLFW3_LIB        "${GLFW_LIB_DIR}/glfw3.lib")
-
-# nlohmann JSON
-set(NLOHMANN_INCLUDE_DIR "${EXTERNAL_DIR}/nlohmann/include")
-
-# SPIRV-Reflect
-set(SPIRV_REFLECT_INCLUDE_DIR "${EXTERNAL_DIR}/SPIRV-Reflect/include")
-set(SPIRV_REFLECT_SOURCE      "${EXTERNAL_DIR}/SPIRV-Reflect/spirv_reflect.cpp")
-
-# ImGui
-set(IMGUI_DIR           "${EXTERNAL_DIR}/imgui")
-set(IMGUI_BACKENDS_DIR  "${IMGUI_DIR}/backends")
-
-# ========================================
-# Output
+# Output directories
 # ========================================
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/x64/Debug)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/x64/Debug)
-
-# ========================================
-# ComponentDLL
-# ========================================
-add_library(ComponentDLL SHARED
-    ComponentDLL/Component.cpp
-    ComponentDLL/GameObjectSystem.cpp
-    ComponentDLL/LevelSystem.cpp
-    ComponentDLL/MegaManObject.cpp
-    ComponentDLL/MegaManShot.cpp
-    ComponentDLL/Camera.cpp
-    ComponentDLL/SpriteSystem.cpp
-    ComponentDLL/VRAM.cpp
-    ComponentDLL/pch.cpp
-)
-target_precompile_headers(ComponentDLL PRIVATE ComponentDLL/pch.h)
-target_include_directories(ComponentDLL PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
-    ${Vulkan_INCLUDE_DIRS}
-    ${GLFW_INCLUDE_DIR}
-    ${NLOHMANN_INCLUDE_DIR}
-    ${SPIRV_REFLECT_INCLUDE_DIR}
-)
-target_compile_definitions(ComponentDLL PRIVATE COMPONENTDLL_EXPORTS)
-target_link_libraries(ComponentDLL
-    Vulkan::Vulkan
-    "${GLFW3_LIB}"
-)
-
-# ========================================
-# Physics2DDLL
-# ========================================
-add_library(Physics2DDLL SHARED
-    Physics2DDLL/AABB.cpp
-    Physics2DDLL/BoxCollider2D.cpp
-    Physics2DDLL/CircleCollider.cpp
-    Physics2DDLL/Collider2D.cpp
-    Physics2DDLL/IntersectionDetector2D.cpp
-    Physics2DDLL/RigidBody.cpp
-    Physics2DDLL/pch.cpp
-)
-target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
-target_include_directories(Physics2DDLL PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
-    ${Vulkan_INCLUDE_DIRS}
-)
 
 # ========================================
 # VulkanEngineDLL
@@ -114,7 +61,9 @@ add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/VulkanRenderPass.cpp
     ${SPIRV_REFLECT_SOURCE}
 )
+
 target_precompile_headers(VulkanEngineDLL PRIVATE VulkanEngineDLL/Platform.h)
+
 target_include_directories(VulkanEngineDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
@@ -122,60 +71,125 @@ target_include_directories(VulkanEngineDLL PRIVATE
     ${GLFW_INCLUDE_DIR}
     ${NLOHMANN_INCLUDE_DIR}
     ${SPIRV_REFLECT_INCLUDE_DIR}
-    ${IMGUI_DIR}
+    ${IMGUI_ROOT_DIR}
     ${IMGUI_BACKENDS_DIR}
 )
+
 target_compile_definitions(VulkanEngineDLL PRIVATE VULKANENGINEDLL_EXPORTS)
-target_link_libraries(VulkanEngineDLL
-    Vulkan::Vulkan
-    "${GLFW3_LIB}"
-)
+target_link_libraries(VulkanEngineDLL PRIVATE Vulkan::Vulkan ${GLFW_LIB})
 
 # ========================================
-# MAIN EXECUTABLE — IN VulkanGameEngine/
+# Physics2DDLL
 # ========================================
-add_executable(VulkanGameEngine
-    ${GAME_SRC_DIR}/main.cpp
-    ${GAME_SRC_DIR}/GameController.cpp
-    ${GAME_SRC_DIR}/ImGuiRenderer.cpp
-    ${GAME_SRC_DIR}/Keyboard.cpp
-    ${GAME_SRC_DIR}/Mouse.cpp
-    ${GAME_SRC_DIR}/FrameTimer.cpp
-    ${GAME_SRC_DIR}/GameSystem.cpp
-    ${GAME_SRC_DIR}/InputSystem.cpp
-    ${GAME_SRC_DIR}/SystemClock.cpp
-    ${GAME_SRC_DIR}/VulkanWindow.cpp
-    # ImGui
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.cpp
-    ${IMGUI_BACKENDS_DIR}/imgui_impl_vulkan.cpp
+add_library(Physics2DDLL SHARED
+    Physics2DDLL/AABB.cpp
+    Physics2DDLL/BoxCollider2D.cpp
+    Physics2DDLL/CircleCollider.cpp
+    Physics2DDLL/Collider2D.cpp
+    Physics2DDLL/IntersectionDetector2D.cpp
+    Physics2DDLL/RigidBody.cpp
+    Physics2DDLL/pch.cpp
 )
 
-target_include_directories(VulkanGameEngine PRIVATE
-    ${GAME_SRC_DIR}
+target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
+
+target_include_directories(Physics2DDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
-    ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${Vulkan_INCLUDE_DIRS}
     ${GLFW_INCLUDE_DIR}
     ${NLOHMANN_INCLUDE_DIR}
     ${SPIRV_REFLECT_INCLUDE_DIR}
-    ${IMGUI_DIR}
+    ${IMGUI_ROOT_DIR}
     ${IMGUI_BACKENDS_DIR}
 )
 
-target_link_libraries(VulkanGameEngine
+target_compile_definitions(Physics2DDLL PRIVATE Physics2DDLL_EXPORTS)
+target_link_libraries(Physics2DDLL PRIVATE Vulkan::Vulkan VulkanEngineDLL ${GLFW_LIB})
+
+# ========================================
+# ComponentDLL
+# ========================================
+add_library(ComponentDLL SHARED
+    ComponentDLL/Component.cpp
+    ComponentDLL/GameObjectSystem.cpp
+    ComponentDLL/LevelSystem.cpp
+    ComponentDLL/MegaManObject.cpp
+    ComponentDLL/MegaManShot.cpp
+    ComponentDLL/Camera.cpp
+    ComponentDLL/SpriteSystem.cpp
+    ComponentDLL/VRAM.cpp
+    ComponentDLL/pch.cpp
+)
+
+target_precompile_headers(ComponentDLL PRIVATE ComponentDLL/pch.h)
+
+target_include_directories(ComponentDLL PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
+    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
+    ${Vulkan_INCLUDE_DIRS}
+    ${GLFW_INCLUDE_DIR}
+    ${NLOHMANN_INCLUDE_DIR}
+    ${SPIRV_REFLECT_INCLUDE_DIR}
+    ${IMGUI_ROOT_DIR}
+    ${IMGUI_BACKENDS_DIR}
+)
+
+target_compile_definitions(ComponentDLL PRIVATE COMPONENTDLL_EXPORTS)
+target_link_libraries(ComponentDLL PRIVATE
+    Vulkan::Vulkan
+    Physics2DDLL
+    VulkanEngineDLL
+    ${GLFW_LIB}
+)
+
+# ========================================
+# MAIN EXECUTABLE — VulkanGameEngine
+# ========================================
+add_executable(VulkanGameEngine
+    VulkanGameEngine/main.cpp
+    VulkanGameEngine/GameController.cpp
+    VulkanGameEngine/ImGuiRenderer.cpp
+    VulkanGameEngine/Keyboard.cpp
+    VulkanGameEngine/Mouse.cpp
+    VulkanGameEngine/FrameTimer.cpp
+    VulkanGameEngine/GameSystem.cpp
+    VulkanGameEngine/InputSystem.cpp
+    VulkanGameEngine/SystemClock.cpp
+    VulkanGameEngine/VulkanWindow.cpp
+
+    # ImGui source files
+    ${EXTERNAL_DIR}/imgui/imgui.cpp
+    ${EXTERNAL_DIR}/imgui/imgui_draw.cpp
+    ${EXTERNAL_DIR}/imgui/imgui_widgets.cpp
+    ${EXTERNAL_DIR}/imgui/imgui_tables.cpp
+    ${EXTERNAL_DIR}/imgui/backends/imgui_impl_glfw.cpp
+    ${EXTERNAL_DIR}/imgui/backends/imgui_impl_vulkan.cpp
+)
+
+target_include_directories(VulkanGameEngine PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanGameEngine
+    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
+    ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
+    ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
+    ${Vulkan_INCLUDE_DIRS}
+    ${GLFW_INCLUDE_DIR}
+    ${NLOHMANN_INCLUDE_DIR}
+    ${SPIRV_REFLECT_INCLUDE_DIR}
+    ${IMPLOT_INCLUDE_DIR}
+    ${IMGUI_ROOT_DIR}
+    ${IMGUI_BACKENDS_DIR}           # This line fixes all imgui/backends includes
+)
+
+target_link_libraries(VulkanGameEngine PRIVATE
     VulkanEngineDLL
     ComponentDLL
     Physics2DDLL
     Vulkan::Vulkan
-    "${GLFW3_LIB}"
+    ${GLFW_LIB}
 )
 
 # ========================================
-# Platform
+# Platform defines
 # ========================================
 if(WIN32)
     add_definitions(-DPLATFORM_WINDOWS)
