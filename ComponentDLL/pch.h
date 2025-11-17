@@ -17,7 +17,7 @@
 #include <ShaderSystem.h>
 #include <TextureSystem.h>
 #include <InputEnum.h>
-#include <glfw/include/GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <memory.h>
 #include <DLL.h>
 #include <Typedef.h>

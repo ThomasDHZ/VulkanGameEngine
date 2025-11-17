@@ -4,7 +4,7 @@
 #include <InputEnum.h>
 #include <vulkan/vulkan_core.h>
 #include <stdbool.h>
-#include <glfw/include/GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 
 class GameEngineWindow
 {
