@@ -3,8 +3,8 @@
 #include "VulkanRenderer.h"
 #include <cstdlib>
 #include <iostream>
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
 #include "MemorySystem.h"
 
 HWND editorRichTextBoxCallback;

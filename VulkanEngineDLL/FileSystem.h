@@ -32,15 +32,15 @@ public:
 	FileSystem() {};
 	~FileSystem() {};
 
-	const char* ReadFile(const String& filePath) { return File_Read(filePath.c_str()).Data; }
-	bool WriteFile(void* fileInfo, size_t size, const String& filePath) { return File_Write(fileInfo, size, filePath.c_str()); }
-	String GetFileExtention(const String& filePath) { return File_GetFileExtention(filePath.c_str()); }
-	String GetFileNameFromPath(const String& filePath) { return File_GetFileNameFromPath(filePath.c_str()); }
-	time_t LastModifiedTime(const String& filePath) { return File_LastModifiedTime(filePath.c_str()); }
-	String RemoveFileExtention(const String& filePath) { return File_RemoveFileExtention(filePath.c_str()); }
-	bool FileExists(const String& filePath) { return File_Exists(filePath.c_str()); }
-	nlohmann::json LoadJsonFile(const String& filePath) { return File_LoadJsonFile(filePath.c_str()); }
-	Vector<String> GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
+	DLL_EXPORT const char* ReadFile(const String& filePath) { return File_Read(filePath.c_str()).Data; }
+	DLL_EXPORT bool WriteFile(void* fileInfo, size_t size, const String& filePath) { return File_Write(fileInfo, size, filePath.c_str()); }
+	DLL_EXPORT String GetFileExtention(const String& filePath) { return File_GetFileExtention(filePath.c_str()); }
+	DLL_EXPORT String GetFileNameFromPath(const String& filePath) { return File_GetFileNameFromPath(filePath.c_str()); }
+	DLL_EXPORT time_t LastModifiedTime(const String& filePath) { return File_LastModifiedTime(filePath.c_str()); }
+	DLL_EXPORT String RemoveFileExtention(const String& filePath) { return File_RemoveFileExtention(filePath.c_str()); }
+	DLL_EXPORT bool FileExists(const String& filePath) { return File_Exists(filePath.c_str()); }
+	DLL_EXPORT nlohmann::json LoadJsonFile(const String& filePath) { return File_LoadJsonFile(filePath.c_str()); }
+	DLL_EXPORT Vector<String> GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
 };
 extern DLL_EXPORT FileSystem fileSystem;
 
