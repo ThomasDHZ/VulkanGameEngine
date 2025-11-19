@@ -5,11 +5,10 @@
 #include "GPUSystem.h"
 #include "JsonStruct.h"
 #include "from_json.h"
-#include <stb/stb_image.h> 
-#include <stb/stb_image_write.h>
 #include <algorithm>
 #include <cmath>
-#include "from_json.h"
+#include <stb/stb_image.h> 
+#include <stb/stb_image_write.h>
 
 TextureSystem textureSystem = TextureSystem();
 
@@ -29,7 +28,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	int height = 0;
 	ColorChannelUsed colorChannels;
 
-	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath);
+	TextureLoader textureLoader = File_LoadJsonFile(texturePath.c_str());
 	if (TextureExists(textureLoader.TextureId))
 	{
 		return textureLoader.TextureId;

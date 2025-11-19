@@ -1,6 +1,10 @@
 #include "FileSystem.h"
-#include <nlohmann/json.hpp>
-#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include "MemorySystem.h"
+#include "from_json.h"
+
 FileSystem fileSystem = FileSystem();
 
 bool File_Exists(const char* fileName)
@@ -213,4 +217,10 @@ Vector<String> FileSystem::GetFilesFromDirectory(const String& fileDirectory, co
     }
 
     return fileList;
+}
+
+nlohmann::json LoadJsonFile(const String& filePath)
+{
+    String rawJson = File_Read(filePath.c_str()).Data;
+    return nlohmann::json::parse(rawJson);
 }

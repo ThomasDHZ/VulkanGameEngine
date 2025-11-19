@@ -3,7 +3,6 @@
 #include "VulkanRenderer.h"
 #include "VulkanRenderPass.h"
 #include "VulkanPipeline.h"
-#include "from_json.h"
 
 class RenderSystem
 {
