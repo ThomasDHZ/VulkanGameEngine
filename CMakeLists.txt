@@ -1,9 +1,20 @@
 ﻿cmake_minimum_required(VERSION 3.22)
 project(VulkanGameEngine LANGUAGES CXX C)
 
+include(GenerateExportHeader)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Add missing original definitions
+add_compile_definitions(
+    _CRT_SECURE_NO_WARNINGS
+    _CONSOLE
+)
+if(WIN32)
+    add_compile_definitions(PLATFORM_WINDOWS UNICODE _UNICODE)
+endif()
 
 # ------------------------------------------------------------------
 # External libraries
@@ -41,6 +52,7 @@ add_library(ComponentDLL SHARED
     ComponentDLL/VRAM.cpp
     ComponentDLL/pch.cpp
 )
+generate_export_header(ComponentDLL)
 
 target_precompile_headers(ComponentDLL PRIVATE ComponentDLL/pch.h)
 
@@ -48,6 +60,7 @@ target_include_directories(ComponentDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
+    ${CMAKE_CURRENT_BINARY_DIR}  # For generated export header
 )
 
 target_link_libraries(ComponentDLL PRIVATE
@@ -55,12 +68,6 @@ target_link_libraries(ComponentDLL PRIVATE
     glfw
     VulkanEngineDLL
 )
-
-if(MSVC)
-    target_compile_definitions(ComponentDLL PRIVATE ComponentDLL_EXPORTS=__declspec(dllexport))
-else()
-    target_compile_definitions(ComponentDLL PRIVATE ComponentDLL_EXPORTS)
-endif()
 
 # ------------------------------------------------------------------
 # Physics2DDLL
@@ -74,6 +81,7 @@ add_library(Physics2DDLL SHARED
     Physics2DDLL/RigidBody.cpp
     Physics2DDLL/pch.cpp
 )
+generate_export_header(Physics2DDLL)
 
 target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
 
@@ -81,13 +89,8 @@ target_include_directories(Physics2DDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
+    ${CMAKE_CURRENT_BINARY_DIR}  # For generated export header
 )
-
-if(MSVC)
-    target_compile_definitions(Physics2DDLL PRIVATE PHYSICS2DDLL_EXPORTS=__declspec(dllexport))
-else()
-    target_compile_definitions(Physics2DDLL PRIVATE PHYSICS2DDLL_EXPORTS)
-endif()
 
 # ------------------------------------------------------------------
 # VulkanEngineDLL — perfect with spirv_reflect.cpp wrapper
@@ -114,6 +117,7 @@ add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/VulkanRenderPass.cpp
     External/SPIRV-Reflect/spirv_reflect.cpp # ← your perfect wrapper
 )
+generate_export_header(VulkanEngineDLL)
 
 target_precompile_headers(VulkanEngineDLL PRIVATE VulkanEngineDLL/Platform.h)
 
@@ -121,6 +125,7 @@ target_include_directories(VulkanEngineDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     External/SPIRV-Reflect
+    ${CMAKE_CURRENT_BINARY_DIR}  # For generated export header
 )
 
 target_link_libraries(VulkanEngineDLL PRIVATE
@@ -133,12 +138,6 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set_target_properties(VulkanEngineDLL PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
-
-if(MSVC)
-    target_compile_definitions(VulkanEngineDLL PRIVATE VulkanEngineDLL_EXPORTS=__declspec(dllexport))
-else()
-    target_compile_definitions(VulkanEngineDLL PRIVATE VulkanEngineDLL_EXPORTS)
-endif()
 
 # ------------------------------------------------------------------
 # ImGui + ImPlot
@@ -185,6 +184,7 @@ target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
+    ${CMAKE_CURRENT_BINARY_DIR}  # For any generated export headers if included
 )
 
 target_link_libraries(VulkanGameEngine PRIVATE

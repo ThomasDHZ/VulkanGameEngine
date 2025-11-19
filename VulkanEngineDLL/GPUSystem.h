@@ -53,5 +53,5 @@ public:
 		GPUSystem_StartUp();
 	}
 };
-DLL_EXPORT GPUSystem gpuSystem;
+extern DLL_EXPORT GPUSystem gpuSystem;
 

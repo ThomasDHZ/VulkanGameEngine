@@ -18,7 +18,7 @@ class DebugSystem
 		DLL_EXPORT void SetRootDirectory(const String& engineRoot);
 		DLL_EXPORT bool IsRenderDocInjected();
 };
-DLL_EXPORT DebugSystem debugSystem;
+extern DLL_EXPORT DebugSystem debugSystem;
 
 
 #ifdef __cplusplus

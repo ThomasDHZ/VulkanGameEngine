@@ -41,7 +41,7 @@ struct VulkanBuffer
 	bool UsingStagingBuffer = false;
 };
 
-DLL_EXPORT int NextBufferId;
+extern DLL_EXPORT int NextBufferId;
 
 struct Vertex2D;
 struct SpriteInstance;
@@ -178,7 +178,7 @@ public:
     DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);
     DLL_EXPORT const Vector<VulkanBuffer>& VulkanBufferList();
 };
-DLL_EXPORT VulkanBufferSystem bufferSystem;
+extern DLL_EXPORT VulkanBufferSystem bufferSystem;
 
 #ifdef __cplusplus
 extern "C" {

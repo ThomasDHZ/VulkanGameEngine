@@ -3,6 +3,7 @@
 #include "MemorySystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
+#include <Windows.h>
 
 ShaderSystem shaderSystem = ShaderSystem();
 

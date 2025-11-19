@@ -1,7 +1,7 @@
 #pragma once
 #include "InputEnum.h"
 #include "VulkanWindow.h"
-#include <glfw/include/GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 
 class Keyboard
 {

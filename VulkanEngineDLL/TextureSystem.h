@@ -107,7 +107,7 @@ public:
     //    return Texture_CreateTexture(renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
     //}
 };
-DLL_EXPORT TextureSystem textureSystem;
+extern DLL_EXPORT TextureSystem textureSystem;
 
 #ifdef __cplusplus
 extern "C"

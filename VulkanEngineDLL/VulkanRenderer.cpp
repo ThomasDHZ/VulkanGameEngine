@@ -1,10 +1,10 @@
 #define GLFW_INCLUDE_VULKAN
-#include <glfw/include/GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 #include "VulkanRenderer.h"
 #include <cstdlib>
 #include <iostream>
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
 #include "MemorySystem.h"
 
 HWND editorRichTextBoxCallback;

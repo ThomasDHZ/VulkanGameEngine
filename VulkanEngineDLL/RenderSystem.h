@@ -45,7 +45,7 @@ public:
     Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
 };
-DLL_EXPORT RenderSystem renderSystem;
+extern DLL_EXPORT RenderSystem renderSystem;
 
 #ifdef __cplusplus
     extern "C"

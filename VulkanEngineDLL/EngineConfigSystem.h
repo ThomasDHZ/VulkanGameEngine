@@ -28,5 +28,5 @@ public:
         return ConfigSystem(j);
     }
 };
-DLL_EXPORT ConfigSystem configSystem;
+extern DLL_EXPORT ConfigSystem configSystem;
 

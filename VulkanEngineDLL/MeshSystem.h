@@ -55,7 +55,7 @@ class MeshSystem
 		DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
 		DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType);
 };
-DLL_EXPORT MeshSystem meshSystem;
+extern DLL_EXPORT MeshSystem meshSystem;
 
 #ifdef __cplusplus
 extern "C" 

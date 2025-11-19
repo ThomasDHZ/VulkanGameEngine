@@ -42,5 +42,5 @@ public:
 	nlohmann::json LoadJsonFile(const String& filePath) { return File_LoadJsonFile(filePath.c_str()); }
 	Vector<String> GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
 };
-DLL_EXPORT FileSystem fileSystem;
+extern DLL_EXPORT FileSystem fileSystem;
 

@@ -121,7 +121,7 @@ public:
     DLL_EXPORT bool                             SearchShaderPipelineStructExists(const Vector<ShaderStructDLL>& shaderStructList, const String& structName);
     DLL_EXPORT void                             Destroy();
 };
-DLL_EXPORT ShaderSystem shaderSystem;
+extern DLL_EXPORT ShaderSystem shaderSystem;
 
 #ifdef __cplusplus
 extern "C" {

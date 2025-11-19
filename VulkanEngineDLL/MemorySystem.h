@@ -121,7 +121,7 @@ public:
     DLL_EXPORT void DeletePtr(void* ptr);
     DLL_EXPORT void ReportLeaks();
 };
-DLL_EXPORT extern MemorySystem memorySystem;
+extern DLL_EXPORT MemorySystem memorySystem;
 
 extern "C" {
      MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);
