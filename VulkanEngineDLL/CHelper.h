@@ -1,5 +1,5 @@
 #pragma once
-#include "DLL.h"
+#include "Platform.h"
 #include "Typedef.h"
 
 DLL_EXPORT const char** CHelper_VectorToConstCharPtrPtr(const Vector<String>& vec);

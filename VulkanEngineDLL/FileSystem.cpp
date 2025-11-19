@@ -1,9 +1,6 @@
 #include "FileSystem.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include "MemorySystem.h"
-
+#include <nlohmann/json.hpp>
+#include <fstream>
 FileSystem fileSystem = FileSystem();
 
 bool File_Exists(const char* fileName)

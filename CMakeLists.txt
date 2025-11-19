@@ -7,7 +7,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Add missing original definitions
 add_compile_definitions(
     _CRT_SECURE_NO_WARNINGS
     _CONSOLE
@@ -34,7 +33,7 @@ include_directories(
     External/imgui
     External/imgui/backends
     External/ImPlot
-    External/stb # ← you switched to stb
+    External/stb
     External/glfw/include/GLFW
     C:/VulkanSDK/1.4.328.1/Include
 )
@@ -63,7 +62,7 @@ target_include_directories(ComponentDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
-    ${CMAKE_CURRENT_BINARY_DIR}  # For generated export header
+    ${CMAKE_CURRENT_BINARY_DIR} 
 )
 
 target_link_libraries(ComponentDLL PRIVATE
@@ -92,11 +91,11 @@ target_include_directories(Physics2DDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
-    ${CMAKE_CURRENT_BINARY_DIR}  # For generated export header
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # ------------------------------------------------------------------
-# VulkanEngineDLL — perfect with spirv_reflect.cpp wrapper
+# VulkanEngineDLL
 # ------------------------------------------------------------------
 add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/Platform.cpp
@@ -118,7 +117,7 @@ add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/ShaderSystem.cpp
     VulkanEngineDLL/VulkanPipeline.cpp
     VulkanEngineDLL/VulkanRenderPass.cpp
-    External/SPIRV-Reflect/spirv_reflect.cpp # ← your perfect wrapper
+    External/SPIRV-Reflect/spirv_reflect.cpp
 )
 generate_export_header(VulkanEngineDLL)
 
@@ -128,7 +127,7 @@ target_include_directories(VulkanEngineDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     External/SPIRV-Reflect
-    ${CMAKE_CURRENT_BINARY_DIR}  # For generated export header
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(VulkanEngineDLL PRIVATE
@@ -187,7 +186,7 @@ target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
-    ${CMAKE_CURRENT_BINARY_DIR}  # For any generated export headers if included
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(VulkanGameEngine PRIVATE
@@ -196,7 +195,7 @@ target_link_libraries(VulkanGameEngine PRIVATE
     Physics2DDLL
     VulkanEngineDLL
     ComponentDLL
-)
+) 
 
 add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

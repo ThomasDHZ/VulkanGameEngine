@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
 #include <../SPIRV-Reflect/spirv_reflect.h>
+#include <nlohmann/json.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +17,6 @@
 #include <sstream>
 #include <iomanip>
 #include <filesystem>
-#include <stb_image.h>
 #include <mutex>
 #include "Typedef.h"
 #if defined(_WIN32)

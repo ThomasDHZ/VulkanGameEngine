@@ -1,8 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"  // Add this line
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"  // Add this if using write functions; otherwise, remove the define
+#include <stb/stb_image.h> 
+#include <stb/stb_image_write.h>
 #include "Platform.h"
 
 const char* Renderer_GetShaderReflectError(SpvReflectResult result)
