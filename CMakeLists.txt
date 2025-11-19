@@ -27,6 +27,7 @@ add_subdirectory(External/nlohmann)
 # Include paths (your exact old layout)
 # ------------------------------------------------------------------
 include_directories(
+    External
     External/glfw/include
     External/glm
     External/nlohmann/include
@@ -34,6 +35,8 @@ include_directories(
     External/imgui/backends
     External/ImPlot
     External/stb # ← you switched to stb
+    External/glfw/include/GLFW
+    C:/VulkanSDK/1.4.328.1/Include
 )
 
 find_package(Vulkan REQUIRED)

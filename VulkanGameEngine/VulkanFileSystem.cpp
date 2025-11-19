@@ -39,11 +39,11 @@ String VulkanFileSystem::GetFileNameFromPath(const String& filePath)
 
 Vector<String> VulkanFileSystem::GetFilesFromDirectory(const String& fileDirectory, Vector<const char*> fileExtenstionList)
 {
-    size_t returnFileCount = 0;
-    size_t extenstionListCount = fileExtenstionList.size();
-    const char** extenstionList = memorySystem.AddPtrBuffer<const char*>(fileExtenstionList.data(), fileExtenstionList.size(), __FILE__, __LINE__, __func__, "Directory List String");
-    const char** fileList = File_GetFilesFromDirectory(fileDirectory.c_str(), extenstionList, extenstionListCount, returnFileCount);
-    return Vector<String>(fileList, fileList + returnFileCount);
+   // size_t returnFileCount = 0;
+    //size_t extenstionListCount = fileExtenstionList.size();
+   // const char** extenstionList = memorySystem.AddPtrBuffer<const char*>(fileExtenstionList.data(), fileExtenstionList.size(), __FILE__, __LINE__, __func__, "Directory List String");
+    //const char** fileList = fileSystem.GetFilesFromDirectory(fileDirectory.c_str(), extenstionList, extenstionListCount, returnFileCount);
+    return Vector<String>();
 }
 
 time_t VulkanFileSystem::LastModifiedTime(const String& filePath)
