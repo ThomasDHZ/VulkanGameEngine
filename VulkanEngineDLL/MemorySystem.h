@@ -18,7 +18,7 @@ private:
     std::mutex Mutex;
     std::unordered_map<void*, MemoryLeakPtr> PtrAddressMap;
 
-    void FreeMemory(MemoryLeakPtr& ptr) 
+    void FreeMemory(MemoryLeakPtr& ptr)
     {
         ptr = MemoryLeakPtr{};
     }
@@ -46,7 +46,7 @@ public:
     ~MemorySystem();
 
     template <typename T>
-    T* AddPtrBuffer(size_t elementCount, const char* file, int line, const char* func, const char* notes = "") 
+    T* AddPtrBuffer(size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
     {
         std::lock_guard<std::mutex> lock(Mutex);
         size_t size = sizeof(T) * elementCount;
@@ -124,7 +124,7 @@ public:
 DLL_EXPORT extern MemorySystem memorySystem;
 
 extern "C" {
-    DLL_EXPORT MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);
-    DLL_EXPORT void MemoryLeakPtr_DeletePtr(void* ptr);
-    DLL_EXPORT void MemoryLeakPtr_ReportLeaks();
+     MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);
+     void MemoryLeakPtr_DeletePtr(void* ptr);
+     void MemoryLeakPtr_ReportLeaks();
 }

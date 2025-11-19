@@ -75,8 +75,8 @@
     <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.304.0\Lib;$(SolutionDir)External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\glfw\include\;$(SolutionDir)External;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)x64\Debug;$(SolutionDir)External\glfw\lib;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\glm;$(SolutionDir)External\;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.328.1\Lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,7 +120,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;ComponentDLL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;ComponentDLL.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp> 
-#include "../External/nlohmann/include/nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include <vector>
 #include "VkGuid.h"
 

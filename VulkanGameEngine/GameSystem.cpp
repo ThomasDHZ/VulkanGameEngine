@@ -1,5 +1,5 @@
 #include "GameSystem.h"
-#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui_impl_glfw.h>
 #include "TextureSystem.h"
 #include "ImGuiRenderer.h"
 #include "GameObjectSystem.h"

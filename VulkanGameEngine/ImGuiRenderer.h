@@ -3,9 +3,9 @@
 #include "Typedef.h"
 #include "VulkanRenderer.h"
 #include <GLFW/glfw3.h>
-#include <ImGui/backends/imgui_impl_glfw.h>
-#include <ImGui/imgui.h>
-#include <imgui/backends/imgui_impl_vulkan.h>
+#include <imgui_impl_glfw.h>
+#include <imgui.h>
+#include <imgui_impl_vulkan.h>
 
 
 struct ImGuiRenderer

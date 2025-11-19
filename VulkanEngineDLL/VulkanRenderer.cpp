@@ -1,5 +1,5 @@
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <glfw/include/GLFW/glfw3.h>
 #include "VulkanRenderer.h"
 #include <cstdlib>
 #include <iostream>

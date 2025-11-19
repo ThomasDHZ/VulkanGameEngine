@@ -8,7 +8,7 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
-#include "Platform.h" 
+#include <Platform.h>
 #include <BufferSystem.h>
 #include <FileSystem.h>
 #include <MaterialSystem.h>
@@ -25,4 +25,3 @@
 #include <EngineConfigSystem.h>
 #include "GameObjectBehavior.h"
 #endif //PCH_H
- 
