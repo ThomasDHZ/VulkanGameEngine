@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 #include <../SPIRV-Reflect/spirv_reflect.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,47 +20,50 @@
 #include <mutex>
 #include "Typedef.h"
 #if defined(_WIN32)
-#define PLATFORM_WINDOWS
-#include <windows.h>
-#include <vulkan/vulkan_win32.h>
-#ifdef VulkanEngineDLL_EXPORTS
-#define DLL_EXPORT __declspec(dllexport)
-#else
-#define DLL_EXPORT __declspec(dllimport)
-#endif
-#define SLEEP(ms) Sleep(ms)
-inline void GenerateGUID(GUID& guid) { CoCreateGuid(&guid); }
+    #define PLATFORM_WINDOWS
+    #include <windows.h>
+    #include <vulkan/vulkan_win32.h>
+    #ifdef VulkanEngineDLL_EXPORTS
+    #define DLL_EXPORT __declspec(dllexport)
+    #else
+    #define DLL_EXPORT __declspec(dllimport)
+    #endif
+    #define SLEEP(ms) Sleep(ms)
+    inline void GenerateGUID(GUID& guid) { CoCreateGuid(&guid); }
+
 #elif defined(__linux__) && !defined(__ANDROID__)
-#define PLATFORM_LINUX
-#include <unistd.h>
-#include <uuid/uuid.h>
-#define DLL_EXPORT __attribute__((visibility("default")))
-#define SLEEP(ms) usleep((ms) * 1000)
-inline void GenerateGUID(uuid_t guid) { uuid_generate(guid); }
-#elif defined(__ANDROID__)
-#define PLATFORM_ANDROID
-#include <unistd.h>
-#include <random>
-#define DLL_EXPORT __attribute__((visibility("default")))
-#define SLEEP(ms) usleep((ms) * 1000)
-inline void GenerateGUID(uint8_t* guid) {
-    std::random_device rd; std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-    for (int i = 0; i < 16; ++i) guid[i] = dis(gen);
-}
+    #define PLATFORM_LINUX
+    #include <unistd.h>
+    #include <uuid/uuid.h>
+    #define DLL_EXPORT __attribute__((visibility("default")))
+    #define SLEEP(ms) usleep((ms) * 1000)
+    inline void GenerateGUID(uuid_t guid) { uuid_generate(guid); }
+    #elif defined(__ANDROID__)
+    #define PLATFORM_ANDROID
+    #include <unistd.h>
+    #include <random>
+    #define DLL_EXPORT __attribute__((visibility("default")))
+    #define SLEEP(ms) usleep((ms) * 1000)
+    inline void GenerateGUID(uint8_t* guid) {
+        std::random_device rd; std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, 255);
+        for (int i = 0; i < 16; ++i) guid[i] = dis(gen);
+    }
+
 #elif defined(__APPLE__)
-#include <TargetConditionals.h>
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#define PLATFORM_IOS
-#else
-#define PLATFORM_MACOS
+    #include <TargetConditionals.h>
+    #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    #define PLATFORM_IOS
+    #else
+    #define PLATFORM_MACOS
+    #endif
+    #include <unistd.h>
+    #include <uuid/uuid.h>
+    #define DLL_EXPORT __attribute__((visibility("default")))
+    #define SLEEP(ms) usleep((ms) * 1000)
+    inline void GenerateGUID(uuid_t guid) { uuid_generate(guid); }
 #endif
-#include <unistd.h>
-#include <uuid/uuid.h>
-#define DLL_EXPORT __attribute__((visibility("default")))
-#define SLEEP(ms) usleep((ms) * 1000)
-inline void GenerateGUID(uuid_t guid) { uuid_generate(guid); }
-#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

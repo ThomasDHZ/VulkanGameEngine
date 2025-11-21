@@ -523,7 +523,7 @@ bool Shader_BuildGLSLShaders(const char* command)
      }
  }
 
- void ShaderSystem::CompileGLSLShaders(const String& fileDirectory, const String& outputDirectory)
+ void ShaderSystem::CompileShaders(const String& fileDirectory, const String& outputDirectory)
  {
      Vector<String> fileExtenstionList
      {

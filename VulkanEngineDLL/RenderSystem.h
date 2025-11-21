@@ -21,7 +21,7 @@ public:
     RenderSystem();
     ~RenderSystem();
 
-    DLL_EXPORT GraphicsRenderer              StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger);
+    DLL_EXPORT GraphicsRenderer              StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution);
     DLL_EXPORT void                          Update(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime);
     DLL_EXPORT VkCommandBuffer               BeginSingleTimeCommands();

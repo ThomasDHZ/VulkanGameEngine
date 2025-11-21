@@ -18,9 +18,9 @@ RenderSystem::~RenderSystem()
 
 }
 
-GraphicsRenderer RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
+GraphicsRenderer RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-    Renderer_RendererSetUp(windowHandle, instance, surface, debugMessenger);
+    Renderer_RendererSetUp(windowHandle, instance, surface);
     return renderer;
 }
 
@@ -472,9 +472,9 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     return texturePropertiesBuffer;
 }
 
- GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
+ GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-     return renderSystem.StartUp(windowHandle, instance, surface, debugMessenger);
+     return renderSystem.StartUp(windowHandle, instance, surface);
 }
 
  void RenderSystem_Update(void* windowHandle, RenderPassGuid& spriteRenderPassGuidId, LevelGuid& levelGuid, const float& deltaTime)

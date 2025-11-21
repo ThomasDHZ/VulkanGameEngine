@@ -27,9 +27,8 @@ int main(int argc, char** argv)
 
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkInstance instance = Renderer_CreateVulkanInstance();
-    VkDebugUtilsMessengerEXT debugMessenger = Renderer_SetupDebugMessenger(renderer.Instance);
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
-    gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface, debugMessenger);
+    gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface);
    // imGuiRenderer = ImGui_StartUp(renderer);
     while (!vulkanWindow->WindowShouldClose(vulkanWindow))
     {

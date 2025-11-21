@@ -21,9 +21,9 @@ GameSystem::~GameSystem()
 {
 }
 
-void GameSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
+void GameSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-    renderSystem.StartUp(windowHandle, instance, surface, debugMessenger);
+    renderSystem.StartUp(windowHandle, instance, surface);
     gpuSystem.StartUp();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
