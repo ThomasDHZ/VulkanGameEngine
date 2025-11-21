@@ -3,7 +3,7 @@
 #include "JsonStruct.h"
 #include "MemorySystem.h"
 #include "BufferSystem.h"
-
+#include <cstdlib>
 
 struct ShaderVariable
 {
@@ -101,7 +101,7 @@ public:
     DLL_EXPORT VkPipelineShaderStageCreateInfo  LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
     DLL_EXPORT ShaderPipelineDataDLL            LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths);
     DLL_EXPORT void                             LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
-    DLL_EXPORT void                             CompileShaders(const String& fileDirectory, const String& outputDirectory);
+    DLL_EXPORT bool                             CompileShaders(const String& fileDirectory, const String& outputDirectory);
     DLL_EXPORT void                             UpdateGlobalShaderBuffer(const String& pushConstantName);
     DLL_EXPORT void                             UpdatePushConstantBuffer(ShaderPushConstantDLL& pushConstantStruct);
     DLL_EXPORT void                             UpdateShaderBuffer(uint vulkanBufferId);
@@ -129,5 +129,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-LPWSTR Shader_StringToLPWSTR(const String& str);

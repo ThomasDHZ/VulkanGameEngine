@@ -3,37 +3,8 @@
 #include "MemorySystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
-#include <Windows.h>
 
 ShaderSystem shaderSystem = ShaderSystem();
-
-LPWSTR Shader_StringToLPWSTR(const String& str)
-{
-    std::wstring wstr(str.begin(), str.end());
-    LPWSTR result = new wchar_t[wstr.length() + 1];
-    wcscpy_s(result, wstr.length() + 1, wstr.c_str());
-    return result;
-}
-
-bool Shader_BuildGLSLShaders(const char* command)
-{
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, command, -1, NULL, 0);
-    std::wstring wcommand(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, command, -1, &wcommand[0], size_needed);
-
-    STARTUPINFOW startUpInfo = { sizeof(startUpInfo) };
-    PROCESS_INFORMATION processInfo;
-    if (CreateProcessW(NULL, (LPWSTR)wcommand.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &startUpInfo, &processInfo)) {
-        WaitForSingleObject(processInfo.hProcess, INFINITE);
-
-        DWORD exitCode;
-        GetExitCodeProcess(processInfo.hProcess, &exitCode);
-        CloseHandle(processInfo.hProcess);
-        CloseHandle(processInfo.hThread);
-        return exitCode == 0;
-    }
-    return false;
-}
 
  ShaderSystem::ShaderSystem()
  {
@@ -523,113 +494,48 @@ bool Shader_BuildGLSLShaders(const char* command)
      }
  }
 
- void ShaderSystem::CompileShaders(const String& fileDirectory, const String& outputDirectory)
+ bool ShaderSystem::CompileShaders(const String& fileDirectory, const String& outputDirectory)
  {
-     Vector<String> fileExtenstionList
-     {
-         "vert",
-         "frag",
-         "tesc",
-         "tess",
-         "geom",
-         "comp",
-         "rgen",
-         "rchit",
-         "rmiss",
-         "rahit"
+     Vector<String> extensions = {
+         "vert", "frag", "tesc", "tese", "geom", "comp",
+         "rgen", "rchit", "rmiss", "rahit", "rint", "rcall"
      };
 
-     Vector<String> shaderSourceFileList = fileSystem.GetFilesFromDirectory(fileDirectory, fileExtenstionList);
-     if (shaderSourceFileList.size() == 0)
-     {
-         throw std::runtime_error("No shader files found in directory: " + String(fileDirectory));
+     Vector<String> shaderFiles = fileSystem.GetFilesFromDirectory(fileDirectory, extensions);
+     if (shaderFiles.empty()) {
+         throw std::runtime_error("No shader files found in: " + fileDirectory);
      }
 
-     String command = "";
-     for (const auto& shaderSource : shaderSourceFileList)
+     String glslc = "glslc";
+     std::filesystem::path outDir = outputDirectory;
+     std::filesystem::create_directories(outDir);
+#if defined(_WIN32)
+     if (const char* sdk = std::getenv("VULKAN_SDK"))
      {
-         String shaderExtension = File_GetFileExtention(shaderSource.c_str());
-         String shaderSourceFile = File_GetFileNameFromPath(shaderSource.c_str());
-         String inputFile = std::filesystem::absolute(shaderSource).string();
-         String outputFile = shaderSourceFile + shaderExtension;
-         outputFile[shaderSourceFile.size()] = std::toupper(outputFile[shaderSourceFile.size()]);
-         outputFile += ".spv";
+         glslc = String(sdk) + "/Bin/glslc.exe";
+     }
+#endif
 
-         if (!std::filesystem::exists(inputFile.c_str()) ||
-             std::filesystem::last_write_time(("..\\Assets\\Shaders\\" + outputFile).c_str()) < std::filesystem::last_write_time(inputFile.c_str()))
+     const String baseCmd = glslc + " --target-env=vulkan1.3" + " --target-spv=spv1.6" + " -g -O0";
+     for (const auto& srcPath : shaderFiles)
+     {
+         std::filesystem::path src = srcPath;
+         std::filesystem::path dst = outDir / (src.filename().stem().string() + fileSystem.GetFileExtention(srcPath.c_str()) + ".spv");
+         if (std::filesystem::exists(dst) &&
+             std::filesystem::last_write_time(dst) >= std::filesystem::last_write_time(src))
          {
-             command += "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe --target-env=vulkan1.4 --target-spv=spv1.6 " + inputFile + " -o " + outputDirectory + outputFile + "\n";
+             continue;
+         }
+
+         String cmd = baseCmd + " \"" + std::filesystem::absolute(src).string() + "\"" + " -o \"" + dst.string() + "\"";
+         int result = std::system(cmd.c_str());
+         if (result == -1)
+         {
+             fprintf(stderr, "Failed to execute: %s\n", cmd);
+             return false;
          }
      }
-     String tempBatchPath = std::filesystem::temp_directory_path().append("temp_glslc.bat").string();
-     std::ofstream tempBatch(tempBatchPath);
-     if (!tempBatch.is_open())
-     {
-         throw std::runtime_error("Failed to create temporary batch file: " + tempBatchPath);
-     }
-     tempBatch << command;
-     tempBatch.close();
-
-     STARTUPINFO startUpInfo = { sizeof(STARTUPINFO) };
-     PROCESS_INFORMATION processInformation;
-     startUpInfo.dwFlags = STARTF_USESTDHANDLES;
-     HANDLE hStdOutRead, hStdOutWrite;
-     SECURITY_ATTRIBUTES securityAttributes = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
-     if (!CreatePipe(&hStdOutRead, &hStdOutWrite, &securityAttributes, 0))
-     {
-         std::filesystem::remove(tempBatchPath);
-         throw std::runtime_error("Failed to create pipe for batch file output");
-     }
-     SetHandleInformation(hStdOutRead, HANDLE_FLAG_INHERIT, 0);
-     startUpInfo.hStdOutput = hStdOutWrite;
-     startUpInfo.hStdError = hStdOutWrite;
-
-     String batchCommand = "cmd.exe /C \"" + tempBatchPath + "\"";
-     LPWSTR batchCommandW = Shader_StringToLPWSTR(batchCommand);
-     std::wstring workingDir = std::filesystem::path(fileDirectory).wstring();
-     if (!CreateProcessW(nullptr, batchCommandW, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, workingDir.c_str(), &startUpInfo, &processInformation))
-     {
-         DWORD errorCode = GetLastError();
-         std::stringstream errorMsg;
-         errorMsg << "Failed to start batch file: " << tempBatchPath << "\nWindows Error Code: " << errorCode;
-         delete[] batchCommandW;
-         CloseHandle(hStdOutRead);
-         CloseHandle(hStdOutWrite);
-         std::filesystem::remove(tempBatchPath);
-         throw std::runtime_error(errorMsg.str());
-     }
-     delete[] batchCommandW;
-     CloseHandle(hStdOutWrite);
-
-     String output;
-     char buffer[4096];
-     DWORD bytesRead;
-     while (true)
-     {
-         bool readSuccess = ReadFile(hStdOutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr);
-         if (!readSuccess ||
-             bytesRead == 0)
-         {
-             break;
-         }
-         buffer[bytesRead] = '\0';
-         output += buffer;
-         std::cout << buffer;
-         std::cout.flush();
-     }
-     CloseHandle(hStdOutRead);
-
-     DWORD waitResult = WaitForSingleObject(processInformation.hProcess, INFINITE);
-     if (waitResult == WAIT_TIMEOUT) {
-         std::cerr << "Batch file process timed out: " << tempBatchPath << "\n";
-         TerminateProcess(processInformation.hProcess, 1);
-     }
-
-     DWORD exitCode;
-     GetExitCodeProcess(processInformation.hProcess, &exitCode);
-     CloseHandle(processInformation.hProcess);
-     CloseHandle(processInformation.hThread);
-     std::filesystem::remove(tempBatchPath);
+     return true;
  }
 
  void ShaderSystem::UpdatePushConstantBuffer(ShaderPushConstantDLL& pushConstantStruct)
@@ -643,7 +549,7 @@ bool Shader_BuildGLSLShaders(const char* command)
          offset += pushConstantVar.Size;
      }
  }
-
+  
  void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
  {
      if (!ShaderPushConstantExists(pushConstantName))

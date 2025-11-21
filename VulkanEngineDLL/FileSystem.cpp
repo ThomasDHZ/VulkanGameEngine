@@ -224,3 +224,21 @@ nlohmann::json LoadJsonFile(const String& filePath)
     String rawJson = File_Read(filePath.c_str()).Data;
     return nlohmann::json::parse(rawJson);
 }
+
+String FileSystem::GetFileExtention(const char* fileName)
+{
+    const char* dot = strrchr(fileName, '.');
+    if (!dot || dot == fileName)
+    {
+        return NULL;
+    }
+
+    char* extension = (char*)malloc(strlen(dot));
+    if (extension == NULL)
+    {
+        return NULL;
+    }
+
+    strcpy(extension, dot + 1);
+    return extension;
+}
