@@ -52,9 +52,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             RenderAreaHandle = renderAreaHandle;
             VkInstance instance = Renderer_CreateVulkanInstance();
-            VkDebugUtilsMessengerEXT debugMessenger = Renderer_SetupDebugMessenger(instance);
             VkSurfaceKHR surface = Renderer_CreateVulkanSurface(RenderAreaHandle, instance);
-            renderer = DLLSystem.CallDLLFunc(() => RenderSystem_StartUp(RenderAreaHandle, ref instance, ref surface, ref debugMessenger));
+            renderer = DLLSystem.CallDLLFunc(() => RenderSystem_StartUp(RenderAreaHandle, ref instance, ref surface));
         }
 
         public static void LoadRenderPass(Guid levelId, string jsonPath, ivec2 renderPassResolution)
@@ -119,7 +118,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkResult Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
 
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GraphicsRenderer RenderSystem_StartUp(void* windowHandle, ref VkInstance instance, ref VkSurfaceKHR surface, ref VkDebugUtilsMessengerEXT debugMessenger);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GraphicsRenderer RenderSystem_StartUp(void* windowHandle, ref VkInstance instance, ref VkSurfaceKHR surface);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_Update(void* windowHandle, Guid spriteRenderPass2DId, Guid levelId, float deltaTime);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Guid RenderSystem_LoadRenderPass(Guid levelId, [MarshalAs(UnmanagedType.LPStr)] String jsonPath, ivec2 renderPassResolution);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_RecreateSwapChain(void* windowHandle, Guid spriteRenderPass2DId, Guid levelId, float deltaTime);

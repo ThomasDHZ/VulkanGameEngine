@@ -148,24 +148,24 @@ void RenderSystem::DestroyBuffer(VkBuffer& buffer)
     Renderer_DestroyBuffer(renderer.Device, &buffer);
 }
 
-VkCommandBuffer RenderSystem::BeginSingleTimeCommands()
+VkCommandBuffer RenderSystem::BeginSingleUseCommand()
 {
-    return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
+    return Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
-VkCommandBuffer RenderSystem::BeginSingleTimeCommands(VkCommandPool& commandPool)
+VkCommandBuffer RenderSystem::BeginSingleUseCommand(VkCommandPool& commandPool)
 {
-    return Renderer_BeginSingleTimeCommands(renderer.Device, renderer.CommandPool);
+    return Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
-VkResult RenderSystem::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+VkResult RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
-    return Renderer_EndSingleTimeCommands(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    return Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
-VkResult RenderSystem::EndSingleTimeCommands(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
+VkResult RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
 {
-    return Renderer_EndSingleTimeCommands(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
+    return Renderer_EndSingleUseCommand(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 VkResult RenderSystem::StartFrame()

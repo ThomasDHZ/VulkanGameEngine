@@ -234,10 +234,10 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 
 void SpriteSystem::Update(float deltaTime)
 {
-    VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands(renderer.CommandPool);
+    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand(renderer.CommandPool);
     UpdateSprites(deltaTime);
     UpdateSpriteBatchLayers(deltaTime);
-    renderSystem.EndSingleTimeCommands(commandBuffer);
+    renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
 void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)

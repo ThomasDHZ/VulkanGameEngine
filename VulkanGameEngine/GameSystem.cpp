@@ -37,9 +37,9 @@ void GameSystem::Update(const float& deltaTime)
     materialSystem.Update(deltaTime);
     renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 
-    VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
     meshSystem.Update(deltaTime);
-    renderSystem.EndSingleTimeCommands(commandBuffer);
+    renderSystem.EndSingleUseCommand(commandBuffer);
     gameObjectSystem.DestroyDeadGameObjects();
 }
 

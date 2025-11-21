@@ -167,9 +167,9 @@ void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImage
 		}
 	};
 
-	auto singleCommand = Renderer_BeginSingleUseCommandBuffer(renderer.Device, renderer.CommandPool);
+	auto singleCommand = Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 	vkCmdPipelineBarrier(singleCommand, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
-	VkResult result = Renderer_EndSingleUseCommandBuffer(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, singleCommand);
+	VkResult result = Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, singleCommand);
 	if (result == VK_SUCCESS)
 	{
 		texture.textureImageLayout = newImageLayout;
@@ -498,9 +498,9 @@ VkResult TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Te
 
 VkResult TextureSystem::QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout)
 {
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
 	TransitionImageLayout(commandBuffer, texture, newLayout);
-	VkResult result = renderSystem.EndSingleTimeCommands(commandBuffer);
+	VkResult result = renderSystem.EndSingleUseCommand(commandBuffer);
 	if (result == VK_SUCCESS)
 	{
 		texture.textureImageLayout = newLayout;
@@ -540,9 +540,9 @@ VkResult TextureSystem::CopyBufferToTexture(Texture& texture, VkBuffer buffer)
 			.depth = static_cast<uint>(texture.depth),
 		}
 	};
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
 	vkCmdCopyBufferToImage(commandBuffer, buffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &BufferImage);
-	return renderSystem.EndSingleTimeCommands(commandBuffer);
+	return renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
 VkResult TextureSystem::GenerateMipmaps(Texture& texture)
@@ -562,7 +562,7 @@ VkResult TextureSystem::GenerateMipmaps(Texture& texture)
 		RENDERER_ERROR("Texture image format does not support linear blitting.");
 	}
 
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleTimeCommands();
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
 	VkImageMemoryBarrier ImageMemoryBarrier =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -659,7 +659,7 @@ VkResult TextureSystem::GenerateMipmaps(Texture& texture)
 	ImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &ImageMemoryBarrier);
-	return renderSystem.EndSingleTimeCommands(commandBuffer);
+	return renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
 Texture TextureSystem::FindTexture(const RenderPassGuid& renderPassGuid)
