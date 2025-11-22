@@ -46,7 +46,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\nlohmann\include;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)External\glfw\;$(SolutionDir)External\glfw\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files\RenderDoc\;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\nlohmann\include;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)External\glfw\;$(SolutionDir)External\glfw\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)x64\Debug;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw\lib-vc2022;C:\Users\dotha\Documents\GitHub\2D-Game-Engine\External\glfw;C:\VulkanSDK\1.4.328.1\Lib;$(SolutionDir)External\sdl\lib;C:\Users\dotha\source\repos\WindowTest\External\sdl\lib;$(SolutionDir)External\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

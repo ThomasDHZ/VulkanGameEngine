@@ -17,11 +17,15 @@ int main(int argc, char** argv)
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
+#if defined(_WIN32)
     if(!debugSystem.IsRenderDocInjected())
     {
         debugSystem.SetRootDirectory("../Assets");
     }
-    
+#else
+    debugSystem.SetRootDirectory("../Assets");
+#endif 
+
     vulkanWindow = new GameEngineWindow();
     vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 

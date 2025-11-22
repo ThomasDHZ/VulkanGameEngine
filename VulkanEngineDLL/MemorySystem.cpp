@@ -41,11 +41,19 @@ const char* MemorySystem::AddPtrBuffer(const char* str, const char* file, int li
 MemoryLeakPtr MemorySystem::NewPtr(size_t memorySize, size_t elementCount, const char* file, int line, const char* type, const char* func, const char* notes)
 {
     void* memory = nullptr;
+#if defined(_WIN32)
     const char* fileStr = file ? _strdup(file) : nullptr;
     const char* lineStr = line ? _strdup(std::to_string(line).c_str()) : nullptr;
     const char* typeStr = type ? _strdup(type) : nullptr;
     const char* funcStr = func ? _strdup(func) : nullptr;
     const char* notesStr = notes ? _strdup(notes) : nullptr;
+#else
+    const char* fileStr = file ? strdup(file) : nullptr;
+    const char* lineStr = line ? strdup(std::to_string(line).c_str()) : nullptr;
+    const char* typeStr = type ? strdup(type) : nullptr;
+    const char* funcStr = func ? strdup(func) : nullptr;
+    const char* notesStr = notes ? strdup(notes) : nullptr;
+#endif
     try
     {
         memory = new byte[memorySize * elementCount];

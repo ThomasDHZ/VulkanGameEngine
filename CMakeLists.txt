@@ -226,3 +226,15 @@ add_custom_command(TARGET VulkanGameEngine POST_BUILD
         $<TARGET_FILE:Physics2DDLL>
         $<TARGET_FILE_DIR:VulkanGameEngine>
 )
+
+if(UNIX AND EXISTS "/mnt/c")
+    add_custom_command(TARGET VulkanGameEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:VulkanGameEngine>/Assets
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:VulkanGameEngine>/Config
+        COMMAND rsync -a --delete "/mnt/c/Users/dotha/Documents/GitHub/VulkanGameEngine/Assets/" 
+                                "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets/"
+        COMMAND rsync -a --delete "/mnt/c/Users/dotha/Documents/GitHub/VulkanGameEngine/Config/" 
+                                "$<TARGET_FILE_DIR:VulkanGameEngine>/Config/"
+        COMMENT "Copying Assets/Config from Windows (WSL)"
+    )
+endif()

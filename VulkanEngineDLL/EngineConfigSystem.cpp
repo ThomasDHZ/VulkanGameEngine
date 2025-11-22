@@ -1,6 +1,10 @@
 #include "EngineConfigSystem.h"
 
-ConfigSystem configSystem = ConfigSystem::LoadConfig("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/EngineConfig.json");
+#if defined(_WIN32)
+    ConfigSystem configSystem = ConfigSystem::LoadConfig("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/EngineConfig.json");
+#elif defined(__linux__) && !defined(__ANDROID__)
+    ConfigSystem configSystem = ConfigSystem::LoadConfig("/home/dothackzero/.vs/VulkanGameEngine/c7fad58a-e4c4-4409-80d1-05d1bf970194/out/build/Linux-Clang-Debug/EngineConfig.json");
+#endif
 
 ConfigSystem::ConfigSystem() : WindowResolution(glm::ivec2(1280, 720)),
 EngineBasePath(),

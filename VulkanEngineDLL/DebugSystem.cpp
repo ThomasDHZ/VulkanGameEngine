@@ -1,7 +1,15 @@
 #include "DebugSystem.h"
+
+#ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
-#include <iostream>
+#include <io.h>
+#else
+#include <limits.h>
+#include <dlfcn.h>
+#include <unistd.h>
+#include <libgen.h>
+#endif
 
 DebugSystem debugSystem = DebugSystem();
 
@@ -13,6 +21,7 @@ DebugSystem::~DebugSystem()
 {
 }
 
+#if defined(_WIN32)
 bool DebugSystem::TryLoadRenderDocAPI()
 {
     HMODULE rd = GetModuleHandleA("renderdoc.dll");
@@ -40,20 +49,6 @@ bool DebugSystem::TryLoadRenderDocAPI()
     return UsingRenderDoc;
 }
 
-void DebugSystem::SetRootDirectory(const String& engineRoot)
-{
-    if (_chdir(engineRoot.c_str()) != 0)
-    {
-        std::cerr << "Failed to set CWD to: " << engineRoot << std::endl;
-        return;
-    }
-
-    char cwd[MAX_PATH];
-    if (_getcwd(cwd, MAX_PATH))
-    {
-        std::cout << "C++ CWD SET TO: " << cwd << std::endl;
-    }
-}
 
 bool DebugSystem::IsRenderDocInjected()
 {
@@ -73,12 +68,43 @@ bool DebugSystem::IsRenderDocInjected()
     return UsingRenderDoc;
 }
 
-void Debug_SetRootDirectory(const char* engineRoot)
-{
-    debugSystem.SetRootDirectory(String(engineRoot));
-}
-
 bool Debug_IsRenderDocInjected()
 {
     return debugSystem.IsRenderDocInjected();
+}
+#endif
+
+void DebugSystem::SetRootDirectory(const String& engineRoot)
+{
+#ifdef _WIN32
+    if (_chdir(engineRoot.c_str()) != 0)
+    {
+        std::cerr << "Failed to set CWD to: " << engineRoot << std::endl;
+        return;
+    }
+
+    char cwd[MAX_PATH];
+    if (_getcwd(cwd, MAX_PATH))
+    {
+        std::cout << "C++ CWD SET TO: " << cwd << std::endl;
+    }
+#else
+    if (chdir(engineRoot.c_str()) != 0)
+    {
+        std::cerr << "Failed to set CWD to: " << engineRoot << std::endl;
+        return;
+    }
+
+    char cwd[PATH_MAX] = {};
+    if (getcwd(cwd, PATH_MAX))
+#endif
+    {
+        std::cout << "C++ CWD SET TO: " << cwd << std::endl;
+    }
+}
+
+
+void Debug_SetRootDirectory(const char* engineRoot)
+{
+    debugSystem.SetRootDirectory(String(engineRoot));
 }

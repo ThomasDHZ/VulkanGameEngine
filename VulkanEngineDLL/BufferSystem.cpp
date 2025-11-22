@@ -279,7 +279,10 @@ VkResult VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* 
 {
     if (newBufferSize < oldBufferSize)
     {
-        RENDERER_ERROR("Buffer size can't be less than the old buffer size. OldSize: " + std::to_string(static_cast<uint>(oldBufferSize)) + " NewSize: " + std::to_string(static_cast<uint>(newBufferSize)));
+        RENDERER_ERROR("%s", (std::string("Buffer size can't be less than the old buffer size. OldSize: ")
+            + std::to_string(static_cast<uint32_t>(oldBufferSize))
+            + " NewSize: "
+            + std::to_string(static_cast<uint32_t>(newBufferSize))).c_str());
         return VK_ERROR_MEMORY_MAP_FAILED;
     }
 

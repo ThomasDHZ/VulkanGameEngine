@@ -531,7 +531,7 @@ ShaderSystem shaderSystem = ShaderSystem();
          int result = std::system(cmd.c_str());
          if (result == -1)
          {
-             fprintf(stderr, "Failed to execute: %s\n", cmd);
+             fprintf(stderr, "Failed to execute: %s\n", cmd.c_str());
              return false;
          }
      }

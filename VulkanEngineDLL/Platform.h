@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <mutex>
 #include "Typedef.h"
+
 #if defined(_WIN32)
     #define PLATFORM_WINDOWS
     #include <windows.h>
@@ -95,10 +96,15 @@ extern "C" {
 #define IO_READ_ERROR_MEMORY "Not enough free memory to read file: %s\n"
 #define ERROR_EXIT(...) { fprintf(stderr, __VA_ARGS__); SLEEP(100); exit(1); }
 #define ERROR_RETURN(R, ...) { fprintf(stderr, __VA_ARGS__); SLEEP(100); return (R); }
-#define RENDERER_ERROR(msg) { \
-    fprintf(stderr, "Error in %s:%d (%s): %s\n", __FILE__, __LINE__, __func__, msg); \
-    SLEEP(100); \
-}
+
+#define RENDERER_ERROR(...)                                                \
+    do {                                                                   \
+        fprintf(stderr, "Error in %s:%d (%s): ", __FILE__, __LINE__, __func__); \
+        fprintf(stderr, __VA_ARGS__);                                      \
+        fprintf(stderr, "\n");                                             \
+        SLEEP(100);                                                        \
+    } while (0)
+
 #define VULKAN_RESULT(call) { \
     VkResult result = (call); \
     if (result != VK_SUCCESS) { \

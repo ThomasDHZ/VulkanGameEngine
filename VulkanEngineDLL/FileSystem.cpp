@@ -4,13 +4,15 @@
 #include <errno.h>
 #include "MemorySystem.h"
 #include "from_json.h"
+#include <sys/stat.h>
+#include <stdbool.h>
 
 FileSystem fileSystem = FileSystem();
 
 bool File_Exists(const char* fileName)
 {
     struct stat buffer;
-    return (stat(fileName, &buffer));
+    return (stat(fileName, &buffer) == 0);
 }
 
 time_t File_LastModifiedTime(const char* fileName)

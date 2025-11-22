@@ -127,7 +127,7 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
       vkEnumerateInstanceExtensionProperties(nullptr, &count, availableExtensionList.data());
 
       Vector<const char*> extensions;
-      auto AddExtenstionIfSupported = [&](const char* ext) 
+      auto AddExtensionIfSupported = [&](const char* ext)
           {
               for (const auto& extension : availableExtensionList)
                   if (strcmp(extension.extensionName, ext) == 0)
@@ -138,21 +138,21 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
                   }
               std::cout << "Extension not supported: " << ext << '\n';
           };
-      AddExtenstionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
+      AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
 
 #if defined(_WIN32)
-      AddExtenstionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+      AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
 #elif defined(__linux__) && !defined(__ANDROID__)
-      AddExtenstionIfSupported(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-      AddExtenstionIfSupported(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+      AddExtensionIfSupported("VK_KHR_xcb_surface");
+      AddExtensionIfSupported("VK_KHR_wayland_surface");
 
 #elif defined(__ANDROID__)
       AddExtenstionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #endif
 
 #ifndef NDEBUG
-      AddExtenstionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); 
+      AddExtensionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
       if (extensions.empty() ||
@@ -171,7 +171,7 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
       vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, availableDeviceExtensions.data());
 
       std::vector<const char*> enabledDeviceExtensions;
-      auto AddDeviceExtenstionIfSupported = [&](const char* ext)
+      auto AddDeviceExtensionIfSupported = [&](const char* ext)
           {
               for (const auto& deviceExtensions : availableDeviceExtensions)
               {
@@ -186,7 +186,7 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
               return false;
           };
 
-      if (!AddDeviceExtenstionIfSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+      if (!AddDeviceExtensionIfSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
       {
           throw std::runtime_error("FATAL: Swapchain extension not supported!");
       }
