@@ -156,7 +156,6 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SpriteSystem.h" />
-    <ClInclude Include="Vertex.h" />
     <ClInclude Include="VRAM.h" />
   </ItemGroup>
   <ItemGroup>

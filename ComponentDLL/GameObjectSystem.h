@@ -73,7 +73,7 @@ public:
     DLL_EXPORT Vector<Transform2DComponent> GetTransform2DComponentList();
     DLL_EXPORT Vector<InputComponent> GetInputComponentList();
 };
-DLL_EXPORT GameObjectSystem gameObjectSystem;
+DLL_EXPORT extern GameObjectSystem gameObjectSystem;
 
 //#ifdef __cplusplus
 //extern "C" {

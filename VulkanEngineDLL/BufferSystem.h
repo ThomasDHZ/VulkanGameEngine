@@ -150,7 +150,7 @@ public:
         Vector<T> DataList;
         size_t dataListSize = vulkanBuffer.BufferSize / sizeof(T);
 
-        void* data = MapBufferMemory(renderer, vulkanBuffer.BufferMemory, vulkanBuffer.BufferSize, &vulkanBuffer.IsMapped);
+        void* data = MapBufferMemory(vulkanBuffer.BufferMemory, vulkanBuffer.BufferSize, &vulkanBuffer.IsMapped);
         if (data == nullptr)
         {
             std::cerr << "Failed to map buffer memory\n";
@@ -163,7 +163,7 @@ public:
             DataList.emplace_back(*reinterpret_cast<T*>(newPtr));
             newPtr += sizeof(T);
         }
-        UnmapBufferMemory(renderer, vulkanBuffer.BufferMemory, &vulkanBuffer.IsMapped);
+        UnmapBufferMemory(vulkanBuffer.BufferMemory, &vulkanBuffer.IsMapped);
 
         return DataList;
     }

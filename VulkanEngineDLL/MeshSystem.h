@@ -1,7 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "ShaderSystem.h"
-#include "vertex.h"
+#include "Vertex.h"
 
 struct MeshPropertiesStruct
 {

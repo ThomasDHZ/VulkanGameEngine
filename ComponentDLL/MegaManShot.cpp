@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "gameObjectSystem.h"
+#include "GameObjectSystem.h"
 #include "MegaManShot.h"
 #include "MegaManObject.h"
 

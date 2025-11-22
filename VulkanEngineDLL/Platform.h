@@ -1,4 +1,8 @@
 #pragma once
+#if defined(__linux__) && !defined(__ANDROID__)
+    #define VK_ENABLE_BETA_EXTENSIONS
+#endif
+
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan.h>
 #include <../SPIRV-Reflect/spirv_reflect.h>
@@ -22,6 +26,9 @@
 #if defined(_WIN32)
     #define PLATFORM_WINDOWS
     #include <windows.h>
+    #include <direct.h>
+    #include <objbase.h>
+    #include <combaseapi.h>
     #include <vulkan/vulkan_win32.h>
     #ifdef VulkanEngineDLL_EXPORTS
     #define DLL_EXPORT __declspec(dllexport)
@@ -35,16 +42,23 @@
     #define PLATFORM_LINUX
     #include <unistd.h>
     #include <uuid/uuid.h>
+    #include <cctype>
+    #include <cstdlib>
     #define DLL_EXPORT __attribute__((visibility("default")))
     #define SLEEP(ms) usleep((ms) * 1000)
+    #if defined(__clang__) && defined(__linux__)
+        #pragma clang diagnostic ignored "-Wfloat-conversion"
+    #endif
     inline void GenerateGUID(uuid_t guid) { uuid_generate(guid); }
-    #elif defined(__ANDROID__)
+
+#elif defined(__ANDROID__)
     #define PLATFORM_ANDROID
     #include <unistd.h>
     #include <random>
     #define DLL_EXPORT __attribute__((visibility("default")))
     #define SLEEP(ms) usleep((ms) * 1000)
-    inline void GenerateGUID(uint8_t* guid) {
+    inline void GenerateGUID(uint8_t* guid) 
+    {
         std::random_device rd; std::mt19937 gen(rd());
         std::uniform_int_distribution<> dis(0, 255);
         for (int i = 0; i < 16; ++i) guid[i] = dis(gen);
@@ -52,6 +66,9 @@
 
 #elif defined(__APPLE__)
     #include <TargetConditionals.h>
+#include <CoreFoundation/CoreFoundation.h>
+
+#include <Endian.h>
     #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
     #define PLATFORM_IOS
     #else

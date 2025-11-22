@@ -1,8 +1,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_NO_SIMD
 #include <stb/stb_image.h> 
 #include <stb/stb_image_write.h>
 #include "Platform.h"
+
+#if defined(__linux__) && !defined(VK_INCOMPATIBLE_SHADER_BINARY_EXT)
+#define VK_INCOMPATIBLE_SHADER_BINARY_EXT 1000489000
+#endif
 
 const char* Renderer_GetShaderReflectError(SpvReflectResult result)
 {
@@ -84,6 +89,7 @@ const char* Renderer_GetError(VkResult result)
     case VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR: return "VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR";
     case VK_ERROR_COMPRESSION_EXHAUSTED_EXT: return "VK_ERROR_COMPRESSION_EXHAUSTED_EXT";
     case VK_INCOMPATIBLE_SHADER_BINARY_EXT: return "VK_INCOMPATIBLE_SHADER_BINARY_EXT";
+
     default: return "Unknown Error";
     }
 }

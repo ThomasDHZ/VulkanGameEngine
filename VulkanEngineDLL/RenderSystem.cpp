@@ -2,8 +2,6 @@
 #include "MaterialSystem.h"
 #include "MeshSystem.h"
 #include "BufferSystem.h"
-#include <windows.h>
-#include <direct.h>
 #include <iostream>
 
 RenderSystem renderSystem = RenderSystem();

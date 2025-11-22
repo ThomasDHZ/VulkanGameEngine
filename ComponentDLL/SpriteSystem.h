@@ -80,7 +80,7 @@ public:
     DLL_EXPORT Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
     DLL_EXPORT void Destroy();
 };
-DLL_EXPORT SpriteSystem spriteSystem;
+DLL_EXPORT extern SpriteSystem spriteSystem;
 
 #ifdef __cplusplus
 extern "C" {

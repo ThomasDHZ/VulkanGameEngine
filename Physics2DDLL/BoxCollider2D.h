@@ -14,7 +14,7 @@ struct PhysicsArchive
 	Vector<RigidBody> RidgidBodyList;
 	Vector<BoxCollider2D> BoxColliderList;
 };
-DLL_EXPORT PhysicsArchive physicsArchive;
+DLL_EXPORT extern PhysicsArchive physicsArchive;
 
 DLL_EXPORT BoxCollider2D BoxCollider2D_CreateBoxCollider2D(vec2& min, vec2& max);
 DLL_EXPORT vec2 BoxCollider2D_GetBoxCollider2DMin(BoxCollider2D& boxCollider, RigidBody& rigidBody);

@@ -313,7 +313,7 @@ void LevelSystem::Update(const float& deltaTime)
      const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
      VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
      VkCommandBuffer commandBuffer = renderPass.CommandBuffer;
-     Vector renderPassTexture = textureSystem.FindRenderedTextureList(spriteRenderPass2DId);
+     Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(spriteRenderPass2DId);
 
      VkViewport viewport
      {

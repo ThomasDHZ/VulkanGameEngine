@@ -193,55 +193,61 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
       return enabledDeviceExtensions;
   }
 
-  VkBool32 VKAPI_CALL Renderer_DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* UserData)
+  VkBool32 VKAPI_CALL Renderer_DebugCallBack(
+      VkDebugUtilsMessageSeverityFlagBitsEXT      MessageSeverity,
+      VkDebugUtilsMessageTypeFlagsEXT             MessageType,
+      const VkDebugUtilsMessengerCallbackDataEXT* CallBackData,
+      void* UserData)
   {
-      HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-      if (hConsole == INVALID_HANDLE_VALUE) {
-          printf("Failed to get console handle.\n");
-          return VK_FALSE;
-      }
-      CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-      GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-      WORD originalAttributes = consoleInfo.wAttributes;
-
-      char message[4096];
-      snprintf(message, sizeof(message), "%s", CallBackData->pMessage);
+      const char* severityStr = "";
+      const char* colorCode = "";
 
       switch (MessageSeverity)
       {
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-          SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
-          fprintf(stdout, "VERBOSE: ");
-          SetConsoleTextAttribute(hConsole, originalAttributes);
-          fprintf(stdout, "%s\n", message);
+          severityStr = "VERBOSE";
+          colorCode = "\033[34m";  // blue
           break;
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-          SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-          fprintf(stdout, "INFO: ");
-          SetConsoleTextAttribute(hConsole, originalAttributes);
-          fprintf(stdout, "%s\n", message);
+          severityStr = "INFO";
+          colorCode = "\033[32m";  // green
           break;
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-          SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
-          fprintf(stdout, "WARNING: ");
-          SetConsoleTextAttribute(hConsole, originalAttributes);
-          fprintf(stdout, "%s\n", message);
+          severityStr = "WARNING";
+          colorCode = "\033[33m";  // yellow
           break;
       case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-          SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-          fprintf(stdout, "ERROR: ");
-          SetConsoleTextAttribute(hConsole, originalAttributes);
-          fprintf(stdout, "%s\n", message);
+          severityStr = "ERROR";
+          colorCode = "\033[31m";  // red
           break;
       default:
-          SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
-          fprintf(stderr, "UNKNOWN SEVERITY: ");
-          SetConsoleTextAttribute(hConsole, originalAttributes);
-          fprintf(stdout, "%s\n", message);
+          severityStr = "UNKNOWN";
+          colorCode = "\033[35m";  // magenta
           break;
       }
 
-      Renderer_LogVulkanMessage(message, (int)MessageSeverity);
+#ifdef _WIN32
+      HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+      CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+      WORD originalAttributes = 7; 
+
+      if (hConsole != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(hConsole, &consoleInfo))
+          originalAttributes = consoleInfo.wAttributes;
+
+      WORD color = originalAttributes;
+      if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)   color = FOREGROUND_RED;
+      else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) color = FOREGROUND_RED | FOREGROUND_GREEN;
+      else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)    color = FOREGROUND_GREEN;
+      else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) color = FOREGROUND_BLUE;
+
+      SetConsoleTextAttribute(hConsole, color);
+      fprintf(stderr, "%s: ", severityStr);
+      SetConsoleTextAttribute(hConsole, originalAttributes);
+      fprintf(stderr, "%s\n", CallBackData->pMessage);
+#else
+      // Linux / macOS: ANSI escape codes (works in every terminal)
+      fprintf(stderr, "%s%s: \033[0m%s\n", colorCode, severityStr, CallBackData->pMessage);
+#endif
       return VK_FALSE;
   }
 
@@ -659,17 +665,17 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .maintenance4 = VK_FALSE
     };
 
-    VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT vertexAttributeRobustnessFeatures =
+    VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT divisorFeatures =
     {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
         .pNext = &physicalDeviceVulkan13Features,
-        .vertexAttributeRobustness = VK_TRUE
+        .vertexAttributeInstanceRateDivisor = VK_TRUE
     };
 
     VkPhysicalDeviceVulkan11Features physicalDeviceVulkan11Features =
     {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-        .pNext = &vertexAttributeRobustnessFeatures,
+        .pNext = &divisorFeatures,
         .multiview = VK_TRUE
     };
 

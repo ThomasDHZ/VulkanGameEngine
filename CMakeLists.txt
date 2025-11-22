@@ -1,6 +1,14 @@
 ﻿cmake_minimum_required(VERSION 3.22)
 project(VulkanGameEngine LANGUAGES CXX C)
 
+if(UNIX AND NOT APPLE)
+    add_compile_options(-Wno-exceptions)
+    add_compile_options(-Wno-error=everything)
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wno-error=float-conversion -Wno-error=everything)
+endif()
+
 include(GenerateExportHeader)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -25,7 +33,7 @@ endif()
 add_subdirectory(External/glfw)
 add_subdirectory(External/glm)
 add_subdirectory(External/nlohmann)
-
+ 
 include_directories(
     External
     External/glfw/include
@@ -38,7 +46,7 @@ include_directories(
     External/glfw/include/GLFW
     C:/VulkanSDK/1.4.328.1/Include
 )
-
+ 
 find_package(Vulkan REQUIRED)
 
 # ------------------------------------------------------------------
@@ -124,6 +132,7 @@ add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/ShaderSystem.cpp
     VulkanEngineDLL/VulkanPipeline.cpp
     VulkanEngineDLL/VulkanRenderPass.cpp
+    VulkanEngineDLL/Pixel.cpp
     External/SPIRV-Reflect/spirv_reflect.cpp
 )
 
@@ -192,7 +201,7 @@ add_executable(VulkanGameEngine
     ${IMGUI_SOURCES}
     ${IMPLOT_SOURCES}
 )
-
+ 
 target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanGameEngine
@@ -204,7 +213,7 @@ target_include_directories(VulkanGameEngine PRIVATE
 
 target_link_libraries(VulkanGameEngine PRIVATE
     Vulkan::Vulkan
-    glfw
+    glfw 
     Physics2DDLL
     VulkanEngineDLL
     ComponentDLL

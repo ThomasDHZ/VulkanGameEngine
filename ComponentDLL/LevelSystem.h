@@ -80,7 +80,7 @@ class LevelSystem
         DLL_EXPORT Vector<Vector<uint>> GetLevelTileMapList();
         DLL_EXPORT Vector<LevelTileSet> GetLevelTileSetList();
 };
-DLL_EXPORT LevelSystem levelSystem;
+DLL_EXPORT extern LevelSystem levelSystem;
 
 #ifdef __cplusplus
     extern "C" 

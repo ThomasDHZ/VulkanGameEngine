@@ -80,7 +80,7 @@ public:
     DLL_EXPORT void                 DeleteLevelLayerPtr(uint** levelLayerPtr);
     DLL_EXPORT void                 DeleteLevelLayerMapPtr(uint* levelLayerMapPtr);
 };
-DLL_EXPORT VramSystem vramSystem;
+DLL_EXPORT extern VramSystem vramSystem;
 
 //#ifdef __cplusplus
 //    extern "C" {
