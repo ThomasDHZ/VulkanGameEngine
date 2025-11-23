@@ -17,28 +17,45 @@ GameEngineWindow::~GameEngineWindow()
 
 }
 
-void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self, const char* WindowName, uint32_t width, uint32_t height)
+void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self,
+    const char* WindowName,
+    uint32_t width, uint32_t height)
 {
     FrameBufferResized = false;
     Width = width;
     Height = height;
     ShouldClose = false;
- 
+
     glfwInit();
+
+    // FORCE WSLg to work
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
 
-    self->WindowHandle = (void*)glfwCreateWindow(width, height, WindowName, NULL, NULL);
+    self->WindowHandle = glfwCreateWindow(width, height, WindowName, nullptr, nullptr);
+    if (!self->WindowHandle) {
+        fprintf(stderr, "ERROR: glfwCreateWindow failed!\n");
+        const char* err = nullptr;
+        glfwGetError(&err);
+        fprintf(stderr, "GLFW: %s\n", err ? err : "unknown error");
+        return;
+    }
+    glfwShowWindow((GLFWwindow*)self->WindowHandle);
+    glfwRequestWindowAttention((GLFWwindow*)self->WindowHandle);  // flashes taskbar
+    glfwFocusWindow((GLFWwindow*)self->WindowHandle);             // brings to front
+    glfwSetWindowSize((GLFWwindow*)self->WindowHandle, 1920, 1080); // force full size
+    glfwSetWindowAttrib((GLFWwindow*)self->WindowHandle, GLFW_MAXIMIZED, GLFW_TRUE);
 
-    glfwMakeContextCurrent((GLFWwindow*)self->WindowHandle);
     glfwSetWindowUserPointer((GLFWwindow*)self->WindowHandle, self);
-    glfwSetErrorCallback(GameEngineWindow::ErrorCallBack);
-    glfwSetFramebufferSizeCallback((GLFWwindow*)self->WindowHandle, GameEngineWindow::FrameBufferResizeCallBack);
+    glfwSetFramebufferSizeCallback((GLFWwindow*)self->WindowHandle, FrameBufferResizeCallBack);
     glfwSetCursorPosCallback((GLFWwindow*)self->WindowHandle, Mouse::MouseMoveEvent);
     glfwSetMouseButtonCallback((GLFWwindow*)self->WindowHandle, Mouse::MouseButtonPressedEvent);
     glfwSetScrollCallback((GLFWwindow*)self->WindowHandle, Mouse::MouseWheelEvent);
     glfwSetKeyCallback((GLFWwindow*)self->WindowHandle, Keyboard::KeyboardKeyPressed);
-    glfwSetJoystickCallback(GameEngineWindow::ControllerConnectCallBack);
+    glfwSetJoystickCallback(ControllerConnectCallBack);
 }
 
 void GameEngineWindow::PollEventHandler(GameEngineWindow* self)
@@ -53,7 +70,11 @@ void GameEngineWindow::SwapBuffer(GameEngineWindow* self)
 void GameEngineWindow::CreateSurface(void* windowHandle, VkInstance* instance, VkSurfaceKHR* surface)
 {
     GLFWwindow* handle = (GLFWwindow*)windowHandle;
-    glfwCreateWindowSurface(*instance, handle, NULL, surface);
+    VkResult result = glfwCreateWindowSurface(*instance, handle, NULL, surface);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "Failed to create Vulkan surface! Error code: %d\n", result);
+        return;
+    }
 }
 
 void GameEngineWindow::GetFrameBufferSize(void* windowHandle, int* width, int* height)
@@ -120,21 +141,13 @@ void GameEngineWindow::ErrorCallBack(int error, const char* description)
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-void GameEngineWindow::FrameBufferResizeCallBack(GLFWwindow* self, int width, int height)
+void GameEngineWindow::FrameBufferResizeCallBack(GLFWwindow* window, int width, int height)
 {
-    //GLFWwindow* app = glfwGetWindowUserPointer(vulkanWindow->WindowHandle);
-    //if (app)
-    //{
-    //	vulkanWindow->FrameBufferResized = true;
-    //	glfwGetFramebufferSize(vulkanWindow->WindowHandle, &width, &height);
-
-    //	while (width == 0 || height == 0)
-    //	{
-    //		glfwGetFramebufferSize(vulkanWindow->WindowHandle, &width, &height);
-    //		glfwWaitEvents();
-    //	}
-
-    //	vulkanWindow->Width = width;
-    //	vulkanWindow->Height = height;
-    //}
+    auto* engineWindow = (GameEngineWindow*)glfwGetWindowUserPointer(window);
+    if (engineWindow) 
+    {
+        engineWindow->FrameBufferResized = true;
+        engineWindow->Width = width;
+        engineWindow->Height = height;
+    }
 }

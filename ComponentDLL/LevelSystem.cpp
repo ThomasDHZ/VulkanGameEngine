@@ -156,7 +156,9 @@ void LevelSystem::Update(const float& deltaTime)
      VkGuid dummyGuid = VkGuid();
      VkGuid tileSetId = VkGuid();
 
+#if defined(_WIN32)
      shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
+#endif
 
      nlohmann::json json = File_LoadJsonFile(levelPath);
      nlohmann::json shaderJson = File_LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");

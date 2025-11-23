@@ -227,14 +227,13 @@ add_custom_command(TARGET VulkanGameEngine POST_BUILD
         $<TARGET_FILE_DIR:VulkanGameEngine>
 )
 
-if(UNIX AND EXISTS "/mnt/c")
+if(UNIX AND NOT APPLE)
     add_custom_command(TARGET VulkanGameEngine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:VulkanGameEngine>/Assets
-        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:VulkanGameEngine>/Config
-        COMMAND rsync -a --delete "/mnt/c/Users/dotha/Documents/GitHub/VulkanGameEngine/Assets/" 
-                                "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets/"
-        COMMAND rsync -a --delete "/mnt/c/Users/dotha/Documents/GitHub/VulkanGameEngine/Config/" 
-                                "$<TARGET_FILE_DIR:VulkanGameEngine>/Config/"
-        COMMENT "Copying Assets/Config from Windows (WSL)"
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying Assets/Config from shared folder..."
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/Assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "/media/sf_VulkanGameEngine/Assets" "${CMAKE_CURRENT_BINARY_DIR}/Assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "/media/sf_VulkanGameEngine/EngineConfig.json" "${CMAKE_CURRENT_BINARY_DIR}/Config/EngineConfig.json"
+        COMMENT "Copying Assets/Config from VirtualBox shared folder"
     )
 endif()
+ 
