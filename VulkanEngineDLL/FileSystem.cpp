@@ -183,9 +183,29 @@ nlohmann::json File_LoadJsonFile(const char* filePath)
     return nlohmann::json::parse(rawJson);
 }
 
+Vector<String> FileSystem::GetFilesFromDirectory(const String& fileDirectory)
+{
+    Vector<String> fileList;
+    try
+    {
+        for (const auto& entry : std::filesystem::directory_iterator(fileDirectory))
+        {
+            if (std::filesystem::exists(fileDirectory) && std::filesystem::is_directory(fileDirectory))
+            {
+                fileList.push_back(entry.path().string());
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& ex)
+    {
+        std::cerr << "Filesystem error: " << ex.what() << std::endl;
+    }
+
+    return fileList;
+}
+
 Vector<String> FileSystem::GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList)
 {
-
     Vector<String> fileList;
     try
     {

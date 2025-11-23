@@ -40,6 +40,7 @@ public:
 	DLL_EXPORT String RemoveFileExtention(const String& filePath) { return File_RemoveFileExtention(filePath.c_str()); }
 	DLL_EXPORT bool FileExists(const String& filePath) { return File_Exists(filePath.c_str()); }
 	DLL_EXPORT nlohmann::json LoadJsonFile(const String& filePath) { return File_LoadJsonFile(filePath.c_str()); }
+	DLL_EXPORT Vector<String> GetFilesFromDirectory(const String& fileDirectory);
 	DLL_EXPORT Vector<String> GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
 };
 extern DLL_EXPORT FileSystem fileSystem;

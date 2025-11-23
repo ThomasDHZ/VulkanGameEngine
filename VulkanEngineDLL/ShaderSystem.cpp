@@ -81,7 +81,6 @@ ShaderSystem shaderSystem = ShaderSystem();
          {
              nlohmann::json pipelineJson = File_LoadJsonFile(renderPassJson["RenderPipelineList"][y].get<String>().c_str());
              Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
-
              Vector<ShaderStructDLL> shaderStructList = LoadProtoTypeStructs(shaderJsonList);
              for (auto& shaderStruct : shaderStructList)
              {
@@ -452,18 +451,30 @@ ShaderSystem shaderSystem = ShaderSystem();
      return shaderVariables;
  }
 
- Vector<ShaderStructDLL> ShaderSystem::LoadProtoTypeStructs(const Vector<String>& pipelineShaderList)
+ Vector<ShaderStructDLL> ShaderSystem::LoadProtoTypeStructs(const Vector<String>& pipelineShaderList) 
  {
      SpvReflectShaderModule spvModule;
      Vector<ShaderStructDLL> shaderStructs;
-     for (auto& pipelineShaderPath : pipelineShaderList)
-     {
-         FileState file = File_Read(pipelineShaderPath.c_str());
-         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
+
+     for (auto& pipelineShaderPath : pipelineShaderList) {
+         std::ifstream shaderFile(pipelineShaderPath, std::ios::binary); // open in binary mode
+         if (!shaderFile) {
+             // handle error
+             continue;
+         }
+
+         std::stringstream buffer;
+         buffer << shaderFile.rdbuf();
+         std::string shaderCode = buffer.str();
+
+         // Get size in bytes
+         size_t shaderSize = shaderCode.size();
+
+         // Create reflection module
+         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(shaderSize, reinterpret_cast<const uint8_t*>(shaderCode.data()), &spvModule));
+
          LoadShaderDescriptorSetInfo(spvModule, shaderStructs);
          spvReflectDestroyShaderModule(&spvModule);
-         free(file.Data);
-         file.Data = nullptr;
      }
      return shaderStructs;
  }

@@ -23,7 +23,7 @@ int main(int argc, char** argv)
         debugSystem.SetRootDirectory("../Assets");
     }
 #else
-    debugSystem.SetRootDirectory("../Assets");
+    debugSystem.SetRootDirectory("Assets");
 #endif 
 
     vulkanWindow = new GameEngineWindow();
