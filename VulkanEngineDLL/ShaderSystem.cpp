@@ -451,31 +451,48 @@ ShaderSystem shaderSystem = ShaderSystem();
      return shaderVariables;
  }
 
- Vector<ShaderStructDLL> ShaderSystem::LoadProtoTypeStructs(const Vector<String>& pipelineShaderList) 
+ Vector<ShaderStructDLL> ShaderSystem::LoadProtoTypeStructs(const Vector<String>& pipelineShaderList)
  {
-     SpvReflectShaderModule spvModule;
      Vector<ShaderStructDLL> shaderStructs;
+     SpvReflectShaderModule spvModule{};
 
-     for (auto& pipelineShaderPath : pipelineShaderList) {
-         std::ifstream shaderFile(pipelineShaderPath, std::ios::binary); // open in binary mode
-         if (!shaderFile) {
-             // handle error
+     for (const auto& filePath : pipelineShaderList)
+     {
+         // We are already chdir'ed into Assets/ ? this is correct
+         std::cout << "=== SHADER LOAD DEBUG ===" << std::endl;
+         std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+         std::cout << "Trying to open: [" << filePath << "]" << std::endl;
+         std::cout << "Loading shader: " << filePath << std::endl;
+
+         std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+         if (!file) {
+             std::cerr << "ERROR: Cannot open shader file: " << filePath << std::endl;
              continue;
          }
 
-         std::stringstream buffer;
-         buffer << shaderFile.rdbuf();
-         std::string shaderCode = buffer.str();
+         size_t size = file.tellg();
+         file.seekg(0);
 
-         // Get size in bytes
-         size_t shaderSize = shaderCode.size();
+         std::vector<std::byte> buffer(size);
+         file.read(reinterpret_cast<char*>(buffer.data()), size);
 
-         // Create reflection module
-         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(shaderSize, reinterpret_cast<const uint8_t*>(shaderCode.data()), &spvModule));
+         if (!file) {
+             std::cerr << "ERROR: Failed to read full shader file: " << filePath << std::endl;
+             continue;
+         }
+
+         SpvReflectResult result = spvReflectCreateShaderModule(
+             size, buffer.data(), &spvModule);
+
+         if (result != SPV_REFLECT_RESULT_SUCCESS) {
+             std::cerr << "SPIRV-Reflect failed for " << filePath << std::endl;
+             continue;
+         }
 
          LoadShaderDescriptorSetInfo(spvModule, shaderStructs);
          spvReflectDestroyShaderModule(&spvModule);
      }
+
      return shaderStructs;
  }
 
