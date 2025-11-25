@@ -464,9 +464,9 @@ ShaderSystem shaderSystem = ShaderSystem();
          std::cout << "Trying to open: [" << filePath << "]" << std::endl;
          std::cout << "Loading shader: " << filePath << std::endl;
 
-         std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+         std::ifstream file(std::filesystem::current_path() / filePath, std::ios::binary | std::ios::ate);
          if (!file) {
-             std::cerr << "ERROR: Cannot open shader file: " << filePath << std::endl;
+             std::cerr << "ERROR: Cannot open shader file: " << std::filesystem::current_path() / filePath << std::endl;
              continue;
          }
 

@@ -24,6 +24,62 @@ struct Material
     float Roughness = 0.0f;
     float AmbientOcclusion = 1.0f;
     float Alpha = 1.0f;
+
+    Material() = default;
+    Material(const Material&) = default;            // ? add these two lines
+    Material& operator=(const Material&) = default;
+
+  /*  Material()
+    { 
+    }
+
+    Material(const Material& material)
+    {
+        VectorMapKey = material.VectorMapKey;
+        materialGuid = material.materialGuid;
+        ShaderMaterialBufferIndex = material.ShaderMaterialBufferIndex;
+        MaterialBufferId = material.MaterialBufferId;
+        AlbedoMapId = material.AlbedoMapId;
+        MetallicRoughnessMapId = material.MetallicRoughnessMapId;
+        MetallicMapId = material.MetallicMapId;
+        RoughnessMapId = material.RoughnessMapId;
+        AmbientOcclusionMapId = material.AmbientOcclusionMapId;
+        NormalMapId = material.NormalMapId;
+        DepthMapId = material.DepthMapId;
+        AlphaMapId = material.AlphaMapId;
+        EmissionMapId = material.EmissionMapId;
+        HeightMapId = material.HeightMapId;
+        Albedo = material.Albedo;
+        Emission = material.Emission;
+        Metallic = material.Metallic;
+        Roughness = material.Roughness;
+        AmbientOcclusion = material.AmbientOcclusion;
+        Alpha = material.Alpha;
+    }
+
+    Material& operator=(const Material& material)
+    {
+		VectorMapKey = material.VectorMapKey;
+		materialGuid = material.materialGuid;
+		ShaderMaterialBufferIndex = material.ShaderMaterialBufferIndex;
+		MaterialBufferId = material.MaterialBufferId;
+		AlbedoMapId = material.AlbedoMapId;
+		MetallicRoughnessMapId = material.MetallicRoughnessMapId;
+		MetallicMapId = material.MetallicMapId;
+		RoughnessMapId = material.RoughnessMapId;
+		AmbientOcclusionMapId = material.AmbientOcclusionMapId;
+		NormalMapId = material.NormalMapId;
+		DepthMapId = material.DepthMapId;
+		AlphaMapId = material.AlphaMapId;
+		EmissionMapId = material.EmissionMapId;
+		HeightMapId = material.HeightMapId;
+		Albedo = material.Albedo;
+		Emission = material.Emission;
+		Metallic = material.Metallic;
+		Roughness = material.Roughness;
+		AmbientOcclusion = material.AmbientOcclusion;
+		Alpha = material.Alpha;
+    }*/
 };
 
 class MaterialSystem
