@@ -144,7 +144,7 @@ void LevelSystem::DestroyLevel()
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    Camera_Update(*OrthographicCamera.get(), shaderSystem.FindShaderPushConstant("sceneData"));
+    Camera_Update(*OrthographicCamera.get());
     spriteSystem.Update(deltaTime);
     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
 }
@@ -293,8 +293,8 @@ void LevelSystem::Update(const float& deltaTime)
 
          float blurStrength = 1.0f + x * 0.5f;
          float lodLevel = static_cast<float>(x);
-         memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurScale").Value, &lodLevel, sizeof(lodLevel));
-         memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurStrength").Value, &blurStrength, sizeof(blurStrength));
+         memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurScale").Value.data(), &lodLevel, sizeof(lodLevel));
+         memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurStrength").Value.data(), &blurStrength, sizeof(blurStrength));
 
          VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
          //vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -384,7 +384,7 @@ void LevelSystem::Update(const float& deltaTime)
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
          // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &meshIndex, sizeof(meshIndex));
-         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer);
+         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
@@ -401,7 +401,7 @@ void LevelSystem::Update(const float& deltaTime)
          const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
          // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &spriteLayer.SpriteLayerMeshId, sizeof(spriteLayer.SpriteLayerMeshId));
-         vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer);
+         vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, offsets);

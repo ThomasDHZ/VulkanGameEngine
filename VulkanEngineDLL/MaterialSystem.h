@@ -26,7 +26,7 @@ struct Material
     float Alpha = 1.0f;
 
     Material() = default;
-    Material(const Material&) = default;            // ? add these two lines
+    Material(const Material&) = default;
     Material& operator=(const Material&) = default;
 
   /*  Material()

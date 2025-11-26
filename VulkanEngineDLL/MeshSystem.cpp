@@ -110,8 +110,8 @@ void MeshSystem::UpdateMesh(Mesh& mesh, ShaderStructDLL& shaderStruct, VulkanBuf
         MeshMatrix = glm::scale(MeshMatrix, mesh.MeshScale);
     }
 
-    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MaterialIndex").Value, &shaderMaterialBufferIndex, sizeof(uint));
-    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MeshTransform").Value, &GameObjectMatrix, sizeof(mat4));
+    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MaterialIndex").Value.data(), &shaderMaterialBufferIndex, sizeof(uint));
+    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MeshTransform").Value.data(), &GameObjectMatrix, sizeof(mat4));
     shaderSystem.UpdateShaderBuffer(meshPropertiesBuffer.BufferId);
 }
 

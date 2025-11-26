@@ -74,7 +74,7 @@ extern "C" {
 	uint32						Renderer_GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkSurfaceFormatKHR			Renderer_FindSwapSurfaceFormat(Vector<VkSurfaceFormatKHR>&availableFormats);
 	VkPresentModeKHR			Renderer_FindSwapPresentMode(Vector<VkPresentModeKHR>&availablePresentModes);
-
+	VkExtent2D					Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkDevice					Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
 	VkPhysicalDevice			Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32 & graphicsFamily, uint32 & presentFamily);
 	void						Renderer_SetUpSwapChain(GraphicsRenderer& renderer);
@@ -102,4 +102,3 @@ extern "C" {
 	void						Renderer_DestroyPipeline(VkDevice device, VkPipeline* pipeline);
 	void						Renderer_DestroyPipelineLayout(VkDevice device, VkPipelineLayout* pipelineLayout);
 	void						Renderer_DestroyPipelineCache(VkDevice device, VkPipelineCache* pipelineCache);
-

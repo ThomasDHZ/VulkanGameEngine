@@ -100,7 +100,7 @@ struct ShaderVariableDLL
     String                          Name;
     size_t                          Size = 0;
     size_t                          ByteAlignment = 0;
-    void* Value =                   nullptr;
+    Vector<byte>                    Value;
     ShaderMemberType                MemberTypeEnum = shaderUnknown;
 };
 
@@ -108,9 +108,9 @@ struct ShaderStructDLL
 {
     String                          Name;
     size_t			                ShaderBufferSize = 0;
-    Vector<ShaderVariableDLL>          ShaderBufferVariableList;
+    Vector<ShaderVariableDLL>       ShaderBufferVariableList;
     int                             ShaderStructBufferId;
-    void* ShaderStructBuffer = nullptr;
+    Vector<byte>                    ShaderStructBuffer;
 };
 
 struct ShaderDescriptorSetDLL
@@ -118,7 +118,7 @@ struct ShaderDescriptorSetDLL
     String                          Name;
     uint32                          Binding;
     VkDescriptorType                DescripterType;
-    Vector<ShaderStructDLL>            ShaderStructList;
+    Vector<ShaderStructDLL>         ShaderStructList;
 };
 
 struct ShaderDescriptorBindingDLL
@@ -139,7 +139,7 @@ struct ShaderPushConstantDLL
     size_t			                PushConstantSize = 0;
     VkShaderStageFlags              ShaderStageFlags;
     Vector<ShaderVariableDLL>       PushConstantVariableList;
-    void* PushConstantBuffer =      nullptr;
+    Vector<byte>                    PushConstantBuffer;
     bool			                GlobalPushContsant = false;
 };
 

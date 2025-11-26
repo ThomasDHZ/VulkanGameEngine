@@ -18,18 +18,17 @@
     #include <cstdlib>
 #endif
 
-class VkGuid {
-private:
-    uint32_t Data1;
-    uint16_t Data2;
-    uint16_t Data3;
-    uint8_t  Data4[8]; 
+struct VkGuid 
+{
 
-public:
-    VkGuid() : Data1(0), Data2(0), Data3(0) 
-    {
-        std::memset(Data4, 0, 8);
-    }
+    uint32_t Data1 = 0;
+    uint16_t Data2 = 0;
+    uint16_t Data3 = 0;
+    uint8_t  Data4[8] = {};
+
+    VkGuid() = default;
+    VkGuid(const VkGuid&) = default;
+    VkGuid& operator=(const VkGuid&) = default;
 
     // From string: {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
     explicit VkGuid(const std::string& s) 
@@ -153,7 +152,6 @@ public:
     }
 
     bool operator!=(const VkGuid& o) const { return !(*this == o); }
-
     friend struct std::hash<VkGuid>;
 };
 
@@ -162,18 +160,15 @@ static_assert(alignof(VkGuid) <= 4, "VkGuid alignment must be <= 4");
 
 namespace std {
     template <>
-    struct hash<VkGuid> 
+    struct hash<VkGuid>
     {
-        // FNV-1a 64-bit – fast, excellent distribution, no endian issues
         static constexpr uint64_t kFNVPrime = 1099511628211ULL;
         static constexpr uint64_t kFNVOffset = 14695981039346656037ULL;
 
-        size_t operator()(const VkGuid& g) const noexcept {
-            // The 16 bytes are always in the same memory layout:
-            //   Data1 (4) + Data2 (2) + Data3 (2) + Data4[8]
+        inline size_t operator()(const VkGuid& g) const noexcept 
+        {
             const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&g);
             uint64_t h = kFNVOffset;
-
             for (int i = 0; i < 16; ++i) {
                 h ^= static_cast<uint64_t>(bytes[i]);
                 h *= kFNVPrime;

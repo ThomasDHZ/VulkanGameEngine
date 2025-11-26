@@ -15,18 +15,20 @@ MaterialSystem::~MaterialSystem()
 
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 {
-    if (materialPath.c_str() == nullptr)
-    {
-        return VkGuid();
-    }
+    if (materialPath.empty() || materialPath.c_str() == nullptr)
+        return VkGuid::Empty();
+
     nlohmann::json json = File_LoadJsonFile(materialPath.c_str());
-    VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
+    VkGuid materialId = VkGuid(json["MaterialId"].get<std::string>());
+
     if (MaterialSystem_MaterialMapExists(materialId))
-    {
         return materialId;
-    }
+
     int bufferIndex = ++NextBufferId;
-    shaderSystem.PipelineShaderStructMap[bufferIndex] = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
+
+    shaderSystem.PipelineShaderStructMap[bufferIndex] =
+        shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
+
     bufferSystem.VulkanBufferMap[bufferIndex] = bufferSystem.CreateVulkanBuffer(
         bufferIndex,
         shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize,
@@ -37,28 +39,28 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
         false
     );
 
-
     Material material;
-    material.materialGuid = VkGuid(json["MaterialId"].get<std::string>());
+    material.materialGuid = materialId;
     material.ShaderMaterialBufferIndex = 0;
     material.MaterialBufferId = bufferIndex;
-    material.AlbedoMapId = json["AlbedoMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["AlbedoMapId"].get<std::string>());
-    material.MetallicRoughnessMapId = json["MetallicRoughnessMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["MetallicRoughnessMapId"].get<std::string>());
-    material.MetallicMapId = json["MetallicMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["MetallicMapId"].get<std::string>());
-    material.RoughnessMapId = json["RoughnessMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["RoughnessMapId"].get<std::string>());
-    material.AmbientOcclusionMapId = json["AmbientOcclusionMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["AmbientOcclusionMapId"].get<std::string>());
-    material.NormalMapId = json["NormalMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["NormalMapId"].get<std::string>());
-    material.DepthMapId = json["DepthMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["DepthMapId"].get<std::string>());
-    material.AlphaMapId = json["AlphaMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["AlphaMapId"].get<std::string>());
-    material.EmissionMapId = json["EmissionMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["EmissionMapId"].get<std::string>());
-    material.HeightMapId = json["HeightMapId"].get<std::string>().empty() ? VkGuid() : VkGuid(json["HeightMapId"].get<std::string>());
+    material.AlbedoMapId = json["AlbedoMapId"].empty() ? VkGuid::Empty() : VkGuid(json["AlbedoMapId"].get<std::string>());
+    material.MetallicRoughnessMapId = json["MetallicRoughnessMapId"].empty() ? VkGuid::Empty() : VkGuid(json["MetallicRoughnessMapId"].get<std::string>());
+    material.MetallicMapId = json["MetallicMapId"].empty() ? VkGuid::Empty() : VkGuid(json["MetallicMapId"].get<std::string>());
+    material.RoughnessMapId = json["RoughnessMapId"].empty() ? VkGuid::Empty() : VkGuid(json["RoughnessMapId"].get<std::string>());
+    material.AmbientOcclusionMapId = json["AmbientOcclusionMapId"].empty() ? VkGuid::Empty() : VkGuid(json["AmbientOcclusionMapId"].get<std::string>());
+    material.NormalMapId = json["NormalMapId"].empty() ? VkGuid::Empty() : VkGuid(json["NormalMapId"].get<std::string>());
+    material.DepthMapId = json["DepthMapId"].empty() ? VkGuid::Empty() : VkGuid(json["DepthMapId"].get<std::string>());
+    material.AlphaMapId = json["AlphaMapId"].empty() ? VkGuid::Empty() : VkGuid(json["AlphaMapId"].get<std::string>());
+    material.EmissionMapId = json["EmissionMapId"].empty() ? VkGuid::Empty() : VkGuid(json["EmissionMapId"].get<std::string>());
+    material.HeightMapId = json["HeightMapId"].empty() ? VkGuid::Empty() : VkGuid(json["HeightMapId"].get<std::string>());
     material.Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]);
     material.Emission = vec3(json["Emission"][0], json["Emission"][1], json["Emission"][2]);
     material.Metallic = json["Metallic"];
     material.Roughness = json["Roughness"];
     material.AmbientOcclusion = json["AmbientOcclusion"];
     material.Alpha = json["Alpha"];
-	materialSystem.MaterialMap.emplace(material.materialGuid, material);
+    materialSystem.MaterialMap.emplace(material.materialGuid, std::move(material));
+    return materialId;
 }
 
 void MaterialSystem::Update(const float& deltaTime)
@@ -79,16 +81,16 @@ void MaterialSystem::Update(const float& deltaTime)
         const uint EmissionMapId = material.EmissionMapId != VkGuid() ? TextureSystem_FindTexture(material.EmissionMapId).textureBufferIndex : 0;
         const uint HeightMapId = material.HeightMapId != VkGuid() ? TextureSystem_FindTexture(material.HeightMapId).textureBufferIndex : 0;
         ShaderStructDLL shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AlbedoMap").Value, &AlbedoMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MetallicRoughnessMap").Value, &MetallicRoughnessMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MetallicMap").Value, &MetallicMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "RoughnessMap").Value, &RoughnessMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AmbientOcclusionMap").Value, &AmbientOcclusionMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "NormalMap").Value, &NormalMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "DepthMap").Value, &DepthMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AlphaMap").Value, &AlphaMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "EmissionMap").Value, &EmissionMapId, sizeof(uint));
-        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "HeightMap").Value, &HeightMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AlbedoMap").Value.data(), &AlbedoMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MetallicRoughnessMap").Value.data(), &MetallicRoughnessMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MetallicMap").Value.data(), &MetallicMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "RoughnessMap").Value.data(), &RoughnessMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AmbientOcclusionMap").Value.data(), &AmbientOcclusionMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "NormalMap").Value.data(), &NormalMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "DepthMap").Value.data(), &DepthMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "AlphaMap").Value.data(), &AlphaMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "EmissionMap").Value.data(), &EmissionMapId, sizeof(uint));
+        memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "HeightMap").Value.data(), &HeightMapId, sizeof(uint));
         shaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
         x++;
     }

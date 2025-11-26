@@ -93,7 +93,7 @@ ShaderSystem shaderSystem = ShaderSystem();
                          .ShaderBufferSize = shaderStruct.ShaderBufferSize,
                          .ShaderBufferVariableList = shaderStruct.ShaderBufferVariableList,
                          .ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
-                         .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStruct.ShaderBufferSize, __FILE__, __LINE__, __func__, name.c_str())
+                         .ShaderStructBuffer = Vector<byte>(shaderStruct.ShaderBufferSize, 0x00)
                      };
                  }
              }
@@ -256,12 +256,11 @@ ShaderSystem shaderSystem = ShaderSystem();
                 .PushConstantSize = bufferSize,
                 .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                 .PushConstantVariableList = shaderStructVariableList,
-                .PushConstantBuffer = memorySystem.AddPtrBuffer<byte>(bufferSize, __FILE__, __LINE__, __func__, pushConstantName.c_str())
+                .PushConstantBuffer = Vector<byte>(bufferSize, 0x00)
              };
              for (auto& shaderVariable : shaderSystem.ShaderPushConstantMap[pushConstantName].PushConstantVariableList)
              {
-                 shaderVariable.Value = memorySystem.AddPtrBuffer<byte>(shaderVariable.Size, __FILE__, __LINE__, __func__, shaderVariable.Name.c_str());
-                 SetVariableDefaults(shaderVariable);
+                 shaderVariable.Value = Vector<byte>(shaderVariable.Size, 0x00);
              }
              shaderPushConstantList.emplace_back(shaderSystem.ShaderPushConstantMap[pushConstantName]);
          }
@@ -357,7 +356,7 @@ ShaderSystem shaderSystem = ShaderSystem();
          .Name = String(shaderInfo.type_name),
          .ShaderBufferSize = bufferSize,
          .ShaderBufferVariableList = structVariableList,
-         .ShaderStructBuffer = nullptr
+         .ShaderStructBuffer = Vector<byte>()
      };
      return shaderStruct;
  }
@@ -409,8 +408,8 @@ ShaderSystem shaderSystem = ShaderSystem();
              }
              case SpvOpTypeMatrix:
              {
-                 uint32_t rowCount = variable.traits.numeric.matrix.row_count;
-                 uint32_t colCount = variable.traits.numeric.matrix.column_count;
+                 uint32 rowCount = variable.traits.numeric.matrix.row_count;
+                 uint32 colCount = variable.traits.numeric.matrix.column_count;
                  memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                  if (rowCount == 2 && colCount == 2)
                  {
@@ -441,7 +440,7 @@ ShaderSystem shaderSystem = ShaderSystem();
                  .Name = String(variable.struct_member_name),
                  .Size = memberSize,
                  .ByteAlignment = byteAlignment,
-                 .Value = nullptr,
+                 .Value = Vector<byte>(),
                  .MemberTypeEnum = memberType,
              });
          size_t alignment = byteAlignment;
@@ -458,12 +457,6 @@ ShaderSystem shaderSystem = ShaderSystem();
 
      for (const auto& filePath : pipelineShaderList)
      {
-         // We are already chdir'ed into Assets/ ? this is correct
-         std::cout << "=== SHADER LOAD DEBUG ===" << std::endl;
-         std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
-         std::cout << "Trying to open: [" << filePath << "]" << std::endl;
-         std::cout << "Loading shader: " << filePath << std::endl;
-
          std::ifstream file(std::filesystem::current_path() / filePath, std::ios::binary | std::ios::ate);
          if (!file) {
              std::cerr << "ERROR: Cannot open shader file: " << std::filesystem::current_path() / filePath << std::endl;
@@ -572,8 +565,8 @@ ShaderSystem shaderSystem = ShaderSystem();
      for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
      {
          offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
-         void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer) + offset;
-         memcpy(dest, pushConstantVar.Value, pushConstantVar.Size);
+         void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer.data()) + offset;
+         memcpy(dest, pushConstantVar.Value.data(), pushConstantVar.Size);
          offset += pushConstantVar.Size;
      }
  }
@@ -595,17 +588,17 @@ ShaderSystem shaderSystem = ShaderSystem();
          return;
      }
 
+     size_t offset = 0;
      ShaderStructDLL shaderStruct = PipelineShaderStructMap[vulkanBufferId];
      VulkanBuffer vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
-     size_t offset = 0;
      for (const auto& shaderStrucVar : shaderStruct.ShaderBufferVariableList)
      {
          offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
-         void* dest = static_cast<byte*>(shaderStruct.ShaderStructBuffer) + offset;
-         memcpy(dest, shaderStrucVar.Value, shaderStrucVar.Size);
+         void* dest = static_cast<byte*>(shaderStruct.ShaderStructBuffer.data()) + offset;
+         memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
          offset += shaderStrucVar.Size;
      }
-     bufferSystem.UpdateBufferMemory(vulkanBuffer, shaderStruct.ShaderStructBuffer, shaderStruct.ShaderBufferSize, 1);
+     bufferSystem.UpdateBufferMemory(vulkanBuffer, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize, 1);
  }
 
  ShaderStructDLL ShaderSystem::CopyShaderStructProtoType(const String& structName)
@@ -617,7 +610,7 @@ ShaderSystem shaderSystem = ShaderSystem();
          .ShaderBufferSize = shaderStructCopy.ShaderBufferSize,
          .ShaderBufferVariableList = shaderStructCopy.ShaderBufferVariableList,
          .ShaderStructBufferId = shaderStructCopy.ShaderStructBufferId,
-         .ShaderStructBuffer = memorySystem.AddPtrBuffer<byte>(shaderStructCopy.ShaderBufferSize, __FILE__, __LINE__, __func__, shaderStructCopy.Name.c_str()),
+         .ShaderStructBuffer = Vector<byte>(shaderStructCopy.ShaderBufferSize, 0x00)
      };
      for (size_t x = 0; x < shaderStructCopy.ShaderBufferVariableList.size(); ++x)
      {
@@ -628,8 +621,7 @@ ShaderSystem shaderSystem = ShaderSystem();
          destVar.Size = srcVar.Size;
          destVar.ByteAlignment = srcVar.ByteAlignment;
          destVar.MemberTypeEnum = srcVar.MemberTypeEnum;
-         destVar.Value = memorySystem.AddPtrBuffer<byte>(destVar.Size, __FILE__, __LINE__, __func__, destVar.Name.c_str());
-         SetVariableDefaults(destVar);
+         destVar.Value = Vector<byte>(destVar.Size, 0x00);
      }
      return shaderStruct;
  }
@@ -657,7 +649,7 @@ ShaderSystem shaderSystem = ShaderSystem();
      return shaderSystem.ShaderModuleMap.at(shaderFile);
  }
 
- ShaderPushConstantDLL ShaderSystem::FindShaderPushConstant(const String& shaderFile)
+ ShaderPushConstantDLL& ShaderSystem::FindShaderPushConstant(const String& shaderFile)
  {
      return shaderSystem.ShaderPushConstantMap.at(shaderFile);
  }
@@ -672,7 +664,7 @@ ShaderSystem shaderSystem = ShaderSystem();
      return shaderSystem.PipelineShaderStructMap.at(vulkanBufferId);
  }
 
- ShaderVariableDLL ShaderSystem::FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName)
+ ShaderVariableDLL& ShaderSystem::FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName)
  {
      auto it = std::ranges::find_if(shaderStruct.ShaderBufferVariableList, [&](const ShaderVariableDLL& var)
          {
@@ -686,7 +678,7 @@ ShaderSystem shaderSystem = ShaderSystem();
      return *it;
  }
 
- ShaderVariableDLL ShaderSystem::FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName)
+ ShaderVariableDLL& ShaderSystem::FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName)
  {
      auto it = std::ranges::find_if(shaderPushConstant.PushConstantVariableList, [&](const ShaderVariableDLL& var)
          {
@@ -744,154 +736,4 @@ ShaderSystem shaderSystem = ShaderSystem();
  bool ShaderSystem::ShaderPipelineStructExists(uint vulkanBufferKey)
  {
      return shaderSystem.PipelineShaderStructMap.contains(vulkanBufferKey);
- }
-
- void ShaderSystem::DestroyShaderStructData(Vector<ShaderStructDLL>& shaderStructList)
- {
-     for (auto& shaderStruct : shaderStructList)
-     {
-         if (!shaderStruct.ShaderBufferVariableList.empty())
-         {
-             for (auto& shaderVar : shaderStruct.ShaderBufferVariableList)
-             {
-                 if (shaderVar.Value != nullptr)
-                 {
-                     byte* value = static_cast<byte*>(shaderVar.Value);
-                     memorySystem.DeletePtr(value);
-                 }
-             }
-         }
-         if (shaderStruct.ShaderStructBuffer != nullptr)
-         {
-             byte* value = static_cast<byte*>(shaderStruct.ShaderStructBuffer);
-             memorySystem.DeletePtr(value);
-         }
-     }
- }
-
- void ShaderSystem::DestroyPushConstantBufferData(Vector<ShaderPushConstantDLL>& pushConstantList)
- {
-     for (auto& shaderStruct : pushConstantList)
-     {
-         if (!shaderStruct.PushConstantVariableList.empty())
-         {
-             for (auto& shaderVar : shaderStruct.PushConstantVariableList)
-             {
-                 if (shaderVar.Value != nullptr)
-                 {
-                     byte* value = static_cast<byte*>(shaderVar.Value);
-                     memorySystem.DeletePtr(value);
-                 }
-             }
-         }
-         if (shaderStruct.PushConstantBuffer != nullptr)
-         {
-             byte* value = static_cast<byte*>(shaderStruct.PushConstantBuffer);
-             memorySystem.DeletePtr(value);
-         }
-     }
- }
-
- void ShaderSystem::Destroy()
- {
-     Vector<ShaderPushConstantDLL> shaderPushConstantList;
-     shaderPushConstantList.reserve(shaderSystem.ShaderPushConstantMap.size());
-     for (const auto& pair : shaderSystem.ShaderPushConstantMap) {
-         shaderPushConstantList.push_back(pair.second);
-     }
-     DestroyPushConstantBufferData(shaderPushConstantList);
-
-     Vector<ShaderStructDLL> shaderStructProtoList;
-     shaderStructProtoList.reserve(shaderSystem.PipelineShaderStructPrototypeMap.size());
-     for (const auto& pair : shaderSystem.PipelineShaderStructPrototypeMap) {
-         shaderStructProtoList.push_back(pair.second);
-     }
-     DestroyShaderStructData(shaderStructProtoList);
-
-     Vector<ShaderStructDLL> shaderStructList;
-     shaderStructList.reserve(shaderSystem.PipelineShaderStructMap.size());
-     for (const auto& pair : shaderSystem.PipelineShaderStructMap) {
-         shaderStructList.push_back(pair.second);
-     }
-     DestroyShaderStructData(shaderStructList);
-     shaderSystem.ShaderModuleMap.clear();
- }
-
- void ShaderSystem::SetVariableDefaults(ShaderVariableDLL& shaderVariable)
- {
-     switch (shaderVariable.MemberTypeEnum)
-     {
-         case shaderInt:
-         {
-             int varType = 0;
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderUint:
-         {
-             int varType = 0;
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderFloat:
-         {
-             int varType = 0.0f;
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderIvec2:
-         {
-             ivec2 varType = ivec2(0.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderIvec3:
-         {
-             ivec3 varType = ivec3(0.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderIvec4:
-         {
-             ivec4 varType = ivec4(0.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderVec2:
-         {
-             vec2 varType = vec2(0.0);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderVec3:
-         {
-             vec3 varType = vec3(0.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderVec4:
-         {
-             vec4 varType = vec4(0.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderMat2:
-         {
-             mat2 varType = mat2(1.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderMat3:
-         {
-             mat3 varType = mat3(1.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-         case shaderMat4:
-         {
-             mat4 varType = mat4(1.0f);
-             memcpy(shaderVariable.Value, &varType, shaderVariable.Size);
-             break;
-         }
-     }
  }

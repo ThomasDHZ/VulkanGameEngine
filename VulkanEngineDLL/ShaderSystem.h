@@ -47,11 +47,11 @@ struct ShaderDescriptorBinding
 
 struct ShaderPushConstant
 {
-    const char* PushConstantName;
+    const char*     PushConstantName;
     size_t			   PushConstantSize = 0;
     size_t			   PushConstantVariableCount = 0;
     VkShaderStageFlags ShaderStageFlags;
-    ShaderVariable* PushConstantVariableList;
+    ShaderVariable*    PushConstantVariableList;
     void* PushConstantBuffer = nullptr;
     bool			   GlobalPushContant = false;
 };
@@ -87,9 +87,6 @@ private:
     Vector<ShaderStructDLL>                     LoadProtoTypeStructs(const Vector<String>& pipelineShaderList);
     Vector<SpvReflectSpecializationConstant*>   LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
     Vector<SpvReflectSpecializationConstant*>   FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
-    void                                        DestroyShaderStructData(Vector<ShaderStructDLL>& shaderStructList);
-    void                                        DestroyPushConstantBufferData(Vector<ShaderPushConstantDLL>& pushConstant);
-    void                                        SetVariableDefaults(ShaderVariableDLL& shaderVariable);
 
 public:
 	
@@ -107,11 +104,11 @@ public:
     DLL_EXPORT void                             UpdateShaderBuffer(uint vulkanBufferId);
     DLL_EXPORT ShaderStructDLL                  CopyShaderStructProtoType(const String& structName);
     DLL_EXPORT ShaderPipelineDataDLL            FindShaderModule(const String& shaderFile);
-    DLL_EXPORT ShaderPushConstantDLL            FindShaderPushConstant(const String& shaderFile);
+    DLL_EXPORT ShaderPushConstantDLL&           FindShaderPushConstant(const String& shaderFile);
     DLL_EXPORT ShaderStructDLL                  FindShaderProtoTypeStruct(const String& shaderKey);
     DLL_EXPORT ShaderStructDLL                  FindShaderStruct(int vulkanBufferId);
-    DLL_EXPORT ShaderVariableDLL                FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName);
-    DLL_EXPORT ShaderVariableDLL                FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName);
+    DLL_EXPORT ShaderVariableDLL&               FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName);
+    DLL_EXPORT ShaderVariableDLL&               FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName);
     DLL_EXPORT bool                             ShaderModuleExists(const String& shaderFile);
     DLL_EXPORT bool                             ShaderPushConstantExists(const String& pushConstantName);
     DLL_EXPORT bool                             ShaderStructPrototypeExists(const String& structKey);
@@ -119,7 +116,41 @@ public:
     DLL_EXPORT bool                             SearchShaderConstantBufferExists(const Vector<ShaderPushConstantDLL>& shaderPushConstantList, const String& constBufferName);
     DLL_EXPORT bool                             SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBindingDLL>& shaderDescriptorBindingList, const String& descriptorBindingName);
     DLL_EXPORT bool                             SearchShaderPipelineStructExists(const Vector<ShaderStructDLL>& shaderStructList, const String& structName);
-    DLL_EXPORT void                             Destroy();
+
+    template<typename T>
+    void UpdatePushConstantValue(const String& pushConstName, const String& valueName, const T& value)
+    {
+		ShaderPushConstantDLL& pushConst = FindShaderPushConstant(pushConstName);
+        ShaderVariableDLL& variable = FindShaderPushConstantStructVariable(pushConst, valueName);
+        static_assert(std::is_trivially_copyable_v<T>, "Push constant type must be trivially copyable");
+        if (variable.Value.size() != sizeof(T))
+        {
+            throw std::runtime_error(
+                "Push constant size mismatch for '" + valueName + "': "
+                "expected " + std::to_string(variable.Value.size()) + " bytes, "
+                "got " + std::to_string(sizeof(T)) + " bytes (type: " + typeid(T).name() + ")"
+            );
+        }
+        auto adf = variable.Value.data();
+        std::memcpy(variable.Value.data(), &value, variable.Value.size());
+    }
+
+    template<typename T>
+    void UpdateShaderStructValue(ShaderStructDLL& shaderStruct, const String& name, const T& value)
+    {
+        ShaderVariableDLL variable = FindShaderPipelineStructVariable(shaderStruct, name);
+        static_assert(std::is_trivially_copyable_v<T>, "Push constant type must be trivially copyable");
+        if (variable.Value.size() != sizeof(T))
+        {
+            throw std::runtime_error(
+                "Push constant size mismatch for '" + name + "': "
+                "expected " + std::to_string(variable.Value.size()) + " bytes, "
+                "got " + std::to_string(sizeof(T)) + " bytes (type: " + typeid(T).name() + ")"
+            );
+        }
+        std::memcpy(variable.Value.data(), &value, variable.Value.size());
+    }
+
 };
 extern DLL_EXPORT ShaderSystem shaderSystem;
 

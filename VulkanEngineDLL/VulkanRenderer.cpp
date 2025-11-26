@@ -54,18 +54,35 @@ GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer&
     return renderer;
 }
 
+VkExtent2D Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
+{
+    int width, height;
+    glfwGetFramebufferSize((GLFWwindow*)windowHandle, &width, &height);
+
+    surfaceCapabilities = Renderer_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
+    if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
+    {
+        return surfaceCapabilities.currentExtent;
+    }
+
+    VkExtent2D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+    extent.width = std::max(surfaceCapabilities.minImageExtent.width, std::min(surfaceCapabilities.maxImageExtent.width, extent.width));
+    extent.height = std::max(surfaceCapabilities.minImageExtent.height, std::min(surfaceCapabilities.maxImageExtent.height, extent.height));
+    return extent;
+}
+
 VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 {
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = Renderer_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
+    VkSurfaceCapabilitiesKHR surfaceCapabilities;
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Renderer_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
+    VkExtent2D extent = Renderer_SetUpSwapChainExtent(windowHandle, surfaceCapabilities);
     VULKAN_RESULT(Renderer_GetQueueFamilies(renderer.PhysicalDevice, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily));
     Vector<VkPresentModeKHR> compatiblePresentModesList = Renderer_GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = Renderer_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = Renderer_FindSwapPresentMode(compatiblePresentModesList);
 
     Renderer_SetUpSwapChain(renderer);
-    renderer.SwapChainResolution.width = surfaceCapabilities.currentExtent.width;
-    renderer.SwapChainResolution.height = surfaceCapabilities.currentExtent.height;
+    renderer.SwapChainResolution = extent;
     renderer.SwapChainImages = Renderer_SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(MAX_FRAMES_IN_FLIGHT));
     renderer.SwapChainImageViews = Renderer_SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
     return VK_SUCCESS;
@@ -702,7 +719,11 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
     deviceCreateInfo.enabledLayerCount = 0;
 #endif
 
-    VULKAN_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device));
+    VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
+    if (result != VK_SUCCESS) 
+    {
+        throw std::runtime_error("vkCreateDevice failed with error: " + std::to_string(result));
+    }
     return device;
 }
 
@@ -721,8 +742,28 @@ VkCommandPool Renderer_SetUpCommandPool(VkDevice device, uint32 graphicsFamily)
 
 VkResult Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue)
 {
+    if (graphicsFamily == UINT32_MAX || presentFamily == UINT32_MAX) {
+        fprintf(stderr, "ERROR: Invalid queue family index!\n");
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    // SAFETY: Just use index 0 — 99.9% of drivers support it
+    // But add null checks so we know immediately if it fails
     vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
     vkGetDeviceQueue(device, presentFamily, 0, &presentQueue);
+
+    if (graphicsQueue == VK_NULL_HANDLE) {
+        fprintf(stderr, "FATAL: graphicsQueue is NULL! Family: %u (index 0 invalid?)\n", graphicsFamily);
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+    if (presentQueue == VK_NULL_HANDLE) {
+        fprintf(stderr, "FATAL: presentQueue is NULL! Family: %u (index 0 invalid?)\n", presentFamily);
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    printf("SUCCESS: GraphicsQueue = %p (family %u), PresentQueue = %p (family %u)\n",
+        (void*)graphicsQueue, graphicsFamily, (void*)presentQueue, presentFamily);
+
     return VK_SUCCESS;
 }
 
@@ -815,8 +856,8 @@ void Renderer_SetUpSwapChain(GraphicsRenderer& renderer)
     }
 
     VkExtent2D extent = surfaceCapabilities.currentExtent;
-    if (extent.width == UINT32_MAX) {
-        // Window manager allows free choice (rare on Linux, common on Android)
+    if (extent.width == UINT32_MAX) 
+    {
         extent.width = std::clamp(static_cast<uint32>(configSystem.WindowResolution.x), surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
         extent.height = std::clamp(static_cast<uint32>(configSystem.WindowResolution.y), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
     }
@@ -870,10 +911,8 @@ void Renderer_SetUpSwapChain(GraphicsRenderer& renderer)
 VkImage* Renderer_SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount)
 {
     VULKAN_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, nullptr));
-
     VkImage* swapChainImageList = memorySystem.AddPtrBuffer<VkImage>(swapChainImageCount, __FILE__, __LINE__, __func__);
-    VULKAN_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, swapChainImageList));
-
+    VULKAN_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, swapChainImageList)); 
     return swapChainImageList;
 }
 
