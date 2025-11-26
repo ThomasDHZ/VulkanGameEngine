@@ -25,7 +25,7 @@ ShaderSystem shaderSystem = ShaderSystem();
      };
 
      VkShaderModule shaderModule = VK_NULL_HANDLE;
-     VULKAN_RESULT(vkCreateShaderModule(renderer.Device, &shaderModuleCreateInfo, NULL, &shaderModule));
+     VULKAN_THROW_IF_FAIL(vkCreateShaderModule(renderer.Device, &shaderModuleCreateInfo, NULL, &shaderModule));
      free(file.Data);
      file.Data = nullptr;
 

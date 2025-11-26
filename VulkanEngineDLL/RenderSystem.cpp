@@ -170,20 +170,8 @@ VkResult RenderSystem::StartFrame()
 {
     renderer.CommandIndex = (renderer.CommandIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 
-    VkResult waitResult = vkWaitForFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex], VK_TRUE, UINT64_MAX);
-    if (waitResult != VK_SUCCESS)
-    {
-        fprintf(stderr, "Error: vkWaitForFences failed with error code: %s\n", Renderer_GetError(waitResult));
-        return waitResult;
-    }
-
-    VkResult resetResult = vkResetFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex]);
-    if (resetResult != VK_SUCCESS)
-    {
-        fprintf(stderr, "Error: vkResetFences failed with error code: %s\n", Renderer_GetError(resetResult));
-        return resetResult;
-    }
-
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex], VK_TRUE, UINT64_MAX));
+    VULKAN_THROW_IF_FAIL(vkResetFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex]));
     VkResult result = vkAcquireNextImageKHR(renderer.Device, renderer.Swapchain, UINT64_MAX, renderer.AcquireImageSemaphores[renderer.CommandIndex], VK_NULL_HANDLE, &renderer.ImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -192,8 +180,7 @@ VkResult RenderSystem::StartFrame()
     }
     else if (result != VK_SUCCESS)
     {
-        fprintf(stderr, "Error: vkAcquireNextImageKHR failed with error code: %s\n", Renderer_GetError(result));
-        return result;
+        VULKAN_THROW_IF_FAIL(result);
     }
 
     return result;
@@ -226,8 +213,7 @@ VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     }
     else if (submitResult != VK_SUCCESS)
     {
-        fprintf(stderr, "Error: vkQueueSubmit failed with error code: %s\n", Renderer_GetError(submitResult));
-        return submitResult;
+        VULKAN_THROW_IF_FAIL(submitResult);
     }
 
     VkPresentInfoKHR presentInfo =
@@ -248,7 +234,7 @@ VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     }
     else if (result != VK_SUCCESS)
     {
-        fprintf(stderr, "Error: vkQueuePresentKHR failed with error code: %s\n", Renderer_GetError(result));
+        VULKAN_THROW_IF_FAIL(result);
     }
 
     return result;

@@ -142,7 +142,7 @@ VkResult RenderPass_CreateCommandBuffers(const GraphicsRenderer& renderer, VkCom
             .commandBufferCount = static_cast<uint32>(commandBufferCount)
         };
 
-        VULKAN_RESULT(vkAllocateCommandBuffers(renderer.Device, &commandBufferAllocateInfo, &commandBufferList[x]));
+        VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(renderer.Device, &commandBufferAllocateInfo, &commandBufferList[x]));
     }
     return VK_SUCCESS;
 }
@@ -243,7 +243,7 @@ VkRenderPass RenderPass_BuildRenderPass(const GraphicsRenderer& renderer, const 
     };
 
     VkRenderPass renderPass = VK_NULL_HANDLE;
-    VULKAN_RESULT(vkCreateRenderPass(renderer.Device, &renderPassInfo, nullptr, &renderPass));
+    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(renderer.Device, &renderPassInfo, nullptr, &renderPass));
     return renderPass;
 }
 
@@ -297,7 +297,7 @@ Vector<VkFramebuffer> RenderPass_BuildFrameBuffer(const GraphicsRenderer& render
             .height = static_cast<uint32_t>(renderPass.RenderPassResolution.y),
             .layers = 1,
         };
-        VULKAN_RESULT(vkCreateFramebuffer(renderer.Device, &framebufferInfo, nullptr, &frameBufferList[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(renderer.Device, &framebufferInfo, nullptr, &frameBufferList[x]));
     }
 
     return frameBufferList;

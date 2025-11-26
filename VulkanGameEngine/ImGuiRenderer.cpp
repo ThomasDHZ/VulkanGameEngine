@@ -49,7 +49,7 @@ ImGuiRenderer ImGui_StartUp(const GraphicsRenderer& renderer)
             .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1
         };
-        VULKAN_RESULT(vkAllocateCommandBuffers(renderer.Device, &commandBufferAllocateInfo, &imGui.ImGuiCommandBuffer));
+        VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(renderer.Device, &commandBufferAllocateInfo, &imGui.ImGuiCommandBuffer));
     }
 
     ImGui_ImplVulkan_InitInfo init_info =
@@ -115,12 +115,12 @@ VkCommandBuffer ImGui_Draw(const GraphicsRenderer& renderer, ImGuiRenderer& imGu
         .flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
     };
 
-    VULKAN_RESULT(vkResetCommandBuffer(imGuiRenderer.ImGuiCommandBuffer, 0));
-    VULKAN_RESULT(vkBeginCommandBuffer(imGuiRenderer.ImGuiCommandBuffer, &beginInfo));
+    VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(imGuiRenderer.ImGuiCommandBuffer, 0));
+    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(imGuiRenderer.ImGuiCommandBuffer, &beginInfo));
     vkCmdBeginRenderPass(imGuiRenderer.ImGuiCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), imGuiRenderer.ImGuiCommandBuffer);
     vkCmdEndRenderPass(imGuiRenderer.ImGuiCommandBuffer);
-    VULKAN_RESULT(vkEndCommandBuffer(imGuiRenderer.ImGuiCommandBuffer));
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(imGuiRenderer.ImGuiCommandBuffer));
 
     return imGuiRenderer.ImGuiCommandBuffer;
 }
@@ -193,7 +193,7 @@ VkRenderPass ImGui_CreateRenderPass(const GraphicsRenderer& renderer)
         .dependencyCount = 1,
         .pDependencies = &dependency
     };
-    VULKAN_RESULT(vkCreateRenderPass(renderer.Device, &renderPassInfo, nullptr, &renderPass));
+    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(renderer.Device, &renderPassInfo, nullptr, &renderPass));
     return renderPass;
 }
 
@@ -217,7 +217,7 @@ Vector<VkFramebuffer> ImGui_CreateRendererFramebuffers(const GraphicsRenderer& r
             .height = renderer.SwapChainResolution.height,
             .layers = 1
         };
-        VULKAN_RESULT(vkCreateFramebuffer(renderer.Device, &frameBufferInfo, nullptr, &frameBuffers[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(renderer.Device, &frameBufferInfo, nullptr, &frameBuffers[x]));
     }
     return frameBuffers;
 }

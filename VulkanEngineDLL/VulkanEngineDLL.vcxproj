@@ -153,6 +153,7 @@
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="BufferSystem.h" />
+    <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="DLL.h" />
     <ClInclude Include="from_json.h" />
@@ -182,6 +183,7 @@
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="VkGuid.cpp" />
+    <ClCompile Include="VulkanError.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="JsonLoader.cpp" />

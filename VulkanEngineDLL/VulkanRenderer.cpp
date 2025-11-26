@@ -36,10 +36,10 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance
     renderer.Surface = surface;
     renderer.PhysicalDevice = Renderer_SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     renderer.Device = Renderer_SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
-    VULKAN_RESULT(Renderer_SetUpSwapChain(windowHandle, renderer));
+    Renderer_SetUpSwapChain(windowHandle, renderer);
     renderer.CommandPool = Renderer_SetUpCommandPool(renderer.Device, renderer.GraphicsFamily);
-    VULKAN_RESULT(Renderer_SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount));
-    VULKAN_RESULT(Renderer_GetDeviceQueue(renderer.Device, renderer.GraphicsFamily, renderer.PresentFamily, renderer.GraphicsQueue, renderer.PresentQueue));
+    Renderer_SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount);
+    Renderer_GetDeviceQueue(renderer.Device, renderer.GraphicsFamily, renderer.PresentFamily, renderer.GraphicsQueue, renderer.PresentQueue);
 
     return renderer;
 }
@@ -76,7 +76,7 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Renderer_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
     VkExtent2D extent = Renderer_SetUpSwapChainExtent(windowHandle, surfaceCapabilities);
-    VULKAN_RESULT(Renderer_GetQueueFamilies(renderer.PhysicalDevice, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily));
+    Renderer_GetQueueFamilies(renderer.PhysicalDevice, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     Vector<VkPresentModeKHR> compatiblePresentModesList = Renderer_GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = Renderer_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = Renderer_FindSwapPresentMode(compatiblePresentModesList);
@@ -123,11 +123,11 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
           .hinstance = GetModuleHandle(nullptr),
           .hwnd = (HWND)windowHandle
       };
-      VULKAN_RESULT(vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface));
+      Vector<VkPresentModeKHR>(vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface));
 
 #elif defined(__linux__) && !defined(__ANDROID__)
       GLFWwindow* window = (GLFWwindow*)windowHandle;
-      VULKAN_RESULT(glfwCreateWindowSurface(instance, window, nullptr, &surface));
+      glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
 #elif defined(__ANDROID__)
       return VK_NULL_HANDLE;
@@ -270,47 +270,19 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 
 Vector<VkSurfaceFormatKHR> Renderer_GetSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
-    Vector<VkSurfaceFormatKHR> surfaceFormatList = Vector<VkSurfaceFormatKHR>();
-
     uint32 surfaceFormatCount = 0;
-    VkResult result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, nullptr);
-    if (result != VK_SUCCESS)
-    {
-        fprintf(stderr, "Failed to get the physical device surface formats count. Error: %d\n", result);
-        return surfaceFormatList;
-    }
-
-    surfaceFormatList = Vector<VkSurfaceFormatKHR>(surfaceFormatCount);
-    result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, surfaceFormatList.data());
-    if (result != VK_SUCCESS)
-    {
-        fprintf(stderr, "Failed to get physical device surface formats. Error: %d\n", result);
-        return surfaceFormatList;
-    }
-
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, nullptr));
+    Vector<VkSurfaceFormatKHR>  surfaceFormatList = Vector<VkSurfaceFormatKHR>(surfaceFormatCount);
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, surfaceFormatList.data()));
     return surfaceFormatList;
 }
 
 Vector<VkPresentModeKHR> Renderer_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
-    Vector<VkPresentModeKHR> presentModeList = Vector<VkPresentModeKHR>();
-
     uint32_t presentModeCount = 0;
-    VkResult result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL);
-    if (result != VK_SUCCESS)
-    {
-        fprintf(stderr, "Failed to get the physical device surface present modes count. Error: %d\n", result);
-        return presentModeList;
-    }
-
-    presentModeList = Vector<VkPresentModeKHR>(presentModeCount);
-    result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModeList.data());
-    if (result != VK_SUCCESS)
-    {
-        fprintf(stderr, "Failed to get physical device surface present modes. Error: %d\n", result);
-        return presentModeList;
-    }
-
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
+    Vector<VkPresentModeKHR> presentModeList = Vector<VkPresentModeKHR>(presentModeCount);
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModeList.data()));
     return presentModeList;
 }
 
@@ -386,12 +358,7 @@ VkInstance Renderer_CreateVulkanInstance()
         .enabledExtensionCount = static_cast<uint32_t>(extensionNames.size()),
         .ppEnabledExtensionNames = extensionNames.data()
     };
-    
-    VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "Failed to create Vulkan instance: %d\n", result);
-        return VK_NULL_HANDLE;
-    }
+    VULKAN_THROW_IF_FAIL(vkCreateInstance(&createInfo, nullptr, &instance));
 
 #ifndef NDEBUG
     PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
@@ -413,28 +380,11 @@ VkPhysicalDeviceFeatures Renderer_GetPhysicalDeviceFeatures(VkPhysicalDevice phy
 
 Vector<VkPhysicalDevice> Renderer_GetPhysicalDeviceList(VkInstance& instance)
 {
-    Vector<VkPhysicalDevice> physicalDeviceList = Vector<VkPhysicalDevice>();
-
     uint32 deviceCount = 0;
-    VkResult result = vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-    if (result != VK_SUCCESS)
-    {
-        fprintf(stderr, "Failed to enumerate physical devices. Error: %d\n", result);
-        return physicalDeviceList;
-    }
-    if (deviceCount == 0) {
-        fprintf(stderr, "No physical devices found.\n");
-        return physicalDeviceList;
-    }
-
+    Vector<VkPhysicalDevice> physicalDeviceList = Vector<VkPhysicalDevice>();
+    VULKAN_THROW_IF_FAIL(vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr));
     physicalDeviceList = Vector<VkPhysicalDevice>(deviceCount);
-    result = vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDeviceList.data());
-    if (result != VK_SUCCESS)
-    {
-        fprintf(stderr, "Failed to enumerate physical devices after allocation. Error: %d\n", result);
-        return physicalDeviceList;
-    }
-
+    VULKAN_THROW_IF_FAIL(vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDeviceList.data()));
     return physicalDeviceList;
 }
 
@@ -719,11 +669,7 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
     deviceCreateInfo.enabledLayerCount = 0;
 #endif
 
-    VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
-    if (result != VK_SUCCESS) 
-    {
-        throw std::runtime_error("vkCreateDevice failed with error: " + std::to_string(result));
-    }
+    VULKAN_THROW_IF_FAIL(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
     return device;
 }
 
@@ -736,7 +682,7 @@ VkCommandPool Renderer_SetUpCommandPool(VkDevice device, uint32 graphicsFamily)
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         .queueFamilyIndex = graphicsFamily
     };
-    VULKAN_RESULT(vkCreateCommandPool(device, &CommandPoolCreateInfo, NULL, &commandPool));
+    VULKAN_THROW_IF_FAIL(vkCreateCommandPool(device, &CommandPoolCreateInfo, NULL, &commandPool));
     return commandPool;
 }
 
@@ -747,8 +693,6 @@ VkResult Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
-    // SAFETY: Just use index 0 — 99.9% of drivers support it
-    // But add null checks so we know immediately if it fails
     vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
     vkGetDeviceQueue(device, presentFamily, 0, &presentQueue);
 
@@ -818,25 +762,25 @@ VkResult Renderer_GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR
 VkSurfaceCapabilitiesKHR Renderer_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    VULKAN_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities));
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities));
     return surfaceCapabilities;
 }
 
 Vector<VkSurfaceFormatKHR> Renderer_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
     uint32 surfaceFormatCount = 0;
-    VULKAN_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, nullptr));
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, nullptr));
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Vector<VkSurfaceFormatKHR>(surfaceFormatCount);
-    VULKAN_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, compatibleSwapChainFormatList.data()));
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, compatibleSwapChainFormatList.data()));
     return compatibleSwapChainFormatList;
 }
 
 Vector<VkPresentModeKHR> Renderer_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
     uint32 presentModeCount = 0;
-    VULKAN_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr));
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr));
     Vector<VkPresentModeKHR> compatiblePresentModesList = Vector<VkPresentModeKHR>(presentModeCount);
-    VULKAN_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, compatiblePresentModesList.data()));
+    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, compatiblePresentModesList.data()));
     return compatiblePresentModesList;
 }
 
@@ -905,14 +849,14 @@ void Renderer_SetUpSwapChain(GraphicsRenderer& renderer)
     {
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
-    VULKAN_RESULT(vkCreateSwapchainKHR(renderer.Device, &SwapChainCreateInfo, nullptr, &renderer.Swapchain));
+    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(renderer.Device, &SwapChainCreateInfo, nullptr, &renderer.Swapchain));
 }
 
 VkImage* Renderer_SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount)
 {
-    VULKAN_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, nullptr));
+    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, nullptr));
     VkImage* swapChainImageList = memorySystem.AddPtrBuffer<VkImage>(swapChainImageCount, __FILE__, __LINE__, __func__);
-    VULKAN_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, swapChainImageList)); 
+    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, swapChainImageList));
     return swapChainImageList;
 }
 
@@ -936,7 +880,7 @@ VkImageView* Renderer_SetUpSwapChainImageViews(VkDevice device, VkImage* swapCha
                 .layerCount = 1
             }
         };
-        VULKAN_RESULT(vkCreateImageView(device, &swapChainViewInfo, nullptr, &imageViews[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateImageView(device, &swapChainViewInfo, nullptr, &imageViews[x]));
     }
 
     return imageViews;
@@ -964,9 +908,9 @@ VkResult Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSe
 
     for (int x = 0; x < maxFramesInFlight; x++)
     {
-        VULKAN_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &acquireImageSemaphores[x]));
-        VULKAN_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &presentImageSemaphores[x]));
-        VULKAN_RESULT(vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &acquireImageSemaphores[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &presentImageSemaphores[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[x]));
     }
 
     return VK_SUCCESS;
@@ -999,14 +943,14 @@ VkCommandBuffer Renderer_BeginSingleUseCommand(VkDevice device, VkCommandPool co
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
-    VULKAN_RESULT(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));
 
     VkCommandBufferBeginInfo beginInfo =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
     };
-    VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &beginInfo));
     return commandBuffer;
 }
 
@@ -1019,9 +963,9 @@ VkResult Renderer_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool
         .pCommandBuffers = &commandBuffer
     };
 
-    VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
-    VULKAN_RESULT(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
-    VULKAN_RESULT(vkQueueWaitIdle(graphicsQueue));
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
+    VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(graphicsQueue));
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
     return VK_SUCCESS;
 }

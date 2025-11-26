@@ -25,29 +25,40 @@ int main(int argc, char** argv)
 #else
     //debugSystem.SetRootDirectory("Assets");
 #endif 
-
-    vulkanWindow = new GameEngineWindow();
-    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkInstance instance = Renderer_CreateVulkanInstance();
-    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
-    gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface);
-   // imGuiRenderer = ImGui_StartUp(renderer);
-    while (!vulkanWindow->WindowShouldClose(vulkanWindow))
+    try 
     {
-        const float frameTime = deltaTime.GetFrameTime();
+        vulkanWindow = new GameEngineWindow();
+        vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 
-        vulkanWindow->PollEventHandler(vulkanWindow);
-        vulkanWindow->SwapBuffer(vulkanWindow);
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
+        VkInstance instance = Renderer_CreateVulkanInstance();
+        glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
+        gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface);
+       // imGuiRenderer = ImGui_StartUp(renderer);
+        while (!vulkanWindow->WindowShouldClose(vulkanWindow))
+        {
+            const float frameTime = deltaTime.GetFrameTime();
 
-        gameSystem.Update(frameTime);
-        gameSystem.DebugUpdate(frameTime);
-        gameSystem.Draw(frameTime);
-        deltaTime.EndFrameTime();
+            vulkanWindow->PollEventHandler(vulkanWindow);
+            vulkanWindow->SwapBuffer(vulkanWindow);
+
+            gameSystem.Update(frameTime);
+            gameSystem.DebugUpdate(frameTime);
+            gameSystem.Draw(frameTime);
+            deltaTime.EndFrameTime();
+        }
+        vkDeviceWaitIdle(renderer.Device);
+        gameSystem.Destroy();
+        vulkanWindow->DestroyWindow(vulkanWindow);
     }
-    vkDeviceWaitIdle(renderer.Device);
-    gameSystem.Destroy();
-    vulkanWindow->DestroyWindow(vulkanWindow);
+    catch (const VulkanError& e) {
+        fprintf(stderr, "%s\n", e.what());
+        // Optional: pop up message box, log to file, etc.
+        return -1;
+    }
+    catch (const std::exception& e) {
+        fprintf(stderr, "STD EXCEPTION: %s\n", e.what());
+        return -1;
+    }
     return 0;
 }

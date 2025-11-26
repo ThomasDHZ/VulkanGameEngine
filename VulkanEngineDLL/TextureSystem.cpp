@@ -61,10 +61,10 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	textureLoader.ImageCreateInfo.extent.width = width;
 	textureLoader.ImageCreateInfo.extent.height = height;
 	textureLoader.ImageCreateInfo.extent.depth = 1;
-	VULKAN_RESULT(CreateTextureImage(texture, textureLoader.ImageCreateInfo, data, bufferSize));
-	VULKAN_RESULT(CreateTextureView(texture, textureLoader.ImageType));
-	VULKAN_RESULT(vkCreateSampler(renderer.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
-	VULKAN_RESULT(GenerateMipmaps(texture));
+	CreateTextureImage(texture, textureLoader.ImageCreateInfo, data, bufferSize);
+	CreateTextureView(texture, textureLoader.ImageType);
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(renderer.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
+	GenerateMipmaps(texture);
 	stbi_image_free(data);
 
 	TextureMap[textureLoader.TextureId] = texture;
@@ -94,10 +94,10 @@ Texture  TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imag
 		.colorChannels = ChannelRGBA,
 	};
 	createImageInfo.mipLevels = texture.mipMapLevels;
-	VULKAN_RESULT(CreateTextureImage(texture, createImageInfo));
-	VULKAN_RESULT(CreateTextureView(texture, imageType));
-	VULKAN_RESULT(vkCreateSampler(renderer.Device, &samplerCreateInfo, NULL, &texture.textureSampler));
-	VULKAN_RESULT(GenerateMipmaps(texture));
+	CreateTextureImage(texture, createImageInfo);
+	CreateTextureView(texture, imageType);
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(renderer.Device, &samplerCreateInfo, NULL, &texture.textureSampler));
+	GenerateMipmaps(texture);
 	return texture;
 }
 
@@ -169,8 +169,7 @@ void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImage
 
 	auto singleCommand = Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 	vkCmdPipelineBarrier(singleCommand, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
-	VkResult result = Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, singleCommand);
-	if (result == VK_SUCCESS)
+	if (Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, singleCommand) == VK_SUCCESS)
 	{
 		texture.textureImageLayout = newImageLayout;
 	}
@@ -285,7 +284,7 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 
 VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo)
 {
-	VULKAN_RESULT(vkCreateImage(renderer.Device, &createImageInfo, nullptr, &texture.textureImage));
+	VULKAN_THROW_IF_FAIL(vkCreateImage(renderer.Device, &createImageInfo, nullptr, &texture.textureImage));
 
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(renderer.Device, texture.textureImage, &memRequirements);
@@ -296,8 +295,8 @@ VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& 
 		.allocationSize = memRequirements.size,
 		.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
-	VULKAN_RESULT(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, &texture.textureMemory));
-	return vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0);
+	VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, &texture.textureMemory));
+	VULKAN_THROW_IF_FAIL(vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0));
 }
 
 VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)
@@ -309,12 +308,12 @@ VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& 
 	const VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
 	const VkMemoryPropertyFlags props = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-	VULKAN_RESULT(bufferSystem.CreateStagingBuffer( &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, usage, props));
-	VULKAN_RESULT(CreateImage(texture, imageCreateInfo));
-	VULKAN_RESULT(QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));
-	VULKAN_RESULT(CopyBufferToTexture(texture, buffer));
-	VULKAN_RESULT(QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
-	VULKAN_RESULT(GenerateMipmaps(texture));
+	bufferSystem.CreateStagingBuffer( &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, usage, props);
+	CreateImage(texture, imageCreateInfo);
+	QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	CopyBufferToTexture(texture, buffer);
+	QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	GenerateMipmaps(texture);
 
 	Renderer_DestroyBuffer(renderer.Device, &buffer);
 	Renderer_FreeDeviceMemory(renderer.Device, &bufferMemory);
@@ -399,7 +398,7 @@ VkResult TextureSystem::UpdateImage(Texture& texture)
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
-	VULKAN_RESULT(vkCreateImage(renderer.Device, &imageCreateInfo, NULL, &texture.textureImage));
+	VULKAN_THROW_IF_FAIL(vkCreateImage(renderer.Device, &imageCreateInfo, NULL, &texture.textureImage));
 
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(renderer.Device, texture.textureImage, &memRequirements);
@@ -410,13 +409,13 @@ VkResult TextureSystem::UpdateImage(Texture& texture)
 		.allocationSize = memRequirements.size,
 		.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
-	VULKAN_RESULT(vkAllocateMemory(renderer.Device, &allocInfo, NULL, &texture.textureMemory));
+	VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, NULL, &texture.textureMemory));
 	return vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0);
 }
 
 VkResult TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo)
 {
-	VULKAN_RESULT(vkCreateImage(renderer.Device, &imageCreateInfo, NULL, &texture.textureImage));
+	VULKAN_THROW_IF_FAIL(vkCreateImage(renderer.Device, &imageCreateInfo, NULL, &texture.textureImage));
 
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(renderer.Device, texture.textureImage, &memRequirements);
@@ -427,7 +426,7 @@ VkResult TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCr
 		.allocationSize = memRequirements.size,
 		.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
-	VULKAN_RESULT(vkAllocateMemory(renderer.Device, &allocInfo, NULL, &texture.textureMemory));
+	VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, NULL, &texture.textureMemory));
 	return vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0);
 }
 
@@ -559,7 +558,7 @@ VkResult TextureSystem::GenerateMipmaps(Texture& texture)
 	vkGetPhysicalDeviceFormatProperties(renderer.PhysicalDevice, texture.textureByteFormat, &formatProperties);
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 	{
-		RENDERER_ERROR("Texture image format does not support linear blitting.");
+	//	RENDERER_ERROR("Texture image format does not support linear blitting.");
 	}
 
 	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();

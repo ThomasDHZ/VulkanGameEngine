@@ -42,16 +42,13 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize 
     void* bufferData = memorySystem.AddPtrBuffer<void*>(bufferSize, __FILE__, __LINE__, __func__);
     memset(bufferData, 0, bufferSize);
 
-    VkResult result;
-    if (vulkanBuffer.UsingStagingBuffer) {
-        result = CreateStagingBuffer(&vulkanBuffer.StagingBuffer, &vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
+    if (vulkanBuffer.UsingStagingBuffer) 
+    {
+        CreateStagingBuffer(&vulkanBuffer.StagingBuffer, &vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
     }
-    else {
-        result = CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
-    }
-
-    if (result != VK_SUCCESS) {
-        RENDERER_ERROR("Failed to create Vulkan buffer");
+    else 
+    {
+       CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
     }
 
     if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
@@ -78,21 +75,14 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, void* bufferD
         .UsingStagingBuffer = usingStagingBuffer,
     };
 
-    VkResult result;
     if (vulkanBuffer.UsingStagingBuffer)
     {
-        result = CreateStagingBuffer(&vulkanBuffer.StagingBuffer, &vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
+        CreateStagingBuffer(&vulkanBuffer.StagingBuffer, &vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
     }
     else
     {
-        result = CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
+        CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
     }
-
-    if (result != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to create Vulkan buffer");
-    }
-
     return vulkanBuffer;
 }
 
@@ -101,12 +91,12 @@ void VulkanBufferSystem::UpdateBufferSize(VulkanBuffer& vulkanBuffer, VkDeviceSi
     VkDeviceSize newBufferSize = newBufferElementSize * newBufferElementCount;
     if (vulkanBuffer.UsingStagingBuffer)
     {
-        VULKAN_RESULT(UpdateBufferSize(&vulkanBuffer.StagingBuffer, &vulkanBuffer.StagingBufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties));
-        VULKAN_RESULT(UpdateBufferSize(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties));
+        UpdateBufferSize(&vulkanBuffer.StagingBuffer, &vulkanBuffer.StagingBufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
+        UpdateBufferSize(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
     }
     else
     {
-        VULKAN_RESULT(UpdateBufferSize(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties));
+        UpdateBufferSize(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
     }
 }
 
@@ -127,10 +117,7 @@ void VulkanBufferSystem::UpdateBufferMemory(VulkanBuffer& vulkanBuffer, void* bu
         {
             UpdateBufferSize(vulkanBuffer, bufferElementSize, bufferElementCount);
         }
-        if (UpdateBufferMemory(vulkanBuffer.BufferMemory, bufferData, newBufferSize) != VK_SUCCESS)
-        {
-            RENDERER_ERROR("Failed to update buffer memory.");
-        }
+        VULKAN_THROW_IF_FAIL(UpdateBufferMemory(vulkanBuffer.BufferMemory, bufferData, newBufferSize));
     }
 }
 
@@ -138,17 +125,11 @@ VkResult VulkanBufferSystem::UpdateBufferMemory(VkDeviceMemory bufferMemory, voi
 {
     if (dataToCopy == nullptr || bufferSize == 0)
     {
-        RENDERER_ERROR("Buffer data and size cannot be nullptr");
-        return VK_ERROR_MEMORY_MAP_FAILED;
+        VULKAN_THROW_IF_FAIL(VK_ERROR_MEMORY_MAP_FAILED);
     }
 
     void* mappedData = nullptr;
-    if (vkMapMemory(renderer.Device, bufferMemory, 0, bufferSize, 0, &mappedData) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to map buffer memory");
-        throw std::runtime_error("Failed to map buffer memory");
-    }
-
+    VULKAN_THROW_IF_FAIL(vkMapMemory(renderer.Device, bufferMemory, 0, bufferSize, 0, &mappedData));
     memcpy(mappedData, dataToCopy, static_cast<size_t>(bufferSize));
     vkUnmapMemory(renderer.Device, bufferMemory);
     return VK_SUCCESS;
@@ -165,11 +146,7 @@ void VulkanBufferSystem::CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer
 
     VkCommandBuffer commandBuffer = Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-    if (Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Command failed");
-        throw std::runtime_error("Command failed");
-    }
+    Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 VkResult VulkanBufferSystem::AllocateMemory(VkBuffer* bufferData, VkDeviceMemory* bufferMemory, VkMemoryPropertyFlags properties, VkBufferUsageFlags usage)
@@ -193,12 +170,7 @@ VkResult VulkanBufferSystem::AllocateMemory(VkBuffer* bufferData, VkDeviceMemory
         .memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, properties)
     };
 
-    if(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, bufferMemory) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to allocate memory");
-        throw std::runtime_error("Failed to allocate memory");
-    }
-
+    VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, bufferMemory));
     return VK_SUCCESS;
 }
 
@@ -206,16 +178,11 @@ void* VulkanBufferSystem::MapBufferMemory(VkDeviceMemory bufferMemory, VkDeviceS
 {
     if (*isMapped)
     {
-        RENDERER_ERROR("Buffer already mapped!");
         return nullptr;
     }
 
     void* mappedData = nullptr;
-    if (vkMapMemory(renderer.Device, bufferMemory, 0, bufferSize, 0, &mappedData) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to map buffer memory");
-        return nullptr;
-    }
+    VULKAN_THROW_IF_FAIL(vkMapMemory(renderer.Device, bufferMemory, 0, bufferSize, 0, &mappedData));
     *isMapped = true;
     return mappedData;
 }
@@ -240,12 +207,6 @@ VkResult VulkanBufferSystem::CreateBuffer(VkBuffer* buffer, VkDeviceMemory* buff
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE
     };
 
-    if (vkCreateBuffer(renderer.Device, &bufferInfo, nullptr, buffer) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to create buffer");
-        throw std::runtime_error("Failed to create buffer");
-    }
-
     VkMemoryAllocateFlagsInfo flagsInfo = {};
     flagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
     if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) 
@@ -261,32 +222,18 @@ VkResult VulkanBufferSystem::CreateBuffer(VkBuffer* buffer, VkDeviceMemory* buff
         .allocationSize = 0,
         .memoryTypeIndex = 0
     };
-
     VkMemoryRequirements memReqs;
+
+    VULKAN_THROW_IF_FAIL(vkCreateBuffer(renderer.Device, &bufferInfo, nullptr, buffer));
     vkGetBufferMemoryRequirements(renderer.Device, *buffer, &memReqs);
     allocInfo.allocationSize = memReqs.size;
     allocInfo.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memReqs.memoryTypeBits, properties);
 
-    
-    if(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, bufferMemory) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to allocate memory");
-        throw std::runtime_error("Failed to allocate memory");
-    }
-
-    if (vkBindBufferMemory(renderer.Device, *buffer, *bufferMemory, 0) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to bind buffer memory");
-        throw std::runtime_error("Failed to bind buffer memory");
-    }
-
+    VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, bufferMemory));
+    VULKAN_THROW_IF_FAIL(vkBindBufferMemory(renderer.Device, *buffer, *bufferMemory, 0));
     if (bufferData) 
     {
-        if(UpdateBufferMemory(*bufferMemory, bufferData, bufferSize) != VK_SUCCESS)
-        {
-            RENDERER_ERROR("Failed to update buffer");
-            throw std::runtime_error("Failed to update buffer");
-        }
+        VULKAN_THROW_IF_FAIL(UpdateBufferMemory(*bufferMemory, bufferData, bufferSize));
     }
 
     return VK_SUCCESS;
@@ -320,8 +267,8 @@ VkResult VulkanBufferSystem::CreateStagingBuffer(VkBuffer* stagingBuffer, VkBuff
 VkResult VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size)
 {
     if (!srcBuffer || !dstBuffer) {
-        RENDERER_ERROR("Source or Destination Buffer is nullptr");
-        return VK_ERROR_UNKNOWN;
+        //RENDERER_ERROR("Source or Destination Buffer is nullptr");
+        VULKAN_THROW_IF_FAIL(VK_ERROR_UNKNOWN);
     }
 
     VkBufferCopy copyRegion = {
@@ -339,11 +286,11 @@ VkResult VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* 
 {
     if (newBufferSize < oldBufferSize)
     {
-        RENDERER_ERROR("%s", (std::string("Buffer size can't be less than the old buffer size. OldSize: ")
+      /*  RENDERER_ERROR("%s", (std::string("Buffer size can't be less than the old buffer size. OldSize: ")
             + std::to_string(static_cast<uint32_t>(oldBufferSize))
             + " NewSize: "
-            + std::to_string(static_cast<uint32_t>(newBufferSize))).c_str());
-        return VK_ERROR_MEMORY_MAP_FAILED;
+            + std::to_string(static_cast<uint32_t>(newBufferSize))).c_str());*/
+        VULKAN_THROW_IF_FAIL(VK_ERROR_MEMORY_MAP_FAILED);
     }
 
     VkBufferCreateInfo bufferCreateInfo = {
@@ -356,47 +303,39 @@ VkResult VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* 
     VkBuffer newBuffer = VK_NULL_HANDLE;
     VkDeviceMemory newBufferMemory = VK_NULL_HANDLE;
 
-    VkResult result = vkCreateBuffer(renderer.Device, &bufferCreateInfo, nullptr, &newBuffer);
-    if (result != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to create new buffer");
-        return result;
-    }
+    VULKAN_THROW_IF_FAIL(vkCreateBuffer(renderer.Device, &bufferCreateInfo, nullptr, &newBuffer));
 
-    result = AllocateMemory(&newBuffer, &newBufferMemory, propertyFlags, bufferUsageFlags);
+    VkResult result = AllocateMemory(&newBuffer, &newBufferMemory, propertyFlags, bufferUsageFlags);
     if (result != VK_SUCCESS)
     {
-        RENDERER_ERROR("Failed to allocate memory for new buffer");
         vkDestroyBuffer(renderer.Device, newBuffer, nullptr);
-        return result;
+        VULKAN_THROW_IF_FAIL(result);
     }
 
     result = vkBindBufferMemory(renderer.Device, newBuffer, newBufferMemory, 0);
     if (result != VK_SUCCESS)
     {
-        RENDERER_ERROR("Failed to bind memory to the new buffer");
         Renderer_FreeDeviceMemory(renderer.Device, &newBufferMemory);
         vkDestroyBuffer(renderer.Device, newBuffer, nullptr);
-        return result;
+        VULKAN_THROW_IF_FAIL(result);
     }
 
     if (bufferData)
     {
-        if (UpdateBufferMemory(newBufferMemory, bufferData, newBufferSize) != VK_SUCCESS) {
-            RENDERER_ERROR("Failed to update memory with buffer data");
+        if (UpdateBufferMemory(newBufferMemory, bufferData, newBufferSize) != VK_SUCCESS)
+        {
             vkDestroyBuffer(renderer.Device, newBuffer, nullptr);
             Renderer_FreeDeviceMemory(renderer.Device, &newBufferMemory);
-            return result;
+            VULKAN_THROW_IF_FAIL(result);
         }
     }
     else if (*buffer != VK_NULL_HANDLE && oldBufferSize > 0) 
     {
         if (CopyBuffer(buffer, &newBuffer, oldBufferSize) != VK_SUCCESS) 
         {
-            RENDERER_ERROR("Failed to copy old data to new buffer");
             vkDestroyBuffer(renderer.Device, newBuffer, nullptr);
             Renderer_FreeDeviceMemory(renderer.Device, &newBufferMemory);
-            return result;
+            VULKAN_THROW_IF_FAIL(result);
         }
     }
 
@@ -422,21 +361,16 @@ void VulkanBufferSystem::UpdateBufferData(VkDeviceMemory* bufferMemory, void* da
 
 void VulkanBufferSystem::UpdateStagingBufferData(VkBuffer stagingBuffer, VkBuffer buffer, VkDeviceMemory* stagingBufferMemory, VkDeviceMemory* bufferMemory, void* dataToCopy, VkDeviceSize bufferSize)
 {
-    if (UpdateBufferMemory(*stagingBufferMemory, dataToCopy, bufferSize) != VK_SUCCESS)
-    {
-        RENDERER_ERROR("Failed to update staging buffer memory.");
-        return;
-    }
+    UpdateBufferMemory(*stagingBufferMemory, dataToCopy, bufferSize);
     CopyBufferMemory(stagingBuffer, buffer, bufferSize);
 }
 
 VkResult VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
 {
-    if (!vulkanBuffer.Buffer && 
+    if (!vulkanBuffer.Buffer &&
         !vulkanBuffer.StagingBuffer)
     {
-        RENDERER_ERROR("Both buffer and stagingBuffer are nullptr");
-        return VK_ERROR_INITIALIZATION_FAILED;
+        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
     }
 
     if (vulkanBuffer.Buffer != VK_NULL_HANDLE)

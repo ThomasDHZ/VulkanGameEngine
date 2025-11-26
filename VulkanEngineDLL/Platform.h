@@ -2,10 +2,8 @@
 #if defined(__linux__) && !defined(__ANDROID__)
     #define VK_ENABLE_BETA_EXTENSIONS
 #endif
-
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan.h>
-#include <../SPIRV-Reflect/spirv_reflect.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +20,10 @@
 #include <iomanip>
 #include <filesystem>
 #include <mutex>
+
+#include "DLL.h"
 #include "Typedef.h"
+#include "VulkanError.h"
 
 #if defined(_WIN32)
     #define PLATFORM_WINDOWS
@@ -31,11 +32,6 @@
     #include <objbase.h>
     #include <combaseapi.h>
     #include <vulkan/vulkan_win32.h>
-    #ifdef VulkanEngineDLL_EXPORTS
-    #define DLL_EXPORT __declspec(dllexport)
-    #else
-    #define DLL_EXPORT __declspec(dllimport)
-    #endif
     #define SLEEP(ms) Sleep(ms)
     inline void GenerateGUID(GUID& guid) { CoCreateGuid(&guid); }
 
@@ -45,7 +41,6 @@
     #include <uuid/uuid.h>
     #include <cctype>
     #include <cstdlib>
-    #define DLL_EXPORT __attribute__((visibility("default")))
     #define SLEEP(ms) usleep((ms) * 1000)
     #if defined(__clang__) && defined(__linux__)
         #pragma clang diagnostic ignored "-Wfloat-conversion"
@@ -56,7 +51,6 @@
     #define PLATFORM_ANDROID
     #include <unistd.h>
     #include <random>
-    #define DLL_EXPORT __attribute__((visibility("default")))
     #define SLEEP(ms) usleep((ms) * 1000)
     inline void GenerateGUID(uint8_t* guid) 
     {
@@ -77,19 +71,10 @@
     #endif
     #include <unistd.h>
     #include <uuid/uuid.h>
-    #define DLL_EXPORT __attribute__((visibility("default")))
     #define SLEEP(ms) usleep((ms) * 1000)
     inline void GenerateGUID(uuid_t guid) { uuid_generate(guid); }
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-    DLL_EXPORT const char* Renderer_GetError(VkResult result);
-    DLL_EXPORT const char* Renderer_GetShaderReflectError(SpvReflectResult result);
-#ifdef __cplusplus
-}
-#endif
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define IO_READ_CHUNK_SIZE 2097152
 #define IO_READ_ERROR_GENERAL "Error reading file: %s. error: %d\n"
@@ -97,28 +82,6 @@ extern "C" {
 #define ERROR_EXIT(...) { fprintf(stderr, __VA_ARGS__); SLEEP(100); exit(1); }
 #define ERROR_RETURN(R, ...) { fprintf(stderr, __VA_ARGS__); SLEEP(100); return (R); }
 
-#define RENDERER_ERROR(...)                                                \
-    do {                                                                   \
-        fprintf(stderr, "Error in %s:%d (%s): ", __FILE__, __LINE__, __func__); \
-        fprintf(stderr, __VA_ARGS__);                                      \
-        fprintf(stderr, "\n");                                             \
-        SLEEP(100);                                                        \
-    } while (0)
-
-#define VULKAN_RESULT(call) { \
-    VkResult result = (call); \
-    if (result != VK_SUCCESS) { \
-        fprintf(stderr, "Error in %s at %s:%d (%s): %s\n", \
-                #call, __FILE__, __LINE__, __func__, Renderer_GetError(result)); \
-    } \
-}
-#define SPV_VULKAN_RESULT(call) { \
-    SpvReflectResult result = (call); \
-    if (result != SPV_REFLECT_RESULT_SUCCESS) { \
-        fprintf(stderr, "Error in %s at %s:%d (%s): %s\n", \
-                #call, __FILE__, __LINE__, __func__, Renderer_GetShaderReflectError(result)); \
-    } \
-}
 #if defined(PLATFORM_WINDOWS) && defined(NOMINMAX)
 #elif defined(PLATFORM_WINDOWS)
 #undef max

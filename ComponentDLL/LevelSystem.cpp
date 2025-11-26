@@ -296,7 +296,7 @@ void LevelSystem::Update(const float& deltaTime)
          memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurScale").Value.data(), &lodLevel, sizeof(lodLevel));
          memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurStrength").Value.data(), &blurStrength, sizeof(blurStrength));
 
-         VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
+         VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
          //vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
          //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
          //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -305,7 +305,7 @@ void LevelSystem::Update(const float& deltaTime)
          //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetCount, pipeline.DescriptorSetList, 0, nullptr);
          //vkCmdDraw(commandBuffer, 6, 1, 0, 0);
          //vkCmdEndRenderPass(commandBuffer);
-         VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
+         VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
      }
      return commandBuffer;
  }
@@ -343,7 +343,7 @@ void LevelSystem::Update(const float& deltaTime)
          .pClearValues = renderPass.ClearValueList
      };
 
-     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
+     VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
      vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -351,7 +351,7 @@ void LevelSystem::Update(const float& deltaTime)
      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
-     VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
+     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
      return commandBuffer;
  }
 
@@ -375,7 +375,7 @@ void LevelSystem::Update(const float& deltaTime)
      };
 
      VkDeviceSize offsets[] = { 0 };
-     VULKAN_RESULT(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
+     VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      for (auto& levelLayer : levelLayerList)
      {
@@ -409,7 +409,7 @@ void LevelSystem::Update(const float& deltaTime)
          vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
      }
      vkCmdEndRenderPass(commandBuffer);
-     VULKAN_RESULT(vkEndCommandBuffer(commandBuffer));
+     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
      return commandBuffer;
  }
 
