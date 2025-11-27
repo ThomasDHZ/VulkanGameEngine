@@ -130,7 +130,7 @@ void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRender
     renderPass.IsRenderedToSwapchain = false;
 }
 
-VkResult RenderPass_CreateCommandBuffers(const GraphicsRenderer& renderer, VkCommandBuffer* commandBufferList, size_t commandBufferCount)
+void RenderPass_CreateCommandBuffers(const GraphicsRenderer& renderer, VkCommandBuffer* commandBufferList, size_t commandBufferCount)
 {
     for (size_t x = 0; x < commandBufferCount; x++)
     {
@@ -144,7 +144,6 @@ VkResult RenderPass_CreateCommandBuffers(const GraphicsRenderer& renderer, VkCom
 
         VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(renderer.Device, &commandBufferAllocateInfo, &commandBufferList[x]));
     }
-    return VK_SUCCESS;
 }
 
 VkRenderPass RenderPass_BuildRenderPass(const GraphicsRenderer& renderer, const RenderPassLoader& renderPassJsonLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)

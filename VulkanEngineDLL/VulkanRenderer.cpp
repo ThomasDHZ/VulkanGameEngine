@@ -28,9 +28,6 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance
 {
     renderer.ImageIndex = 0;
     renderer.CommandIndex = 0;
-    renderer.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
-    renderer.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
-    renderer.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(MAX_FRAMES_IN_FLIGHT, __FILE__, __LINE__, __func__);
     renderer.RebuildRendererFlag = false;
     renderer.Instance = instance;
     renderer.Surface = surface;
@@ -47,7 +44,7 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance
 GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 {
     vkDeviceWaitIdle(renderer.Device);
-    Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], MAX_FRAMES_IN_FLIGHT);
+    Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
     Renderer_DestroySwapChain(renderer.Device, &renderer.Swapchain);
 
     Renderer_SetUpSwapChain(windowHandle, renderer);
@@ -71,7 +68,7 @@ VkExtent2D Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabiliti
     return extent;
 }
 
-VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
+void Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Renderer_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
@@ -83,16 +80,18 @@ VkResult Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
 
     Renderer_SetUpSwapChain(renderer);
     renderer.SwapChainResolution = extent;
-    renderer.SwapChainImages = Renderer_SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(MAX_FRAMES_IN_FLIGHT));
+    renderer.SwapChainImages = Renderer_SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(renderer.SwapChainImageCount));
     renderer.SwapChainImageViews = Renderer_SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
-    return VK_SUCCESS;
+    renderer.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    renderer.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    renderer.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
 }
 
  void Renderer_DestroyRenderer(GraphicsRenderer& renderer)
  {
-     Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], MAX_FRAMES_IN_FLIGHT);
+     Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
      Renderer_DestroySwapChain(renderer.Device, &renderer.Swapchain);
-     Renderer_DestroyFences(renderer.Device, &renderer.AcquireImageSemaphores[0], &renderer.PresentImageSemaphores[0], &renderer.InFlightFences[0], MAX_FRAMES_IN_FLIGHT);
+     Renderer_DestroyFences(renderer.Device, &renderer.AcquireImageSemaphores[0], &renderer.PresentImageSemaphores[0], &renderer.InFlightFences[0], renderer.SwapChainImageCount);
      Renderer_DestroyCommandPool(renderer.Device, &renderer.CommandPool);
      Renderer_DestroyDevice(renderer.Device);
      Renderer_DestroyDebugger(&renderer.Instance, renderer.DebugMessenger);
@@ -394,7 +393,7 @@ VkPhysicalDevice Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR 
     for (auto& physicalDevice : physicalDeviceList)
     {
         VkPhysicalDeviceFeatures physicalDeviceFeatures = Renderer_GetPhysicalDeviceFeatures(physicalDevice);
-        VkResult result = Renderer_GetQueueFamilies(physicalDevice, surface, graphicsFamily, presentFamily);
+        Renderer_GetQueueFamilies(physicalDevice, surface, graphicsFamily, presentFamily);
         Vector<VkSurfaceFormatKHR> surfaceFormatList = Renderer_GetSurfaceFormats(physicalDevice, surface);
         Vector<VkPresentModeKHR> presentModeList = Renderer_GetSurfacePresentModes(physicalDevice, surface);
 
@@ -686,11 +685,11 @@ VkCommandPool Renderer_SetUpCommandPool(VkDevice device, uint32 graphicsFamily)
     return commandPool;
 }
 
-VkResult Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue)
+void Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue)
 {
     if (graphicsFamily == UINT32_MAX || presentFamily == UINT32_MAX) {
         fprintf(stderr, "ERROR: Invalid queue family index!\n");
-        return VK_ERROR_INITIALIZATION_FAILED;
+        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
     }
 
     vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
@@ -698,17 +697,15 @@ VkResult Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 
 
     if (graphicsQueue == VK_NULL_HANDLE) {
         fprintf(stderr, "FATAL: graphicsQueue is NULL! Family: %u (index 0 invalid?)\n", graphicsFamily);
-        return VK_ERROR_INITIALIZATION_FAILED;
+        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
     }
     if (presentQueue == VK_NULL_HANDLE) {
         fprintf(stderr, "FATAL: presentQueue is NULL! Family: %u (index 0 invalid?)\n", presentFamily);
-        return VK_ERROR_INITIALIZATION_FAILED;
+        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
     }
 
     printf("SUCCESS: GraphicsQueue = %p (family %u), PresentQueue = %p (family %u)\n",
         (void*)graphicsQueue, graphicsFamily, (void*)presentQueue, presentFamily);
-
-    return VK_SUCCESS;
 }
 
 VkSurfaceFormatKHR Renderer_FindSwapSurfaceFormat(Vector<VkSurfaceFormatKHR>& availableFormats)
@@ -737,7 +734,7 @@ VkPresentModeKHR Renderer_FindSwapPresentMode(Vector<VkPresentModeKHR>& availabl
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkResult Renderer_GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily)
+void Renderer_GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily)
 {
     uint32 queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -750,13 +747,11 @@ VkResult Renderer_GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR
             graphicsFamily = x;
 
             VkBool32 presentSupport = VK_FALSE;
-            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, x, surface, &presentSupport);
+            VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, x, surface, &presentSupport));
             if (presentSupport) presentFamily = x;
             if (graphicsFamily != UINT32_MAX) break;
         }
     }
-
-    return VK_SUCCESS;
 }
 
 VkSurfaceCapabilitiesKHR Renderer_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
@@ -792,25 +787,18 @@ void Renderer_SetUpSwapChain(GraphicsRenderer& renderer)
     VkSurfaceFormatKHR swapChainImageFormat = Renderer_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = Renderer_FindSwapPresentMode(compatiblePresentModesList);
 
-    renderer.SwapChainImageCount = surfaceCapabilities.minImageCount + 1;
-    if (surfaceCapabilities.maxImageCount > 0 &&
-        renderer.SwapChainImageCount > surfaceCapabilities.maxImageCount)
+    uint32 imageCount = surfaceCapabilities.minImageCount + 1;
+    if (surfaceCapabilities.maxImageCount > 0) 
     {
-        renderer.SwapChainImageCount = surfaceCapabilities.maxImageCount;
+        imageCount = std::min(imageCount, surfaceCapabilities.maxImageCount);
     }
+    imageCount = std::max(imageCount, surfaceCapabilities.minImageCount);
 
     VkExtent2D extent = surfaceCapabilities.currentExtent;
     if (extent.width == UINT32_MAX) 
     {
         extent.width = std::clamp(static_cast<uint32>(configSystem.WindowResolution.x), surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
         extent.height = std::clamp(static_cast<uint32>(configSystem.WindowResolution.y), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-    }
-
-    uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
-    if (surfaceCapabilities.maxImageCount > 0 && 
-        imageCount > surfaceCapabilities.maxImageCount)
-    {
-        imageCount = surfaceCapabilities.maxImageCount;
     }
 
     renderer.SwapChainResolution = extent;
@@ -823,7 +811,7 @@ void Renderer_SetUpSwapChain(GraphicsRenderer& renderer)
         .minImageCount = static_cast<uint32>(renderer.SwapChainImageCount),
         .imageFormat = swapChainImageFormat.format,
         .imageColorSpace = swapChainImageFormat.colorSpace,
-        .imageExtent = surfaceCapabilities.maxImageExtent,
+        .imageExtent = extent,
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
         .preTransform = surfaceCapabilities.currentTransform,
@@ -887,7 +875,7 @@ VkImageView* Renderer_SetUpSwapChainImageViews(VkDevice device, VkImage* swapCha
 }
 
 
-VkResult Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight)
+void Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight)
 {
     VkSemaphoreTypeCreateInfo semaphoreTypeCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
@@ -912,8 +900,6 @@ VkResult Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSe
         VULKAN_THROW_IF_FAIL(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &presentImageSemaphores[x]));
         VULKAN_THROW_IF_FAIL(vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[x]));
     }
-
-    return VK_SUCCESS;
 }
 
 uint32_t Renderer_GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -954,7 +940,7 @@ VkCommandBuffer Renderer_BeginSingleUseCommand(VkDevice device, VkCommandPool co
     return commandBuffer;
 }
 
-VkResult Renderer_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
+void Renderer_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
 {
     VkSubmitInfo submitInfo =
     {
@@ -967,7 +953,6 @@ VkResult Renderer_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool
     VULKAN_THROW_IF_FAIL(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
     VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(graphicsQueue));
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
-    return VK_SUCCESS;
 }
 
 void Renderer_DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator)

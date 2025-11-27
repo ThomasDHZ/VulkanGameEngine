@@ -35,8 +35,6 @@ struct GraphicsRenderer
 };
 extern DLL_EXPORT GraphicsRenderer renderer;
 
-
-static const int MAX_FRAMES_IN_FLIGHT = 3;
 typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
 
 #ifdef __cplusplus
@@ -46,7 +44,7 @@ extern "C" {
 	 DLL_EXPORT VkInstance		Renderer_CreateVulkanInstance();
 	 DLL_EXPORT VkSurfaceKHR	Renderer_CreateVulkanSurface(void* windowHandle, VkInstance instance);
 	 DLL_EXPORT VkCommandBuffer Renderer_BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool);
-	 DLL_EXPORT VkResult		Renderer_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
+	 DLL_EXPORT void			Renderer_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
 	 DLL_EXPORT void			Renderer_DestroyRenderer(GraphicsRenderer& renderer);
 	 DLL_EXPORT void			Renderer_DestroyRenderPass(VkDevice device, VkRenderPass* renderPass);
 	 DLL_EXPORT void			Renderer_DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count);
@@ -69,8 +67,8 @@ extern "C" {
 	VkSurfaceCapabilitiesKHR    Renderer_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkSurfaceFormatKHR>  Renderer_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkPresentModeKHR>    Renderer_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	VkResult					Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue & graphicsQueue, VkQueue & presentQueue);
-	VkResult					Renderer_GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32 & graphicsFamily, uint32 & presentFamily);
+	void						Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue & graphicsQueue, VkQueue & presentQueue);
+	void						Renderer_GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32 & graphicsFamily, uint32 & presentFamily);
 	uint32						Renderer_GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkSurfaceFormatKHR			Renderer_FindSwapSurfaceFormat(Vector<VkSurfaceFormatKHR>&availableFormats);
 	VkPresentModeKHR			Renderer_FindSwapPresentMode(Vector<VkPresentModeKHR>&availablePresentModes);
@@ -81,8 +79,8 @@ extern "C" {
 	VkImage*					Renderer_SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount);
 	VkImageView*				Renderer_SetUpSwapChainImageViews(VkDevice device, VkImage* swapChainImageList, size_t swapChainImageCount, VkSurfaceFormatKHR swapChainImageFormat);
 	VkCommandPool				Renderer_SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
-	VkResult					Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight);
-	VkResult					Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer);
+	void						Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight);
+	void						Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer);
 	void						Renderer_LogVulkanMessage(const char* message, int severity);
 	
 	void						Renderer_DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator);

@@ -169,10 +169,8 @@ void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImage
 
 	auto singleCommand = Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 	vkCmdPipelineBarrier(singleCommand, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
-	if (Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, singleCommand) == VK_SUCCESS)
-	{
-		texture.textureImageLayout = newImageLayout;
-	}
+	Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, singleCommand);
+	texture.textureImageLayout = newImageLayout;
 }
 
 void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout)

@@ -168,7 +168,7 @@ void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandP
 
 void RenderSystem::StartFrame()
 {
-    renderer.CommandIndex = (renderer.CommandIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+    renderer.CommandIndex = (renderer.CommandIndex + 1) % renderer.SwapChainImageCount;
 
     VULKAN_THROW_IF_FAIL(vkWaitForFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex], VK_TRUE, UINT64_MAX));
     VULKAN_THROW_IF_FAIL(vkResetFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex]));
