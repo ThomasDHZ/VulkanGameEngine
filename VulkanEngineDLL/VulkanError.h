@@ -17,7 +17,6 @@ public:
 
     const VkResult result;
 
-    // INLINE + STATIC = Works on MSVC, Clang, GCC, everywhere
     static inline const char* GetVulkanError(VkResult r)
     {
         switch (r) {

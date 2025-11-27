@@ -71,7 +71,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	return textureLoader.TextureId;
 }
 
-Texture  TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
+Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
 	Texture texture = Texture
 	{
@@ -282,7 +282,7 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 	texture.textureBufferIndex = bufferIndex;
 }
 
-VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo)
+void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo)
 {
 	VULKAN_THROW_IF_FAIL(vkCreateImage(renderer.Device, &createImageInfo, nullptr, &texture.textureImage));
 
@@ -299,7 +299,7 @@ VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& 
 	VULKAN_THROW_IF_FAIL(vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0));
 }
 
-VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)
+void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)
 {
 	VkBuffer buffer = VK_NULL_HANDLE;
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
@@ -319,11 +319,9 @@ VkResult TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& 
 	Renderer_FreeDeviceMemory(renderer.Device, &bufferMemory);
 	Renderer_DestroyBuffer(renderer.Device, &stagingBuffer);
 	Renderer_FreeDeviceMemory(renderer.Device, &stagingBufferMemory);
-
-	return VK_SUCCESS;
 }
 
-VkResult TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType)
+void TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType)
 {
 	//Vector<Pixel> pixels(textureResolution.x * textureResolution.y, clearColor);
 	//VkDeviceSize bufferSize = (textureResolution.x * textureResolution.y * colorChannels);
@@ -374,10 +372,9 @@ VkResult TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textur
 	//VULKAN_RESULT(Texture_CreateTextureSampler(renderer, texture, textureLoader.SamplerCreateInfo));
 	//VULKAN_RESULT(Texture_GenerateMipmaps(renderer, texture));
 	//return texture;
-	return VK_SUCCESS;
 }
 
-VkResult TextureSystem::UpdateImage(Texture& texture)
+void TextureSystem::UpdateImage(Texture& texture)
 {
 	VkImageCreateInfo imageCreateInfo =
 	{
@@ -410,10 +407,10 @@ VkResult TextureSystem::UpdateImage(Texture& texture)
 		.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
 	VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, NULL, &texture.textureMemory));
-	return vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0);
+	VULKAN_THROW_IF_FAIL(vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0));
 }
 
-VkResult TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo)
+void TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo)
 {
 	VULKAN_THROW_IF_FAIL(vkCreateImage(renderer.Device, &imageCreateInfo, NULL, &texture.textureImage));
 
@@ -427,10 +424,10 @@ VkResult TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCr
 		.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
 	VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, NULL, &texture.textureMemory));
-	return vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0);
+	VULKAN_THROW_IF_FAIL(vkBindImageMemory(renderer.Device, texture.textureImage, texture.textureMemory, 0));
 }
 
-VkResult TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)
+void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)
 {
 	VkImageViewCreateInfo TextureImageViewInfo =
 	{
@@ -447,10 +444,10 @@ VkResult TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags i
 			.layerCount = 1,
 		}
 	};
-	return vkCreateImageView(renderer.Device, &TextureImageViewInfo, NULL, &texture.textureView);
+	VULKAN_THROW_IF_FAIL(vkCreateImageView(renderer.Device, &TextureImageViewInfo, NULL, &texture.textureView));
 }
 
-VkResult TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout)
+void TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout)
 {
 	VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
 	VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
@@ -492,27 +489,21 @@ VkResult TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Te
 
 	vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
 	texture.textureImageLayout = newLayout;
-	return VK_SUCCESS;
 }
 
-VkResult TextureSystem::QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout)
+void TextureSystem::QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout)
 {
 	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
 	TransitionImageLayout(commandBuffer, texture, newLayout);
-	VkResult result = renderSystem.EndSingleUseCommand(commandBuffer);
-	if (result == VK_SUCCESS)
-	{
-		texture.textureImageLayout = newLayout;
-	}
-	return result;
+	renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
-VkResult TextureSystem::CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel)
+void TextureSystem::CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel)
 {
-	return TransitionImageLayout(commandBuffer, texture, newLayout);
+	TransitionImageLayout(commandBuffer, texture, newLayout);
 }
 
-VkResult TextureSystem::CopyBufferToTexture(Texture& texture, VkBuffer buffer)
+void TextureSystem::CopyBufferToTexture(Texture& texture, VkBuffer buffer)
 {
 	VkBufferImageCopy BufferImage =
 	{
@@ -541,14 +532,14 @@ VkResult TextureSystem::CopyBufferToTexture(Texture& texture, VkBuffer buffer)
 	};
 	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
 	vkCmdCopyBufferToImage(commandBuffer, buffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &BufferImage);
-	return renderSystem.EndSingleUseCommand(commandBuffer);
+	renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
-VkResult TextureSystem::GenerateMipmaps(Texture& texture)
+void TextureSystem::GenerateMipmaps(Texture& texture)
 {
 	if (texture.mipMapLevels == 1)
 	{
-		return VK_SUCCESS;
+		return;
 	}
 
 	int32 mipWidth = texture.width;
@@ -658,7 +649,7 @@ VkResult TextureSystem::GenerateMipmaps(Texture& texture)
 	ImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &ImageMemoryBarrier);
-	return renderSystem.EndSingleUseCommand(commandBuffer);
+	renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
 Texture TextureSystem::FindTexture(const RenderPassGuid& renderPassGuid)

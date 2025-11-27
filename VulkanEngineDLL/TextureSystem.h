@@ -42,19 +42,19 @@ struct Texture
 class TextureSystem
 {
 private:
-    void     UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
-    VkResult CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo);
-    VkResult CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
-    VkResult CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType);
-    VkResult UpdateImage(Texture& texture);
-    VkResult CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo);
-    VkResult CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
-    VkResult CreateTextureSampler(Texture& texture, VkSamplerCreateInfo& sampleCreateInfo);
-    VkResult TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
-    VkResult QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout);
-    VkResult CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel);
-    VkResult CopyBufferToTexture(Texture& texture, VkBuffer buffer);
-    VkResult GenerateMipmaps(Texture& texture);
+    void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
+    void CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo);
+    void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
+    void CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType);
+    void UpdateImage(Texture& texture);
+    void CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo);
+    void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
+    void CreateTextureSampler(Texture& texture, VkSamplerCreateInfo& sampleCreateInfo);
+    void TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
+    void QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout);
+    void CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel);
+    void CopyBufferToTexture(Texture& texture, VkBuffer buffer);
+    void GenerateMipmaps(Texture& texture);
 
 public:
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;

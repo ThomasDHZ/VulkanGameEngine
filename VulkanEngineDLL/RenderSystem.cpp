@@ -156,17 +156,17 @@ VkCommandBuffer RenderSystem::BeginSingleUseCommand(VkCommandPool& commandPool)
     return Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
-VkResult RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
+void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
-    return Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
-VkResult RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
+void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
 {
-    return Renderer_EndSingleUseCommand(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
+    Renderer_EndSingleUseCommand(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
-VkResult RenderSystem::StartFrame()
+void RenderSystem::StartFrame()
 {
     renderer.CommandIndex = (renderer.CommandIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -176,17 +176,14 @@ VkResult RenderSystem::StartFrame()
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         renderer.RebuildRendererFlag = true;
-        return result;
     }
     else if (result != VK_SUCCESS)
     {
         VULKAN_THROW_IF_FAIL(result);
     }
-
-    return result;
 }
 
-VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
+void RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
 {
     VkPipelineStageFlags waitStages[] =
     {
@@ -236,8 +233,6 @@ VkResult RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     {
         VULKAN_THROW_IF_FAIL(result);
     }
-
-    return result;
 }
 
 Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer() 
@@ -471,15 +466,15 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
      return renderSystem.LoadRenderPass(levelGuid, jsonPath, renderPassResolution);
 }
 
- VkResult RenderSystem_StartFrame()
+ void RenderSystem_StartFrame()
 {
-     return renderSystem.StartFrame();
+     renderSystem.StartFrame();
 }
 
- VkResult RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount)
+ void RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount)
 {
      Vector<VkCommandBuffer> commandBufferList = Vector<VkCommandBuffer>(commandBufferListPtr, commandBufferListPtr + commandBufferCount);
-     return renderSystem.EndFrame(commandBufferList);
+     renderSystem.EndFrame(commandBufferList);
 }
 
  VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)
