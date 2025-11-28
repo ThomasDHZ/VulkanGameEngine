@@ -21,7 +21,15 @@
 bld/
 [Bb]in/
 [Oo]bj/
+
+# Visual Studio – never let these poison a CMake project
+CppProperties.json
+CMakeSettings.json
+launch.vs.json
+tasks.vs.json
+*.vs/
 out/
+android/app/build/
 
 # Visual Studio 2015 cache/options directory
 .vs/

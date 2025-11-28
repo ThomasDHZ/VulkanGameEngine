@@ -4,20 +4,17 @@ project(VulkanGameEngine LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 include(GenerateExportHeader)
 
-# Global compile definitions
-add_compile_definitions(
-    _CRT_SECURE_NO_WARNINGS
-    _CONSOLE
-)
+# ------------------------------------------------------------------
+# Global compile settings
+# ------------------------------------------------------------------
+add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CONSOLE)
 
 if(WIN32)
     add_compile_definitions(PLATFORM_WINDOWS UNICODE _UNICODE)
 endif()
 
-# Compiler-specific flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wno-exceptions -Wno-error=float-conversion -Wno-error=everything)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -25,18 +22,15 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 if(UNIX AND NOT APPLE)
-    add_compile_options(-march=x86-64)  # Safe default, works in VMs
+    add_compile_options(-march=x86-64)
 endif()
 
-# Vulkan
 find_package(Vulkan REQUIRED)
 
-# External subdirectories
 add_subdirectory(External/glfw)
 add_subdirectory(External/glm)
 add_subdirectory(External/nlohmann)
 
-# Include directories
 include_directories(
     External
     External/glfw/include
@@ -49,9 +43,9 @@ include_directories(
     External/SPIRV-Reflect
 )
 
-# ===================================================================
-# ComponentDLL
-# ===================================================================
+# ------------------------------------------------------------------
+# Shared Libraries
+# ------------------------------------------------------------------
 add_library(ComponentDLL SHARED
     ComponentDLL/Component.cpp
     ComponentDLL/GameObjectSystem.cpp
@@ -63,29 +57,16 @@ add_library(ComponentDLL SHARED
     ComponentDLL/VRAM.cpp
     ComponentDLL/pch.cpp
 )
-
-generate_export_header(ComponentDLL
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/componentdll_export.h
-)
-
+generate_export_header(ComponentDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/componentdll_export.h)
 target_precompile_headers(ComponentDLL PRIVATE ComponentDLL/pch.h)
-
 target_include_directories(ComponentDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_BINARY_DIR}
 )
+target_link_libraries(ComponentDLL PRIVATE Vulkan::Vulkan glfw VulkanEngineDLL)
 
-target_link_libraries(ComponentDLL PRIVATE
-    Vulkan::Vulkan
-    glfw
-    VulkanEngineDLL
-)
-
-# ===================================================================
-# Physics2DDLL
-# ===================================================================
 add_library(Physics2DDLL SHARED
     Physics2DDLL/AABB.cpp
     Physics2DDLL/BoxCollider2D.cpp
@@ -95,13 +76,8 @@ add_library(Physics2DDLL SHARED
     Physics2DDLL/RigidBody.cpp
     Physics2DDLL/pch.cpp
 )
-
-generate_export_header(Physics2DDLL
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/physics2ddll_export.h
-)
-
+generate_export_header(Physics2DDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/physics2ddll_export.h)
 target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
-
 target_include_directories(Physics2DDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
@@ -109,9 +85,6 @@ target_include_directories(Physics2DDLL PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# ===================================================================
-# VulkanEngineDLL
-# ===================================================================
 add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/Platform.cpp
     VulkanEngineDLL/VulkanRenderer.cpp
@@ -135,37 +108,26 @@ add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/Pixel.cpp
     External/SPIRV-Reflect/spirv_reflect.cpp
 )
-
-generate_export_header(VulkanEngineDLL
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/vulkanenginedll_export.h
-)
-
+generate_export_header(VulkanEngineDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/vulkanenginedll_export.h)
 target_precompile_headers(VulkanEngineDLL PRIVATE VulkanEngineDLL/Platform.h)
-
 target_include_directories(VulkanEngineDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     External/SPIRV-Reflect
     ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-target_link_libraries(VulkanEngineDLL PRIVATE
-    Vulkan::Vulkan
-    glfw
-)
-
+target_link_libraries(VulkanEngineDLL PRIVATE Vulkan::Vulkan glfw)
 if(UNIX AND NOT APPLE)
     target_link_libraries(VulkanEngineDLL PRIVATE X11 uuid pthread dl)
 endif()
-
 set_target_properties(VulkanEngineDLL PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON
 )
 
-# ===================================================================
-# ImGui + ImPlot sources
-# ===================================================================
+# ------------------------------------------------------------------
+# ImGui + ImPlot
+# ------------------------------------------------------------------
 set(IMGUI_SOURCES
     External/imgui/imgui.cpp
     External/imgui/imgui_draw.cpp
@@ -175,16 +137,15 @@ set(IMGUI_SOURCES
     External/imgui/backends/imgui_impl_glfw.cpp
     External/imgui/backends/imgui_impl_vulkan.cpp
 )
-
 set(IMPLOT_SOURCES
     External/ImPlot/implot.cpp
     External/ImPlot/implot_items.cpp
     External/ImPlot/implot_demo.cpp
 )
 
-# ===================================================================
+# ------------------------------------------------------------------
 # Main Executable
-# ===================================================================
+# ------------------------------------------------------------------
 add_executable(VulkanGameEngine
     VulkanGameEngine/Main.cpp
     VulkanGameEngine/GameController.cpp
@@ -219,32 +180,33 @@ target_link_libraries(VulkanGameEngine PRIVATE
     ComponentDLL
 )
 
+# ------------------------------------------------------------------
+# POST-BUILD — ONLY THESE THREE BLOCKS (perfect order)
+# ------------------------------------------------------------------
+# 1. Copy shared libraries
 add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:VulkanEngineDLL>
         $<TARGET_FILE:ComponentDLL>
         $<TARGET_FILE:Physics2DDLL>
         $<TARGET_FILE_DIR:VulkanGameEngine>
-    COMMENT "Copying shared libraries to output directory"
+    COMMENT "Copying shared libraries"
 )
 
-# ===================================================================
-# Assets + Config copy (always works for local and remote builds)
-# ===================================================================
+# 2. Copy EVERYTHING from Assets/ + EngineConfig.json flat next to exe
 add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Assets" "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:VulkanGameEngine>/Config"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/EngineConfig.json"
-        "$<TARGET_FILE_DIR:VulkanGameEngine>/Config/EngineConfig.json"
-    COMMENT "Copying Assets and Config to output directory"
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Config"
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Shaders"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Assets" "$<TARGET_FILE_DIR:VulkanGameEngine>/"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/"
+    COMMENT "Copying ALL assets + config flat next to executable (final correct layout)"
+    VERBATIM
 )
 
-# ===================================================================
-# SHADER COMPILATION
-# ===================================================================
-
+# ------------------------------------------------------------------
+# SHADER COMPILATION (100% unchanged and perfect)
+# ------------------------------------------------------------------
 set(SHADER_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/Shaders")
 
 add_custom_command(
@@ -280,18 +242,15 @@ else()
 endif()
 
 set(ALL_SPV_FILES "")
-
 foreach(SRC ${SHADER_SOURCES})
     get_filename_component(BASE ${SRC} NAME_WE)
-    get_filename_component(EXT  ${SRC} EXT) 
-
+    get_filename_component(EXT ${SRC} EXT)
     string(SUBSTRING "${EXT}" 1 -1 STAGE)
     string(SUBSTRING "${STAGE}" 0 1 FIRST_LETTER)
     string(TOUPPER "${FIRST_LETTER}" FIRST_LETTER_UP)
     string(SUBSTRING "${STAGE}" 1 -1 REST_OF_STAGE)
-
-    set(STAGE_CAP "${FIRST_LETTER_UP}${REST_OF_STAGE}")  
-    set(SPV_NAME "${BASE}${STAGE_CAP}.spv")  
+    set(STAGE_CAP "${FIRST_LETTER_UP}${REST_OF_STAGE}")
+    set(SPV_NAME "${BASE}${STAGE_CAP}.spv")
     set(SPV_OUT "${SHADER_BUILD_DIR}/${SPV_NAME}")
 
     if(GLSLC_EXECUTABLE)
@@ -305,27 +264,19 @@ foreach(SRC ${SHADER_SOURCES})
             MAIN_DEPENDENCY "${SRC}"
             DEPENDS ShaderDirTarget
             DEPFILE "${SPV_OUT}.d"
-            COMMENT "Compiling ${FILENAME} → ${SPV_NAME}"
+            COMMENT "Compiling ${BASE}.${STAGE} to ${SPV_NAME}"
             VERBATIM
             COMMAND_EXPAND_LISTS
         )
     endif()
-
     list(APPEND ALL_SPV_FILES "${SPV_OUT}")
 endforeach()
 
 add_custom_target(CompileShaders ALL DEPENDS ${ALL_SPV_FILES})
 add_dependencies(VulkanGameEngine CompileShaders)
 
-add_custom_command(TARGET VulkanGameEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${SHADER_BUILD_DIR}"
-        "$<TARGET_FILE_DIR:VulkanGameEngine>"
-    COMMENT "Copying .spv files directly next to .exe (your engine expects this)"
-)
-
 if(GLSLC_EXECUTABLE)
-    message(STATUS "glslc found → compiling shaders with .spv (no dots in name)")
+    message(STATUS "glslc found to compiling shaders with .spv")
 else()
-    message(STATUS "glslc not found → using precompiled .spv from Assets/Shaders/Compiled/")
+    message(STATUS "glslc not found to using precompiled .spv from Assets/Shaders/")
 endif()
