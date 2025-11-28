@@ -25,6 +25,16 @@ if(UNIX AND NOT APPLE)
     add_compile_options(-march=x86-64)
 endif()
 
+# ------------------------------------------------------------------
+# Android: disable desktop-only GLFW features
+# ------------------------------------------------------------------
+if(ANDROID)
+    set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_X11     OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_DOCS    OFF CACHE BOOL "" FORCE)
+    set(GLFW_INSTALL       OFF CACHE BOOL "" FORCE)
+endif()
+
 find_package(Vulkan REQUIRED)
 
 add_subdirectory(External/glfw)
@@ -44,7 +54,7 @@ include_directories(
 )
 
 # ------------------------------------------------------------------
-# Shared Libraries
+# Shared Libraries (unchanged)
 # ------------------------------------------------------------------
 add_library(ComponentDLL SHARED
     ComponentDLL/Component.cpp
@@ -59,12 +69,7 @@ add_library(ComponentDLL SHARED
 )
 generate_export_header(ComponentDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/componentdll_export.h)
 target_precompile_headers(ComponentDLL PRIVATE ComponentDLL/pch.h)
-target_include_directories(ComponentDLL PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
-    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(ComponentDLL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(ComponentDLL PRIVATE Vulkan::Vulkan glfw VulkanEngineDLL)
 
 add_library(Physics2DDLL SHARED
@@ -78,12 +83,7 @@ add_library(Physics2DDLL SHARED
 )
 generate_export_header(Physics2DDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/physics2ddll_export.h)
 target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
-target_include_directories(Physics2DDLL PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
-    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(Physics2DDLL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/Platform.cpp
@@ -110,20 +110,12 @@ add_library(VulkanEngineDLL SHARED
 )
 generate_export_header(VulkanEngineDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/vulkanenginedll_export.h)
 target_precompile_headers(VulkanEngineDLL PRIVATE VulkanEngineDLL/Platform.h)
-target_include_directories(VulkanEngineDLL PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
-    External/SPIRV-Reflect
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(VulkanEngineDLL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL External/SPIRV-Reflect ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(VulkanEngineDLL PRIVATE Vulkan::Vulkan glfw)
 if(UNIX AND NOT APPLE)
     target_link_libraries(VulkanEngineDLL PRIVATE X11 uuid pthread dl)
 endif()
-set_target_properties(VulkanEngineDLL PROPERTIES
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN ON
-)
+set_target_properties(VulkanEngineDLL PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 
 # ------------------------------------------------------------------
 # ImGui + ImPlot
@@ -144,24 +136,43 @@ set(IMPLOT_SOURCES
 )
 
 # ------------------------------------------------------------------
-# Main Executable
+# Main Target — Executable on desktop, Shared Library on Android
 # ------------------------------------------------------------------
-add_executable(VulkanGameEngine
-    VulkanGameEngine/Main.cpp
-    VulkanGameEngine/GameController.cpp
-    VulkanGameEngine/ImGuiRenderer.cpp
-    VulkanGameEngine/Keyboard.cpp
-    VulkanGameEngine/Mouse.cpp
-    VulkanGameEngine/FrameTimer.cpp
-    VulkanGameEngine/GameSystem.cpp
-    VulkanGameEngine/InputSystem.cpp
-    VulkanGameEngine/SystemClock.cpp
-    VulkanGameEngine/VulkanWindow.cpp
-    VulkanGameEngine/Tile.cpp
-    VulkanGameEngine/VulkanFileSystem.cpp
-    ${IMGUI_SOURCES}
-    ${IMPLOT_SOURCES}
-)
+if(ANDROID)
+    add_library(VulkanGameEngine SHARED
+        VulkanGameEngine/Main.cpp
+        VulkanGameEngine/GameController.cpp
+        VulkanGameEngine/ImGuiRenderer.cpp
+        VulkanGameEngine/Keyboard.cpp
+        VulkanGameEngine/Mouse.cpp
+        VulkanGameEngine/FrameTimer.cpp
+        VulkanGameEngine/GameSystem.cpp
+        VulkanGameEngine/InputSystem.cpp
+        VulkanGameEngine/SystemClock.cpp
+        VulkanGameEngine/VulkanWindow.cpp
+        VulkanGameEngine/Tile.cpp
+        VulkanGameEngine/VulkanFileSystem.cpp
+        ${IMGUI_SOURCES}
+        ${IMPLOT_SOURCES}
+    )
+else()
+    add_executable(VulkanGameEngine
+        VulkanGameEngine/Main.cpp
+        VulkanGameEngine/GameController.cpp
+        VulkanGameEngine/ImGuiRenderer.cpp
+        VulkanGameEngine/Keyboard.cpp
+        VulkanGameEngine/Mouse.cpp
+        VulkanGameEngine/FrameTimer.cpp
+        VulkanGameEngine/GameSystem.cpp
+        VulkanGameEngine/InputSystem.cpp
+        VulkanGameEngine/SystemClock.cpp
+        VulkanGameEngine/VulkanWindow.cpp
+        VulkanGameEngine/Tile.cpp
+        VulkanGameEngine/VulkanFileSystem.cpp
+        ${IMGUI_SOURCES}
+        ${IMPLOT_SOURCES}
+    )
+endif()
 
 target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -181,9 +192,17 @@ target_link_libraries(VulkanGameEngine PRIVATE
 )
 
 # ------------------------------------------------------------------
-# POST-BUILD — ONLY THESE THREE BLOCKS (perfect order)
+# Android-specific properties (must come AFTER the target exists)
 # ------------------------------------------------------------------
-# 1. Copy shared libraries
+if(ANDROID)
+    set_target_properties(VulkanGameEngine PROPERTIES
+        OUTPUT_NAME "main"  # Android expects libmain.so
+    )
+endif()
+
+# ------------------------------------------------------------------
+# POST-BUILD — copy everything next to the executable
+# ------------------------------------------------------------------
 add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:VulkanEngineDLL>
@@ -193,22 +212,28 @@ add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMENT "Copying shared libraries"
 )
 
-# 2. Copy EVERYTHING from Assets/ + EngineConfig.json flat next to exe
 add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
-    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Config"
-    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Shaders"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Assets" "$<TARGET_FILE_DIR:VulkanGameEngine>/"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/"
-    COMMENT "Copying ALL assets + config flat next to executable (final correct layout)"
+    COMMENT "Copying Assets + Config flat"
+    VERBATIM
+)
+
+add_custom_command(TARGET VulkanGameEngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
+        "$<TARGET_FILE_DIR:VulkanGameEngine>"
+    COMMAND ${CMAKE_COMMAND} -E remove_directory
+        "$<TARGET_FILE_DIR:VulkanGameEngine>/Shaders"
+    COMMENT "Copying and flattening .spv shaders"
     VERBATIM
 )
 
 # ------------------------------------------------------------------
-# SHADER COMPILATION (100% unchanged and perfect)
+# SHADER COMPILATION (unchanged)
 # ------------------------------------------------------------------
 set(SHADER_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/Shaders")
-
 add_custom_command(
     OUTPUT "${SHADER_BUILD_DIR}/_created"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${SHADER_BUILD_DIR}"

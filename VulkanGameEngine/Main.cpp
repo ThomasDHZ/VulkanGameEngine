@@ -12,6 +12,28 @@
 #include "ImGuiRenderer.h"
 #include <DebugSystem.h>
 
+
+#ifdef __ANDROID__
+
+#include <jni.h>
+#include <android/native_activity.h>
+#include <android/log.h>
+
+extern "C" {
+
+    __attribute__((visibility("default")))
+        JNIEXPORT void JNICALL
+        Java_com_example_vulkangameengine_MainActivity_vulkanMain(
+            JNIEnv* env,
+            jobject)
+    {
+        __android_log_print(ANDROID_LOG_INFO, "VulkanGameEngine", "vulkanMain() called — starting engine");
+        main(0, nullptr);
+    }
+
+}
+#endif
+
 int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();
@@ -51,12 +73,13 @@ int main(int argc, char** argv)
         gameSystem.Destroy();
         vulkanWindow->DestroyWindow(vulkanWindow);
     }
-    catch (const VulkanError& e) {
+    catch (const VulkanError& e) 
+    {
         fprintf(stderr, "%s\n", e.what());
-        // Optional: pop up message box, log to file, etc.
         return -1;
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e) 
+    {
         fprintf(stderr, "STD EXCEPTION: %s\n", e.what());
         return -1;
     }
