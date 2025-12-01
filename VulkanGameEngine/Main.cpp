@@ -14,27 +14,27 @@
 
 
 #ifdef __ANDROID__
-
 #include <jni.h>
-#include <android/native_activity.h>
 #include <android/log.h>
+#include <android/native_window.h>
+#include <android_native_app_glue.h>
 
 extern "C" {
 
-    __attribute__((visibility("default")))
-        JNIEXPORT void JNICALL
-        Java_com_example_vulkangameengine_MainActivity_vulkanMain(
-            JNIEnv* env,
-            jobject)
+    __attribute__((visibility("default"))) JNIEXPORT void JNICALL Java_com_example_vulkangameengine_MainActivity_vulkanMain(JNIEnv* env, jobject, jobject assetManager)
     {
         __android_log_print(ANDROID_LOG_INFO, "VulkanGameEngine", "vulkanMain() called — starting engine");
-        main(0, nullptr);
+        AAssetManager* nativeAssetManager = AAssetManager_fromJava(env, assetManager);
+		fileSystem.LoadAndroidAssetManager(nativeAssetManager);
+        EngineMain();
     }
 
 }
-#endif
 
-int main(int argc, char** argv)
+void EngineMain()
+#else
+    int main(int argc, char** argv)
+#endif
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
@@ -51,11 +51,8 @@ int main(int argc, char** argv)
     {
         vulkanWindow = new GameEngineWindow();
         vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
+        gameSystem.StartUp(vulkanWindow);
 
-        VkSurfaceKHR surface = VK_NULL_HANDLE;
-        VkInstance instance = Renderer_CreateVulkanInstance();
-        glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
-        gameSystem.StartUp(vulkanWindow->WindowHandle, instance, surface);
        // imGuiRenderer = ImGui_StartUp(renderer);
         while (!vulkanWindow->WindowShouldClose(vulkanWindow))
         {

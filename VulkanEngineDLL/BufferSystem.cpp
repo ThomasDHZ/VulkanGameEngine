@@ -56,7 +56,11 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize 
         VkBufferDeviceAddressInfo addrInfo = {};
         addrInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
         addrInfo.buffer = vulkanBuffer.Buffer;
-        vulkanBuffer.BufferDeviceAddress = vkGetBufferDeviceAddress(renderer.Device, &addrInfo);
+#if defined(__ANDROID__)
+        vulkanBuffer.BufferDeviceAddress = renderer.vkGetBufferDeviceAddress(renderer.Device, &addrInfo);
+#else
+		vulkanBuffer.BufferDeviceAddress = vkGetBufferDeviceAddress(renderer.Device, &addrInfo);
+#endif
     }
 
     memorySystem.DeletePtr(bufferData);

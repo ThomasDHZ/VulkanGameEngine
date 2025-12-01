@@ -1,4 +1,4 @@
-#define GLFW_INCLUDE_VULKAN
+﻿#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include "VulkanRenderer.h"
 #include <cstdlib>
@@ -6,7 +6,11 @@
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include "MemorySystem.h"
+#include "Platform.h"
 #include "EngineConfigSystem.h"
+#if defined(__ANDROID__)
+#include <vulkan/vulkan_android.h>
+#endif
 
 LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
 GraphicsRenderer renderer = GraphicsRenderer();
@@ -33,6 +37,14 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance
     renderer.Surface = surface;
     renderer.PhysicalDevice = Renderer_SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
     renderer.Device = Renderer_SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
+
+#if defined(__ANDROID__)
+    renderer.vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)vkGetDeviceProcAddr(renderer.Device, "vkGetBufferDeviceAddress");
+    if (renderer.vkGetBufferDeviceAddress == nullptr) {
+        throw std::runtime_error("Failed to load vkGetBufferDeviceAddress function pointer!");
+    }
+#endif
+
     Renderer_SetUpSwapChain(windowHandle, renderer);
     renderer.CommandPool = Renderer_SetUpCommandPool(renderer.Device, renderer.GraphicsFamily);
     Renderer_SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount);
@@ -164,7 +176,7 @@ void Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
       AddExtensionIfSupported("VK_KHR_wayland_surface");
 
 #elif defined(__ANDROID__)
-      AddExtenstionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+      AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #endif
 
 #ifndef NDEBUG
@@ -174,7 +186,7 @@ void Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
       if (extensions.empty() ||
           (extensions.size() == 1 && extensions[0] == VK_KHR_SURFACE_EXTENSION_NAME)) 
       {
-          throw std::runtime_error("No platform surface extension available � cannot create window.");
+          throw std::runtime_error("No platform surface extension available — cannot create window.");
       }
       return extensions;
   }
@@ -206,6 +218,8 @@ void Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
       {
           throw std::runtime_error("FATAL: Swapchain extension not supported!");
       }
+      AddDeviceExtensionIfSupported(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+
       return enabledDeviceExtensions;
   }
 
@@ -344,7 +358,11 @@ VkInstance Renderer_CreateVulkanInstance()
         .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
         .pEngineName = "No Engine",
         .engineVersion = VK_MAKE_VERSION(1, 0, 0),
-        .apiVersion = VK_API_VERSION_1_4
+        #if defined(__ANDROID__)
+            .apiVersion = VK_API_VERSION_1_1
+        #else
+            .apiVersion = VK_API_VERSION_1_3
+        #endif
     };
 
     VkInstanceCreateInfo createInfo = 
@@ -413,78 +431,35 @@ VkPhysicalDevice Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR 
 VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily)
 {
     VkDevice device = VK_NULL_HANDLE;
-
     float queuePriority = 1.0f;
+
+    // 1. First: create queues
     Vector<VkDeviceQueueCreateInfo> queueCreateInfoList;
     if (graphicsFamily != UINT32_MAX)
     {
-        queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo
-            {
-                .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-                .pNext = nullptr,
-                .flags = 0,
-                .queueFamilyIndex = graphicsFamily,
-                .queueCount = 1,
-                .pQueuePriorities = &queuePriority
+        queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = graphicsFamily,
+            .queueCount = 1,
+            .pQueuePriorities = &queuePriority
+            });
+    }
+    if (presentFamily != UINT32_MAX && presentFamily != graphicsFamily)
+    {
+        queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = presentFamily,
+            .queueCount = 1,
+            .pQueuePriorities = &queuePriority
             });
     }
 
-    if (presentFamily != UINT32_MAX &&
-        presentFamily != graphicsFamily)
-    {
-        queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo
-            {
-               .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-               .pNext = nullptr,
-               .flags = 0,
-               .queueFamilyIndex = presentFamily,
-               .queueCount = 1,
-               .pQueuePriorities = &queuePriority
-            });
-    }
+    // 2. Second: get required extensions (MUST come before using DeviceExtensionList)
+    Vector<const char*> DeviceExtensionList = Renderer_GetRequiredDeviceExtensions(physicalDevice);
 
-    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures =
-    {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-        .pNext = nullptr,
-        .bufferDeviceAddress = VK_TRUE,
-        .bufferDeviceAddressCaptureReplay = VK_FALSE,
-        .bufferDeviceAddressMultiDevice = VK_FALSE,
-    };
-
-    //if (Renderer_GetRayTracingSupport())
-    //{
-    //    VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures =
-    //    {
-    //        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
-    //        .accelerationStructure = VK_TRUE,
-    //        .accelerationStructureCaptureReplay = VK_FALSE,
-    //        .accelerationStructureIndirectBuild = VK_FALSE,
-    //        .accelerationStructureHostCommands = VK_FALSE,
-    //        .descriptorBindingAccelerationStructureUpdateAfterBind = VK_FALSE,
-    //    };
-
-    //    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures =
-    //    {
-    //        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
-    //        .pNext = &accelerationStructureFeatures,
-    //        .rayTracingPipeline = VK_TRUE,
-    //        .rayTracingPipelineShaderGroupHandleCaptureReplay = VK_FALSE,
-    //        .rayTracingPipelineShaderGroupHandleCaptureReplayMixed = VK_FALSE,
-    //        .rayTracingPipelineTraceRaysIndirect = VK_FALSE,
-    //        .rayTraversalPrimitiveCulling = VK_FALSE,
-    //    };
-
-    //    bufferDeviceAddressFeatures.pNext = &rayTracingPipelineFeatures;
-    //}
-    //else
-    //{
-    //    bufferDeviceAddressFeatures.pNext = NULL;
-    //}
-
-    VkPhysicalDeviceFeatures deviceFeatures =
-    {
-        .robustBufferAccess = VK_FALSE,
+    // 3. Third: define the base VkPhysicalDeviceFeatures (you already have this later — move it up!)
+    VkPhysicalDeviceFeatures deviceFeatures = {
+       .robustBufferAccess = VK_FALSE,
         .fullDrawIndexUint32 = VK_FALSE,
         .imageCubeArray = VK_FALSE,
         .independentBlend = VK_FALSE,
@@ -541,15 +516,14 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .inheritedQueries = VK_FALSE,
     };
 
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 =
-    {
+    // 4. Now build the full pNext chain (exact same as before)
+    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = nullptr,
         .features = deviceFeatures
     };
 
-    VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features =
-    {
+    VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .pNext = &physicalDeviceFeatures2,
         .samplerMirrorClampToEdge = VK_FALSE,
@@ -590,7 +564,7 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .separateDepthStencilLayouts = VK_TRUE,
         .hostQueryReset = VK_FALSE,
         .timelineSemaphore = VK_TRUE,
-        .bufferDeviceAddress = VK_TRUE,
+        .bufferDeviceAddress = VK_TRUE, 
         .bufferDeviceAddressCaptureReplay = VK_FALSE,
         .bufferDeviceAddressMultiDevice = VK_FALSE,
         .vulkanMemoryModel = VK_TRUE,
@@ -601,17 +575,13 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .subgroupBroadcastDynamicId = VK_FALSE,
     };
 
-    VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features =
-    {
+    VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
         .pNext = &physicalDeviceVulkan12Features,
-        .robustBufferAccess2 = VK_FALSE,
-        .robustImageAccess2 = VK_FALSE,
         .nullDescriptor = VK_TRUE,
     };
 
-    VkPhysicalDeviceVulkan13Features physicalDeviceVulkan13Features =
-    {
+    VkPhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
         .pNext = &physicalDeviceRobustness2Features,
         .robustImageAccess = VK_FALSE,
@@ -631,41 +601,39 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .maintenance4 = VK_FALSE
     };
 
-    VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT divisorFeatures =
-    {
+    VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT divisorFeatures = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
         .pNext = &physicalDeviceVulkan13Features,
         .vertexAttributeInstanceRateDivisor = VK_TRUE
     };
 
-    VkPhysicalDeviceVulkan11Features physicalDeviceVulkan11Features =
-    {
+    VkPhysicalDeviceVulkan11Features physicalDeviceVulkan11Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
         .pNext = &divisorFeatures,
         .multiview = VK_TRUE
     };
 
-    Vector<const char*> DeviceExtensionList = Renderer_GetRequiredDeviceExtensions(physicalDevice);
-    VkDeviceCreateInfo deviceCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
         .pNext = &physicalDeviceVulkan11Features,
-        .flags = 0,
+        .bufferDeviceAddress = VK_TRUE,
+    };
+
+    // 5. Final device create info
+    VkDeviceCreateInfo deviceCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = &bufferDeviceAddressFeatures,           // ← chain starts here
         .queueCreateInfoCount = static_cast<uint32>(queueCreateInfoList.size()),
         .pQueueCreateInfos = queueCreateInfoList.data(),
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr,
         .enabledExtensionCount = static_cast<uint32>(DeviceExtensionList.size()),
         .ppEnabledExtensionNames = DeviceExtensionList.data(),
-        .pEnabledFeatures = nullptr
+        .pEnabledFeatures = nullptr                      // we use pNext chain
     };
 
 #ifndef NDEBUG
     Vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
     deviceCreateInfo.enabledLayerCount = static_cast<uint32>(validationLayers.size());
     deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
-#else
-    deviceCreateInfo.enabledLayerCount = 0;
 #endif
 
     VULKAN_THROW_IF_FAIL(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));

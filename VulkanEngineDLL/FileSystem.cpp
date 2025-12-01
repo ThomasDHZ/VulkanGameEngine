@@ -176,6 +176,12 @@ int File_Write(void* buffer, size_t size, const char* path)
     return 0;
 }
 
+#if defined(__ANDROID__)
+void LoadAndroidAssetManager(AAssetManager* androidAssetManager)
+{
+	g_AssetManager = androidAssetManager;
+}
+#endif
 
 nlohmann::json File_LoadJsonFile(const char* filePath)
 {
@@ -241,10 +247,42 @@ Vector<String> FileSystem::GetFilesFromDirectory(const String& fileDirectory, co
     return fileList;
 }
 
-nlohmann::json LoadJsonFile(const String& filePath)
+nlohmann::json FileSystem::LoadJsonFile(const String& filePath)
 {
     String rawJson = File_Read(filePath.c_str()).Data;
     return nlohmann::json::parse(rawJson);
+}
+
+Vector<byte> FileSystem::LoadAssetFile(const String& filePath)
+{
+#if defined(__ANDROID__)
+    if (!g_AssetManager)
+    {
+        throw std::runtime_error("Asset Manager is not initialized!");
+    }
+
+    AAsset* asset = AAssetManager_open(g_AssetManager, filePath.c_str(), AASSET_MODE_BUFFER);
+    if (!asset)
+    {
+        throw std::runtime_error("Failed to open Android asset: " + filePath);
+    }
+
+    size_t size = AAsset_getLength(asset);
+    Vector<byte> buffer(size);
+    AAsset_read(asset, buffer.data(), size);
+    AAsset_close(asset);
+#else
+    std::ifstream file(std::filesystem::current_path() / filePath, std::ios::binary | std::ios::ate);
+    size_t size = file.tellg();
+    file.seekg(0);
+    Vector<byte> buffer(size);
+    file.read(reinterpret_cast<char*>(buffer.data()), size);
+    if (!file)
+    {
+        std::cerr << "ERROR: Failed to read full shader file: " << filePath << std::endl;
+    }
+#endif
+    return buffer;
 }
 
 String FileSystem::GetFileExtention(const char* fileName)

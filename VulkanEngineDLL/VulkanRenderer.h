@@ -32,6 +32,10 @@ struct GraphicsRenderer
 	VkPresentModeKHR   PresentMode;
 
 	bool               RebuildRendererFlag;
+
+#if defined(__ANDROID__)
+	PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress;
+#endif
 };
 extern DLL_EXPORT GraphicsRenderer renderer;
 

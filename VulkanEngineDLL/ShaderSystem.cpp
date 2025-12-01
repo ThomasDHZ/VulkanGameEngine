@@ -457,27 +457,9 @@ ShaderSystem shaderSystem = ShaderSystem();
 
      for (const auto& filePath : pipelineShaderList)
      {
-         std::ifstream file(std::filesystem::current_path() / filePath, std::ios::binary | std::ios::ate);
-         if (!file) {
-             std::cerr << "ERROR: Cannot open shader file: " << std::filesystem::current_path() / filePath << std::endl;
-             continue;
-         }
-
-         size_t size = file.tellg();
-         file.seekg(0);
-
-         std::vector<std::byte> buffer(size);
-         file.read(reinterpret_cast<char*>(buffer.data()), size);
-
-         if (!file) {
-             std::cerr << "ERROR: Failed to read full shader file: " << filePath << std::endl;
-             continue;
-         }
-
-         SpvReflectResult result = spvReflectCreateShaderModule(
-             size, buffer.data(), &spvModule);
-
-         if (result != SPV_REFLECT_RESULT_SUCCESS) {
+         Vector<byte> buffer = fileSystem.LoadAssetFile(filePath);
+         if (spvReflectCreateShaderModule(buffer.size(), buffer.data(), &spvModule) != SPV_REFLECT_RESULT_SUCCESS)
+         {
              std::cerr << "SPIRV-Reflect failed for " << filePath << std::endl;
              continue;
          }

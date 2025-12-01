@@ -49,6 +49,7 @@
 
 #elif defined(__ANDROID__)
     #define PLATFORM_ANDROID
+    #include <vulkan/vulkan_android.h>
     #include <unistd.h>
     #include <random>
     #define SLEEP(ms) usleep((ms) * 1000)

@@ -10,9 +10,10 @@
 #include "GameController.h"
 #include <LevelSystem.h>
 
-
 GameSystem gameSystem = GameSystem();
-
+#ifdef __ANDROID__
+Vector<VkCommandBuffer> GameSystem::CommandBufferSubmitList;
+#endif
 GameSystem::GameSystem()
 {
 }
@@ -21,8 +22,23 @@ GameSystem::~GameSystem()
 {
 }
 
-void GameSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
+void GameSystem::StartUp(void* windowHandle)
 {
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkInstance instance = Renderer_CreateVulkanInstance();
+#ifdef __ANDROID__
+    ANativeWindow* nativeWindow = (ANativeWindow*)glfwGetWindowUserPointer((GLFWwindow*)windowHandle);
+    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+        .window = nativeWindow
+    };
+    vkCreateAndroidSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
+
+    vulkanWindow = new GameEngineWindow();
+    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
+#endif 
+    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
     renderSystem.StartUp(windowHandle, instance, surface);
     gpuSystem.StartUp();
     levelSystem.LoadLevel("Levels/TestLevel.json");

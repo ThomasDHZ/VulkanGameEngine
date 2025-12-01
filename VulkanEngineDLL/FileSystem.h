@@ -1,6 +1,9 @@
 #pragma once
 #include "Platform.h"
 #include "MemorySystem.h"
+#if defined(__ANDROID__)
+#include <android/asset_manager.h>
+#endif
 
 typedef struct fileState
 {
@@ -25,14 +28,24 @@ extern "C" {
 
 DLL_EXPORT nlohmann::json File_LoadJsonFile(const char* filePath); 
 
+
+
 class FileSystem
 {
 private:
+#if defined(__ANDROID__)
+	AAssetManager* g_AssetManager = nullptr;
+#endif
+
 public:
 	FileSystem() {};
 	~FileSystem() {};
 
+#if defined(__ANDROID__)
+	void LoadAndroidAssetManager(AAssetManager* androidAssetManager);
+#endif
 	DLL_EXPORT const char* ReadFile(const String& filePath) { return File_Read(filePath.c_str()).Data; }
+	DLL_EXPORT Vector<byte> LoadAssetFile(const String& filePath);
 	DLL_EXPORT bool WriteFile(void* fileInfo, size_t size, const String& filePath) { return File_Write(fileInfo, size, filePath.c_str()); }
 	DLL_EXPORT String GetFileExtention(const char* fileName);
 	DLL_EXPORT String GetFileNameFromPath(const String& filePath) { return File_GetFileNameFromPath(filePath.c_str()); }
