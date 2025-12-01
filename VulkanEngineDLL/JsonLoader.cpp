@@ -6,7 +6,7 @@ RenderPassLoader JsonLoader_LoadRenderPassLoaderInfo(const char* renderPassLoade
     RenderPassLoader renderPassLoader = {};
     try 
     {
-        nlohmann::json j = File_LoadJsonFile(renderPassLoaderJson);
+        nlohmann::json j = fileSystem.LoadJsonFile(renderPassLoaderJson);
 
         j.at("RenderPassId").get_to(renderPassLoader.RenderPassId);
         j.at("IsRenderedToSwapchain").get_to(renderPassLoader.IsRenderedToSwapchain);
@@ -47,7 +47,7 @@ RenderPipelineLoader JsonLoader_LoadRenderPipelineLoaderInfo(const char* renderP
     RenderPipelineLoader renderPipelineLoader = {};
     try
     {
-        nlohmann::json j = File_LoadJsonFile(renderPassLoaderJson);
+        nlohmann::json j = fileSystem.LoadJsonFile(renderPassLoaderJson);
 
   /*      j.at("PipelineId").get_to(renderPipelineLoader.PipelineId);
         j.at("VertexShader").get_to(renderPipelineLoader.VertexShaderModule.ShaderPath);

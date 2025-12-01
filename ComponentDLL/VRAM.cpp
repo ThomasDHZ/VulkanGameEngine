@@ -16,7 +16,7 @@ VramSystem::~VramSystem()
 
 SpriteVram VramSystem::LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture)
 {
-    nlohmann::json json = File_LoadJsonFile(spritePath);
+    nlohmann::json json = fileSystem.LoadJsonFile(spritePath);
     ivec2 spritePixelSize = ivec2{ json["SpritePixelSize"][0], json["SpritePixelSize"][1] };
     ivec2 spriteCells = ivec2(texture.width / spritePixelSize.x, texture.height / spritePixelSize.y);
     ivec2 spriteScale = ivec2{ json["SpriteScale"][0], json["SpriteScale"][1] };
@@ -38,7 +38,7 @@ SpriteVram VramSystem::LoadSpriteVRAM(const char* spritePath, const Material& ma
 Vector<Animation2D> VramSystem::LoadSpriteAnimations(const char* spritePath)
 {
     Vector<Animation2D> animationList;
-    nlohmann::json json = File_LoadJsonFile(spritePath);
+    nlohmann::json json = fileSystem.LoadJsonFile(spritePath);
     for (size_t x = 0; x < json["AnimationList"].size(); ++x)
     {
         Vector<ivec2> spriteFrameList;
@@ -66,7 +66,7 @@ Vector<Animation2D> VramSystem::LoadSpriteAnimations(const char* spritePath)
 
 LevelTileSet VramSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)
 {
-    nlohmann::json json = File_LoadJsonFile(tileSetPath);
+    nlohmann::json json = fileSystem.LoadJsonFile(tileSetPath);
 
     LevelTileSet tileSet = LevelTileSet();
     tileSet.TileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
@@ -85,7 +85,7 @@ bool VramSystem::SpriteVramExists(const VkGuid& vramId)
 
 void VramSystem::LoadTileSets(const char* tileSetPath, LevelTileSet& tileSet)
 {
-    nlohmann::json json = File_LoadJsonFile(tileSetPath);
+    nlohmann::json json = fileSystem.LoadJsonFile(tileSetPath);
 
     Vector<Tile> tileList;
     for (int x = 0; x < json["TileList"].size(); x++)
@@ -106,7 +106,7 @@ void VramSystem::LoadTileSets(const char* tileSetPath, LevelTileSet& tileSet)
 
 LevelLayout VramSystem::LoadLevelInfo(const char* levelLayoutPath)
 {
-    nlohmann::json json = File_LoadJsonFile(levelLayoutPath);
+    nlohmann::json json = fileSystem.LoadJsonFile(levelLayoutPath);
 
     LevelLayout levelLayout;
     levelLayout.LevelLayoutId = VkGuid(json["LevelLayoutId"].get<String>().c_str());
@@ -118,7 +118,7 @@ LevelLayout VramSystem::LoadLevelInfo(const char* levelLayoutPath)
 Vector<Vector<uint>> VramSystem::LoadLevelLayout(const String& levelLayoutPath)
 {
     Vector<Vector<uint>> levelLayerList;
-    nlohmann::json json = File_LoadJsonFile(levelLayoutPath.c_str());
+    nlohmann::json json = fileSystem.LoadJsonFile(levelLayoutPath.c_str());
     for (int x = 0; x < json["LevelLayouts"].size(); x++)
     {
         Vector<uint> levelLayerMap;

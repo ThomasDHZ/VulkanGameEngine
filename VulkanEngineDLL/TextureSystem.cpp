@@ -28,7 +28,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	int height = 0;
 	ColorChannelUsed colorChannels;
 
-	TextureLoader textureLoader = File_LoadJsonFile(texturePath.c_str());
+	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
 	if (TextureExists(textureLoader.TextureId))
 	{
 		return textureLoader.TextureId;

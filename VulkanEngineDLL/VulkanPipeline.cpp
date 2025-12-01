@@ -10,7 +10,7 @@
 
 VulkanPipeline VulkanPipeline_CreateRenderPipeline(VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
 {
-    nlohmann::json pipelineJson = File_LoadJsonFile(pipelineJsonFilePath);
+    nlohmann::json pipelineJson = fileSystem.LoadJsonFile(pipelineJsonFilePath);
     RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;

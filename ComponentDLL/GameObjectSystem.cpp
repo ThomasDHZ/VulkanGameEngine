@@ -111,7 +111,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
             .GameObjectData = LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
         });
 
-    nlohmann::json json = File_LoadJsonFile(gameObjectJson.c_str());
+    nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
     for (const auto& componentJson : json["GameObjectComponentList"])
     {
         uint64 componentType = componentJson["ComponentType"].get<uint64>();

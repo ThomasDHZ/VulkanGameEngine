@@ -4,7 +4,7 @@
 
 VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, RenderPassAttachementTextures& renderPassAttachments, ivec2& renderPassResolution)
 {
-    RenderPassLoader renderPassLoader = File_LoadJsonFile(renderPassJsonFilePath);
+    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath);
     if (renderPassLoader.RenderArea.UseDefaultRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;

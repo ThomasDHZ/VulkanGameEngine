@@ -18,7 +18,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     if (materialPath.empty() || materialPath.c_str() == nullptr)
         return VkGuid::Empty();
 
-    nlohmann::json json = File_LoadJsonFile(materialPath.c_str());
+    nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<std::string>());
 
     if (MaterialSystem_MaterialMapExists(materialId))

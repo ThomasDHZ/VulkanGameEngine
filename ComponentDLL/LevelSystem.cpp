@@ -160,9 +160,9 @@ void LevelSystem::Update(const float& deltaTime)
      shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
 
-     nlohmann::json json = File_LoadJsonFile(levelPath);
-     nlohmann::json shaderJson = File_LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
-     nlohmann::json shaderWiredJson = File_LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
+     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
+     nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
+     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
      spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
      levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
      shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
