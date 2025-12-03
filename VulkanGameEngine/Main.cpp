@@ -43,10 +43,10 @@ void EngineMain()
 #if defined(_WIN32)
     if(!debugSystem.IsRenderDocInjected())
     {
-        debugSystem.SetRootDirectory("../Assets");
+       debugSystem.SetRootDirectory("../Assets");
     }
 #else
- //   debugSystem.SetRootDirectory("");
+    debugSystem.SetRootDirectory("Assets");
 #endif 
 
     try 

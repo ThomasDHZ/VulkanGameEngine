@@ -2,8 +2,8 @@
   "Name": "GaussianBlurPipeline",
   "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
   "ShaderList": [
-    "GaussianBlurShaderVert.spv",
-    "GaussianBlurShaderFrag.spv"
+    "Shaders/GaussianBlurShaderVert.spv",
+    "Shaders/GaussianBlurShaderFrag.spv"
   ],
   "VertexType": 0,
   "ViewportList": [],

@@ -1,20 +1,19 @@
 ﻿cmake_minimum_required(VERSION 3.22)
-# Disable the buggy Ninja recompaction that causes "Permission denied" on Windows
+
 set(CMAKE_NINJA_RECOMPACT OFF CACHE BOOL "" FORCE)
 project(VulkanGameEngine LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(GenerateExportHeader)
-
 add_compile_definitions(
     _CRT_SECURE_NO_WARNINGS
     _CONSOLE
 )
+
 if(WIN32)
     add_compile_definitions(PLATFORM_WINDOWS UNICODE _UNICODE)
 endif()
-
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wno-exceptions -Wno-error=float-conversion -Wno-error=everything)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -25,11 +24,9 @@ if(UNIX AND NOT APPLE)
 endif()
 
 find_package(Vulkan REQUIRED)
-
 add_subdirectory(External/glfw)
 add_subdirectory(External/glm)
 add_subdirectory(External/nlohmann)
-
 include_directories(
     External
     External/glfw/include
@@ -43,11 +40,6 @@ include_directories(
     ${Vulkan_INCLUDE_DIRS}
 )
 
-# ===================================================================
-# Cross-platform support for "#include \"../GLFW/glfw3.h\""
-# - Windows: copy headers so your original includes work unchanged
-# - Linux/macOS: use proper include paths (clean, fast, no file copying)
-# ===================================================================
 if(WIN32)
     add_custom_target(CopyGLFWHeaders ALL
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_SOURCE_DIR}/External/imgui/GLFW"
@@ -213,15 +205,15 @@ endif()
 # ===================================================================
 # INSTALL RULES: Deploy to run dir (works for remote Linux via cmake --install)
 # ===================================================================
-set(RUN_DIR "${CMAKE_INSTALL_PREFIX}/run")  # VS uses installRoot as prefix
+set(RUN_DIR "${CMAKE_INSTALL_PREFIX}/run") # VS uses installRoot as prefix
 install(TARGETS VulkanGameEngine VulkanEngineDLL ComponentDLL Physics2DDLL
     RUNTIME DESTINATION "${RUN_DIR}"
     LIBRARY DESTINATION "${RUN_DIR}"
     ARCHIVE DESTINATION "${RUN_DIR}"
 )
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Assets" DESTINATION "${RUN_DIR}")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/Assets/" DESTINATION "${RUN_DIR}/Assets" PATTERN "Shaders/*" EXCLUDE)
 install(FILES "${CMAKE_SOURCE_DIR}/EngineConfig.json" DESTINATION "${RUN_DIR}/Config")
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Shaders" DESTINATION "${RUN_DIR}" OPTIONAL)
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Shaders/" DESTINATION "${RUN_DIR}/Shaders" OPTIONAL PATTERN ".deps/*" EXCLUDE) 
 
 # ===================================================================
 # Post-build: copy DLLs + Assets + Config (local fallback, + install trigger)
@@ -234,110 +226,12 @@ add_custom_command(TARGET VulkanGameEngine POST_BUILD
         $<TARGET_FILE_DIR:VulkanGameEngine>
     COMMENT "Copying DLLs (local)"
 )
+
 add_custom_command(TARGET VulkanGameEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Assets" "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:VulkanGameEngine>/Config"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/Config/EngineConfig.json"
-    COMMENT "Copying Assets + Config (local)"
-)
-
-# ===================================================================
-# SHADER COMPILATION
-# ===================================================================
-# ===================================================================
-# SHADER COMPILATION – Clean version (no visible .spv.d files)
-# ===================================================================
-
-set(SHADER_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/Shaders")
-set(SHADER_DEP_DIR   "${SHADER_BUILD_DIR}/.deps")   # <-- hidden folder for .d files
-
-# Ensure directories exist
-file(MAKE_DIRECTORY "${SHADER_BUILD_DIR}")
-file(MAKE_DIRECTORY "${SHADER_DEP_DIR}")
-
-add_custom_command(
-    OUTPUT "${SHADER_BUILD_DIR}/_created"
-    COMMAND ${CMAKE_COMMAND} -E touch "${SHADER_BUILD_DIR}/_created"
-    COMMENT "Ensuring shader output directory exists"
-)
-add_custom_target(ShaderDirTarget DEPENDS "${SHADER_BUILD_DIR}/_created")
-
-find_program(GLSLC_EXECUTABLE glslc
-    HINTS
-        "$ENV{VULKAN_SDK}/Bin"
-        "${Vulkan_INCLUDE_DIRS}/../Bin"
-        /usr/bin
-        /usr/local/bin
-)
-
-file(GLOB_RECURSE SHADER_SOURCES
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.vert"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.frag"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.comp"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.tesc"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.tese"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.geom"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.rgen"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.rchit"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.rmiss"
-    "${CMAKE_SOURCE_DIR}/Assets/Shaders/*.rahit"
-)
-
-if(CMAKE_BUILD_TYPE MATCHES "Debug" OR CMAKE_CONFIGURATION_TYPES MATCHES "Debug")
-    set(GLSL_FLAGS -g -O0)
-else()
-    set(GLSL_FLAGS -O)
-endif()
-
-set(ALL_SPV_FILES "")
-
-foreach(SRC ${SHADER_SOURCES})
-    get_filename_component(BASE ${SRC} NAME_WE)
-    get_filename_component(EXT  ${SRC} EXT)
-
-    string(SUBSTRING "${EXT}" 1 -1 STAGE) 
-    string(SUBSTRING "${STAGE}" 0 1 FIRST_LETTER)
-    string(TOUPPER "${FIRST_LETTER}" FIRST_LETTER_UP)
-    string(SUBSTRING "${STAGE}" 1 -1 REST_OF_STAGE)
-    set(STAGE_CAP "${FIRST_LETTER_UP}${REST_OF_STAGE}")
-
-    set(SPV_NAME "${BASE}${STAGE_CAP}.spv")
-    set(SPV_OUT  "${SHADER_BUILD_DIR}/${SPV_NAME}")
-    set(DEP_FILE "${SHADER_DEP_DIR}/${SPV_NAME}.d")
-
-    if(GLSLC_EXECUTABLE)
-        add_custom_command(
-            OUTPUT "${SPV_OUT}"
-            COMMAND "${GLSLC_EXECUTABLE}"
-                "${SRC}"
-                -o "${SPV_OUT}"
-                --target-env=vulkan1.3
-                --target-spv=spv1.6
-                ${GLSL_FLAGS}
-                -MD -MF "${DEP_FILE}" -MT "${SPV_OUT}"
-            MAIN_DEPENDENCY "${SRC}"
-            DEPENDS ShaderDirTarget
-            DEPFILE "${DEP_FILE}"
-            COMMENT "Compiling shader: ${BASE}${EXT} → ${SPV_NAME}"
-            VERBATIM
-            COMMAND_EXPAND_LISTS
-        )
-    else()
-        message(WARNING "glslc not found – precompiled .spv files will be used for ${SRC}")
-    endif()
-
-    list(APPEND ALL_SPV_FILES "${SPV_OUT}")
-endforeach()
-
-add_custom_target(CompileShaders ALL DEPENDS ${ALL_SPV_FILES})
-add_dependencies(VulkanGameEngine CompileShaders)
-
-add_custom_command(TARGET VulkanGameEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${SHADER_BUILD_DIR}"
-        "$<TARGET_FILE_DIR:VulkanGameEngine>/Shaders"
-    COMMENT "Copying compiled .spv shaders to runtime directory"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/EngineConfig.json"
+    COMMENT "Copying Assets + Config (local, excluding source shaders)"
 )
 
 if(GLSLC_EXECUTABLE)
