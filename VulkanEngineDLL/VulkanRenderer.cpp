@@ -45,7 +45,7 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance
     }
 #endif
 
-    Renderer_SetUpSwapChain(windowHandle, renderer);
+    Renderer_SetUpSwapChain(windowHandle);
     renderer.CommandPool = Renderer_SetUpCommandPool(renderer.Device, renderer.GraphicsFamily);
     Renderer_SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount);
     Renderer_GetDeviceQueue(renderer.Device, renderer.GraphicsFamily, renderer.PresentFamily, renderer.GraphicsQueue, renderer.PresentQueue);
@@ -53,13 +53,13 @@ GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance
     return renderer;
 }
 
-GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer& renderer)
+GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle)
 {
     vkDeviceWaitIdle(renderer.Device);
     Renderer_DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
     Renderer_DestroySwapChain(renderer.Device, &renderer.Swapchain);
 
-    Renderer_SetUpSwapChain(windowHandle, renderer);
+    Renderer_SetUpSwapChain(windowHandle);
     return renderer;
 }
 
@@ -80,7 +80,7 @@ VkExtent2D Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabiliti
     return extent;
 }
 
-void Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
+void Renderer_SetUpSwapChain(void* windowHandle)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Renderer_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
@@ -90,8 +90,8 @@ void Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer)
     VkSurfaceFormatKHR swapChainImageFormat = Renderer_FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = Renderer_FindSwapPresentMode(compatiblePresentModesList);
 
-    Renderer_SetUpSwapChain(renderer);
-    renderer.SwapChainResolution = extent;
+    Renderer_SetUpSwapChain();
+   // renderer.SwapChainResolution = extent;
     renderer.SwapChainImages = Renderer_SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(renderer.SwapChainImageCount));
     renderer.SwapChainImageViews = Renderer_SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
     renderer.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
@@ -747,7 +747,7 @@ Vector<VkPresentModeKHR> Renderer_GetPhysicalDevicePresentModes(VkPhysicalDevice
     return compatiblePresentModesList;
 }
 
-void Renderer_SetUpSwapChain(GraphicsRenderer& renderer)
+void Renderer_SetUpSwapChain()
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities = Renderer_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Renderer_GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);

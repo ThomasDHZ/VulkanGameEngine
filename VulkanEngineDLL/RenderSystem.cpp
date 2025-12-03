@@ -73,7 +73,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
 void RenderSystem::RecreateSwapchain(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime) 
 { 
     vkDeviceWaitIdle(renderer.Device);
-    Renderer_RebuildSwapChain(windowHandle, renderer);
+    Renderer_RebuildSwapChain(windowHandle);
     for (auto& renderPassPair : renderSystem.RenderPassMap)
     {
         VulkanRenderPass& renderPass = renderPassPair.second;

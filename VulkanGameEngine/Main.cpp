@@ -39,14 +39,16 @@ void EngineMain()
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
+	std::cout << "Base Directory: " << std::filesystem::current_path() << std::endl;
 #if defined(_WIN32)
     if(!debugSystem.IsRenderDocInjected())
     {
         debugSystem.SetRootDirectory("../Assets");
     }
 #else
-    //debugSystem.SetRootDirectory("Assets");
+ //   debugSystem.SetRootDirectory("");
 #endif 
+
     try 
     {
         vulkanWindow = new GameEngineWindow();

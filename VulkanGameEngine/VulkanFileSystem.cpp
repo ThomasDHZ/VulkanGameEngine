@@ -17,11 +17,6 @@ const char* VulkanFileSystem::ReadFile(const String& filePath)
     return File_Read(filePath.c_str()).Data;
 }
 
-nlohmann::json VulkanFileSystem::LoadJsonFile(const String& filePath)
-{
-    return File_LoadJsonFile(filePath.c_str());
-}
-
 bool VulkanFileSystem::WriteFile(void* fileInfo, size_t size, const String& filePath)
 {
     return File_Write(fileInfo, size, filePath.c_str());

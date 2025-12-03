@@ -79,6 +79,7 @@ ShaderSystem shaderSystem = ShaderSystem();
          nlohmann::json renderPassJson = fileSystem.LoadJsonFile(shaderPathList[x].c_str());
          for (size_t y = 0; y < renderPassJson["RenderPipelineList"].size(); ++y)
          {
+             auto asdf = renderPassJson["RenderPipelineList"][y].get<String>();
              nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassJson["RenderPipelineList"][y].get<String>().c_str());
              Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
              Vector<ShaderStructDLL> shaderStructList = LoadProtoTypeStructs(shaderJsonList);

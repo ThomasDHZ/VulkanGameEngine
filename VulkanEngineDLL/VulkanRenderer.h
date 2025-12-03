@@ -60,7 +60,7 @@ extern "C" {
 #endif
 
 	GraphicsRenderer		    Renderer_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
-	GraphicsRenderer		    Renderer_RebuildSwapChain(void* windowHandle, GraphicsRenderer& renderer);
+	GraphicsRenderer		    Renderer_RebuildSwapChain(void* windowHandle);
 	VkBool32 VKAPI_CALL		    Renderer_DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* pUserData);
 	Vector<const char*>		    Renderer_GetRequiredInstanceExtensions();
 	Vector<const char*>		    Renderer_GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice);
@@ -78,13 +78,13 @@ extern "C" {
 	VkPresentModeKHR			Renderer_FindSwapPresentMode(Vector<VkPresentModeKHR>&availablePresentModes);
 	VkExtent2D					Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkDevice					Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
-	VkPhysicalDevice			Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32 & graphicsFamily, uint32 & presentFamily);
-	void						Renderer_SetUpSwapChain(GraphicsRenderer& renderer);
+	VkPhysicalDevice			Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
+	void						Renderer_SetUpSwapChain();
 	VkImage*					Renderer_SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount);
 	VkImageView*				Renderer_SetUpSwapChainImageViews(VkDevice device, VkImage* swapChainImageList, size_t swapChainImageCount, VkSurfaceFormatKHR swapChainImageFormat);
 	VkCommandPool				Renderer_SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
 	void						Renderer_SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight);
-	void						Renderer_SetUpSwapChain(void* windowHandle, GraphicsRenderer& renderer);
+	void						Renderer_SetUpSwapChain(void* windowHandle);
 	void						Renderer_LogVulkanMessage(const char* message, int severity);
 	
 	void						Renderer_DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator);
