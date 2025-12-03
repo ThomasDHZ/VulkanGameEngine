@@ -14,27 +14,58 @@
 
 
 #ifdef __ANDROID__
-#include <jni.h>
-#include <android/log.h>
-#include <android/native_window.h>
 #include <android_native_app_glue.h>
+#include <android/log.h>
 
-extern "C" {
-
-    __attribute__((visibility("default"))) JNIEXPORT void JNICALL Java_com_example_vulkangameengine_MainActivity_vulkanMain(JNIEnv* env, jobject, jobject assetManager)
+void handle_cmd(android_app* app, int32_t cmd) 
+{
+    switch (cmd) 
     {
-        __android_log_print(ANDROID_LOG_INFO, "VulkanGameEngine", "vulkanMain() called — starting engine");
-        AAssetManager* nativeAssetManager = AAssetManager_fromJava(env, assetManager);
-		fileSystem.LoadAndroidAssetManager(nativeAssetManager);
-        EngineMain();
+        case APP_CMD_INIT_WINDOW:
+            if (app->window && vulkanWindow) {
+                int32_t w = ANativeWindow_getWidth(app->window);
+                int32_t h = ANativeWindow_getHeight(app->window);
+                vulkanWindow->Width = w;
+                vulkanWindow->Height = h;
+                vulkanWindow->FrameBufferResized = true;
+                __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Window created/resized: %dx%d", w, h);
+            }
+            break;
+        case APP_CMD_TERM_WINDOW:
+            if (vulkanWindow) 
+            {
+                __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Window terminated");
+            }
+            break;
     }
-
 }
 
-void EngineMain()
-#else
-    int main(int argc, char** argv)
+void android_main(struct android_app* app)
+{
+    app_dummy();
+    app->onAppCmd = handle_cmd;
+    fileSystem.LoadAndroidAssetManager(app->activity->assetManager);
+    while (!app->window) 
+    {
+        int events;
+        android_poll_source* source;
+        if (ALooper_pollAll(-1, nullptr, &events, (void**)&source) >= 0) 
+        {
+            if (source) source->process(app, source);
+            if (app->destroyRequested) return;
+        }
+    }
+
+    vulkanWindow = new GameEngineWindow();
+    int32 width = ANativeWindow_getWidth(app->window);
+    int32 height = ANativeWindow_getHeight(app->window);
+    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android window size: %dx%d", width, height);
+    vulkanWindow->CreateGraphicsWindow(vulkanWindow, (void*)app->window, "Vulkan Game Engine", (uint32)width, (uint32)height);
+    main();
+}
 #endif
+
+int main()
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
@@ -59,9 +90,7 @@ void EngineMain()
         while (!vulkanWindow->WindowShouldClose(vulkanWindow))
         {
             const float frameTime = deltaTime.GetFrameTime();
-
             vulkanWindow->PollEventHandler(vulkanWindow);
-            vulkanWindow->SwapBuffer(vulkanWindow);
 
             gameSystem.Update(frameTime);
             gameSystem.DebugUpdate(frameTime);

@@ -17,18 +17,36 @@ GameEngineWindow::~GameEngineWindow()
 
 }
 
-void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self,
-    const char* WindowName,
-    uint32_t width, uint32_t height)
+void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self, const char* WindowName, uint32 width, uint32 height)
 {
     FrameBufferResized = false;
     Width = width;
     Height = height;
     ShouldClose = false;
 
-    glfwInit();
 
-    // FORCE WSLg to work
+#ifdef PLATFORM_ANDROID
+    self->WindowHandle = platformWindowHandle; 
+
+    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+        .pNext = nullptr,
+        .flags = 0,
+        .window = (ANativeWindow*)platformWindowHandle
+    };
+
+    VkResult err = vkCreateAndroidSurfaceKHR(self->Instance, &surfaceCreateInfo, nullptr, &self->Surface);
+    if (err != VK_SUCCESS)
+    {
+        __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "vkCreateAndroidSurfaceKHR failed: %d", err);
+        return;
+    }
+
+    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully");
+#else
+
+    glfwInit();
     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -43,10 +61,11 @@ void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self,
         fprintf(stderr, "GLFW: %s\n", err ? err : "unknown error");
         return;
     }
+
     glfwShowWindow((GLFWwindow*)self->WindowHandle);
-    glfwRequestWindowAttention((GLFWwindow*)self->WindowHandle);  // flashes taskbar
-    glfwFocusWindow((GLFWwindow*)self->WindowHandle);             // brings to front
-    glfwSetWindowSize((GLFWwindow*)self->WindowHandle, 1920, 1080); // force full size
+    glfwRequestWindowAttention((GLFWwindow*)self->WindowHandle); 
+    glfwFocusWindow((GLFWwindow*)self->WindowHandle);      
+    glfwSetWindowSize((GLFWwindow*)self->WindowHandle, width, height);
     glfwSetWindowAttrib((GLFWwindow*)self->WindowHandle, GLFW_MAXIMIZED, GLFW_TRUE);
 
     glfwSetWindowUserPointer((GLFWwindow*)self->WindowHandle, self);
@@ -56,16 +75,16 @@ void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self,
     glfwSetScrollCallback((GLFWwindow*)self->WindowHandle, Mouse::MouseWheelEvent);
     glfwSetKeyCallback((GLFWwindow*)self->WindowHandle, Keyboard::KeyboardKeyPressed);
     glfwSetJoystickCallback(ControllerConnectCallBack);
+#endif
 }
 
 void GameEngineWindow::PollEventHandler(GameEngineWindow* self)
 {
+#ifndef PLATFORM_ANDROID
     glfwPollEvents();
+#endif
 }
 
-void GameEngineWindow::SwapBuffer(GameEngineWindow* self)
-{
-}
 
 void GameEngineWindow::CreateSurface(void* windowHandle, VkInstance* instance, VkSurfaceKHR* surface)
 {
@@ -85,45 +104,34 @@ void GameEngineWindow::GetFrameBufferSize(void* windowHandle, int* width, int* h
 
 void GameEngineWindow::DestroyWindow(GameEngineWindow* self)
 {
-    GLFWwindow* handle = (GLFWwindow*)self->WindowHandle;
-    glfwDestroyWindow(handle);
+#ifndef PLATFORM_ANDROID
+    if (self->WindowHandle) 
+    {
+        glfwDestroyWindow((GLFWwindow*)self->WindowHandle);
+        self->WindowHandle = nullptr;
+    }
     glfwTerminate();
+#else
+    if (self->Surface) 
+    {
+        vkDestroySurfaceKHR(self->Instance, self->Surface, nullptr);
+        self->Surface = VK_NULL_HANDLE;
+    }
+    self->WindowHandle = nullptr;
+#endif
 }
 
 bool GameEngineWindow::WindowShouldClose(GameEngineWindow* self)
 {
-    GLFWwindow* handle = (GLFWwindow*)self->WindowHandle;
-    return  glfwWindowShouldClose(handle);
+#ifndef PLATFORM_ANDROID
+    return glfwWindowShouldClose((GLFWwindow*)self->WindowHandle);
+#else
+    return true;
+#endif
 }
 
-const char** GameEngineWindow::GetInstanceExtensions(GameEngineWindow* self, uint32_t* outExtensionCount, bool enableValidationLayers)
+void GameEngineWindow::ControllerConnectCallBack(int jid, int event) 
 {
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-    size_t totalCount = glfwExtensionCount + (enableValidationLayers ? 1 : 0);
-
-    const char** extensions = memorySystem.AddPtrBuffer<const char*>(totalCount * sizeof(const char*), __FILE__, __LINE__, __func__);
-    if (!extensions) {
-        fprintf(stderr, "Failed to allocate memory for extensions\n");
-        return NULL;
-    }
-
-    for (uint32_t x = 0; x < glfwExtensionCount; x++) {
-        extensions[x] = glfwExtensions[x];
-    }
-
-    if (enableValidationLayers)
-    {
-        extensions[glfwExtensionCount] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-    }
-
-    *outExtensionCount = totalCount;
-    return extensions;
-}
-
-
-void GameEngineWindow::ControllerConnectCallBack(int jid, int event) {
     if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
         printf("Controller connected: %s\n", glfwGetGamepadName(jid));
   /*      GLFWWindow* window = ((GLFWWindow*)vulkanWindow);

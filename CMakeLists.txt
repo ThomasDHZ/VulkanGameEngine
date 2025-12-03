@@ -1,5 +1,4 @@
 ﻿cmake_minimum_required(VERSION 3.22)
-
 set(CMAKE_NINJA_RECOMPACT OFF CACHE BOOL "" FORCE)
 project(VulkanGameEngine LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
@@ -10,26 +9,31 @@ add_compile_definitions(
     _CRT_SECURE_NO_WARNINGS
     _CONSOLE
 )
-
 if(WIN32)
     add_compile_definitions(PLATFORM_WINDOWS UNICODE _UNICODE)
+elseif(ANDROID)
+    add_compile_definitions(PLATFORM_ANDROID)
 endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wno-exceptions -Wno-error=float-conversion -Wno-error=everything)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wno-exceptions)
 endif()
-if(UNIX AND NOT APPLE)
+
+if(UNIX AND NOT APPLE AND NOT ANDROID)
     add_compile_options(-march=x86-64)
 endif()
 
 find_package(Vulkan REQUIRED)
-add_subdirectory(External/glfw)
+if(NOT ANDROID)
+    add_subdirectory(External/glfw)
+endif()
+
 add_subdirectory(External/glm)
 add_subdirectory(External/nlohmann)
 include_directories(
     External
-    External/glfw/include
     External/glm
     External/nlohmann/include
     External/imgui
@@ -40,6 +44,18 @@ include_directories(
     ${Vulkan_INCLUDE_DIRS}
 )
 
+if(NOT ANDROID)
+    include_directories(
+        External/glfw/include
+    )
+endif()
+
+# ===================================================================
+# Cross-platform support for "#include \"../GLFW/glfw3.h\""
+# - Windows: copy headers so your original includes work unchanged
+# - Linux/macOS: use proper include paths (clean, fast, no file copying)
+# - Android: skip
+# ===================================================================
 if(WIN32)
     add_custom_target(CopyGLFWHeaders ALL
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_SOURCE_DIR}/External/imgui/GLFW"
@@ -52,7 +68,6 @@ if(WIN32)
     )
     set(GLFW_HEADER_DEPS CopyGLFWHeaders)
 else()
-    # On Linux/macOS just ensure the proper include path is visible
     set(GLFW_HEADER_DEPS)
 endif()
 
@@ -78,8 +93,12 @@ target_include_directories(ComponentDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_BINARY_DIR}
 )
-target_link_libraries(ComponentDLL PRIVATE Vulkan::Vulkan glfw VulkanEngineDLL)
-if(GLFW_HEADER_DEPS)
+if(ANDROID)
+    target_link_libraries(ComponentDLL PRIVATE Vulkan::Vulkan VulkanEngineDLL android log)
+else()
+    target_link_libraries(ComponentDLL PRIVATE Vulkan::Vulkan glfw VulkanEngineDLL)
+endif()
+if(GLFW_HEADER_DEPS AND NOT ANDROID)
     add_dependencies(ComponentDLL ${GLFW_HEADER_DEPS})
 endif()
 
@@ -103,7 +122,7 @@ target_include_directories(Physics2DDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_BINARY_DIR}
 )
-if(GLFW_HEADER_DEPS)
+if(GLFW_HEADER_DEPS AND NOT ANDROID)
     add_dependencies(Physics2DDLL ${GLFW_HEADER_DEPS})
 endif()
 
@@ -141,9 +160,13 @@ target_include_directories(VulkanEngineDLL PUBLIC
     External/SPIRV-Reflect
     ${CMAKE_CURRENT_BINARY_DIR}
 )
-target_link_libraries(VulkanEngineDLL PRIVATE Vulkan::Vulkan glfw)
-if(UNIX AND NOT APPLE)
-    target_link_libraries(VulkanEngineDLL PRIVATE X11 uuid pthread dl)
+if(ANDROID)
+    target_link_libraries(VulkanEngineDLL PRIVATE Vulkan::Vulkan android log)
+else()
+    target_link_libraries(VulkanEngineDLL PRIVATE Vulkan::Vulkan glfw)
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(VulkanEngineDLL PRIVATE X11 uuid pthread dl)
+    endif()
 endif()
 set_target_properties(VulkanEngineDLL PROPERTIES
     CXX_VISIBILITY_PRESET hidden
@@ -159,9 +182,17 @@ set(IMGUI_SOURCES
     External/imgui/imgui_tables.cpp
     External/imgui/imgui_widgets.cpp
     External/imgui/imgui_demo.cpp
-    External/imgui/backends/imgui_impl_glfw.cpp
     External/imgui/backends/imgui_impl_vulkan.cpp
 )
+if(NOT ANDROID)
+    list(APPEND IMGUI_SOURCES
+        External/imgui/backends/imgui_impl_glfw.cpp
+    )
+else()
+    list(APPEND IMGUI_SOURCES
+        External/imgui/backends/imgui_impl_android.cpp
+    )
+endif()
 set(IMPLOT_SOURCES
     External/ImPlot/implot.cpp
     External/ImPlot/implot_items.cpp
@@ -169,24 +200,43 @@ set(IMPLOT_SOURCES
 )
 
 # ===================================================================
-# Main Executable
+# Main Target (executable on desktop, shared lib on Android)
 # ===================================================================
-add_executable(VulkanGameEngine
-    VulkanGameEngine/Main.cpp
-    VulkanGameEngine/GameController.cpp
-    VulkanGameEngine/ImGuiRenderer.cpp
-    VulkanGameEngine/Keyboard.cpp
-    VulkanGameEngine/Mouse.cpp
-    VulkanGameEngine/FrameTimer.cpp
-    VulkanGameEngine/GameSystem.cpp
-    VulkanGameEngine/InputSystem.cpp
-    VulkanGameEngine/SystemClock.cpp
-    VulkanGameEngine/VulkanWindow.cpp
-    VulkanGameEngine/Tile.cpp
-    VulkanGameEngine/VulkanFileSystem.cpp
-    ${IMGUI_SOURCES}
-    ${IMPLOT_SOURCES}
-)
+if(ANDROID)
+    add_library(VulkanGameEngine SHARED
+        VulkanGameEngine/Main.cpp
+        VulkanGameEngine/GameController.cpp
+        VulkanGameEngine/ImGuiRenderer.cpp
+        VulkanGameEngine/Keyboard.cpp  
+        VulkanGameEngine/Mouse.cpp  
+        VulkanGameEngine/FrameTimer.cpp
+        VulkanGameEngine/GameSystem.cpp
+        VulkanGameEngine/InputSystem.cpp  
+        VulkanGameEngine/SystemClock.cpp
+        VulkanGameEngine/VulkanWindow.cpp 
+        VulkanGameEngine/Tile.cpp
+        VulkanGameEngine/VulkanFileSystem.cpp
+        ${IMGUI_SOURCES}
+        ${IMPLOT_SOURCES}
+    )
+else()
+    add_executable(VulkanGameEngine
+        VulkanGameEngine/Main.cpp
+        VulkanGameEngine/GameController.cpp
+        VulkanGameEngine/ImGuiRenderer.cpp
+        VulkanGameEngine/Keyboard.cpp
+        VulkanGameEngine/Mouse.cpp
+        VulkanGameEngine/FrameTimer.cpp
+        VulkanGameEngine/GameSystem.cpp
+        VulkanGameEngine/InputSystem.cpp
+        VulkanGameEngine/SystemClock.cpp
+        VulkanGameEngine/VulkanWindow.cpp
+        VulkanGameEngine/Tile.cpp
+        VulkanGameEngine/VulkanFileSystem.cpp
+        ${IMGUI_SOURCES}
+        ${IMPLOT_SOURCES}
+    )
+endif()
 target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanGameEngine
@@ -195,44 +245,49 @@ target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
     ${CMAKE_CURRENT_BINARY_DIR}
 )
-target_link_libraries(VulkanGameEngine PRIVATE
-    Vulkan::Vulkan glfw Physics2DDLL VulkanEngineDLL ComponentDLL
-)
-if(GLFW_HEADER_DEPS)
-    add_dependencies(VulkanGameEngine ${GLFW_HEADER_DEPS})
+if(ANDROID)
+    target_link_libraries(VulkanGameEngine PRIVATE Vulkan::Vulkan android log Physics2DDLL VulkanEngineDLL ComponentDLL)
+else()
+    target_link_libraries(VulkanGameEngine PRIVATE Vulkan::Vulkan glfw Physics2DDLL VulkanEngineDLL ComponentDLL)
+    if(GLFW_HEADER_DEPS)
+        add_dependencies(VulkanGameEngine ${GLFW_HEADER_DEPS})
+    endif()
 endif()
 
 # ===================================================================
-# INSTALL RULES: Deploy to run dir (works for remote Linux via cmake --install)
+# INSTALL RULES: 
 # ===================================================================
-set(RUN_DIR "${CMAKE_INSTALL_PREFIX}/run") # VS uses installRoot as prefix
-install(TARGETS VulkanGameEngine VulkanEngineDLL ComponentDLL Physics2DDLL
-    RUNTIME DESTINATION "${RUN_DIR}"
-    LIBRARY DESTINATION "${RUN_DIR}"
-    ARCHIVE DESTINATION "${RUN_DIR}"
-)
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/Assets/" DESTINATION "${RUN_DIR}/Assets" PATTERN "Shaders/*" EXCLUDE)
-install(FILES "${CMAKE_SOURCE_DIR}/EngineConfig.json" DESTINATION "${RUN_DIR}/Config")
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Shaders/" DESTINATION "${RUN_DIR}/Shaders" OPTIONAL PATTERN ".deps/*" EXCLUDE) 
+if(NOT ANDROID)
+    set(RUN_DIR "${CMAKE_INSTALL_PREFIX}/run") # VS uses installRoot as prefix
+    install(TARGETS VulkanGameEngine VulkanEngineDLL ComponentDLL Physics2DDLL
+        RUNTIME DESTINATION "${RUN_DIR}"
+        LIBRARY DESTINATION "${RUN_DIR}"
+        ARCHIVE DESTINATION "${RUN_DIR}"
+    )
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/Assets/" DESTINATION "${RUN_DIR}/Assets" PATTERN "Shaders/*" EXCLUDE)
+    install(FILES "${CMAKE_SOURCE_DIR}/EngineConfig.json" DESTINATION "${RUN_DIR}/Config")
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Shaders/" DESTINATION "${RUN_DIR}/Shaders" OPTIONAL PATTERN ".deps/*" EXCLUDE)
+endif()
 
 # ===================================================================
-# Post-build: copy DLLs + Assets + Config (local fallback, + install trigger)
+# Post-build:
 # ===================================================================
-add_custom_command(TARGET VulkanGameEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:VulkanEngineDLL>
-        $<TARGET_FILE:ComponentDLL>
-        $<TARGET_FILE:Physics2DDLL>
-        $<TARGET_FILE_DIR:VulkanGameEngine>
-    COMMENT "Copying DLLs (local)"
-)
-
-add_custom_command(TARGET VulkanGameEngine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Assets" "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/EngineConfig.json"
-    COMMENT "Copying Assets + Config (local, excluding source shaders)"
-)
+if(NOT ANDROID)
+    add_custom_command(TARGET VulkanGameEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:VulkanEngineDLL>
+            $<TARGET_FILE:ComponentDLL>
+            $<TARGET_FILE:Physics2DDLL>
+            $<TARGET_FILE_DIR:VulkanGameEngine>
+        COMMENT "Copying DLLs (local)"
+    )
+    add_custom_command(TARGET VulkanGameEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Assets" "$<TARGET_FILE_DIR:VulkanGameEngine>/Assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/EngineConfig.json"
+        COMMENT "Copying Assets + Config (local, excluding source shaders)"
+    )
+endif()
 
 if(GLSLC_EXECUTABLE)
     message(STATUS "glslc found to compiling shaders automatically")
