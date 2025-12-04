@@ -5,7 +5,6 @@
 class InputSystem
 {
 private:
-
 	bool a = true;
 public:
 	InputSystem();

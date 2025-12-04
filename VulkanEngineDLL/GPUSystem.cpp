@@ -1,7 +1,7 @@
 #include "GPUSystem.h"
 GPUSystem gpuSystem = GPUSystem();
 
-bool GPUSystem_CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice)
+bool GPUSystem::CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice)
 {
 	if (!gpuSystem.RayTracingFeature)
 	{
@@ -41,7 +41,7 @@ bool GPUSystem_CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice)
 	return gpuSystem.RayTracingFeature;
 }
 
-VkSampleCountFlagBits GPUSystem_GetMaxUsableSampleCount(VkPhysicalDevice GPUDevice)
+VkSampleCountFlagBits GPUSystem::GetMaxUsableSampleCount(VkPhysicalDevice gpuDevice)
 {
 	VkSampleCountFlags counts = gpuSystem.PhysicalDeviceLimits.framebufferColorSampleCounts & gpuSystem.PhysicalDeviceLimits.framebufferDepthSampleCounts;
 	if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
@@ -53,7 +53,15 @@ VkSampleCountFlagBits GPUSystem_GetMaxUsableSampleCount(VkPhysicalDevice GPUDevi
 	return VK_SAMPLE_COUNT_1_BIT;
 }
 
-void GPUSystem_StartUp()
+GPUSystem::GPUSystem()
+{
+}
+
+GPUSystem::~GPUSystem()
+{
+}
+
+void GPUSystem::StartUp()
 {
 	gpuSystem.AccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
 
@@ -75,5 +83,5 @@ void GPUSystem_StartUp()
 	PhysicalDeviceProperties.pNext = &gpuSystem.RayTracingPipelineProperties;
 	vkGetPhysicalDeviceProperties2(renderer.PhysicalDevice, &PhysicalDeviceProperties);
 
-	gpuSystem.MaxSampleCount = GPUSystem_GetMaxUsableSampleCount(renderer.PhysicalDevice);
+	gpuSystem.MaxSampleCount = gpuSystem.GetMaxUsableSampleCount(renderer.PhysicalDevice);
 }

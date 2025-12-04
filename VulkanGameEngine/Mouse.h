@@ -1,6 +1,8 @@
 #pragma once
 #include "InputEnum.h"
 #include "VulkanWindow.h"
+
+#ifndef __ANDROID__
 #include <GLFW/glfw3.h>
 
 class Mouse
@@ -23,3 +25,4 @@ public:
 };
 extern Mouse mouse;
 
+#endif

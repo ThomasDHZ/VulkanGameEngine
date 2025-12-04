@@ -1,5 +1,6 @@
 #include "GameController.h"
 
+#ifndef __ANDROID__
 GameController gameController = GameController();
 
 GameController::GameController()
@@ -58,3 +59,4 @@ vec2 GameController::R2L2Pressed(int controllerId)
     }
     return joyStickMovement;
 }
+#endif

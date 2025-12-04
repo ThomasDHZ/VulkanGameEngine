@@ -1,6 +1,7 @@
 #pragma once
 #include "InputEnum.h"
 #include "VulkanWindow.h"
+#ifndef __ANDROID__
 #include <GLFW/glfw3.h>
 
 class Keyboard
@@ -16,3 +17,4 @@ public:
 };
 extern Keyboard keyboard;
 
+#endif

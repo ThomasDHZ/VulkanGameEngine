@@ -75,8 +75,8 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
     }
 
     VramSpriteGuid materialId = VramSpriteGuid(json["MaterialId"].get<String>().c_str());
-    const Material& material = MaterialSystem_FindMaterial(materialId);
-    const Texture& texture = TextureSystem_FindTexture(material.AlbedoMapId);
+    const Material& material = materialSystem.FindMaterial(materialId);
+    const Texture& texture = textureSystem.FindTexture(material.AlbedoMapId);
     spriteSystem.SpriteAnimationMap[vramId] = vramSystem.LoadSpriteAnimations(spriteVramPath.c_str());
     spriteSystem.SpriteVramList.emplace_back(vramSystem.LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
     return vramId;
@@ -89,7 +89,7 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
         const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
-        const auto& material = MaterialSystem_FindMaterial(vram.SpriteMaterialID);
+        const auto& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
         const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
 
         mat4 spriteMatrix = mat4(1.0f);

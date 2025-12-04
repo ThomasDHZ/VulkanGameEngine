@@ -27,7 +27,10 @@ public:
     bool WindowShouldClose(GameEngineWindow* self);
 
     static void ErrorCallBack(int error, const char* description);
-    static void ControllerConnectCallBack(int jid, int event);
     static void FrameBufferResizeCallBack(GLFWwindow* window, int width, int height);
+    
+#ifndef PLATFORM_ANDROID
+    static void ControllerConnectCallBack(int jid, int event);
+#endif
 };
 extern GameEngineWindow* vulkanWindow;

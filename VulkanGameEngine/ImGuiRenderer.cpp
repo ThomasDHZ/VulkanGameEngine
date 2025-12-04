@@ -2,6 +2,7 @@
 #include "ImGuiRenderer.h"
 #include "Platform.h"
 
+#ifndef PLATFORM_ANDROID
 ImGuiRenderer imGuiRenderer = ImGuiRenderer();
 
 ImGuiRenderer ImGui_StartUp(const GraphicsRenderer& renderer)
@@ -229,3 +230,4 @@ void ImGui_VkResult(VkResult err)
     if (err < 0)
         abort();
 }
+#endif

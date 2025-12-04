@@ -103,7 +103,6 @@ void DebugSystem::SetRootDirectory(const String& engineRoot)
     }
 }
 
-
 void Debug_SetRootDirectory(const char* engineRoot)
 {
     debugSystem.SetRootDirectory(String(engineRoot));

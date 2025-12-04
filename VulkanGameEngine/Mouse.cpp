@@ -1,5 +1,6 @@
 #include "Mouse.h"
 
+#ifndef __ANDROID__
 Mouse mouse = Mouse();
 
 Mouse::Mouse()
@@ -29,3 +30,4 @@ void Mouse::MouseWheelEvent(GLFWwindow* window, double xpos, double ypos)
 {
 	mouse.WheelOffset += (int)ypos;
 }
+#endif

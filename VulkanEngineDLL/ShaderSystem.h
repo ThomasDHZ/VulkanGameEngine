@@ -131,7 +131,6 @@ public:
                 "got " + std::to_string(sizeof(T)) + " bytes (type: " + typeid(T).name() + ")"
             );
         }
-        auto adf = variable.Value.data();
         std::memcpy(variable.Value.data(), &value, variable.Value.size());
     }
 
@@ -153,10 +152,3 @@ public:
 
 };
 extern DLL_EXPORT ShaderSystem shaderSystem;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-#ifdef __cplusplus
-}
-#endif

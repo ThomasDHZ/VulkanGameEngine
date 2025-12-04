@@ -28,58 +28,6 @@ struct Material
     Material() = default;
     Material(const Material&) = default;
     Material& operator=(const Material&) = default;
-
-  /*  Material()
-    { 
-    }
-
-    Material(const Material& material)
-    {
-        VectorMapKey = material.VectorMapKey;
-        materialGuid = material.materialGuid;
-        ShaderMaterialBufferIndex = material.ShaderMaterialBufferIndex;
-        MaterialBufferId = material.MaterialBufferId;
-        AlbedoMapId = material.AlbedoMapId;
-        MetallicRoughnessMapId = material.MetallicRoughnessMapId;
-        MetallicMapId = material.MetallicMapId;
-        RoughnessMapId = material.RoughnessMapId;
-        AmbientOcclusionMapId = material.AmbientOcclusionMapId;
-        NormalMapId = material.NormalMapId;
-        DepthMapId = material.DepthMapId;
-        AlphaMapId = material.AlphaMapId;
-        EmissionMapId = material.EmissionMapId;
-        HeightMapId = material.HeightMapId;
-        Albedo = material.Albedo;
-        Emission = material.Emission;
-        Metallic = material.Metallic;
-        Roughness = material.Roughness;
-        AmbientOcclusion = material.AmbientOcclusion;
-        Alpha = material.Alpha;
-    }
-
-    Material& operator=(const Material& material)
-    {
-		VectorMapKey = material.VectorMapKey;
-		materialGuid = material.materialGuid;
-		ShaderMaterialBufferIndex = material.ShaderMaterialBufferIndex;
-		MaterialBufferId = material.MaterialBufferId;
-		AlbedoMapId = material.AlbedoMapId;
-		MetallicRoughnessMapId = material.MetallicRoughnessMapId;
-		MetallicMapId = material.MetallicMapId;
-		RoughnessMapId = material.RoughnessMapId;
-		AmbientOcclusionMapId = material.AmbientOcclusionMapId;
-		NormalMapId = material.NormalMapId;
-		DepthMapId = material.DepthMapId;
-		AlphaMapId = material.AlphaMapId;
-		EmissionMapId = material.EmissionMapId;
-		HeightMapId = material.HeightMapId;
-		Albedo = material.Albedo;
-		Emission = material.Emission;
-		Metallic = material.Metallic;
-		Roughness = material.Roughness;
-		AmbientOcclusion = material.AmbientOcclusion;
-		Alpha = material.Alpha;
-    }*/
 };
 
 class MaterialSystem
@@ -99,18 +47,4 @@ public:
     DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
     DLL_EXPORT void DestroyAllMaterials();
 };
-
 extern DLL_EXPORT MaterialSystem materialSystem;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-    DLL_EXPORT VkGuid MaterialSystem_CreateMaterial(const char* materialPath);
-    DLL_EXPORT void MaterialSystem_Update(const float& deltaTime);
-    DLL_EXPORT const bool MaterialSystem_MaterialMapExists(const MaterialGuid& materialGuid);
-    DLL_EXPORT const Material& MaterialSystem_FindMaterial(const MaterialGuid& materialGuid);
-    DLL_EXPORT void MaterialSystem_Destroy(const MaterialGuid& materialGuid);
-    DLL_EXPORT void MaterialSystem_DestroyAllMaterials();
-#ifdef __cplusplus
-}
-#endif

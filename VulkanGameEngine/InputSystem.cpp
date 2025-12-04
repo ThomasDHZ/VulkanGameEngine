@@ -15,6 +15,7 @@ InputSystem::~InputSystem()
 
 void InputSystem::Update(const float& deltaTime)
 {
+#ifndef PLATFORM_ANDROID
     int joy = GLFW_JOYSTICK_1;
     for (auto& input : gameObjectSystem.InputComponentList)
     {
@@ -48,6 +49,5 @@ void InputSystem::Update(const float& deltaTime)
             gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].KeyBoardInput(input.GameObjectId, deltaTime, keyboard.GetKeyBoardState());
         }
     }
-
-
+#endif
 }

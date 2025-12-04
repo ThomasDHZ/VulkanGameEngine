@@ -86,7 +86,7 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
         return VkGuid();
     }
 
-    auto json = nlohmann::json::parse(File_Read(tileSetPath).Data);
+    auto json = fileSystem.LoadJsonFile(tileSetPath);
     VkGuid tileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
 

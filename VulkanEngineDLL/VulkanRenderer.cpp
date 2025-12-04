@@ -65,7 +65,9 @@ GraphicsRenderer Renderer_RebuildSwapChain(void* windowHandle)
 
 VkExtent2D Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
 {
-    int width, height;
+#ifndef PLATFORM_ANDROID
+    int width;
+    int height;
     glfwGetFramebufferSize((GLFWwindow*)windowHandle, &width, &height);
 
     surfaceCapabilities = Renderer_GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
@@ -75,7 +77,16 @@ VkExtent2D Renderer_SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabiliti
     }
 
     VkExtent2D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-    extent.width = std::max(surfaceCapabilities.minImageExtent.width, std::min(surfaceCapabilities.maxImageExtent.width, extent.width));
+#else
+    VkExtent2D extent = {
+            surfaceCapabilities.currentExtent.width,
+            surfaceCapabilities.currentExtent.height
+    };
+    if (extent.width == UINT32_MAX) {
+        extent = { 1280, 720 };
+    }
+#endif
+    extent.width  = std::max(surfaceCapabilities.minImageExtent.width, std::min(surfaceCapabilities.maxImageExtent.width, extent.width));
     extent.height = std::max(surfaceCapabilities.minImageExtent.height, std::min(surfaceCapabilities.maxImageExtent.height, extent.height));
     return extent;
 }

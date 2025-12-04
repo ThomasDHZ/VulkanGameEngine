@@ -75,7 +75,7 @@ void MeshSystem::Update(const float& deltaTime)
     for (auto& mesh : meshSystem.MeshList)
     {
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
-        uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? MaterialSystem_FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
+        uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
         UpdateMesh(mesh, shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
     }
 }
@@ -123,10 +123,10 @@ void MeshSystem::Destroy(uint meshId)
     VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
     VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-    VulkanBuffer_DestroyBuffer(vertexBuffer);
-    VulkanBuffer_DestroyBuffer(indexBuffer);
-    VulkanBuffer_DestroyBuffer(transformBuffer);
-    VulkanBuffer_DestroyBuffer(propertiesBuffer);
+    bufferSystem.DestroyBuffer(vertexBuffer);
+    bufferSystem.DestroyBuffer(indexBuffer);
+    bufferSystem.DestroyBuffer(transformBuffer);
+    bufferSystem.DestroyBuffer(propertiesBuffer);
 
     bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
     bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
@@ -143,10 +143,10 @@ void MeshSystem::DestroyAllGameObjects()
         VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-        VulkanBuffer_DestroyBuffer(vertexBuffer);
-        VulkanBuffer_DestroyBuffer(indexBuffer);
-        VulkanBuffer_DestroyBuffer(transformBuffer);
-        VulkanBuffer_DestroyBuffer(propertiesBuffer);
+        bufferSystem.DestroyBuffer(vertexBuffer);
+        bufferSystem.DestroyBuffer(indexBuffer);
+        bufferSystem.DestroyBuffer(transformBuffer);
+        bufferSystem.DestroyBuffer(propertiesBuffer);
 
         bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
         bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
@@ -180,38 +180,4 @@ const Vector<Mesh>& MeshSystem::FindMeshByVertexType(VertexTypeEnum vertexType)
             return mesh.VertexTypeId == static_cast<uint32>(vertexType);
         });
     return meshList;
-}
-
-uint MeshSystem_CreateMesh(MeshTypeEnum meshType, Vertex2D* vertexListPtr, uint32* indexListPtr, size_t vertexListCount, size_t indexListCount)
-{
-    Vector<Vertex2D> vertexList = Vector<Vertex2D>(vertexListPtr, vertexListPtr + vertexListCount);
-    Vector<uint32> indexList = Vector<uint32>(indexListPtr, indexListPtr + indexListCount);
-    return meshSystem.CreateMesh(meshType, vertexList, indexList);
-}
-
-void MeshSystem_Update(const float& deltaTime)
-{
-    meshSystem.Update(deltaTime);
-}
-
-void MeshSystem_Destroy(uint meshId)
-{
-    meshSystem.Destroy(meshId);
-}
-
-void MeshSystem_DestroyAllGameObjects()
-{
-    meshSystem.DestroyAllGameObjects();
-}
-
-void* MeshSystem_FindMesh(const uint& meshId)
-{
-    struct TempDLL
-    {
-        int Age = 34;
-        int Score = 32;
-    } temp;
-
-    TempDLL* tempPtr = memorySystem.AddPtrBuffer<TempDLL>(temp, __FILE__, __LINE__, __func__);
-    return static_cast<void*>(tempPtr);
 }

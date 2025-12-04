@@ -1,5 +1,7 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#ifndef PLATFORM_ANDROID
+    #define GLFW_INCLUDE_VULKAN
+    #include <GLFW/glfw3.h>
+#endif
 #include <MemorySystem.h>
 #include "VulkanWindow.h"
 #include "GameController.h"
@@ -25,27 +27,7 @@ void GameEngineWindow::CreateGraphicsWindow(GameEngineWindow* self, const char* 
     ShouldClose = false;
 
 
-#ifdef PLATFORM_ANDROID
-    self->WindowHandle = platformWindowHandle; 
-
-    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-        .pNext = nullptr,
-        .flags = 0,
-        .window = (ANativeWindow*)platformWindowHandle
-    };
-
-    VkResult err = vkCreateAndroidSurfaceKHR(self->Instance, &surfaceCreateInfo, nullptr, &self->Surface);
-    if (err != VK_SUCCESS)
-    {
-        __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "vkCreateAndroidSurfaceKHR failed: %d", err);
-        return;
-    }
-
-    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully");
-#else
-
+#ifndef PLATFORM_ANDROID
     glfwInit();
     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -112,12 +94,12 @@ void GameEngineWindow::DestroyWindow(GameEngineWindow* self)
     }
     glfwTerminate();
 #else
-    if (self->Surface) 
+   /* if (self->Surface) 
     {
         vkDestroySurfaceKHR(self->Instance, self->Surface, nullptr);
         self->Surface = VK_NULL_HANDLE;
     }
-    self->WindowHandle = nullptr;
+    self->WindowHandle = nullptr;*/
 #endif
 }
 
@@ -130,6 +112,7 @@ bool GameEngineWindow::WindowShouldClose(GameEngineWindow* self)
 #endif
 }
 
+#ifndef PLATFORM_ANDROID
 void GameEngineWindow::ControllerConnectCallBack(int jid, int event) 
 {
     if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
@@ -143,6 +126,7 @@ void GameEngineWindow::ControllerConnectCallBack(int jid, int event)
         window->jid = -1;*/
     }
 }
+#endif
 
 void GameEngineWindow::ErrorCallBack(int error, const char* description)
 {

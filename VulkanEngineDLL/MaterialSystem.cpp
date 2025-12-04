@@ -21,8 +21,10 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<std::string>());
 
-    if (MaterialSystem_MaterialMapExists(materialId))
+    if (MaterialMapExists(materialId))
+    {
         return materialId;
+    }
 
     int bufferIndex = ++NextBufferId;
 
@@ -71,16 +73,16 @@ void MaterialSystem::Update(const float& deltaTime)
         materialPair.second.ShaderMaterialBufferIndex = x;
 
         const Material material = materialPair.second;
-        const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? TextureSystem_FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
-        const uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != VkGuid() ? TextureSystem_FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
-        const uint MetallicMapId = material.MetallicMapId != VkGuid() ? TextureSystem_FindTexture(material.MetallicMapId).textureBufferIndex : 0;
-        const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? TextureSystem_FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
-        const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? TextureSystem_FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
-        const uint NormalMapId = material.NormalMapId != VkGuid() ? TextureSystem_FindTexture(material.NormalMapId).textureBufferIndex : 0;
-        const uint DepthMapId = material.DepthMapId != VkGuid() ? TextureSystem_FindTexture(material.DepthMapId).textureBufferIndex : 0;
-        const uint AlphaMapId = material.AlphaMapId != VkGuid() ? TextureSystem_FindTexture(material.AlphaMapId).textureBufferIndex : 0;
-        const uint EmissionMapId = material.EmissionMapId != VkGuid() ? TextureSystem_FindTexture(material.EmissionMapId).textureBufferIndex : 0;
-        const uint HeightMapId = material.HeightMapId != VkGuid() ? TextureSystem_FindTexture(material.HeightMapId).textureBufferIndex : 0;
+        const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureBufferIndex : 0;
+        const uint MetallicRoughnessMapId = material.MetallicRoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicRoughnessMapId).textureBufferIndex : 0;
+        const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureBufferIndex : 0;
+        const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.RoughnessMapId).textureBufferIndex : 0;
+        const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? textureSystem.FindTexture(material.AmbientOcclusionMapId).textureBufferIndex : 0;
+        const uint NormalMapId = material.NormalMapId != VkGuid() ? textureSystem.FindTexture(material.NormalMapId).textureBufferIndex : 0;
+        const uint DepthMapId = material.DepthMapId != VkGuid() ? textureSystem.FindTexture(material.DepthMapId).textureBufferIndex : 0;
+        const uint AlphaMapId = material.AlphaMapId != VkGuid() ? textureSystem.FindTexture(material.AlphaMapId).textureBufferIndex : 0;
+        const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : 0;
+        const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureBufferIndex : 0;
 
         ShaderStructDLL shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoMap", AlbedoMapId);
@@ -158,41 +160,6 @@ void MaterialSystem::DestroyAllMaterials()
 {
     for (auto& materialPair : materialSystem.MaterialMap)
     {
-        MaterialSystem_Destroy(materialPair.second.materialGuid);
+        Destroy(materialPair.second.materialGuid);
     }
-}
-
-VkGuid MaterialSystem_CreateMaterial(const char* materialPath)
-{
-    return materialSystem.LoadMaterial(materialPath);
-}
-
-void MaterialSystem_Update(const float& deltaTime)
-{
-    materialSystem.Update(deltaTime);
-}
-
-const bool MaterialSystem_MaterialMapExists(const MaterialGuid& materialGuid)
-{
-    return materialSystem.MaterialMapExists(materialGuid);
-}
-
-const Material& MaterialSystem_FindMaterial(const RenderPassGuid& guid)
-{
-    return materialSystem.FindMaterial(guid);
-}
-
-const Vector<Material>& Material_MaterialList()
-{
-    return materialSystem.MaterialList();
-}
-
-void MaterialSystem_Destroy(const MaterialGuid& materialGuid)
-{
-    materialSystem.Destroy(materialGuid);
-}
-
-void MaterialSystem_DestroyAllMaterials()
-{
-    materialSystem.DestroyAllMaterials();
 }

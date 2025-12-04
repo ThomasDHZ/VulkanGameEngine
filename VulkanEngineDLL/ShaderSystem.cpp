@@ -16,18 +16,16 @@ ShaderSystem shaderSystem = ShaderSystem();
 
  VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, VkShaderStageFlagBits shaderStages)
  {
-     FileState file = File_Read(filename);
+     Vector<byte> file = fileSystem.LoadAssetFile(filename);
      VkShaderModuleCreateInfo shaderModuleCreateInfo =
      {
          .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-         .codeSize = file.Size,
-         .pCode = (const uint32*)file.Data
+         .codeSize = file.size(),
+         .pCode = (const uint32*)file.data()
      };
 
      VkShaderModule shaderModule = VK_NULL_HANDLE;
      VULKAN_THROW_IF_FAIL(vkCreateShaderModule(renderer.Device, &shaderModuleCreateInfo, NULL, &shaderModule));
-     free(file.Data);
-     file.Data = nullptr;
 
      return VkPipelineShaderStageCreateInfo
      {
@@ -49,8 +47,8 @@ ShaderSystem shaderSystem = ShaderSystem();
 
      for (auto& pipelineShaderPath : pipelineShaderPathList)
      {
-         FileState file = File_Read(pipelineShaderPath.c_str());
-         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.Size * sizeof(byte), file.Data, &spvModule));
+         Vector<byte> file = fileSystem.LoadAssetFile(pipelineShaderPath.c_str());
+         SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.size(), file.data(), &spvModule));
          LoadShaderConstantBufferData(spvModule, constBuffers);
          LoadShaderDescriptorBindings(spvModule, descriptorBindings);
          if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
@@ -58,8 +56,6 @@ ShaderSystem shaderSystem = ShaderSystem();
              LoadShaderVertexInputVariables(spvModule, vertexInputBindingList, vertexInputAttributeList);
          }
          spvReflectDestroyShaderModule(&spvModule);
-         free(file.Data);
-         file.Data = nullptr;
      }
 
      return ShaderPipelineDataDLL

@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include "Keyboard.h"
 
+#ifndef __ANDROID__
 Keyboard keyboard = Keyboard();
 
 Keyboard::Keyboard()
@@ -21,3 +22,4 @@ void Keyboard::KeyboardKeyPressed(GLFWwindow* window, int key, int scancode, int
         case GLFW_RELEASE: keyboard.KeyPressed[key] = KS_RELEASED; break;
     }
 }
+#endif

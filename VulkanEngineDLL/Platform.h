@@ -1,4 +1,9 @@
 #pragma once
+
+#ifdef PLATFORM_ANDROID
+#define GLFW_INCLUDE_NONE
+#endif
+
 #if defined(__linux__) && !defined(__ANDROID__)
     #define VK_ENABLE_BETA_EXTENSIONS
 #endif

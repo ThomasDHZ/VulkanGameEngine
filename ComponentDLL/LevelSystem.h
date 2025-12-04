@@ -3,7 +3,10 @@
 #include "VRAM.h"
 #include "Camera.h"
 #include "SpriteSystem.h"
+
+#ifndef PLATFORM_ANDROID
 #pragma comment(lib, "vulkan-1.lib")
+#endif
 
 struct GameObjectLoader
 {

@@ -2,29 +2,9 @@
 #include "Platform.h"
 #include "VulkanRenderer.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-	DLL_EXPORT bool GPUSystem_CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice);
-	DLL_EXPORT VkSampleCountFlagBits GPUSystem_GetMaxUsableSampleCount(VkPhysicalDevice GPUDevice);
-	DLL_EXPORT void GPUSystem_StartUp();
-#ifdef __cplusplus
-}
-#endif
-
 class GPUSystem
 {
 private:
-	bool CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice)
-	{
-		return GPUSystem_CheckRayTracingCompatiblity(gpuDevice);
-	}
-
-	VkSampleCountFlagBits GetMaxUsableSampleCount(VkPhysicalDevice gpuDevice)
-	{
-		return GPUSystem_GetMaxUsableSampleCount(gpuDevice);
-	}
 
 public:
 	Vector<String> FeatureList;
@@ -38,20 +18,11 @@ public:
 	VkSampleCountFlagBits MaxSampleCount;
 	bool RayTracingFeature;
 
-	GPUSystem()
-	{
-
-	}
-
-	~GPUSystem()
-	{
-
-	}
-
-	void StartUp()
-	{
-		GPUSystem_StartUp();
-	}
+	GPUSystem();
+	~GPUSystem();
+	DLL_EXPORT void StartUp();
+	DLL_EXPORT bool CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice);
+	DLL_EXPORT VkSampleCountFlagBits GetMaxUsableSampleCount(VkPhysicalDevice gpuDevice);
 };
 extern DLL_EXPORT GPUSystem gpuSystem;
 

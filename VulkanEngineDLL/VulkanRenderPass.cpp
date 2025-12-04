@@ -4,7 +4,7 @@
 
 VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& renderer, const char* renderPassJsonFilePath, RenderPassAttachementTextures& renderPassAttachments, ivec2& renderPassResolution)
 {
-    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath);
+    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
     if (renderPassLoader.RenderArea.UseDefaultRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
@@ -53,8 +53,7 @@ VulkanRenderPass VulkanRenderPass_CreateVulkanRenderPass(GraphicsRenderer& rende
 
 VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
-    const char* jsonDataString = File_Read(renderPassJsonFilePath).Data;
-    RenderPassLoader renderPassLoader = nlohmann::json::parse(jsonDataString).get<RenderPassLoader>();
+    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
 
     renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
     renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
@@ -101,7 +100,7 @@ void VulkanRenderPass_DestoryRenderPassSwapChainTextures(GraphicsRenderer& rende
     Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
     for (auto& renderedTexture : renderedTextureList)
     {
-        TextureSystem_DestroyTexture(renderedTexture);
+        textureSystem.DestroyTexture(renderedTexture);
     }
     std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
     renderedTextureCount = 0;

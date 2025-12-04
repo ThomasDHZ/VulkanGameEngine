@@ -33,8 +33,7 @@ void RenderSystem::Update(void* windowHandle, RenderPassGuid& spriteRenderPass2D
 
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution)
 {
-    const char* renderPassJson = File_Read(jsonPath.c_str()).Data;
-    RenderPassLoader renderPassLoader = nlohmann::json::parse(renderPassJson).get<RenderPassLoader>();
+    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
     if (renderPassLoader.RenderArea.UseDefaultRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
@@ -126,8 +125,8 @@ void RenderSystem::DestroyRenderPipelines()
 
 void RenderSystem::Destroy()
 {
-    RenderSystem_DestroyRenderPasses();
-    RenderSystem_DestroyRenderPipelines();
+    DestroyRenderPasses();
+    DestroyRenderPipelines();
     Renderer_DestroyRenderer(renderer);
 }
 
@@ -389,7 +388,7 @@ Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const Level
 Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid) 
 { 
     Vector<Texture> textureList;
-    const VulkanRenderPass& renderPass = RenderSystem_FindRenderPass(renderPassGuid);
+    const VulkanRenderPass& renderPass = FindRenderPass(renderPassGuid);
     if (renderPass.InputTextureIdListCount > 0)
     {
         Vector<VkGuid> inputTextureList = Vector<VkGuid>(renderPass.InputTextureIdList, renderPass.InputTextureIdList + renderPass.InputTextureIdListCount);
@@ -450,54 +449,3 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
 
     return texturePropertiesBuffer;
 }
-
- GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
-{
-     return renderSystem.StartUp(windowHandle, instance, surface);
-}
-
- void RenderSystem_Update(void* windowHandle, RenderPassGuid& spriteRenderPassGuidId, LevelGuid& levelGuid, const float& deltaTime)
-{
-     return renderSystem.Update(windowHandle, spriteRenderPassGuidId, levelGuid, deltaTime);
-}
-
- RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution)
-{
-     return renderSystem.LoadRenderPass(levelGuid, jsonPath, renderPassResolution);
-}
-
- void RenderSystem_StartFrame()
-{
-     renderSystem.StartFrame();
-}
-
- void RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount)
-{
-     Vector<VkCommandBuffer> commandBufferList = Vector<VkCommandBuffer>(commandBufferListPtr, commandBufferListPtr + commandBufferCount);
-     renderSystem.EndFrame(commandBufferList);
-}
-
- VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)
- {
-     return renderSystem.FindRenderPass(renderPassGuid);
- }
-
- Vector<VulkanPipeline> RenderSystem_FindRenderPipelineList(const RenderPassGuid& renderPassGuid)
- {
-     return renderSystem.FindRenderPipelineList(renderPassGuid);
- }
-
- void RenderSystem_DestroyRenderPasses()
-{
-     return renderSystem.DestroyRenderPasses();
-}
-
- void RenderSystem_DestroyRenderPipelines()
-{
-     return renderSystem.DestroyRenderPipelines();
- }
-
- void RenderSystem_Destroy()
- {
-     return renderSystem.Destroy();
- }
