@@ -147,18 +147,23 @@
     <ClInclude Include="BufferSystemDLL.h" />
     <ClInclude Include="FileSystemDLL.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GameObjectSystemDLL.h" />
     <ClInclude Include="GPUSystemDLL.h" />
+    <ClInclude Include="LevelSystemDLL.h" />
     <ClInclude Include="MaterialSystemDLL.h" />
     <ClInclude Include="MeshSystemDLL.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RenderSystemDLL.h" />
+    <ClInclude Include="SpriteSystemDLL.h" />
     <ClInclude Include="TextureSystemDLL.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BufferSystemDLL.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FileSystemDLL.cpp" />
+    <ClCompile Include="GameObjectSystemDLL.cpp" />
     <ClCompile Include="GPUSystemDLL.cpp" />
+    <ClCompile Include="LevelSystemDLL.cpp" />
     <ClCompile Include="MaterialSystemDLL.cpp" />
     <ClCompile Include="MeshSystemDLL.cpp" />
     <ClCompile Include="pch.cpp">
@@ -168,6 +173,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RenderSystemDLL.cpp" />
+    <ClCompile Include="SpriteSystemDLL.cpp" />
     <ClCompile Include="TextureSystemDLL.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

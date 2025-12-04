@@ -9,6 +9,9 @@
 #include "Mouse.h"
 #include "GameController.h"
 #include <LevelSystem.h>
+#ifdef PLATFORM_ANDROID
+#include <android/native_window.h>
+#endif
 
 GameSystem gameSystem = GameSystem();
 #ifdef __ANDROID__
@@ -26,19 +29,30 @@ void GameSystem::StartUp(void* windowHandle)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkInstance instance = Renderer_CreateVulkanInstance();
-#ifdef __ANDROID__
-    ANativeWindow* nativeWindow = (ANativeWindow*)glfwGetWindowUserPointer((GLFWwindow*)windowHandle);
-    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-        .window = nativeWindow
+
+#ifdef PLATFORM_ANDROID
+    // windowHandle is ANativeWindow* on Android
+    ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
+
+    VkAndroidSurfaceCreateInfoKHR surfaceInfo = {
+            .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+            .window = nativeWindow
     };
-    vkCreateAndroidSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
+    vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
+
+    int32_t w = ANativeWindow_getWidth(nativeWindow);
+    int32_t h = ANativeWindow_getHeight(nativeWindow);
 
     vulkanWindow = new GameEngineWindow();
-    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-#endif 
-    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
+    vulkanWindow->WindowHandle = (void*)nativeWindow;
+    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", (uint32_t)w, (uint32_t)h);
+
+#else
+    vulkanWindow = new GameEngineWindow();
+    vulkanWindow->CreateGraphicsWindow(vulkanWindow, nullptr, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
+    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, nullptr, &surface);
+#endif
+
     renderSystem.StartUp(windowHandle, instance, surface);
     gpuSystem.StartUp();
     levelSystem.LoadLevel("Levels/TestLevel.json");

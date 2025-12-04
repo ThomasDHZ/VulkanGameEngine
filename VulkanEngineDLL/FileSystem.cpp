@@ -220,7 +220,7 @@ bool FileSystem::WriteFile(void* fileInfo, size_t size, const String& path)
     FILE* filePath = fopen(path.c_str(), "wb");
     if (!filePath || ferror(filePath))
     {
-        ERROR_RETURN(1, "Cannot write files: %s.\n", path);
+        ERROR_RETURN(1, "Cannot write files: %s.\n", path.c_str());
     }
 
     size_t chunks_written = fwrite(fileInfo, size, 1, filePath);

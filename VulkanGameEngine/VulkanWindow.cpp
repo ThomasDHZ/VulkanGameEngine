@@ -67,22 +67,17 @@ void GameEngineWindow::PollEventHandler(GameEngineWindow* self)
 #endif
 }
 
-
-void GameEngineWindow::CreateSurface(void* windowHandle, VkInstance* instance, VkSurfaceKHR* surface)
-{
-    GLFWwindow* handle = (GLFWwindow*)windowHandle;
-    VkResult result = glfwCreateWindowSurface(*instance, handle, NULL, surface);
-    if (result != VK_SUCCESS) {
-        fprintf(stderr, "Failed to create Vulkan surface! Error code: %d\n", result);
-        return;
-    }
-}
-
 void GameEngineWindow::GetFrameBufferSize(void* windowHandle, int* width, int* height)
 {
+#ifndef PLATFORM_ANDROID
     GLFWwindow* handle = (GLFWwindow*)windowHandle;
     glfwGetFramebufferSize(handle, &*width, &*height);
+#else
+    *width = (int)Width;
+    *height = (int)Height;
+#endif
 }
+
 
 void GameEngineWindow::DestroyWindow(GameEngineWindow* self)
 {
@@ -113,6 +108,16 @@ bool GameEngineWindow::WindowShouldClose(GameEngineWindow* self)
 }
 
 #ifndef PLATFORM_ANDROID
+void GameEngineWindow::CreateSurface(void* windowHandle, VkInstance* instance, VkSurfaceKHR* surface)
+{
+    GLFWwindow* handle = (GLFWwindow*)windowHandle;
+    VkResult result = glfwCreateWindowSurface(*instance, handle, NULL, surface);
+    if (result != VK_SUCCESS) {
+        fprintf(stderr, "Failed to create Vulkan surface! Error code: %d\n", result);
+        return;
+    }
+}
+
 void GameEngineWindow::ControllerConnectCallBack(int jid, int event) 
 {
     if (event == GLFW_CONNECTED && glfwJoystickIsGamepad(jid)) {
@@ -126,12 +131,6 @@ void GameEngineWindow::ControllerConnectCallBack(int jid, int event)
         window->jid = -1;*/
     }
 }
-#endif
-
-void GameEngineWindow::ErrorCallBack(int error, const char* description)
-{
-    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
 
 void GameEngineWindow::FrameBufferResizeCallBack(GLFWwindow* window, int width, int height)
 {
@@ -142,4 +141,10 @@ void GameEngineWindow::FrameBufferResizeCallBack(GLFWwindow* window, int width, 
         engineWindow->Width = width;
         engineWindow->Height = height;
     }
+}
+#endif
+
+void GameEngineWindow::ErrorCallBack(int error, const char* description)
+{
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
