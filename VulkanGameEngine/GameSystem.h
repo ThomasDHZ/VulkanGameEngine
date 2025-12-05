@@ -12,20 +12,19 @@ class GameSystem
 private:
     Vector<VkCommandBuffer> CommandBufferSubmitList;
 
-    GameSystem() = default;
-    ~GameSystem() = default;
-
 public:
-    // Delete copy/move
+    GameSystem();
+    ~GameSystem();
     GameSystem(const GameSystem&) = delete;
     GameSystem& operator=(const GameSystem&) = delete;
 
-    // Singleton access
+#if __ANDROID__
     static GameSystem& Get()
     {
         static GameSystem instance;
         return instance;
     }
+#endif
 
     void StartUp(void* windowHandle);
 
@@ -38,9 +37,6 @@ public:
     void Draw(float deltaTime);
     void Destroy();
 };
-
-// Keep old global for desktop compatibility (optional, but safe)
 #ifndef __ANDROID__
 extern GameSystem gameSystem;
-inline GameSystem& GameSystem::Get() { return gameSystem; }
 #endif

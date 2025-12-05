@@ -100,9 +100,8 @@ target_include_directories(ComponentDLL PUBLIC
 
 target_link_libraries(ComponentDLL PRIVATE VulkanEngineDLL)
 
-# THIS IS THE CRUCIAL PART
 if(ANDROID)
-    target_link_libraries(ComponentDLL PRIVATE android log vulkan)   # vulkan MUST be here
+    target_link_libraries(ComponentDLL PRIVATE android log vulkan) 
 endif()
 
 if(GLFW_HEADER_DEPS AND NOT ANDROID)
@@ -202,7 +201,7 @@ set(IMPLOT_SOURCES
 )
 
 # ===================================================================
-# native_app_glue — ONLY FOR ANDROID (fixes ANativeActivity_onCreate)
+# native_app_glue — ONLY FOR ANDROID
 # ===================================================================
 if(ANDROID)
     add_library(native_app_glue STATIC
@@ -254,7 +253,6 @@ if(ANDROID)
         nlohmann_json::nlohmann_json
     )
 
-    # THIS IS THE MISSING PIECE — FORCE THE SYMBOL TO BE EXPORTED
     target_link_options(VulkanGameEngine PRIVATE
         "-Wl,--export-dynamic"
         "-u" "ANativeActivity_onCreate"
@@ -277,7 +275,7 @@ if(ANDROID)
         vulkan
         android
         log
-        native_app_glue          # This provides ANativeActivity_onCreate
+        native_app_glue       
         Physics2DDLL
         VulkanEngineDLL
         ComponentDLL
@@ -326,4 +324,4 @@ if(NOT ANDROID)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/EngineConfig.json"
         COMMENT "Copying Assets + Config"
     )
-endif()
+endif()  

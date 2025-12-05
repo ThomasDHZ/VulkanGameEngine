@@ -13,11 +13,24 @@
 #include <android/native_window.h>
 #endif
 
+#ifndef __ANDROID__
+    GameSystem gameSystem = GameSystem();
+#endif
+
+GameSystem::GameSystem()
+{
+
+}
+
+GameSystem::~GameSystem()
+{
+
+}
+
 void GameSystem::StartUp(void* windowHandle)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkInstance instance = Renderer_CreateVulkanInstance();
-
 #ifdef PLATFORM_ANDROID
     ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
 
@@ -36,9 +49,7 @@ void GameSystem::StartUp(void* windowHandle)
 
     __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
 #else
-    VulkanWindow* vulkanWindow = new GameEngineWindow();
-    vulkanWindow->WindowHandle = (void*)nativeWindow;
-    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Vulkan Game Engine", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
+    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
     gpuSystem.StartUp();
