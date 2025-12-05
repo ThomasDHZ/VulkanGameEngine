@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "MemorySystem.h"
+
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
 #endif
@@ -16,7 +17,7 @@ class FileSystem
 {
 private:
 #if defined(__ANDROID__)
-	static inline AAssetManager* g_AssetManager = nullptr;
+    static inline AAssetManager* g_AssetManager = nullptr;
 #endif
 
 public:
@@ -31,7 +32,9 @@ public:
 	DLL_EXPORT time_t		  LastModifiedTime(const String& filePath);
 	DLL_EXPORT String		  RemoveFileExtention(const String& filePath);
 	DLL_EXPORT bool			  FileExists(const String& filePath);
+    DLL_EXPORT nlohmann::json LoadConfig(const String& configPath);
 	DLL_EXPORT nlohmann::json LoadJsonFile(const String& filePath);
+    DLL_EXPORT Vector<byte>   LoadImageFile(const String& filePath, int& width, int& height, int& channelCount);
 	DLL_EXPORT String		  File_GetFileExtention(const char* fileName);
 	DLL_EXPORT Vector<String> GetFilesFromDirectory(const String& fileDirectory);
 	DLL_EXPORT Vector<String> GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);

@@ -1,0 +1,16 @@
+{
+  "Flags": 0,
+  "ImageType": 1,
+  "Format": 37,
+  "Extent": "1478, 643, 1",
+  "MipLevels": 1,
+  "ArrayLayers": 1,
+  "Samples": 1,
+  "Tiling": 0,
+  "Usage": 23,
+  "SharingMode": 0,
+  "QueueFamilyIndexCount": 0,
+  "PQueueFamilyIndices": null,
+  "InitialLayout": 0,
+  "_name": "DefaultColorTextureCreateInfo"
+}

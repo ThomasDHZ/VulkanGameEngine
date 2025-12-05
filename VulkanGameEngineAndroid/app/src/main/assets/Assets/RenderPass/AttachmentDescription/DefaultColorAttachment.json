@@ -1,0 +1,12 @@
+{
+  "Flags": 0,
+  "Format": 37,
+  "Samples": 1,
+  "LoadOp": 1,
+  "StoreOp": 0,
+  "StencilLoadOp": 2,
+  "StencilStoreOp": 1,
+  "InitialLayout": 2,
+  "FinalLayout": 2,
+  "_name": "DefaultColorAttachment"
+}

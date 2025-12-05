@@ -1,0 +1,122 @@
+{
+  "Name": "LevelShader2DRenderPass",
+  "RenderPassId": "e26ff327-9a80-45b9-9ec1-6654d930f789",
+  "RenderPipelineList": [ "Pipelines/SpriteInstanceWireFramePipeline.json", "Pipelines/LevelShader2DWireframePipeline.json" ],
+  "IsRenderedToSwapchain": false,
+  "InputTextureList": [],
+  "RenderedTextureInfoModelList": [
+    {
+      "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
+      "TextureType": 0,
+      "SampleCountOverride": 1,
+      "UsingMipMaps": false,
+      "ImageCreateInfo": {
+        "SType": 14,
+        "ImageType": 1,
+        "Format": 44,
+        "MipLevels": 1,
+        "ArrayLayers": 1,
+        "Samples": 1,
+        "Tiling": 0,
+        "Usage": 23,
+        "SharingMode": 0,
+        "InitialLayout": 0
+      },
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 0,
+        "AddressModeV": 0,
+        "AddressModeW": 0,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      },
+      "AttachmentDescription": {
+        "StructureType": 0,
+        "Flags": 0,
+        "Format": 44,
+        "Samples": 1,
+        "LoadOp": 1,
+        "StoreOp": 0,
+        "StencilLoadOp": 2,
+        "StencilStoreOp": 1,
+        "InitialLayout": 0,
+        "FinalLayout": 7
+      },
+      "ColorBlendState": {
+        "SType": 19,
+        "LogicOpEnable": false,
+        "LogicOp": 0,
+        "Attachments": [
+          {
+            "BlendEnable": true,
+            "SrcColorBlendFactor": 1,
+            "DstColorBlendFactor": 1,
+            "ColorBlendOp": 25,
+            "SrcAlphaBlendFactor": 1,
+            "DstAlphaBlendFactor": 1,
+            "AlphaBlendOp": 25,
+            "ColorWriteMask": 15
+          }
+        ],
+        "BlendConstants": {
+          "Red": 1.0,
+          "Green": 1.0,
+          "Blue": 1.0,
+          "Alpha": 1.0
+        }
+      }
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 384,
+      "DependencyFlags": 0
+    }
+  ],
+  "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    }
+  ],
+  "RenderArea": {
+    "UseDefaultRenderArea": true,
+    "RenderArea": {
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "extent": {
+        "width": 0,
+        "height": 0
+      }
+    }
+  }
+}

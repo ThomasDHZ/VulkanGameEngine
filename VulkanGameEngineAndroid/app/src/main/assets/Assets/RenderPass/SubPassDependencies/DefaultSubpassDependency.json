@@ -1,0 +1,10 @@
+{
+  "SrcSubpass": 4294967295,
+  "DstSubpass": 0,
+  "SrcStageMask": 1024,
+  "DstStageMask": 1024,
+  "SrcAccessMask": 0,
+  "DstAccessMask": 256,
+  "DependencyFlags": 0,
+  "_name": "DefaultSubpassDependency"
+}

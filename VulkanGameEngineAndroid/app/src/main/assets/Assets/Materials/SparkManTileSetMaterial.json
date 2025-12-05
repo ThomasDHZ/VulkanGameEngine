@@ -1,0 +1,30 @@
+{
+  "Name": "Material1",
+  "MaterialId": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
+  "ShaderMaterialBufferIndex": 0,
+  "MaterialBufferId": 0,
+  "AlbedoMapId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",
+  "MetallicRoughnessMapId": "00000000-0000-0000-0000-000000000000",
+  "MetallicMapId": "00000000-0000-0000-0000-000000000000",
+  "RoughnessMapId": "00000000-0000-0000-0000-000000000000",
+  "AmbientOcclusionMapId": "00000000-0000-0000-0000-000000000000",
+  "NormalMapId": "00000000-0000-0000-0000-000000000000",
+  "DepthMapId": "00000000-0000-0000-0000-000000000000",
+  "AlphaMapId": "00000000-0000-0000-0000-000000000000",
+  "EmissionMapId": "00000000-0000-0000-0000-000000000000",
+  "HeightMapId": "00000000-0000-0000-0000-000000000000",
+  "Albedo": [
+    0.0,
+    0.35,
+    0.45
+  ],
+  "Metallic": 0.0,
+  "Roughness": 0.0,
+  "AmbientOcclusion": 1.0,
+  "Emission": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "Alpha": 1.0
+}

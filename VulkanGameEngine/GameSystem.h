@@ -7,37 +7,40 @@
 #include <LevelSystem.h>
 
 class MeshSystem;
+class GameSystem
+{
+private:
+    Vector<VkCommandBuffer> CommandBufferSubmitList;
+
+    GameSystem() = default;
+    ~GameSystem() = default;
+
+public:
+    // Delete copy/move
+    GameSystem(const GameSystem&) = delete;
+    GameSystem& operator=(const GameSystem&) = delete;
+
+    // Singleton access
+    static GameSystem& Get()
+    {
+        static GameSystem instance;
+        return instance;
+    }
+
+    void StartUp(void* windowHandle);
+
 #ifndef __ANDROID__
-	class GameSystem
-	{
-	private:
-		 Vector<VkCommandBuffer>				CommandBufferSubmitList;
-
-	public:
-		GameSystem();
-		~GameSystem();
-
-		 void StartUp(void* windowHandle);
-		 void Update(const float& deltaTime);
-		 void DebugUpdate(const float& deltaTime);
-		 void Draw(const float& deltaTime);
-		 void Destroy();
-	};
+    void Update(float deltaTime);
 #else
-	class GameSystem
-	{
-	private:
-		static Vector<VkCommandBuffer>				CommandBufferSubmitList;
+    void Update(void* windowHandle, float deltaTime);
+#endif
+    void DebugUpdate(float deltaTime);
+    void Draw(float deltaTime);
+    void Destroy();
+};
 
-	public:
-		GameSystem();
-		~GameSystem();
-
-		static void StartUp(void* windowHandle);
-		static void Update(const float& deltaTime);
-		static void DebugUpdate(const float& deltaTime);
-		static void Draw(const float& deltaTime);
-		static void Destroy();
-	};
-#endif 
+// Keep old global for desktop compatibility (optional, but safe)
+#ifndef __ANDROID__
 extern GameSystem gameSystem;
+inline GameSystem& GameSystem::Get() { return gameSystem; }
+#endif

@@ -7,6 +7,12 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#ifdef __ANDROID__
+#define STBI_NO_STDIO
+#endif
+#include "stb_image.h"
+
 FileSystem fileSystem = FileSystem();
 
 
@@ -101,6 +107,39 @@ nlohmann::json FileSystem::LoadJsonFile(const String& filePath)
     return nlohmann::json::parse(rawJson);
 }
 
+Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& height, int& channelCount)
+{
+    byte* data = nullptr;
+    int w = 0, h = 0, comp = 0;
+
+#ifdef PLATFORM_ANDROID
+    AAsset* asset = AAssetManager_open(g_AssetManager, filePath.c_str(), AASSET_MODE_BUFFER);
+    if (!asset) {
+        return {};
+    }
+
+    size_t size = AAsset_getLength(asset);
+    const void* buffer = AAsset_getBuffer(asset);
+    data = stbi_load_from_memory((const stbi_uc*)buffer, (int)size, &w, &h, &comp, 4);
+    AAsset_close(asset);
+
+   /* if (!data) {
+        __android_log_print(ANDROID_LOG_ERROR, "FileSystem", "STB failed: %s", stbi_failure_reason());
+        return {};
+    }*/
+#else
+    data = stbi_load(filePath.c_str(), &w, &h, &comp, 4);
+#endif
+
+    width = w;
+    height = h;
+    channelCount = ColorChannelUsed::ChannelRGBA;
+
+    Vector<byte> result(data, data + (w * h * 4));
+    stbi_image_free(data);
+    return result;
+}
+
 String FileSystem::File_GetFileExtention(const char* fileName)
 {
     const char* dot = strrchr(fileName, '.');
@@ -181,6 +220,53 @@ const char* FileSystem::ReadFile(const String& filePath)
     fileState.Valid = true;
 
     return fileState.Data;
+}
+
+nlohmann::json FileSystem::LoadConfig(const String& configPath)
+{
+    #ifdef PLATFORM_ANDROID
+    if (!g_AssetManager) {
+        throw std::runtime_error("AssetManager not initialized");
+    }
+
+    AAsset* asset = AAssetManager_open(g_AssetManager, configPath.c_str(), AASSET_MODE_BUFFER);
+    if (!asset)
+    {
+        throw std::runtime_error("Failed to open asset: " + configPath);
+    }
+
+    size_t size = AAsset_getLength(asset);
+    if (size == 0)
+    {
+        AAsset_close(asset);
+        return nlohmann::json{};
+    }
+
+    String buffer;
+    buffer.resize(size);
+
+    ssize_t read_bytes = AAsset_read(asset, buffer.data(), size);
+    AAsset_close(asset);
+
+    if (read_bytes <= 0)
+    {
+        throw std::runtime_error("Failed to read asset: " + configPath);
+    }
+
+    if (static_cast<size_t>(read_bytes) < size) {
+        buffer.resize(read_bytes);
+    }
+
+    return nlohmann::json::parse(buffer);
+    #else
+    std::ifstream file(configPath);
+            if (!file.is_open()) {
+                throw std::runtime_error("Failed to open " + configPath);
+            }
+            nlohmann::json j;
+            file >> j;
+            return j;
+    #endif
 }
 
 Vector<byte> FileSystem::LoadAssetFile(const String& filePath)

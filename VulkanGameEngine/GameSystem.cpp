@@ -13,58 +13,48 @@
 #include <android/native_window.h>
 #endif
 
-GameSystem gameSystem = GameSystem();
-#ifdef __ANDROID__
-Vector<VkCommandBuffer> GameSystem::CommandBufferSubmitList;
-#endif
-GameSystem::GameSystem()
-{
-}
-
-GameSystem::~GameSystem()
-{
-}
-
 void GameSystem::StartUp(void* windowHandle)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkInstance instance = Renderer_CreateVulkanInstance();
 
 #ifdef PLATFORM_ANDROID
-    // windowHandle is ANativeWindow* on Android
     ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
 
-    VkAndroidSurfaceCreateInfoKHR surfaceInfo = {
-            .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-            .window = nativeWindow
-    };
-    vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
+    VkAndroidSurfaceCreateInfoKHR surfaceInfo = { VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR };
+    surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    surfaceInfo.pNext = nullptr;
+    surfaceInfo.flags = 0;
+    surfaceInfo.window = nativeWindow;
 
-    int32_t w = ANativeWindow_getWidth(nativeWindow);
-    int32_t h = ANativeWindow_getHeight(nativeWindow);
+    VkResult result = vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
+    if (result != VK_SUCCESS || surface == VK_NULL_HANDLE)
+    {
+        __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "FATAL: vkCreateAndroidSurfaceKHR failed! Result: %d", result);
+        return;
+    }
 
-    vulkanWindow = new GameEngineWindow();
-    vulkanWindow->WindowHandle = (void*)nativeWindow;
-    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", (uint32_t)w, (uint32_t)h);
-
+    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
 #else
-    vulkanWindow = new GameEngineWindow();
-    vulkanWindow->CreateGraphicsWindow(vulkanWindow, nullptr, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, nullptr, &surface);
+    VulkanWindow* vulkanWindow = new GameEngineWindow();
+    vulkanWindow->WindowHandle = (void*)nativeWindow;
+    vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Vulkan Game Engine", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
 #endif
-
     renderSystem.StartUp(windowHandle, instance, surface);
     gpuSystem.StartUp();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 
-void GameSystem::Update(const float& deltaTime)
+#ifndef __ANDROID__
+void Update(float deltaTime);
+void GameSystem::Update(float deltaTime)
 {
     inputSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
     textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);
+
     renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 
     VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
@@ -73,7 +63,25 @@ void GameSystem::Update(const float& deltaTime)
     gameObjectSystem.DestroyDeadGameObjects();
 }
 
-void GameSystem::DebugUpdate(const float& deltaTime)
+#else
+void GameSystem::Update(void* windowHandle, float deltaTime)
+{
+    inputSystem.Update(deltaTime);
+    gameObjectSystem.Update(deltaTime);
+    levelSystem.Update(deltaTime);
+    textureSystem.Update(deltaTime);
+    materialSystem.Update(deltaTime);
+
+    renderSystem.Update(windowHandle, levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);
+
+    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
+    meshSystem.Update(deltaTime);
+    renderSystem.EndSingleUseCommand(commandBuffer);
+    gameObjectSystem.DestroyDeadGameObjects();
+}
+#endif
+
+void GameSystem::DebugUpdate(float deltaTime)
 {
     //vec2 leftStick = gameController.LeftJoyStickMoved(GLFW_JOYSTICK_1);
     //vec2 rightStick = gameController.RightJoyStickMoved(GLFW_JOYSTICK_1);
@@ -105,7 +113,7 @@ void GameSystem::DebugUpdate(const float& deltaTime)
     //ImGui_EndFrame();
 }
 
-void GameSystem::Draw(const float& deltaTime)
+void GameSystem::Draw(float deltaTime)
 {
     renderSystem.StartFrame();
     levelSystem.Draw(CommandBufferSubmitList, deltaTime);

@@ -1,0 +1,35 @@
+{
+  "LevelID": "a4ff0086-0069-4265-9a81-b38fb9e6b5be",
+  "LoadTextures": [
+    "Textures/TestTexture.json",
+    "Textures/MegaManShotTexture.json",
+    "Textures/SparkManTexture.json"
+  ],
+  "LoadMaterials": [
+    "Materials/Material1.json",
+    "Materials/MegaManShotMaterial.json",
+    "Materials/SparkManTileSetMaterial.json"
+  ],
+  "LoadSpriteVRAM": [
+    "Sprites/TestSprite.json",
+    "Sprites/MegaManShotSprite.json"
+  ],
+  "LoadTileSetVRAM": [
+    "TileSets/SparkManTileSet.json"
+  ],
+  "LoadRenderPasses": [
+    "RenderPass/LevelShader2DRenderPass.json",
+    "RenderPass/GaussianBlurRenderPass.json",
+    "RenderPass/FrameBufferRenderPass.json"
+  ],
+  "GameObjectList": [
+    {
+      "GameObjectPath": "GameObjects/TestGameObject.json",
+      "GameObjectPositionOverride": [
+        240.0,
+        240.0
+      ]
+    }
+  ],
+  "LoadLevelLayout": "LevelMapLevelLayout/TestMapLevelLayout.json"
+}

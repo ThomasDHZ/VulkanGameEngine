@@ -151,7 +151,18 @@ void Renderer_SetUpSwapChain(void* windowHandle)
       glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
 #elif defined(__ANDROID__)
-      return VK_NULL_HANDLE;
+      VkAndroidSurfaceCreateInfoKHR surfaceInfo =
+      {
+              .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+              .pNext = nullptr,
+              .window = (ANativeWindow*)windowHandle
+      };
+
+      if (vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS)
+      {
+          __android_log_print(ANDROID_LOG_ERROR, "Vulkan", "Failed to create Android surface!");
+          return VK_NULL_HANDLE;
+      }
 #endif
 
       return surface;
@@ -189,7 +200,7 @@ void Renderer_SetUpSwapChain(void* windowHandle)
       AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #endif
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(__ANDROID__)
       AddExtensionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
@@ -313,13 +324,10 @@ VkInstance Renderer_CreateVulkanInstance()
 {
     VkInstance instance = VK_NULL_HANDLE;
     VkDebugUtilsMessengerCreateInfoEXT debugInfo;
-    Vector<const char*> validationLayers;
     Vector<VkValidationFeatureEnableEXT> enabledList;
     Vector<VkValidationFeatureDisableEXT> disabledList;
 
 #ifndef NDEBUG
-     validationLayers = { "VK_LAYER_KHRONOS_validation" };
-
      enabledList =
      {
          VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
@@ -339,10 +347,10 @@ VkInstance Renderer_CreateVulkanInstance()
      {
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
         .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+                           VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
         .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = Renderer_DebugCallBack
      };
 #endif
@@ -369,12 +377,14 @@ VkInstance Renderer_CreateVulkanInstance()
         .pEngineName = "No Engine",
         .engineVersion = VK_MAKE_VERSION(1, 0, 0),
         #if defined(__ANDROID__)
-            .apiVersion = VK_API_VERSION_1_1
-        #else
             .apiVersion = VK_API_VERSION_1_3
+        #else
+            .apiVersion = VK_API_VERSION_1_4
         #endif
     };
 
+
+    Vector<const char*> validationLayers = Renderer_GetValidationLayerProperties();
     VkInstanceCreateInfo createInfo = 
     {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -440,10 +450,8 @@ VkPhysicalDevice Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR 
 
 VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily)
 {
-    VkDevice device = VK_NULL_HANDLE;
     float queuePriority = 1.0f;
-
-    // 1. First: create queues
+    VkDevice device = VK_NULL_HANDLE;
     Vector<VkDeviceQueueCreateInfo> queueCreateInfoList;
     if (graphicsFamily != UINT32_MAX)
     {
@@ -464,11 +472,9 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
             });
     }
 
-    // 2. Second: get required extensions (MUST come before using DeviceExtensionList)
     Vector<const char*> DeviceExtensionList = Renderer_GetRequiredDeviceExtensions(physicalDevice);
-
-    // 3. Third: define the base VkPhysicalDeviceFeatures (you already have this later — move it up!)
-    VkPhysicalDeviceFeatures deviceFeatures = {
+    VkPhysicalDeviceFeatures deviceFeatures = 
+    {
        .robustBufferAccess = VK_FALSE,
         .fullDrawIndexUint32 = VK_FALSE,
         .imageCubeArray = VK_FALSE,
@@ -526,7 +532,6 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .inheritedQueries = VK_FALSE,
     };
 
-    // 4. Now build the full pNext chain (exact same as before)
     VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = nullptr,
@@ -629,19 +634,18 @@ VkDevice Renderer_SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFa
         .bufferDeviceAddress = VK_TRUE,
     };
 
-    // 5. Final device create info
     VkDeviceCreateInfo deviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &bufferDeviceAddressFeatures,           // ← chain starts here
+        .pNext = &bufferDeviceAddressFeatures,
         .queueCreateInfoCount = static_cast<uint32>(queueCreateInfoList.size()),
         .pQueueCreateInfos = queueCreateInfoList.data(),
         .enabledExtensionCount = static_cast<uint32>(DeviceExtensionList.size()),
         .ppEnabledExtensionNames = DeviceExtensionList.data(),
-        .pEnabledFeatures = nullptr                      // we use pNext chain
+        .pEnabledFeatures = nullptr  
     };
 
 #ifndef NDEBUG
-    Vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+	Vector<const char*> validationLayers = Renderer_GetValidationLayerProperties();
     deviceCreateInfo.enabledLayerCount = static_cast<uint32>(validationLayers.size());
     deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
 #endif
@@ -746,6 +750,34 @@ Vector<VkSurfaceFormatKHR> Renderer_GetPhysicalDeviceFormats(VkPhysicalDevice ph
     Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = Vector<VkSurfaceFormatKHR>(surfaceFormatCount);
     VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, compatibleSwapChainFormatList.data()));
     return compatibleSwapChainFormatList;
+}
+
+Vector<const char*> Renderer_GetValidationLayerProperties()
+{
+    uint32 layerCount = UINT32_MAX;
+    Vector<const char*> validationLayers;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    Vector<const char*> extensions;
+    auto AddExtensionIfSupported = [&](const char* ext)
+        {
+            for (const auto& layer : availableLayers)
+            {
+                if (strcmp(layer.layerName, ext) == 0)
+                {
+                    extensions.push_back(ext);
+                    std::cout << "Enabling instance extension: " << ext << '\n';
+                    return;
+                }
+            }
+            std::cout << "Extension not supported: " << ext << '\n';
+         //   __android_log_print(ANDROID_LOG_WARN, "Vulkan", "Validation layers not available - running without validation");
+        };
+    AddExtensionIfSupported("VK_LAYER_KHRONOS_validation");
+    
+    return extensions;
 }
 
 Vector<VkPresentModeKHR> Renderer_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)

@@ -28,24 +28,17 @@ if(UNIX AND NOT APPLE AND NOT ANDROID)
 endif()
 
 # ===================================================================
-# Vulkan + external libraries
+# External libraries
 # ===================================================================
 find_package(Vulkan REQUIRED)
-
-if(ANDROID)
-    link_libraries(vulkan)
-endif()
-
-# Desktop only: GLFW
 if(NOT ANDROID)
     add_subdirectory(External/glfw)
 endif()
-
 add_subdirectory(External/glm)
 add_subdirectory(External/nlohmann)
 
 # ===================================================================
-# Include directories
+# Include directories (global)
 # ===================================================================
 include_directories(
     External
@@ -81,7 +74,7 @@ else()
 endif()
 
 # ===================================================================
-# ComponentDLL
+# DLLs
 # ===================================================================
 add_library(ComponentDLL SHARED
     ComponentDLL/Component.cpp
@@ -94,8 +87,10 @@ add_library(ComponentDLL SHARED
     ComponentDLL/VRAM.cpp
     ComponentDLL/pch.cpp
 )
+
 generate_export_header(ComponentDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/componentdll_export.h)
 target_precompile_headers(ComponentDLL PRIVATE ComponentDLL/pch.h)
+
 target_include_directories(ComponentDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/ComponentDLL
@@ -103,19 +98,17 @@ target_include_directories(ComponentDLL PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# FINAL FIX: Do NOT link Vulkan::Vulkan here on Android — VulkanEngineDLL already has it
 target_link_libraries(ComponentDLL PRIVATE VulkanEngineDLL)
+
+# THIS IS THE CRUCIAL PART
 if(ANDROID)
-    target_link_libraries(ComponentDLL PRIVATE android log)
+    target_link_libraries(ComponentDLL PRIVATE android log vulkan)   # vulkan MUST be here
 endif()
 
 if(GLFW_HEADER_DEPS AND NOT ANDROID)
     add_dependencies(ComponentDLL ${GLFW_HEADER_DEPS})
 endif()
 
-# ===================================================================
-# Physics2DDLL
-# ===================================================================
 add_library(Physics2DDLL SHARED
     Physics2DDLL/AABB.cpp
     Physics2DDLL/BoxCollider2D.cpp
@@ -125,21 +118,26 @@ add_library(Physics2DDLL SHARED
     Physics2DDLL/RigidBody.cpp
     Physics2DDLL/pch.cpp
 )
+
 generate_export_header(Physics2DDLL EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/physics2ddll_export.h)
 target_precompile_headers(Physics2DDLL PRIVATE Physics2DDLL/pch.h)
+
 target_include_directories(Physics2DDLL PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Physics2DDLL
     ${CMAKE_CURRENT_SOURCE_DIR}/VulkanEngineDLL
     ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Add vulkan on Android
+if(ANDROID)
+    target_link_libraries(Physics2DDLL PRIVATE android log vulkan)
+endif()
+
 if(GLFW_HEADER_DEPS AND NOT ANDROID)
     add_dependencies(Physics2DDLL ${GLFW_HEADER_DEPS})
 endif()
 
-# ===================================================================
-# VulkanEngineDLL — THIS ONE NEEDS vulkan ON ANDROID
-# ===================================================================
 add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/Platform.cpp
     VulkanEngineDLL/VulkanRenderer.cpp
@@ -196,11 +194,24 @@ if(ANDROID)
 else()
     list(APPEND IMGUI_SOURCES External/imgui/backends/imgui_impl_glfw.cpp)
 endif()
+
 set(IMPLOT_SOURCES
     External/ImPlot/implot.cpp
     External/ImPlot/implot_items.cpp
     External/ImPlot/implot_demo.cpp
 )
+
+# ===================================================================
+# native_app_glue — ONLY FOR ANDROID (fixes ANativeActivity_onCreate)
+# ===================================================================
+if(ANDROID)
+    add_library(native_app_glue STATIC
+        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
+    )
+    target_include_directories(native_app_glue PUBLIC
+        ${ANDROID_NDK}/sources/android/native_app_glue
+    )
+endif()
 
 # ===================================================================
 # Main target
@@ -226,10 +237,30 @@ if(ANDROID)
         ${MAIN_SOURCES}
         VulkanGameEngine/AndroidMain.cpp
     )
-else()
-    add_executable(VulkanGameEngine
-        ${MAIN_SOURCES}
+
+    set_target_properties(VulkanGameEngine PROPERTIES
+        OUTPUT_NAME "main"
     )
+
+    target_link_libraries(VulkanGameEngine PRIVATE
+        vulkan
+        android
+        log
+        native_app_glue
+        Physics2DDLL
+        VulkanEngineDLL
+        ComponentDLL
+        glm::glm
+        nlohmann_json::nlohmann_json
+    )
+
+    # THIS IS THE MISSING PIECE — FORCE THE SYMBOL TO BE EXPORTED
+    target_link_options(VulkanGameEngine PRIVATE
+        "-Wl,--export-dynamic"
+        "-u" "ANativeActivity_onCreate"
+    )
+else()
+    add_executable(VulkanGameEngine ${MAIN_SOURCES})
 endif()
 
 target_include_directories(VulkanGameEngine PRIVATE
@@ -238,19 +269,31 @@ target_include_directories(VulkanGameEngine PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# ===================================================================
+# Link everything — CLEAN AND FINAL
+# ===================================================================
 if(ANDROID)
     target_link_libraries(VulkanGameEngine PRIVATE
         vulkan
-        Physics2DDLL VulkanEngineDLL ComponentDLL
-        glm::glm nlohmann_json::nlohmann_json
-        android log
+        android
+        log
+        native_app_glue          # This provides ANativeActivity_onCreate
+        Physics2DDLL
+        VulkanEngineDLL
+        ComponentDLL
+        glm::glm
+        nlohmann_json::nlohmann_json
+        "-Wl,--export-dynamic"
     )
 else()
     target_link_libraries(VulkanGameEngine PRIVATE
         Vulkan::Vulkan
-        Physics2DDLL VulkanEngineDLL ComponentDLL
-        glm::glm nlohmann_json::nlohmann_json
         glfw
+        Physics2DDLL
+        VulkanEngineDLL
+        ComponentDLL
+        glm::glm
+        nlohmann_json::nlohmann_json
     )
     if(GLFW_HEADER_DEPS)
         add_dependencies(VulkanGameEngine ${GLFW_HEADER_DEPS})
@@ -258,25 +301,7 @@ else()
 endif()
 
 # ===================================================================
-# ANDROID ONLY: Game Activity + native_app_glue
-# ===================================================================
-if(ANDROID)
-    add_library(native_app_glue STATIC
-        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-    target_include_directories(VulkanGameEngine PRIVATE
-        ${ANDROID_NDK}/sources/android/native_app_glue)
-    target_link_libraries(VulkanGameEngine PRIVATE native_app_glue)
-
-    find_package(game-activity REQUIRED CONFIG)
-    target_link_libraries(VulkanGameEngine PRIVATE
-        game-activity::game-activity
-        android
-        log
-    )
-endif()
-
-# ===================================================================
-# Desktop install/post-build
+# Desktop post-build (unchanged)
 # ===================================================================
 if(NOT ANDROID)
     set(RUN_DIR "${CMAKE_INSTALL_PREFIX}/run")
@@ -287,7 +312,6 @@ if(NOT ANDROID)
     )
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/Assets/" DESTINATION "${RUN_DIR}/Assets" PATTERN "Shaders/*" EXCLUDE)
     install(FILES "${CMAKE_SOURCE_DIR}/EngineConfig.json" DESTINATION "${RUN_DIR}/Config")
-
     add_custom_command(TARGET VulkanGameEngine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:VulkanEngineDLL>
@@ -302,10 +326,4 @@ if(NOT ANDROID)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/EngineConfig.json" "$<TARGET_FILE_DIR:VulkanGameEngine>/EngineConfig.json"
         COMMENT "Copying Assets + Config"
     )
-
-    if(GLSLC_EXECUTABLE)
-        message(STATUS "glslc found to compiling shaders automatically")
-    else()
-        message(WARNING "glslc not found to using precompiled .spv")
-    endif()
 endif()

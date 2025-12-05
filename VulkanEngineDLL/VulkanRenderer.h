@@ -1,6 +1,9 @@
 #pragma once
 #include "Platform.h"
 #include "InputEnum.h"
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
 
 struct GraphicsRenderer
 {
@@ -11,11 +14,11 @@ struct GraphicsRenderer
 	VkCommandPool      CommandPool = VK_NULL_HANDLE;
 	VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 
-	VkFence* InFlightFences = VK_NULL_HANDLE;
-	VkSemaphore* AcquireImageSemaphores = VK_NULL_HANDLE;
-	VkSemaphore* PresentImageSemaphores = VK_NULL_HANDLE;
-	VkImage* SwapChainImages = VK_NULL_HANDLE;
-	VkImageView* SwapChainImageViews = VK_NULL_HANDLE;
+	VkFence*		   InFlightFences = VK_NULL_HANDLE;
+	VkSemaphore*	   AcquireImageSemaphores = VK_NULL_HANDLE;
+	VkSemaphore*	   PresentImageSemaphores = VK_NULL_HANDLE;
+	VkImage*		   SwapChainImages = VK_NULL_HANDLE;
+	VkImageView*	   SwapChainImageViews = VK_NULL_HANDLE;
 	VkSwapchainKHR     Swapchain = VK_NULL_HANDLE;
 	VkExtent2D         SwapChainResolution;
 
@@ -64,6 +67,7 @@ extern "C" {
 	VkBool32 VKAPI_CALL		    Renderer_DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* pUserData);
 	Vector<const char*>		    Renderer_GetRequiredInstanceExtensions();
 	Vector<const char*>		    Renderer_GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice);
+	Vector<const char*>			Renderer_GetValidationLayerProperties();
 	Vector<VkSurfaceFormatKHR>  Renderer_GetSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkPresentModeKHR>    Renderer_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	VkPhysicalDeviceFeatures    Renderer_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);

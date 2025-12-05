@@ -1,0 +1,19 @@
+{
+  "Flags": 0,
+  "MagFilter": 0,
+  "MinFilter": 0,
+  "MipmapMode": 1,
+  "AddressModeU": 0,
+  "AddressModeV": 0,
+  "AddressModeW": 0,
+  "MipLodBias": 0.0,
+  "AnisotropyEnable": true,
+  "MaxAnisotropy": 16.0,
+  "CompareEnable": false,
+  "CompareOp": 7,
+  "MinLod": 0.0,
+  "MaxLod": 1.0,
+  "BorderColor": 2,
+  "UnnormalizedCoordinates": false,
+  "_name": "DefaultColorSampleCreateInfo"
+}

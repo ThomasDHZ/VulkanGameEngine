@@ -26,7 +26,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 {
 	int width = 0;
 	int height = 0;
-	ColorChannelUsed colorChannels;
+	int colorChannels;
 
 	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
 	if (TextureExists(textureLoader.TextureId))
@@ -34,9 +34,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		return textureLoader.TextureId;
 	}
 
-	byte* data = stbi_load(textureLoader.TextureFilePath.c_str(), &width, &height, (int*)&colorChannels, 0);
-	VkDeviceSize bufferSize = width * height * colorChannels;
-
+    Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
 	Texture texture = Texture
 	{
 		.textureId = textureLoader.TextureId,
@@ -55,17 +53,16 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		.textureByteFormat = textureLoader.ImageCreateInfo.format,
 		.textureImageLayout = textureLoader.ImageCreateInfo.initialLayout,
 		.sampleCount = textureLoader.ImageCreateInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : textureLoader.ImageCreateInfo.samples,
-		.colorChannels = colorChannels,
+		.colorChannels = (ColorChannelUsed)colorChannels,
 	};
 
 	textureLoader.ImageCreateInfo.extent.width = width;
 	textureLoader.ImageCreateInfo.extent.height = height;
 	textureLoader.ImageCreateInfo.extent.depth = 1;
-	CreateTextureImage(texture, textureLoader.ImageCreateInfo, data, bufferSize);
+	CreateTextureImage(texture, textureLoader.ImageCreateInfo, textureData.data(), textureData.size());
 	CreateTextureView(texture, textureLoader.ImageType);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(renderer.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 	GenerateMipmaps(texture);
-	stbi_image_free(data);
 
 	TextureMap[textureLoader.TextureId] = texture;
 	return textureLoader.TextureId;
