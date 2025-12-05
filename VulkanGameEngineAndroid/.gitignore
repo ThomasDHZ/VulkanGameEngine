@@ -13,3 +13,15 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Android build artifacts
+app/build/
+app/.cxx/
+.gradle/
+
+# Generated assets — NEVER commit these
+app/src/main/assets/
+!app/src/main/assets/.keep
+
+# Gradle wrapper (if present)
+gradle/
