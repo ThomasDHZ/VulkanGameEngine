@@ -28,6 +28,17 @@ void Renderer_LogVulkanMessage(const char* message, int severity)
     }
 }
 
+uint32 Renderer_FindMaxApiVersion(VkPhysicalDevice physicalDevice)
+{
+	uint32 version = Renderer_GetPhysicalDeviceProperties(physicalDevice).apiVersion;
+#ifndef __ANDROID__
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 4)) return VK_API_VERSION_1_4;
+#endif
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 3)) return VK_API_VERSION_1_3;
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 2)) return VK_API_VERSION_1_2;
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 1)) return VK_API_VERSION_1_1;
+}
+
 GraphicsRenderer Renderer_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
     renderer.ImageIndex = 0;
@@ -430,6 +441,10 @@ VkPhysicalDevice Renderer_SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR 
     Vector<VkPhysicalDevice> physicalDeviceList = Renderer_GetPhysicalDeviceList(instance);
     for (auto& physicalDevice : physicalDeviceList)
     {
+		VkPhysicalDeviceProperties physicalDeviceProperties = Renderer_GetPhysicalDeviceProperties(physicalDevice);
+        uint32 version = Renderer_FindMaxApiVersion(physicalDevice);
+        uint32 driverVersion = physicalDeviceProperties.apiVersion;
+
         VkPhysicalDeviceFeatures physicalDeviceFeatures = Renderer_GetPhysicalDeviceFeatures(physicalDevice);
         Renderer_GetQueueFamilies(physicalDevice, surface, graphicsFamily, presentFamily);
         Vector<VkSurfaceFormatKHR> surfaceFormatList = Renderer_GetSurfaceFormats(physicalDevice, surface);
@@ -741,6 +756,13 @@ VkSurfaceCapabilitiesKHR Renderer_GetSurfaceCapabilities(VkPhysicalDevice physic
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities));
     return surfaceCapabilities;
+}
+
+VkPhysicalDeviceProperties Renderer_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice)
+{
+    VkPhysicalDeviceProperties props{};
+    vkGetPhysicalDeviceProperties(physicalDevice, &props);
+    return props;
 }
 
 Vector<VkSurfaceFormatKHR> Renderer_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)

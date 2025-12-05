@@ -128,7 +128,6 @@ target_include_directories(Physics2DDLL PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Add vulkan on Android
 if(ANDROID)
     target_link_libraries(Physics2DDLL PRIVATE android log vulkan)
 endif()

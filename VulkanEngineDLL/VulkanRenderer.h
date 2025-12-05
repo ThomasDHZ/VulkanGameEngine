@@ -7,6 +7,7 @@
 
 struct GraphicsRenderer
 {
+	uint32	           ApiVersion = VK_API_VERSION_1_1;
 	VkInstance         Instance = VK_NULL_HANDLE;
 	VkDevice           Device = VK_NULL_HANDLE;
 	VkPhysicalDevice   PhysicalDevice = VK_NULL_HANDLE;
@@ -62,6 +63,7 @@ extern "C" {
 }
 #endif
 
+	uint32						Renderer_FindMaxApiVersion(VkPhysicalDevice physicalDevice);
 	GraphicsRenderer		    Renderer_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
 	GraphicsRenderer		    Renderer_RebuildSwapChain(void* windowHandle);
 	VkBool32 VKAPI_CALL		    Renderer_DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* pUserData);
@@ -70,9 +72,10 @@ extern "C" {
 	Vector<const char*>			Renderer_GetValidationLayerProperties();
 	Vector<VkSurfaceFormatKHR>  Renderer_GetSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkPresentModeKHR>    Renderer_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	VkSurfaceCapabilitiesKHR    Renderer_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	VkPhysicalDeviceProperties  Renderer_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
 	VkPhysicalDeviceFeatures    Renderer_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
 	Vector<VkPhysicalDevice>    Renderer_GetPhysicalDeviceList(VkInstance& instance);
-	VkSurfaceCapabilitiesKHR    Renderer_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkSurfaceFormatKHR>  Renderer_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	Vector<VkPresentModeKHR>    Renderer_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	void						Renderer_GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue & graphicsQueue, VkQueue & presentQueue);
@@ -99,7 +102,6 @@ extern "C" {
 	void						Renderer_DestroyDebugger(VkInstance* instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT);
 	void						Renderer_DestroyInstance(VkInstance* instance);
 	void						Renderer_DestroyDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout* descriptorSetLayout);
-	void						Renderer_FreeDeviceMemory(VkDevice device, VkDeviceMemory* memory);
 	void						Renderer_DestroySwapChainImageView(VkDevice device, VkSurfaceKHR surface, VkImageView* pSwapChainImageViewList, uint32 count);
 	void						Renderer_DestroySwapChain(VkDevice device, VkSwapchainKHR* swapChain);
 	void						Renderer_DestroyImageView(VkDevice device, VkImageView* imageView);
@@ -108,3 +110,4 @@ extern "C" {
 	void						Renderer_DestroyPipeline(VkDevice device, VkPipeline* pipeline);
 	void						Renderer_DestroyPipelineLayout(VkDevice device, VkPipelineLayout* pipelineLayout);
 	void						Renderer_DestroyPipelineCache(VkDevice device, VkPipelineCache* pipelineCache);
+	void						Renderer_FreeDeviceMemory(VkDevice device, VkDeviceMemory* memory);
