@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "MeshSystemDLL.h"
 
 uint MeshSystem_CreateMesh(MeshTypeEnum meshType, Vertex2D* vertexListPtr, uint32* indexListPtr, size_t vertexListCount, size_t indexListCount)

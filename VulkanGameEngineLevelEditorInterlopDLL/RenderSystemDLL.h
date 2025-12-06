@@ -1,5 +1,4 @@
 #pragma once
-#include <DLL.h>
 #include <RenderSystem.h>
 
 #ifdef __cplusplus

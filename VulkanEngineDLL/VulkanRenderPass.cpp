@@ -66,14 +66,14 @@ VulkanRenderPass VulkanRenderPass_RebuildSwapChain(GraphicsRenderer& renderer, V
 
     Vector<Texture> renderedTextureList;
     Vector<VkFramebuffer> frameBufferList;
-    Renderer_DestroyFrameBuffers(renderer.Device, vulkanRenderPass.FrameBufferList, renderer.SwapChainImageCount);
+    vulkanSystem.DestroyFrameBuffers(renderer.Device, vulkanRenderPass.FrameBufferList, renderer.SwapChainImageCount);
     if (vulkanRenderPass.IsRenderedToSwapchain)
     {
         vulkanRenderPass.RenderPassResolution = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
         renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
 
         VulkanRenderPass_DestoryRenderPassSwapChainTextures(renderer, renderedTextureListPtr, renderedTextureCount, depthTexture);
-        Renderer_DestroyRenderPass(renderer.Device, &vulkanRenderPass.RenderPass);
+        vulkanSystem.DestroyRenderPass(renderer.Device, &vulkanRenderPass.RenderPass);
         renderedTextureList.clear();
 
         vulkanRenderPass.RenderPass = RenderPass_BuildRenderPass(renderer, renderPassLoader, renderedTextureList, depthTexture);
@@ -109,9 +109,9 @@ void VulkanRenderPass_DestoryRenderPassSwapChainTextures(GraphicsRenderer& rende
 
 void VulkanRenderPass_DestroyRenderPass(GraphicsRenderer& renderer, VulkanRenderPass& renderPass)
 {
-    Renderer_DestroyRenderPass(renderer.Device, &renderPass.RenderPass);
-    Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &renderPass.CommandBuffer, 1);
-    Renderer_DestroyFrameBuffers(renderer.Device, &renderPass.FrameBufferList[0], renderer.SwapChainImageCount);
+    vulkanSystem.DestroyRenderPass(renderer.Device, &renderPass.RenderPass);
+    vulkanSystem.DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &renderPass.CommandBuffer, 1);
+    vulkanSystem.DestroyFrameBuffers(renderer.Device, &renderPass.FrameBufferList[0], renderer.SwapChainImageCount);
 
     memorySystem.DeletePtr<VkGuid>(renderPass.InputTextureIdList);
     memorySystem.DeletePtr<VkFramebuffer>(renderPass.FrameBufferList);

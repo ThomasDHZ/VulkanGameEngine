@@ -49,10 +49,10 @@ VulkanPipeline VulkanPipeline_RebuildSwapChain(VulkanPipeline& oldPipeline, Vulk
 void VulkanPipeline_Destroy(VulkanPipeline& vulkanPipeline)
 {
     vulkanPipeline.RenderPipelineId = VkGuid();
-    Renderer_DestroyPipeline(renderer.Device, &vulkanPipeline.Pipeline);
-    Renderer_DestroyPipelineLayout(renderer.Device, &vulkanPipeline.PipelineLayout);
-    Renderer_DestroyPipelineCache(renderer.Device, &vulkanPipeline.PipelineCache);
-    Renderer_DestroyDescriptorPool(renderer.Device, &vulkanPipeline.DescriptorPool);
+    vulkanSystem.DestroyPipeline(renderer.Device, &vulkanPipeline.Pipeline);
+    vulkanSystem.DestroyPipelineLayout(renderer.Device, &vulkanPipeline.PipelineLayout);
+    vulkanSystem.DestroyPipelineCache(renderer.Device, &vulkanPipeline.PipelineCache);
+    vulkanSystem.DestroyDescriptorPool(renderer.Device, &vulkanPipeline.DescriptorPool);
 }
 
 

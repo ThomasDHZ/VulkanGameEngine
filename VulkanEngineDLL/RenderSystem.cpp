@@ -18,7 +18,7 @@ RenderSystem::~RenderSystem()
 
 GraphicsRenderer RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-    Renderer_RendererSetUp(windowHandle, instance, surface);
+    vulkanSystem.RendererSetUp(windowHandle, instance, surface);
     return renderer;
 }
 
@@ -72,7 +72,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
 void RenderSystem::RecreateSwapchain(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime) 
 { 
     vkDeviceWaitIdle(renderer.Device);
-    Renderer_RebuildSwapChain(windowHandle);
+    vulkanSystem.RebuildSwapChain(windowHandle);
     for (auto& renderPassPair : renderSystem.RenderPassMap)
     {
         VulkanRenderPass& renderPass = renderPassPair.second;
@@ -127,42 +127,42 @@ void RenderSystem::Destroy()
 {
     DestroyRenderPasses();
     DestroyRenderPipelines();
-    Renderer_DestroyRenderer(renderer);
+    vulkanSystem.DestroyRenderer(renderer);
 }
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    Renderer_DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size());
+    vulkanSystem.DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size());
 }
 
 void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
 {
-    Renderer_DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1);
+    vulkanSystem.DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
-    Renderer_DestroyBuffer(renderer.Device, &buffer);
+    vulkanSystem.DestroyBuffer(renderer.Device, &buffer);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleUseCommand()
 {
-    return Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
+    return vulkanSystem.BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleUseCommand(VkCommandPool& commandPool)
 {
-    return Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
+    return vulkanSystem.BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
 void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
-    Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    vulkanSystem.EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
 {
-    Renderer_EndSingleUseCommand(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
+    vulkanSystem.EndSingleUseCommand(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 void RenderSystem::StartFrame()

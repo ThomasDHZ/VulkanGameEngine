@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "GPUSystemDLL.h"
 
 void GPUSystem_StartUp()

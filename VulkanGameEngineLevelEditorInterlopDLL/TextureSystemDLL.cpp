@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "TextureSystemDLL.h"
 
 VkGuid TextureSystem_CreateTexture(const char* texturePath)

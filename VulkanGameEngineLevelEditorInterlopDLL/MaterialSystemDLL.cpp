@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "MaterialSystemDLL.h"
 
 VkGuid MaterialSystem_CreateMaterial(const char* materialPath)

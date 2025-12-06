@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "FileSystemDLL.h"
 
 bool File_Exists(const char* fileName)

@@ -148,9 +148,9 @@ void VulkanBufferSystem::CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer
         .size = bufferSize
     };
 
-    VkCommandBuffer commandBuffer = Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
+    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-    Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    vulkanSystem.EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 void VulkanBufferSystem::AllocateMemory(VkBuffer* bufferData, VkDeviceMemory* bufferMemory, VkMemoryPropertyFlags properties, VkBufferUsageFlags usage)
@@ -171,7 +171,7 @@ void VulkanBufferSystem::AllocateMemory(VkBuffer* bufferData, VkDeviceMemory* bu
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .pNext = &allocateFlagsInfo,
         .allocationSize = memRequirements.size,
-        .memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, properties)
+        .memoryTypeIndex = vulkanSystem.GetMemoryType(renderer.PhysicalDevice, memRequirements.memoryTypeBits, properties)
     };
 
     VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, bufferMemory));
@@ -229,7 +229,7 @@ void VulkanBufferSystem::CreateBuffer(VkBuffer* buffer, VkDeviceMemory* bufferMe
     VULKAN_THROW_IF_FAIL(vkCreateBuffer(renderer.Device, &bufferInfo, nullptr, buffer));
     vkGetBufferMemoryRequirements(renderer.Device, *buffer, &memReqs);
     allocInfo.allocationSize = memReqs.size;
-    allocInfo.memoryTypeIndex = Renderer_GetMemoryType(renderer.PhysicalDevice, memReqs.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = vulkanSystem.GetMemoryType(renderer.PhysicalDevice, memReqs.memoryTypeBits, properties);
 
     VULKAN_THROW_IF_FAIL(vkAllocateMemory(renderer.Device, &allocInfo, nullptr, bufferMemory));
     VULKAN_THROW_IF_FAIL(vkBindBufferMemory(renderer.Device, *buffer, *bufferMemory, 0));
@@ -265,16 +265,16 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
         .size = size
     };
 
-    VkCommandBuffer commandBuffer = Renderer_BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
+    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
     vkCmdCopyBuffer(commandBuffer, *srcBuffer, *dstBuffer, 1, &copyRegion);
-    Renderer_EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
+    vulkanSystem.EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 void VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* bufferMemory, void* bufferData, VkDeviceSize oldBufferSize, VkDeviceSize newBufferSize, VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags propertyFlags)
 {
     if (newBufferSize < oldBufferSize)
     {
-      /*  RENDERER_ERROR("%s", (std::string("Buffer size can't be less than the old buffer size. OldSize: ")
+      /*  vulkanSystem.ERROR("%s", (std::string("Buffer size can't be less than the old buffer size. OldSize: ")
             + std::to_string(static_cast<uint32_t>(oldBufferSize))
             + " NewSize: "
             + std::to_string(static_cast<uint32_t>(newBufferSize))).c_str());*/
@@ -298,7 +298,7 @@ void VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* buff
     VkResult result = vkBindBufferMemory(renderer.Device, newBuffer, newBufferMemory, 0);
     if (result != VK_SUCCESS)
     {
-        Renderer_FreeDeviceMemory(renderer.Device, &newBufferMemory);
+        vulkanSystem.FreeDeviceMemory(renderer.Device, &newBufferMemory);
         vkDestroyBuffer(renderer.Device, newBuffer, nullptr);
         VULKAN_THROW_IF_FAIL(result);
     }
@@ -318,7 +318,7 @@ void VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* buff
     }
     if (*bufferMemory != VK_NULL_HANDLE)
     {
-        Renderer_FreeDeviceMemory(renderer.Device, bufferMemory);
+        vulkanSystem.FreeDeviceMemory(renderer.Device, bufferMemory);
     }
 
     *buffer = newBuffer;
@@ -358,13 +358,13 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
 
     if (vulkanBuffer.BufferMemory != VK_NULL_HANDLE)
     {
-        Renderer_FreeDeviceMemory(renderer.Device, &vulkanBuffer.BufferMemory);
+        vulkanSystem.FreeDeviceMemory(renderer.Device, &vulkanBuffer.BufferMemory);
         vulkanBuffer.BufferMemory = VK_NULL_HANDLE;
     }
 
     if (vulkanBuffer.StagingBufferMemory != VK_NULL_HANDLE)
     {
-        Renderer_FreeDeviceMemory(renderer.Device, &vulkanBuffer.StagingBufferMemory);
+        vulkanSystem.FreeDeviceMemory(renderer.Device, &vulkanBuffer.StagingBufferMemory);
         vulkanBuffer.StagingBufferMemory = VK_NULL_HANDLE;
     }
 

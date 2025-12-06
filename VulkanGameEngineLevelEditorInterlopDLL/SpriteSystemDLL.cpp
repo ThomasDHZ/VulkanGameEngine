@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "SpriteSystemDLL.h"
 
 void SpriteSystem_AddSprite(GameObject& gameObject, VramSpriteGuid& spriteVramId)

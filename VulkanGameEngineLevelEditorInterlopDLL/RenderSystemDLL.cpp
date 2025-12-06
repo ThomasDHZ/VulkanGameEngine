@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "RenderSystemDLL.h"
 
 GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)

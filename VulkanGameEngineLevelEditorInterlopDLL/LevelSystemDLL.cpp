@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "LevelSystemDLL.h"
 
 VkCommandBuffer LevelSystem_RenderBloomPass(VkGuid& renderPassId)

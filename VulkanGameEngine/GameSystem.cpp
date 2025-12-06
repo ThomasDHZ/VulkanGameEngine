@@ -30,7 +30,7 @@ GameSystem::~GameSystem()
 void GameSystem::StartUp(void* windowHandle)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkInstance instance = Renderer_CreateVulkanInstance();
+    VkInstance instance = vulkanSystem.CreateVulkanInstance();
 #ifdef PLATFORM_ANDROID
     ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
 
