@@ -35,9 +35,9 @@ void VulkanSystem_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool
 	return vulkanSystem.EndSingleUseCommand(device, commandPool, graphicsQueue, commandBuffer);
 }
 
-void VulkanSystem_DestroyRenderer(GraphicsRenderer& renderer)
+void VulkanSystem_DestroyRenderer()
 {
-	return vulkanSystem.DestroyRenderer(renderer);
+	vulkanSystem.DestroyRenderer();
 }
 
 void VulkanSystem_DestroyRenderPass(VkDevice device, VkRenderPass* renderPass)

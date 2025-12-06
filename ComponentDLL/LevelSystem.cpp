@@ -151,7 +151,7 @@ void LevelSystem::Update(const float& deltaTime)
 
  void LevelSystem::LoadLevel(const char* levelPath)
 {
-     OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)renderer.SwapChainResolution.width, (float)renderer.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+     OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
      VkGuid dummyGuid = VkGuid();
      VkGuid tileSetId = VkGuid();
@@ -198,10 +198,10 @@ void LevelSystem::Update(const float& deltaTime)
      LoadLevelMesh(tileSetId);
 
      VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
-     spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-   //  gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
-     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height));
+     spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+   //  gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
 }
 
  void LevelSystem::Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime)
@@ -244,8 +244,8 @@ void LevelSystem::Update(const float& deltaTime)
      Texture blurTexture = textureSystem.FindRenderedTextureList(spriteRenderPass2DId)[0];
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
 
-     uint mipWidth = renderer.SwapChainResolution.width;
-     uint mipHeight = renderer.SwapChainResolution.height;
+     uint mipWidth = vulkanSystem.SwapChainResolution.width;
+     uint mipHeight = vulkanSystem.SwapChainResolution.height;
      for (uint x = 0; x < blurTexture.mipMapLevels; x++)
      {
          VkDescriptorImageInfo imageInfo =
@@ -263,7 +263,7 @@ void LevelSystem::Update(const float& deltaTime)
              .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
              .pImageInfo = &imageInfo
          };
-         vkUpdateDescriptorSets(renderer.Device, 1, &descriptorWrite, 0, nullptr);
+         vkUpdateDescriptorSets(vulkanSystem.Device, 1, &descriptorWrite, 0, nullptr);
 
          VkViewport viewport
          {
@@ -285,7 +285,7 @@ void LevelSystem::Update(const float& deltaTime)
          {
              .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
              .renderPass = renderPass.RenderPass,
-             .framebuffer = renderPass.FrameBufferList[renderer.ImageIndex],
+             .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
              .renderArea = scissor,
              .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
              .pClearValues = renderPass.ClearValueList
@@ -321,8 +321,8 @@ void LevelSystem::Update(const float& deltaTime)
      {
          .x = 0.0f,
          .y = 0.0f,
-         .width = static_cast<float>(renderer.SwapChainResolution.width),
-         .height = static_cast<float>(renderer.SwapChainResolution.height),
+         .width = static_cast<float>(vulkanSystem.SwapChainResolution.width),
+         .height = static_cast<float>(vulkanSystem.SwapChainResolution.height),
          .minDepth = 0.0f,
          .maxDepth = 1.0f
      };
@@ -330,14 +330,14 @@ void LevelSystem::Update(const float& deltaTime)
      VkRect2D scissor = VkRect2D
      {
          .offset = VkOffset2D {.x = 0, .y = 0},
-         .extent = VkExtent2D {.width = (uint32)renderer.SwapChainResolution.width, .height = (uint32)renderer.SwapChainResolution.height}
+         .extent = VkExtent2D {.width = (uint32)vulkanSystem.SwapChainResolution.width, .height = (uint32)vulkanSystem.SwapChainResolution.height}
      };
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
          .renderPass = renderPass.RenderPass,
-         .framebuffer = renderPass.FrameBufferList[renderer.ImageIndex],
+         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
          .renderArea = scissor,
          .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
          .pClearValues = renderPass.ClearValueList
@@ -368,7 +368,7 @@ void LevelSystem::Update(const float& deltaTime)
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
          .renderPass = renderPass.RenderPass,
-         .framebuffer = renderPass.FrameBufferList[renderer.ImageIndex],
+         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
          .renderArea = renderPass.RenderArea,
          .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
          .pClearValues = renderPass.ClearValueList

@@ -71,17 +71,17 @@ void GPUSystem::StartUp()
 	VkPhysicalDeviceFeatures2 PhysicalDeviceFeatures2{};
 	PhysicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	PhysicalDeviceFeatures2.pNext = &gpuSystem.RayTracingPipelineFeatures;
-	vkGetPhysicalDeviceFeatures2(renderer.PhysicalDevice, &PhysicalDeviceFeatures2);
+	vkGetPhysicalDeviceFeatures2(vulkanSystem.PhysicalDevice, &PhysicalDeviceFeatures2);
 	gpuSystem.PhysicalDeviceFeatures = PhysicalDeviceFeatures2.features;
 
-	vkGetPhysicalDeviceProperties(renderer.PhysicalDevice, &gpuSystem.PhysicalDeviceProperties);
+	vkGetPhysicalDeviceProperties(vulkanSystem.PhysicalDevice, &gpuSystem.PhysicalDeviceProperties);
 	gpuSystem.PhysicalDeviceLimits = gpuSystem.PhysicalDeviceProperties.limits;
 
 	gpuSystem.RayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
 	VkPhysicalDeviceProperties2 PhysicalDeviceProperties{};
 	PhysicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
 	PhysicalDeviceProperties.pNext = &gpuSystem.RayTracingPipelineProperties;
-	vkGetPhysicalDeviceProperties2(renderer.PhysicalDevice, &PhysicalDeviceProperties);
+	vkGetPhysicalDeviceProperties2(vulkanSystem.PhysicalDevice, &PhysicalDeviceProperties);
 
-	gpuSystem.MaxSampleCount = gpuSystem.GetMaxUsableSampleCount(renderer.PhysicalDevice);
+	gpuSystem.MaxSampleCount = gpuSystem.GetMaxUsableSampleCount(vulkanSystem.PhysicalDevice);
 }

@@ -1,8 +1,8 @@
 #include "RenderSystemDLL.h"
 
-GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
+void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-    return renderSystem.StartUp(windowHandle, instance, surface);
+    renderSystem.StartUp(windowHandle, instance, surface);
 }
 
 void RenderSystem_Update(void* windowHandle, RenderPassGuid& spriteRenderPassGuidId, LevelGuid& levelGuid, const float& deltaTime)
@@ -26,9 +26,9 @@ void RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t command
     renderSystem.EndFrame(commandBufferList);
 }
 
-GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
+void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
 {
-    return renderSystem.StartUp(windowHandle, instance, surface);
+   renderSystem.StartUp(windowHandle, instance, surface);
 }
 
 void RenderSystem_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)

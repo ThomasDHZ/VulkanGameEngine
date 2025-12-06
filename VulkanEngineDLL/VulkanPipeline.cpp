@@ -49,10 +49,10 @@ VulkanPipeline VulkanPipeline_RebuildSwapChain(VulkanPipeline& oldPipeline, Vulk
 void VulkanPipeline_Destroy(VulkanPipeline& vulkanPipeline)
 {
     vulkanPipeline.RenderPipelineId = VkGuid();
-    vulkanSystem.DestroyPipeline(renderer.Device, &vulkanPipeline.Pipeline);
-    vulkanSystem.DestroyPipelineLayout(renderer.Device, &vulkanPipeline.PipelineLayout);
-    vulkanSystem.DestroyPipelineCache(renderer.Device, &vulkanPipeline.PipelineCache);
-    vulkanSystem.DestroyDescriptorPool(renderer.Device, &vulkanPipeline.DescriptorPool);
+    vulkanSystem.DestroyPipeline(vulkanSystem.Device, &vulkanPipeline.Pipeline);
+    vulkanSystem.DestroyPipelineLayout(vulkanSystem.Device, &vulkanPipeline.PipelineLayout);
+    vulkanSystem.DestroyPipelineCache(vulkanSystem.Device, &vulkanPipeline.PipelineCache);
+    vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &vulkanPipeline.DescriptorPool);
 }
 
 
@@ -78,7 +78,7 @@ VkDescriptorPool Pipeline_CreatePipelineDescriptorPool(RenderPipelineLoader& ren
         .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
         .pPoolSizes = descriptorPoolSizeList.data()
     };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(renderer.Device, &poolCreateInfo, nullptr, &descriptorPool));
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolCreateInfo, nullptr, &descriptorPool));
     return descriptorPool;
 }
 
@@ -109,7 +109,7 @@ Vector<VkDescriptorSetLayout> Pipeline_CreatePipelineDescriptorSetLayout(RenderP
     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(1);
     for (auto& descriptorSetLayout : descriptorSetLayoutList)
     {
-        VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(renderer.Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
+        VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
     }
 
     return descriptorSetLayoutList;
@@ -128,7 +128,7 @@ Vector<VkDescriptorSet> Pipeline_AllocatePipelineDescriptorSets(RenderPipelineLo
     Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(1);
     for (auto& descriptorSet : descriptorSetList)
     {
-        VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(renderer.Device, &allocInfo, &descriptorSet));
+        VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSet));
     }
     return descriptorSetList;
 }
@@ -155,7 +155,7 @@ void Pipeline_UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineL
                     .pTexelBufferView = nullptr
                 });
         }
-        vkUpdateDescriptorSets(renderer.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
+        vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
     }
 }
 
@@ -183,7 +183,7 @@ VkPipelineLayout Pipeline_CreatePipelineLayout(RenderPipelineLoader& renderPipel
         .pushConstantRangeCount = static_cast<uint32>(pushConstantRangeList.size()),
         .pPushConstantRanges = pushConstantRangeList.data()
     };
-    VULKAN_THROW_IF_FAIL(vkCreatePipelineLayout(renderer.Device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+    VULKAN_THROW_IF_FAIL(vkCreatePipelineLayout(vulkanSystem.Device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
     return pipelineLayout;
 }
 
@@ -272,10 +272,10 @@ VkPipeline Pipeline_CreatePipeline(RenderPipelineLoader& renderPipelineLoader, V
         .basePipelineIndex = 0,
     };
 
-    VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(renderer.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
+    VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(vulkanSystem.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
     for (auto& shader : pipelineShaderStageCreateInfoList)
     {
-        vkDestroyShaderModule(renderer.Device, shader.module, nullptr);
+        vkDestroyShaderModule(vulkanSystem.Device, shader.module, nullptr);
     }
 
     return pipeline;

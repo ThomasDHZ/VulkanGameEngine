@@ -12,7 +12,7 @@ extern "C" {
 	DLL_EXPORT VkSurfaceKHR		VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
 	DLL_EXPORT VkCommandBuffer  VulkanSystem_BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool);
 	DLL_EXPORT void				VulkanSystem_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
-	DLL_EXPORT void				VulkanSystem_DestroyRenderer(GraphicsRenderer& renderer);
+	DLL_EXPORT void				VulkanSystem_DestroyRenderer();
 	DLL_EXPORT void				VulkanSystem_DestroyRenderPass(VkDevice device, VkRenderPass* renderPass);
 	DLL_EXPORT void				VulkanSystem_DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count);
 	DLL_EXPORT void				VulkanSystem_DestroyDescriptorPool(VkDevice device, VkDescriptorPool* descriptorPool);
