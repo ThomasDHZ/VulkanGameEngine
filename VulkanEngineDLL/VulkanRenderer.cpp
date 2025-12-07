@@ -12,6 +12,7 @@
 #include <vulkan/vulkan_android.h>
 #endif
 
+GraphicsRenderer renderer = GraphicsRenderer();
 VulkanSystem vulkanSystem = VulkanSystem();
 
 uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
@@ -27,13 +28,13 @@ uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 
 void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-    ImageIndex = 0;
-    CommandIndex = 0;
-    RebuildRendererFlag = false;
-    Instance = instance;
-    Surface = surface;
-    PhysicalDevice = SetUpPhysicalDevice(Instance, Surface, GraphicsFamily, PresentFamily);
-    Device = SetUpDevice(PhysicalDevice, GraphicsFamily, PresentFamily);
+    renderer.ImageIndex = 0;
+    renderer.CommandIndex = 0;
+    renderer.RebuildRendererFlag = false;
+    renderer.Instance = instance;
+    renderer.Surface = surface;
+    renderer.PhysicalDevice = SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
+    renderer.Device = SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
 
 #if defined(__ANDROID__)
     vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)vkGetDeviceProcAddr(Device, "vkGetBufferDeviceAddress");
@@ -43,16 +44,16 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 #endif
 
     SetUpSwapChain(windowHandle);
-    CommandPool = SetUpCommandPool(Device, GraphicsFamily);
-    SetUpSemaphores(Device, InFlightFences, AcquireImageSemaphores, PresentImageSemaphores, SwapChainImageCount);
-    GetDeviceQueue(Device, GraphicsFamily, PresentFamily, GraphicsQueue, PresentQueue);
+    renderer.CommandPool = SetUpCommandPool(renderer.Device, renderer.GraphicsFamily);
+    SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount);
+    GetDeviceQueue(renderer.Device, renderer.GraphicsFamily, renderer.PresentFamily, renderer.GraphicsQueue, renderer.PresentQueue);
 }
 
 void VulkanSystem::RebuildSwapChain(void* windowHandle)
 {
-    vkDeviceWaitIdle(Device);
-    DestroySwapChainImageView(Device, Surface, &SwapChainImageViews[0], SwapChainImageCount);
-    DestroySwapChain(Device, &Swapchain);
+    vkDeviceWaitIdle(renderer.Device);
+    DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
+    DestroySwapChain(renderer.Device, &renderer.Swapchain);
 
     SetUpSwapChain(windowHandle);
 }
@@ -64,7 +65,7 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
     int height;
     glfwGetFramebufferSize((GLFWwindow*)windowHandle, &width, &height);
 
-    surfaceCapabilities = GetSurfaceCapabilities(PhysicalDevice, Surface);
+    surfaceCapabilities = GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
     if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
     {
         return surfaceCapabilities.currentExtent;
@@ -88,37 +89,37 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
 void VulkanSystem::SetUpSwapChain(void* windowHandle)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(PhysicalDevice, Surface);
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
     VkExtent2D extent = SetUpSwapChainExtent(windowHandle, surfaceCapabilities);
-    GetQueueFamilies(PhysicalDevice, Surface, GraphicsFamily, PresentFamily);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(PhysicalDevice, Surface);
+    GetQueueFamilies(renderer.PhysicalDevice, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
     SetUpSwapChain();
-    SwapChainImages = SetUpSwapChainImages(Device, Swapchain, static_cast<uint32>(SwapChainImageCount));
-    SwapChainImageViews = SetUpSwapChainImageViews(Device, SwapChainImages, SwapChainImageCount, swapChainImageFormat);
-    InFlightFences = memorySystem.AddPtrBuffer<VkFence>(SwapChainImageCount, __FILE__, __LINE__, __func__);
-    AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(SwapChainImageCount, __FILE__, __LINE__, __func__);
-    PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(SwapChainImageCount, __FILE__, __LINE__, __func__);
+    renderer.SwapChainImages = SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(renderer.SwapChainImageCount));
+    renderer.SwapChainImageViews = SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
+    renderer.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    renderer.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    renderer.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
 }
 
  void VulkanSystem::DestroyRenderer()
  {
-     DestroySwapChainImageView(Device, Surface, &SwapChainImageViews[0], SwapChainImageCount);
-     DestroySwapChain(Device, &Swapchain);
-     DestroyFences(Device, &AcquireImageSemaphores[0], &PresentImageSemaphores[0], &InFlightFences[0], SwapChainImageCount);
-     DestroyCommandPool(Device, &CommandPool);
-     DestroyDevice(Device);
-     DestroyDebugger(&Instance, DebugMessenger);
-     DestroySurface(Instance, &Surface);
-     DestroyInstance(&Instance);
+     DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
+     DestroySwapChain(renderer.Device, &renderer.Swapchain);
+     DestroyFences(renderer.Device, &renderer.AcquireImageSemaphores[0], &renderer.PresentImageSemaphores[0], &renderer.InFlightFences[0], renderer.SwapChainImageCount);
+     DestroyCommandPool(renderer.Device, &renderer.CommandPool);
+     DestroyDevice(renderer.Device);
+     DestroyDebugger(&renderer.Instance, renderer.DebugMessenger);
+     DestroySurface(renderer.Instance, &renderer.Surface);
+     DestroyInstance(&renderer.Instance);
 
-     memorySystem.DeletePtr(InFlightFences);
-     memorySystem.DeletePtr(AcquireImageSemaphores);
-     memorySystem.DeletePtr(PresentImageSemaphores);
-     memorySystem.DeletePtr(SwapChainImages);
-     memorySystem.DeletePtr(SwapChainImageViews);
+     memorySystem.DeletePtr(renderer.InFlightFences);
+     memorySystem.DeletePtr(renderer.AcquireImageSemaphores);
+     memorySystem.DeletePtr(renderer.PresentImageSemaphores);
+     memorySystem.DeletePtr(renderer.SwapChainImages);
+     memorySystem.DeletePtr(renderer.SwapChainImageViews);
  }
 
   VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
@@ -395,7 +396,7 @@ VkInstance VulkanSystem::CreateVulkanInstance()
     PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func)
     {
-        func(instance, &debugInfo, nullptr, &DebugMessenger);
+        func(instance, &debugInfo, nullptr, &renderer.DebugMessenger);
     }
 #endif
 
@@ -793,9 +794,9 @@ Vector<VkPresentModeKHR> VulkanSystem::GetPhysicalDevicePresentModes(VkPhysicalD
 
 void VulkanSystem::SetUpSwapChain()
 {
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(PhysicalDevice, Surface);
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(PhysicalDevice, Surface);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(PhysicalDevice, Surface);
+    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
@@ -813,14 +814,14 @@ void VulkanSystem::SetUpSwapChain()
         extent.height = std::clamp(static_cast<uint32>(configSystem.WindowResolution.y), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
     }
 
-    SwapChainResolution = extent;
-    SwapChainImageCount = imageCount;
+    renderer.SwapChainResolution = extent;
+    renderer.SwapChainImageCount = imageCount;
 
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = Surface,
-        .minImageCount = static_cast<uint32>(SwapChainImageCount),
+        .surface = renderer.Surface,
+        .minImageCount = static_cast<uint32>(renderer.SwapChainImageCount),
         .imageFormat = swapChainImageFormat.format,
         .imageColorSpace = swapChainImageFormat.colorSpace,
         .imageExtent = extent,
@@ -830,15 +831,15 @@ void VulkanSystem::SetUpSwapChain()
         .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         .presentMode = swapChainPresentMode,
         .clipped = VK_TRUE,
-        .oldSwapchain = Swapchain
+        .oldSwapchain = renderer.Swapchain
     };
 
-    if (GraphicsFamily != PresentFamily)
+    if (renderer.GraphicsFamily != renderer.PresentFamily)
     {
         Vector<uint32> queueFamilyIndices = 
         { 
-            GraphicsFamily, 
-            PresentFamily 
+            renderer.GraphicsFamily,
+            renderer.PresentFamily
         };
 
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -849,7 +850,7 @@ void VulkanSystem::SetUpSwapChain()
     {
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
-    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(Device, &SwapChainCreateInfo, nullptr, &Swapchain));
+    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(renderer.Device, &SwapChainCreateInfo, nullptr, &renderer.Swapchain));
 }
 
 VkImage* VulkanSystem::SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount)

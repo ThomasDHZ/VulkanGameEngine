@@ -23,10 +23,10 @@ void RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKH
 
 void RenderSystem::Update(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime)
 {
-    if (vulkanSystem.RebuildRendererFlag)
+    if (renderer.RebuildRendererFlag)
     {
         RecreateSwapchain(windowHandle, spriteRenderPass2DGuid, levelGuid, deltaTime);
-        vulkanSystem.RebuildRendererFlag = false;
+        renderer.RebuildRendererFlag = false;
     }
 }
 
@@ -70,12 +70,12 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime) 
 { 
-    vkDeviceWaitIdle(vulkanSystem.Device);
+    vkDeviceWaitIdle(renderer.Device);
     vulkanSystem.RebuildSwapChain(windowHandle);
     for (auto& renderPassPair : renderSystem.RenderPassMap)
     {
         VulkanRenderPass& renderPass = renderPassPair.second;
-        ivec2 swapChainResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
+        ivec2 swapChainResolution = ivec2(renderer.SwapChainResolution.width, renderer.SwapChainResolution.height);
         String renderPassJsonLoader = renderSystem.RenderPassLoaderJsonMap[renderPass.RenderPassId];
         Vector<Texture>& renderedTextureList = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
 
@@ -131,49 +131,49 @@ void RenderSystem::Destroy()
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, frameBufferList.data(), frameBufferList.size());
+    vulkanSystem.DestroyFrameBuffers(renderer.Device, frameBufferList.data(), frameBufferList.size());
 }
 
 void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
 {
-    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &commandBuffer, 1);
+    vulkanSystem.DestroyCommandBuffers(renderer.Device, &renderer.CommandPool, &commandBuffer, 1);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
-    vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
+    vulkanSystem.DestroyBuffer(renderer.Device, &buffer);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleUseCommand()
 {
-    return vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
+    return vulkanSystem.BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
 VkCommandBuffer RenderSystem::BeginSingleUseCommand(VkCommandPool& commandPool)
 {
-    return vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
+    return vulkanSystem.BeginSingleUseCommand(renderer.Device, renderer.CommandPool);
 }
 
 void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
-    vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, commandBuffer);
+    vulkanSystem.EndSingleUseCommand(renderer.Device, renderer.CommandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
 {
-    vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, commandPool, vulkanSystem.GraphicsQueue, commandBuffer);
+    vulkanSystem.EndSingleUseCommand(renderer.Device, commandPool, renderer.GraphicsQueue, commandBuffer);
 }
 
 void RenderSystem::StartFrame()
 {
-    vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
+    renderer.CommandIndex = (renderer.CommandIndex + 1) % renderer.SwapChainImageCount;
 
-    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
-    VULKAN_THROW_IF_FAIL(vkResetFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
-    VkResult result = vkAcquireNextImageKHR(vulkanSystem.Device, vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex], VK_TRUE, UINT64_MAX));
+    VULKAN_THROW_IF_FAIL(vkResetFences(renderer.Device, 1, &renderer.InFlightFences[renderer.CommandIndex]));
+    VkResult result = vkAcquireNextImageKHR(renderer.Device, renderer.Swapchain, UINT64_MAX, renderer.AcquireImageSemaphores[renderer.CommandIndex], VK_NULL_HANDLE, &renderer.ImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        vulkanSystem.RebuildRendererFlag = true;
+        renderer.RebuildRendererFlag = true;
     }
     else if (result != VK_SUCCESS)
     {
@@ -192,19 +192,19 @@ void RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
+        .pWaitSemaphores = &renderer.AcquireImageSemaphores[renderer.CommandIndex],
         .pWaitDstStageMask = waitStages,
         .commandBufferCount = static_cast<uint32>(commandBufferSubmitList.size()),
         .pCommandBuffers = commandBufferSubmitList.data(),
         .signalSemaphoreCount = 1,
-        .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex]
+        .pSignalSemaphores = &renderer.PresentImageSemaphores[renderer.ImageIndex]
     };
 
-    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
+    VkResult submitResult = vkQueueSubmit(renderer.GraphicsQueue, 1, &submitInfo, renderer.InFlightFences[renderer.CommandIndex]);
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
         submitResult == VK_SUBOPTIMAL_KHR)
     {
-        vulkanSystem.RebuildRendererFlag = true;
+        renderer.RebuildRendererFlag = true;
     }
     else if (submitResult != VK_SUCCESS)
     {
@@ -215,17 +215,17 @@ void RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
     {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex],
+        .pWaitSemaphores = &renderer.PresentImageSemaphores[renderer.ImageIndex],
         .swapchainCount = 1,
-        .pSwapchains = &vulkanSystem.Swapchain,
-        .pImageIndices = &vulkanSystem.ImageIndex
+        .pSwapchains = &renderer.Swapchain,
+        .pImageIndices = &renderer.ImageIndex
     };
 
-    VkResult result = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
+    VkResult result = vkQueuePresentKHR(renderer.PresentQueue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR ||
         result == VK_SUBOPTIMAL_KHR)
     {
-        vulkanSystem.RebuildRendererFlag = true;
+        renderer.RebuildRendererFlag = true;
     }
     else if (result != VK_SUCCESS)
     {
@@ -425,7 +425,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
         };
 
         VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        if (vkCreateSampler(renderer.Device, &NullSamplerInfo, nullptr, &nullSampler))
         {
             throw std::runtime_error("Failed to create Sampler.");
         }
