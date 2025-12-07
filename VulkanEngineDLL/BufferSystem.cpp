@@ -1,7 +1,8 @@
+#define BUFFER_SYSTEM_IMPLEMENTATION
 #include "BufferSystem.h"
 #include "MemorySystem.h"
 
-VulkanBufferSystem bufferSystem = VulkanBufferSystem();
+VulkanBufferSystem& bufferSystem = VulkanBufferSystem::Get();
 int NextBufferId = 0;
 
 VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)

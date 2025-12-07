@@ -4,15 +4,7 @@
 #include "FileSystem.h"
 #include "BufferSystem.h"
 
-ShaderSystem shaderSystem = ShaderSystem();
-
- ShaderSystem::ShaderSystem()
- {
- }
-
- ShaderSystem::~ShaderSystem()
- {
- }
+ShaderSystem& shaderSystem = ShaderSystem::Get();
 
  VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, VkShaderStageFlagBits shaderStages)
  {

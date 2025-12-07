@@ -14,7 +14,17 @@ struct MemoryLeakPtr {
 };
 
 class MemorySystem {
+public:
+    static MemorySystem& Get();
+
 private:
+    MemorySystem() = default;
+    ~MemorySystem() = default;
+    MemorySystem(const MemorySystem&) = delete;
+    MemorySystem& operator=(const MemorySystem&) = delete;
+    MemorySystem(MemorySystem&&) = delete;
+    MemorySystem& operator=(MemorySystem&&) = delete;
+
     std::mutex Mutex;
     std::unordered_map<void*, MemoryLeakPtr> PtrAddressMap;
 
@@ -42,8 +52,6 @@ private:
     }
 
 public:
-    MemorySystem();
-    ~MemorySystem();
 
     template <typename T>
     T* AddPtrBuffer(size_t elementCount, const char* file, int line, const char* func, const char* notes = "")
@@ -121,7 +129,16 @@ public:
     DLL_EXPORT void DeletePtr(void* ptr);
     DLL_EXPORT void ReportLeaks();
 };
-extern DLL_EXPORT MemorySystem memorySystem;
+extern DLL_EXPORT MemorySystem& memorySystem;
+inline MemorySystem& MemorySystem::Get()
+{
+#ifdef _DEBUG
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
+    static MemorySystem instance;
+    return instance;
+}
 
 extern "C" {
      MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);

@@ -1,6 +1,6 @@
 ﻿#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include "VulkanRenderer.h"
+#include "VulkanSystem.h"
 #include <cstdlib>
 #include <iostream>
 #include <imgui/imgui.h>
@@ -12,7 +12,7 @@
 #include <vulkan/vulkan_android.h>
 #endif
 
-VulkanSystem vulkanSystem = VulkanSystem();
+VulkanSystem& vulkanSystem = VulkanSystem::Get();
 
 uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 {
@@ -1110,14 +1110,6 @@ void VulkanSystem::FreeDeviceMemory(VkDevice device, VkDeviceMemory* memory)
         vkFreeMemory(device, *memory, NULL);
         *memory = VK_NULL_HANDLE;
     }
-}
-
-VulkanSystem::VulkanSystem()
-{
-}
-
-VulkanSystem::~VulkanSystem()
-{
 }
 
 void VulkanSystem::DestroySwapChainImageView(VkDevice device, VkSurfaceKHR surface, VkImageView* pSwapChainImageViewList, uint32 count)

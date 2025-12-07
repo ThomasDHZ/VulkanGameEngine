@@ -1,6 +1,6 @@
 #pragma once
 #include "Platform.h"
-#include "VulkanRenderer.h"
+#include "VulkanSystem.h"
 
 enum MeshTypeEnum
 {
@@ -48,6 +48,15 @@ struct SpriteInstance;
 struct MeshPropertiesStruct;
 class VulkanBufferSystem
 {
+public:
+    static VulkanBufferSystem& Get();
+
+private:
+    VulkanBufferSystem() = default;
+    ~VulkanBufferSystem() = default;
+    VulkanBufferSystem(const VulkanBufferSystem&) = delete;
+    VulkanBufferSystem& operator=(const VulkanBufferSystem&) = delete;
+
 public:
     UnorderedMap<int, VulkanBuffer> VulkanBufferMap;
 
@@ -178,4 +187,9 @@ public:
     DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);
     DLL_EXPORT const Vector<VulkanBuffer>& VulkanBufferList();
 };
-extern DLL_EXPORT VulkanBufferSystem bufferSystem;
+extern DLL_EXPORT VulkanBufferSystem& bufferSystem;
+inline VulkanBufferSystem& VulkanBufferSystem::Get()
+{
+    static VulkanBufferSystem instance;
+    return instance;
+}

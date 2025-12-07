@@ -32,7 +32,17 @@ struct Mesh
 
 class MeshSystem
 {
-	private:
+public:
+	static MeshSystem& Get();
+
+private:
+	MeshSystem() = default;
+	~MeshSystem() = default;
+	MeshSystem(const MeshSystem&) = delete;
+	MeshSystem& operator=(const MeshSystem&) = delete;
+	MeshSystem(MeshSystem&&) = delete;
+	MeshSystem& operator=(MeshSystem&&) = delete;
+
 		Vector<uint32>				 FreeMeshIndicesList;
 		Vector<Mesh>                 MeshList;
 		Vector<MeshPropertiesStruct> MeshPropertiesList;
@@ -44,9 +54,6 @@ class MeshSystem
 		Vector<Vector<Vertex2D>>     Vertex2DList;
 		Vector<Vector<uint>>         IndexList;
 
-		MeshSystem();
-		~MeshSystem();
-
 		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
 		DLL_EXPORT void Update(const float& deltaTime);
 		DLL_EXPORT void Destroy(uint meshId);
@@ -55,4 +62,9 @@ class MeshSystem
 		DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
 		DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType);
 };
-extern DLL_EXPORT MeshSystem meshSystem;
+extern DLL_EXPORT MeshSystem& meshSystem;
+inline MeshSystem& MeshSystem::Get()
+{
+	static MeshSystem instance;
+	return instance;
+}

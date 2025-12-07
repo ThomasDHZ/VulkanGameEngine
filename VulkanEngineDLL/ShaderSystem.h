@@ -71,7 +71,17 @@ struct ShaderPipelineData
 
 class ShaderSystem
 {
+public:
+    static ShaderSystem& Get();
+
 private:
+    ShaderSystem() = default;
+    ~ShaderSystem() = default;
+    ShaderSystem(const ShaderSystem&) = delete;
+    ShaderSystem& operator=(const ShaderSystem&) = delete;
+    ShaderSystem(ShaderSystem&&) = delete;
+    ShaderSystem& operator=(ShaderSystem&&) = delete;
+
     UnorderedMap<String, ShaderPipelineDataDLL> ShaderModuleMap;
 	UnorderedMap<String, ShaderPushConstantDLL> ShaderPushConstantMap;
 	UnorderedMap<String, ShaderStructDLL>       PipelineShaderStructPrototypeMap;
@@ -91,9 +101,6 @@ private:
 public:
 	
     UnorderedMap<int, ShaderStructDLL>          PipelineShaderStructMap;
-
-    ShaderSystem();
-    ~ShaderSystem();
     
     DLL_EXPORT VkPipelineShaderStageCreateInfo  LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
     DLL_EXPORT ShaderPipelineDataDLL            LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths);
@@ -151,4 +158,9 @@ public:
     }
 
 };
-extern DLL_EXPORT ShaderSystem shaderSystem;
+extern DLL_EXPORT ShaderSystem& shaderSystem;
+inline ShaderSystem& ShaderSystem::Get()
+{
+    static ShaderSystem instance;
+    return instance;
+}

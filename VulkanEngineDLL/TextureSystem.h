@@ -41,7 +41,17 @@ struct Texture
 
 class TextureSystem
 {
+public: 
+    static TextureSystem& Get();
+
 private:
+    TextureSystem() = default;
+    ~TextureSystem() = default;
+    TextureSystem(const TextureSystem&) = delete;
+    TextureSystem& operator=(const TextureSystem&) = delete;
+    TextureSystem(TextureSystem&&) = delete;
+    TextureSystem& operator=(TextureSystem&&) = delete;
+
     void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
@@ -60,9 +70,6 @@ public:
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
-
-    TextureSystem();
-    ~TextureSystem();
 
     DLL_EXPORT VkGuid                CreateTexture(const String& texturePath);
     DLL_EXPORT Texture               CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
@@ -107,4 +114,10 @@ public:
     //    return Texture_CreateTexture(renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
     //}
 };
-extern DLL_EXPORT TextureSystem textureSystem;
+
+extern DLL_EXPORT TextureSystem& textureSystem;
+inline TextureSystem& TextureSystem::Get()
+{
+    static TextureSystem instance;
+    return instance;
+}

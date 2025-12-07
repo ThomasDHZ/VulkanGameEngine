@@ -3,7 +3,7 @@
 #include "InputComponent.h"
 #include "Transform2DComponent.h"
 #include "MegaManShot.h"
-#include "VulkanRenderer.h"
+#include "VulkanSystem.h"
 
 enum GameObjectTypeEnum
 {
@@ -36,7 +36,16 @@ struct GameObject
 
 class GameObjectSystem
 {
+public:
+    static GameObjectSystem& Get();
+
 private:
+    GameObjectSystem() = default;
+    ~GameObjectSystem() = default;
+    GameObjectSystem(const GameObjectSystem&) = delete;
+    GameObjectSystem& operator=(const GameObjectSystem&) = delete;
+    GameObjectSystem(GameObjectSystem&&) = delete;
+    GameObjectSystem& operator=(GameObjectSystem&&) = delete;
 
 public:
     Vector<GameObject> GameObjectList;
@@ -44,9 +53,6 @@ public:
     Vector<InputComponent> InputComponentList;
     Vector<Transform2DComponent> Transform2DComponentList;
     UnorderedMap<GameObjectTypeEnum, GameObjectBehavior> ComponentBehaviorMap;
-
-    GameObjectSystem();
-    ~GameObjectSystem();
 
     DLL_EXPORT uint32 GetNextGameObjectIndex();
     DLL_EXPORT void*  LoadObjectData(GameObjectTypeEnum gameObjectType);
@@ -73,4 +79,9 @@ public:
     DLL_EXPORT Vector<Transform2DComponent> GetTransform2DComponentList();
     DLL_EXPORT Vector<InputComponent> GetInputComponentList();
 };
-DLL_EXPORT extern GameObjectSystem gameObjectSystem;
+extern DLL_EXPORT GameObjectSystem& gameObjectSystem;
+inline GameObjectSystem& GameObjectSystem::Get()
+{
+    static GameObjectSystem instance;
+    return instance;
+}

@@ -1,13 +1,23 @@
 #pragma once
 #include "Platform.h"
-#include "VulkanRenderer.h"
+#include "VulkanSystem.h"
 #include "VulkanRenderPass.h"
 #include "VulkanPipeline.h"
 
 class RenderSystem
 {
     friend class JsonRenderPass;
+public:
+    static RenderSystem& Get();
+
 private:
+    RenderSystem() = default;
+    ~RenderSystem() = default;
+    RenderSystem(const RenderSystem&) = delete;
+    RenderSystem& operator=(const RenderSystem&) = delete;
+    RenderSystem(RenderSystem&&) = delete;
+    RenderSystem& operator=(RenderSystem&&) = delete;
+
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
@@ -17,9 +27,6 @@ private:
 
 public:
     VkCommandBufferBeginInfo                                      CommandBufferBeginInfo;
-
-    RenderSystem();
-    ~RenderSystem();
 
     DLL_EXPORT void              StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution);
@@ -45,4 +52,9 @@ public:
     Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
 };
-extern DLL_EXPORT RenderSystem renderSystem;
+extern DLL_EXPORT RenderSystem& renderSystem;
+inline RenderSystem& RenderSystem::Get()
+{
+    static RenderSystem instance;
+    return instance;
+}

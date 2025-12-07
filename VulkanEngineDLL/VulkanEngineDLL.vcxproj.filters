@@ -99,9 +99,6 @@
     <ClInclude Include="MeshSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -120,11 +117,11 @@
     <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="VulkanRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -187,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="VulkanError.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 #include "LevelSystem.h"
 #include "GameObjectSystem.h"
 
-LevelSystem levelSystem = LevelSystem();
+LevelSystem& levelSystem = LevelSystem::Get();
 
 LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
 {

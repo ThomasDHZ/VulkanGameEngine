@@ -32,12 +32,21 @@ struct Material
 
 class MaterialSystem
 {
+public:
+    static MaterialSystem& Get();
+
 private:
+    MaterialSystem() = default;
+    ~MaterialSystem() = default;
+    MaterialSystem(const MaterialSystem&) = delete;
+    MaterialSystem& operator=(const MaterialSystem&) = delete;
+    MaterialSystem(MaterialSystem&&) = delete;
+    MaterialSystem& operator=(MaterialSystem&&) = delete;
+
     UnorderedMap<MaterialGuid, Material> MaterialMap;
     void Material_DestroyBuffer(VulkanBuffer& materialBuffer);
+
 public:
-    MaterialSystem();
-    ~MaterialSystem();
     DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
     DLL_EXPORT const bool MaterialMapExists(const MaterialGuid& materialGuid) const;
@@ -47,4 +56,9 @@ public:
     DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
     DLL_EXPORT void DestroyAllMaterials();
 };
-extern DLL_EXPORT MaterialSystem materialSystem;
+extern DLL_EXPORT MaterialSystem& materialSystem;
+inline MaterialSystem& MaterialSystem::Get()
+{
+    static MaterialSystem instance;
+    return instance;
+}

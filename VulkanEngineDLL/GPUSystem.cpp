@@ -1,5 +1,6 @@
 #include "GPUSystem.h"
-GPUSystem gpuSystem = GPUSystem();
+
+GPUSystem& gpuSystem = GPUSystem::Get();
 
 bool GPUSystem::CheckRayTracingCompatiblity(VkPhysicalDevice gpuDevice)
 {
@@ -51,14 +52,6 @@ VkSampleCountFlagBits GPUSystem::GetMaxUsableSampleCount(VkPhysicalDevice gpuDev
 	if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
 	if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
 	return VK_SAMPLE_COUNT_1_BIT;
-}
-
-GPUSystem::GPUSystem()
-{
-}
-
-GPUSystem::~GPUSystem()
-{
 }
 
 void GPUSystem::StartUp()

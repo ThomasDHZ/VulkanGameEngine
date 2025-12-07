@@ -1,19 +1,7 @@
 #include "MemorySystem.h"
 #include <algorithm>
 
-MemorySystem memorySystem = MemorySystem();
-
-MemorySystem::MemorySystem() 
-{
-    #ifdef _DEBUG
-        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    #endif
-}
-
-MemorySystem::~MemorySystem()
-{
-
-}
+MemorySystem& memorySystem = MemorySystem::Get();
 
 const char* MemorySystem::AddPtrBuffer(const char* str, const char* file, int line, const char* func, const char* notes) 
 {

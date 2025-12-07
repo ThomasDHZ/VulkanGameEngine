@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Platform.h"
 #include "InputEnum.h"
 #ifdef __ANDROID__
@@ -8,43 +8,45 @@
 	class VulkanSystem
 	{
 		public:
+			static VulkanSystem& Get();  
 
-			uint32	           ApiVersion = VK_API_VERSION_1_1;
-			VkInstance         Instance = VK_NULL_HANDLE;
-			VkDevice           Device = VK_NULL_HANDLE;
-			VkPhysicalDevice   PhysicalDevice = VK_NULL_HANDLE;
-			VkSurfaceKHR       Surface = VK_NULL_HANDLE;
-			VkCommandPool      CommandPool = VK_NULL_HANDLE;
+			uint32_t                 ApiVersion = VK_API_VERSION_1_1;
+			VkInstance               Instance = VK_NULL_HANDLE;
+			VkDevice                 Device = VK_NULL_HANDLE;
+			VkPhysicalDevice         PhysicalDevice = VK_NULL_HANDLE;
+			VkSurfaceKHR             Surface = VK_NULL_HANDLE;
+			VkCommandPool            CommandPool = VK_NULL_HANDLE;
 			VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 
-			VkFence* InFlightFences = VK_NULL_HANDLE;
-			VkSemaphore* AcquireImageSemaphores = VK_NULL_HANDLE;
-			VkSemaphore* PresentImageSemaphores = VK_NULL_HANDLE;
-			VkImage* SwapChainImages = VK_NULL_HANDLE;
-			VkImageView* SwapChainImageViews = VK_NULL_HANDLE;
-			VkSwapchainKHR     Swapchain = VK_NULL_HANDLE;
-			VkExtent2D         SwapChainResolution;
+			VkFence* InFlightFences = nullptr;
+			VkSemaphore* AcquireImageSemaphores = nullptr;
+			VkSemaphore* PresentImageSemaphores = nullptr;
 
-			size_t			   SwapChainImageCount = UINT64_MAX;
-			uint32			   ImageIndex = UINT32_MAX;
-			uint32			   CommandIndex = UINT32_MAX;
-			uint32			   GraphicsFamily = UINT32_MAX;
-			uint32			   PresentFamily = UINT32_MAX;
+			VkImage* SwapChainImages = nullptr;
+			VkImageView* SwapChainImageViews = nullptr;
+			VkSwapchainKHR Swapchain = VK_NULL_HANDLE;
 
-			VkQueue			   GraphicsQueue = VK_NULL_HANDLE;
-			VkQueue			   PresentQueue = VK_NULL_HANDLE;
-			VkFormat           Format;
-			VkColorSpaceKHR    ColorSpace;
-			VkPresentModeKHR   PresentMode;
+			VkExtent2D   SwapChainResolution{};
+			size_t       SwapChainImageCount = UINT64_MAX;
 
-			bool               RebuildRendererFlag;
+			uint32_t     ImageIndex = UINT32_MAX;
+			uint32_t     CommandIndex = UINT32_MAX;
+			uint32_t     GraphicsFamily = UINT32_MAX;
+			uint32_t     PresentFamily = UINT32_MAX;
+
+			VkQueue      GraphicsQueue = VK_NULL_HANDLE;
+			VkQueue      PresentQueue = VK_NULL_HANDLE;
+
+			VkFormat          Format = VK_FORMAT_UNDEFINED;
+			VkColorSpaceKHR   ColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+			VkPresentModeKHR  PresentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+			bool RebuildRendererFlag = false;
 
 #if defined(__ANDROID__)
 			PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress;
 #endif
 
-			VulkanSystem();
-			~VulkanSystem();
 
 
 			DLL_EXPORT VkInstance		  CreateVulkanInstance();
@@ -106,10 +108,20 @@
 			void						DestroyPipeline(VkDevice device, VkPipeline* pipeline);
 			void						DestroyPipelineLayout(VkDevice device, VkPipelineLayout* pipelineLayout);
 			void						DestroyPipelineCache(VkDevice device, VkPipelineCache* pipelineCache);
+            
+private:
+	// Prevent anyone from creating/destroying copies
+	VulkanSystem() = default;
+	~VulkanSystem() = default;
+	VulkanSystem(const VulkanSystem&) = delete;
+	VulkanSystem& operator=(const VulkanSystem&) = delete;
+	VulkanSystem(VulkanSystem&&) = delete;
+	VulkanSystem& operator=(VulkanSystem&&) = delete;
+};
 
-
-#if defined(__ANDROID__)
-	PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress;
-#endif
-	};
-	extern DLL_EXPORT VulkanSystem vulkanSystem;
+extern DLL_EXPORT VulkanSystem& vulkanSystem;
+inline VulkanSystem& VulkanSystem::Get()
+{
+	static VulkanSystem instance;
+	return instance;
+}

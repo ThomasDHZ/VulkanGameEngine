@@ -3,15 +3,7 @@
 #include "BufferSystem.h"
 #include "ShaderSystem.h"
 
-MaterialSystem materialSystem;
-
-MaterialSystem::MaterialSystem()
-{
-}
-
-MaterialSystem::~MaterialSystem()
-{
-}
+MaterialSystem& materialSystem = MaterialSystem::Get();
 
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 {

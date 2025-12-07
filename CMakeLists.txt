@@ -138,7 +138,7 @@ endif()
 
 add_library(VulkanEngineDLL SHARED
     VulkanEngineDLL/Platform.cpp
-    VulkanEngineDLL/VulkanRenderer.cpp
+    VulkanEngineDLL/VulkanSystem.cpp
     VulkanEngineDLL/RenderSystem.cpp
     VulkanEngineDLL/TextureSystem.cpp
     VulkanEngineDLL/MeshSystem.cpp

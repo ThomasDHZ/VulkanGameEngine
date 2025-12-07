@@ -6,15 +6,22 @@
 
 class DebugSystem
 {
-	private:
+public:
+	static DebugSystem& Get();
+
+private:
+	DebugSystem() = default;
+	~DebugSystem() = default;
+	DebugSystem(const DebugSystem&) = delete;
+	DebugSystem& operator=(const DebugSystem&) = delete;
+	DebugSystem(DebugSystem&&) = delete;
+	DebugSystem& operator=(DebugSystem&&) = delete;
+
 #if defined(_WIN32)
 		bool TryLoadRenderDocAPI();
 #endif
 
 	public:
-		DebugSystem();
-		~DebugSystem();
-
 #if defined(_WIN32)
 		RENDERDOC_API_1_6_0* RenderDocAPI = nullptr;
 		bool UsingRenderDoc = false;
@@ -23,7 +30,12 @@ class DebugSystem
 
 		DLL_EXPORT void SetRootDirectory(const String& engineRoot);
 };
-extern DLL_EXPORT DebugSystem debugSystem;
+extern DLL_EXPORT DebugSystem& debugSystem;
+inline DebugSystem& DebugSystem::Get()
+{
+	static DebugSystem instance;
+	return instance;
+}
 
 
 #ifdef __cplusplus

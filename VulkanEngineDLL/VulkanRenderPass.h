@@ -3,7 +3,7 @@
 #include "JsonStruct.h"
 #include "JsonLoader.h"
 #include "MemorySystem.h"
-#include "VulkanRenderer.h"
+#include "VulkanSystem.h"
 #include "TextureSystem.h"
 
 #ifdef __cplusplus

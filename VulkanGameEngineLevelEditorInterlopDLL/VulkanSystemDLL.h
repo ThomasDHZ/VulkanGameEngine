@@ -1,5 +1,5 @@
 #pragma once
-#include <VulkanRenderer.h>
+#include <VulkanSystem.h>
 
 typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
 

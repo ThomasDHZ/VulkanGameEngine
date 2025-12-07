@@ -11,15 +11,7 @@
 #include <libgen.h>
 #endif
 
-DebugSystem debugSystem = DebugSystem();
-
-DebugSystem::DebugSystem()
-{
-}
-
-DebugSystem::~DebugSystem()
-{
-}
+DebugSystem& debugSystem = DebugSystem::Get();
 
 #if defined(_WIN32)
 bool DebugSystem::TryLoadRenderDocAPI()

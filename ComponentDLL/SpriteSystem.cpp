@@ -2,19 +2,7 @@
 #include "SpriteSystem.h"
 #include "Vertex.h"
 
-SpriteSystem spriteSystem = SpriteSystem();
-
-SpriteSystem::SpriteSystem()
-{
-    SpriteList.reserve(5);
-    SpriteInstanceList.reserve(5);
-    SpriteLayerList.reserve(5);
-}
-
-SpriteSystem::~SpriteSystem()
-{
-
-}
+SpriteSystem& spriteSystem = SpriteSystem::Get();
 
 uint32 SpriteSystem::GetNextSpriteIndex()
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "VulkanRenderer.h"
+#include "VulkanSystem.h"
 #include "JsonStruct.h"
 #include "ShaderSystem.h"
 

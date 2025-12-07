@@ -3,7 +3,7 @@
 #include "SpriteSystem.h"
 #include "MegaManObject.h"
 
-GameObjectSystem gameObjectSystem = GameObjectSystem();
+GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
 uint32 GameObjectSystem::GetNextGameObjectIndex()
 {
@@ -92,14 +92,6 @@ void GameObjectSystem::LoadComponentTable(GameObject& gameObject, vec2& objectPo
         gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
         spriteSystem.AddSprite(gameObject, vramId);
     }
-}
-
-GameObjectSystem::GameObjectSystem()
-{
-}
-
-GameObjectSystem::~GameObjectSystem()
-{
 }
 
 void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition)

@@ -4,14 +4,7 @@
 #include "LevelSystem.h"
 #include "Keyboard.h"
 
-InputSystem inputSystem = InputSystem();
-InputSystem::InputSystem()
-{
-}
-
-InputSystem::~InputSystem()
-{
-}
+InputSystem& inputSystem = InputSystem::Get();
 
 void InputSystem::Update(const float& deltaTime)
 {

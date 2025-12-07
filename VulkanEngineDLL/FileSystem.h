@@ -15,15 +15,22 @@ typedef struct fileState
 
 class FileSystem
 {
+public:
+	static FileSystem& Get();
+
 private:
+	FileSystem() = default;
+	~FileSystem() = default;
+	FileSystem(const FileSystem&) = delete;
+	FileSystem& operator=(const FileSystem&) = delete;
+	FileSystem(FileSystem&&) = delete;
+	FileSystem& operator=(FileSystem&&) = delete;
+
 #if defined(__ANDROID__)
     static inline AAssetManager* g_AssetManager = nullptr;
 #endif
 
 public:
-	FileSystem() {};
-	~FileSystem() {};
-
 	DLL_EXPORT const char*	  ReadFile(const String& filePath);
 	DLL_EXPORT Vector<byte>	  LoadAssetFile(const String& filePath);
 	DLL_EXPORT bool			  WriteFile(void* fileInfo, size_t size, const String& filePath);
@@ -43,5 +50,10 @@ public:
 	DLL_EXPORT void LoadAndroidAssetManager(AAssetManager* androidAssetManager);
 #endif
 };
-extern DLL_EXPORT FileSystem fileSystem;
+extern DLL_EXPORT FileSystem& fileSystem;
+inline FileSystem& FileSystem::Get()
+{
+	static FileSystem instance;
+	return instance;
+}
 

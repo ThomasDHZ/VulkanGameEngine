@@ -10,17 +10,7 @@
 #include <stb/stb_image.h> 
 #include <stb/stb_image_write.h>
 
-TextureSystem textureSystem = TextureSystem();
-
-TextureSystem::TextureSystem()
-{
-
-}
-
-TextureSystem::~TextureSystem()
-{
-
-}
+TextureSystem& textureSystem = TextureSystem::Get();
 
 VkGuid TextureSystem::CreateTexture(const String& texturePath)
 {

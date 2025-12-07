@@ -2,17 +2,7 @@
 #include "BufferSystem.h"
 #include "MaterialSystem.h"
 
-MeshSystem meshSystem = MeshSystem();
-
-MeshSystem::MeshSystem()
-{
-
-}
-
-MeshSystem::~MeshSystem()
-{
-
-}
+MeshSystem& meshSystem = MeshSystem::Get();
 
 uint32 MeshSystem::GetNextMeshIndex()
 {

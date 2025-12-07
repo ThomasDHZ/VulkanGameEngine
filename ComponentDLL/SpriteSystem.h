@@ -46,6 +46,17 @@ struct Sprite
 
 class SpriteSystem
 {
+public:
+    static SpriteSystem& Get();
+
+private:
+    SpriteSystem() = default;
+    ~SpriteSystem() = default;
+    SpriteSystem(const SpriteSystem&) = delete;
+    SpriteSystem operator=(const SpriteSystem&) = delete;
+    SpriteSystem(SpriteSystem&&) = delete;
+    SpriteSystem& operator=(SpriteSystem&&) = delete;
+
 private:
 
     Vector<uint32>				                      FreeSpriteIndicesList;
@@ -66,9 +77,6 @@ public:
     Vector<SpriteVram>                                SpriteVramList;
     UnorderedMap<SpriteLayerId, SpriteLayer>          SpriteLayerList;
 
-    SpriteSystem();
-    ~SpriteSystem();
-
     DLL_EXPORT void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
     DLL_EXPORT VkGuid LoadSpriteVRAM(const String& spriteVramPath);
     DLL_EXPORT void Update(float deltaTime);
@@ -80,4 +88,9 @@ public:
     DLL_EXPORT Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
     DLL_EXPORT void Destroy();
 };
-DLL_EXPORT extern SpriteSystem spriteSystem;
+extern DLL_EXPORT SpriteSystem& spriteSystem;
+inline SpriteSystem& SpriteSystem::Get()
+{
+    static SpriteSystem instance;
+    return instance;
+}

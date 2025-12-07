@@ -13,7 +13,7 @@
 #endif
 #include "stb_image.h"
 
-FileSystem fileSystem = FileSystem();
+FileSystem& fileSystem = FileSystem::Get();
 
 
 Vector<String> FileSystem::GetFilesFromDirectory(const String& fileDirectory)

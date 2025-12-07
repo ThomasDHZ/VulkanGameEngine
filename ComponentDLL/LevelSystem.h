@@ -45,7 +45,17 @@ struct LevelLayer
 
 class LevelSystem
 {
-    private:
+public:
+    static LevelSystem& Get();
+
+private:
+    LevelSystem() = default;
+    ~LevelSystem() = default;
+    LevelSystem(const LevelSystem&) = delete;
+    LevelSystem& operator=(const LevelSystem&) = delete;
+    LevelSystem(LevelSystem&&) = delete;
+    LevelSystem& operator=(LevelSystem&&) = delete;
+
         bool WireframeModeFlag = false;
 
         LevelLayer  LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
@@ -68,9 +78,6 @@ class LevelSystem
         RenderPassGuid frameBufferId;
         RenderPassGuid gaussianBlurRenderPassId;
 
-        LevelSystem() {}
-        ~LevelSystem() {}
-
         DLL_EXPORT void                 Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime);
         DLL_EXPORT VkCommandBuffer      RenderBloomPass(VkGuid& renderPassId);
         DLL_EXPORT VkCommandBuffer      RenderFrameBuffer(VkGuid& renderPassId);
@@ -83,4 +90,9 @@ class LevelSystem
         DLL_EXPORT Vector<Vector<uint>> GetLevelTileMapList();
         DLL_EXPORT Vector<LevelTileSet> GetLevelTileSetList();
 };
-DLL_EXPORT extern LevelSystem levelSystem;
+extern DLL_EXPORT LevelSystem& levelSystem;
+inline LevelSystem& LevelSystem::Get()
+{
+    static LevelSystem instance;
+    return instance;
+}

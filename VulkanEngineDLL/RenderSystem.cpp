@@ -4,17 +4,7 @@
 #include "BufferSystem.h"
 #include <iostream>
 
-RenderSystem renderSystem = RenderSystem();
-
-RenderSystem::RenderSystem() 
-{
-
-}
-
-RenderSystem::~RenderSystem() 
-{
-
-}
+RenderSystem& renderSystem = RenderSystem::Get();
 
 void RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
