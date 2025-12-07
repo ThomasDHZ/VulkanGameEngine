@@ -44,7 +44,7 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 
     SetUpSwapChain(windowHandle);
     vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
-    SetUpSemaphores(vulkanSystem.Device, vulkanSystem.InFlightFences, vulkanSystem.AcquireImageSemaphores, vulkanSystem.PresentImageSemaphores, vulkanSystem.SwapChainImageCount);
+    SetUpSemaphores();
     GetDeviceQueue(vulkanSystem.Device, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily, vulkanSystem.GraphicsQueue, vulkanSystem.PresentQueue);
 }
 
@@ -96,11 +96,8 @@ void VulkanSystem::SetUpSwapChain(void* windowHandle)
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
     SetUpSwapChain();
-    vulkanSystem.SwapChainImages = SetUpSwapChainImages(vulkanSystem.Device, vulkanSystem.Swapchain, static_cast<uint32>(vulkanSystem.SwapChainImageCount));
-    vulkanSystem.SwapChainImageViews = SetUpSwapChainImageViews(vulkanSystem.Device, vulkanSystem.SwapChainImages, vulkanSystem.SwapChainImageCount, swapChainImageFormat);
-    vulkanSystem.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(vulkanSystem.SwapChainImageCount, __FILE__, __LINE__, __func__);
-    vulkanSystem.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(vulkanSystem.SwapChainImageCount, __FILE__, __LINE__, __func__);
-    vulkanSystem.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(vulkanSystem.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    SetUpSwapChainImages();
+    SetUpSwapChainImageViews(swapChainImageFormat);
 }
 
  void VulkanSystem::DestroyRenderer()
@@ -113,12 +110,6 @@ void VulkanSystem::SetUpSwapChain(void* windowHandle)
      DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
      DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);
      DestroyInstance(&vulkanSystem.Instance);
-
-     memorySystem.DeletePtr(vulkanSystem.InFlightFences);
-     memorySystem.DeletePtr(vulkanSystem.AcquireImageSemaphores);
-     memorySystem.DeletePtr(vulkanSystem.PresentImageSemaphores);
-     memorySystem.DeletePtr(vulkanSystem.SwapChainImages);
-     memorySystem.DeletePtr(vulkanSystem.SwapChainImageViews);
  }
 
   VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
@@ -813,8 +804,9 @@ void VulkanSystem::SetUpSwapChain()
         extent.height = std::clamp(static_cast<uint32>(configSystem.WindowResolution.y), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
     }
 
-    vulkanSystem.SwapChainResolution = extent;
-    vulkanSystem.SwapChainImageCount = imageCount;
+    SwapChainResolution = extent;
+    SwapChainImageCount = imageCount;
+	MaxFramesInFlight = SwapChainImageCount;
 
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
@@ -852,23 +844,23 @@ void VulkanSystem::SetUpSwapChain()
     VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(vulkanSystem.Device, &SwapChainCreateInfo, nullptr, &vulkanSystem.Swapchain));
 }
 
-VkImage* VulkanSystem::SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount)
+void VulkanSystem::SetUpSwapChainImages()
 {
-    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, nullptr));
-    VkImage* swapChainImageList = memorySystem.AddPtrBuffer<VkImage>(swapChainImageCount, __FILE__, __LINE__, __func__);
-    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(device, swapChain, &swapChainImageCount, swapChainImageList));
-    return swapChainImageList;
+    uint32 swapChainImageCount = UINT32_MAX;
+    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(Device, Swapchain, &swapChainImageCount, nullptr));
+	SwapChainImages.resize(swapChainImageCount);
+    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(Device, Swapchain, &swapChainImageCount, SwapChainImages.data()));
 }
 
-VkImageView* VulkanSystem::SetUpSwapChainImageViews(VkDevice device, VkImage* swapChainImageList, size_t swapChainImageCount, VkSurfaceFormatKHR swapChainImageFormat)
+void VulkanSystem::SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat)
 {
-    VkImageView* imageViews = memorySystem.AddPtrBuffer<VkImageView>(swapChainImageCount, __FILE__, __LINE__, __func__);
-    for (size_t x = 0; x < swapChainImageCount; x++)
+	SwapChainImageViews.resize(SwapChainImageCount, VK_NULL_HANDLE);
+    for (size_t x = 0; x < SwapChainImageCount; x++)
     {
         VkImageViewCreateInfo swapChainViewInfo =
         {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = swapChainImageList[x],
+            .image = SwapChainImages[x],
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
             .format = swapChainImageFormat.format,
             .subresourceRange =
@@ -880,14 +872,11 @@ VkImageView* VulkanSystem::SetUpSwapChainImageViews(VkDevice device, VkImage* sw
                 .layerCount = 1
             }
         };
-        VULKAN_THROW_IF_FAIL(vkCreateImageView(device, &swapChainViewInfo, nullptr, &imageViews[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateImageView(Device, &swapChainViewInfo, nullptr, &SwapChainImageViews[x]));
     }
-
-    return imageViews;
 }
 
-
-void VulkanSystem::SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, int maxFramesInFlight)
+void VulkanSystem::SetUpSemaphores()
 {
     VkSemaphoreTypeCreateInfo semaphoreTypeCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
@@ -906,11 +895,15 @@ void VulkanSystem::SetUpSemaphores(VkDevice device, VkFence* inFlightFences, VkS
         .flags = VK_FENCE_CREATE_SIGNALED_BIT
     };
 
-    for (int x = 0; x < maxFramesInFlight; x++)
+
+	InFlightFences.resize(MaxFramesInFlight, VK_NULL_HANDLE);
+	AcquireImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
+	PresentImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
+    for (int x = 0; x < MaxFramesInFlight; x++)
     {
-        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &acquireImageSemaphores[x]));
-        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(device, &semaphoreCreateInfo, NULL, &presentImageSemaphores[x]));
-        VULKAN_THROW_IF_FAIL(vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateFence(Device, &fenceInfo, NULL, &InFlightFences[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(Device, &semaphoreCreateInfo, NULL, &AcquireImageSemaphores[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(Device, &semaphoreCreateInfo, NULL, &PresentImageSemaphores[x]));
     }
 }
 
