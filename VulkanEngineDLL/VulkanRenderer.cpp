@@ -12,7 +12,6 @@
 #include <vulkan/vulkan_android.h>
 #endif
 
-GraphicsRenderer renderer = GraphicsRenderer();
 VulkanSystem vulkanSystem = VulkanSystem();
 
 uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
@@ -28,13 +27,13 @@ uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 
 void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
-    renderer.ImageIndex = 0;
-    renderer.CommandIndex = 0;
-    renderer.RebuildRendererFlag = false;
-    renderer.Instance = instance;
-    renderer.Surface = surface;
-    renderer.PhysicalDevice = SetUpPhysicalDevice(renderer.Instance, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
-    renderer.Device = SetUpDevice(renderer.PhysicalDevice, renderer.GraphicsFamily, renderer.PresentFamily);
+    vulkanSystem.ImageIndex = 0;
+    vulkanSystem.CommandIndex = 0;
+    vulkanSystem.RebuildRendererFlag = false;
+    vulkanSystem.Instance = instance;
+    vulkanSystem.Surface = surface;
+    vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+    vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
 
 #if defined(__ANDROID__)
     vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)vkGetDeviceProcAddr(Device, "vkGetBufferDeviceAddress");
@@ -44,16 +43,16 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 #endif
 
     SetUpSwapChain(windowHandle);
-    renderer.CommandPool = SetUpCommandPool(renderer.Device, renderer.GraphicsFamily);
-    SetUpSemaphores(renderer.Device, renderer.InFlightFences, renderer.AcquireImageSemaphores, renderer.PresentImageSemaphores, renderer.SwapChainImageCount);
-    GetDeviceQueue(renderer.Device, renderer.GraphicsFamily, renderer.PresentFamily, renderer.GraphicsQueue, renderer.PresentQueue);
+    vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
+    SetUpSemaphores(vulkanSystem.Device, vulkanSystem.InFlightFences, vulkanSystem.AcquireImageSemaphores, vulkanSystem.PresentImageSemaphores, vulkanSystem.SwapChainImageCount);
+    GetDeviceQueue(vulkanSystem.Device, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily, vulkanSystem.GraphicsQueue, vulkanSystem.PresentQueue);
 }
 
 void VulkanSystem::RebuildSwapChain(void* windowHandle)
 {
-    vkDeviceWaitIdle(renderer.Device);
-    DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
-    DestroySwapChain(renderer.Device, &renderer.Swapchain);
+    vkDeviceWaitIdle(vulkanSystem.Device);
+    DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
+    DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
 
     SetUpSwapChain(windowHandle);
 }
@@ -65,7 +64,7 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
     int height;
     glfwGetFramebufferSize((GLFWwindow*)windowHandle, &width, &height);
 
-    surfaceCapabilities = GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
+    surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
     if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
     {
         return surfaceCapabilities.currentExtent;
@@ -89,37 +88,37 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
 void VulkanSystem::SetUpSwapChain(void* windowHandle)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
     VkExtent2D extent = SetUpSwapChainExtent(windowHandle, surfaceCapabilities);
-    GetQueueFamilies(renderer.PhysicalDevice, renderer.Surface, renderer.GraphicsFamily, renderer.PresentFamily);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
+    GetQueueFamilies(vulkanSystem.PhysicalDevice, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
     SetUpSwapChain();
-    renderer.SwapChainImages = SetUpSwapChainImages(renderer.Device, renderer.Swapchain, static_cast<uint32>(renderer.SwapChainImageCount));
-    renderer.SwapChainImageViews = SetUpSwapChainImageViews(renderer.Device, renderer.SwapChainImages, renderer.SwapChainImageCount, swapChainImageFormat);
-    renderer.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
-    renderer.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
-    renderer.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(renderer.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    vulkanSystem.SwapChainImages = SetUpSwapChainImages(vulkanSystem.Device, vulkanSystem.Swapchain, static_cast<uint32>(vulkanSystem.SwapChainImageCount));
+    vulkanSystem.SwapChainImageViews = SetUpSwapChainImageViews(vulkanSystem.Device, vulkanSystem.SwapChainImages, vulkanSystem.SwapChainImageCount, swapChainImageFormat);
+    vulkanSystem.InFlightFences = memorySystem.AddPtrBuffer<VkFence>(vulkanSystem.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    vulkanSystem.AcquireImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(vulkanSystem.SwapChainImageCount, __FILE__, __LINE__, __func__);
+    vulkanSystem.PresentImageSemaphores = memorySystem.AddPtrBuffer<VkSemaphore>(vulkanSystem.SwapChainImageCount, __FILE__, __LINE__, __func__);
 }
 
  void VulkanSystem::DestroyRenderer()
  {
-     DestroySwapChainImageView(renderer.Device, renderer.Surface, &renderer.SwapChainImageViews[0], renderer.SwapChainImageCount);
-     DestroySwapChain(renderer.Device, &renderer.Swapchain);
-     DestroyFences(renderer.Device, &renderer.AcquireImageSemaphores[0], &renderer.PresentImageSemaphores[0], &renderer.InFlightFences[0], renderer.SwapChainImageCount);
-     DestroyCommandPool(renderer.Device, &renderer.CommandPool);
-     DestroyDevice(renderer.Device);
-     DestroyDebugger(&renderer.Instance, renderer.DebugMessenger);
-     DestroySurface(renderer.Instance, &renderer.Surface);
-     DestroyInstance(&renderer.Instance);
+     DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
+     DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
+     DestroyFences(vulkanSystem.Device, &vulkanSystem.AcquireImageSemaphores[0], &vulkanSystem.PresentImageSemaphores[0], &vulkanSystem.InFlightFences[0], vulkanSystem.SwapChainImageCount);
+     DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
+     DestroyDevice(vulkanSystem.Device);
+     DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
+     DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);
+     DestroyInstance(&vulkanSystem.Instance);
 
-     memorySystem.DeletePtr(renderer.InFlightFences);
-     memorySystem.DeletePtr(renderer.AcquireImageSemaphores);
-     memorySystem.DeletePtr(renderer.PresentImageSemaphores);
-     memorySystem.DeletePtr(renderer.SwapChainImages);
-     memorySystem.DeletePtr(renderer.SwapChainImageViews);
+     memorySystem.DeletePtr(vulkanSystem.InFlightFences);
+     memorySystem.DeletePtr(vulkanSystem.AcquireImageSemaphores);
+     memorySystem.DeletePtr(vulkanSystem.PresentImageSemaphores);
+     memorySystem.DeletePtr(vulkanSystem.SwapChainImages);
+     memorySystem.DeletePtr(vulkanSystem.SwapChainImageViews);
  }
 
   VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
@@ -396,7 +395,7 @@ VkInstance VulkanSystem::CreateVulkanInstance()
     PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func)
     {
-        func(instance, &debugInfo, nullptr, &renderer.DebugMessenger);
+        func(instance, &debugInfo, nullptr, &vulkanSystem.DebugMessenger);
     }
 #endif
 
@@ -794,9 +793,9 @@ Vector<VkPresentModeKHR> VulkanSystem::GetPhysicalDevicePresentModes(VkPhysicalD
 
 void VulkanSystem::SetUpSwapChain()
 {
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(renderer.PhysicalDevice, renderer.Surface);
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(renderer.PhysicalDevice, renderer.Surface);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(renderer.PhysicalDevice, renderer.Surface);
+    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
@@ -814,14 +813,14 @@ void VulkanSystem::SetUpSwapChain()
         extent.height = std::clamp(static_cast<uint32>(configSystem.WindowResolution.y), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
     }
 
-    renderer.SwapChainResolution = extent;
-    renderer.SwapChainImageCount = imageCount;
+    vulkanSystem.SwapChainResolution = extent;
+    vulkanSystem.SwapChainImageCount = imageCount;
 
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = renderer.Surface,
-        .minImageCount = static_cast<uint32>(renderer.SwapChainImageCount),
+        .surface = vulkanSystem.Surface,
+        .minImageCount = static_cast<uint32>(vulkanSystem.SwapChainImageCount),
         .imageFormat = swapChainImageFormat.format,
         .imageColorSpace = swapChainImageFormat.colorSpace,
         .imageExtent = extent,
@@ -831,15 +830,15 @@ void VulkanSystem::SetUpSwapChain()
         .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         .presentMode = swapChainPresentMode,
         .clipped = VK_TRUE,
-        .oldSwapchain = renderer.Swapchain
+        .oldSwapchain = vulkanSystem.Swapchain
     };
 
-    if (renderer.GraphicsFamily != renderer.PresentFamily)
+    if (vulkanSystem.GraphicsFamily != vulkanSystem.PresentFamily)
     {
         Vector<uint32> queueFamilyIndices = 
         { 
-            renderer.GraphicsFamily,
-            renderer.PresentFamily
+            vulkanSystem.GraphicsFamily,
+            vulkanSystem.PresentFamily
         };
 
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -850,7 +849,7 @@ void VulkanSystem::SetUpSwapChain()
     {
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
-    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(renderer.Device, &SwapChainCreateInfo, nullptr, &renderer.Swapchain));
+    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(vulkanSystem.Device, &SwapChainCreateInfo, nullptr, &vulkanSystem.Swapchain));
 }
 
 VkImage* VulkanSystem::SetUpSwapChainImages(VkDevice device, VkSwapchainKHR swapChain, uint32 swapChainImageCount)

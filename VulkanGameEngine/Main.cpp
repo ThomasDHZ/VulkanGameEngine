@@ -29,7 +29,7 @@
             vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
             gameSystem.StartUp(vulkanWindow);
 
-            // imGuirenderer. = ImGui_StartUp(renderer.);
+            // imGuivulkanSystem. = ImGui_StartUp(vulkanSystem.);
             while (!vulkanWindow->WindowShouldClose(vulkanWindow))
             {
                 const float frameTime = deltaTime.GetFrameTime();
@@ -40,7 +40,7 @@
                 gameSystem.Draw(frameTime);
                 deltaTime.EndFrameTime();
             }
-            vkDeviceWaitIdle(renderer.Device);
+            vkDeviceWaitIdle(vulkanSystem.Device);
             gameSystem.Destroy();
             vulkanWindow->DestroyWindow(vulkanWindow);
         }

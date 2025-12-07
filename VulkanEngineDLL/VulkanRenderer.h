@@ -5,47 +5,43 @@
 #include <android/log.h>
 #endif
 
-struct GraphicsRenderer
-{
-	uint32	           ApiVersion = VK_API_VERSION_1_1;
-	VkInstance         Instance = VK_NULL_HANDLE;
-	VkDevice           Device = VK_NULL_HANDLE;
-	VkPhysicalDevice   PhysicalDevice = VK_NULL_HANDLE;
-	VkSurfaceKHR       Surface = VK_NULL_HANDLE;
-	VkCommandPool      CommandPool = VK_NULL_HANDLE;
-	VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
-
-	VkFence* InFlightFences = VK_NULL_HANDLE;
-	VkSemaphore* AcquireImageSemaphores = VK_NULL_HANDLE;
-	VkSemaphore* PresentImageSemaphores = VK_NULL_HANDLE;
-	VkImage* SwapChainImages = VK_NULL_HANDLE;
-	VkImageView* SwapChainImageViews = VK_NULL_HANDLE;
-	VkSwapchainKHR     Swapchain = VK_NULL_HANDLE;
-	VkExtent2D         SwapChainResolution;
-
-	size_t			   SwapChainImageCount = UINT64_MAX;
-	uint32			   ImageIndex = UINT32_MAX;
-	uint32			   CommandIndex = UINT32_MAX;
-	uint32			   GraphicsFamily = UINT32_MAX;
-	uint32			   PresentFamily = UINT32_MAX;
-
-	VkQueue			   GraphicsQueue = VK_NULL_HANDLE;
-	VkQueue			   PresentQueue = VK_NULL_HANDLE;
-	VkFormat           Format;
-	VkColorSpaceKHR    ColorSpace;
-	VkPresentModeKHR   PresentMode;
-
-	bool               RebuildRendererFlag;
-
-#if defined(__ANDROID__)
-	PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress;
-#endif
-};
-extern DLL_EXPORT GraphicsRenderer renderer;
-
 	class VulkanSystem
 	{
 		public:
+
+			uint32	           ApiVersion = VK_API_VERSION_1_1;
+			VkInstance         Instance = VK_NULL_HANDLE;
+			VkDevice           Device = VK_NULL_HANDLE;
+			VkPhysicalDevice   PhysicalDevice = VK_NULL_HANDLE;
+			VkSurfaceKHR       Surface = VK_NULL_HANDLE;
+			VkCommandPool      CommandPool = VK_NULL_HANDLE;
+			VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
+
+			VkFence* InFlightFences = VK_NULL_HANDLE;
+			VkSemaphore* AcquireImageSemaphores = VK_NULL_HANDLE;
+			VkSemaphore* PresentImageSemaphores = VK_NULL_HANDLE;
+			VkImage* SwapChainImages = VK_NULL_HANDLE;
+			VkImageView* SwapChainImageViews = VK_NULL_HANDLE;
+			VkSwapchainKHR     Swapchain = VK_NULL_HANDLE;
+			VkExtent2D         SwapChainResolution;
+
+			size_t			   SwapChainImageCount = UINT64_MAX;
+			uint32			   ImageIndex = UINT32_MAX;
+			uint32			   CommandIndex = UINT32_MAX;
+			uint32			   GraphicsFamily = UINT32_MAX;
+			uint32			   PresentFamily = UINT32_MAX;
+
+			VkQueue			   GraphicsQueue = VK_NULL_HANDLE;
+			VkQueue			   PresentQueue = VK_NULL_HANDLE;
+			VkFormat           Format;
+			VkColorSpaceKHR    ColorSpace;
+			VkPresentModeKHR   PresentMode;
+
+			bool               RebuildRendererFlag;
+
+#if defined(__ANDROID__)
+			PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress;
+#endif
 
 			VulkanSystem();
 			~VulkanSystem();

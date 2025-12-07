@@ -234,7 +234,7 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 
 void SpriteSystem::Update(float deltaTime)
 {
-    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand(renderer.CommandPool);
+    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand(vulkanSystem.CommandPool);
     UpdateSprites(deltaTime);
     UpdateSpriteBatchLayers(deltaTime);
     renderSystem.EndSingleUseCommand(commandBuffer);
