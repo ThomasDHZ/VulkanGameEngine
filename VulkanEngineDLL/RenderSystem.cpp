@@ -1,8 +1,10 @@
 #include "RenderSystem.h"
+#include <vulkan/vulkan.h>
+#include <iostream>
 #include "MaterialSystem.h"
 #include "MeshSystem.h"
 #include "BufferSystem.h"
-#include <iostream>
+#include "from_json.h"
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -36,7 +38,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     }
 
     RenderPassAttachementTextures renderPassAttachments;
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass_CreateVulkanRenderPass(jsonPath.c_str(), renderPassAttachments, renderPassResolution);
+    VulkanRenderPass vulkanRenderPass = CreateVulkanRenderPass(jsonPath.c_str(), renderPassAttachments, renderPassResolution);
     renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
     renderSystem.RenderPassLoaderJsonMap[vulkanRenderPass.RenderPassId] = jsonPath;
 
@@ -51,7 +53,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     {
         nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList[x].c_str());
         ShaderPipelineDataDLL shaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline_CreateRenderPipeline(renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), shaderPiplineInfo));
+        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(CreateRenderPipeline(renderSystem.RenderPassMap[vulkanRenderPass.RenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), shaderPiplineInfo));
     }
     memorySystem.DeletePtr(renderPassAttachments.RenderPassTexture);
     memorySystem.DeletePtr(renderPassAttachments.DepthTexture);
@@ -76,7 +78,7 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, RenderPassGuid& spriteR
         }
 
         size_t size = renderedTextureList.size();
-        renderPass = VulkanRenderPass_RebuildSwapChain(renderPass, renderSystem.RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, *renderedTextureList.data(), size, depthTexture);
+        renderPass = RebuildSwapChain(renderPass, renderSystem.RenderPassLoaderJsonMap[renderPass.RenderPassId].c_str(), swapChainResolution, *renderedTextureList.data(), size, depthTexture);
     }
     // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
 }
@@ -95,7 +97,7 @@ void RenderSystem::DestroyRenderPasses()
 {
     for (auto& renderPass : renderSystem.RenderPassMap)
     {
-        VulkanRenderPass_DestroyRenderPass(renderPass.second);
+        DestroyRenderPass(renderPass.second);
     }
     renderSystem.RenderPassMap.clear();
 }
@@ -106,7 +108,7 @@ void RenderSystem::DestroyRenderPipelines()
     {
         for (auto& renderPipeline : renderPipelineList.second)
         {
-            VulkanPipeline_Destroy(renderPipeline);
+           DestroyPipeline(renderPipeline);
         }
     }
     renderSystem.RenderPipelineMap.clear();
@@ -437,4 +439,627 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     }
 
     return texturePropertiesBuffer;
+}
+
+VulkanPipeline RenderSystem::CreateRenderPipeline(VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
+{
+    nlohmann::json pipelineJson = fileSystem.LoadJsonFile(pipelineJsonFilePath);
+    RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
+    renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
+    renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;
+    renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
+    renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
+    renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
+    renderPipelineLoader.ShaderPiplineInfo = shaderPipelineData;
+
+    VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+    PipelineBindingData(renderPipelineLoader);
+    VkDescriptorPool descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
+    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
+    Vector<VkDescriptorSet> descriptorSetList = AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+    UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
+    VkPipelineLayout pipelineLayout = CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+    VkPipeline pipeline = CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+
+    return VulkanPipeline
+    {
+        .RenderPipelineId = renderPipelineLoader.PipelineId,
+        .DescriptorPool = descriptorPool,
+        .DescriptorSetLayoutList = descriptorSetLayoutList,
+        .DescriptorSetList = descriptorSetList,
+        .Pipeline = pipeline,
+        .PipelineLayout = pipelineLayout,
+        .PipelineCache = pipelineCache
+    };
+}
+
+VulkanPipeline RenderSystem::RebuildSwapChain(VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
+{
+    DestroyPipeline(oldPipeline);
+    return CreateRenderPipeline(vulkanRenderPass, pipelineJsonFilePath, shaderPipelineData);
+}
+
+void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
+{
+    vulkanPipeline.RenderPipelineId = VkGuid();
+    vulkanSystem.DestroyPipeline(vulkanSystem.Device, &vulkanPipeline.Pipeline);
+    vulkanSystem.DestroyPipelineLayout(vulkanSystem.Device, &vulkanPipeline.PipelineLayout);
+    vulkanSystem.DestroyPipelineCache(vulkanSystem.Device, &vulkanPipeline.PipelineCache);
+    vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &vulkanPipeline.DescriptorPool);
+}
+
+VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
+{
+    Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
+    for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
+    {
+        descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
+            {
+                .type = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescripterType,
+                .descriptorCount = static_cast<uint32>(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size())
+            });
+    }
+
+    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+    VkDescriptorPoolCreateInfo poolCreateInfo = VkDescriptorPoolCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .maxSets = static_cast<uint32>(descriptorPoolSizeList.size()) * 100,
+        .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
+        .pPoolSizes = descriptorPoolSizeList.data()
+    };
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolCreateInfo, nullptr, &descriptorPool));
+    return descriptorPool;
+}
+
+Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader)
+{
+    Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
+    for (auto& descriptorBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
+    {
+        descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
+            {
+                .binding = descriptorBinding.Binding,
+                .descriptorType = descriptorBinding.DescripterType,
+                .descriptorCount = static_cast<uint32>(descriptorBinding.DescriptorCount),
+                .stageFlags = descriptorBinding.ShaderStageFlags,
+                .pImmutableSamplers = nullptr
+            });
+    }
+
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList.size()),
+        .pBindings = descriptorSetLayoutBindingList.data()
+    };
+
+    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(1);
+    for (auto& descriptorSetLayout : descriptorSetLayoutList)
+    {
+        VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
+    }
+
+    return descriptorSetLayoutList;
+}
+
+Vector<VkDescriptorSet> RenderSystem::AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
+{
+    VkDescriptorSetAllocateInfo allocInfo = 
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .descriptorPool = descriptorPool,
+        .descriptorSetCount = static_cast<uint32>(descriptorSetLayoutCount),
+        .pSetLayouts = descriptorSetLayoutList
+    };
+
+    Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(1, VK_NULL_HANDLE);
+    for (auto& descriptorSet : descriptorSetList)
+    {
+        VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSet));
+    }
+    return descriptorSetList;
+}
+
+void RenderSystem::UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
+{
+    Span<VkDescriptorSet> descriptorSetLayouts(descriptorSetList, descriptorSetCount);
+    for (auto& descriptorSet : descriptorSetLayouts)
+    {
+        Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
+        for (auto& descriptorSetBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
+        {
+            writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+                {
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .pNext = nullptr,
+                    .dstSet = descriptorSet,
+                    .dstBinding = descriptorSetBinding.Binding,
+                    .dstArrayElement = 0,
+                    .descriptorCount = static_cast<uint32>(descriptorSetBinding.DescriptorCount),
+                    .descriptorType = descriptorSetBinding.DescripterType,
+                    .pImageInfo = descriptorSetBinding.DescriptorImageInfo.data(),
+                    .pBufferInfo = descriptorSetBinding.DescriptorBufferInfo.data(),
+                    .pTexelBufferView = nullptr
+                });
+        }
+        vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
+    }
+}
+
+VkPipelineLayout RenderSystem::CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
+{
+    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    Vector<VkPushConstantRange> pushConstantRangeList = Vector<VkPushConstantRange>();
+    if (!renderPipelineLoader.ShaderPiplineInfo.PushConstantList.empty())
+    {
+        pushConstantRangeList.emplace_back(VkPushConstantRange
+            {
+                .stageFlags = renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].ShaderStageFlags,
+                .offset = 0,
+                .size = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize)
+            });
+    }
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .setLayoutCount = static_cast<uint32>(descriptorSetLayoutCount),
+        .pSetLayouts = descriptorSetLayoutList,
+        .pushConstantRangeCount = static_cast<uint32>(pushConstantRangeList.size()),
+        .pPushConstantRanges = pushConstantRangeList.data()
+    };
+    VULKAN_THROW_IF_FAIL(vkCreatePipelineLayout(vulkanSystem.Device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+    return pipelineLayout;
+}
+
+VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
+{
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .vertexBindingDescriptionCount = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.VertexInputBindingList.size()),
+        .pVertexBindingDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputBindingList.data(),
+        .vertexAttributeDescriptionCount = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList.size()),
+        .pVertexAttributeDescriptions = renderPipelineLoader.ShaderPiplineInfo.VertexInputAttributeList.data()
+    };
+
+    for (auto& viewPort : renderPipelineLoader.ViewportList)
+    {
+        viewPort.width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x);
+        viewPort.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
+    }
+
+    for (auto& scissor : renderPipelineLoader.ScissorList)
+    {
+        scissor.extent.width = static_cast<float>(renderPipelineLoader.RenderPassResolution.x);
+        scissor.extent.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
+    }
+
+    VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = VkPipelineViewportStateCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .viewportCount = static_cast<uint32>(renderPipelineLoader.ViewportList.size() + (renderPipelineLoader.ViewportList.empty() ? 1 : 0)),
+        .pViewports = renderPipelineLoader.ViewportList.data(),
+        .scissorCount = static_cast<uint32>(renderPipelineLoader.ScissorList.size() + (renderPipelineLoader.ScissorList.empty() ? 1 : 0)),
+        .pScissors = renderPipelineLoader.ScissorList.data()
+    };
+
+    Vector<VkDynamicState> dynamicStateList = renderPipelineLoader.ViewportList.empty() ? Vector<VkDynamicState> { VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT, VkDynamicState::VK_DYNAMIC_STATE_SCISSOR} : Vector<VkDynamicState>();
+    VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = VkPipelineDynamicStateCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .dynamicStateCount = static_cast<uint32>(dynamicStateList.size()),
+        .pDynamicStates = dynamicStateList.data()
+    };
+
+    Vector<VkPipelineShaderStageCreateInfo> pipelineShaderStageCreateInfoList = Vector<VkPipelineShaderStageCreateInfo>
+    {
+        shaderSystem.LoadShader(renderPipelineLoader.ShaderPiplineInfo.ShaderList[0].c_str(), VK_SHADER_STAGE_VERTEX_BIT),
+        shaderSystem.LoadShader(renderPipelineLoader.ShaderPiplineInfo.ShaderList[1].c_str(), VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
+
+    VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfoModel = renderPipelineLoader.PipelineColorBlendStateCreateInfoModel;
+    pipelineColorBlendStateCreateInfoModel.attachmentCount = renderPipelineLoader.PipelineColorBlendAttachmentStateList.size();
+    pipelineColorBlendStateCreateInfoModel.pAttachments = renderPipelineLoader.PipelineColorBlendAttachmentStateList.data();
+
+    VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = renderPipelineLoader.PipelineMultisampleStateCreateInfo;
+    pipelineMultisampleStateCreateInfo.rasterizationSamples = pipelineMultisampleStateCreateInfo.rasterizationSamples >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : pipelineMultisampleStateCreateInfo.rasterizationSamples;
+    pipelineMultisampleStateCreateInfo.sampleShadingEnable = pipelineMultisampleStateCreateInfo.rasterizationSamples > VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
+    pipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
+
+    VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = VkGraphicsPipelineCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .stageCount = static_cast<uint32>(pipelineShaderStageCreateInfoList.size()),
+        .pStages = pipelineShaderStageCreateInfoList.data(),
+        .pVertexInputState = &vertexInputInfo,
+        .pInputAssemblyState = &renderPipelineLoader.PipelineInputAssemblyStateCreateInfo,
+        .pTessellationState = nullptr,
+        .pViewportState = &pipelineViewportStateCreateInfo,
+        .pRasterizationState = &renderPipelineLoader.PipelineRasterizationStateCreateInfo,
+        .pMultisampleState = &pipelineMultisampleStateCreateInfo,
+        .pDepthStencilState = &renderPipelineLoader.PipelineDepthStencilStateCreateInfo,
+        .pColorBlendState = &pipelineColorBlendStateCreateInfoModel,
+        .pDynamicState = &pipelineDynamicStateCreateInfo,
+        .layout = pipelineLayout,
+        .renderPass = renderPipelineLoader.RenderPass,
+        .subpass = 0,
+        .basePipelineHandle = VK_NULL_HANDLE,
+        .basePipelineIndex = 0,
+    };
+
+    VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(vulkanSystem.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
+    for (auto& shader : pipelineShaderStageCreateInfoList)
+    {
+        vkDestroyShaderModule(vulkanSystem.Device, shader.module, nullptr);
+    }
+
+    return pipeline;
+}
+
+void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoader)
+{
+    Vector<ShaderDescriptorBinding> bindingList;
+    for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
+    {
+        switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
+        {
+        case kVertexDescsriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetVertexPropertiesBuffer().size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetVertexPropertiesBuffer();
+            break;
+        }
+        case kIndexDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIndexPropertiesBuffer().size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetIndexPropertiesBuffer();
+            break;
+        }
+        case kTransformDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetGameObjectTransformBuffer().size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetGameObjectTransformBuffer();
+            break;
+        }
+        case kMeshPropertiesDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId).size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId);
+            break;
+        }
+        case kTextureDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId).size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId);
+            break;
+        }
+        case kMaterialDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = materialSystem.GetMaterialPropertiesBuffer().size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = materialSystem.GetMaterialPropertiesBuffer();
+            break;
+        }
+        default:
+        {
+            throw std::runtime_error("Binding case hasn't been handled yet");
+        }
+        }
+    }
+}
+
+VulkanRenderPass RenderSystem::CreateVulkanRenderPass(const char* renderPassJsonFilePath, RenderPassAttachementTextures& renderPassAttachments, ivec2& renderPassResolution)
+{
+    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
+    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    {
+        renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+        renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+        for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+        {
+            renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+            renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+            renderTexture.ImageCreateInfo.extent.depth = 1;
+        }
+    }
+
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
+    {
+        .RenderPassId = renderPassLoader.RenderPassId,
+        .SampleCount = renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderedTextureInfoModelList[0].SampleCountOverride,
+        .RenderArea = renderPassLoader.RenderArea.RenderArea,
+        .InputTextureIdListCount = renderPassLoader.InputTextureList.size(),
+        .ClearValueCount = renderPassLoader.ClearValueList.size(),
+        .CommandBuffer = VK_NULL_HANDLE,
+        .RenderPassResolution = renderPassResolution,
+        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
+    };
+
+    Texture depthTexture;
+    Vector<Texture> renderedTextureList;
+    vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader, renderedTextureList, depthTexture);
+    BuildRenderPassAttachments(renderPassLoader, renderedTextureList, depthTexture);
+    Vector<VkFramebuffer> frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
+    CreateCommandBuffers(&vulkanRenderPass.CommandBuffer, 1);
+
+    vulkanRenderPass.FrameBufferCount = frameBufferList.size();
+    vulkanRenderPass.InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.data(), frameBufferList.size(), __FILE__, __LINE__, __func__);
+
+    renderPassAttachments = RenderPassAttachementTextures
+    {
+        .RenderPassTextureCount = renderPassLoader.RenderedTextureInfoModelList.size(),
+        .RenderPassTexture = memorySystem.AddPtrBuffer<Texture>(renderedTextureList.data(), renderedTextureList.size(), __FILE__, __LINE__, __func__),
+        .DepthTexture = memorySystem.AddPtrBuffer<Texture>(&depthTexture, 1, __FILE__, __LINE__, __func__)
+    };
+
+    return vulkanRenderPass;
+}
+
+VulkanRenderPass RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+{
+    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
+
+    renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
+    renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
+    for (auto& renderTexture : renderPassLoader.RenderedTextureInfoModelList)
+    {
+        renderTexture.ImageCreateInfo.extent.width = renderPassResolution.x;
+        renderTexture.ImageCreateInfo.extent.height = renderPassResolution.y;
+        renderTexture.ImageCreateInfo.extent.depth = 1;
+    }
+
+    Vector<Texture> renderedTextureList;
+    Vector<VkFramebuffer> frameBufferList;
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList, vulkanSystem.SwapChainImageCount);
+    if (vulkanRenderPass.IsRenderedToSwapchain)
+    {
+        vulkanRenderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
+        renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
+
+        DestoryRenderPassSwapChainTextures(renderedTextureListPtr, renderedTextureCount, depthTexture);
+        vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &vulkanRenderPass.RenderPass);
+        renderedTextureList.clear();
+
+        vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader, renderedTextureList, depthTexture);
+        BuildRenderPassAttachments(renderPassLoader, renderedTextureList, depthTexture);
+        frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
+    }
+    else
+    {
+        renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
+        frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
+    }
+
+    vulkanRenderPass.InputTextureIdList = memorySystem.AddPtrBuffer<VkGuid>(renderPassLoader.InputTextureList.data(), renderPassLoader.InputTextureList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.ClearValueList = memorySystem.AddPtrBuffer<VkClearValue>(renderPassLoader.ClearValueList.data(), renderPassLoader.ClearValueList.size(), __FILE__, __LINE__, __func__);
+    vulkanRenderPass.FrameBufferList = memorySystem.AddPtrBuffer<VkFramebuffer>(frameBufferList.data(), frameBufferList.size(), __FILE__, __LINE__, __func__);
+
+    renderedTextureCount = renderedTextureList.size();
+    renderedTextureListPtr = *renderedTextureList.data();
+    return vulkanRenderPass;
+}
+
+void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+{
+    Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
+    for (auto& renderedTexture : renderedTextureList)
+    {
+        textureSystem.DestroyTexture(renderedTexture);
+    }
+    std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
+    renderedTextureCount = 0;
+    renderedTextureList.clear();
+}
+
+void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
+{
+    vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &renderPass.RenderPass);
+    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.CommandBuffer, 1);
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &renderPass.FrameBufferList[0], vulkanSystem.SwapChainImageCount);
+
+    memorySystem.DeletePtr<VkGuid>(renderPass.InputTextureIdList);
+    memorySystem.DeletePtr<VkFramebuffer>(renderPass.FrameBufferList);
+    memorySystem.DeletePtr<VkClearValue>(renderPass.ClearValueList);
+
+    renderPass.RenderPassId = VkGuid();
+    renderPass.SampleCount = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
+    renderPass.RenderArea = VkRect2D();
+    renderPass.RenderPass = VK_NULL_HANDLE;
+    renderPass.FrameBufferList = nullptr;
+    renderPass.ClearValueList = nullptr;
+    renderPass.FrameBufferCount = 0;
+    renderPass.ClearValueCount = 0;
+    renderPass.CommandBuffer = VK_NULL_HANDLE;
+    renderPass.IsRenderedToSwapchain = false;
+}
+
+void RenderSystem::CreateCommandBuffers(VkCommandBuffer* commandBufferList, size_t commandBufferCount)
+{
+    for (size_t x = 0; x < commandBufferCount; x++)
+    {
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool = vulkanSystem.CommandPool,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = static_cast<uint32>(commandBufferCount)
+        };
+
+        vkAllocateCommandBuffers(vulkanSystem.Device, &commandBufferAllocateInfo, &commandBufferList[x]);
+    }
+}
+
+VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJsonLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+{
+    Vector<VkAttachmentDescription> attachmentDescriptionList = Vector<VkAttachmentDescription>();
+    Vector<VkAttachmentReference> inputAttachmentReferenceList = Vector<VkAttachmentReference>();
+    Vector<VkAttachmentReference> colorAttachmentReferenceList = Vector<VkAttachmentReference>();
+    Vector<VkAttachmentReference> resolveAttachmentReferenceList = Vector<VkAttachmentReference>();
+    Vector<VkSubpassDescription> preserveAttachmentReferenceList = Vector<VkSubpassDescription>();
+    Vector<VkAttachmentReference> depthReference = Vector<VkAttachmentReference>();
+    for (int x = 0; x < renderPassJsonLoader.RenderedTextureInfoModelList.size(); x++)
+    {
+        attachmentDescriptionList.emplace_back(renderPassJsonLoader.RenderedTextureInfoModelList[x].AttachmentDescription);
+        attachmentDescriptionList.back().samples = renderPassJsonLoader.RenderedTextureInfoModelList[x].SampleCountOverride >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassJsonLoader.RenderedTextureInfoModelList[x].SampleCountOverride;
+        switch (renderPassJsonLoader.RenderedTextureInfoModelList[x].TextureType)
+        {
+        case RenderedTextureType::ColorRenderedTexture:
+        {
+            colorAttachmentReferenceList.emplace_back(VkAttachmentReference
+                {
+                    .attachment = static_cast<uint32>(x),
+                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                });
+            break;
+        }
+        case RenderedTextureType::InputAttachmentTexture:
+        {
+            inputAttachmentReferenceList.emplace_back(VkAttachmentReference
+                {
+                    .attachment = static_cast<uint32>(x),
+                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                });
+            break;
+        }
+        case RenderedTextureType::ResolveAttachmentTexture:
+        {
+            resolveAttachmentReferenceList.emplace_back(VkAttachmentReference
+                {
+                    .attachment = static_cast<uint32>(x),
+                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                });
+            break;
+        }
+        default:
+        {
+            throw std::runtime_error("Case doesn't exist: RenderedTextureType");
+        }
+        case RenderedTextureType::DepthRenderedTexture:
+        {
+            depthReference.emplace_back(VkAttachmentReference
+                {
+                    .attachment = (uint)(x),
+                    .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
+                });
+            break;
+        }
+        }
+    }
+
+    Vector<VkSubpassDescription> subpassDescriptionList =
+    {
+        VkSubpassDescription
+        {
+            .flags = 0,
+            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+            .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
+            .pInputAttachments = inputAttachmentReferenceList.data(),
+            .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList.size()),
+            .pColorAttachments = colorAttachmentReferenceList.data(),
+            .pResolveAttachments = resolveAttachmentReferenceList.data(),
+            .pDepthStencilAttachment = nullptr,
+            .preserveAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
+            .pPreserveAttachments = nullptr,
+        }
+    };
+    if (depthReference.size() > 0)
+    {
+        subpassDescriptionList[0].pDepthStencilAttachment = &depthReference[0];
+    }
+
+    Vector<VkSubpassDependency> subPassList = Vector<VkSubpassDependency>();
+    for (VkSubpassDependency subpass : renderPassJsonLoader.SubpassDependencyModelList)
+    {
+        subPassList.emplace_back(subpass);
+    }
+
+    VkRenderPassCreateInfo renderPassInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .attachmentCount = static_cast<uint32>(attachmentDescriptionList.size()),
+        .pAttachments = attachmentDescriptionList.data(),
+        .subpassCount = static_cast<uint32>(subpassDescriptionList.size()),
+        .pSubpasses = subpassDescriptionList.data(),
+        .dependencyCount = static_cast<uint32>(subPassList.size()),
+        .pDependencies = subPassList.data(),
+    };
+
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &renderPass));
+    return renderPass;
+}
+
+void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPassoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+{
+    for (auto& texture : renderPassoader.RenderedTextureInfoModelList)
+    {
+        VkGuid renderedTextureId = texture.RenderedTextureId;
+        bool usingMipMap = texture.UsingMipMaps;
+        VkImageCreateInfo imageCreateInfo = texture.ImageCreateInfo;
+        VkSamplerCreateInfo samplerCreateInfo = texture.SamplerCreateInfo;
+        switch (texture.TextureType)
+        {
+        case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
+        case DepthRenderedTexture: depthTexture = textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap); break;
+        };
+    }
+}
+
+Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& renderPass, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+{
+    Vector<VkFramebuffer> frameBufferList = Vector<VkFramebuffer>(vulkanSystem.SwapChainImageCount);
+    for (size_t x = 0; x < vulkanSystem.SwapChainImageCount; x++)
+    {
+        std::vector<VkImageView> TextureAttachmentList;
+        for (int y = 0; y < renderedTextureList.size(); y++)
+        {
+            if (renderPass.IsRenderedToSwapchain)
+            {
+                TextureAttachmentList.emplace_back(vulkanSystem.SwapChainImageViews[x]);
+            }
+            else
+            {
+                TextureAttachmentList.emplace_back(renderedTextureList[y].textureView);
+            }
+        }
+        if (depthTexture.textureMemory != VK_NULL_HANDLE)
+        {
+            TextureAttachmentList.emplace_back(depthTexture.textureView);
+        }
+
+        VkFramebufferCreateInfo framebufferInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .renderPass = renderPass.RenderPass,
+            .attachmentCount = static_cast<uint32_t>(TextureAttachmentList.size()),
+            .pAttachments = TextureAttachmentList.data(),
+            .width = static_cast<uint32_t>(renderPass.RenderPassResolution.x),
+            .height = static_cast<uint32_t>(renderPass.RenderPassResolution.y),
+            .layers = 1,
+        };
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &framebufferInfo, nullptr, &frameBufferList[x]));
+    }
+
+    return frameBufferList;
 }

@@ -45,12 +45,6 @@
     <ClInclude Include="VkGuid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanRenderPass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JsonLoader.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
@@ -122,12 +116,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="VulkanPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanRenderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="JsonLoader.cpp">
       <Filter>Source Files\Json</Filter>
     </ClCompile>

@@ -59,7 +59,6 @@ private:
     void UpdateImage(Texture& texture);
     void CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo);
     void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
-    void CreateTextureSampler(Texture& texture, VkSamplerCreateInfo& sampleCreateInfo);
     void TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
     void QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout);
     void CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel);
@@ -114,7 +113,6 @@ public:
     //    return Texture_CreateTexture(renderer, clearColor, imageType, createImageInfo, samplerCreateInfo, useMipMaps);
     //}
 };
-
 extern DLL_EXPORT TextureSystem& textureSystem;
 inline TextureSystem& TextureSystem::Get()
 {

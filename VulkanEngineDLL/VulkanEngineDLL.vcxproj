@@ -168,8 +168,6 @@
     <ClInclude Include="Transform2DComponent.h" />
     <ClInclude Include="Typedef.h" />
     <ClInclude Include="VkGuid.h" />
-    <ClInclude Include="VulkanPipeline.h" />
-    <ClInclude Include="VulkanRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
@@ -192,8 +190,6 @@
     <ClCompile Include="MeshSystem.cpp" />
     <ClCompile Include="ShaderSystem.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
-    <ClCompile Include="VulkanPipeline.cpp" />
-    <ClCompile Include="VulkanRenderPass.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,4 @@
 #include "from_json.h"
-#include "VulkanPipeline.h"
 #include "GPUSystem.h"
 
 namespace nlohmann

@@ -32,8 +32,14 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
     vulkanSystem.RebuildRendererFlag = false;
     vulkanSystem.Instance = instance;
     vulkanSystem.Surface = surface;
+	//GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
     vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+	vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
+    SetUpSwapChain(windowHandle);
+    vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
+    SetUpSemaphores();
+    GetDeviceQueue(vulkanSystem.Device, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily, vulkanSystem.GraphicsQueue, vulkanSystem.PresentQueue);
 
 #if defined(__ANDROID__)
     vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)vkGetDeviceProcAddr(Device, "vkGetBufferDeviceAddress");
@@ -42,10 +48,6 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
     }
 #endif
 
-    SetUpSwapChain(windowHandle);
-    vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
-    SetUpSemaphores();
-    GetDeviceQueue(vulkanSystem.Device, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily, vulkanSystem.GraphicsQueue, vulkanSystem.PresentQueue);
 }
 
 void VulkanSystem::RebuildSwapChain(void* windowHandle)
@@ -400,6 +402,13 @@ VkPhysicalDeviceFeatures VulkanSystem::GetPhysicalDeviceFeatures(VkPhysicalDevic
     return features;
 }
 
+VkPhysicalDeviceFeatures2 VulkanSystem::GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice)
+{
+    VkPhysicalDeviceFeatures2 features;
+    vkGetPhysicalDeviceFeatures2(physicalDevice, &features);
+    return features;
+}
+
 Vector<VkPhysicalDevice> VulkanSystem::GetPhysicalDeviceList(VkInstance& instance)
 {
     uint32 deviceCount = 0;
@@ -720,6 +729,57 @@ void VulkanSystem::GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKH
             if (graphicsFamily != UINT32_MAX) break;
         }
     }
+}
+
+void VulkanSystem::GetRayTracingCapability(VkPhysicalDevice gpuDevice, Vector<String> &featureList, Vector<const char*>& deviceExtensionList)
+{
+    if (RequestRayTracingSupport)
+    {
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR AccelerationStructureFeatures{};
+        AccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR RayTracingPipelineFeatures{};
+        RayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+        RayTracingPipelineFeatures.pNext = &AccelerationStructureFeatures;
+
+        VkPhysicalDeviceFeatures2 DeviceFeatures2{};
+        DeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        DeviceFeatures2.pNext = &RayTracingPipelineFeatures;
+        vkGetPhysicalDeviceFeatures2(gpuDevice, &DeviceFeatures2);
+
+        if (RayTracingPipelineFeatures.rayTracingPipeline == VK_TRUE &&
+            AccelerationStructureFeatures.accelerationStructure == VK_TRUE)
+        {
+            if (std::find(featureList.begin(), featureList.end(), VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME) != featureList.end() &&
+                std::find(featureList.begin(), featureList.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) != featureList.end())
+            {
+                RayTracingSupported = true;
+                deviceExtensionList.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+                deviceExtensionList.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            }
+            else
+            {
+                RayTracingSupported = false;
+            }
+        }
+        else
+        {
+            std::cout << "GPU/MotherBoard isn't ray tracing compatible." << std::endl;
+        }
+    }
+}
+
+VkSampleCountFlagBits VulkanSystem::GetMaxSampleCount(VkPhysicalDevice gpuDevice)
+{
+    VkPhysicalDeviceLimits physicalDeviceProperties = GetPhysicalDeviceProperties(PhysicalDevice).limits;
+    VkSampleCountFlags counts = physicalDeviceProperties.framebufferColorSampleCounts & physicalDeviceProperties.framebufferDepthSampleCounts;
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+    return VK_SAMPLE_COUNT_1_BIT;
 }
 
 VkSurfaceCapabilitiesKHR VulkanSystem::GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
