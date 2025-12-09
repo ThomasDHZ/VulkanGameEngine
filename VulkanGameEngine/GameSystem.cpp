@@ -139,7 +139,7 @@ void GameSystem::Destroy()
     meshSystem.DestroyAllGameObjects();
     materialSystem.DestroyAllMaterials(); 
     textureSystem.DestroyAllTextures(); 
-    bufferSystem.DestroyAllBuffers();
+    //bufferSystem.DestroyAllBuffers();
     levelSystem.DestroyLevel(); 
     renderSystem.Destroy();
     memorySystem.ReportLeaks();

@@ -1,6 +1,7 @@
 #define BUFFER_SYSTEM_IMPLEMENTATION
 #include "BufferSystem.h"
 #include "MemorySystem.h"
+#include "vk_mem_alloc.h"
 
 VulkanBufferSystem& bufferSystem = VulkanBufferSystem::Get();
 int NextBufferId = 0;
@@ -8,24 +9,6 @@ int NextBufferId = 0;
 VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
 {
     return VulkanBufferMap.at(id);
-}
-
-const Vector<VulkanBuffer>& VulkanBufferSystem::VulkanBufferList()
-{
-    Vector<VulkanBuffer> vulkanBufferList;
-    for (const auto& buffer : VulkanBufferMap)
-    {
-        vulkanBufferList.emplace_back(buffer.second);
-    }
-    return vulkanBufferList;
-}
-
-void VulkanBufferSystem::DestroyAllBuffers()
-{
-    for (auto& buffer : VulkanBufferMap)
-    {
-        DestroyBuffer(buffer.second);
-    }
 }
 
 VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer) 
@@ -40,104 +23,181 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize 
         .UsingStagingBuffer = usingStagingBuffer,
     };
 
-    void* bufferData = memorySystem.AddPtrBuffer<void*>(bufferSize, __FILE__, __LINE__, __func__);
-    memset(bufferData, 0, bufferSize);
-
-    if (vulkanBuffer.UsingStagingBuffer) 
+    VkBufferCreateInfo bufferInfo = 
     {
-        CreateStagingBuffer(&vulkanBuffer.StagingBuffer, &vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
-    }
-    else 
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = bufferSize,
+        .usage = usage,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    };
+
+    VmaAllocationCreateInfo allocInfo = {};
+    if (usingStagingBuffer) 
     {
-       CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
+        allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+        allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufferInfo, &allocInfo, &vulkanBuffer.StagingBuffer, &vulkanBuffer.StagingBufferMemory, nullptr));
+
+        bufferInfo.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        allocInfo = {};
+        allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufferInfo, &allocInfo, &vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr));
+    }
+    else
+    {
+        allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+        if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+          //  allocInfo.flags |= VMA_ALLOCATION_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        }
+        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufferInfo, &allocInfo, &vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr));
     }
 
-    if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) 
-    {
-        VkBufferDeviceAddressInfo addrInfo = {};
-        addrInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-        addrInfo.buffer = vulkanBuffer.Buffer;
-#if defined(__ANDROID__)
-        vulkanBuffer.BufferDeviceAddress = vulkanSystem.vkGetBufferDeviceAddress(vulkanSystem.Device, &addrInfo);
-#else
-		vulkanBuffer.BufferDeviceAddress = vkGetBufferDeviceAddress(vulkanSystem.Device, &addrInfo);
-#endif
+    if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+        VkBufferDeviceAddressInfo addrInfo = { .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer = vulkanBuffer.Buffer };
+        vulkanBuffer.BufferDeviceAddress = vkGetBufferDeviceAddress(vulkanSystem.Device, &addrInfo);
     }
-
-    memorySystem.DeletePtr(bufferData);
     return vulkanBuffer;
 }
 
 VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
 {
-    VkDeviceSize bufferSize = bufferElementSize * bufferElementCount;
-    VulkanBuffer vulkanBuffer =
+    VulkanBuffer buffer = CreateVulkanBuffer(bufferId, bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
+
+    if (bufferData) 
     {
-        .BufferId = bufferId,
-        .BufferSize = bufferSize,
-        .BufferUsage = usage,
-        .BufferProperties = properties,
-        .BufferType = bufferTypeEnum,
-        .UsingStagingBuffer = usingStagingBuffer,
+        if (usingStagingBuffer) 
+        {
+            void* mapped = nullptr;
+            vmaMapMemory(vulkanSystem.vmaAllocator, buffer.StagingBufferMemory, &mapped);
+            memcpy(mapped, bufferData, buffer.BufferSize);
+            vmaUnmapMemory(vulkanSystem.vmaAllocator, buffer.StagingBufferMemory);
+
+            VkBufferCopy copy = { .size = buffer.BufferSize };
+            VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
+            vkCmdCopyBuffer(cmd, buffer.StagingBuffer, buffer.Buffer, 1, &copy);
+            vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, cmd);
+        }
+        else 
+        {
+            void* mapped;
+            vmaMapMemory(vulkanSystem.vmaAllocator, buffer.BufferMemory, &mapped);
+            memcpy(mapped, bufferData, buffer.BufferSize);
+            vmaUnmapMemory(vulkanSystem.vmaAllocator, buffer.BufferMemory);
+        }
+    }
+
+    return buffer;
+}
+
+void VulkanBufferSystem::ResizeBuffer(VulkanBuffer& vulkanBuffer, VkDeviceSize newSize, void* newData)
+{
+    if (newSize == 0) 
+    {
+        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
+    }
+
+    VkBufferUsageFlags usage = vulkanBuffer.BufferUsage;
+    bool useStaging = vulkanBuffer.UsingStagingBuffer;
+
+    VkBuffer newBuffer = VK_NULL_HANDLE;
+    VmaAllocation newAlloc = VK_NULL_HANDLE;
+    VkBuffer newStaging = VK_NULL_HANDLE;
+    VmaAllocation newStagingAlloc = VK_NULL_HANDLE;
+
+    VkBufferCreateInfo bufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = newSize,
+        .usage = useStaging ? (usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT) : usage,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
     };
 
-    if (vulkanBuffer.UsingStagingBuffer)
-    {
-        CreateStagingBuffer(&vulkanBuffer.StagingBuffer, &vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
-    }
-    else
-    {
-        CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
-    }
-    return vulkanBuffer;
-}
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-void VulkanBufferSystem::UpdateBufferSize(VulkanBuffer& vulkanBuffer, VkDeviceSize newBufferElementSize, uint newBufferElementCount)
-{
-    VkDeviceSize newBufferSize = newBufferElementSize * newBufferElementCount;
-    if (vulkanBuffer.UsingStagingBuffer)
+    VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufferInfo, &allocInfo, &newBuffer, &newAlloc, nullptr));
+    if (useStaging) 
     {
-        UpdateBufferSize(&vulkanBuffer.StagingBuffer, &vulkanBuffer.StagingBufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
-        UpdateBufferSize(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+        allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufferInfo, &allocInfo, &newStaging, &newStagingAlloc, nullptr));
     }
-    else
-    {
-        UpdateBufferSize(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, nullptr, vulkanBuffer.BufferSize, newBufferSize, vulkanBuffer.BufferUsage, vulkanBuffer.BufferProperties);
-    }
-}
 
-void VulkanBufferSystem::UpdateBufferMemory(VulkanBuffer& vulkanBuffer, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount)
-{
-    VkDeviceSize newBufferSize = bufferElementSize * bufferElementCount;
-    if (vulkanBuffer.UsingStagingBuffer)
+    if (newData == nullptr && vulkanBuffer.Buffer != VK_NULL_HANDLE && vulkanBuffer.BufferSize > 0) 
     {
-        if (vulkanBuffer.BufferSize != newBufferSize) 
+        VkDeviceSize copySize = std::min(vulkanBuffer.BufferSize, newSize);
+        if (useStaging && vulkanBuffer.StagingBuffer) 
         {
-            UpdateBufferSize(vulkanBuffer, bufferElementSize, bufferElementCount);
+            CopyBufferMemory(vulkanBuffer.StagingBuffer, newStaging, copySize);
         }
-        UpdateStagingBufferData(vulkanBuffer.StagingBuffer, vulkanBuffer.Buffer, &vulkanBuffer.StagingBufferMemory, &vulkanBuffer.BufferMemory, bufferData, newBufferSize);
-    }
-    else
-    {
-        if (vulkanBuffer.BufferSize != newBufferSize)
+        else 
         {
-            UpdateBufferSize(vulkanBuffer, bufferElementSize, bufferElementCount);
+            CopyBufferMemory(vulkanBuffer.Buffer, newBuffer, copySize);
         }
-        UpdateBufferMemory(vulkanBuffer.BufferMemory, bufferData, newBufferSize);
+    }
+
+    if (newData) 
+    {
+        if (useStaging && newStaging) 
+        {
+            void* mapped = nullptr;
+            vmaMapMemory(vulkanSystem.vmaAllocator, newStagingAlloc, &mapped);
+            memcpy(mapped, newData, newSize);
+            vmaUnmapMemory(vulkanSystem.vmaAllocator, newStagingAlloc);
+        }
+        else 
+        {
+            void* mapped = nullptr;
+            vmaMapMemory(vulkanSystem.vmaAllocator, newAlloc, &mapped);
+            memcpy(mapped, newData, newSize);
+            vmaUnmapMemory(vulkanSystem.vmaAllocator, newAlloc);
+        }
+    }
+
+    if (vulkanBuffer.Buffer) 
+    {
+        vmaDestroyBuffer(vulkanSystem.vmaAllocator, vulkanBuffer.Buffer, vulkanBuffer.BufferMemory);
+    }
+    if (vulkanBuffer.StagingBuffer) 
+    {
+        vmaDestroyBuffer(vulkanSystem.vmaAllocator, vulkanBuffer.StagingBuffer, vulkanBuffer.StagingBufferMemory);
+    }
+
+    vulkanBuffer.Buffer = newBuffer;
+    vulkanBuffer.BufferMemory = newAlloc;
+    vulkanBuffer.StagingBuffer = newStaging;
+    vulkanBuffer.StagingBufferMemory = newStagingAlloc;
+    vulkanBuffer.BufferSize = newSize;
+    if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) 
+    {
+        VkBufferDeviceAddressInfo addrInfo = { .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, .buffer = newBuffer };
+        vulkanBuffer.BufferDeviceAddress = vkGetBufferDeviceAddress(vulkanSystem.Device, &addrInfo);
     }
 }
 
-void VulkanBufferSystem::UpdateBufferMemory(VkDeviceMemory bufferMemory, void* dataToCopy, VkDeviceSize bufferSize)
+void VulkanBufferSystem::UpdateBufferData(VulkanBuffer& vulkanBuffer, void* data, VkDeviceSize size)
 {
-    if (dataToCopy == nullptr || bufferSize == 0)
+    if (size > vulkanBuffer.BufferSize) 
     {
-        VULKAN_THROW_IF_FAIL(VK_ERROR_MEMORY_MAP_FAILED);
+        ResizeBuffer(vulkanBuffer, size, data);
+        return;
     }
 
-    void* mappedData = nullptr;
-    VULKAN_THROW_IF_FAIL(vkMapMemory(vulkanSystem.Device, bufferMemory, 0, bufferSize, 0, &mappedData));
-    memcpy(mappedData, dataToCopy, static_cast<size_t>(bufferSize));
-    vkUnmapMemory(vulkanSystem.Device, bufferMemory);
+    if (vulkanBuffer.UsingStagingBuffer && vulkanBuffer.StagingBuffer) 
+    {
+        void* mapped;
+        vmaMapMemory(vulkanSystem.vmaAllocator, vulkanBuffer.StagingBufferMemory, &mapped);
+        memcpy(mapped, data, size);
+        vmaUnmapMemory(vulkanSystem.vmaAllocator, vulkanBuffer.BufferMemory);
+        CopyBufferMemory(vulkanBuffer.StagingBuffer, vulkanBuffer.Buffer, size);
+    }
+    else 
+    {
+        void* mapped;
+        vmaMapMemory(vulkanSystem.vmaAllocator, vulkanBuffer.BufferMemory, &mapped);
+        memcpy(mapped, data, size);
+        vmaUnmapMemory(vulkanSystem.vmaAllocator, vulkanBuffer.BufferMemory);
+    }
 }
 
 void VulkanBufferSystem::CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize bufferSize)
@@ -154,112 +214,14 @@ void VulkanBufferSystem::CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer
     vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, commandBuffer);
 }
 
-void VulkanBufferSystem::AllocateMemory(VkBuffer* bufferData, VkDeviceMemory* bufferMemory, VkMemoryPropertyFlags properties, VkBufferUsageFlags usage)
-{
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(vulkanSystem.Device, *bufferData, &memRequirements);
-
-    VkMemoryAllocateFlagsInfo allocateFlagsInfo = {};
-    allocateFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
-    allocateFlagsInfo.flags = 0;
-    if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)
-    {
-        allocateFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
-    }
-
-    VkMemoryAllocateInfo allocInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .pNext = &allocateFlagsInfo,
-        .allocationSize = memRequirements.size,
-        .memoryTypeIndex = vulkanSystem.GetMemoryType(vulkanSystem.PhysicalDevice, memRequirements.memoryTypeBits, properties)
-    };
-
-    VULKAN_THROW_IF_FAIL(vkAllocateMemory(vulkanSystem.Device, &allocInfo, nullptr, bufferMemory));
-}
-
-void* VulkanBufferSystem::MapBufferMemory(VkDeviceMemory bufferMemory, VkDeviceSize bufferSize, bool* isMapped)
-{
-    if (*isMapped)
-    {
-        return nullptr;
-    }
-
-    void* mappedData = nullptr;
-    VULKAN_THROW_IF_FAIL(vkMapMemory(vulkanSystem.Device, bufferMemory, 0, bufferSize, 0, &mappedData));
-    *isMapped = true;
-    return mappedData;
-}
-
-void VulkanBufferSystem::UnmapBufferMemory(VkDeviceMemory bufferMemory, bool* isMapped)
-{
-    if (*isMapped)
-    {
-        vkUnmapMemory(vulkanSystem.Device, bufferMemory);
-        *isMapped = false;
-    }
-}
-
-void VulkanBufferSystem::CreateBuffer(VkBuffer* buffer, VkDeviceMemory* bufferMemory, void* bufferData, VkDeviceSize bufferSize, VkMemoryPropertyFlags properties, VkBufferUsageFlags usage)
-{
-    VkBufferCreateInfo bufferInfo = 
-    {
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = bufferSize,
-        .usage = usage,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
-    };
-
-    VkMemoryAllocateFlagsInfo flagsInfo = {};
-    flagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
-    if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) 
-    {
-        flagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
-        flagsInfo.pNext = nullptr;
-    }
-
-    VkMemoryAllocateInfo allocInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .pNext = (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) ? &flagsInfo : nullptr,
-        .allocationSize = 0,
-        .memoryTypeIndex = 0
-    };
-    VkMemoryRequirements memReqs;
-
-    VULKAN_THROW_IF_FAIL(vkCreateBuffer(vulkanSystem.Device, &bufferInfo, nullptr, buffer));
-    vkGetBufferMemoryRequirements(vulkanSystem.Device, *buffer, &memReqs);
-    allocInfo.allocationSize = memReqs.size;
-    allocInfo.memoryTypeIndex = vulkanSystem.GetMemoryType(vulkanSystem.PhysicalDevice, memReqs.memoryTypeBits, properties);
-
-    VULKAN_THROW_IF_FAIL(vkAllocateMemory(vulkanSystem.Device, &allocInfo, nullptr, bufferMemory));
-    VULKAN_THROW_IF_FAIL(vkBindBufferMemory(vulkanSystem.Device, *buffer, *bufferMemory, 0));
-    if (bufferData) 
-    {
-        UpdateBufferMemory(*bufferMemory, bufferData, bufferSize);
-    }
-}
-
-void VulkanBufferSystem::CreateStagingBuffer(VkBuffer* stagingBuffer, VkBuffer* buffer, VkDeviceMemory* stagingBufferMemory, VkDeviceMemory* bufferMemory, void* bufferData, VkDeviceSize bufferSize, VkBufferUsageFlags  bufferUsage, VkMemoryPropertyFlags stagingProperties)
-{
-    if (!stagingBuffer || !buffer || !stagingBufferMemory || !bufferMemory)
-    {
-        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
-    }
-
-    CreateBuffer(stagingBuffer, stagingBufferMemory, bufferData, bufferSize, stagingProperties, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    CreateBuffer(buffer, bufferMemory, nullptr, bufferSize, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, bufferUsage | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    CopyBufferMemory(*stagingBuffer, *buffer, bufferSize);
-}
-
 void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size)
 {
-    if (!srcBuffer || !dstBuffer) 
+    if (!srcBuffer || !dstBuffer)
     {
         VULKAN_THROW_IF_FAIL(VK_ERROR_UNKNOWN);
     }
 
-    VkBufferCopy copyRegion = 
+    VkBufferCopy copyRegion =
     {
         .srcOffset = 0,
         .dstOffset = 0,
@@ -271,118 +233,17 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
     vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, commandBuffer);
 }
 
-void VulkanBufferSystem::UpdateBufferSize(VkBuffer* buffer, VkDeviceMemory* bufferMemory, void* bufferData, VkDeviceSize oldBufferSize, VkDeviceSize newBufferSize, VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags propertyFlags)
-{
-    if (newBufferSize < oldBufferSize)
-    {
-      /*  vulkanSystem.ERROR("%s", (std::string("Buffer size can't be less than the old buffer size. OldSize: ")
-            + std::to_string(static_cast<uint32_t>(oldBufferSize))
-            + " NewSize: "
-            + std::to_string(static_cast<uint32_t>(newBufferSize))).c_str());*/
-        VULKAN_THROW_IF_FAIL(VK_ERROR_MEMORY_MAP_FAILED);
-    }
-
-    VkBufferCreateInfo bufferCreateInfo = 
-    {
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = newBufferSize,
-        .usage = bufferUsageFlags,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
-    };
-
-    VkBuffer newBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory newBufferMemory = VK_NULL_HANDLE;
-
-    VULKAN_THROW_IF_FAIL(vkCreateBuffer(vulkanSystem.Device, &bufferCreateInfo, nullptr, &newBuffer));
-    AllocateMemory(&newBuffer, &newBufferMemory, propertyFlags, bufferUsageFlags);
-
-    VkResult result = vkBindBufferMemory(vulkanSystem.Device, newBuffer, newBufferMemory, 0);
-    if (result != VK_SUCCESS)
-    {
-        vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &newBufferMemory);
-        vkDestroyBuffer(vulkanSystem.Device, newBuffer, nullptr);
-        VULKAN_THROW_IF_FAIL(result);
-    }
-
-    if (bufferData)
-    {
-        UpdateBufferMemory(newBufferMemory, bufferData, newBufferSize);
-    }
-    else if (*buffer != VK_NULL_HANDLE && oldBufferSize > 0) 
-    {
-        CopyBuffer(buffer, &newBuffer, oldBufferSize);
-    }
-
-    if (*buffer != VK_NULL_HANDLE)
-    {
-        vkDestroyBuffer(vulkanSystem.Device, *buffer, nullptr);
-    }
-    if (*bufferMemory != VK_NULL_HANDLE)
-    {
-        vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, bufferMemory);
-    }
-
-    *buffer = newBuffer;
-    *bufferMemory = newBufferMemory;
-}
-
-void VulkanBufferSystem::UpdateBufferData(VkDeviceMemory* bufferMemory, void* dataToCopy, VkDeviceSize bufferSize)
-{
-    UpdateBufferMemory(*bufferMemory, dataToCopy, bufferSize);
-}
-
-void VulkanBufferSystem::UpdateStagingBufferData(VkBuffer stagingBuffer, VkBuffer buffer, VkDeviceMemory* stagingBufferMemory, VkDeviceMemory* bufferMemory, void* dataToCopy, VkDeviceSize bufferSize)
-{
-    UpdateBufferMemory(*stagingBufferMemory, dataToCopy, bufferSize);
-    CopyBufferMemory(stagingBuffer, buffer, bufferSize);
-}
-
 void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
 {
-    if (!vulkanBuffer.Buffer &&
-        !vulkanBuffer.StagingBuffer)
-    {
-        VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
-    }
-
-    if (vulkanBuffer.Buffer != VK_NULL_HANDLE)
-    {
-        vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.Buffer, nullptr);
+    if (vulkanBuffer.Buffer != VK_NULL_HANDLE) {
+        vmaDestroyBuffer(vulkanSystem.vmaAllocator, vulkanBuffer.Buffer, vulkanBuffer.BufferMemory);
         vulkanBuffer.Buffer = VK_NULL_HANDLE;
-    }
-
-    if (vulkanBuffer.StagingBuffer != VK_NULL_HANDLE)
-    {
-        vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.StagingBuffer, nullptr);
-        vulkanBuffer.StagingBuffer = VK_NULL_HANDLE;
-    }
-
-    if (vulkanBuffer.BufferMemory != VK_NULL_HANDLE)
-    {
-        vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &vulkanBuffer.BufferMemory);
         vulkanBuffer.BufferMemory = VK_NULL_HANDLE;
     }
-
-    if (vulkanBuffer.StagingBufferMemory != VK_NULL_HANDLE)
-    {
-        vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &vulkanBuffer.StagingBufferMemory);
+    if (vulkanBuffer.StagingBuffer != VK_NULL_HANDLE) {
+        vmaDestroyBuffer(vulkanSystem.vmaAllocator, vulkanBuffer.StagingBuffer, vulkanBuffer.StagingBufferMemory);
+        vulkanBuffer.StagingBuffer = VK_NULL_HANDLE;
         vulkanBuffer.StagingBufferMemory = VK_NULL_HANDLE;
     }
-
-    if (vulkanBuffer.BufferData)
-    {
-        vulkanBuffer.BufferData = nullptr;
-    }
-    if (vulkanBuffer.BufferSize)
-    {
-        vulkanBuffer.BufferSize = 0;
-    }
-    if (vulkanBuffer.BufferUsage)
-    {
-        vulkanBuffer.BufferUsage = 0;
-    }
-    if (vulkanBuffer.BufferProperties)
-    {
-        vulkanBuffer.BufferProperties = 0;
-    }
+    vulkanBuffer.BufferSize = 0;
 }

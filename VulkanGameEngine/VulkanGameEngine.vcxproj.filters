@@ -54,9 +54,6 @@
     <ClCompile Include="SystemClock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="InputSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -93,9 +90,6 @@
     <ClCompile Include="..\External\ImPlot\implot_demo.cpp">
       <Filter>Header Files\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanWindow.cpp">
-      <Filter>Source Files\Input</Filter>
-    </ClCompile>
     <ClCompile Include="Mouse.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
@@ -107,6 +101,12 @@
     </ClCompile>
     <ClCompile Include="AndroidMain.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanWindow.cpp">
+      <Filter>Source Files\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

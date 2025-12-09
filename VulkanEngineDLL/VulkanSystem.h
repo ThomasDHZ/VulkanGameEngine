@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Platform.h"
 #include "InputEnum.h"
+#include <vk_mem_alloc.h>
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif
@@ -20,6 +21,7 @@ private:
 
 	VkExtent2D					SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkDevice					SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
+	VmaAllocator				SetUpVmaAllocation();
 	VkPhysicalDevice			SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
 	void						SetUpSwapChain();
 	void						SetUpSwapChainImages();
@@ -80,6 +82,8 @@ public:
 	uint32					 GraphicsFamily = UINT32_MAX;
 	uint32					 PresentFamily = UINT32_MAX;
 	uint32					 MaxFramesInFlight = UINT32_MAX;
+
+	VmaAllocator			vmaAllocator;
 
 	VkFormat				Format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR			ColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;

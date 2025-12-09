@@ -81,7 +81,7 @@ Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags image
 		.colorChannels = ChannelRGBA,
 	};
 	createImageInfo.mipLevels = texture.mipMapLevels;
-	CreateTextureImage(texture, createImageInfo);
+	CreateImage(texture, createImageInfo);
 	CreateTextureView(texture, imageType);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, NULL, &texture.textureSampler));
 	GenerateMipmaps(texture);
@@ -96,18 +96,6 @@ void TextureSystem::Update(const float& deltaTime)
 		UpdateTextureBufferIndex(texture, x);
 		x++;
 	}
-}
-
-void TextureSystem::UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution)
-{
-	texture.width = TextureResolution.x;
-	texture.height = TextureResolution.y;
-
-	DestroyTexture(texture);
-	UpdateImage(texture);
-	CreateTextureView(texture, imageType);
-
-	//ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(Sampler, View, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
@@ -202,8 +190,12 @@ void TextureSystem::DestroyTexture(Texture& texture)
 {
 	vulkanSystem.DestroyImageView(vulkanSystem.Device, &texture.textureView);
 	vulkanSystem.DestroySampler(vulkanSystem.Device, &texture.textureSampler);
-	vulkanSystem.DestroyImage(vulkanSystem.Device, &texture.textureImage);
-	vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &texture.textureMemory);
+
+	if (texture.textureImage != VK_NULL_HANDLE) {
+		vmaDestroyImage(vulkanSystem.vmaAllocator, texture.textureImage, texture.textureMemory);
+		texture.textureImage = VK_NULL_HANDLE;
+		//texture.textureMemory = VK_NULL_HANDLE;
+	}
 }
 
 void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
@@ -267,43 +259,35 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 	texture.textureBufferIndex = bufferIndex;
 }
 
-void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo)
-{
-	VULKAN_THROW_IF_FAIL(vkCreateImage(vulkanSystem.Device, &createImageInfo, nullptr, &texture.textureImage));
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(vulkanSystem.Device, texture.textureImage, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = vulkanSystem.GetMemoryType(vulkanSystem.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	};
-	VULKAN_THROW_IF_FAIL(vkAllocateMemory(vulkanSystem.Device, &allocInfo, nullptr, &texture.textureMemory));
-	VULKAN_THROW_IF_FAIL(vkBindImageMemory(vulkanSystem.Device, texture.textureImage, texture.textureMemory, 0));
-}
-
 void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)
 {
-	VkBuffer buffer = VK_NULL_HANDLE;
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
-	VkDeviceMemory bufferMemory = VK_NULL_HANDLE;
-	const VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
-	const VkMemoryPropertyFlags props = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
 
-	bufferSystem.CreateStagingBuffer( &stagingBuffer, &buffer, &stagingBufferMemory, &bufferMemory, textureData, textureSize, usage, props);
+	VkBufferCreateInfo bufInfo = {
+		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+		.size = textureSize,
+		.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+	};
+
+	VmaAllocationCreateInfo stagingAllocInfo = {};
+	stagingAllocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+	stagingAllocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+
+	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufInfo, &stagingAllocInfo, &stagingBuffer, &stagingAlloc, nullptr));
+
+	void* data;
+	vmaMapMemory(vulkanSystem.vmaAllocator, stagingAlloc, &data);
+	memcpy(data, textureData, textureSize);
+	vmaUnmapMemory(vulkanSystem.vmaAllocator, stagingAlloc);
+
 	CreateImage(texture, imageCreateInfo);
 	QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyBufferToTexture(texture, buffer);
+	CopyBufferToTexture(texture, stagingBuffer);
 	QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	GenerateMipmaps(texture);
-
-	vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
-	vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &bufferMemory);
-	vulkanSystem.DestroyBuffer(vulkanSystem.Device, &stagingBuffer);
-	vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &stagingBufferMemory);
+	vmaDestroyBuffer(vulkanSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 }
 
 void TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType)
@@ -359,57 +343,14 @@ void TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textureRes
 	//return texture;
 }
 
-void TextureSystem::UpdateImage(Texture& texture)
-{
-	VkImageCreateInfo imageCreateInfo =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.imageType = VK_IMAGE_TYPE_2D,
-		.format = texture.textureByteFormat,
-		.extent =
-		{
-			.width = static_cast<uint32_t>(texture.width),
-			.height = static_cast<uint32_t>(texture.height),
-			.depth = 1
-		},
-		.mipLevels = texture.mipMapLevels,
-		.arrayLayers = 1,
-		.samples = texture.sampleCount,
-		.tiling = VK_IMAGE_TILING_OPTIMAL,
-		.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-	};
-	VULKAN_THROW_IF_FAIL(vkCreateImage(vulkanSystem.Device, &imageCreateInfo, NULL, &texture.textureImage));
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(vulkanSystem.Device, texture.textureImage, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = vulkanSystem.GetMemoryType(vulkanSystem.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	};
-	VULKAN_THROW_IF_FAIL(vkAllocateMemory(vulkanSystem.Device, &allocInfo, NULL, &texture.textureMemory));
-	VULKAN_THROW_IF_FAIL(vkBindImageMemory(vulkanSystem.Device, texture.textureImage, texture.textureMemory, 0));
-}
 
 void TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo)
 {
-	VULKAN_THROW_IF_FAIL(vkCreateImage(vulkanSystem.Device, &imageCreateInfo, NULL, &texture.textureImage));
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(vulkanSystem.Device, texture.textureImage, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = vulkanSystem.GetMemoryType(vulkanSystem.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	};
-	VULKAN_THROW_IF_FAIL(vkAllocateMemory(vulkanSystem.Device, &allocInfo, NULL, &texture.textureMemory));
-	VULKAN_THROW_IF_FAIL(vkBindImageMemory(vulkanSystem.Device, texture.textureImage, texture.textureMemory, 0));
+	VmaAllocationInfo vmaAllocInfo;
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(vulkanSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &texture.textureMemory, &vmaAllocInfo));
 }
 
 void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)

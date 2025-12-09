@@ -3,6 +3,7 @@
 #include "Pixel.h"
 #include "enum.h"
 #include "FileSystem.h"
+#include <vk_mem_alloc.h>
 
 struct TextureLoader
 {
@@ -25,7 +26,7 @@ struct Texture
     uint32 textureBufferIndex = 0;
 
     VkImage textureImage = VK_NULL_HANDLE;
-    VkDeviceMemory textureMemory = VK_NULL_HANDLE;
+    VmaAllocation textureMemory = VK_NULL_HANDLE;
     VkImageView textureView = VK_NULL_HANDLE;
     VkSampler textureSampler = VK_NULL_HANDLE;
     VkDescriptorSet ImGuiDescriptorSet = VK_NULL_HANDLE;
@@ -53,10 +54,8 @@ private:
     TextureSystem& operator=(TextureSystem&&) = delete;
 
     void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
-    void CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
     void CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType);
-    void UpdateImage(Texture& texture);
     void CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo);
     void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
     void TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout);
@@ -75,7 +74,6 @@ public:
     DLL_EXPORT void                  AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                  AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
     DLL_EXPORT void                  Update(const float& deltaTime);
-    DLL_EXPORT void                  UpdateTextureSize(Texture& texture, VkImageAspectFlags imageType, vec2& TextureResolution);
     DLL_EXPORT void                  GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
     DLL_EXPORT void                  UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout);
     DLL_EXPORT void                  UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout, uint32 mipLevels);
