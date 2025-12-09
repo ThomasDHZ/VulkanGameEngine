@@ -12,46 +12,50 @@
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
-VkGuid TextureSystem::CreateTexture(const String& texturePath)
+VkGuid TextureSystem::CreateTexture(const String & texturePath)
 {
-	int width = 0;
-	int height = 0;
-	int colorChannels;
-
+	int width = 0, height = 0, colorChannels = 0;
 	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
-	if (TextureExists(textureLoader.TextureId))
-	{
+
+	if (TextureExists(textureLoader.TextureId)) {
 		return textureLoader.TextureId;
 	}
 
-    Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
-	Texture texture = Texture
-	{
+	Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
+
+	if (width <= 0 || height <= 0 || textureData.empty()) {
+		std::cerr << "ERROR: Failed to load texture or invalid size: " << textureLoader.TextureFilePath << std::endl;
+		width = 1; height = 1;
+		textureData = { 255, 0, 255, 255 };
+		colorChannels = 4;
+	}
+
+	Texture texture = {
 		.textureId = textureLoader.TextureId,
 		.width = width,
 		.height = height,
 		.depth = 1,
-		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
-		.textureBufferIndex = 0,
-		.textureImage = VK_NULL_HANDLE,
-		.textureMemory = VK_NULL_HANDLE,
-		.textureView = VK_NULL_HANDLE,
-		.textureSampler = VK_NULL_HANDLE,
-		.ImGuiDescriptorSet = VK_NULL_HANDLE,
-		.textureUsage = kUse_2DImageTexture,
-		.textureType = kType_UndefinedTexture,
+		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
 		.textureByteFormat = textureLoader.ImageCreateInfo.format,
-		.textureImageLayout = textureLoader.ImageCreateInfo.initialLayout,
-		.sampleCount = textureLoader.ImageCreateInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : textureLoader.ImageCreateInfo.samples,
+		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
 		.colorChannels = (ColorChannelUsed)colorChannels,
 	};
 
-	textureLoader.ImageCreateInfo.extent.width = width;
-	textureLoader.ImageCreateInfo.extent.height = height;
+	textureLoader.ImageCreateInfo.extent.width = static_cast<uint32_t>(width);
+	textureLoader.ImageCreateInfo.extent.height = static_cast<uint32_t>(height);
 	textureLoader.ImageCreateInfo.extent.depth = 1;
+	textureLoader.ImageCreateInfo.mipLevels = texture.mipMapLevels;
+	textureLoader.ImageCreateInfo.arrayLayers = 1;
+	textureLoader.ImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	textureLoader.ImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	textureLoader.ImageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	textureLoader.ImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	textureLoader.ImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
 	CreateTextureImage(texture, textureLoader.ImageCreateInfo, textureData.data(), textureData.size());
 	CreateTextureView(texture, textureLoader.ImageType);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
 	GenerateMipmaps(texture);
 
 	TextureMap[textureLoader.TextureId] = texture;
@@ -346,11 +350,22 @@ void TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textureRes
 
 void TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo)
 {
+	if (imageCreateInfo.extent.width == 0 || imageCreateInfo.extent.height == 0) {
+		imageCreateInfo.extent.width = 1;
+		imageCreateInfo.extent.height = 1;
+	}
+
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-	VmaAllocationInfo vmaAllocInfo;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(vulkanSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &texture.textureMemory, &vmaAllocInfo));
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(
+		vulkanSystem.vmaAllocator,
+		&imageCreateInfo,
+		&allocInfo,
+		&texture.textureImage,
+		&texture.textureMemory,
+		nullptr
+	));
 }
 
 void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)

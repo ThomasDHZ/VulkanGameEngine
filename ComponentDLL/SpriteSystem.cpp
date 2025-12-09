@@ -49,7 +49,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
-    spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(spriteInstanceList, MeshBufferUsageSettings, MeshBufferPropertySettings, false);
+    spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(spriteInstanceList, MeshBufferUsageSettings, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
     spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
 
