@@ -768,7 +768,7 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
 VulkanRenderPass RenderSystem::CreateVulkanRenderPass(const char* renderPassJsonFilePath, RenderPassAttachementTextures& renderPassAttachments, ivec2& renderPassResolution)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
-    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    if (true)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
         renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;

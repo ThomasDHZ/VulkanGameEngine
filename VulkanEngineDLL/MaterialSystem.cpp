@@ -25,6 +25,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 
     bufferSystem.VulkanBufferMap[bufferIndex] = bufferSystem.CreateVulkanBuffer(
         bufferIndex,
+        nullptr,
         shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize,
         1,
         BufferTypeEnum::BufferType_MaterialProperitiesBuffer,

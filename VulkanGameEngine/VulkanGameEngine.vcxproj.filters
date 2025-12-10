@@ -99,9 +99,6 @@
     <ClCompile Include="GameController.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="AndroidMain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
