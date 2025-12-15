@@ -1,7 +1,7 @@
 #include "EngineConfigSystem.h"
 
 #if defined(_WIN32)
-    ConfigSystem configSystem = ConfigSystem::LoadConfig("C:/Users/dotha/Documents/GitHub/VulkanGameEngine/EngineConfig.json");
+    ConfigSystem configSystem = ConfigSystem::LoadConfig("C:/Users/dhz/Documents/GitHub/VulkanGameEngine/EngineConfig.json");
 #elif defined(__ANDROID__)
     ConfigSystem configSystem;
 #elif defined(__linux__) && !defined(__ANDROID__)
