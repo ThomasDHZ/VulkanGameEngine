@@ -1,6 +1,7 @@
 #define BUFFER_SYSTEM_IMPLEMENTATION
 #include "BufferSystem.h"
 #include "MemorySystem.h"
+#include <vk_mem_alloc.h>
 
 VulkanBufferSystem& bufferSystem = VulkanBufferSystem::Get();
 int NextBufferId = 0;
@@ -28,7 +29,79 @@ void VulkanBufferSystem::DestroyAllBuffers()
     }
 }
 
-VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer) 
+uint32 VulkanBufferSystem::VMACreateVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkDeviceSize offset)
+{
+    uint bufferId = NextBufferId++;
+
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | usageFlags;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+
+    VkBuffer dstBuffer = VK_NULL_HANDLE;
+    VmaAllocation dstAllocation = VK_NULL_HANDLE;
+    VmaAllocationInfo dstAllocOut = {};
+    VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vmaAllocator, &bufferInfo, &allocInfo, &dstBuffer, &dstAllocation, &dstAllocOut));
+
+    if (srcData == nullptr) 
+    {
+        VulkanBufferMap[bufferId] = VulkanBuffer
+        {
+            .BufferId = bufferId,
+            .Buffer = dstBuffer,
+            .BufferSize = size,
+            .Allocation = dstAllocation,
+            .BufferData = nullptr,
+            .UsingStagingBuffer = false,
+            .IsPersistentlyMapped = false
+        };
+        return bufferId;
+    }
+
+    VkBufferCreateInfo stagingBufferInfo = {};
+    stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    stagingBufferInfo.size = size;
+    stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stagingBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo stagingAllocInfo = {};
+    stagingAllocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    stagingAllocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+    VkBuffer stagingBuffer = VK_NULL_HANDLE;
+    VmaAllocation stagingAllocation = VK_NULL_HANDLE;
+    VmaAllocationInfo stagingAllocOut = {};
+
+    VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vmaAllocator, &stagingBufferInfo, &stagingAllocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocOut));
+    memcpy((char*)stagingAllocOut.pMappedData + offset, srcData, size);
+    VULKAN_THROW_IF_FAIL(vmaFlushAllocation(vmaAllocator, stagingAllocation, offset, size));
+    CopyBuffer(&stagingBuffer, &dstBuffer, size);
+    vmaDestroyBuffer(vmaAllocator, stagingBuffer, stagingAllocation);
+
+    VulkanBufferMap[bufferId] = VulkanBuffer
+    {
+        .BufferId = bufferId,
+        .Buffer = dstBuffer,
+        .BufferSize = size,
+        .Allocation = dstAllocation,
+        .BufferData = nullptr,
+        .UsingStagingBuffer = true,
+        .IsPersistentlyMapped = false
+    };
+
+    return bufferId;
+}
+
+uint32 VulkanBufferSystem::VMACreateVulkanBuffer(void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+{
+    return uint32();
+}
+
+VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
 {
     VkDeviceSize bufferSize = bufferElementSize * bufferElementCount;
     VulkanBuffer vulkanBuffer = {

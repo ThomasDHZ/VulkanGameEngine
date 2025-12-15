@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "VulkanSystem.h"
+#include <vk_mem_alloc.h>
 
 enum MeshTypeEnum
 {
@@ -36,9 +37,11 @@ struct VulkanBuffer
 	uint64 BufferDeviceAddress = 0;
 	VkAccelerationStructureKHR BufferHandle = VK_NULL_HANDLE;
 	BufferTypeEnum  BufferType;
+    VmaAllocation Allocation = VK_NULL_HANDLE;
 	void* BufferData = nullptr;
 	bool IsMapped = false;
 	bool UsingStagingBuffer = false;
+    bool IsPersistentlyMapped = false;
 };
 
 extern DLL_EXPORT int NextBufferId;
@@ -89,6 +92,7 @@ private:
         }
     }
 
+
     void     CreateBuffer(VkBuffer* buffer, VkDeviceMemory* bufferMemory, void* bufferData, VkDeviceSize bufferSize, VkMemoryPropertyFlags properties, VkBufferUsageFlags usage);
     void     UpdateBufferSize(VulkanBuffer& vulkanBuffer, VkDeviceSize newBufferElementSize, uint32_t newBufferElementCount);
     void     UpdateBufferMemory(VkDeviceMemory bufferMemory, void* dataToCopy, VkDeviceSize bufferSize);
@@ -101,6 +105,7 @@ private:
     void     UpdateStagingBufferData(VkBuffer stagingBuffer, VkBuffer buffer, VkDeviceMemory* stagingBufferMemory, VkDeviceMemory* bufferMemory, void* dataToCopy, VkDeviceSize bufferSize);
 
 public:
+    VmaAllocator			vmaAllocator;
     template <typename T>
     uint32 CreateVulkanBuffer(T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
     {
@@ -141,9 +146,9 @@ public:
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, Vector<T>& bufferData)
     {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
+    /*    BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
         if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
-            throw std::runtime_error("Buffer type doesn't match");
+            throw std::runtime_error("Buffer type doesn't match");*/
 
         VkDeviceSize bufferElementSize = sizeof(T);
         uint bufferElementCount = bufferData.size();
@@ -176,6 +181,9 @@ public:
 
         return DataList;
     }
+
+    uint32 VMACreateVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkDeviceSize offset = 0);
+    uint32 VMACreateVulkanBuffer(void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
 
     DLL_EXPORT VulkanBuffer                CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
     DLL_EXPORT VulkanBuffer                CreateVulkanBuffer(uint bufferId, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);

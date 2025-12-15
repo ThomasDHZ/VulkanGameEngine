@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Platform.h"
 #include "InputEnum.h"
+#include <vk_mem_alloc.h>
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif
@@ -27,6 +28,7 @@ private:
 	VkCommandPool				SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
 	void						SetUpSemaphores();
 	void						SetUpSwapChain(void* windowHandle);
+	VmaAllocator				SetUpVmaAllocation();
 
 	void						GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue);
 	void						GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);

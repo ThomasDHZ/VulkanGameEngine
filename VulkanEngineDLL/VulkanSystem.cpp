@@ -8,6 +8,7 @@
 #include "MemorySystem.h"
 #include "Platform.h"
 #include "EngineConfigSystem.h"
+#include "BufferSystem.h"
 #if defined(__ANDROID__)
 #include <vulkan/vulkan_android.h>
 #endif
@@ -35,6 +36,7 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 	//GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
     vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+    bufferSystem.vmaAllocator = SetUpVmaAllocation();
 	vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
     SetUpSwapChain(windowHandle);
     vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
@@ -100,6 +102,29 @@ void VulkanSystem::SetUpSwapChain(void* windowHandle)
     SetUpSwapChain();
     SetUpSwapChainImages();
     SetUpSwapChainImageViews(swapChainImageFormat);
+}
+
+VmaAllocator VulkanSystem::SetUpVmaAllocation()
+{
+    VmaVulkanFunctions vulkanFunctions =
+    {
+        .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+        .vkGetDeviceProcAddr = vkGetDeviceProcAddr
+    };
+
+    VmaAllocatorCreateInfo allocatorCreateInfo =
+    {
+        .flags = 0,  // Add VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT if needed
+        .physicalDevice = PhysicalDevice,
+        .device = Device,
+        .pVulkanFunctions = &vulkanFunctions,
+        .instance = Instance,
+        .vulkanApiVersion = ApiVersion,
+    };
+
+    VmaAllocator vmaAllocator;
+    vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
+    return vmaAllocator;
 }
 
  void VulkanSystem::DestroyRenderer()
@@ -1007,16 +1032,16 @@ VkCommandBuffer VulkanSystem::BeginSingleUseCommand(VkDevice device, VkCommandPo
 
 void VulkanSystem::EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
 {
-    VkSubmitInfo submitInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &commandBuffer
-    };
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));  
 
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
     VULKAN_THROW_IF_FAIL(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
     VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(graphicsQueue));
+
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
