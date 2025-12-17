@@ -18,25 +18,21 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
         return materialId;
     }
 
-    int bufferIndex = ++NextBufferId;
-
-    shaderSystem.PipelineShaderStructMap[bufferIndex] =
-        shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
-
-    bufferSystem.VulkanBufferMap[bufferIndex] = bufferSystem.CreateVulkanBuffer(
-        bufferIndex,
-        shaderSystem.PipelineShaderStructMap[bufferIndex].ShaderBufferSize,
+    ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
+    uint32 bufferId = bufferSystem.CreateVulkanBuffer(
+        shaderStruct.ShaderBufferSize,
         1,
         BufferTypeEnum::BufferType_MaterialProperitiesBuffer,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
         false
     );
+    shaderSystem.PipelineShaderStructMap[bufferId] = shaderStruct;
 
     Material material;
     material.materialGuid = materialId;
     material.ShaderMaterialBufferIndex = 0;
-    material.MaterialBufferId = bufferIndex;
+    material.MaterialBufferId = bufferId;
     material.AlbedoMapId = VkGuid(json["AlbedoMapId"].get<std::string>());
     material.MetallicRoughnessMapId = VkGuid(json["MetallicRoughnessMapId"].get<std::string>());
     material.MetallicMapId = VkGuid(json["MetallicMapId"].get<std::string>());

@@ -101,11 +101,12 @@ uint32 VulkanBufferSystem::VMACreateVulkanBuffer(void* bufferData, VkDeviceSize 
     return uint32();
 }
 
-VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+uint VulkanBufferSystem::CreateVulkanBuffer(VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
 {
+    uint bufferIndex = ++NextBufferId;
     VkDeviceSize bufferSize = bufferElementSize * bufferElementCount;
     VulkanBuffer vulkanBuffer = {
-        .BufferId = bufferId,
+        .BufferId = bufferIndex,
         .BufferSize = bufferSize,
         .BufferUsage = usage,
         .BufferProperties = properties,
@@ -136,17 +137,18 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, VkDeviceSize 
 		vulkanBuffer.BufferDeviceAddress = vkGetBufferDeviceAddress(vulkanSystem.Device, &addrInfo);
 #endif
     }
-
+    VulkanBufferMap[bufferIndex] = vulkanBuffer;
     memorySystem.DeletePtr(bufferData);
-    return vulkanBuffer;
+    return bufferIndex;
 }
 
-VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+uint VulkanBufferSystem::CreateVulkanBuffer(void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
 {
+    uint bufferIndex = ++NextBufferId;
     VkDeviceSize bufferSize = bufferElementSize * bufferElementCount;
     VulkanBuffer vulkanBuffer =
     {
-        .BufferId = bufferId,
+        .BufferId = bufferIndex,
         .BufferSize = bufferSize,
         .BufferUsage = usage,
         .BufferProperties = properties,
@@ -162,7 +164,8 @@ VulkanBuffer VulkanBufferSystem::CreateVulkanBuffer(uint bufferId, void* bufferD
     {
         CreateBuffer(&vulkanBuffer.Buffer, &vulkanBuffer.BufferMemory, bufferData, bufferSize, vulkanBuffer.BufferProperties, vulkanBuffer.BufferUsage);
     }
-    return vulkanBuffer;
+    VulkanBufferMap[bufferIndex] = vulkanBuffer;
+    return bufferIndex;
 }
 
 void VulkanBufferSystem::UpdateBufferSize(VulkanBuffer& vulkanBuffer, VkDeviceSize newBufferElementSize, uint newBufferElementCount)
