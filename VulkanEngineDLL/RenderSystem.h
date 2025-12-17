@@ -41,7 +41,7 @@ public:
     DLL_EXPORT void              StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution);
     DLL_EXPORT VulkanPipeline                CreateRenderPipeline(VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData);
-    DLL_EXPORT VulkanRenderPass              CreateVulkanRenderPass(const char* renderPassJsonFilePath, RenderPassAttachementTextures& vulkanRenderPass, ivec2& renderPassResolution);
+    DLL_EXPORT RenderPassGuid              CreateVulkanRenderPass(const char* renderPassJsonFilePath, ivec2& renderPassResolution);
     DLL_EXPORT VulkanRenderPass              RebuildSwapChain(VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT void                          DestroyRenderPass(VulkanRenderPass& renderPass);
     DLL_EXPORT VulkanPipeline                RebuildSwapChain(VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData);
