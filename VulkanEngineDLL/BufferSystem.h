@@ -106,6 +106,41 @@ private:
 
 public:
     VmaAllocator			vmaAllocator;
+
+   /* template <typename T>
+    uint32 VMACreateVulkanBuffer(T& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
+    {
+        if (usingStagingBuffer)
+        {
+            return VMACreateStaticVulkanBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
+        }
+        else
+        {
+            return VMACreateDynamicBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
+        }
+    }
+
+    template <typename T>
+    uint32 VMACreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
+    {
+        VkDeviceSize bufferSize = sizeof(T) * bufferData.size();
+        if (bufferData.empty())
+        {
+            bufferSize = sizeof(T) * 64;
+        }
+
+        if (usingStagingBuffer)
+        {
+            return VMACreateStaticVulkanBuffer(static_cast<void*>(&bufferData), bufferSize, shaderUsageFlags);
+        }
+        else
+        {
+            return VMACreateDynamicBuffer(static_cast<void*>(&bufferData), bufferSize, shaderUsageFlags);
+        }
+    }*/
+
+
+
     template <typename T>
     uint32 CreateVulkanBuffer(T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
     {
@@ -178,14 +213,15 @@ public:
         return DataList;
     }
 
-    uint32 VMACreateVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkDeviceSize offset = 0);
-    uint32 VMACreateVulkanBuffer(void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
+    uint32 VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
+    uint32 VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
+    void   VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
 
     DLL_EXPORT uint                CreateVulkanBuffer(VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
     DLL_EXPORT uint                CreateVulkanBuffer(void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
     DLL_EXPORT void                        CreateStagingBuffer(VkBuffer* stagingBuffer, VkBuffer* buffer, VkDeviceMemory* stagingBufferMemory, VkDeviceMemory* bufferMemory, void* bufferData, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsage, VkMemoryPropertyFlags properties);
     DLL_EXPORT void                        UpdateBufferMemory(VulkanBuffer& vulkanBuffer, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount);
-    DLL_EXPORT void                        CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size);
+    DLL_EXPORT void                        CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkDeviceSize offset = 0);
     DLL_EXPORT void                        DestroyBuffer(VulkanBuffer& vulkanBuffer);
     DLL_EXPORT void                        DestroyAllBuffers();
     DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);
