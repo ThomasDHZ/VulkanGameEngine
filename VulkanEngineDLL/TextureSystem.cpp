@@ -57,70 +57,28 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	return textureLoader.TextureId;
 }
 
-Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
+
+Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples, uint32 mipLevels, bool createSampler)
 {
-	int a = 34;
-	Texture texture = Texture
+	Texture texture =
 	{
 		.textureId = textureId,
-		.width = static_cast<int>(createImageInfo.extent.width),
-		.height = static_cast<int>(createImageInfo.extent.height),
-		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
-		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
-		.textureBufferIndex = 0,
-		.textureImage = VK_NULL_HANDLE,
-		.textureMemory = VK_NULL_HANDLE,
-		.textureView = VK_NULL_HANDLE,
-		.textureSampler = VK_NULL_HANDLE,
-		.ImGuiDescriptorSet = VK_NULL_HANDLE,
-		.textureUsage = kUse_2DImageTexture,
-		.textureType = kType_UndefinedTexture,
-		.textureByteFormat = createImageInfo.format,
-		.textureImageLayout = createImageInfo.initialLayout,
-		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
-		.colorChannels = ChannelRGBA,
+		.width = static_cast<int>(width),
+		.height = static_cast<int>(height),
+		.depth = 1,
+		.mipMapLevels = mipLevels,
+		.textureByteFormat = format,
+		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.sampleCount = samples
 	};
-	createImageInfo.mipLevels = texture.mipMapLevels;
-	CreateTextureImage(texture, createImageInfo);
-	CreateTextureView(texture, imageType);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, NULL, &texture.textureSampler));
-	return texture;
-}
-
-Texture TextureSystem::CreateRenderPassTexture(
-	VkGuid& textureId,
-	uint32 width,
-	uint32 height,
-	VkFormat format,
-	VkSampleCountFlagBits samples,
-	uint32 mipLevels,
-	bool createSampler)  // Optional: only if you'll sample it
-{
-	Texture texture = {};
-	texture.textureId = textureId;
-	texture.width = static_cast<int>(width);
-	texture.height = static_cast<int>(height);
-	texture.depth = 1;
-	texture.mipMapLevels = mipLevels;
-	texture.textureByteFormat = format;
-	texture.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	texture.sampleCount = samples;
-
-	// Determine if this is a depth format
-	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
-		(format == VK_FORMAT_X8_D24_UNORM_PACK32);
 
 	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
-
-	// Set usage flags correctly
-	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |          // Almost always want this
-		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |    // For mip gen, resolve
-		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	if (isDepthFormat)
 	{
 		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		texture.colorChannels = ColorChannelUsed::ChannelR;  // Or add a DepthStencil enum
+		texture.colorChannels = ColorChannelUsed::ChannelR;
 	}
 	else
 	{
@@ -128,38 +86,44 @@ Texture TextureSystem::CreateRenderPassTexture(
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 	}
 
-	VkImageCreateInfo imageInfo = {};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.format = format;
-	imageInfo.extent = { width, height, 1 };
-	imageInfo.mipLevels = mipLevels;
-	imageInfo.arrayLayers = 1;
-	imageInfo.samples = samples;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.usage = usage;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VkImageCreateInfo imageInfo =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.imageType = VK_IMAGE_TYPE_2D,
+		.format = format,
+		.extent = { width, height, 1 },
+		.mipLevels = mipLevels,
+		.arrayLayers = 1,
+		.samples = samples,
+		.tiling = VK_IMAGE_TILING_OPTIMAL,
+		.usage = usage,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+	};
 
-	VmaAllocationCreateInfo allocInfo = {};
-	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+	VmaAllocationCreateInfo allocInfo =
+	{
+		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
+	};
 
 	VmaAllocation allocation = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo,
-		&texture.textureImage, &allocation, nullptr));
-
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	texture.TextureAllocation = allocation;
 
-	// Create view with correct aspect mask
-	VkImageViewCreateInfo viewInfo = {};
-	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewInfo.image = texture.textureImage;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	viewInfo.format = format;
-	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = mipLevels;
-	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = 1;
+	VkImageViewCreateInfo viewInfo =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+		.image = texture.textureImage,
+		.viewType = VK_IMAGE_VIEW_TYPE_2D,
+		.format = format,
+		.subresourceRange =
+		{
+			.baseMipLevel = 0,
+			.levelCount = mipLevels,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		}
+	};
 
 	if (isDepthFormat)
 	{
@@ -175,8 +139,6 @@ Texture TextureSystem::CreateRenderPassTexture(
 	}
 
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
-
-	// Create sampler only if we'll sample it
 	if (createSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT))
 	{
 		VkSamplerCreateInfo samplerInfo = {};
@@ -352,23 +314,6 @@ const Vector<Texture> TextureSystem::DepthTextureList()
 void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex)
 {
 	texture.textureBufferIndex = bufferIndex;
-}
-
-void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo)
-{
-	VULKAN_THROW_IF_FAIL(vkCreateImage(vulkanSystem.Device, &createImageInfo, nullptr, &texture.textureImage));
-
-	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(vulkanSystem.Device, texture.textureImage, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo =
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = vulkanSystem.GetMemoryType(vulkanSystem.PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	};
-	VULKAN_THROW_IF_FAIL(vkAllocateMemory(vulkanSystem.Device, &allocInfo, nullptr, &texture.textureMemory));
-	VULKAN_THROW_IF_FAIL(vkBindImageMemory(vulkanSystem.Device, texture.textureImage, texture.textureMemory, 0));
 }
 
 void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)

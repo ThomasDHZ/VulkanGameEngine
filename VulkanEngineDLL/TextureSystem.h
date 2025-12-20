@@ -54,7 +54,6 @@ private:
     TextureSystem& operator=(TextureSystem&&) = delete;
 
     void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
-    void CreateTextureImage(Texture& texture, VkImageCreateInfo& createImageInfo);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize);
     void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
     void GenerateMipmaps(Texture& texture);
@@ -65,7 +64,6 @@ public:
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
 
     DLL_EXPORT VkGuid                CreateTexture(const String& texturePath);
-    DLL_EXPORT Texture               CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
     DLL_EXPORT Texture               CreateRenderPassTexture(VkGuid& textureId, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, uint32 mipLevels = 1, bool createSampler = true);
     DLL_EXPORT void                  AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                  AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
