@@ -419,36 +419,27 @@ void VulkanBufferSystem::CreateStagingBuffer(VkBuffer* stagingBuffer, VkBuffer* 
 void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkDeviceSize offset)
 {
     VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
-
-    VkBufferCopy copyRegion = {};
-    copyRegion.srcOffset = offset;
-    copyRegion.dstOffset = offset;
-    copyRegion.size = size;
+    VkBufferCopy copyRegion =
+    {
+        .srcOffset = offset,
+        .dstOffset = offset,
+        .size = size
+    };
 
     vkCmdCopyBuffer(cmd, *srcBuffer, *dstBuffer, 1, &copyRegion);
+    VkBufferMemoryBarrier barrier =
+    {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .buffer = *dstBuffer,
+        .offset = offset,
+        .size = size
+    };
 
-    // THIS IS THE FINAL FIX — makes transfer writes visible to vertex reads
-    VkBufferMemoryBarrier barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;                 // From the copy
-    barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;          // To vertex shader
-    // If this buffer is also an index buffer, add: | VK_ACCESS_INDEX_READ_BIT
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.buffer = *dstBuffer;
-    barrier.offset = offset;
-    barrier.size = size;
-
-    vkCmdPipelineBarrier(
-        cmd,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,          // Wait for copy to finish
-        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,      // Before vertex stage reads it
-        0,
-        0, nullptr,
-        1, &barrier,
-        0, nullptr
-    );
-
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
     vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, cmd);
 }
 
