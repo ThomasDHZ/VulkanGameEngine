@@ -66,7 +66,7 @@ public:
 
     DLL_EXPORT VkGuid                CreateTexture(const String& texturePath);
     DLL_EXPORT Texture               CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps);
-    DLL_EXPORT Texture               CreateRenderPassTexture(uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, VkImageUsageFlags extraUsage = 0, uint32 mipLevels = 1);
+    DLL_EXPORT Texture               CreateRenderPassTexture(VkGuid& textureId, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, uint32 mipLevels = 1, bool createSampler = true);
     DLL_EXPORT void                  AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                  AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
     DLL_EXPORT void                  Update(const float& deltaTime);

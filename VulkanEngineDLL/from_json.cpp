@@ -121,7 +121,7 @@ namespace nlohmann
 
     void from_json(const json& j, RenderAreaModel& area) {
         j.at("RenderArea").get_to(area.RenderArea);
-        j.at("UseDefaultRenderArea").get_to(area.UseDefaultRenderArea);
+        j.at("UseSwapChainRenderArea").get_to(area.UseSwapChainRenderArea);
     }
 
     void from_json(const json& j, VkGuid& guid) {

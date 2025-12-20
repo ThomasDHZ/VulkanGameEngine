@@ -656,7 +656,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 var widthProp = typeof(Extent2D).GetProperty(nameof(Extent2D.Width));
                 var heightProp = typeof(Extent2D).GetProperty(nameof(Extent2D.Height));
 
-                if (renderArea.UseDefaultRenderArea)
+                if (renderArea.UseSwapChainRenderArea)
                 {
                     if (widthProp != null) extentPanel.AddDynamicAttribute(widthProp, new IgnorePropertyAttribute());
                     if (heightProp != null) extentPanel.AddDynamicAttribute(heightProp, new IgnorePropertyAttribute());

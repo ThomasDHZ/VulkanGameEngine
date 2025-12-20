@@ -104,7 +104,7 @@
     }
   ],
   "RenderArea": {
-    "UseDefaultRenderArea": true,
+    "UseSwapChainRenderArea": true,
     "RenderArea": {
       "offset": {
         "x": 0,

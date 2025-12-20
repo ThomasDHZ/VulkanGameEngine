@@ -15,7 +15,7 @@ struct RenderedTextureInfoModel
 struct RenderAreaModel
 {
     VkRect2D RenderArea;
-    bool UseDefaultRenderArea;
+    bool UseSwapChainRenderArea;
 };
 
 struct PipelineDescriptorModel

@@ -99,7 +99,7 @@
         "height": 0
       }
     },
-    "UseDefaultRenderArea": true
+    "UseSwapChainRenderArea": true
   },
   "_name": "BasicRenderPass",
   "IsRenderedToSwapchain": true,

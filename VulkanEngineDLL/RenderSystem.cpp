@@ -5,6 +5,7 @@
 #include "MeshSystem.h"
 #include "BufferSystem.h"
 #include "from_json.h"
+#include "GPUSystem.h"
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -25,7 +26,7 @@ void RenderSystem::Update(void* windowHandle, RenderPassGuid& spriteRenderPass2D
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
-    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    if (renderPassLoader.RenderArea.UseSwapChainRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
         renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
@@ -757,7 +758,7 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
 RenderPassGuid RenderSystem::CreateVulkanRenderPass(const char* renderPassJsonFilePath, ivec2& renderPassResolution)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
-    if (renderPassLoader.RenderArea.UseDefaultRenderArea)
+    if (renderPassLoader.RenderArea.UseSwapChainRenderArea)
     {
         renderPassLoader.RenderArea.RenderArea.extent.width = renderPassResolution.x;
         renderPassLoader.RenderArea.RenderArea.extent.height = renderPassResolution.y;
@@ -938,10 +939,6 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
                 });
             break;
         }
-        default:
-        {
-            throw std::runtime_error("Case doesn't exist: RenderedTextureType");
-        }
         case RenderedTextureType::DepthRenderedTexture:
         {
             depthReference.emplace_back(VkAttachmentReference
@@ -950,6 +947,10 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
                     .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
                 });
             break;
+        }
+        default:
+        {
+            throw std::runtime_error("Case doesn't exist: RenderedTextureType");
         }
         }
     }
@@ -1005,12 +1006,16 @@ void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPass
         bool usingMipMap = texture.UsingMipMaps;
         VkImageCreateInfo imageCreateInfo = texture.ImageCreateInfo;
         VkSamplerCreateInfo samplerCreateInfo = texture.SamplerCreateInfo;
+        uint32 width = imageCreateInfo.extent.width;
+        uint32 height = imageCreateInfo.extent.height;
+        VkFormat textureByteFormat = imageCreateInfo.format;
+        VkSampleCountFlagBits sampleCount = imageCreateInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : imageCreateInfo.samples;
         switch (texture.TextureType)
         {
-        case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_COLOR_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap)); break;
-        case DepthRenderedTexture: depthTexture = textureSystem.CreateTexture(renderedTextureId, VK_IMAGE_ASPECT_DEPTH_BIT, imageCreateInfo, samplerCreateInfo, usingMipMap); break;
+        case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderedTextureId, width, height, textureByteFormat, sampleCount, 1, true)); break;
+        case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderedTextureId, width, height, textureByteFormat, sampleCount, 1, true)); break;
+        case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderedTextureId, width, height, textureByteFormat, sampleCount, 1, true)); break;
+        case DepthRenderedTexture: depthTexture = textureSystem.CreateRenderPassTexture(renderedTextureId, width, height, textureByteFormat, sampleCount, 1, true); break;
         };
     }
 }

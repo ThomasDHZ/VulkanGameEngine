@@ -59,6 +59,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 
 Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
 {
+	int a = 34;
 	Texture texture = Texture
 	{
 		.textureId = textureId,
@@ -67,11 +68,11 @@ Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags image
 		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
 		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
 		.textureBufferIndex = 0,
-		.textureImage = texture.textureImage,
-		.textureMemory = texture.textureMemory,
-		.textureView = texture.textureView,
-		.textureSampler = texture.textureSampler,
-		.ImGuiDescriptorSet = texture.ImGuiDescriptorSet,
+		.textureImage = VK_NULL_HANDLE,
+		.textureMemory = VK_NULL_HANDLE,
+		.textureView = VK_NULL_HANDLE,
+		.textureSampler = VK_NULL_HANDLE,
+		.ImGuiDescriptorSet = VK_NULL_HANDLE,
 		.textureUsage = kUse_2DImageTexture,
 		.textureType = kType_UndefinedTexture,
 		.textureByteFormat = createImageInfo.format,
@@ -86,86 +87,114 @@ Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags image
 	return texture;
 }
 
-Texture TextureSystem::CreateRenderPassTexture(uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples, VkImageUsageFlags extraUsage, uint32 mipLevels)
+Texture TextureSystem::CreateRenderPassTexture(
+	VkGuid& textureId,
+	uint32 width,
+	uint32 height,
+	VkFormat format,
+	VkSampleCountFlagBits samples,
+	uint32 mipLevels,
+	bool createSampler)  // Optional: only if you'll sample it
 {
-	Texture texture =
-	{
-		.width = static_cast<int>(width),
-		.height = static_cast<int>(height),
-		.depth = 1,
-		.mipMapLevels = mipLevels,
-		.textureByteFormat = format,
-		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.sampleCount = samples
-	};
+	Texture texture = {};
+	texture.textureId = textureId;
+	texture.width = static_cast<int>(width);
+	texture.height = static_cast<int>(height);
+	texture.depth = 1;
+	texture.mipMapLevels = mipLevels;
+	texture.textureByteFormat = format;
+	texture.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	texture.sampleCount = samples;
 
-	VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | extraUsage;
-	if (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT)
+	// Determine if this is a depth format
+	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
+		(format == VK_FORMAT_X8_D24_UNORM_PACK32);
+
+	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
+
+	// Set usage flags correctly
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |          // Almost always want this
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |    // For mip gen, resolve
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+	if (isDepthFormat)
 	{
-		usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		texture.colorChannels = ColorChannelUsed::ChannelR;  // Or add a DepthStencil enum
+	}
+	else
+	{
+		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 	}
 
-	VkImageCreateInfo imageInfo =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.imageType = VK_IMAGE_TYPE_2D,
-		.format = format,
-		.extent = { width, height, 1 },
-		.mipLevels = mipLevels,
-		.arrayLayers = 1,
-		.samples = samples,
-		.tiling = VK_IMAGE_TILING_OPTIMAL,
-		.usage = usage,
-		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	};
+	VkImageCreateInfo imageInfo = {};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.format = format;
+	imageInfo.extent = { width, height, 1 };
+	imageInfo.mipLevels = mipLevels;
+	imageInfo.arrayLayers = 1;
+	imageInfo.samples = samples;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.usage = usage;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	VmaAllocationCreateInfo allocInfo =
-	{
-		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
-	};
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-	VmaAllocation allocation;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
+	VmaAllocation allocation = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo,
+		&texture.textureImage, &allocation, nullptr));
+
 	texture.TextureAllocation = allocation;
 
-	VkImageViewCreateInfo viewInfo =
+	// Create view with correct aspect mask
+	VkImageViewCreateInfo viewInfo = {};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = texture.textureImage;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = format;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = mipLevels;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	if (isDepthFormat)
 	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-		.image = texture.textureImage,
-		.viewType = VK_IMAGE_VIEW_TYPE_2D,
-		.format = format,
-		.subresourceRange =
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (hasStencil)
 		{
-			.aspectMask = static_cast<VkImageAspectFlags>((usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT),
-			.baseMipLevel = 0,
-			.levelCount = mipLevels,
-			.baseArrayLayer = 0,
-			.layerCount = 1
+			viewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
-	};
+	}
+	else
+	{
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 
-	if (extraUsage & VK_IMAGE_USAGE_SAMPLED_BIT)
+	// Create sampler only if we'll sample it
+	if (createSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT))
 	{
-		VkSamplerCreateInfo samplerInfo =
-		{
-			.magFilter = VK_FILTER_LINEAR,
-			.minFilter = VK_FILTER_LINEAR,
-			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-			.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			.minLod = 0,
-			.maxLod = static_cast<float>(mipLevels)
-		};
+		VkSamplerCreateInfo samplerInfo = {};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = static_cast<float>(mipLevels);
+
 		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
 	}
 
 	return texture;
 }
-
 
 void TextureSystem::Update(const float& deltaTime)
 {
@@ -353,10 +382,10 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 		allocInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 	}
 
-	VmaAllocation allocation = VK_NULL_HANDLE;
 	VmaAllocationInfo allocOut = {};
-
+	VmaAllocation allocation = VK_NULL_HANDLE;
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, &allocOut));
+	
 	texture.TextureAllocation = allocation;
 	if (textureData && textureSize > 0)
 	{
