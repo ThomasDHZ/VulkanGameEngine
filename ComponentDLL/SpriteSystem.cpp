@@ -49,7 +49,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
-    spriteLayer.SpriteLayerBufferId = bufferSystem.VMACreateVulkanBuffer<SpriteInstance>(spriteInstanceList, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false);
+    spriteLayer.SpriteLayerBufferId = bufferSystem.VMACreateDynamicBuffer(spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
 
