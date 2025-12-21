@@ -107,7 +107,7 @@ private:
 public:
     VmaAllocator			vmaAllocator;
 
-   /* template <typename T>
+    template <typename T>
     uint32 VMACreateVulkanBuffer(T& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
     {
         if (usingStagingBuffer)
@@ -131,13 +131,13 @@ public:
 
         if (usingStagingBuffer)
         {
-            return VMACreateStaticVulkanBuffer(static_cast<void*>(&bufferData), bufferSize, shaderUsageFlags);
+            return VMACreateStaticVulkanBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
         }
         else
         {
-            return VMACreateDynamicBuffer(static_cast<void*>(&bufferData), bufferSize, shaderUsageFlags);
+            return VMACreateDynamicBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
         }
-    }*/
+    }
 
 
 

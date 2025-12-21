@@ -19,14 +19,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     }
 
     ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
-    uint32 bufferId = bufferSystem.CreateVulkanBuffer(
-        shaderStruct.ShaderBufferSize,
-        1,
-        BufferTypeEnum::BufferType_MaterialProperitiesBuffer,
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        false
-    );
+    uint32 bufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     shaderSystem.PipelineShaderStructMap[bufferId] = shaderStruct;
 
     Material material;

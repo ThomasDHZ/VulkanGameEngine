@@ -80,9 +80,9 @@ uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDe
         .usage = VMA_MEMORY_USAGE_AUTO
     };
 
+    VmaAllocationInfo stagingAllocOut = {};
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingAllocation = VK_NULL_HANDLE;
-    VmaAllocationInfo stagingAllocOut = {};
     VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vmaAllocator, &stagingBufferInfo, &stagingAllocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocOut));
 
     bool needUnmap = false;
