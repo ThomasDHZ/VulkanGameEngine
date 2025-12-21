@@ -1,5 +1,5 @@
 #include "from_json.h"
-#include "GPUSystem.h"
+#include "VulkanSystem.h"
 
 namespace nlohmann
 {
@@ -150,7 +150,7 @@ namespace nlohmann
         if (j.contains("SampleCountOverride"))
         {
             j.at("SampleCountOverride").get_to(model.SampleCountOverride);
-            model.SampleCountOverride = model.SampleCountOverride >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : model.SampleCountOverride;
+            model.SampleCountOverride = model.SampleCountOverride >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : model.SampleCountOverride;
             model.ImageCreateInfo.samples = model.SampleCountOverride;
             model.AttachmentDescription.samples = model.SampleCountOverride;
         }

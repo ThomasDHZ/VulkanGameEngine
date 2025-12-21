@@ -2,7 +2,6 @@
 #include "RenderSystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
-#include "GPUSystem.h"
 #include "JsonStruct.h"
 #include "from_json.h"
 #include <algorithm>
@@ -42,7 +41,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		.textureType = kType_UndefinedTexture,
 		.textureByteFormat = textureLoader.ImageCreateInfo.format,
 		.textureImageLayout = textureLoader.ImageCreateInfo.initialLayout,
-		.sampleCount = textureLoader.ImageCreateInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : textureLoader.ImageCreateInfo.samples,
+		.sampleCount = textureLoader.ImageCreateInfo.samples >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : textureLoader.ImageCreateInfo.samples,
 		.colorChannels = (ColorChannelUsed)colorChannels,
 	};
 

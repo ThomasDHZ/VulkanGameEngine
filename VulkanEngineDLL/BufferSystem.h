@@ -170,7 +170,7 @@ public:
     DLL_EXPORT uint32 VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
     DLL_EXPORT uint32 VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
     DLL_EXPORT void   VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
-    DLL_EXPORT void                        CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkDeviceSize offset = 0);
+    DLL_EXPORT void                        CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
     DLL_EXPORT void                        DestroyBuffer(VulkanBuffer& vulkanBuffer);
     DLL_EXPORT void                        DestroyAllBuffers();
     DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);

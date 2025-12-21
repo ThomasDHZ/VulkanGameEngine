@@ -4,6 +4,7 @@
 #include "Transform2DComponent.h"
 #include "MegaManShot.h"
 #include "VulkanSystem.h"
+#include <entt/entt.hpp>
 
 enum GameObjectTypeEnum
 {

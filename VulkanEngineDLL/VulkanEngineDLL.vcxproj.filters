@@ -75,9 +75,6 @@
     <ClInclude Include="FileSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="GPUSystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="MaterialSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -152,9 +149,6 @@
     <ClCompile Include="FileSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="GPUSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="MeshSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -183,7 +177,7 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -5,7 +5,6 @@
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
-#include <GPUSystem.h>
 #include "Mouse.h"
 #include "GameController.h"
 #include <LevelSystem.h>
@@ -52,7 +51,6 @@ void GameSystem::StartUp(void* windowHandle)
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
-    gpuSystem.StartUp();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 

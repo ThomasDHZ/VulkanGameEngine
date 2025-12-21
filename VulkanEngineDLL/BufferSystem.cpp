@@ -100,7 +100,7 @@ uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDe
         vmaUnmapMemory(vmaAllocator, stagingAllocation);
     }
 
-    CopyBuffer(&stagingBuffer, &dstBuffer, size - offset, offset);
+    CopyBuffer(&stagingBuffer, &dstBuffer, size - offset, shaderUsageFlags, offset);
     vmaDestroyBuffer(vmaAllocator, stagingBuffer, stagingAllocation);
 
     VulkanBufferMap[bufferId] = 
@@ -189,21 +189,7 @@ void VulkanBufferSystem::VMAUpdateDynamicBuffer(uint32 bufferId, const void* dat
     }
 }
 
-void VulkanBufferSystem::CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize bufferSize)
-{
-    VkBufferCopy copyRegion =
-    {
-        .srcOffset = 0,
-        .dstOffset = 0,
-        .size = bufferSize
-    };
-
-    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-    vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, commandBuffer);
-}
-
-void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkDeviceSize offset)
+void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkDeviceSize offset)
 {
     VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
     VkBufferCopy copyRegion =
@@ -212,21 +198,53 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
         .dstOffset = offset,
         .size = size
     };
-
     vkCmdCopyBuffer(cmd, *srcBuffer, *dstBuffer, 1, &copyRegion);
+
+    VkPipelineStageFlags dstStageMask = 0;
+    VkAccessFlags dstAccessMask = 0;
+
+    if (usageFlags & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) 
+    {
+        dstStageMask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+        dstAccessMask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    }
+    if (usageFlags & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) {
+        dstStageMask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+        dstAccessMask |= VK_ACCESS_INDEX_READ_BIT;
+    }
+    if (usageFlags & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT) {
+        dstStageMask |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+        dstAccessMask |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+    }
+    if (usageFlags & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) 
+    {
+        dstStageMask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        dstAccessMask |= VK_ACCESS_UNIFORM_READ_BIT;
+    }
+    if (usageFlags & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) 
+    {
+        dstStageMask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dstAccessMask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    }
+    if (dstStageMask == 0) 
+    {
+        std::cout << "Unoptimised buffer transfer" << std::endl;
+        dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
+    }
+
     VkBufferMemoryBarrier barrier =
     {
         .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-        .dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT,
+        .dstAccessMask = dstAccessMask,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .buffer = *dstBuffer,
         .offset = offset,
         .size = size
     };
-
-    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, dstStageMask, 0, 0, nullptr, 1, &barrier, 0, nullptr);
     vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, cmd);
 }
 

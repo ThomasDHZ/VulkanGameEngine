@@ -5,7 +5,6 @@
 #include "MeshSystem.h"
 #include "BufferSystem.h"
 #include "from_json.h"
-#include "GPUSystem.h"
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -1009,7 +1008,7 @@ void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPass
         uint32 width = imageCreateInfo.extent.width;
         uint32 height = imageCreateInfo.extent.height;
         VkFormat textureByteFormat = imageCreateInfo.format;
-        VkSampleCountFlagBits sampleCount = imageCreateInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : imageCreateInfo.samples;
+        VkSampleCountFlagBits sampleCount = imageCreateInfo.samples >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : imageCreateInfo.samples;
         switch (texture.TextureType)
         {
         case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderedTextureId, width, height, textureByteFormat, sampleCount, 1, true)); break;
