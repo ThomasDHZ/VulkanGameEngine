@@ -141,51 +141,51 @@ public:
 
 
 
-    template <typename T>
-    uint32 CreateVulkanBuffer(T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
-    {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = 1;
+    //template <typename T>
+    //uint32 CreateVulkanBuffer(T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+    //{
+    //    BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
+    //    VkDeviceSize bufferElementSize = sizeof(T);
+    //    uint bufferElementCount = 1;
 
-        return CreateVulkanBuffer(static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
-    }
+    //    return CreateVulkanBuffer(static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
+    //}
 
-    template <typename T>
-    uint32 CreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
-    {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = bufferData.size();
+    //template <typename T>
+    //uint32 CreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+    //{
+    //    BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
+    //    VkDeviceSize bufferElementSize = sizeof(T);
+    //    uint bufferElementCount = bufferData.size();
 
-        return CreateVulkanBuffer(bufferData.data(), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
-    }
+    //    return CreateVulkanBuffer(bufferData.data(), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
+    //}
 
-    template <typename T>
-    void UpdateBufferMemory(uint32 bufferId, T& bufferData)
-    {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
-            throw std::runtime_error("Buffer type doesn't match");
+    //template <typename T>
+    //void UpdateBufferMemory(uint32 bufferId, T& bufferData)
+    //{
+    //    BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
+    //    if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
+    //        throw std::runtime_error("Buffer type doesn't match");
 
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = 1;
+    //    VkDeviceSize bufferElementSize = sizeof(T);
+    //    uint bufferElementCount = 1;
 
-        UpdateBufferMemory(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount);
-    }
+    //    UpdateBufferMemory(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount);
+    //}
 
-    template <typename T>
-    void UpdateBufferMemory(uint32 bufferId, Vector<T>& bufferData)
-    {
-    /*    BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
-            throw std::runtime_error("Buffer type doesn't match");*/
+    //template <typename T>
+    //void UpdateBufferMemory(uint32 bufferId, Vector<T>& bufferData)
+    //{
+    ///*    BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
+    //    if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
+    //        throw std::runtime_error("Buffer type doesn't match");*/
 
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = bufferData.size();
+    //    VkDeviceSize bufferElementSize = sizeof(T);
+    //    uint bufferElementCount = bufferData.size();
 
-        UpdateBufferMemory(VulkanBufferMap[bufferId], bufferData.data(), bufferElementSize, bufferElementCount);
-    }
+    //    UpdateBufferMemory(VulkanBufferMap[bufferId], bufferData.data(), bufferElementSize, bufferElementCount);
+    //}
 
     template <typename T>
     Vector<T> CheckBufferMemory(uint32 vulkanBufferId)
@@ -213,9 +213,9 @@ public:
         return DataList;
     }
 
-    uint32 VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
-    uint32 VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
-    void   VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
+    DLL_EXPORT uint32 VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
+    DLL_EXPORT uint32 VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
+    DLL_EXPORT void   VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
 
     DLL_EXPORT uint                CreateVulkanBuffer(VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
     DLL_EXPORT uint                CreateVulkanBuffer(void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
