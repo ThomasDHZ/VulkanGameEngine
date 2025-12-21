@@ -27,8 +27,6 @@ void InputSystem::Update(const float& deltaTime)
             }
             else 
             {
-                std::cout << "Not mapped as gamepad. Raw axes/buttons available." << std::endl;
-
                 int count;
                 const float* axes = glfwGetJoystickAxes(joy, &count);
                 const unsigned char* buttons = glfwGetJoystickButtons(joy, &count);

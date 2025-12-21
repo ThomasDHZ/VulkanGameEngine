@@ -8,7 +8,7 @@ namespace VulkanGameEngineLevelEditor.Models
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct RenderAreaModel : INotifyPropertyChanged
     {
-        public bool UseDefaultRenderArea { get; set; }
+        public bool UseSwapChainRenderArea { get; set; }
         public VkRect2D RenderArea { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
     }

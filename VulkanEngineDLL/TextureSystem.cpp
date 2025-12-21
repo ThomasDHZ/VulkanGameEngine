@@ -12,83 +12,149 @@
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
-VkGuid TextureSystem::CreateTexture(const String & texturePath)
+VkGuid TextureSystem::CreateTexture(const String& texturePath)
 {
-	int width = 0, height = 0, colorChannels = 0;
-	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
+	int width = 0;
+	int height = 0;
+	int colorChannels;
 
-	if (TextureExists(textureLoader.TextureId)) {
+	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
+	if (TextureExists(textureLoader.TextureId))
+	{
 		return textureLoader.TextureId;
 	}
 
-	Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
-
-	if (width <= 0 || height <= 0 || textureData.empty()) {
-		std::cerr << "ERROR: Failed to load texture or invalid size: " << textureLoader.TextureFilePath << std::endl;
-		width = 1; height = 1;
-		textureData = { 255, 0, 255, 255 };
-		colorChannels = 4;
-	}
-
-	Texture texture = {
+    Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
+	Texture texture = Texture
+	{
 		.textureId = textureLoader.TextureId,
 		.width = width,
 		.height = height,
 		.depth = 1,
-		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
+		.textureBufferIndex = 0,
+		.textureImage = VK_NULL_HANDLE,
+		.textureMemory = VK_NULL_HANDLE,
+		.textureView = VK_NULL_HANDLE,
+		.textureSampler = VK_NULL_HANDLE,
+		.ImGuiDescriptorSet = VK_NULL_HANDLE,
+		.textureUsage = kUse_2DImageTexture,
+		.textureType = kType_UndefinedTexture,
 		.textureByteFormat = textureLoader.ImageCreateInfo.format,
-		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+		.textureImageLayout = textureLoader.ImageCreateInfo.initialLayout,
+		.sampleCount = textureLoader.ImageCreateInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : textureLoader.ImageCreateInfo.samples,
 		.colorChannels = (ColorChannelUsed)colorChannels,
 	};
 
-	textureLoader.ImageCreateInfo.extent.width = static_cast<uint32_t>(width);
-	textureLoader.ImageCreateInfo.extent.height = static_cast<uint32_t>(height);
+	textureLoader.ImageCreateInfo.extent.width = width;
+	textureLoader.ImageCreateInfo.extent.height = height;
 	textureLoader.ImageCreateInfo.extent.depth = 1;
-	textureLoader.ImageCreateInfo.mipLevels = texture.mipMapLevels;
-	textureLoader.ImageCreateInfo.arrayLayers = 1;
-	textureLoader.ImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	textureLoader.ImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	textureLoader.ImageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	textureLoader.ImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	textureLoader.ImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
 	CreateTextureImage(texture, textureLoader.ImageCreateInfo, textureData.data(), textureData.size());
 	CreateTextureView(texture, textureLoader.ImageType);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
-	GenerateMipmaps(texture);
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
 	TextureMap[textureLoader.TextureId] = texture;
 	return textureLoader.TextureId;
 }
 
-Texture TextureSystem::CreateTexture(VkGuid& textureId, VkImageAspectFlags imageType, VkImageCreateInfo& createImageInfo, VkSamplerCreateInfo& samplerCreateInfo, bool useMipMaps)
+
+Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples, uint32 mipLevels, bool createSampler)
 {
-	Texture texture = Texture
+	Texture texture =
 	{
 		.textureId = textureId,
-		.width = static_cast<int>(createImageInfo.extent.width),
-		.height = static_cast<int>(createImageInfo.extent.height),
-		.depth = (static_cast<int>(createImageInfo.extent.depth) < 1) ? 1 : static_cast<int>(createImageInfo.extent.depth),
-		.mipMapLevels = useMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
-		.textureBufferIndex = 0,
-		.textureImage = texture.textureImage,
-		.textureMemory = texture.textureMemory,
-		.textureView = texture.textureView,
-		.textureSampler = texture.textureSampler,
-		.ImGuiDescriptorSet = texture.ImGuiDescriptorSet,
-		.textureUsage = kUse_2DImageTexture,
-		.textureType = kType_UndefinedTexture,
-		.textureByteFormat = createImageInfo.format,
-		.textureImageLayout = createImageInfo.initialLayout,
-		.sampleCount = createImageInfo.samples >= gpuSystem.MaxSampleCount ? gpuSystem.MaxSampleCount : createImageInfo.samples,
-		.colorChannels = ChannelRGBA,
+		.width = static_cast<int>(width),
+		.height = static_cast<int>(height),
+		.depth = 1,
+		.mipMapLevels = mipLevels,
+		.textureByteFormat = format,
+		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.sampleCount = samples
 	};
-	createImageInfo.mipLevels = texture.mipMapLevels;
-	CreateImage(texture, createImageInfo);
-	CreateTextureView(texture, imageType);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, NULL, &texture.textureSampler));
-	GenerateMipmaps(texture);
+
+	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
+	if (isDepthFormat)
+	{
+		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		texture.colorChannels = ColorChannelUsed::ChannelR;
+	}
+	else
+	{
+		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
+	}
+
+	VkImageCreateInfo imageInfo =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.imageType = VK_IMAGE_TYPE_2D,
+		.format = format,
+		.extent = { width, height, 1 },
+		.mipLevels = mipLevels,
+		.arrayLayers = 1,
+		.samples = samples,
+		.tiling = VK_IMAGE_TILING_OPTIMAL,
+		.usage = usage,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+	};
+
+	VmaAllocationCreateInfo allocInfo =
+	{
+		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
+	};
+
+	VmaAllocation allocation = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
+	texture.TextureAllocation = allocation;
+
+	VkImageViewCreateInfo viewInfo =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+		.image = texture.textureImage,
+		.viewType = VK_IMAGE_VIEW_TYPE_2D,
+		.format = format,
+		.subresourceRange =
+		{
+			.baseMipLevel = 0,
+			.levelCount = mipLevels,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		}
+	};
+
+	if (isDepthFormat)
+	{
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (hasStencil)
+		{
+			viewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	}
+	else
+	{
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
+	if (createSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT))
+	{
+		VkSamplerCreateInfo samplerInfo = {};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = static_cast<float>(mipLevels);
+
+		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
+	}
+
 	return texture;
 }
 
@@ -112,93 +178,80 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 		});
 }
 
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout)
+void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
 {
-	UpdateTextureLayout(texture, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout newImageLayout, uint32 mipLevels)
-{
-	UpdateTextureLayout(texture, texture.textureImageLayout, newImageLayout, mipLevels);
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
-{
-	UpdateTextureLayout(texture, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipLevels)
-{
-	VkImageMemoryBarrier imageMemoryBarrier =
+	VkImageMemoryBarrier barrier =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-		.oldLayout = oldImageLayout,
-		.newLayout = newImageLayout,
-		.image = texture.textureImage,
-		.subresourceRange =
-		{
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = mipLevels,
-			.levelCount = VK_REMAINING_MIP_LEVELS,
-			.layerCount = 1
-		}
-	};
-
-	auto singleCommand = vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
-	vkCmdPipelineBarrier(singleCommand, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
-	vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, singleCommand);
-	texture.textureImageLayout = newImageLayout;
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout)
-{
-	UpdateTextureLayout(texture, commandBuffer, texture.textureImageLayout, newImageLayout, texture.mipMapLevels - 1);
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout newImageLayout, uint32 mipLevels)
-{
-	UpdateTextureLayout(texture, commandBuffer, texture.textureImageLayout, newImageLayout, mipLevels);
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout)
-{
-	UpdateTextureLayout(texture, commandBuffer, oldImageLayout, newImageLayout, texture.mipMapLevels - 1);
-}
-
-void TextureSystem::UpdateTextureLayout(Texture& texture, VkCommandBuffer& commandBuffer, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, uint32 mipmapLevels)
-{
-	VkImageMemoryBarrier imageMemoryBarrier =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
 		.oldLayout = texture.textureImageLayout,
-		.newLayout = newImageLayout,
+		.newLayout = newLayout,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.image = texture.textureImage,
 		.subresourceRange =
 		{
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = mipmapLevels,
-			.levelCount = VK_REMAINING_MIP_LEVELS,
-			.layerCount = 1
+			.baseMipLevel = baseMipLevel,
+			.levelCount = levelCount,
+			.baseArrayLayer = 0, 
+			.layerCount = VK_REMAINING_ARRAY_LAYERS
 		}
 	};
 
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
-	texture.textureImageLayout = newImageLayout;
+	VkAccessFlags srcAccess = 0;
+	VkAccessFlags dstAccess = 0;
+	VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		srcAccess = 0;
+		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+			newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+			newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+			newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+
+	barrier.srcAccessMask = srcAccess;
+	barrier.dstAccessMask = dstAccess;
+
+	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
+	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	renderSystem.EndSingleUseCommand(commandBuffer);
+
+	texture.textureImageLayout = newLayout;
 }
 
 void TextureSystem::DestroyTexture(Texture& texture)
 {
-	vulkanSystem.DestroyImageView(vulkanSystem.Device, &texture.textureView);
-	vulkanSystem.DestroySampler(vulkanSystem.Device, &texture.textureSampler);
-
-	if (texture.textureImage != VK_NULL_HANDLE) {
-		vmaDestroyImage(vulkanSystem.vmaAllocator, texture.textureImage, texture.textureMemory);
-		texture.textureImage = VK_NULL_HANDLE;
-		//texture.textureMemory = VK_NULL_HANDLE;
+	if (texture.textureSampler) vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
+	if (texture.textureView) vkDestroyImageView(vulkanSystem.Device, texture.textureView, nullptr);
+	if (texture.textureImage && texture.TextureAllocation)
+	{
+		vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
 	}
 }
 
@@ -265,107 +318,86 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 
 void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)
 {
-	VkBuffer stagingBuffer = VK_NULL_HANDLE;
-	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-
-	VkBufferCreateInfo bufInfo = {
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.size = textureSize,
-		.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+	VmaAllocationCreateInfo allocInfo =
+	{
+		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
 	};
-
-	VmaAllocationCreateInfo stagingAllocInfo = {};
-	stagingAllocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
-	stagingAllocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
-
-	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vulkanSystem.vmaAllocator, &bufInfo, &stagingAllocInfo, &stagingBuffer, &stagingAlloc, nullptr));
-
-	void* data;
-	vmaMapMemory(vulkanSystem.vmaAllocator, stagingAlloc, &data);
-	memcpy(data, textureData, textureSize);
-	vmaUnmapMemory(vulkanSystem.vmaAllocator, stagingAlloc);
-
-	CreateImage(texture, imageCreateInfo);
-	QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyBufferToTexture(texture, stagingBuffer);
-	QuickTransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	GenerateMipmaps(texture);
-	vmaDestroyBuffer(vulkanSystem.vmaAllocator, stagingBuffer, stagingAlloc);
-}
-
-void TextureSystem::CreateTextureImage(const Pixel& clearColor, ivec2 textureResolution, ColorChannelUsed colorChannels, VkImageAspectFlags imageType)
-{
-	//Vector<Pixel> pixels(textureResolution.x * textureResolution.y, clearColor);
-	//VkDeviceSize bufferSize = (textureResolution.x * textureResolution.y * colorChannels);
-
-	//Texture texture = Texture
-	//{
-	//	.width = textureResolution.x,
-	//	.height = textureResolution.y,
-	//	.depth = 1,
-	//	.mipMapLevels = 1,
-	//	.textureBufferIndex = 0,
-	//	.textureImage = VK_NULL_HANDLE,
-	//	.textureMemory = VK_NULL_HANDLE,
-	//	.textureView = VK_NULL_HANDLE,
-	//	.textureSampler = VK_NULL_HANDLE,
-	//	.ImGuiDescriptorSet = VK_NULL_HANDLE,
-	//	.textureUsage = kUse_2DImageTexture,
-	//	.textureType = kType_UndefinedTexture,
-	//	.textureByteFormat = VK_FORMAT_R8G8B8A8_SRGB,
-	//	.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-	//	.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-	//	.colorChannels = colorChannels,
-	//};
-
-	//VkImageCreateInfo imageCreateInfo =
-	//{
-	//	.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-	//	.imageType = VK_IMAGE_TYPE_2D,
-	//	.format = texture.textureByteFormat,
-	//	.extent =
-	//	{
-	//		.width = static_cast<uint32_t>(texture.width),
-	//		.height = static_cast<uint32_t>(texture.height),
-	//		.depth = 1
-	//	},
-	//	.mipLevels = texture.mipMapLevels,
-	//	.arrayLayers = 1,
-	//	.samples = texture.sampleCount,
-	//	.tiling = VK_IMAGE_TILING_OPTIMAL,
-	//	.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-	//	.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-	//	.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-	//};
-
-	//byte* pixelData = static_cast<byte*>(pixels.data());
-	//VULKAN_RESULT(Texture_CreateTextureImage(renderer, texture, ImageCreateInfo, static_cast<byte*>(pixels.data()), bufferSize));
-	//VULKAN_RESULT(Texture_CreateTextureView(renderer, texture, imageType));
-	//VULKAN_RESULT(Texture_CreateTextureSampler(renderer, texture, textureLoader.SamplerCreateInfo));
-	//VULKAN_RESULT(Texture_GenerateMipmaps(renderer, texture));
-	//return texture;
-}
-
-
-void TextureSystem::CreateImage(Texture& texture, VkImageCreateInfo& imageCreateInfo)
-{
-	if (imageCreateInfo.extent.width == 0 || imageCreateInfo.extent.height == 0) {
-		imageCreateInfo.extent.width = 1;
-		imageCreateInfo.extent.height = 1;
+	if (imageCreateInfo.extent.width * imageCreateInfo.extent.height > 1024 * 1024)
+	{
+		allocInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 	}
 
-	VmaAllocationCreateInfo allocInfo = {};
-	allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+	VmaAllocationInfo allocOut = {};
+	VmaAllocation allocation = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, &allocOut));
+	
+	texture.TextureAllocation = allocation;
+	if (textureData && textureSize > 0)
+	{
+		VkBufferCreateInfo stagingBufferInfo =
+		{
+			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+			.size = textureSize,
+			.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+		};
 
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(
-		vulkanSystem.vmaAllocator,
-		&imageCreateInfo,
-		&allocInfo,
-		&texture.textureImage,
-		&texture.textureMemory,
-		nullptr
-	));
+		VmaAllocationCreateInfo stagingAllocInfo =
+		{
+			.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+			.usage = VMA_MEMORY_USAGE_AUTO
+		};
+
+		VmaAllocationInfo stagingAllocOut;
+		VkBuffer stagingBuffer = VK_NULL_HANDLE;
+		VmaAllocation stagingAllocation = VK_NULL_HANDLE;
+		VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingBufferInfo, &stagingAllocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocOut));
+
+		void* mapped = stagingAllocOut.pMappedData;
+		if (!mapped)
+		{
+			VULKAN_THROW_IF_FAIL(vmaMapMemory(bufferSystem.vmaAllocator, stagingAllocation, &mapped));
+		}
+
+		memcpy(mapped, textureData, textureSize);
+		vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAllocation, 0, textureSize);
+		if (!stagingAllocOut.pMappedData)
+		{
+			vmaUnmapMemory(bufferSystem.vmaAllocator, stagingAllocation);
+		}
+
+		TransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		VkBufferImageCopy copyRegion =
+		{
+			.imageSubresource = 
+				{
+					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+					.mipLevel = 0,
+					.baseArrayLayer = 0,
+					.layerCount = 1,
+				},
+			.imageExtent = imageCreateInfo.extent,
+		};
+		VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
+		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+		renderSystem.EndSingleUseCommand(commandBuffer);
+
+		if (texture.mipMapLevels > 1)
+		{
+			TransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 1);
+		}
+		else
+		{
+			TransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+
+		vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAllocation);
+		if (texture.mipMapLevels > 1)
+		{
+			GenerateMipmaps(texture);
+		}
+		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
 }
 
 void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)
@@ -386,94 +418,6 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 		}
 	};
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &TextureImageViewInfo, NULL, &texture.textureView));
-}
-
-void TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout)
-{
-	VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
-	VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
-	VkImageMemoryBarrier barrier =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.oldLayout = texture.textureImageLayout,
-		.newLayout = newLayout,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = texture.textureImage,
-		.subresourceRange = VkImageSubresourceRange
-		{
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = 0,
-			.levelCount = texture.mipMapLevels,
-			.baseArrayLayer = 0,
-			.layerCount = VK_REMAINING_ARRAY_LAYERS,
-		}
-	};
-	if (texture.textureImageLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-	{
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-
-	vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, NULL, 0, NULL, 1, &barrier);
-	texture.textureImageLayout = newLayout;
-}
-
-void TextureSystem::QuickTransitionImageLayout(Texture& texture, VkImageLayout newLayout)
-{
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
-	TransitionImageLayout(commandBuffer, texture, newLayout);
-	renderSystem.EndSingleUseCommand(commandBuffer);
-}
-
-void TextureSystem::CommandBufferTransitionImageLayout(VkCommandBuffer commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 mipmapLevel)
-{
-	TransitionImageLayout(commandBuffer, texture, newLayout);
-}
-
-void TextureSystem::CopyBufferToTexture(Texture& texture, VkBuffer buffer)
-{
-	VkBufferImageCopy BufferImage =
-	{
-		.bufferOffset = 0,
-		.bufferRowLength = 0,
-		.bufferImageHeight = 0,
-		.imageSubresource = VkImageSubresourceLayers
-		{
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.mipLevel = 0,
-			.baseArrayLayer = 0,
-			.layerCount = static_cast<uint>((texture.textureType == kUse_CubeMapTexture ? 6 : 1))
-		},
-		.imageOffset = VkOffset3D
-		{
-			.x = 0,
-			.y = 0,
-			.z = 0,
-		},
-		.imageExtent = VkExtent3D
-		{
-			.width = static_cast<uint>(texture.width),
-			.height = static_cast<uint>(texture.height),
-			.depth = static_cast<uint>(texture.depth),
-		}
-	};
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
-	vkCmdCopyBufferToImage(commandBuffer, buffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &BufferImage);
-	renderSystem.EndSingleUseCommand(commandBuffer);
 }
 
 void TextureSystem::GenerateMipmaps(Texture& texture)
@@ -649,54 +593,3 @@ const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& render
 {
 	return RenderedTextureListMap.find(renderPassGuid) != RenderedTextureListMap.end();
 }
-
-/*oid TextureSystem_AddRenderedTexture(RenderPassGuid& renderPassGuid, Texture* renderedTextureListPtr, size_t renderedTextureCount)
-{
-	Vector<Texture> renderedTextureList(renderedTextureListPtr, renderedTextureListPtr + renderedTextureCount);
-	AddRenderedTexture(renderPassGuid, renderedTextureList);
-}
-
- Vector<Texture> Texture_TextureList()
-{
-	Vector<Texture> list;
-	list.reserve(TextureMap.size());
-	for (const auto& pair : TextureMap)
-	{
-		list.emplace_back(pair.second);
-	}
-	return list;
-}
-
-const Vector<Texture> Texture_DepthTextureList()
-{
-	Vector<Texture> list;
-	list.reserve(DepthTextureMap.size());
-	for (const auto& pair : DepthTextureMap)
-	{
-		list.emplace_back(pair.second);
-	}
-	return list;
-}
-
-void TextureSystem_UpdateCmdTextureLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout& oldImageLayout, VkImageLayout& newImageLayout, uint32 mipmapLevel)
-{
-	VkImageMemoryBarrier imageMemoryBarrier =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-		.oldLayout = texture.textureImageLayout,
-		.newLayout = newImageLayout,
-		.image = texture.textureImage,
-		.subresourceRange =
-		{
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = mipmapLevel,
-			.levelCount = VK_REMAINING_MIP_LEVELS,
-			.layerCount = 1
-		}
-	};
-
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &imageMemoryBarrier);
-	texture.textureImageLayout = newImageLayout;
-}*/

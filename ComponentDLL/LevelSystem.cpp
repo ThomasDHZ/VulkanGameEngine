@@ -287,8 +287,8 @@ void LevelSystem::Update(const float& deltaTime)
              .renderPass = renderPass.RenderPass,
              .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
              .renderArea = scissor,
-             .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
-             .pClearValues = renderPass.ClearValueList
+             .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+             .pClearValues = renderPass.ClearValueList.data()
          };
 
          float blurStrength = 1.0f + x * 0.5f;
@@ -339,8 +339,8 @@ void LevelSystem::Update(const float& deltaTime)
          .renderPass = renderPass.RenderPass,
          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
          .renderArea = scissor,
-         .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
-         .pClearValues = renderPass.ClearValueList
+         .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+         .pClearValues = renderPass.ClearValueList.data()
      };
 
      VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
@@ -370,8 +370,8 @@ void LevelSystem::Update(const float& deltaTime)
          .renderPass = renderPass.RenderPass,
          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
          .renderArea = renderPass.RenderArea,
-         .clearValueCount = static_cast<uint32>(renderPass.ClearValueCount),
-         .pClearValues = renderPass.ClearValueList
+         .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+         .pClearValues = renderPass.ClearValueList.data()
      };
 
      VkDeviceSize offsets[] = { 0 };

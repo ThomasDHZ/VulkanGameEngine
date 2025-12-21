@@ -49,7 +49,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
-    spriteLayer.SpriteLayerBufferId = bufferSystem.CreateVulkanBuffer<SpriteInstance>(spriteInstanceList, MeshBufferUsageSettings, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
+    spriteLayer.SpriteLayerBufferId = bufferSystem.VMACreateDynamicBuffer(spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
 
@@ -126,7 +126,7 @@ void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
     for (auto& spriteLayer : SpriteLayerList)
     {
         Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer.second);
-        bufferSystem.UpdateBufferMemory(spriteLayer.second.SpriteLayerBufferId, spriteInstanceList);
+        bufferSystem.VMAUpdateDynamicBuffer(spriteLayer.second.SpriteLayerBufferId, spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size());
     }
 }
 

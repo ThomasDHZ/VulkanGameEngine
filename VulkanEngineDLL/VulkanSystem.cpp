@@ -8,6 +8,7 @@
 #include "MemorySystem.h"
 #include "Platform.h"
 #include "EngineConfigSystem.h"
+#include "BufferSystem.h"
 #if defined(__ANDROID__)
 #include <vulkan/vulkan_android.h>
 #endif
@@ -35,7 +36,7 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 	//GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
     vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
-    vmaAllocator = SetUpVmaAllocation();
+    bufferSystem.vmaAllocator = SetUpVmaAllocation();
 	vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
     SetUpSwapChain(windowHandle);
     vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
@@ -101,6 +102,29 @@ void VulkanSystem::SetUpSwapChain(void* windowHandle)
     SetUpSwapChain();
     SetUpSwapChainImages();
     SetUpSwapChainImageViews(swapChainImageFormat);
+}
+
+VmaAllocator VulkanSystem::SetUpVmaAllocation()
+{
+    VmaVulkanFunctions vulkanFunctions =
+    {
+        .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+        .vkGetDeviceProcAddr = vkGetDeviceProcAddr
+    };
+
+    VmaAllocatorCreateInfo allocatorCreateInfo =
+    {
+        .flags = 0,  // Add VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT if needed
+        .physicalDevice = PhysicalDevice,
+        .device = Device,
+        .pVulkanFunctions = &vulkanFunctions,
+        .instance = Instance,
+        .vulkanApiVersion = ApiVersion,
+    };
+
+    VmaAllocator vmaAllocator;
+    vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
+    return vmaAllocator;
 }
 
  void VulkanSystem::DestroyRenderer()
@@ -316,7 +340,7 @@ VkInstance VulkanSystem::CreateVulkanInstance()
     Vector<VkValidationFeatureDisableEXT> disabledList;
 
 #ifndef NDEBUG
-  enabledList =
+     enabledList =
      {
          VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
          VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
@@ -335,8 +359,10 @@ VkInstance VulkanSystem::CreateVulkanInstance()
      {
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
         .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT,
+                           VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = DebugCallBack
      };
 #endif
@@ -354,12 +380,6 @@ VkInstance VulkanSystem::CreateVulkanInstance()
      validationFeatures.pNext = &debugInfo;
 #endif
 
-#if defined(__ANDROID__)
-     ApiVersion = VK_API_VERSION_1_3;
-#else
-     ApiVersion = VK_API_VERSION_1_4;
-#endif
-
     Vector<const char*> extensionNames = GetRequiredInstanceExtensions();
     VkApplicationInfo applicationInfo =
     {
@@ -368,14 +388,15 @@ VkInstance VulkanSystem::CreateVulkanInstance()
         .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
         .pEngineName = "No Engine",
         .engineVersion = VK_MAKE_VERSION(1, 0, 0),
-        .apiVersion = ApiVersion,
+        #if defined(__ANDROID__)
+            .apiVersion = VK_API_VERSION_1_3
+        #else
+            .apiVersion = VK_API_VERSION_1_4
+        #endif
     };
 
 
-    Vector<const char*> validationLayers;
-#ifndef NDEBUG
-    validationLayers = GetValidationLayerProperties();
-#endif
+    Vector<const char*> validationLayers = GetValidationLayerProperties();
     VkInstanceCreateInfo createInfo = 
     {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -461,7 +482,6 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
             .pQueuePriorities = &queuePriority
             });
     }
-
     if (presentFamily != UINT32_MAX && presentFamily != graphicsFamily)
     {
         queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo{
@@ -473,10 +493,63 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
     }
 
     Vector<const char*> DeviceExtensionList = GetRequiredDeviceExtensions(physicalDevice);
-    VkPhysicalDeviceFeatures deviceFeatures =
+    VkPhysicalDeviceFeatures deviceFeatures = 
     {
+       .robustBufferAccess = VK_FALSE,
+        .fullDrawIndexUint32 = VK_FALSE,
+        .imageCubeArray = VK_FALSE,
+        .independentBlend = VK_FALSE,
+        .geometryShader = VK_FALSE,
+        .tessellationShader = VK_FALSE,
+        .sampleRateShading = VK_TRUE,
+        .dualSrcBlend = VK_FALSE,
+        .logicOp = VK_FALSE,
+        .multiDrawIndirect = VK_FALSE,
+        .drawIndirectFirstInstance = VK_FALSE,
+        .depthClamp = VK_FALSE,
+        .depthBiasClamp = VK_FALSE,
+        .fillModeNonSolid = VK_TRUE,
+        .depthBounds = VK_FALSE,
+        .wideLines = VK_FALSE,
+        .largePoints = VK_FALSE,
+        .alphaToOne = VK_FALSE,
+        .multiViewport = VK_FALSE,
+        .samplerAnisotropy = VK_TRUE,
+        .textureCompressionETC2 = VK_FALSE,
+        .textureCompressionASTC_LDR = VK_FALSE,
+        .textureCompressionBC = VK_FALSE,
+        .occlusionQueryPrecise = VK_FALSE,
+        .pipelineStatisticsQuery = VK_FALSE,
         .vertexPipelineStoresAndAtomics = VK_TRUE,
         .fragmentStoresAndAtomics = VK_TRUE,
+        .shaderTessellationAndGeometryPointSize = VK_FALSE,
+        .shaderImageGatherExtended = VK_FALSE,
+        .shaderStorageImageExtendedFormats = VK_FALSE,
+        .shaderStorageImageMultisample = VK_FALSE,
+        .shaderStorageImageReadWithoutFormat = VK_FALSE,
+        .shaderStorageImageWriteWithoutFormat = VK_FALSE,
+        .shaderUniformBufferArrayDynamicIndexing = VK_FALSE,
+        .shaderSampledImageArrayDynamicIndexing = VK_FALSE,
+        .shaderStorageBufferArrayDynamicIndexing = VK_FALSE,
+        .shaderStorageImageArrayDynamicIndexing = VK_FALSE,
+        .shaderClipDistance = VK_FALSE,
+        .shaderCullDistance = VK_FALSE,
+        .shaderFloat64 = VK_FALSE,
+        .shaderInt64 = VK_TRUE,
+        .shaderInt16 = VK_FALSE,
+        .shaderResourceResidency = VK_FALSE,
+        .shaderResourceMinLod = VK_FALSE,
+        .sparseBinding = VK_FALSE,
+        .sparseResidencyBuffer = VK_FALSE,
+        .sparseResidencyImage2D = VK_FALSE,
+        .sparseResidencyImage3D = VK_FALSE,
+        .sparseResidency2Samples = VK_FALSE,
+        .sparseResidency4Samples = VK_FALSE,
+        .sparseResidency8Samples = VK_FALSE,
+        .sparseResidency16Samples = VK_FALSE,
+        .sparseResidencyAliased = VK_FALSE,
+        .variableMultisampleRate = VK_FALSE,
+        .inheritedQueries = VK_FALSE,
     };
 
     VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
@@ -488,17 +561,53 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
     VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .pNext = &physicalDeviceFeatures2,
+        .samplerMirrorClampToEdge = VK_FALSE,
+        .drawIndirectCount = VK_FALSE,
         .storageBuffer8BitAccess = VK_TRUE,
         .uniformAndStorageBuffer8BitAccess = VK_TRUE,
+        .storagePushConstant8 = VK_FALSE,
+        .shaderBufferInt64Atomics = VK_FALSE,
+        .shaderSharedInt64Atomics = VK_FALSE,
+        .shaderFloat16 = VK_FALSE,
+        .shaderInt8 = VK_FALSE,
         .descriptorIndexing = VK_TRUE,
+        .shaderInputAttachmentArrayDynamicIndexing = VK_FALSE,
+        .shaderUniformTexelBufferArrayDynamicIndexing = VK_FALSE,
+        .shaderStorageTexelBufferArrayDynamicIndexing = VK_FALSE,
+        .shaderUniformBufferArrayNonUniformIndexing = VK_FALSE,
+        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+        .shaderStorageBufferArrayNonUniformIndexing = VK_FALSE,
+        .shaderStorageImageArrayNonUniformIndexing = VK_FALSE,
+        .shaderInputAttachmentArrayNonUniformIndexing = VK_FALSE,
+        .shaderUniformTexelBufferArrayNonUniformIndexing = VK_FALSE,
+        .shaderStorageTexelBufferArrayNonUniformIndexing = VK_FALSE,
+        .descriptorBindingUniformBufferUpdateAfterBind = VK_FALSE,
+        .descriptorBindingSampledImageUpdateAfterBind = VK_FALSE,
+        .descriptorBindingStorageImageUpdateAfterBind = VK_FALSE,
+        .descriptorBindingStorageBufferUpdateAfterBind = VK_FALSE,
+        .descriptorBindingUniformTexelBufferUpdateAfterBind = VK_FALSE,
+        .descriptorBindingStorageTexelBufferUpdateAfterBind = VK_FALSE,
+        .descriptorBindingUpdateUnusedWhilePending = VK_FALSE,
+        .descriptorBindingPartiallyBound = VK_FALSE,
         .descriptorBindingVariableDescriptorCount = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
+        .samplerFilterMinmax = VK_FALSE,
         .scalarBlockLayout = VK_TRUE,
+        .imagelessFramebuffer = VK_FALSE,
+        .uniformBufferStandardLayout = VK_FALSE,
+        .shaderSubgroupExtendedTypes = VK_FALSE,
         .separateDepthStencilLayouts = VK_TRUE,
+        .hostQueryReset = VK_FALSE,
         .timelineSemaphore = VK_TRUE,
-        .bufferDeviceAddress = VK_TRUE,
+        .bufferDeviceAddress = VK_TRUE, 
+        .bufferDeviceAddressCaptureReplay = VK_FALSE,
+        .bufferDeviceAddressMultiDevice = VK_FALSE,
         .vulkanMemoryModel = VK_TRUE,
         .vulkanMemoryModelDeviceScope = VK_TRUE,
+        .vulkanMemoryModelAvailabilityVisibilityChains = VK_FALSE,
+        .shaderOutputViewportIndex = VK_FALSE,
+        .shaderOutputLayer = VK_FALSE,
+        .subgroupBroadcastDynamicId = VK_FALSE,
     };
 
     VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features = {
@@ -510,7 +619,21 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
     VkPhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
         .pNext = &physicalDeviceRobustness2Features,
-        .shaderDemoteToHelperInvocation = VK_TRUE,
+        .robustImageAccess = VK_FALSE,
+        .inlineUniformBlock = VK_FALSE,
+        .descriptorBindingInlineUniformBlockUpdateAfterBind = VK_FALSE,
+        .pipelineCreationCacheControl = VK_FALSE,
+        .privateData = VK_FALSE,
+        .shaderDemoteToHelperInvocation = VK_FALSE,
+        .shaderTerminateInvocation = VK_FALSE,
+        .subgroupSizeControl = VK_FALSE,
+        .computeFullSubgroups = VK_FALSE,
+        .synchronization2 = VK_FALSE,
+        .textureCompressionASTC_HDR = VK_FALSE,
+        .shaderZeroInitializeWorkgroupMemory = VK_FALSE,
+        .dynamicRendering = VK_FALSE,
+        .shaderIntegerDotProduct = VK_FALSE,
+        .maintenance4 = VK_FALSE
     };
 
     VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT divisorFeatures = {
@@ -525,47 +648,30 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .multiview = VK_TRUE
     };
 
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+        .pNext = &physicalDeviceVulkan11Features,
+        .bufferDeviceAddress = VK_TRUE,
+    };
+
     VkDeviceCreateInfo deviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &physicalDeviceVulkan11Features,
+        .pNext = &bufferDeviceAddressFeatures,
         .queueCreateInfoCount = static_cast<uint32>(queueCreateInfoList.size()),
         .pQueueCreateInfos = queueCreateInfoList.data(),
         .enabledExtensionCount = static_cast<uint32>(DeviceExtensionList.size()),
         .ppEnabledExtensionNames = DeviceExtensionList.data(),
-        .pEnabledFeatures = nullptr
+        .pEnabledFeatures = nullptr  
     };
 
 #ifndef NDEBUG
-    Vector<const char*> validationLayers = GetValidationLayerProperties();
+	Vector<const char*> validationLayers = GetValidationLayerProperties();
     deviceCreateInfo.enabledLayerCount = static_cast<uint32>(validationLayers.size());
     deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
 #endif
 
     VULKAN_THROW_IF_FAIL(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
     return device;
-}
-
-VmaAllocator VulkanSystem::SetUpVmaAllocation()
-{
-    VmaVulkanFunctions vulkanFunctions =
-    {
-        .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
-        .vkGetDeviceProcAddr = vkGetDeviceProcAddr
-    };
-
-    VmaAllocatorCreateInfo allocatorCreateInfo =
-    {
-        .flags = 0,  // Add VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT if needed
-        .physicalDevice = PhysicalDevice,
-        .device = Device,
-        .pVulkanFunctions = &vulkanFunctions,
-        .instance = Instance,
-        .vulkanApiVersion = ApiVersion,
-    };
-
-    VmaAllocator vmaAllocator;
-    vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
-    return vmaAllocator;
 }
 
 VkCommandPool VulkanSystem::SetUpCommandPool(VkDevice device, uint32 graphicsFamily)
@@ -926,16 +1032,16 @@ VkCommandBuffer VulkanSystem::BeginSingleUseCommand(VkDevice device, VkCommandPo
 
 void VulkanSystem::EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
 {
-    VkSubmitInfo submitInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &commandBuffer
-    };
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));  
 
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
     VULKAN_THROW_IF_FAIL(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
     VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(graphicsQueue));
+
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 

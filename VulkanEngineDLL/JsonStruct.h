@@ -15,7 +15,7 @@ struct RenderedTextureInfoModel
 struct RenderAreaModel
 {
     VkRect2D RenderArea;
-    bool UseDefaultRenderArea;
+    bool UseSwapChainRenderArea;
 };
 
 struct PipelineDescriptorModel
@@ -54,12 +54,9 @@ struct VulkanRenderPass
     VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkRect2D RenderArea = VkRect2D();
     VkRenderPass RenderPass = VK_NULL_HANDLE;
-    VkGuid* InputTextureIdList = nullptr;
-    VkFramebuffer* FrameBufferList = nullptr;
-    VkClearValue* ClearValueList = nullptr;
-    size_t InputTextureIdListCount = 0;
-    size_t FrameBufferCount = 0;
-    size_t ClearValueCount = 0;
+    Vector<VkGuid> InputTextureIdList;
+    Vector<VkFramebuffer> FrameBufferList;
+    Vector<VkClearValue> ClearValueList;
     VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
     ivec2 RenderPassResolution = ivec2();
     bool IsRenderedToSwapchain = false;

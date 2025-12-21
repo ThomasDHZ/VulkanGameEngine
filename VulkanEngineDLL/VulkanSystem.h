@@ -21,7 +21,6 @@ private:
 
 	VkExtent2D					SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkDevice					SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
-	VmaAllocator				SetUpVmaAllocation();
 	VkPhysicalDevice			SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
 	void						SetUpSwapChain();
 	void						SetUpSwapChainImages();
@@ -29,6 +28,7 @@ private:
 	VkCommandPool				SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
 	void						SetUpSemaphores();
 	void						SetUpSwapChain(void* windowHandle);
+	VmaAllocator				SetUpVmaAllocation();
 
 	void						GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue);
 	void						GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
@@ -82,8 +82,6 @@ public:
 	uint32					 GraphicsFamily = UINT32_MAX;
 	uint32					 PresentFamily = UINT32_MAX;
 	uint32					 MaxFramesInFlight = UINT32_MAX;
-
-	VmaAllocator			vmaAllocator;
 
 	VkFormat				Format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR			ColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;

@@ -1,4 +1,4 @@
-﻿#include "MeshSystem.h"
+#include "MeshSystem.h"
 #include "BufferSystem.h"
 #include "MaterialSystem.h"
 
@@ -17,25 +17,31 @@ uint32 MeshSystem::GetNextMeshIndex()
 
 uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
 {
-    uint meshId = GetNextMeshIndex();
+    uint meshId = meshSystem.GetNextMeshIndex();
     mat4 meshMatrix = mat4(1.0f);
-    MeshPropertiesStruct meshProperties = {};
-
-    const VkBufferUsageFlags usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+    const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
         VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
         VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-    Mesh mesh = {
+    const VkMemoryPropertyFlags MeshBufferPropertySettings = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+    Mesh mesh = Mesh
+    {
         .MeshId = meshId,
+        .ParentGameObjectId = UINT32_MAX,
         .MeshTypeId = static_cast<uint32>(meshType),
         .VertexTypeId = BufferTypeEnum::BufferType_Vertex2D,
-        .MeshVertexBufferId = bufferSystem.CreateVulkanBuffer<Vertex2D>(vertexList, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true),
-        .MeshIndexBufferId = bufferSystem.CreateVulkanBuffer<uint32>(indexList, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true),
-        .MeshTransformBufferId = bufferSystem.CreateVulkanBuffer<mat4>(meshMatrix, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true),
-        .PropertiesBufferId = bufferSystem.CreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true),
+        .MeshPropertiesId = meshId,
+        .MeshVertexBufferId = bufferSystem.VMACreateVulkanBuffer<Vertex2D>(vertexList, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true),
+        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .VertexIndex = meshId,
         .IndexIndex = meshId,
         .MeshPosition = vec3(0.0f),
         .MeshRotation = vec3(0.0f),

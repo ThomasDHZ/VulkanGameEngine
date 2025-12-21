@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "VulkanSystem.h"
+#include <vk_mem_alloc.h>
 
 enum MeshTypeEnum
 {
@@ -25,24 +26,22 @@ enum BufferTypeEnum
 
 struct VulkanBuffer
 {
-    uint BufferId = 0;
-    VkBuffer Buffer = VK_NULL_HANDLE;
-    VkBuffer StagingBuffer = VK_NULL_HANDLE;
-
-    // VMA allocations
+	uint BufferId = 0;
+	VkBuffer Buffer = VK_NULL_HANDLE;
+	VkBuffer StagingBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory StagingBufferMemory = VK_NULL_HANDLE;
+	VkDeviceMemory BufferMemory = VK_NULL_HANDLE;
+	VkDeviceSize BufferSize = 0;
+	VkBufferUsageFlags BufferUsage = 0;
+	VkMemoryPropertyFlags BufferProperties = 0;
+	uint64 BufferDeviceAddress = 0;
+	VkAccelerationStructureKHR BufferHandle = VK_NULL_HANDLE;
+	BufferTypeEnum  BufferType;
     VmaAllocation Allocation = VK_NULL_HANDLE;
-    VmaAllocation StagingAllocation = VK_NULL_HANDLE;
-
-    // Persistent mapping (only for HOST_VISIBLE buffers)
-    void* MappedData = nullptr;
-    bool  IsPersistentlyMapped = false;
-
-    VkDeviceSize BufferSize = 0;
-    VkBufferUsageFlags BufferUsage = 0;
-    VkMemoryPropertyFlags BufferProperties = 0;
-    uint64 BufferDeviceAddress = 0;
-    BufferTypeEnum BufferType;
-    bool UsingStagingBuffer = false;
+	void* BufferData = nullptr;
+	bool IsMapped = false;
+	bool UsingStagingBuffer = false;
+    bool IsPersistentlyMapped = false;
 };
 
 extern DLL_EXPORT int NextBufferId;
@@ -61,6 +60,10 @@ private:
     VulkanBufferSystem(const VulkanBufferSystem&) = delete;
     VulkanBufferSystem& operator=(const VulkanBufferSystem&) = delete;
 
+public:
+    UnorderedMap<int, VulkanBuffer> VulkanBufferMap;
+
+private:
     template <typename T>
     BufferTypeEnum GetBufferType()
     {
@@ -89,59 +92,53 @@ private:
         }
     }
 
-    void CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize bufferSize);
+    void     CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize bufferSize);
 
 public:
-    UnorderedMap<int, VulkanBuffer> VulkanBufferMap;
+    VmaAllocator			vmaAllocator;
 
     template <typename T>
-    uint32 CreateVulkanBuffer(T& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+    uint32 VMACreateVulkanBuffer(T& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
     {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = 1;
-
-        int nextBufferId = ++NextBufferId;
-        VulkanBufferMap[nextBufferId] = CreateVulkanBuffer(nextBufferId, static_cast<void*>(&bufferData), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
-        return nextBufferId;
+        if (usingStagingBuffer)
+        {
+            return VMACreateStaticVulkanBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
+        }
+        else
+        {
+            return VMACreateDynamicBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
+        }
     }
 
     template <typename T>
-    uint32 CreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
+    uint32 VMACreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
     {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = bufferData.size();
+        VkDeviceSize bufferSize = sizeof(T) * bufferData.size();
+        if (bufferData.empty())
+        {
+            bufferSize = sizeof(T) * 64;
+        }
 
-        int nextBufferId = ++NextBufferId;
-        VulkanBufferMap[nextBufferId] = CreateVulkanBuffer(nextBufferId, bufferData.data(), bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
-        return nextBufferId;
+        if (usingStagingBuffer)
+        {
+            return VMACreateStaticVulkanBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
+        }
+        else
+        {
+            return VMACreateDynamicBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
+        }
     }
 
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, T& bufferData)
     {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
-            throw std::runtime_error("Buffer type doesn't match");
-
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = 1;
-
-        UpdateBufferData(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), bufferElementSize);
+        VMAUpdateDynamicBuffer(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), sizeof(T));
     }
 
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, Vector<T>& bufferData)
     {
-        BufferTypeEnum bufferTypeEnum = GetBufferType<T>();
-        if (VulkanBufferMap[bufferId].BufferType != bufferTypeEnum)
-            throw std::runtime_error("Buffer type doesn't match");
-
-        VkDeviceSize bufferElementSize = sizeof(T);
-        uint bufferElementCount = bufferData.size();
-
-        UpdateBufferMemory(VulkanBufferMap[bufferId], bufferData.data(), bufferElementSize);
+        VMAUpdateDynamicBuffer(VulkanBufferMap[bufferId], bufferData.data(), sizeof(T) * bufferData.size());
     }
 
     template <typename T>
@@ -150,7 +147,7 @@ public:
         VulkanBuffer& vulkanBuffer = FindVulkanBuffer(vulkanBufferId);
 
         Vector<T> DataList;
-        /*size_t dataListSize = vulkanBuffer.BufferSize / sizeof(T);
+   /*     size_t dataListSize = vulkanBuffer.BufferSize / sizeof(T);
 
         void* data = MapBufferMemory(vulkanBuffer.BufferMemory, vulkanBuffer.BufferSize, &vulkanBuffer.IsMapped);
         if (data == nullptr)
@@ -170,12 +167,14 @@ public:
         return DataList;
     }
 
-    DLL_EXPORT VulkanBuffer CreateVulkanBuffer(uint bufferId, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
-    DLL_EXPORT void ResizeBuffer(VulkanBuffer& vulkanBuffer, VkDeviceSize newSize, void* newData);
-    DLL_EXPORT void CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size);
-    DLL_EXPORT void UpdateBufferMemory(VulkanBuffer& vulkanBuffer, void* bufferData, VkDeviceSize bufferSize);
-    DLL_EXPORT VulkanBuffer& FindVulkanBuffer(int id);
-    DLL_EXPORT void DestroyBuffer(VulkanBuffer& vulkanBuffer);
+    DLL_EXPORT uint32 VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
+    DLL_EXPORT uint32 VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
+    DLL_EXPORT void   VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
+    DLL_EXPORT void                        CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkDeviceSize offset = 0);
+    DLL_EXPORT void                        DestroyBuffer(VulkanBuffer& vulkanBuffer);
+    DLL_EXPORT void                        DestroyAllBuffers();
+    DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);
+    DLL_EXPORT const Vector<VulkanBuffer>& VulkanBufferList();
 };
 extern DLL_EXPORT VulkanBufferSystem& bufferSystem;
 inline VulkanBufferSystem& VulkanBufferSystem::Get()
