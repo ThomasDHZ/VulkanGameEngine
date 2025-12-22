@@ -17,16 +17,6 @@ uint32 SpriteSystem::GetNextSpriteIndex()
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
 {
-    const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-        VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-    const VkMemoryPropertyFlags MeshBufferPropertySettings = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
     Vector<Vertex2D> SpriteVertexList =
     {
         Vertex2D(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
@@ -49,7 +39,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
-    spriteLayer.SpriteLayerBufferId = bufferSystem.VMACreateDynamicBuffer(spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    spriteLayer.SpriteLayerBufferId = bufferSystem.VMACreateDynamicBuffer(spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
 }
 

@@ -9,10 +9,11 @@ struct TextureLoader
 {
     String TextureFilePath;
     VkGuid TextureId;
+    VkFormat TextureByteFormat;
+    bool UsingSRGBFormat;
     VkImageAspectFlags ImageType;
     TextureTypeEnum TextureType;
     bool UseMipMaps;
-    VkImageCreateInfo ImageCreateInfo;
     VkSamplerCreateInfo SamplerCreateInfo;
 };
 

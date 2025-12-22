@@ -13,42 +13,73 @@ TextureSystem& textureSystem = TextureSystem::Get();
 
 VkGuid TextureSystem::CreateTexture(const String& texturePath)
 {
-	int width = 0;
-	int height = 0;
-	int colorChannels;
-
 	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
 	if (TextureExists(textureLoader.TextureId))
 	{
 		return textureLoader.TextureId;
 	}
 
+	int width = 0;
+	int height = 0;
+	int colorChannels = 0;
     Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
+
+	VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
+	switch (colorChannels)
+	{
+		case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
+		case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
+		case 3: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
+		case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+		default:
+		{
+			std::cout << "[TextureSystem WARNING] Unsupported channel count: " << colorChannels << " for " << textureLoader.TextureFilePath << std::endl;
+			detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+			break;
+		}
+	}
+
+	VkFormat finalFormat = detectedFormat;
+	if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
+	{
+		finalFormat = textureLoader.TextureByteFormat;
+	}
+
 	Texture texture = Texture
 	{
 		.textureId = textureLoader.TextureId,
 		.width = width,
 		.height = height,
 		.depth = 1,
-		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(texture.width, texture.height)))) + 1 : 1,
-		.textureBufferIndex = 0,
-		.textureImage = VK_NULL_HANDLE,
-		.textureMemory = VK_NULL_HANDLE,
-		.textureView = VK_NULL_HANDLE,
-		.textureSampler = VK_NULL_HANDLE,
-		.ImGuiDescriptorSet = VK_NULL_HANDLE,
-		.textureUsage = kUse_2DImageTexture,
-		.textureType = kType_UndefinedTexture,
-		.textureByteFormat = textureLoader.ImageCreateInfo.format,
-		.textureImageLayout = textureLoader.ImageCreateInfo.initialLayout,
-		.sampleCount = textureLoader.ImageCreateInfo.samples >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : textureLoader.ImageCreateInfo.samples,
-		.colorChannels = (ColorChannelUsed)colorChannels,
+		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+		.textureByteFormat = finalFormat,
+		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+		.colorChannels = static_cast<ColorChannelUsed>(colorChannels)
 	};
 
-	textureLoader.ImageCreateInfo.extent.width = width;
-	textureLoader.ImageCreateInfo.extent.height = height;
-	textureLoader.ImageCreateInfo.extent.depth = 1;
-	CreateTextureImage(texture, textureLoader.ImageCreateInfo, textureData.data(), textureData.size());
+	VkImageCreateInfo imageCreateInfo =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.imageType = VK_IMAGE_TYPE_2D,
+		.format = texture.textureByteFormat,
+		.extent =
+		{
+			.width = static_cast<uint32>(texture.width),
+			.height = static_cast<uint32>(texture.height),
+			.depth = 1,
+		},
+		.mipLevels = texture.mipMapLevels,
+		.arrayLayers = 1,
+		.samples = texture.sampleCount,
+		.tiling = VK_IMAGE_TILING_OPTIMAL,
+		.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+		.initialLayout = texture.textureImageLayout
+	};
+	if (texture.mipMapLevels > 1) imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+	CreateTextureImage(texture, imageCreateInfo, textureData.data(), textureData.size());
 	CreateTextureView(texture, textureLoader.ImageType);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
@@ -67,7 +98,7 @@ Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, 
 		.depth = 1,
 		.mipMapLevels = mipLevels,
 		.textureByteFormat = format,
-		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.textureImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		.sampleCount = samples
 	};
 
@@ -97,7 +128,7 @@ Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, 
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.initialLayout = texture.textureImageLayout
 	};
 
 	VmaAllocationCreateInfo allocInfo =
@@ -138,7 +169,7 @@ Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, 
 	}
 
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
-	if (createSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT))
+	if (createSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !isDepthFormat)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -173,7 +204,7 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 		{
 			.sampler = texture.textureSampler,
 			.imageView = texture.textureView,
-			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			.imageLayout = texture.textureImageLayout
 		});
 }
 
@@ -401,7 +432,32 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 
 void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)
 {
-	VkImageViewCreateInfo TextureImageViewInfo =
+	VkImageAspectFlags aspect = imageAspectFlags;
+
+	if (aspect == 0)
+	{
+		std::cout << "CreateTextureView: imageAspectFlags not set — using auto-detect." << std::endl;
+
+		bool isDepthFormat = (texture.textureByteFormat >= VK_FORMAT_D16_UNORM &&
+			texture.textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
+			(texture.textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+
+		if (isDepthFormat)
+		{
+			aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+			if (texture.textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+				texture.textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT)
+			{
+				aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+		}
+		else
+		{
+			aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+	}
+
+	VkImageViewCreateInfo viewInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.image = texture.textureImage,
@@ -409,14 +465,15 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 		.format = texture.textureByteFormat,
 		.subresourceRange =
 		{
-			.aspectMask = imageAspectFlags,
+			.aspectMask = aspect,
 			.baseMipLevel = 0,
 			.levelCount = texture.mipMapLevels,
 			.baseArrayLayer = 0,
 			.layerCount = 1,
 		}
 	};
-	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &TextureImageViewInfo, NULL, &texture.textureView));
+
+	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 }
 
 void TextureSystem::GenerateMipmaps(Texture& texture)
@@ -433,7 +490,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	vkGetPhysicalDeviceFormatProperties(vulkanSystem.PhysicalDevice, texture.textureByteFormat, &formatProperties);
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 	{
-	//	vulkanSystem.ERROR("Texture image format does not support linear blitting.");
+		std::cout << "[TextureSystem WARNING] Format " << texture.textureByteFormat << " does not support linear blitting — mipmaps will be poor quality" << std::endl;
 	}
 
 	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();

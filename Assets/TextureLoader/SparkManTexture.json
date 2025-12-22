@@ -2,22 +2,11 @@
   "TextureFilePath": "Textures/SparkMan.png",
   "TextureId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",
   "TextureByteFormat": 43,
+  "UsingSRGBFormat": true,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
   "UseMipMaps": false,
-  "ImageCreateInfo": {
-    "SType": 14,
-    "ImageType": 1,
-    "Format": 43,
-    "MipLevels": 1,
-    "ArrayLayers": 1,
-    "Samples": 1,
-    "Tiling": 0,
-    "Usage": 6,
-    "SharingMode": 0,
-    "InitialLayout": 0
-  },
   "SamplerCreateInfo": {
     "SType": 31,
     "MagFilter": 0,
