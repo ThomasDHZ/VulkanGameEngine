@@ -1,4 +1,4 @@
-#include "RenderSystem.h"
+﻿#include "RenderSystem.h"
 #include <vulkan/vulkan.h>
 #include <iostream>
 #include "MaterialSystem.h"
@@ -876,24 +876,28 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
         VkImageLayout initialLayout;
         switch (renderPassJsonLoader.RenderAttachmentList[x].RenderTextureType)
         {
-            case RenderType_SwapChainTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-            case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-            case RenderType_DepthBufferTexture: initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; break;
-            default:
-            {
-                throw std::runtime_error("Case doesn't exist: RenderAttachmentType");
-            }
-        };
+        case RenderType_SwapChainTexture:
+        case RenderType_OffscreenColorTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            break;
+        case RenderType_DepthBufferTexture:
+            initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            break;
+        default:
+            throw std::runtime_error("Unknown RenderTextureType");
+        }
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
             {
                 .format = renderPassJsonLoader.RenderAttachmentList[x].Format,
-                .samples = renderPassJsonLoader.RenderAttachmentList[x].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassJsonLoader.RenderAttachmentList[x].SampleCount,
+                .samples = renderPassJsonLoader.RenderAttachmentList[x].SampleCount >= vulkanSystem.MaxSampleCount
+                           ? vulkanSystem.MaxSampleCount
+                           : renderPassJsonLoader.RenderAttachmentList[x].SampleCount,
                 .loadOp = renderPassJsonLoader.RenderAttachmentList[x].LoadOp,
                 .storeOp = renderPassJsonLoader.RenderAttachmentList[x].StoreOp,
                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                .initialLayout = renderPassJsonLoader.RenderAttachmentList[x].Format ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                .initialLayout = initialLayout,  // ← Use the switch result
                 .finalLayout = renderPassJsonLoader.RenderAttachmentList[x].FinalLayout
             });
 
