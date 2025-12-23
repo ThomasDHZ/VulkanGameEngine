@@ -7,24 +7,22 @@
   ],
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
-  "RenderedTextureInfoModelList": [
+  "RenderAttachmentList": [
     {
-      "TextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
-      "TextureType": 0,
-      "SampleCountOverride": 8,
-      "UsingMipMaps": false,
-      "ImageCreateInfo": {
-        "SType": 14,
-        "ImageType": 1,
-        "Format": 44,
-        "MipLevels": 1,
-        "ArrayLayers": 1,
-        "Samples": 8,
-        "Tiling": 0,
-        "Usage": 23,
-        "SharingMode": 0,
-        "InitialLayout": 0
-      },
+      "RenderedTextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
+      "Width": 0,
+      "Height": 0,
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 44,
+      "SampleCount": 8,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 2,
+      "UseDefaultRenderArea": true,
+      "UseSampler": true,
+      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
@@ -42,60 +40,23 @@
         "MaxLod": 1.0,
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
-      },
-      "AttachmentDescription": {
-        "StructureType": 0,
-        "Flags": 0,
-        "Format": 44,
-        "Samples": 8,
-        "LoadOp": 1,
-        "StoreOp": 1,
-        "StencilLoadOp": 2,
-        "StencilStoreOp": 1,
-        "InitialLayout": 0,
-        "FinalLayout": 2
-      },
-      "ColorBlendState": {
-        "SType": 19,
-        "LogicOpEnable": false,
-        "LogicOp": 0,
-        "Attachments": [
-          {
-            "BlendEnable": true,
-            "SrcColorBlendFactor": 1,
-            "DstColorBlendFactor": 1,
-            "ColorBlendOp": 0,
-            "SrcAlphaBlendFactor": 1,
-            "DstAlphaBlendFactor": 1,
-            "AlphaBlendOp": 0,
-            "ColorWriteMask": 15
-          }
-        ],
-        "BlendConstants": {
-          "Red": 1.0,
-          "Green": 1.0,
-          "Blue": 1.0,
-          "Alpha": 1.0
-        }
       }
     },
     {
-      "TextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
-      "TextureType": 3,
-      "SampleCountOverride": 1,
-      "UsingMipMaps": false,
-      "ImageCreateInfo": {
-        "SType": 14,
-        "ImageType": 1,
-        "Format": 44,
-        "MipLevels": 1,
-        "ArrayLayers": 1,
-        "Samples": 1,
-        "Tiling": 0,
-        "Usage": 29,
-        "SharingMode": 0,
-        "InitialLayout": 0
-      },
+      "RenderedTextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
+      "Width": 0,
+      "Height": 0,
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 3,
+      "Format": 44,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseDefaultRenderArea": true,
+      "UseSampler": true,
+      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
@@ -113,60 +74,23 @@
         "MaxLod": 1.0,
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
-      },
-      "AttachmentDescription": {
-        "StructureType": 0,
-        "Flags": 0,
-        "Format": 44,
-        "Samples": 1,
-        "LoadOp": 2,
-        "StoreOp": 0,
-        "StencilLoadOp": 2,
-        "StencilStoreOp": 1,
-        "InitialLayout": 0,
-        "FinalLayout": 5
-      },
-      "ColorBlendState": {
-        "SType": 19,
-        "LogicOpEnable": false,
-        "LogicOp": 0,
-        "Attachments": [
-          {
-            "BlendEnable": true,
-            "SrcColorBlendFactor": 1,
-            "DstColorBlendFactor": 1,
-            "ColorBlendOp": 0,
-            "SrcAlphaBlendFactor": 1,
-            "DstAlphaBlendFactor": 1,
-            "AlphaBlendOp": 0,
-            "ColorWriteMask": 15
-          }
-        ],
-        "BlendConstants": {
-          "Red": 1.0,
-          "Green": 1.0,
-          "Blue": 1.0,
-          "Alpha": 1.0
-        }
       }
     },
     {
-      "TextureId": "ba64cbda-d29e-406a-a5d0-cd940b8fc0bf",
-      "TextureType": 0,
-      "SampleCountOverride": 8,
-      "UsingMipMaps": false,
-      "ImageCreateInfo": {
-        "SType": 14,
-        "ImageType": 1,
-        "Format": 44,
-        "MipLevels": 1,
-        "ArrayLayers": 1,
-        "Samples": 8,
-        "Tiling": 0,
-        "Usage": 23,
-        "SharingMode": 0,
-        "InitialLayout": 0
-      },
+      "RenderedTextureId": "ba64cbda-d29e-406a-a5d0-cd940b8fc0bf",
+      "Width": 0,
+      "Height": 0,
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 44,
+      "SampleCount": 8,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 2,
+      "UseDefaultRenderArea": true,
+      "UseSampler": true,
+      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
@@ -184,60 +108,23 @@
         "MaxLod": 1.0,
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
-      },
-      "AttachmentDescription": {
-        "StructureType": 0,
-        "Flags": 0,
-        "Format": 44,
-        "Samples": 8,
-        "LoadOp": 1,
-        "StoreOp": 1,
-        "StencilLoadOp": 2,
-        "StencilStoreOp": 1,
-        "InitialLayout": 0,
-        "FinalLayout": 2
-      },
-      "ColorBlendState": {
-        "SType": 19,
-        "LogicOpEnable": false,
-        "LogicOp": 0,
-        "Attachments": [
-          {
-            "BlendEnable": true,
-            "SrcColorBlendFactor": 1,
-            "DstColorBlendFactor": 1,
-            "ColorBlendOp": 0,
-            "SrcAlphaBlendFactor": 1,
-            "DstAlphaBlendFactor": 1,
-            "AlphaBlendOp": 0,
-            "ColorWriteMask": 15
-          }
-        ],
-        "BlendConstants": {
-          "Red": 1.0,
-          "Green": 1.0,
-          "Blue": 1.0,
-          "Alpha": 1.0
-        }
       }
     },
     {
-      "TextureId": "5b937f79-d0de-4d22-b95e-ee6627de88f4",
-      "TextureType": 3,
-      "SampleCountOverride": 1,
-      "UsingMipMaps": false,
-      "ImageCreateInfo": {
-        "SType": 14,
-        "ImageType": 1,
-        "Format": 44,
-        "MipLevels": 1,
-        "ArrayLayers": 1,
-        "Samples": 1,
-        "Tiling": 0,
-        "Usage": 29,
-        "SharingMode": 0,
-        "InitialLayout": 0
-      },
+      "RenderedTextureId": "5b937f79-d0de-4d22-b95e-ee6627de88f4",
+      "Width": 0,
+      "Height": 0,
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 3,
+      "Format": 44,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseDefaultRenderArea": true,
+      "UseSampler": true,
+      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
@@ -255,41 +142,6 @@
         "MaxLod": 1.0,
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
-      },
-      "AttachmentDescription": {
-        "StructureType": 0,
-        "Flags": 0,
-        "Format": 44,
-        "Samples": 1,
-        "LoadOp": 2,
-        "StoreOp": 0,
-        "StencilLoadOp": 2,
-        "StencilStoreOp": 1,
-        "InitialLayout": 0,
-        "FinalLayout": 5
-      },
-      "ColorBlendState": {
-        "SType": 19,
-        "LogicOpEnable": false,
-        "LogicOp": 0,
-        "Attachments": [
-          {
-            "BlendEnable": true,
-            "SrcColorBlendFactor": 1,
-            "DstColorBlendFactor": 1,
-            "ColorBlendOp": 0,
-            "SrcAlphaBlendFactor": 1,
-            "DstAlphaBlendFactor": 1,
-            "AlphaBlendOp": 0,
-            "ColorWriteMask": 15
-          }
-        ],
-        "BlendConstants": {
-          "Red": 1.0,
-          "Green": 1.0,
-          "Blue": 1.0,
-          "Alpha": 1.0
-        }
       }
     }
   ],

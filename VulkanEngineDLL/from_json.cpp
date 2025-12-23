@@ -140,19 +140,24 @@ namespace nlohmann
         j.at("maxDepth").get_to(viewPort.maxDepth);
     }
 
-    void from_json(const json& j, RenderedTextureLoader& model) {
-        j.at("TextureId").get_to(model.RenderedTextureId);
-        j.at("TextureType").get_to(model.TextureType);
-        j.at("ImageCreateInfo").get_to(model.ImageCreateInfo);
-        j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
-        j.at("AttachmentDescription").get_to(model.AttachmentDescription);
-        j.at("UsingMipMaps").get_to(model.UsingMipMaps);
-        if (j.contains("SampleCountOverride"))
+    void from_json(const json& j, RenderAttachmentLoader& model) {
+        j.at("RenderedTextureId").get_to(model.RenderedTextureId);
+        j.at("Width").get_to(model.Width);
+        j.at("Height").get_to(model.Height);
+        j.at("MipMapCount").get_to(model.MipMapCount);
+        j.at("RenderTextureType").get_to(model.RenderTextureType);
+        j.at("RenderAttachmentType").get_to(model.RenderAttachmentType);
+        j.at("Format").get_to(model.Format);
+        j.at("SampleCount").get_to(model.SampleCount);
+        j.at("LoadOp").get_to(model.LoadOp);
+        j.at("StoreOp").get_to(model.StoreOp);
+        j.at("FinalLayout").get_to(model.FinalLayout);
+        j.at("UseDefaultRenderArea").get_to(model.UseDefaultRenderArea);
+        j.at("UseSampler").get_to(model.UseSampler);
+        j.at("UseMipMaps").get_to(model.UseMipMaps);
+        if (j.contains("SamplerCreateInfo"))
         {
-            j.at("SampleCountOverride").get_to(model.SampleCountOverride);
-            model.SampleCountOverride = model.SampleCountOverride >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : model.SampleCountOverride;
-            model.ImageCreateInfo.samples = model.SampleCountOverride;
-            model.AttachmentDescription.samples = model.SampleCountOverride;
+            j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
         }
     }
 
@@ -340,7 +345,7 @@ namespace nlohmann
         j.at("RenderPassId").get_to(model.RenderPassId);
         j.at("IsRenderedToSwapchain").get_to(model.IsRenderedToSwapchain);
         j.at("RenderPipelineList").get_to(model.RenderPipelineList);
-        j.at("RenderedTextureInfoModelList").get_to(model.RenderedTextureInfoModelList);
+        j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyModelList);
         j.at("ClearValueList").get_to(model.ClearValueList);
 
@@ -357,7 +362,7 @@ namespace nlohmann
             j.at("RenderArea").get_to(model.RenderArea);
  /*           model.RenderArea.RenderArea.extent.width = defaultRenderPassResoultion.x;
             model.RenderArea.RenderArea.extent.height = defaultRenderPassResoultion.y;*/
-            for (auto& renderTexture : model.RenderedTextureInfoModelList)
+            for (auto& renderTexture : model.RenderAttachmentList)
             {
                 //renderTexture.ImageCreateInfo.extent.width = defaultRenderPassResoultion.x;
                 //renderTexture.ImageCreateInfo.extent.height = defaultRenderPassResoultion.y;

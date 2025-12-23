@@ -8,6 +8,7 @@
 #include <cmath>
 #include <stb/stb_image.h> 
 #include <stb/stb_image_write.h>
+#include "JsonStruct.h"
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
@@ -88,47 +89,54 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 }
 
 
-Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples, uint32 mipLevels, bool createSampler)
+Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader)
 {
+
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	bool hasStencil = (renderAttachmentLoader.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderAttachmentLoader.Format == VK_FORMAT_D24_UNORM_S8_UINT);
+	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	Texture texture =
 	{
-		.textureId = textureId,
-		.width = static_cast<int>(width),
-		.height = static_cast<int>(height),
+		.textureId = renderAttachmentLoader.RenderedTextureId,
+		.width = renderAttachmentLoader.UseDefaultRenderArea ? static_cast<int>(vulkanSystem.SwapChainResolution.width) : static_cast<int>(renderAttachmentLoader.Width),
+		.height = renderAttachmentLoader.UseDefaultRenderArea ? static_cast<int>(vulkanSystem.SwapChainResolution.height) : static_cast<int>(renderAttachmentLoader.Height),
 		.depth = 1,
-		.mipMapLevels = mipLevels,
-		.textureByteFormat = format,
-		.textureImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-		.sampleCount = samples
+		.mipMapLevels = renderAttachmentLoader.UseMipMaps ? renderAttachmentLoader.MipMapCount : 1,
+		.textureByteFormat = renderAttachmentLoader.Format,
+		.textureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		.sampleCount = renderAttachmentLoader.SampleCount 
 	};
 
-	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
-	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	if (isDepthFormat)
 	{
 		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		texture.colorChannels = ColorChannelUsed::ChannelR;
 	}
 	else
 	{
 		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		texture.textureImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
+	}
+	if (texture.mipMapLevels > 1)
+	{
+		usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	}
 
 	VkImageCreateInfo imageInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.imageType = VK_IMAGE_TYPE_2D,
-		.format = format,
-		.extent = { width, height, 1 },
-		.mipLevels = mipLevels,
+		.format = texture.textureByteFormat,
+		.extent = { static_cast<uint32>(texture.width), static_cast<uint32>(texture.height), 1 },
+		.mipLevels = texture.mipMapLevels,
 		.arrayLayers = 1,
-		.samples = samples,
+		.samples = texture.sampleCount,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout = texture.textureImageLayout
+		.initialLayout = texture.textureImageLayout,
 	};
 
 	VmaAllocationCreateInfo allocInfo =
@@ -145,11 +153,11 @@ Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, 
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.image = texture.textureImage,
 		.viewType = VK_IMAGE_VIEW_TYPE_2D,
-		.format = format,
+		.format = texture.textureByteFormat,
 		.subresourceRange =
 		{
 			.baseMipLevel = 0,
-			.levelCount = mipLevels,
+			.levelCount = texture.mipMapLevels,
 			.baseArrayLayer = 0,
 			.layerCount = 1
 		}
@@ -169,7 +177,7 @@ Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, 
 	}
 
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
-	if (createSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !isDepthFormat)
+	if (renderAttachmentLoader.UseSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !isDepthFormat)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -180,7 +188,7 @@ Texture TextureSystem::CreateRenderPassTexture(VkGuid& textureId, uint32 width, 
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = static_cast<float>(mipLevels);
+		samplerInfo.maxLod = static_cast<float>(texture.mipMapLevels);
 
 		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
 	}

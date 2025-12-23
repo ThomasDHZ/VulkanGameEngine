@@ -68,7 +68,15 @@ enum TextureTypeEnum
     kType_BakedTexture
 };
 
-enum RenderedTextureType
+enum RenderTextureTypeEnum
+{
+    RenderType_UNKNOWN,
+    RenderType_SwapChainTexture,
+    RenderType_OffscreenColorTexture,
+    RenderType_DepthBufferTexture
+};
+
+enum RenderAttachmentTypeEnum
 {
     ColorRenderedTexture,
     DepthRenderedTexture,

@@ -9,7 +9,7 @@ struct RenderedTextureInfoModel
     VkImageCreateInfo ImageCreateInfo;
     VkSamplerCreateInfo SamplerCreateInfo;
     VkAttachmentDescription AttachmentDescription;
-    RenderedTextureType TextureType;
+    RenderAttachmentTypeEnum TextureType;
 };
 
 struct RenderAreaModel
@@ -62,15 +62,23 @@ struct VulkanRenderPass
     bool IsRenderedToSwapchain = false;
 };
 
-struct  RenderedTextureLoader
+struct  RenderAttachmentLoader
 {
-    VkGuid RenderedTextureId;
-    VkImageCreateInfo ImageCreateInfo;
-    VkSamplerCreateInfo SamplerCreateInfo;
-    VkAttachmentDescription AttachmentDescription;
-    RenderedTextureType TextureType;
-    VkSampleCountFlagBits SampleCountOverride;
-    bool UsingMipMaps;
+    VkGuid                       RenderedTextureId = VkGuid();
+    uint32                       Width = -1;
+    uint32                       Height = -1;
+    uint32                       MipMapCount = -1;
+    RenderTextureTypeEnum        RenderTextureType = RenderType_UNKNOWN;
+    RenderAttachmentTypeEnum     RenderAttachmentType = ColorRenderedTexture;
+    VkFormat                     Format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkSampleCountFlagBits        SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkAttachmentLoadOp           LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    VkAttachmentStoreOp          StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+    VkImageLayout                FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkSamplerCreateInfo          SamplerCreateInfo = VkSamplerCreateInfo();
+    bool                         UseDefaultRenderArea = true;
+    bool                         UseSampler = true;
+    bool                         UseMipMaps = false;
 };
 
 struct RenderPassAttachementTextures
@@ -86,7 +94,7 @@ struct RenderPassLoader
     bool IsRenderedToSwapchain;
     Vector<String> RenderPipelineList;
     Vector<VkGuid> InputTextureList;
-    Vector<RenderedTextureLoader> RenderedTextureInfoModelList;
+    Vector<RenderAttachmentLoader> RenderAttachmentList;
     Vector<VkSubpassDependency> SubpassDependencyModelList;
     Vector<VkClearValue> ClearValueList;
     RenderAreaModel RenderArea;

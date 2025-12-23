@@ -5,6 +5,7 @@
 #include "FileSystem.h"
 #include <vk_mem_alloc.h>
 
+
 struct TextureLoader
 {
     String TextureFilePath;
@@ -41,6 +42,7 @@ struct Texture
     ColorChannelUsed colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
+struct RenderAttachmentLoader;
 class TextureSystem
 {
 public: 
@@ -65,7 +67,7 @@ public:
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
 
     DLL_EXPORT VkGuid                CreateTexture(const String& texturePath);
-    DLL_EXPORT Texture               CreateRenderPassTexture(VkGuid& textureId, uint32 width, uint32 height, VkFormat format, VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT, uint32 mipLevels = 1, bool createSampler = true);
+    DLL_EXPORT Texture               CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader);
     DLL_EXPORT void                  AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                  AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
     DLL_EXPORT void                  Update(const float& deltaTime);
@@ -89,4 +91,8 @@ inline TextureSystem& TextureSystem::Get()
 {
     static TextureSystem instance;
     return instance;
+}
+
+namespace nlohmann
+{
 }
