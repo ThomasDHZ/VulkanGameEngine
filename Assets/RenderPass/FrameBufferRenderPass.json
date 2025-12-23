@@ -4,23 +4,23 @@
   "RenderPipelineList": [
     "Pipelines/FrameBufferPipeline.json"
   ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
   "IsRenderedToSwapchain": true,
   "InputTextureList": [ "ca62ddec-30ff-49e2-b168-3cfeddcedb8e" ],
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "6492ef85-2573-4b76-9510-d8550ca5315d",
-      "Width": 0,
-      "Height": 0,
       "MipMapCount": 1,
       "RenderTextureType": 1,
       "RenderAttachmentType": 0,
       "Format": 37,
       "SampleCount": 1,
-      "LoadOp": 0,
+      "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 1000001002,
-      "UseDefaultRenderArea": true,
-      "UseSampler": false, 
+      "UseSampler": false,
       "UseMipMaps": false
     }
   ],
@@ -56,18 +56,5 @@
         "stencil": 0
       }
     }
-  ],
-  "RenderArea": {
-    "UseSwapChainRenderArea": true,
-    "RenderArea": {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  }
+  ]
 }

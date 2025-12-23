@@ -119,11 +119,6 @@ namespace nlohmann
         j.at("extent").at("height").get_to(rect.extent.height);
     }
 
-    void from_json(const json& j, RenderAreaModel& area) {
-        j.at("RenderArea").get_to(area.RenderArea);
-        j.at("UseSwapChainRenderArea").get_to(area.UseSwapChainRenderArea);
-    }
-
     void from_json(const json& j, VkGuid& guid) {
         std::string temp;
         j.get_to(temp);
@@ -142,9 +137,6 @@ namespace nlohmann
 
     void from_json(const json& j, RenderAttachmentLoader& model) {
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
-        j.at("Width").get_to(model.Width);
-        j.at("Height").get_to(model.Height);
-        j.at("MipMapCount").get_to(model.MipMapCount);
         j.at("RenderTextureType").get_to(model.RenderTextureType);
         j.at("RenderAttachmentType").get_to(model.RenderAttachmentType);
         j.at("Format").get_to(model.Format);
@@ -152,10 +144,20 @@ namespace nlohmann
         j.at("LoadOp").get_to(model.LoadOp);
         j.at("StoreOp").get_to(model.StoreOp);
         j.at("FinalLayout").get_to(model.FinalLayout);
-        j.at("UseDefaultRenderArea").get_to(model.UseDefaultRenderArea);
         j.at("UseSampler").get_to(model.UseSampler);
         j.at("UseMipMaps").get_to(model.UseMipMaps);
-        if (j.contains("SamplerCreateInfo"))
+
+        if (model.UseMipMaps &&
+            j.contains("MipMapCount"))
+        {
+            j.at("MipMapCount").get_to(model.MipMapCount);
+        }
+        else
+        {
+            model.MipMapCount = 1;
+        }
+
+        if (model.UseSampler && j.contains("SamplerCreateInfo"))
         {
             j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
         }
@@ -182,7 +184,6 @@ namespace nlohmann
     void from_json(const json& j, RenderPassBuildInfoModel& model)
     {
         model.IsRenderedToSwapchain = j.at("IsRenderedToSwapchain").get<bool>();
-        model.RenderArea = j.at("RenderArea");
         for (int x = 0; x < j.at("RenderPipelineList").size(); x++)
         {
             model.RenderPipelineList.emplace_back(j.at("RenderPipelineList")[x]["Path"]);
@@ -348,24 +349,26 @@ namespace nlohmann
         j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyModelList);
         j.at("ClearValueList").get_to(model.ClearValueList);
+        j.at("UseDefaultSwapChainResolution").get_to(model.UseDefaultSwapChainResolution);
+
+        if (model.UseDefaultSwapChainResolution &&
+            j.contains("RenderPassWidth") &&
+            j.contains("RenderPassHeight"))
+        {
+            model.RenderPassWidth = static_cast<int>(vulkanSystem.SwapChainResolution.width);
+            model.RenderPassHeight = static_cast<int>(vulkanSystem.SwapChainResolution.height);
+        }
+        else
+        {
+            model.RenderPassWidth = static_cast<int>(j.at("RenderPassWidth"));
+            model.RenderPassHeight = static_cast<int>(j.at("RenderPassHeight"));
+        }
 
         if (j.contains("InputTextureList"))
         {
             for (int x = 0; x < j.at("InputTextureList").size(); x++)
             {
                 model.InputTextureList.emplace_back(VkGuid(j["InputTextureList"][x].get<String>().c_str()));
-            }
-        }
-
-        if (j.contains("RenderArea"))
-        {
-            j.at("RenderArea").get_to(model.RenderArea);
- /*           model.RenderArea.RenderArea.extent.width = defaultRenderPassResoultion.x;
-            model.RenderArea.RenderArea.extent.height = defaultRenderPassResoultion.y;*/
-            for (auto& renderTexture : model.RenderAttachmentList)
-            {
-                //renderTexture.ImageCreateInfo.extent.width = defaultRenderPassResoultion.x;
-                //renderTexture.ImageCreateInfo.extent.height = defaultRenderPassResoultion.y;
             }
         }
     }

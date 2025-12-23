@@ -750,7 +750,6 @@ RenderPassGuid RenderSystem::CreateVulkanRenderPass(const char* renderPassJsonFi
     {
         .RenderPassId = renderPassLoader.RenderPassId,
         .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
-        .RenderArea = renderPassLoader.RenderArea.RenderArea,
         .InputTextureIdList = renderPassLoader.InputTextureList,
         .ClearValueList = renderPassLoader.ClearValueList,
         .CommandBuffer = VK_NULL_HANDLE,
@@ -841,7 +840,6 @@ void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 
     renderPass.RenderPassId = VkGuid();
     renderPass.SampleCount = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
-    renderPass.RenderArea = VkRect2D();
     renderPass.RenderPass = VK_NULL_HANDLE;
     renderPass.CommandBuffer = VK_NULL_HANDLE;
     renderPass.IsRenderedToSwapchain = false;
@@ -890,14 +888,12 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
             {
                 .format = renderPassJsonLoader.RenderAttachmentList[x].Format,
-                .samples = renderPassJsonLoader.RenderAttachmentList[x].SampleCount >= vulkanSystem.MaxSampleCount
-                           ? vulkanSystem.MaxSampleCount
-                           : renderPassJsonLoader.RenderAttachmentList[x].SampleCount,
+                .samples = renderPassJsonLoader.RenderAttachmentList[x].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassJsonLoader.RenderAttachmentList[x].SampleCount,
                 .loadOp = renderPassJsonLoader.RenderAttachmentList[x].LoadOp,
                 .storeOp = renderPassJsonLoader.RenderAttachmentList[x].StoreOp,
                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                .initialLayout = initialLayout,  // ← Use the switch result
+                .initialLayout = initialLayout,
                 .finalLayout = renderPassJsonLoader.RenderAttachmentList[x].FinalLayout
             });
 
@@ -989,16 +985,16 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
     return renderPass;
 }
 
-void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPassoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPassLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
 {
-    for (auto& renderPassAttachmentInfo : renderPassoader.RenderAttachmentList)
+    for (auto& renderPassAttachmentInfo : renderPassLoader.RenderAttachmentList)
     {
         switch (renderPassAttachmentInfo.RenderAttachmentType)
         {
-            case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo)); break;
-            case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo)); break;
-            case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo)); break;
-            case DepthRenderedTexture: depthTexture = textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo); break;
+            case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
+            case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
+            case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
+            case DepthRenderedTexture: depthTexture = textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight)); break;
         };
     }
 }

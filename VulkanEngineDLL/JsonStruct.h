@@ -12,12 +12,6 @@ struct RenderedTextureInfoModel
     RenderAttachmentTypeEnum TextureType;
 };
 
-struct RenderAreaModel
-{
-    VkRect2D RenderArea;
-    bool UseSwapChainRenderArea;
-};
-
 struct PipelineDescriptorModel
 {
     uint BindingNumber;
@@ -37,7 +31,6 @@ struct RenderPassBuildInfoModel
     Vector<RenderedTextureInfoModel> RenderedTextureInfoModelList;
     Vector<VkSubpassDependency> SubpassDependencyModelList;
     Vector<VkClearValue> ClearValueList;
-    RenderAreaModel RenderArea;
 };
 
 struct BlendConstantsModel
@@ -52,21 +45,19 @@ struct VulkanRenderPass
 {
     RenderPassGuid RenderPassId = VkGuid();
     VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkRect2D RenderArea = VkRect2D();
     VkRenderPass RenderPass = VK_NULL_HANDLE;
     Vector<VkGuid> InputTextureIdList;
     Vector<VkFramebuffer> FrameBufferList;
     Vector<VkClearValue> ClearValueList;
     VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
     ivec2 RenderPassResolution = ivec2();
+    bool                         UseDefaultSwapChainResolution = true;
     bool IsRenderedToSwapchain = false;
 };
 
 struct  RenderAttachmentLoader
 {
     VkGuid                       RenderedTextureId = VkGuid();
-    uint32                       Width = -1;
-    uint32                       Height = -1;
     uint32                       MipMapCount = -1;
     RenderTextureTypeEnum        RenderTextureType = RenderType_UNKNOWN;
     RenderAttachmentTypeEnum     RenderAttachmentType = ColorRenderedTexture;
@@ -76,7 +67,6 @@ struct  RenderAttachmentLoader
     VkAttachmentStoreOp          StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
     VkImageLayout                FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     VkSamplerCreateInfo          SamplerCreateInfo = VkSamplerCreateInfo();
-    bool                         UseDefaultRenderArea = true;
     bool                         UseSampler = true;
     bool                         UseMipMaps = false;
 };
@@ -91,13 +81,15 @@ struct RenderPassAttachementTextures
 struct RenderPassLoader
 {
     VkGuid RenderPassId;
+    uint32                       RenderPassWidth = -1;
+    uint32                       RenderPassHeight = -1;
+    bool UseDefaultSwapChainResolution = true;
     bool IsRenderedToSwapchain;
     Vector<String> RenderPipelineList;
     Vector<VkGuid> InputTextureList;
     Vector<RenderAttachmentLoader> RenderAttachmentList;
     Vector<VkSubpassDependency> SubpassDependencyModelList;
     Vector<VkClearValue> ClearValueList;
-    RenderAreaModel RenderArea;
 };
 
 struct VulkanPipeline

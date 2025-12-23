@@ -89,7 +89,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 }
 
 
-Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader)
+Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution)
 {
 
 	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -98,12 +98,12 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	Texture texture =
 	{
 		.textureId = renderAttachmentLoader.RenderedTextureId,
-		.width = renderAttachmentLoader.UseDefaultRenderArea ? static_cast<int>(vulkanSystem.SwapChainResolution.width) : static_cast<int>(renderAttachmentLoader.Width),
-		.height = renderAttachmentLoader.UseDefaultRenderArea ? static_cast<int>(vulkanSystem.SwapChainResolution.height) : static_cast<int>(renderAttachmentLoader.Height),
+		.width = renderAttachmentResolution.x,
+		.height = renderAttachmentResolution.y,
 		.depth = 1,
 		.mipMapLevels = renderAttachmentLoader.UseMipMaps ? renderAttachmentLoader.MipMapCount : 1,
 		.textureByteFormat = renderAttachmentLoader.Format,
-		.textureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		.textureImageLayout = renderAttachmentLoader.FinalLayout,
 		.sampleCount = renderAttachmentLoader.SampleCount 
 	};
 
@@ -116,7 +116,6 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	else
 	{
 		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		texture.textureImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 	}
 	if (texture.mipMapLevels > 1)
@@ -214,6 +213,70 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 			.imageView = texture.textureView,
 			.imageLayout = texture.textureImageLayout
 		});
+}
+
+void TextureSystem::TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
+{
+	VkImageMemoryBarrier barrier =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		.oldLayout = texture.textureImageLayout,
+		.newLayout = newLayout,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = texture.textureImage,
+		.subresourceRange =
+		{
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.baseMipLevel = baseMipLevel,
+			.levelCount = levelCount,
+			.baseArrayLayer = 0,
+			.layerCount = VK_REMAINING_ARRAY_LAYERS
+		}
+	};
+
+	VkAccessFlags srcAccess = 0;
+	VkAccessFlags dstAccess = 0;
+	VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		srcAccess = 0;
+		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+
+	barrier.srcAccessMask = srcAccess;
+	barrier.dstAccessMask = dstAccess;
+
+	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	texture.textureImageLayout = newLayout;
 }
 
 void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)

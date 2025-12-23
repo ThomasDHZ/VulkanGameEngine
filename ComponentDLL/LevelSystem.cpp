@@ -145,8 +145,7 @@ void LevelSystem::DestroyLevel()
 void LevelSystem::Update(const float& deltaTime)
 {
     Camera_Update(*OrthographicCamera.get());
-    spriteSystem.Update(deltaTime);
-    shaderSystem.UpdateGlobalShaderBuffer("sceneData");
+
 }
 
  void LevelSystem::LoadLevel(const char* levelPath)
@@ -329,8 +328,16 @@ void LevelSystem::Update(const float& deltaTime)
 
      VkRect2D scissor = VkRect2D
      {
-         .offset = VkOffset2D {.x = 0, .y = 0},
-         .extent = VkExtent2D {.width = (uint32)vulkanSystem.SwapChainResolution.width, .height = (uint32)vulkanSystem.SwapChainResolution.height}
+         .offset = VkOffset2D
+         {
+             .x = 0,
+             .y = 0
+         },
+        .extent = VkExtent2D
+             {
+                     .width = static_cast<uint>(renderPass.RenderPassResolution.x),
+                     .height = static_cast<uint>(renderPass.RenderPassResolution.y)
+             }
      };
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
@@ -363,13 +370,26 @@ void LevelSystem::Update(const float& deltaTime)
      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
      const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
+     Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
          .renderPass = renderPass.RenderPass,
          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
-         .renderArea = renderPass.RenderArea,
+         .renderArea = VkRect2D
+         {
+             .offset = VkOffset2D
+             {
+                 .x = 0,
+                 .y = 0
+             },
+            .extent = VkExtent2D
+                 {
+                         .width = static_cast<uint>(renderPass.RenderPassResolution.x),
+                         .height = static_cast<uint>(renderPass.RenderPassResolution.y)
+                 }
+         },
          .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
          .pClearValues = renderPass.ClearValueList.data()
      };
@@ -377,6 +397,9 @@ void LevelSystem::Update(const float& deltaTime)
      VkDeviceSize offsets[] = { 0 };
      VkDeviceSize instanceOffset[] = { 0 };
      VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
+     spriteSystem.Update(deltaTime);
+     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
+     meshSystem.Update(deltaTime);
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      for (auto& levelLayer : levelLayerList)
      {
@@ -410,6 +433,8 @@ void LevelSystem::Update(const float& deltaTime)
          vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
      }
      vkCmdEndRenderPass(commandBuffer);
+     //textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[1], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+     //textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[3], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
      VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
      return commandBuffer;
  }

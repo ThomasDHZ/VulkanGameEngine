@@ -5,13 +5,14 @@
     "Pipelines/SpriteInstancePipeline.json",
     "Pipelines/LevelShader2DPipeline.json"
   ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "1e0878ca-0650-4b58-b290-ca07c169ec54",
-      "Width": 0,
-      "Height": 0,
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentType": 0,
@@ -20,7 +21,6 @@
       "LoadOp": 1,
       "StoreOp": 1,
       "FinalLayout": 2,
-      "UseDefaultRenderArea": true,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -44,8 +44,6 @@
     },
     {
       "RenderedTextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
-      "Width": 0,
-      "Height": 0,
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentType": 3,
@@ -54,7 +52,6 @@
       "LoadOp": 1,
       "StoreOp": 2,
       "FinalLayout": 5,
-      "UseDefaultRenderArea": true,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -78,8 +75,6 @@
     },
     {
       "RenderedTextureId": "ba64cbda-d29e-406a-a5d0-cd940b8fc0bf",
-      "Width": 0,
-      "Height": 0,
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentType": 0,
@@ -88,7 +83,6 @@
       "LoadOp": 1,
       "StoreOp": 1,
       "FinalLayout": 2,
-      "UseDefaultRenderArea": true,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -112,8 +106,6 @@
     },
     {
       "RenderedTextureId": "5b937f79-d0de-4d22-b95e-ee6627de88f4",
-      "Width": 0,
-      "Height": 0,
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentType": 3,
@@ -122,7 +114,6 @@
       "LoadOp": 1,
       "StoreOp": 2,
       "FinalLayout": 5,
-      "UseDefaultRenderArea": true,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -230,18 +221,5 @@
         "Uint32_3": 1065353216
       }
     }
-  ],
-  "RenderArea": {
-    "UseSwapChainRenderArea": true,
-    "RenderArea": {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  }
+  ]
 }
