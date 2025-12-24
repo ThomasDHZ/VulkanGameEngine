@@ -85,6 +85,14 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
 	TextureMap[textureLoader.TextureId] = texture;
+
+#ifndef NDEBUG
+	std::cout << "[TextureDebug] Created texture ID: " << texture.textureId.ToString()
+		<< " Image: " << texture.textureImage
+		<< " Format: " << texture.textureByteFormat
+		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+#endif
+
 	return textureLoader.TextureId;
 }
 
@@ -192,6 +200,12 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
 	}
 
+#ifndef NDEBUG
+	std::cout << "[TextureDebug] Created texture ID: " << texture.textureId.ToString()
+		<< " Image: " << texture.textureImage
+		<< " Format: " << texture.textureByteFormat
+		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+#endif
 	return texture;
 }
 

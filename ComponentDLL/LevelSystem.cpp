@@ -309,7 +309,7 @@ void LevelSystem::Update(const float& deltaTime)
      return commandBuffer;
  }
 
- VkCommandBuffer LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
+ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
  {
      const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
      VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
@@ -356,11 +356,9 @@ void LevelSystem::Update(const float& deltaTime)
      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
-
-     return commandBuffer;
  }
 
- VkCommandBuffer LevelSystem::RenderLevel(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
+ void LevelSystem::RenderLevel(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
  {
      const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
@@ -429,7 +427,4 @@ void LevelSystem::Update(const float& deltaTime)
          vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
      }
      vkCmdEndRenderPass(commandBuffer);
-     textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[1], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-     textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[3], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-     return commandBuffer;
  }

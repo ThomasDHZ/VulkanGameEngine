@@ -769,8 +769,6 @@ RenderPassGuid RenderSystem::CreateVulkanRenderPass(const char* renderPassJsonFi
     vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader, renderedTextureList, depthTexture);
     BuildRenderPassAttachments(renderPassLoader, renderedTextureList, depthTexture);
     Vector<VkFramebuffer> frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
-    CreateCommandBuffers(&vulkanRenderPass.CommandBuffer, 1);
-
     vulkanRenderPass.FrameBufferList = frameBufferList;
 
     RenderPassAttachementTextures renderPassAttachments = RenderPassAttachementTextures
@@ -852,22 +850,6 @@ void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
     renderPass.RenderPass = VK_NULL_HANDLE;
     renderPass.CommandBuffer = VK_NULL_HANDLE;
     renderPass.IsRenderedToSwapchain = false;
-}
-
-void RenderSystem::CreateCommandBuffers(VkCommandBuffer* commandBufferList, size_t commandBufferCount)
-{
-    for (size_t x = 0; x < commandBufferCount; x++)
-    {
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo =
-        {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .commandPool = vulkanSystem.CommandPool,
-            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = static_cast<uint32>(commandBufferCount)
-        };
-
-        vkAllocateCommandBuffers(vulkanSystem.Device, &commandBufferAllocateInfo, &commandBufferList[x]);
-    }
 }
 
 VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJsonLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
