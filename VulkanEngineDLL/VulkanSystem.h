@@ -27,6 +27,7 @@ private:
 	void						SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat);
 	VkCommandPool				SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
 	void						SetUpSemaphores();
+	void						SetUpCommandBuffers();
 	void						SetUpSwapChain(void* windowHandle);
 	VmaAllocator				SetUpVmaAllocation();
 
@@ -70,6 +71,7 @@ public:
 
 	Vector<VkFence>			 InFlightFences = Vector<VkFence>();
 	Vector<VkImage>			 SwapChainImages = Vector<VkImage>();
+	Vector<VkCommandBuffer>	 CommandBuffers = Vector<VkCommandBuffer>();
 	Vector<VkImageView>		 SwapChainImageViews = Vector<VkImageView>();
 	Vector<VkSemaphore>		 AcquireImageSemaphores = Vector<VkSemaphore>();
 	Vector<VkSemaphore>		 PresentImageSemaphores = Vector<VkSemaphore>();

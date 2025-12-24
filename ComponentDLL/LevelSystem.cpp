@@ -203,11 +203,11 @@ void LevelSystem::Update(const float& deltaTime)
      frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
 }
 
- void LevelSystem::Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime)
+ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
  {
-     commandBufferList.emplace_back(RenderLevel(spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime));
+     RenderLevel(commandBuffer, spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime);
      //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
-     commandBufferList.emplace_back(RenderFrameBuffer(frameBufferId));
+     RenderFrameBuffer(commandBuffer, frameBufferId);
  }
 
   LevelLayout LevelSystem::GetLevelLayout()
@@ -295,7 +295,7 @@ void LevelSystem::Update(const float& deltaTime)
          memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurScale").Value.data(), &lodLevel, sizeof(lodLevel));
          memcpy(shaderSystem.FindShaderPushConstantStructVariable(pushConstant, "blurStrength").Value.data(), &blurStrength, sizeof(blurStrength));
 
-         VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
+         //VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
          //vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
          //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
          //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -304,16 +304,15 @@ void LevelSystem::Update(const float& deltaTime)
          //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetCount, pipeline.DescriptorSetList, 0, nullptr);
          //vkCmdDraw(commandBuffer, 6, 1, 0, 0);
          //vkCmdEndRenderPass(commandBuffer);
-         VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+       //  VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
      }
      return commandBuffer;
  }
 
- VkCommandBuffer LevelSystem::RenderFrameBuffer(VkGuid& renderPassId)
+ VkCommandBuffer LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
  {
      const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
      VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-     VkCommandBuffer commandBuffer = renderPass.CommandBuffer;
      Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(spriteRenderPass2DId);
 
      VkViewport viewport
@@ -350,7 +349,6 @@ void LevelSystem::Update(const float& deltaTime)
          .pClearValues = renderPass.ClearValueList.data()
      };
 
-     VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
      vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -358,17 +356,16 @@ void LevelSystem::Update(const float& deltaTime)
      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
-     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+
      return commandBuffer;
  }
 
- VkCommandBuffer LevelSystem::RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
+ VkCommandBuffer LevelSystem::RenderLevel(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
  {
      const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
-     const VkCommandBuffer& commandBuffer = renderPass.CommandBuffer;
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
      Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
 
@@ -396,7 +393,6 @@ void LevelSystem::Update(const float& deltaTime)
 
      VkDeviceSize offsets[] = { 0 };
      VkDeviceSize instanceOffset[] = { 0 };
-     VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &renderSystem.CommandBufferBeginInfo));
      spriteSystem.Update(deltaTime);
      shaderSystem.UpdateGlobalShaderBuffer("sceneData");
      meshSystem.Update(deltaTime);
@@ -433,8 +429,7 @@ void LevelSystem::Update(const float& deltaTime)
          vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
      }
      vkCmdEndRenderPass(commandBuffer);
-     //textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[1], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-     //textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[3], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+     textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[1], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+     textureSystem.TransitionImageLayout(commandBuffer, renderPassTextures[3], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
      return commandBuffer;
  }

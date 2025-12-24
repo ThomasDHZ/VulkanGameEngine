@@ -40,6 +40,7 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 	vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
     SetUpSwapChain(windowHandle);
     vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
+    SetUpCommandBuffers();
     SetUpSemaphores();
     GetDeviceQueue(vulkanSystem.Device, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily, vulkanSystem.GraphicsQueue, vulkanSystem.PresentQueue);
 
@@ -940,6 +941,23 @@ void VulkanSystem::SetUpSemaphores()
         VULKAN_THROW_IF_FAIL(vkCreateFence(Device, &fenceInfo, NULL, &InFlightFences[x]));
         VULKAN_THROW_IF_FAIL(vkCreateSemaphore(Device, &semaphoreCreateInfo, NULL, &AcquireImageSemaphores[x]));
         VULKAN_THROW_IF_FAIL(vkCreateSemaphore(Device, &semaphoreCreateInfo, NULL, &PresentImageSemaphores[x]));
+    }
+}
+
+void VulkanSystem::SetUpCommandBuffers()
+{
+    CommandBuffers = Vector<VkCommandBuffer>(SwapChainImageCount, VK_NULL_HANDLE);
+    for (size_t x = 0; x < SwapChainImageCount; x++)
+    {
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool = vulkanSystem.CommandPool,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = static_cast<uint32>(SwapChainImageCount)
+        };
+
+        vkAllocateCommandBuffers(vulkanSystem.Device, &commandBufferAllocateInfo, &CommandBuffers[x]);
     }
 }
 

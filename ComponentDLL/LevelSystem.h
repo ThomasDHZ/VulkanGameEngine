@@ -78,10 +78,10 @@ private:
         RenderPassGuid frameBufferId;
         RenderPassGuid gaussianBlurRenderPassId;
 
-        DLL_EXPORT void                 Draw(Vector<VkCommandBuffer>& commandBufferList, const float& deltaTime);
+        DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
         DLL_EXPORT VkCommandBuffer      RenderBloomPass(VkGuid& renderPassId);
-        DLL_EXPORT VkCommandBuffer      RenderFrameBuffer(VkGuid& renderPassId);
-        DLL_EXPORT VkCommandBuffer      RenderLevel(VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
+        DLL_EXPORT VkCommandBuffer      RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
+        DLL_EXPORT VkCommandBuffer      RenderLevel(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 LoadLevel(const char* levelPath);
         DLL_EXPORT void                 Update(const float& deltaTime);
         DLL_EXPORT void                 DestroyLevel();

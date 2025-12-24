@@ -63,12 +63,8 @@ void GameSystem::Update(float deltaTime)
     levelSystem.Update(deltaTime);
     textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);
-
     renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.spriteRenderPass2DId, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 
-    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
-    meshSystem.Update(deltaTime);
-    renderSystem.EndSingleUseCommand(commandBuffer);
     gameObjectSystem.DestroyDeadGameObjects();
 }
 
@@ -125,10 +121,10 @@ void GameSystem::DebugUpdate(float deltaTime)
 void GameSystem::Draw(float deltaTime)
 {
     renderSystem.StartFrame();
-    levelSystem.Draw(CommandBufferSubmitList, deltaTime);
-    CommandBufferSubmitList.emplace_back(ImGui_Draw(imGuiRenderer));
-    renderSystem.EndFrame(CommandBufferSubmitList);
-    CommandBufferSubmitList.clear();
+    VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+    levelSystem.Draw(commandBuffer, deltaTime);
+    ImGui_Draw(commandBuffer, imGuiRenderer);
+    renderSystem.EndFrame(commandBuffer);
 }
 
 void GameSystem::Destroy()

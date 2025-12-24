@@ -10,8 +10,6 @@ class MeshSystem;
 class GameSystem
 {
 private:
-    Vector<VkCommandBuffer> CommandBufferSubmitList;
-
 public:
     GameSystem();
     ~GameSystem();

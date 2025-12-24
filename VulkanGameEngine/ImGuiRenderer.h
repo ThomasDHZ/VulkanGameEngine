@@ -13,7 +13,6 @@ struct ImGuiRenderer
 {
 	VkRenderPass RenderPass = VK_NULL_HANDLE;
 	VkDescriptorPool ImGuiDescriptorPool = VK_NULL_HANDLE;
-	VkCommandBuffer ImGuiCommandBuffer = VK_NULL_HANDLE;
 	Vector<VkFramebuffer> SwapChainFramebuffers;
 };
  extern ImGuiRenderer imGuiRenderer;
@@ -21,7 +20,7 @@ struct ImGuiRenderer
 ImGuiRenderer ImGui_StartUp();
 void ImGui_StartFrame();
 void ImGui_EndFrame();
-VkCommandBuffer ImGui_Draw(ImGuiRenderer& imGuiRenderer);
+void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer);
 void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer);
 void ImGui_Destroy(ImGuiRenderer& imGuiRenderer);
 VkRenderPass ImGui_CreateRenderPass();

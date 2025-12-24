@@ -6,6 +6,7 @@
 #include "BufferSystem.h"
 #include "from_json.h"
 
+
 RenderSystem& renderSystem = RenderSystem::Get();
 
 void RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
@@ -134,10 +135,17 @@ void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandP
 
 void RenderSystem::StartFrame()
 {
+    VkCommandBufferBeginInfo commandBufferBeginInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+    };
     vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
 
     VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
     VULKAN_THROW_IF_FAIL(vkResetFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
+    VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], 0));
+    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], &commandBufferBeginInfo));
     VkResult result = vkAcquireNextImageKHR(vulkanSystem.Device, vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -149,7 +157,7 @@ void RenderSystem::StartFrame()
     }
 }
 
-void RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
+void RenderSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
 {
     VkPipelineStageFlags waitStages[] =
     {
@@ -162,12 +170,13 @@ void RenderSystem::EndFrame(Vector<VkCommandBuffer> commandBufferSubmitList)
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
         .pWaitDstStageMask = waitStages,
-        .commandBufferCount = static_cast<uint32>(commandBufferSubmitList.size()),
-        .pCommandBuffers = commandBufferSubmitList.data(),
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBufferSubmit,
         .signalSemaphoreCount = 1,
         .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex]
     };
 
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
     VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
         submitResult == VK_SUBOPTIMAL_KHR)

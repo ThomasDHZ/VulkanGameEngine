@@ -41,18 +41,6 @@ ImGuiRenderer ImGui_StartUp()
     };
     vkCreateDescriptorPool(vulkanSystem.Device, &pool_info, nullptr, &imGui.ImGuiDescriptorPool);
 
-    for (size_t x = 0; x < vulkanSystem.SwapChainImageCount; x++)
-    {
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo
-        {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .commandPool = vulkanSystem.CommandPool,
-            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = 1
-        };
-        VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkanSystem.Device, &commandBufferAllocateInfo, &imGui.ImGuiCommandBuffer));
-    }
-
     ImGui_ImplVulkan_InitInfo init_info =
     {
         .Instance = vulkanSystem.Instance,
@@ -88,12 +76,11 @@ void ImGui_EndFrame()
     ImGui::Render();
 }
 
-VkCommandBuffer ImGui_Draw(ImGuiRenderer& imGuiRenderer)
+void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer)
 {
     std::vector<VkClearValue> clearValues
     {
-        VkClearValue {.color = { {0.0f, 0.0f, 0.0f, 1.0f} } },
-        VkClearValue {.depthStencil = { 1.0f, 0 } }
+        VkClearValue {.color = { {0.0f, 0.0f, 0.0f, 1.0f} } }
     };
 
     VkRenderPassBeginInfo renderPassInfo
@@ -110,20 +97,9 @@ VkCommandBuffer ImGui_Draw(ImGuiRenderer& imGuiRenderer)
         .pClearValues = clearValues.data()
     };
 
-    VkCommandBufferBeginInfo beginInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
-    };
-
-    VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(imGuiRenderer.ImGuiCommandBuffer, 0));
-    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(imGuiRenderer.ImGuiCommandBuffer, &beginInfo));
-    vkCmdBeginRenderPass(imGuiRenderer.ImGuiCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), imGuiRenderer.ImGuiCommandBuffer);
-    vkCmdEndRenderPass(imGuiRenderer.ImGuiCommandBuffer);
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(imGuiRenderer.ImGuiCommandBuffer));
-
-    return imGuiRenderer.ImGuiCommandBuffer;
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    vkCmdEndRenderPass(commandBuffer);
 }
 
 void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer)
@@ -137,7 +113,7 @@ void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer)
 void ImGui_Destroy(ImGuiRenderer& imGuiRenderer)
 {
     ImGui_ImplVulkan_Shutdown();
-    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &imGuiRenderer.ImGuiCommandBuffer, 1);
+    //vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &imGuiRenderer.ImGuiCommandBuffer, 1);
     vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &imGuiRenderer.ImGuiDescriptorPool);
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
     vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &imGuiRenderer.SwapChainFramebuffers[0], vulkanSystem.SwapChainImageCount);
