@@ -1,0 +1,87 @@
+{
+  "Name": "FrameBufferPipeline",
+  "PipelineId": "837bb197-773e-4352-ae43-b4f377527318",
+  "ShaderList": [
+    "Shaders/HdrShaderVert.spv",
+    "Shaders/HdrShaderFrag.spv"
+  ],
+  "VertexType": 0,
+  "ViewportList": [],
+  "ScissorList": [],
+  "PipelineColorBlendAttachmentStateList": [
+    {
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 6,
+      "DstColorBlendFactor": 7,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    }
+  ],
+  "PipelineColorBlendStateCreateInfoModel": {
+    "BlendConstants": { "FixedElementField": 0.0 },
+    "SType": 26,
+    "LogicOpEnable": false,
+    "LogicOp": 5,
+    "AttachmentCount": 1
+  },
+  "PipelineRasterizationStateCreateInfo": {
+    "sType": 23,
+    "depthClampEnable": 0,
+    "rasterizerDiscardEnable": 0,
+    "polygonMode": 0,
+    "cullMode": 0,
+    "frontFace": 0,
+    "depthBiasEnable": 0,
+    "depthBiasConstantFactor": 0.0,
+    "depthBiasClamp": 0.0,
+    "depthBiasSlopeFactor": 0.0,
+    "lineWidth": 1.0,
+    "flags": 0
+  },
+  "PipelineMultisampleStateCreateInfo": {
+    "sType": 24,
+    "rasterizationSamples": 1,
+    "sampleShadingEnable": false,
+    "minSampleShading": 0.0,
+    "alphaToCoverageEnable": false,
+    "alphaToOneEnable": false,
+    "flags": 0
+  },
+  "PipelineDepthStencilStateCreateInfo": {
+    "sType": 25,
+    "depthTestEnable": true,
+    "depthWriteEnable": true,
+    "depthCompareOp": 3,
+    "depthBoundsTestEnable": false,
+    "stencilTestEnable": false,
+    "front": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "back": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "minDepthBounds": 0.0,
+    "maxDepthBounds": 0.0,
+    "flags": 0
+  },
+  "PipelineInputAssemblyStateCreateInfo": {
+    "sType": 20,
+    "topology": 3,
+    "primitiveRestartEnable": 0
+  }
+}

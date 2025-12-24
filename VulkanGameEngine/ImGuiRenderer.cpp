@@ -93,8 +93,8 @@ void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer)
             .offset = { 0, 0 },
             .extent = vulkanSystem.SwapChainResolution,
         },
-        .clearValueCount = static_cast<uint32>(clearValues.size()),
-        .pClearValues = clearValues.data()
+.clearValueCount = 0,
+.pClearValues = nullptr
     };
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -113,7 +113,6 @@ void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer)
 void ImGui_Destroy(ImGuiRenderer& imGuiRenderer)
 {
     ImGui_ImplVulkan_Shutdown();
-    //vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &imGuiRenderer.ImGuiCommandBuffer, 1);
     vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &imGuiRenderer.ImGuiDescriptorPool);
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
     vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &imGuiRenderer.SwapChainFramebuffers[0], vulkanSystem.SwapChainImageCount);

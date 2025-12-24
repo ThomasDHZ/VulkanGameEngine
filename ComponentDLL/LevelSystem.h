@@ -76,9 +76,11 @@ private:
         RenderPassGuid levelWireFrameRenderPass2DId;
         RenderPassGuid spriteWireFrameRenderPass2DId;
         RenderPassGuid frameBufferId;
+        RenderPassGuid hdrRenderPassId;
         RenderPassGuid gaussianBlurRenderPassId;
 
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+        DLL_EXPORT void                 RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT VkCommandBuffer      RenderBloomPass(VkGuid& renderPassId);
         DLL_EXPORT void                 RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderLevel(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
