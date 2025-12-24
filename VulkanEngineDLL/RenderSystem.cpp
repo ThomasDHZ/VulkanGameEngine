@@ -884,7 +884,7 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
                 .storeOp = renderPassJsonLoader.RenderAttachmentList[x].StoreOp,
                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                .initialLayout = initialLayout,
+                .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                 .finalLayout = renderPassJsonLoader.RenderAttachmentList[x].FinalLayout
             });
 

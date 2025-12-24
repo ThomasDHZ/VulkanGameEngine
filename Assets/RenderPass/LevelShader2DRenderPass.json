@@ -142,8 +142,8 @@
       "DstSubpass": 0,
       "SrcStageMask": 1024,
       "DstStageMask": 1024,
-      "SrcAccessMask": 256,
-      "DstAccessMask": 128,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 384,
       "DependencyFlags": 1
     },
     {
