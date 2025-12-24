@@ -4,25 +4,24 @@
   "RenderPipelineList": [
     "Pipelines/GaussianBlurPipeline.json"
   ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [ "5b937f79-d0de-4d22-b95e-ee6627de88f4" ],
-  "RenderedTextureInfoModelList": [
+  "RenderAttachmentList": [
     {
-      "TextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
-      "TextureType": 0,
-      "SampleCountOverride": 1,
-      "UsingMipMaps": true,
-      "ImageCreateInfo": {
-        "ImageType": 1,
-        "Format": 37,
-        "MipLevels": 1,
-        "ArrayLayers": 1,
-        "Samples": 1,
-        "Tiling": 0,
-        "Usage": 23,
-        "SharingMode": 0,
-        "InitialLayout": 7
-      },
+      "RenderedTextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 97,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 2,
+      "UseSampler": true,
+      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
@@ -40,17 +39,6 @@
         "MaxLod": 1.0,
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
-      },
-      "AttachmentDescription": {
-        "Flags": 0,
-        "Format": 37,
-        "Samples": 1,
-        "LoadOp": 1,
-        "StoreOp": 0,
-        "StencilLoadOp": 2,
-        "StencilStoreOp": 1,
-        "InitialLayout": 0,
-        "FinalLayout": 1000001002
       }
     }
   ],

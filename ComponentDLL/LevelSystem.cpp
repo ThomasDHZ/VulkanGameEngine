@@ -148,65 +148,66 @@ void LevelSystem::Update(const float& deltaTime)
 
 }
 
- void LevelSystem::LoadLevel(const char* levelPath)
+void LevelSystem::LoadLevel(const char* levelPath)
 {
-     OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+    OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
-     VkGuid dummyGuid = VkGuid();
-     VkGuid tileSetId = VkGuid();
+    VkGuid dummyGuid = VkGuid();
+    VkGuid tileSetId = VkGuid();
 
 #if defined(_WIN32)
-     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
+    shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
-     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-     nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
-     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
-     spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
-     levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
-     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+    nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
+    nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
+    nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
+    spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
+    levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
+    shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
-     std::cout << "StartUp level" << std::endl;
-     for (size_t x = 0; x < json["LoadTextures"].size(); x++)
-     {
-         textureSystem.CreateTexture(json["LoadTextures"][x]);
-     }
+    std::cout << "StartUp level" << std::endl;
+    for (size_t x = 0; x < json["LoadTextures"].size(); x++)
+    {
+        textureSystem.CreateTexture(json["LoadTextures"][x]);
+    }
 
-     for (size_t x = 0; x < json["LoadMaterials"].size(); x++)
-     {
-         materialSystem.LoadMaterial(json["LoadMaterials"][x]);
-     }
+    for (size_t x = 0; x < json["LoadMaterials"].size(); x++)
+    {
+        materialSystem.LoadMaterial(json["LoadMaterials"][x]);
+    }
 
-     for (size_t x = 0; x < json["LoadSpriteVRAM"].size(); x++)
-     {
-         spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
-     }
+    for (size_t x = 0; x < json["LoadSpriteVRAM"].size(); x++)
+    {
+        spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
+    }
 
-     for (size_t x = 0; x < json["LoadTileSetVRAM"].size(); x++)
-     {
-         tileSetId = LoadTileSetVRAM(json["LoadTileSetVRAM"][x].get<String>().c_str());
-     }
+    for (size_t x = 0; x < json["LoadTileSetVRAM"].size(); x++)
+    {
+        tileSetId = LoadTileSetVRAM(json["LoadTileSetVRAM"][x].get<String>().c_str());
+    }
 
-     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
-     {
-         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
-         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
-         gameObjectSystem.CreateGameObject(objectJson, positionOverride);
-     }
+    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
+    {
+        String objectJson = json["GameObjectList"][x]["GameObjectPath"];
+        vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
+        gameObjectSystem.CreateGameObject(objectJson, positionOverride);
+    }
 
-     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
-     LoadLevelMesh(tileSetId);
-     
-     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
-     spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-   //  gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-     hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
+    LoadLevelMesh(tileSetId);
+
+    VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
+    spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    gaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/GaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
 }
 
  void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
  {
      RenderLevel(commandBuffer, spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime);
+     RenderGaussianBlurPass(commandBuffer, gaussianBlurRenderPassId);
      //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
      RenderHdrPass(commandBuffer, hdrRenderPassId);
      RenderFrameBuffer(commandBuffer, frameBufferId);
@@ -222,8 +223,8 @@ void LevelSystem::Update(const float& deltaTime)
      {
          .x = 0.0f,
          .y = 0.0f,
-         .width = static_cast<float>(vulkanSystem.SwapChainResolution.width),
-         .height = static_cast<float>(vulkanSystem.SwapChainResolution.height),
+         .width = static_cast<float>(renderPass.RenderPassResolution.x),
+         .height = static_cast<float>(renderPass.RenderPassResolution.y),
          .minDepth = 0.0f,
          .maxDepth = 1.0f
      };
@@ -236,10 +237,10 @@ void LevelSystem::Update(const float& deltaTime)
              .y = 0
          },
         .extent = VkExtent2D
-             {
-                     .width = static_cast<uint>(renderPass.RenderPassResolution.x),
-                     .height = static_cast<uint>(renderPass.RenderPassResolution.y)
-             }
+         {
+            .width = static_cast<uint>(renderPass.RenderPassResolution.x),
+            .height = static_cast<uint>(renderPass.RenderPassResolution.y)
+         }
      };
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
@@ -259,6 +260,72 @@ void LevelSystem::Update(const float& deltaTime)
      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
+ }
+
+ void LevelSystem::RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
+ {
+     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
+     const VulkanPipeline&  pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+     ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
+
+     shaderSystem.UpdatePushConstantValue<uint>("bloomSettings", "blurDirection", 0);
+     shaderSystem.UpdatePushConstantValue<float>("bloomSettings", "blurScale", 1.0f);
+     shaderSystem.UpdatePushConstantValue<float>("bloomSettings", "blurStrength", 0.04f);
+
+     VkViewport viewport
+     {
+         .x = 0.0f,
+         .y = 0.0f,
+         .width = static_cast<float>(renderPass.RenderPassResolution.x),
+         .height = static_cast<float>(renderPass.RenderPassResolution.y),
+         .minDepth = 0.0f,
+         .maxDepth = 1.0f
+     };
+
+     VkRect2D scissor = VkRect2D
+     {
+         .offset = VkOffset2D
+         {
+             .x = 0,
+             .y = 0
+         },
+        .extent = VkExtent2D
+         {
+            .width = static_cast<uint>(renderPass.RenderPassResolution.x),
+            .height = static_cast<uint>(renderPass.RenderPassResolution.y)
+         }
+     };
+
+     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
+     {
+         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+         .renderPass = renderPass.RenderPass,
+         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+         .renderArea = scissor,
+         .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+         .pClearValues = renderPass.ClearValueList.data()
+     };
+
+     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+     vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+     vkCmdEndRenderPass(commandBuffer);
+
+     shaderSystem.UpdatePushConstantValue<uint>("BloomSettings", "blurDirection", 1);
+
+     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+     vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+     vkCmdEndRenderPass(commandBuffer);
+
  }
 
   LevelLayout LevelSystem::GetLevelLayout()
