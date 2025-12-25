@@ -5,6 +5,12 @@
 #extension GL_EXT_debug_printf : enable
 
 layout(location = 0) out vec2 UV;
+layout(push_constant) uniform BloomSettings
+{
+    uint  blurDirection;  // 0 = horizontal, 1 = vertical
+    float blurScale;     // Controls blur radius (e.g., 1.0–4.0)
+    float blurStrength;  // Overall intensity multiplier
+} bloomSettings;
 
 void main() 
 {

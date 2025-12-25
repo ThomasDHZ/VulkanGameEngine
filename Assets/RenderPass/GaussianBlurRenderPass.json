@@ -40,6 +40,37 @@
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
+    },
+    {
+      "RenderedTextureId": "11fbd192-ed90-430b-968c-d8a063c3cfd1",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 97,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 2,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 0,
+        "AddressModeV": 0,
+        "AddressModeW": 0,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
     }
   ],
   "SubpassDependencyList": [
@@ -54,6 +85,26 @@
     }
   ],
   "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 1.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      },
+      "DepthStencil": {
+        "depth": 0.0,
+        "stencil": 0
+      }
+    },
     {
       "Color": {
         "Float32_0": 1.0,

@@ -1,5 +1,5 @@
 {
-  "Name": "FrameBufferPipeline",
+  "Name": "HdrPipeline",
   "PipelineId": "837bb197-773e-4352-ae43-b4f377527318",
   "ShaderList": [
     "Shaders/HdrShaderVert.spv",
