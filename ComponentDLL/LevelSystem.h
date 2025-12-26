@@ -71,6 +71,7 @@ private:
         UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
         SharedPtr<Camera> OrthographicCamera;
 
+        RenderPassGuid gBufferRenderPassId;
         RenderPassGuid levelRenderPass2DId;
         RenderPassGuid spriteRenderPass2DId;
         RenderPassGuid verticalGaussianBlurRenderPassId;
@@ -83,6 +84,7 @@ private:
         RenderPassGuid spriteWireFrameRenderPass2DId;
 
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+        DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderLevel(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection);
         DLL_EXPORT void                 RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);

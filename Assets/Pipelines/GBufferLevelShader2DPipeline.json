@@ -1,9 +1,9 @@
 {
-  "Name": "SpriteInstancePipeline",
-  "PipelineId": "de78235b-3c69-4298-99da-acd8c6622ece",
+  "Name": "LevelShader2DPipeline",
+  "PipelineId": "72cb20b1-fe7b-488d-8e4b-f3642d41b423",
   "ShaderList": [
-    "Shaders/SpriteInstanceShaderVert.spv",
-    "Shaders/SpriteInstanceShaderFrag.spv"
+    "Shaders/GBufferLevelShader2DVert.spv",
+    "Shaders/GBufferLevelShader2DFrag.spv"
   ],
   "VertexType": 1,
   "UseDynamicColorWrite": false,
@@ -31,9 +31,10 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
+      "_comment": "Attachment 0 - Albedo (G-buffer write) - NO BLENDING",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
       "DstAlphaBlendFactor": 0,
@@ -41,18 +42,51 @@
       "ColorWriteMask": 15
     },
     {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
+      "_comment": "Attachment 1 - NormalMap (G-buffer write) - NO BLENDING",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
       "DstAlphaBlendFactor": 0,
       "AlphaBlendOp": 0,
       "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 2 - Metallic/Roughness/AO/Emissive (G-buffer write) - NO BLENDING",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 3 - Environment Map (usually loaded, not written in geometry pass) - NO BLENDING",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 4 - Depth/stencil attachment - ignored for color blend",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 0
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
-    "BlendConstants": { "FixedElementField": 0.0 },
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,

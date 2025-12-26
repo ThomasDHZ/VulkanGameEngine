@@ -945,18 +945,14 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
             .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
             .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
             .pInputAttachments = inputAttachmentReferenceList.data(),
-            .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList.size()),
+            .colorAttachmentCount = depthReference.empty() ? static_cast<uint32>(colorAttachmentReferenceList.size()) : static_cast<uint32>(colorAttachmentReferenceList.size() - 1) ,
             .pColorAttachments = colorAttachmentReferenceList.data(),
             .pResolveAttachments = resolveAttachmentReferenceList.data(),
-            .pDepthStencilAttachment = nullptr,
+            .pDepthStencilAttachment = depthReference.empty() ? nullptr : depthReference.data(),
             .preserveAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
             .pPreserveAttachments = nullptr,
         }
     };
-    if (depthReference.size() > 0)
-    {
-        subpassDescriptionList[0].pDepthStencilAttachment = &depthReference[0];
-    }
 
     Vector<VkSubpassDependency> subPassList = Vector<VkSubpassDependency>();
     for (VkSubpassDependency subpass : renderPassJsonLoader.SubpassDependencyModelList)
@@ -967,7 +963,7 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
     VkRenderPassCreateInfo renderPassInfo =
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = static_cast<uint32>(attachmentDescriptionList.size()),
+        .attachmentCount =static_cast<uint32>(attachmentDescriptionList.size()),
         .pAttachments = attachmentDescriptionList.data(),
         .subpassCount = static_cast<uint32>(subpassDescriptionList.size()),
         .pSubpasses = subpassDescriptionList.data(),
@@ -1011,7 +1007,7 @@ Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& ren
                 TextureAttachmentList.emplace_back(renderedTextureList[y].textureView);
             }
         }
-        if (depthTexture.textureMemory != VK_NULL_HANDLE)
+        if (depthTexture.TextureAllocation != VK_NULL_HANDLE)
         {
             TextureAttachmentList.emplace_back(depthTexture.textureView);
         }

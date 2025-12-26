@@ -104,7 +104,7 @@ namespace nlohmann
         else if (j.contains("DepthStencil")) 
         {
             auto& depthStencil = j.at("DepthStencil");
-            depthStencil.at("DepthStencil").get_to(clearValue.depthStencil.depth);
+            depthStencil.at("Depth").get_to(clearValue.depthStencil.depth);
             depthStencil.at("Stencil").get_to(clearValue.depthStencil.stencil);
         }
         else {
