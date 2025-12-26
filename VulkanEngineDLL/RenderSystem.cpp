@@ -630,20 +630,24 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
         scissor.extent.height = static_cast<float>(renderPipelineLoader.RenderPassResolution.y);
     }
 
-    VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = VkPipelineViewportStateCreateInfo
-    {
+    VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .viewportCount = static_cast<uint32>(renderPipelineLoader.ViewportList.size() + (renderPipelineLoader.ViewportList.empty() ? 1 : 0)),
+        .viewportCount = static_cast<uint32>(renderPipelineLoader.ViewportList.size() ? renderPipelineLoader.ViewportList.size() : 1),
         .pViewports = renderPipelineLoader.ViewportList.data(),
-        .scissorCount = static_cast<uint32>(renderPipelineLoader.ScissorList.size() + (renderPipelineLoader.ScissorList.empty() ? 1 : 0)),
+        .scissorCount = static_cast<uint32>(renderPipelineLoader.ScissorList.size() ? renderPipelineLoader.ScissorList.size() : 1),
         .pScissors = renderPipelineLoader.ScissorList.data()
     };
 
-    Vector<VkDynamicState> dynamicStateList = renderPipelineLoader.ViewportList.empty() ? Vector<VkDynamicState> { VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT, VkDynamicState::VK_DYNAMIC_STATE_SCISSOR} : Vector<VkDynamicState>();
-    VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = VkPipelineDynamicStateCreateInfo
+    Vector<VkDynamicState> dynamicStateList;
+    if (renderPipelineLoader.ViewportList.empty() || renderPipelineLoader.ScissorList.empty())
     {
+        dynamicStateList.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+        dynamicStateList.push_back(VK_DYNAMIC_STATE_SCISSOR);
+    }
+
+    VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,

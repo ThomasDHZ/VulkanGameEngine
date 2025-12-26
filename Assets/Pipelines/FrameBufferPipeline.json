@@ -6,6 +6,7 @@
     "Shaders/FrameBufferShaderFrag.spv"
   ],
   "VertexType": 0,
+  "UseDynamicColorWrite": false,
   "ViewportList": [],
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [

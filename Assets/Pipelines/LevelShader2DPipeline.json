@@ -6,6 +6,7 @@
     "Shaders/LevelShader2DFrag.spv"
   ],
   "VertexType": 1,
+  "UseDynamicColorWrite": false,
   "ViewportList": [
     {
       "x": 0.0,

@@ -1,0 +1,91 @@
+{
+  "Name": "GaussianBlurRenderPass",
+  "RenderPassId": "44d22120-d385-4cbb-86d0-55afd870ce50",
+  "RenderPipelineList": [
+    "Pipelines/GaussianBlurPipeline.json"
+  ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
+  "IsRenderedToSwapchain": false,
+  "InputTextureList": [ "5b937f79-d0de-4d22-b95e-ee6627de88f4" ],
+  "RenderAttachmentList": [
+    {
+      "RenderedTextureId": "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 97,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 2,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 0,
+        "AddressModeV": 0,
+        "AddressModeW": 0,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 0
+    }
+  ],
+  "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 1.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      },
+      "DepthStencil": {
+        "depth": 0.0,
+        "stencil": 0
+      }
+    }
+  ],
+  "RenderArea": {
+    "UseSwapChainRenderArea": true,
+    "RenderArea": {
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "extent": {
+        "width": 0,
+        "height": 0
+      }
+    }
+  }
+}

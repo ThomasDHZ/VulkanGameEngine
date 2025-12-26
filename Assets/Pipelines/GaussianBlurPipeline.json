@@ -6,19 +6,10 @@
     "Shaders/GaussianBlurShaderFrag.spv"
   ],
   "VertexType": 0,
+  "UseDynamicColorWrite": true,
   "ViewportList": [],
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
-    {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
-      "ColorBlendOp": 0,
-      "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 0,
-      "AlphaBlendOp": 0,
-      "ColorWriteMask": 15
-    },
     {
       "BlendEnable": true,
       "SrcColorBlendFactor": 6,

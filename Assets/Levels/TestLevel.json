@@ -19,7 +19,8 @@
   ],
   "LoadRenderPasses": [
     "RenderPass/LevelShader2DRenderPass.json",
-    "RenderPass/GaussianBlurRenderPass.json",
+    "RenderPass/VertGaussianBlurRenderPass.json",
+    "RenderPass/HorizontalGaussianBlurRenderPass.json",
     "RenderPass/FrameBufferRenderPass.json"
   ],
   "GameObjectList": [

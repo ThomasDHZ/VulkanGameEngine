@@ -201,7 +201,7 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
               std::cout << "Extension not supported: " << ext << '\n';
           };
       AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
-
+      AddExtensionIfSupported(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
 #if defined(_WIN32)
       AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
@@ -501,9 +501,15 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .fragmentStoresAndAtomics = VK_TRUE,
     };
 
+    VkPhysicalDeviceColorWriteEnableFeaturesEXT colorWriteFeatures
+    {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
+        .colorWriteEnable = VK_TRUE
+    };
+
     VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        .pNext = nullptr,
+        .pNext = &colorWriteFeatures,
         .features = deviceFeatures
     };
 
