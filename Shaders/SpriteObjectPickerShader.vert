@@ -46,6 +46,7 @@ struct MaterialProperitiesBuffer
 	float AmbientOcclusion;
 	vec3 Emission;
 	float Alpha;
+	float HeightScale;
 
 	uint AlbedoMap;
 	uint MetallicRoughnessMap;
@@ -53,7 +54,6 @@ struct MaterialProperitiesBuffer
 	uint RoughnessMap;
 	uint AmbientOcclusionMap;
 	uint NormalMap;
-	uint DepthMap;
 	uint AlphaMap;
 	uint EmissionMap;
 	uint HeightMap;

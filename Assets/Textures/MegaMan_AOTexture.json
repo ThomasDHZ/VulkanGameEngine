@@ -1,8 +1,8 @@
 {
-  "TextureFilePath": "Textures/SparkMan.png",
-  "TextureId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",
-  "TextureByteFormat": 43,
-  "UsingSRGBFormat": true,
+  "TextureFilePath": "Textures/MegaMan_AO.bmp",
+  "TextureId": "a10aecbd-1b29-4965-ab5b-521cb5e5f0f4",
+  "TextureByteFormat": 37,
+  "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
@@ -22,7 +22,7 @@
     "CompareOp": 7,
     "MinLod": 0.0,
     "MaxLod": 1000.0,
-    "BorderColor": 3,
+    "BorderColor": 2,
     "UnnormalizedCoordinates": false
   }
 }

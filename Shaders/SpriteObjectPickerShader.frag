@@ -29,24 +29,7 @@ layout(binding = 0) buffer MeshProperitiesBuffer
 	mat4   MeshTransform;
 } meshProperities[];
 layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperitiesBuffer {
-    vec3 Albedo;
-    float Metallic;
-    float Roughness;
-    float AmbientOcclusion;
-    vec3 Emission;
-    float Alpha;
-    uint AlbedoMap;
-    uint MetallicRoughnessMap;
-    uint MetallicMap;
-    uint RoughnessMap;
-    uint AmbientOcclusionMap;
-    uint NormalMap;
-    uint DepthMap;
-    uint AlphaMap;
-    uint EmissionMap;
-    uint HeightMap;
-} materialBuffer[];
+
 
 void main() 
 {

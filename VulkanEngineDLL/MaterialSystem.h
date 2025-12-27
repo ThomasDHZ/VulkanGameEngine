@@ -8,22 +8,24 @@ struct Material
     VkGuid materialGuid = VkGuid();
     uint ShaderMaterialBufferIndex;
     int MaterialBufferId;
+
     VkGuid AlbedoMapId = VkGuid();
     VkGuid MetallicRoughnessMapId = VkGuid();
     VkGuid MetallicMapId = VkGuid();
     VkGuid RoughnessMapId = VkGuid();
     VkGuid AmbientOcclusionMapId = VkGuid();
     VkGuid NormalMapId = VkGuid();
-    VkGuid DepthMapId = VkGuid();
     VkGuid AlphaMapId = VkGuid();
     VkGuid EmissionMapId = VkGuid();
     VkGuid HeightMapId = VkGuid();
-    vec3 Albedo = vec3(0.0f, 0.35f, 0.45f);
-    vec3 Emission = vec3(0.0f);
+
+    vec3  Albedo = vec3(0.8f);
+    vec3  Emission = vec3(0.0f);
     float Metallic = 0.0f;
-    float Roughness = 0.0f;
+    float Roughness = 0.5f;
     float AmbientOcclusion = 1.0f;
     float Alpha = 1.0f;
+    float HeightScale = 0.04f;
 
     Material() = default;
     Material(const Material&) = default;

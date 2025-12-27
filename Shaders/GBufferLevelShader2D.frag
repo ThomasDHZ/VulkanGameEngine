@@ -38,6 +38,7 @@ struct MaterialProperitiesBuffer
 	float AmbientOcclusion;
 	vec3 Emission;
 	float Alpha;
+	float HeightScale;
 
 	uint AlbedoMap;
 	uint MetallicRoughnessMap;
@@ -45,7 +46,6 @@ struct MaterialProperitiesBuffer
 	uint RoughnessMap;
 	uint AmbientOcclusionMap;
 	uint NormalMap;
-	uint DepthMap;
 	uint AlphaMap;
 	uint EmissionMap;
 	uint HeightMap;
@@ -60,9 +60,19 @@ void main()
     vec4 albedoColor = texture(TextureMap[1], inPS_UV);
     vec3 Albedo = albedoColor.rgb;
     float Alpha = albedoColor.a;
+	if(Alpha == 0.0f)
+	{
+		discard;
+	}
+
+	vec3 Normal = vec3(0.0f);
+	if(material.NormalMap != -1)
+	{
+		Normal = texture(TextureMap[material.NormalMap], UV).rgb;
+	}
 
     AlbedoMap = vec4(Albedo, 1.0f);
-	NormalMap = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	NormalMap = vec4(Normal, 1.0f);
 	MatRoughAOEmissiveMap = vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	EnvironmentMap = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 }

@@ -319,12 +319,10 @@ ModelManifest.xml
 *.ipch
 *.db
 *.jpg
-*.png
 *.ktx
 *.ktx2
 *.dds
 *.ipch
-*.bmp
 *.tif
 *.blend1
 *.psd
