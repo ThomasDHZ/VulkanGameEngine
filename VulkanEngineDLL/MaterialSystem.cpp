@@ -24,7 +24,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 
     Material material;
     material.materialGuid = materialId;
-    material.ShaderMaterialBufferIndex = 0;
+    material.ShaderMaterialBufferIndex = materialSystem.MaterialMap.size();
     material.MaterialBufferId = bufferId;
     material.AlbedoMapId = VkGuid(json["AlbedoMapId"].get<std::string>());
     material.MetallicRoughnessMapId = VkGuid(json["MetallicRoughnessMapId"].get<std::string>());

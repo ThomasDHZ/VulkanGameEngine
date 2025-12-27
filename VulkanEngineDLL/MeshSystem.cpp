@@ -20,15 +20,6 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList,
     uint meshId = meshSystem.GetNextMeshIndex();
     mat4 meshMatrix = mat4(1.0f);
     MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
-    const VkBufferUsageFlags MeshBufferUsageSettings = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-        VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-    const VkMemoryPropertyFlags MeshBufferPropertySettings = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
     Mesh mesh = Mesh
     {
@@ -47,6 +38,42 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList,
         .MeshRotation = vec3(0.0f),
         .MeshScale = vec3(1.0f),
         .MaterialId = VkGuid(),
+        .MeshExtension = nullptr
+    };
+
+    meshSystem.MeshList.emplace_back(mesh);
+    meshSystem.MeshPropertiesList.emplace_back(meshProperties);
+    meshSystem.Vertex2DList.emplace_back(vertexList);
+    meshSystem.IndexList.emplace_back(indexList);
+
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
+    return meshId;
+}
+
+uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList, VkGuid& materialId)
+{
+    uint meshId = meshSystem.GetNextMeshIndex();
+    mat4 meshMatrix = mat4(1.0f);
+    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+
+    Mesh mesh = Mesh
+    {
+        .MeshId = meshId,
+        .ParentGameObjectId = UINT32_MAX,
+        .MeshTypeId = static_cast<uint32>(meshType),
+        .VertexTypeId = BufferTypeEnum::BufferType_Vertex2D,
+        .MeshPropertiesId = meshId,
+        .MeshVertexBufferId = bufferSystem.VMACreateVulkanBuffer<Vertex2D>(vertexList, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, true),
+        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .VertexIndex = meshId,
+        .IndexIndex = meshId,
+        .MeshPosition = vec3(0.0f),
+        .MeshRotation = vec3(0.0f),
+        .MeshScale = vec3(1.0f),
+        .MaterialId = materialId,
         .MeshExtension = nullptr
     };
 

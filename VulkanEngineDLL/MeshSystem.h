@@ -55,6 +55,7 @@ private:
 		Vector<Vector<uint>>         IndexList;
 
 		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList, VkGuid& materialId);
 		DLL_EXPORT void Update(const float& deltaTime);
 		DLL_EXPORT void Destroy(uint meshId);
 		DLL_EXPORT void DestroyAllGameObjects();
