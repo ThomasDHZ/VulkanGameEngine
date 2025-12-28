@@ -87,7 +87,8 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	TextureMap[textureLoader.TextureId] = texture;
 
 #ifndef NDEBUG
-	std::cout << "[TextureDebug] Created texture ID: " << texture.textureId.ToString()
+	std::cout << "[TextureDebug] Created Texture:" << texturePath
+		<< " Texture ID: " << texture.textureId.ToString()
 		<< " Image: " << texture.textureImage
 		<< " Format: " << texture.textureByteFormat
 		<< " InitialLayout: " << texture.textureImageLayout << std::endl;

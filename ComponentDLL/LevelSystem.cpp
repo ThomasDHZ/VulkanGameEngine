@@ -254,7 +254,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      VkDeviceSize offsets[] = { 0 };
      VkDeviceSize instanceOffset[] = { 0 };
      spriteSystem.Update(deltaTime);
-     shaderSystem.UpdateGlobalShaderBuffer("sceneData");
+     shaderSystem.UpdatePushConstantBuffer("sceneData");
      meshSystem.Update(deltaTime);
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      for (auto& levelLayer : levelLayerList)
@@ -263,7 +263,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &meshIndex, sizeof(meshIndex));
+         shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", 0);
+         shaderSystem.UpdatePushConstantBuffer("sceneData");
          vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
@@ -350,7 +351,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       VkDeviceSize offsets[] = { 0 };
       VkDeviceSize instanceOffset[] = { 0 };
       spriteSystem.Update(deltaTime);
-      shaderSystem.UpdateGlobalShaderBuffer("sceneData");
       meshSystem.Update(deltaTime);
       vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       for (auto& levelLayer : levelLayerList)
@@ -359,7 +359,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-          // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &meshIndex, sizeof(meshIndex));
+          Mesh mesh = meshSystem.FindMesh(levelLayer.MeshId);
+          const Material& material = materialSystem.FindMaterial(mesh.MaterialId);
+          const Texture& texture = textureSystem.FindTexture(material.AlbedoMapId);
+          String guid = texture.textureId.ToString();
+
+          shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", 1);
+          shaderSystem.UpdatePushConstantBuffer("sceneData");
           vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
           vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);

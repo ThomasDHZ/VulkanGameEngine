@@ -106,14 +106,14 @@ public:
     DLL_EXPORT ShaderPipelineDataDLL            LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths);
     DLL_EXPORT void                             LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
     DLL_EXPORT bool                             CompileShaders(const String& fileDirectory, const String& outputDirectory);
-    DLL_EXPORT void                             UpdateGlobalShaderBuffer(const String& pushConstantName);
+    DLL_EXPORT void                             UpdatePushConstantBuffer(const String& pushConstantName);
     DLL_EXPORT void                             UpdatePushConstantBuffer(ShaderPushConstantDLL& pushConstantStruct);
-    DLL_EXPORT void                             UpdateShaderBuffer(uint vulkanBufferId);
+    DLL_EXPORT void                             UpdateShaderBuffer(ShaderStructDLL& shaderStruct, uint vulkanBufferId);
     DLL_EXPORT ShaderStructDLL                  CopyShaderStructProtoType(const String& structName);
     DLL_EXPORT ShaderPipelineDataDLL            FindShaderModule(const String& shaderFile);
     DLL_EXPORT ShaderPushConstantDLL&           FindShaderPushConstant(const String& shaderFile);
     DLL_EXPORT ShaderStructDLL                  FindShaderProtoTypeStruct(const String& shaderKey);
-    DLL_EXPORT ShaderStructDLL                  FindShaderStruct(int vulkanBufferId);
+    DLL_EXPORT ShaderStructDLL&                 FindShaderStruct(int vulkanBufferId);
     DLL_EXPORT ShaderVariableDLL&               FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName);
     DLL_EXPORT ShaderVariableDLL&               FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName);
     DLL_EXPORT bool                             ShaderModuleExists(const String& shaderFile);
@@ -144,7 +144,7 @@ public:
     template<typename T>
     void UpdateShaderStructValue(ShaderStructDLL& shaderStruct, const String& name, const T& value)
     {
-        ShaderVariableDLL variable = FindShaderPipelineStructVariable(shaderStruct, name);
+        ShaderVariableDLL& variable = FindShaderPipelineStructVariable(shaderStruct, name);
         static_assert(std::is_trivially_copyable_v<T>, "Push constant type must be trivially copyable");
         if (variable.Value.size() != sizeof(T))
         {

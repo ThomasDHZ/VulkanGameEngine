@@ -14,6 +14,7 @@ struct Mesh
 {
 	uint32 MeshId = UINT32_MAX;
 	uint32 ParentGameObjectId = UINT32_MAX;
+	uint32 MeshShaderBufferIndex = UINT32_MAX;
 	uint32 MeshTypeId = UINT32_MAX;
 	uint32 VertexTypeId = UINT32_MAX;
 	uint32 MeshPropertiesId = UINT32_MAX;
@@ -48,7 +49,7 @@ private:
 		Vector<MeshPropertiesStruct> MeshPropertiesList;
 
 		uint32 GetNextMeshIndex();
-		void   UpdateMesh(Mesh& mesh, ShaderStructDLL& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime);
+		void   UpdateMesh(Mesh& mesh, const float& deltaTime);
 
 	public:
 		Vector<Vector<Vertex2D>>     Vertex2DList;

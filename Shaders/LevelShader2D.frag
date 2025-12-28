@@ -55,7 +55,29 @@ layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer mater
 
 void main()
 {
-    vec4 albedoColor = texture(TextureMap[1], inPS_UV);
+if (gl_FragCoord.x < 2.0 && gl_FragCoord.y < 2.0) // only one pixel
+{
+ MeshProperities meshBuffer1 = MeshProperities[0].meshProperties;
+  MeshProperities meshBuffer2 = MeshProperities[1].meshProperties;
+   MeshProperities meshBuffer3 = MeshProperities[2].meshProperties;
+    MeshProperities meshBuffer4 = MeshProperities[3].meshProperties;
+    uint count = 2; // adjust to your max expected mesh count
+    for (uint i = 0; i < count; ++i)
+    {
+	        int matIndex = meshBuffer[i].meshProperties.MaterialIndex;
+        int matIndex = meshBuffer[i].meshProperties.MaterialIndex;
+        if (matIndex < 0) break; // optional sentinel
+
+        debugPrintfEXT("meshBuffer[%u].MaterialIndex = %d\n", i, matIndex);
+        // Optionally print transform parts if needed
+    }
+}
+
+	int meshIndex = sceneData.MeshBufferIndex;
+    uint materialId = meshBuffer[meshIndex].meshProperties.MaterialIndex;
+	MaterialProperitiesBuffer material = materialBuffer[2].materialProperties;
+
+    vec4 albedoColor = texture(TextureMap[material.AlbedoMap], inPS_UV);
     vec3 Albedo = albedoColor.rgb;
     float Alpha = albedoColor.a;
 

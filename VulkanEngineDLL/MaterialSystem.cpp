@@ -64,7 +64,7 @@ void MaterialSystem::Update(const float& deltaTime)
         const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureBufferIndex : MAXUINT32;
         const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureBufferIndex : MAXUINT32;
 
-        ShaderStructDLL shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
+        ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Albedo", material.Albedo);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Emission", material.Emission);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Metallic", material.Metallic);
@@ -82,7 +82,7 @@ void MaterialSystem::Update(const float& deltaTime)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlphaMap", AlphaMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionMap", EmissionMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "HeightMap", HeightMapId);
-        shaderSystem.UpdateShaderBuffer(material.MaterialBufferId);
+        shaderSystem.UpdateShaderBuffer(shaderStruct, material.MaterialBufferId);
         x++;
     }
 }

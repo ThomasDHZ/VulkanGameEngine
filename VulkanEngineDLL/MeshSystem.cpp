@@ -25,6 +25,7 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList,
     {
         .MeshId = meshId,
         .ParentGameObjectId = UINT32_MAX,
+        .MeshShaderBufferIndex = static_cast<uint>(meshSystem.MeshList.size()),
         .MeshTypeId = static_cast<uint32>(meshType),
         .VertexTypeId = BufferTypeEnum::BufferType_Vertex2D,
         .MeshPropertiesId = meshId,
@@ -61,6 +62,7 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList,
     {
         .MeshId = meshId,
         .ParentGameObjectId = UINT32_MAX,
+        .MeshShaderBufferIndex = static_cast<uint>(meshSystem.MeshList.size()),
         .MeshTypeId = static_cast<uint32>(meshType),
         .VertexTypeId = BufferTypeEnum::BufferType_Vertex2D,
         .MeshPropertiesId = meshId,
@@ -91,14 +93,15 @@ void MeshSystem::Update(const float& deltaTime)
 {
     for (auto& mesh : meshSystem.MeshList)
     {
-        VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
-        uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
-        UpdateMesh(mesh, shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId], propertiesBuffer, shaderMaterialBufferIndex, deltaTime);
+        UpdateMesh(mesh, deltaTime);
     }
 }
 
-void MeshSystem::UpdateMesh(Mesh& mesh, ShaderStructDLL& shaderStruct, VulkanBuffer& meshPropertiesBuffer, uint shaderMaterialBufferIndex, const float& deltaTime)
+void MeshSystem::UpdateMesh(Mesh& mesh, const float& deltaTime)
 {
+    VulkanBuffer& meshPropertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
+    ShaderStructDLL& shaderStruct = shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId];
+    uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
 
     const vec3 LastMeshPosition = mesh.MeshPosition;
     const vec3 LastMeshRotation = mesh.MeshRotation;
@@ -129,7 +132,7 @@ void MeshSystem::UpdateMesh(Mesh& mesh, ShaderStructDLL& shaderStruct, VulkanBuf
 
     memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MaterialIndex").Value.data(), &shaderMaterialBufferIndex, sizeof(uint));
     memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MeshTransform").Value.data(), &GameObjectMatrix, sizeof(mat4));
-    shaderSystem.UpdateShaderBuffer(meshPropertiesBuffer.BufferId);
+    shaderSystem.UpdateShaderBuffer(shaderStruct, meshPropertiesBuffer.BufferId);
 }
 
 void MeshSystem::Destroy(uint meshId)

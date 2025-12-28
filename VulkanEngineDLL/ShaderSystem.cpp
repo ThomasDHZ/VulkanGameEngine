@@ -542,7 +542,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      }
  }
   
- void ShaderSystem::UpdateGlobalShaderBuffer(const String& pushConstantName)
+ void ShaderSystem::UpdatePushConstantBuffer(const String& pushConstantName)
  {
      if (!ShaderPushConstantExists(pushConstantName))
      {
@@ -552,7 +552,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      UpdatePushConstantBuffer(ShaderPushConstantMap[pushConstantName]);
  }
 
- void ShaderSystem::UpdateShaderBuffer(uint vulkanBufferId)
+ void ShaderSystem::UpdateShaderBuffer(ShaderStructDLL& shaderStruct, uint vulkanBufferId)
  {
      if (!ShaderPipelineStructExists(vulkanBufferId))
      {
@@ -560,7 +560,6 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      }
 
      size_t offset = 0;
-     ShaderStructDLL shaderStruct = PipelineShaderStructMap[vulkanBufferId];
      VulkanBuffer vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
      for (const auto& shaderStrucVar : shaderStruct.ShaderBufferVariableList)
      {
@@ -630,7 +629,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return shaderSystem.PipelineShaderStructPrototypeMap.at(shaderKey);
  }
 
- ShaderStructDLL ShaderSystem::FindShaderStruct(int vulkanBufferId)
+ ShaderStructDLL& ShaderSystem::FindShaderStruct(int vulkanBufferId)
  {
      return shaderSystem.PipelineShaderStructMap.at(vulkanBufferId);
  }
