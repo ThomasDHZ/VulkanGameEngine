@@ -317,25 +317,8 @@ Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer()
 
 Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId) 
 { 
-    Vector<Mesh> meshList;
-    if (levelLayerId == LevelGuid())
-    {
-        for (auto& sprite : meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_SpriteMesh))
-        {
-            meshList.emplace_back(sprite);
-
-        }
-    }
-    else
-    {
-        for (auto& layer : meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh))
-        {
-            meshList.emplace_back(layer);
-        }
-    }
-
     Vector<VkDescriptorBufferInfo> meshPropertiesBuffer;
-    if (meshList.empty())
+    if (meshSystem.MeshList.empty())
     {
         meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
             {
@@ -346,7 +329,7 @@ Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const Level
     }
     else
     {
-        for (auto& mesh : meshList)
+        for (auto& mesh : meshSystem.MeshList)
         {
             const VulkanBuffer& meshProperties = bufferSystem.FindVulkanBuffer(mesh.PropertiesBufferId);
             meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo

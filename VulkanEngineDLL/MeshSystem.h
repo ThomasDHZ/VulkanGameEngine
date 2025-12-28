@@ -45,13 +45,13 @@ private:
 	MeshSystem& operator=(MeshSystem&&) = delete;
 
 		Vector<uint32>				 FreeMeshIndicesList;
-		Vector<Mesh>                 MeshList;
 		Vector<MeshPropertiesStruct> MeshPropertiesList;
 
 		uint32 GetNextMeshIndex();
 		void   UpdateMesh(Mesh& mesh, const float& deltaTime);
 
 	public:
+		Vector<Mesh>                 MeshList;
 		Vector<Vector<Vertex2D>>     Vertex2DList;
 		Vector<Vector<uint>>         IndexList;
 

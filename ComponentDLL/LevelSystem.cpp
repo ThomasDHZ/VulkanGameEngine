@@ -364,7 +364,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const Texture& texture = textureSystem.FindTexture(material.AlbedoMapId);
           String guid = texture.textureId.ToString();
 
-          shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", 1);
+          shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", 0);
           shaderSystem.UpdatePushConstantBuffer("sceneData");
           vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
