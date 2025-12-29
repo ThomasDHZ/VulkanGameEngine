@@ -45,6 +45,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
 
 VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 {
+
     nlohmann::json json = fileSystem.LoadJsonFile(spriteVramPath.c_str());
     VramSpriteGuid vramId = VramSpriteGuid(json["VramSpriteId"].get<String>().c_str());
     if (vramSystem.SpriteVramExists(vramId))

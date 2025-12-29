@@ -13,15 +13,22 @@
     "TextureLoader/SparkMan_MetallicTexture.json",
     "TextureLoader/SparkMan_NormalTexture.json",
     "TextureLoader/SparkMan_SpecularTexture.json",
-    "TextureLoader/SparkMan_AlphaTexture.json"
+    "TextureLoader/SparkMan_AlphaTexture.json",
+    "TextureLoader/AnimeGirl_DiffuseTexture.json",
+    "TextureLoader/AnimeGirl_AOTexture.json",
+    "TextureLoader/AnimeGirl_MetallicTexture.json",
+    "TextureLoader/AnimeGirl_NormalTexture.json",
+    "TextureLoader/AnimeGirl_SpecularTexture.json",
+    "TextureLoader/AnimeGirl_AlphaTexture.json"
   ],
   "LoadMaterials": [
     "Materials/MegaManMaterial.json",
     "Materials/MegaManShotMaterial.json",
-    "Materials/SparkManTileSetMaterial.json"
+    "Materials/SparkManTileSetMaterial.json",
+    "Materials/AnimeGirlMaterial.json"
   ],
   "LoadSpriteVRAM": [
-    "Sprites/TestSprite.json",
+    "Sprites/AnimeGirl.json",
     "Sprites/MegaManShotSprite.json"
   ],
   "LoadTileSetVRAM": [
