@@ -8,11 +8,15 @@
     "TextureLoader/MegaMan_SpecularTexture.json",
     "TextureLoader/MegaMan_AlphaTexture.json",
     "TextureLoader/MegaManShotTexture.json",
-    "TextureLoader/SparkManTexture.json"
+    "TextureLoader/SparkMan_DiffuseTexture.json",
+    "TextureLoader/SparkMan_AOTexture.json",
+    "TextureLoader/SparkMan_MetallicTexture.json",
+    "TextureLoader/SparkMan_NormalTexture.json",
+    "TextureLoader/SparkMan_SpecularTexture.json",
+    "TextureLoader/SparkMan_AlphaTexture.json"
   ],
   "LoadMaterials": [
     "Materials/MegaManMaterial.json",
-
     "Materials/MegaManShotMaterial.json",
     "Materials/SparkManTileSetMaterial.json"
   ],

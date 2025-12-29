@@ -1,0 +1,63 @@
+{
+  "Name": "GeometryRenderPass",
+  "RenderPassId": "35cf1a35-cdbe-4ddb-912a-83b43bfe85e5",
+  "RenderPipelineList": [
+    "Pipelines/GeometryPipeline.json"
+  ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
+  "IsRenderedToSwapchain": false,
+  "InputTextureList": [
+    "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
+    "2a87d23c-a051-4f43-8f2f-a36b6b5162e6"
+  ],
+  "RenderAttachmentList": [
+    {
+      "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
+      "MipMapCount": 1,
+      "RenderTextureType": 1,
+      "RenderAttachmentType": 0,
+      "Format": 44,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 0
+    }
+  ],
+  "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 1.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      },
+      "DepthStencil": {
+        "depth": 0.0,
+        "stencil": 0
+      }
+    }
+  ]
+}

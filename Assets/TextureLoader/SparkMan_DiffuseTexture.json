@@ -1,23 +1,12 @@
 {
-  "TextureFilePath": "Textures/MegaManShot.png",
-  "TextureId": "cf0daea4-871d-4137-a9f9-8c6fda795325",
+  "TextureFilePath": "Textures/SparkMan_DiffuseTexture.png",
+  "TextureId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",
   "TextureByteFormat": 43,
+  "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
   "UseMipMaps": false,
-  "ImageCreateInfo": {
-    "SType": 14,
-    "ImageType": 1,
-    "Format": 43,
-    "MipLevels": 1,
-    "ArrayLayers": 1,
-    "Samples": 1,
-    "Tiling": 0,
-    "Usage": 6,
-    "SharingMode": 0,
-    "InitialLayout": 0
-  },
   "SamplerCreateInfo": {
     "SType": 31,
     "MagFilter": 0,

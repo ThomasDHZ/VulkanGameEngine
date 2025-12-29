@@ -31,7 +31,7 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "_comment": "Attachment 0 - Albedo (G-buffer write) - NO BLENDING",
+      "_comment": "Attachment 0 - PositionData",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -42,7 +42,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 1 - NormalMap (G-buffer write) - NO BLENDING",
+      "_comment": "Attachment 1 - Albedo (G-buffer write)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -53,7 +53,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 2 - Metallic/Roughness/AO/Emissive (G-buffer write) - NO BLENDING",
+      "_comment": "Attachment 2 - NormalMap (G-buffer write)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -64,7 +64,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 3 - Environment Map (usually loaded, not written in geometry pass) - NO BLENDING",
+      "_comment": "Attachment 3 - Metallic/Roughness/AO/Emissive (G-buffer write)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -75,7 +75,18 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 4 - Depth/stencil attachment - ignored for color blend",
+      "_comment": "Attachment 4 - Emission (G-buffer write)",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 5 - Depth/stencil attachment - ignored for color blend",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

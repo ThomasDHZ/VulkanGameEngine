@@ -54,7 +54,10 @@ private:
 		Vector<Mesh>                 MeshList;
 		Vector<Vector<Vertex2D>>     Vertex2DList;
 		Vector<Vector<uint>>         IndexList;
+		VulkanBuffer 				 MeshPropertiesBuffer;
+		VulkanBuffer				 TransformBuffer;
 
+		DLL_EXPORT void MeshSystemStartUp();
 		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
 		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList, VkGuid& materialId);
 		DLL_EXPORT void Update(const float& deltaTime);

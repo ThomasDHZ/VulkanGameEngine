@@ -15,6 +15,12 @@ uint32 MeshSystem::GetNextMeshIndex()
     return meshSystem.MeshList.size();
 }
 
+void MeshSystem::MeshSystemStartUp()
+{
+    ShaderStructDLL shaderStructData = shaderSystem.CopyShaderStructProtoType("SceneDataBuffer");
+    bufferSystem.VMACreateDynamicBuffer(nullptr, shaderStructData.ShaderBufferSize * 256, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+}
+
 uint MeshSystem::CreateMesh(MeshTypeEnum meshType, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList)
 {
     uint meshId = meshSystem.GetNextMeshIndex();

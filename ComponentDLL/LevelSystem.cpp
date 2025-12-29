@@ -196,7 +196,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
-    //gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     spriteRenderPass2DId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
@@ -209,7 +209,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
  void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
  {
-     //RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
+     RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
      RenderLevel(commandBuffer, spriteRenderPass2DId, levelLayout.LevelLayoutId, deltaTime);
      RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
      RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
@@ -254,7 +254,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
      VkDeviceSize offsets[] = { 0 };
      VkDeviceSize instanceOffset[] = { 0 };
      spriteSystem.Update(deltaTime);
-     shaderSystem.UpdatePushConstantBuffer("sceneData");
      meshSystem.Update(deltaTime);
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      for (auto& levelLayer : levelLayerList)
@@ -263,7 +262,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-         shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", 0);
+         shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", levelLayer.MeshId);
          shaderSystem.UpdatePushConstantBuffer("sceneData");
          vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
@@ -275,14 +274,11 @@ void LevelSystem::LoadLevel(const char* levelPath)
      for (auto& spriteLayer : spriteSystem.SpriteLayerList)
      {
          const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
-         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshVertexBufferId).Buffer;
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
          const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
          const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
          const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
-         // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &spriteLayer.SpriteLayerMeshId, sizeof(spriteLayer.SpriteLayerMeshId));
-         vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, instanceOffset);
@@ -359,12 +355,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-          Mesh mesh = meshSystem.FindMesh(levelLayer.MeshId);
-          const Material& material = materialSystem.FindMaterial(mesh.MaterialId);
-          const Texture& texture = textureSystem.FindTexture(material.AlbedoMapId);
-          String guid = texture.textureId.ToString();
-
-          shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", 0);
+          shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", levelLayer.MeshId);
           shaderSystem.UpdatePushConstantBuffer("sceneData");
           vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
@@ -376,14 +367,11 @@ void LevelSystem::LoadLevel(const char* levelPath)
       for (auto& spriteLayer : spriteSystem.SpriteLayerList)
       {
           const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
-          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
           const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
           const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
           const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
-          // memcpy(shaderSystem.SearchGlobalShaderConstantVar(&sceneDataBuffer, "MeshBufferIndex")->Value, &spriteLayer.SpriteLayerMeshId, sizeof(spriteLayer.SpriteLayerMeshId));
-          vkCmdPushConstants(commandBuffer, spritePipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
           vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, instanceOffset);

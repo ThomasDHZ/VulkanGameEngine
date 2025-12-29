@@ -117,6 +117,9 @@
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryPoolSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPoolSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

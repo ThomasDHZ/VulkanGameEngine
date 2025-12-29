@@ -12,7 +12,39 @@
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
-      "_comment": "Attachment 0 - AlbedoMap - Use nearest for crisp pixel art or linear for smooth art",
+      "_comment": "Attachment 0 - PositionData (View-space or World-space positions) - Linear filtering for smooth reconstruction",
+      "RenderedTextureId": "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 110,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 2,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "_comment": "Attachment 1 - AlbedoMap - Use nearest for crisp pixel art or linear for smooth art",
       "RenderedTextureId": "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -44,7 +76,7 @@
       }
     },
     {
-      "_comment": "Attachment 1 - NormalMap - Linear filtering mandatory for correct lighting",
+      "_comment": "Attachment 2 - NormalMap - Linear filtering mandatory for correct lighting",
       "RenderedTextureId": "f7084167-9c9f-47bf-b1f6-e6723c20c352",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -76,12 +108,12 @@
       }
     },
     {
-      "_comment": "Attachment 2 - R = Metallic / G = Roughness / B = AO / A = Emissive",
+      "_comment": "Attachment 3 - R = Metallic / G = Roughness / B = AO",
       "RenderedTextureId": "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentType": 0,
-      "Format": 37,
+      "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 1,
@@ -108,24 +140,24 @@
       }
     },
     {
-      "_comment": "Attachment 3 - Environment Map (for IBL reflections)",
-      "RenderedTextureId": "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
-      "MipMapCount": 8,
+      "_comment": "Attachment 4 - RGB: Emission, A = Emission Strangth",
+      "RenderedTextureId": "b8de6731-4fd0-4461-b9b9-bdf40c6944d6",
+      "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentType": 0,
       "Format": 97,
       "SampleCount": 1,
-      "LoadOp": 0,
+      "LoadOp": 1,
       "StoreOp": 1,
       "FinalLayout": 2,
       "UseSampler": true,
-      "UseMipMaps": true,
+      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
         "MinFilter": 1,
         "MipmapMode": 1,
-        "AddressModeU": 0,
+        "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
         "MipLodBias": 0.0,
@@ -135,12 +167,12 @@
         "CompareOp": 7,
         "MinLod": 0.0,
         "MaxLod": 1000.0,
-        "BorderColor": 3,
+        "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
     },
     {
-      "_comment": "Attachment 4 -DepthMap",
+      "_comment": "Attachment 5 -DepthMap",
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "RenderTextureType": 3,
@@ -167,6 +199,22 @@
     }
   ],
   "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
     {
       "Color": {
         "Float32_0": 0.0,

@@ -55,8 +55,6 @@ layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer mater
 
 void main()
 {
-if (gl_FragCoord.x < 2.0 && gl_FragCoord.y < 2.0) // only one pixel
-{
 	int meshIndex = sceneData.MeshBufferIndex;
     uint materialId = meshBuffer[meshIndex].meshProperties.MaterialIndex;
 	MaterialProperitiesBuffer material = materialBuffer[materialId].materialProperties;

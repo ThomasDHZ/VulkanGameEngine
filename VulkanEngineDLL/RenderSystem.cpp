@@ -340,7 +340,6 @@ Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const Level
                 });
         }
     }
-
     return meshPropertiesBuffer;
 };
 
