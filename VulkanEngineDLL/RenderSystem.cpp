@@ -14,11 +14,11 @@ void RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKH
     vulkanSystem.RendererSetUp(windowHandle, instance, surface);
 }
 
-void RenderSystem::Update(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime)
+void RenderSystem::Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime)
 {
     if (vulkanSystem.RebuildRendererFlag)
     {
-        RecreateSwapchain(windowHandle, spriteRenderPass2DGuid, levelGuid, deltaTime);
+      //  RecreateSwapchain(windowHandle, spriteRenderPass2DGuid, levelGuid, deltaTime);
         vulkanSystem.RebuildRendererFlag = false;
     }
 }
@@ -457,12 +457,11 @@ void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
-    for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
+    for (const auto& binding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
     {
-        descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize
-            {
-                .type = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescripterType,
-                .descriptorCount = static_cast<uint32>(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size())
+        descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize{
+            .type = binding.DescripterType,
+            .descriptorCount = static_cast<uint32>(binding.DescriptorCount)
             });
     }
 
@@ -849,14 +848,24 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
     for (int x = 0; x < renderPassJsonLoader.RenderAttachmentList.size(); x++)
     {
         VkImageLayout initialLayout;
+        VkImageLayout finalLayout;
         switch (renderPassJsonLoader.RenderAttachmentList[x].RenderTextureType)
         {
         case RenderType_SwapChainTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR;
+                break;
         case RenderType_OffscreenColorTexture:
             initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             break;
         case RenderType_DepthBufferTexture:
             initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            break;
+        case RenderType_GBufferTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             break;
         default:
             throw std::runtime_error("Unknown RenderTextureType");
@@ -871,7 +880,7 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                .finalLayout = renderPassJsonLoader.RenderAttachmentList[x].FinalLayout
+                .finalLayout = finalLayout
             });
 
         switch (renderPassJsonLoader.RenderAttachmentList[x].RenderAttachmentType)
@@ -927,7 +936,7 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
             .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
             .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
             .pInputAttachments = inputAttachmentReferenceList.data(),
-            .colorAttachmentCount = depthReference.empty() ? static_cast<uint32>(colorAttachmentReferenceList.size()) : static_cast<uint32>(colorAttachmentReferenceList.size() - 1) ,
+            .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList.size()),
             .pColorAttachments = colorAttachmentReferenceList.data(),
             .pResolveAttachments = resolveAttachmentReferenceList.data(),
             .pDepthStencilAttachment = depthReference.empty() ? nullptr : depthReference.data(),

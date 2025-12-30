@@ -28,7 +28,7 @@
             vulkanWindow = new GameEngineWindow();
             vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
             gameSystem.StartUp(vulkanWindow);
-   
+
 
             imGuiRenderer = ImGui_StartUp();
             while (!vulkanWindow->WindowShouldClose(vulkanWindow))

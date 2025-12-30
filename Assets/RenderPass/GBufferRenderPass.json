@@ -12,16 +12,15 @@
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
-      "_comment": "Attachment 0 - PositionData (View-space or World-space positions) - Linear filtering for smooth reconstruction",
       "RenderedTextureId": "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "RenderTextureType": 4,
       "RenderAttachmentType": 0,
-      "Format": 110,
+      "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 1,
-      "FinalLayout": 2,
+      "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -44,16 +43,15 @@
       }
     },
     {
-      "_comment": "Attachment 1 - AlbedoMap - Use nearest for crisp pixel art or linear for smooth art",
       "RenderedTextureId": "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "RenderTextureType": 4,
       "RenderAttachmentType": 0,
       "Format": 43,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 1,
-      "FinalLayout": 2,
+      "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -76,16 +74,15 @@
       }
     },
     {
-      "_comment": "Attachment 2 - NormalMap - Linear filtering mandatory for correct lighting",
       "RenderedTextureId": "f7084167-9c9f-47bf-b1f6-e6723c20c352",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "RenderTextureType": 4,
       "RenderAttachmentType": 0,
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 1,
-      "FinalLayout": 2,
+      "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -108,16 +105,15 @@
       }
     },
     {
-      "_comment": "Attachment 3 - R = Metallic / G = Roughness / B = AO",
       "RenderedTextureId": "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "RenderTextureType": 4,
       "RenderAttachmentType": 0,
-      "Format": 97,
+      "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 1,
-      "FinalLayout": 2,
+      "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -140,16 +136,15 @@
       }
     },
     {
-      "_comment": "Attachment 4 - RGB: Emission, A = Emission Strangth",
       "RenderedTextureId": "b8de6731-4fd0-4461-b9b9-bdf40c6944d6",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "RenderTextureType": 4,
       "RenderAttachmentType": 0,
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 1,
-      "FinalLayout": 2,
+      "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
@@ -172,7 +167,6 @@
       }
     },
     {
-      "_comment": "Attachment 5 -DepthMap",
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "RenderTextureType": 3,
@@ -181,7 +175,7 @@
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 0,
-      "FinalLayout": 4,
+      "FinalLayout": 3,
       "UseSampler": false,
       "UseMipMaps": false,
       "SamplerCreateInfo": null
@@ -191,10 +185,19 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1024,
-      "DstStageMask": 1024,
+      "SrcStageMask": 1,
+      "DstStageMask": 1792,
       "SrcAccessMask": 0,
-      "DstAccessMask": 256,
+      "DstAccessMask": 1280,
+      "DependencyFlags": 0
+    },
+    {
+      "SrcSubpass": 0,
+      "DstSubpass": 4294967295,
+      "SrcStageMask": 1536,
+      "SrcAccessMask": 1280,
+      "DstStageMask": 8192,
+      "DstAccessMask": 0,
       "DependencyFlags": 0
     }
   ],
@@ -204,7 +207,7 @@
         "Float32_0": 0.0,
         "Float32_1": 0.0,
         "Float32_2": 0.0,
-        "Float32_3": 1.0,
+        "Float32_3": 0.0,
         "Int32_0": 0,
         "Int32_1": 0,
         "Int32_2": 0,
@@ -235,8 +238,24 @@
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 1.0,
+        "Float32_2": 1.0,
+        "Float32_3": 0.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.5,
+        "Float32_2": 1.0,
+        "Float32_3": 0.0,
         "Int32_0": 0,
         "Int32_1": 0,
         "Int32_2": 0,
@@ -252,23 +271,7 @@
         "Float32_0": 0.0,
         "Float32_1": 0.0,
         "Float32_2": 0.0,
-        "Float32_3": 1.0,
-        "Int32_0": 0,
-        "Int32_1": 0,
-        "Int32_2": 0,
-        "Int32_3": 1065353216,
-        "Uint32_0": 0,
-        "Uint32_1": 0,
-        "Uint32_2": 0,
-        "Uint32_3": 1065353216
-      }
-    },
-    {
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 1.0,
+        "Float32_3": 0.0,
         "Int32_0": 0,
         "Int32_1": 0,
         "Int32_2": 0,

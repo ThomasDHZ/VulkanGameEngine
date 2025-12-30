@@ -73,7 +73,8 @@ enum RenderTextureTypeEnum
     RenderType_UNKNOWN,
     RenderType_SwapChainTexture,
     RenderType_OffscreenColorTexture,
-    RenderType_DepthBufferTexture
+    RenderType_DepthBufferTexture,
+    RenderType_GBufferTexture
 };
 
 enum RenderAttachmentTypeEnum

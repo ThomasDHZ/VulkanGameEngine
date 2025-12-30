@@ -44,7 +44,7 @@ public:
     DLL_EXPORT void                          DestroyRenderPass(VulkanRenderPass& renderPass);
     DLL_EXPORT VulkanPipeline                RebuildSwapChain(VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData);
     DLL_EXPORT void                          DestroyPipeline(VulkanPipeline& vulkanPipelineDLL);
-    DLL_EXPORT void                          Update(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime);
+    DLL_EXPORT void                          Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
     DLL_EXPORT VkCommandBuffer               BeginSingleUseCommand();
     DLL_EXPORT VkCommandBuffer               BeginSingleUseCommand(VkCommandPool& commandPool);
     DLL_EXPORT void                          EndSingleUseCommand(VkCommandBuffer commandBuffer);

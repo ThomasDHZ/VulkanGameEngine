@@ -84,17 +84,6 @@
       "DstAlphaBlendFactor": 0,
       "AlphaBlendOp": 0,
       "ColorWriteMask": 15
-    },
-    {
-      "_comment": "Attachment 5 - Depth/stencil attachment - ignored for color blend",
-      "BlendEnable": false,
-      "SrcColorBlendFactor": 1,
-      "DstColorBlendFactor": 0,
-      "ColorBlendOp": 0,
-      "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 0,
-      "AlphaBlendOp": 0,
-      "ColorWriteMask": 0
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {

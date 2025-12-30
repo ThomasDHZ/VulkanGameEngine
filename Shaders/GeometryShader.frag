@@ -5,20 +5,21 @@
 
 layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
 layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
+layout(constant_id = 2) const uint DescriptorBindingType2 = 1;
+layout(constant_id = 3) const uint DescriptorBindingType3 = 1;
+layout(constant_id = 4) const uint DescriptorBindingType4 = 1;
 
-layout(binding = 0) uniform sampler2D HDRSceneTexture;
-layout(binding = 1) uniform sampler2D BloomTexture;
+layout(binding = 0) uniform sampler2D PositionDataMap;
+layout(binding = 1) uniform sampler2D AlbedoMap;
+layout(binding = 2) uniform sampler2D NormalMap;
+layout(binding = 3) uniform sampler2D MatRoughAOMap;
+layout(binding = 4) uniform sampler2D EmissionMap;
 
 layout(location = 0) in vec2 TexCoords;
 layout(location = 0) out vec4 outColor;
 
-const float Gamma = 2.2;
-const float Exposure = 1.0;
 void main() 
 {
-    vec3 hdrColor = texture(BloomTexture, TexCoords).rgb;
-    vec3 finalColor = hdrColor;
-    vec3 mapped = vec3(1.0) - exp(-finalColor * Exposure);
-    mapped = pow(mapped, vec3(1.0 / Gamma));
-    outColor = vec4(mapped, 1.0);
+    vec3 color = texture(AlbedoMap, TexCoords).rgb;
+    outColor = vec4(color, 1.0);
 }
