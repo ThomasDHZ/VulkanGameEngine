@@ -71,8 +71,8 @@ private:
         UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
         SharedPtr<Camera> OrthographicCamera;
 
-        RenderPassGuid gBufferRenderPassId;
-        RenderPassGuid geometryRenderPassId;
+       // RenderPassGuid gBufferRenderPassId;
+       // RenderPassGuid geometryRenderPassId;
         //RenderPassGuid levelRenderPass2DId;
         RenderPassGuid spriteRenderPass2DId;
         //RenderPassGuid verticalGaussianBlurRenderPassId;
