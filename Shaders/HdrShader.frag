@@ -4,10 +4,8 @@
 #extension GL_EXT_debug_printf : enable
 
 layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
-layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
 
 layout(binding = 0) uniform sampler2D HDRSceneTexture;
-layout(binding = 1) uniform sampler2D BloomTexture;
 
 layout(location = 0) in vec2 TexCoords;
 layout(location = 0) out vec4 outColor;

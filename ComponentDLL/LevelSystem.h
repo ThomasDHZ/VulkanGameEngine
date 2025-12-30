@@ -74,7 +74,7 @@ private:
         RenderPassGuid gBufferRenderPassId;
         RenderPassGuid geometryRenderPassId;
         //RenderPassGuid levelRenderPass2DId;
-        //RenderPassGuid spriteRenderPass2DId;
+        RenderPassGuid spriteRenderPass2DId;
         //RenderPassGuid verticalGaussianBlurRenderPassId;
         //RenderPassGuid horizontalGaussianBlurRenderPassId;
         //RenderPassGuid bloomRenderPassId;
