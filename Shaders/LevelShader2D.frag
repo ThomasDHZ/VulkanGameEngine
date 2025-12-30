@@ -13,7 +13,6 @@ layout(location = 0) in vec3 inPS_Position;
 layout(location = 1) in vec2 inPS_UV;    
 
 layout(location = 0) out vec4 OutputColor;
-layout(location = 1) out vec4 OutputBloom;
 
 layout(push_constant) uniform SceneDataBuffer {
     int MeshBufferIndex;
@@ -67,5 +66,4 @@ void main()
         discard;
 
     OutputColor = vec4(Albedo, Alpha);
-	OutputBloom = vec4(Albedo, Alpha);
 }

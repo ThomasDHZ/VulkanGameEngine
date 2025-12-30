@@ -17,7 +17,6 @@ layout (location = 5) in flat uint  PS_MaterialID;
 layout (location = 6) in flat vec4  PS_UVOffset;
 
 layout(location = 0) out vec4 OutputColor;
-layout(location = 1) out vec4 OutputBloom;
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -82,5 +81,4 @@ void main()
 	}
   
     OutputColor = vec4(material.Albedo.rgb, 1.0f);
-	OutputBloom = vec4(material.Albedo.rgb, 1.0f);
 }
