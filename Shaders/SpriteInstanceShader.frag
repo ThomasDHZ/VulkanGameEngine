@@ -35,15 +35,17 @@ struct MeshProperitiesBuffer
 struct MaterialProperitiesBuffer
 {
 	vec3 Albedo;
+	float Specular;
 	float Metallic;
 	float Roughness;
 	float AmbientOcclusion;
 	vec3 Emission;
 	float Alpha;
 	float HeightScale;
+	float Height;
 
 	uint AlbedoMap;
-	uint MetallicRoughnessMap;
+	uint SpecularMap;
 	uint MetallicMap;
 	uint RoughnessMap;
 	uint AmbientOcclusionMap;

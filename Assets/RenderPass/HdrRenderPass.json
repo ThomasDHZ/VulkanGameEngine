@@ -9,7 +9,7 @@
   "UseDefaultSwapChainResolution": true,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [
-    "ca62ddec-30ff-49e2-b168-3cfeddcedb8e"
+    "c836201c-8413-4185-a37c-3a43d8c9bb67"
   ],
   "RenderAttachmentList": [
     {
@@ -21,7 +21,7 @@
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 0,
-      "FinalLayout": 3,
+      "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false
     }

@@ -4,6 +4,7 @@
   "ShaderMaterialBufferIndex": 0,
   "MaterialBufferId": 0,
   "AlbedoMapId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
+  "SpecularMapId": "6ed9450e-05b9-4253-b710-53ff04b4a9f5",
   "MetallicRoughnessMapId": "00000000-0000-0000-0000-000000000000",
   "MetallicMapId": "ed8f689d-6b97-413e-9a59-e12d3344ea56",
   "RoughnessMapId": "00000000-0000-0000-0000-000000000000",
@@ -17,6 +18,7 @@
     0.8,
     0.8
   ],
+  "Specular": 0.0,
   "Metallic": 0.0,
   "Roughness": 0.5,
   "AmbientOcclusion": 1.0,
@@ -26,5 +28,6 @@
     0.0
   ],
   "Alpha": 1.0,
-  "HeightScale": 0.04
+  "HeightScale": 0.04,
+  "Height": 0.0
 }
