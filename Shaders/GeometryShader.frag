@@ -94,41 +94,36 @@ struct MaterialProperitiesBuffer
 
 struct DirectionalLightBuffer
 {
-    vec3  LightColor;
-    vec3  LightDirection;
+    vec3 LightColor;
+    vec3 LightDirection;
     float LightIntensity;
 };
-
-struct PointLightBuffer 
+struct PointLightBuffer
 {
-    vec3  LightPosition;
-    vec3  LightColor;    
+    vec3 LightPosition;
+    vec3 LightColor;
     float LightRadius;
     float LightIntensity;
 };
-
 layout(binding = 0) uniform sampler2D TextureMap[];
 layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-
-void main() 
+void main()
 {
-    vec3  positionDataMap     = texture(TextureMap[0], TexCoords).rgb;
-    vec3  albedoMap           = texture(TextureMap[1], TexCoords).rgb;
-    vec3  N                   = vec3(0.0f, 0.0f, 1.0f); //normalize(texture(TextureMap[2], TexCoords).rgb + vec3(0.0f, 0.0f, 1.0f));
-    float metallicMap         = texture(TextureMap[3], TexCoords).r;
-    float roughnessMap        = texture(TextureMap[3], TexCoords).g;
+    vec3 positionDataMap = texture(TextureMap[0], TexCoords).rgb;
+    vec3 albedoMap = texture(TextureMap[1], TexCoords).rgb;
+    vec3 normalMap = texture(TextureMap[2], TexCoords).rgb * 2.0f - 1.0f;
+    vec3 N = normalize(normalMap);
+    
+    float metallicMap = texture(TextureMap[3], TexCoords).r;
+    float roughnessMap = texture(TextureMap[3], TexCoords).g;
     float ambientOcclusionMap = texture(TextureMap[3], TexCoords).b;
-    float heightMap           = texture(TextureMap[3], TexCoords).a;
-    vec3  emissionMap         = texture(TextureMap[4], TexCoords).rgb;
-    float specularMap         = texture(TextureMap[4], TexCoords).a;
-    vec3  V                   = normalize(vec3(0.3f, 0.3f, 1.0f));
-
-    N = normalize(N * 2.0f - 1.0f);
-    N = normalize(TBN * N);
-    vec3 R = reflect(-V, N); 
-
-    vec3 F0 = vec3(0.04f); 
+    float heightMap = texture(TextureMap[3], TexCoords).a;
+    vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
+    float specularMap = texture(TextureMap[4], TexCoords).a;
+    vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
+    
+    vec3 F0 = vec3(0.04f);
     F0 = mix(F0, albedoMap, metallicMap);
 
     vec3 Lo = vec3(0.0f); 
@@ -150,48 +145,37 @@ void main()
         Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
     }
 
-   for(int x = 0; x < 1; x++)
+    for(int x = 0; x < 1; x++)
     {
-    // Ultra-simple debug light — bypass all PBR
-//const PointLightBuffer pointLight = pointLightBuffer[0].pointLightProperties;
-//vec3 lightPos = pointLight.LightPosition;
-//float radius = 600.0;
-//float intensity = 5.0;
-//
-//vec3 toLight = lightPos - positionDataMap;
-//float dist = length(toLight);
-//
-//if (dist < radius) {
-//    float attenuation = 1.0 - (dist / radius);
-//    attenuation = attenuation * attenuation;  // sharper falloff
-//    vec3 glow = vec3(1.0f, 0.9f, 0.8f) * intensity * attenuation;
-//    Lo += glow;  // just add bright color
-//}
         const PointLightBuffer pointLight = pointLightBuffer[x].pointLightProperties;
         vec3 lightPos = pointLight.LightPosition;
         vec3 L = lightPos - positionDataMap;
 
         float distance = length(L);
-        if (distance < pointLight.LightRadius)
+        if (distance > pointLight.LightRadius)
         {
             continue;
         }
 
         L = normalize(L);
         vec3 H = normalize(V + L);
-        float attenuation = 1.0 - (distance / radius);
-         attenuation = attenuation * attenuation; 
+
+        float attenuation = 1.0f - (distance / pointLight.LightRadius);
+        attenuation = max(0.0f, attenuation);
+        attenuation = attenuation * attenuation;
+
         vec3 radiance = pointLight.LightColor * pointLight.LightIntensity * attenuation;
 
         float NDF = DistributionGGX(N, H, roughnessMap);
-        float G   = GeometrySmith(N, V, L, roughnessMap);
-        vec3  F   = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughnessMap);
+        float G = GeometrySmith(N, V, L, roughnessMap);
+        vec3 F = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughnessMap);
+
         vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
 
         vec3 kS = F;
         vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
         float NdotL = max(dot(N, L), 0.0f);
-        Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedoMap / PI + specular) * radiance;
     }
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughnessMap);
@@ -210,7 +194,6 @@ void main()
     specular *= specularMap;
 
     vec3 ambient      = emissionMap + ((kD * diffuse + specular) * ambientOcclusionMap);
-    vec3 color        = Lo;
-
+    vec3 color = ambient + Lo;
     outColor = vec4(color, 1.0f);
 }
