@@ -1,0 +1,127 @@
+{
+  "Name": "GeometryRenderPass",
+  "RenderPassId": "35cf1a35-cdbe-4ddb-912a-83b43bfe85e5",
+  "RenderPipelineList": [
+    "Pipelines/GBufferLightingPipeline.json"
+  ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
+  "IsRenderedToSwapchain": false,
+  "InputTextureList": [
+    "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
+    "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
+    "f7084167-9c9f-47bf-b1f6-e6723c20c352",
+    "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
+    "b8de6731-4fd0-4461-b9b9-bdf40c6944d6"
+  ],
+  "RenderAttachmentList": [
+    {
+      "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 97,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "RenderedTextureId": "f4e743d7-2dbc-4c34-ad54-0ee462e5dad2",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentType": 0,
+      "Format": 44,
+      "SampleCount": 1,
+      "LoadOp": 2,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 0
+    }
+  ],
+  "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    }
+  ]
+}

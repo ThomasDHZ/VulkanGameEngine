@@ -8,7 +8,9 @@ layout(constant_id = 1) const uint DescriptorBindingType1 = 3;
 layout(constant_id = 2) const uint DescriptorBindingType2 = 4;
 
 layout(location = 0) in  vec2 TexCoords;
+
 layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec4 outBloom;
 
 //layout(location = 0) in vec4 PositionDataMap;
 //layout(location = 1) in vec4 AlbedoMap;
@@ -69,29 +71,6 @@ mat3 TBN = mat3(
     vec3(0.0, 0.0, 1.0)   // Normal    (Z)
 );
 
-struct MaterialProperitiesBuffer
-{
-	vec3 Albedo;
-	float Specular;
-	float Metallic;
-	float Roughness;
-	float AmbientOcclusion;
-	vec3 Emission;
-	float Alpha;
-	float HeightScale;
-	float Height;
-
-	uint AlbedoMap;
-	uint SpecularMap;
-	uint MetallicMap;
-	uint RoughnessMap;
-	uint AmbientOcclusionMap;
-	uint NormalMap;
-	uint AlphaMap;
-	uint EmissionMap;
-	uint HeightMap;
-};
-
 struct DirectionalLightBuffer
 {
     vec3 LightColor;
@@ -113,20 +92,19 @@ void main()
     vec3 positionDataMap = texture(TextureMap[0], TexCoords).rgb;
     vec3 albedoMap = texture(TextureMap[1], TexCoords).rgb;
     vec3 normalMap = texture(TextureMap[2], TexCoords).rgb * 2.0f - 1.0f;
-    vec3 N = normalize(normalMap);
-    
-    float metallicMap = texture(TextureMap[3], TexCoords).r;
-    float roughnessMap = texture(TextureMap[3], TexCoords).g;
+    float metallicMap = 0.0f;//texture(TextureMap[3], TexCoords).r;
+    float roughnessMap = 0.5f;//texture(TextureMap[3], TexCoords).g;
     float ambientOcclusionMap = texture(TextureMap[3], TexCoords).b;
     float heightMap = texture(TextureMap[3], TexCoords).a;
     vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
     float specularMap = texture(TextureMap[4], TexCoords).a;
+    
+    vec3 N = normalize(normalMap);
     vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
     
+    vec3 Lo = vec3(0.0f); 
     vec3 F0 = vec3(0.04f);
     F0 = mix(F0, albedoMap, metallicMap);
-
-    vec3 Lo = vec3(0.0f); 
     for(int x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; x++)
     {
         const DirectionalLightBuffer directionalLight = directionalLightBuffer[x].directionalLightProperties;
@@ -145,7 +123,7 @@ void main()
         Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
     }
 
-    for(int x = 0; x < 1; x++)
+    for(int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     {
         const PointLightBuffer pointLight = pointLightBuffer[x].pointLightProperties;
         vec3 lightPos = pointLight.LightPosition;
@@ -157,7 +135,7 @@ void main()
             continue;
         }
 
-        L = normalize(L);
+        L = normalize(L + vec3(0.0001f));
         vec3 H = normalize(V + L);
 
         float attenuation = 1.0f - (distance / pointLight.LightRadius);
@@ -193,7 +171,12 @@ void main()
     vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
     specular *= specularMap;
 
-    vec3 ambient      = emissionMap + ((kD * diffuse + specular) * ambientOcclusionMap);
+    vec3 ambient = emissionMap + ((kD * diffuse + specular) * ambientOcclusionMap);
     vec3 color = ambient + Lo;
+
+    vec3 bloomColor = color - emissionMap;
+    bloomColor = emissionMap + max(vec3(0.0f), bloomColor - vec3(1.0f));
+
     outColor = vec4(color, 1.0f);
+    outBloom = vec4(bloomColor, 1.0f);
 }

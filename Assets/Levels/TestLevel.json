@@ -39,10 +39,16 @@
     "Lights/PointLight.json"
   ],
   "LoadRenderPasses": [
-    "RenderPass/LevelShader2DRenderPass.json",
+    "RenderPass/BRDFRenderPass.json",
+    "RenderPass/IrradianceRenderPass.json",
+    "RenderPass/PrefilterRenderPass.json",
+    "RenderPass/SkyBoxRenderPass.json",
+    "RenderPass/GBufferRenderPass.json",
+    "RenderPass/GBufferLightingRenderPass.json",
     "RenderPass/VertGaussianBlurRenderPass.json",
     "RenderPass/HorizontalGaussianBlurRenderPass.json",
-    "RenderPass/GeometryRenderPass.json",
+    "RenderPass/BloomRenderPass.json",
+    "RenderPass/HdrPipeline.json",
     "RenderPass/FrameBufferRenderPass.json"
   ],
   "GameObjectList": [

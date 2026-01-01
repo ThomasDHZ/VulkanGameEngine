@@ -1,39 +1,19 @@
 {
-  "Name": "GeometryPipeline",
-  "PipelineId": "1c9d6cfd-7339-494d-b666-681e58973d17",
+  "Name": "SkyBoxPipeline",
+  "PipelineId": "a432f537-bfa4-46d8-a942-565973c0b164",
   "ShaderList": [
-    "Shaders/GeometryShaderVert.spv",
-    "Shaders/GeometryShaderFrag.spv"
+    "Shaders/SkyBoxShaderVert.spv",
+    "Shaders/SkyBoxShaderFrag.spv"
   ],
   "VertexType": 0,
   "UseDynamicColorWrite": false,
-  "ViewportList": [
-    {
-      "x": 0.0,
-      "y": 0.0,
-      "width": 0.0,
-      "height": 0.0,
-      "minDepth": 0.0,
-      "maxDepth": 1.0
-    }
-  ],
-  "ScissorList": [
-    {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  ],
+  "ViewportList": [],
+  "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": false,
-      "SrcColorBlendFactor": 1,
-      "DstColorBlendFactor": 0,
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 6,
+      "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
       "DstAlphaBlendFactor": 0,
