@@ -9,15 +9,11 @@ layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
 layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
 layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
 
-layout(location = 0) in vec3 inPS_Position; 
-layout(location = 1) in vec2 inPS_UV;    
+layout (location = 0)  in vec2  VS_Position;
+layout (location = 1)  in vec2  VS_UV;
 
-layout(location = 0) out vec4 PositionDataMap;
-layout(location = 1) out vec4 AlbedoMap;
-layout(location = 2) out vec4 NormalMap;
-layout(location = 3) out vec4 MatRoughAOHeightMap;
-layout(location = 4) out vec4 EmissionMap;
-
+layout (location = 0) out vec3  PS_Position;
+layout (location = 1) out vec2  PS_UV;
 
 layout(push_constant) uniform SceneDataBuffer {
     int MeshBufferIndex;
@@ -61,28 +57,14 @@ layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer mater
 
 void main()
 {
-	int meshIndex = sceneData.MeshBufferIndex;
-    uint materialId = meshBuffer[meshIndex].meshProperties.MaterialIndex;
-	MaterialProperitiesBuffer material = materialBuffer[materialId].materialProperties;
+    int meshIndex = sceneData.MeshBufferIndex;
+    mat4 meshTransform = meshBuffer[meshIndex].meshProperties.MeshTransform;
 
-    vec4  albedoMap =			(material.AlbedoMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlbedoMap], inPS_UV).rgba		 : vec4(material.Albedo, 1.0f);
-    vec3  normalMap =			(material.NormalMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.NormalMap], inPS_UV).rgb		 : vec3(0.0, 0.0, 1.0);
-	float specularMap =			(material.SpecularMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.SpecularMap], inPS_UV).r		 : material.Specular;
-    float metallicMap =			(material.MetallicMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.MetallicMap], inPS_UV).r		 : material.Metallic;
-    float roughnessMap =		(material.RoughnessMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.RoughnessMap], inPS_UV).r		 : material.Roughness;
-    float ambientOcclusionMap = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? texture(TextureMap[material.AmbientOcclusionMap], inPS_UV).r : material.AmbientOcclusion;
-	float heightMap =			(material.HeightMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.HeightMap], inPS_UV).r			 : material.Height;
-    vec3  emissionMap =			(material.EmissionMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.EmissionMap], inPS_UV).rgb		 : material.Emission;
-	float alphaMap =			(material.AlphaMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlphaMap], inPS_UV).r			 : material.Alpha;
+    PS_Position = vec3(meshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
+	PS_UV = VS_UV.xy;
 
-    if (albedoMap.a == 0.0)
-	{
-        discard;
-	}
-
-	PositionDataMap = vec4(inPS_Position, 1.0);
-	AlbedoMap = vec4(albedoMap.rgb, 1.0f);
-	NormalMap = vec4(normalMap, 1.0f);
-	MatRoughAOHeightMap = vec4(metallicMap, roughnessMap, ambientOcclusionMap, heightMap);
-	EmissionMap = vec4(emissionMap, specularMap);
+    gl_Position = sceneData.Projection * 
+                  sceneData.View *  
+                  meshTransform *
+                  vec4(VS_Position.xy, 0.0f, 1.0f);
 }

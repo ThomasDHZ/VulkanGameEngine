@@ -150,6 +150,7 @@
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="InputEnum.h" />
+    <ClInclude Include="LightSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="RenderSystem.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
+    <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="MemoryPoolSystem.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="Platform.cpp" />

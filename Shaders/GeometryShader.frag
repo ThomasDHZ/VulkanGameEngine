@@ -4,7 +4,8 @@
 #extension GL_EXT_debug_printf : enable
 
 layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
-layout(binding = 0) uniform sampler2D TextureMap[];
+layout(constant_id = 1) const uint DescriptorBindingType1 = 3;
+layout(constant_id = 2) const uint DescriptorBindingType2 = 4;
 
 layout(location = 0) in  vec2 TexCoords;
 layout(location = 0) out vec4 outColor;
@@ -14,6 +15,12 @@ layout(location = 0) out vec4 outColor;
 //layout(location = 2) in vec4 NormalMap;
 //layout(location = 3) in vec4 MatRoughAOHeightMap;
 //layout(location = 4) in vec4 EmissionMap;
+
+layout(push_constant) uniform GBufferSceneDataBuffer
+{
+	uint DirectionalLightCount;
+    uint PointLightCount;
+}gBufferSceneDataBuffer;
 
 const float PI = 3.14159265359;
 
@@ -90,70 +97,120 @@ struct DirectionalLightBuffer
     vec3  LightColor;
     vec3  LightDirection;
     float LightIntensity;
-}
+};
+
+struct PointLightBuffer 
+{
+    vec3  LightPosition;
+    vec3  LightColor;    
+    float LightRadius;
+    float LightIntensity;
+};
+
+layout(binding = 0) uniform sampler2D TextureMap[];
+layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 
 void main() 
 {
-    vec4  PositionDataMap     = texture(TextureMap[0], TexCoords).rgba;
+    vec3  positionDataMap     = texture(TextureMap[0], TexCoords).rgb;
     vec3  albedoMap           = texture(TextureMap[1], TexCoords).rgb;
-    vec3  N                   = normalize(texture(TextureMap[2], TexCoords).rgb + vec3(0.0, 0.0, 1.0));
+    vec3  N                   = vec3(0.0f, 0.0f, 1.0f); //normalize(texture(TextureMap[2], TexCoords).rgb + vec3(0.0f, 0.0f, 1.0f));
     float metallicMap         = texture(TextureMap[3], TexCoords).r;
     float roughnessMap        = texture(TextureMap[3], TexCoords).g;
     float ambientOcclusionMap = texture(TextureMap[3], TexCoords).b;
     float heightMap           = texture(TextureMap[3], TexCoords).a;
     vec3  emissionMap         = texture(TextureMap[4], TexCoords).rgb;
     float specularMap         = texture(TextureMap[4], TexCoords).a;
-    vec3  V                   = normalize(vec3(0.3, 0.3, 1.0));
+    vec3  V                   = normalize(vec3(0.3f, 0.3f, 1.0f));
 
-    N = normalize(N * 2.0 - 1.0);
+    N = normalize(N * 2.0f - 1.0f);
     N = normalize(TBN * N);
     vec3 R = reflect(-V, N); 
 
     vec3 F0 = vec3(0.04f); 
     F0 = mix(F0, albedoMap, metallicMap);
 
-    vec3 lightDir = normalize(vec3(0.5, 0.2, 1.0)); 
-    vec3 Lo = vec3(0.0);
-    for(int x = 0; x <= 5; x++)
+    vec3 Lo = vec3(0.0f); 
+    for(int x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; x++)
     {
-        vec3  lightColor = vec3(1.0, 0.95, 0.9);  
-        float lightIntensity = 1.2f;
-
-        vec3 L = lightDir;
+        const DirectionalLightBuffer directionalLight = directionalLightBuffer[x].directionalLightProperties;
+        vec3 L = normalize(directionalLight.LightDirection);
         vec3 H = normalize(V + L);
-        vec3 radiance = lightColor * lightIntensity;
+        vec3 radiance = directionalLight.LightColor * directionalLight.LightIntensity;
 
         float NDF = DistributionGGX(N, H, roughnessMap);
         float G   = GeometrySmith(N, V, L, roughnessMap);
-        vec3  F   = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, roughnessMap);
-
-        vec3 specular = (NDF * G * F) / (4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001);
+        vec3  F   = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughnessMap);
+        vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
 
         vec3 kS = F;
-        vec3 kD = (vec3(1.0) - kS) * (1.0 - metallicMap);
-
-        float NdotL = max(dot(N, L), 0.0);
-
+        vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
+        float NdotL = max(dot(N, L), 0.0f);
         Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
     }
 
-    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughnessMap);
+   for(int x = 0; x < 1; x++)
+    {
+    // Ultra-simple debug light — bypass all PBR
+//const PointLightBuffer pointLight = pointLightBuffer[0].pointLightProperties;
+//vec3 lightPos = pointLight.LightPosition;
+//float radius = 600.0;
+//float intensity = 5.0;
+//
+//vec3 toLight = lightPos - positionDataMap;
+//float dist = length(toLight);
+//
+//if (dist < radius) {
+//    float attenuation = 1.0 - (dist / radius);
+//    attenuation = attenuation * attenuation;  // sharper falloff
+//    vec3 glow = vec3(1.0f, 0.9f, 0.8f) * intensity * attenuation;
+//    Lo += glow;  // just add bright color
+//}
+        const PointLightBuffer pointLight = pointLightBuffer[x].pointLightProperties;
+        vec3 lightPos = pointLight.LightPosition;
+        vec3 L = lightPos - positionDataMap;
+
+        float distance = length(L);
+        if (distance < pointLight.LightRadius)
+        {
+            continue;
+        }
+
+        L = normalize(L);
+        vec3 H = normalize(V + L);
+        float attenuation = 1.0 - (distance / radius);
+         attenuation = attenuation * attenuation; 
+        vec3 radiance = pointLight.LightColor * pointLight.LightIntensity * attenuation;
+
+        float NDF = DistributionGGX(N, H, roughnessMap);
+        float G   = GeometrySmith(N, V, L, roughnessMap);
+        vec3  F   = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughnessMap);
+        vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
+
+        vec3 kS = F;
+        vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
+        float NdotL = max(dot(N, L), 0.0f);
+        Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
+    }
+
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughnessMap);
     vec3 kS = F;
-    vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallicMap;
+    vec3 kD = 1.0f - kS;
+    kD *= 1.0f - metallicMap;
 
     vec3 irradiance   = vec3(0.36f);
     vec3 diffuse      = irradiance * albedoMap;
 
-    vec3  L   = lightDir;
-    vec3  H   = normalize(V + L);
-    float NDF = DistributionGGX(N, H, roughnessMap);
-    float G   = GeometrySmith(N, V, L, roughnessMap);
-    vec3 specular = (NDF * G * F) / (4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001);
+    vec3  L       = normalize(directionalLightBuffer[0].directionalLightProperties.LightDirection);
+    vec3  H       = normalize(V + L);
+    float NDF     = DistributionGGX(N, H, roughnessMap);
+    float G       = GeometrySmith(N, V, L, roughnessMap);
+    vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
     specular *= specularMap;
 
-    vec3 ambient      = emissionMap + ((vec3(0.15, 0.18, 0.25) * diffuse + specular));
-    vec3 color        = ambient + Lo;
+    vec3 ambient      = emissionMap + ((kD * diffuse + specular) * ambientOcclusionMap);
+    vec3 color        = Lo;
 
-    outColor = vec4(color, 1.0);
+    outColor = vec4(color, 1.0f);
 }

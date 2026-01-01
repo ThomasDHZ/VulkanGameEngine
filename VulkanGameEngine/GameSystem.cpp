@@ -94,11 +94,36 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     ImGui_StartFrame();
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    
+    ImGui::Separator();
+
+    for (auto& directionalLight : lightSystem.DirectionalLightList)
+    {
+        ImGui::SliderFloat3("DLightColor ", &directionalLight.LightColor.x, 0.0f, 1.0f);
+        ImGui::SliderFloat3("DLightDirection ", &directionalLight.LightDirection.x, -1.0f, 1.0f);
+        ImGui::SliderFloat("DLightIntensity ", &directionalLight.LightIntensity, 0.0f, 10.0f);
+    }
+
+    ImGui::Separator();
+
+    for (auto& pointLight : lightSystem.PointLightList)
+    {
+        ImGui::SliderFloat("PLightPosition X", &pointLight.LightPosition.x, 0.0f, static_cast<float>(vulkanSystem.SwapChainResolution.width));
+        ImGui::SliderFloat("PLightPosition Y", &pointLight.LightPosition.y, 0.0f, static_cast<float>(vulkanSystem.SwapChainResolution.height));
+        ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f);
+        ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f);
+        ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f);
+    }
+
+    ImGui::Separator();
+
     ImGui::Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
     ImGui::Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
     ImGui::Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
     ImGui::Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
     ImGui::Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");
+
+    ImGui::Separator();
 
     ImGui::Text("Left Stick: (%.03f, %.03f)", leftStick.x, leftStick.y);
     ImGui::Text("Right Stick: (%.03f, %.03f)", rightStick.x, rightStick.y);

@@ -22,6 +22,7 @@
 #include <DLL.h>
 #include <Typedef.h>
 #include <VulkanSystem.h>
+#include <LightSystem.h>
 #include <EngineConfigSystem.h>
 #include "GameObjectBehavior.h"
 #endif //PCH_H

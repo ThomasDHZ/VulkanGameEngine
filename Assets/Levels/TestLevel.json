@@ -34,10 +34,15 @@
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
   ],
+  "LoadSceneLights": [
+    "Lights/DirectionalLight.json",
+    "Lights/PointLight.json"
+  ],
   "LoadRenderPasses": [
     "RenderPass/LevelShader2DRenderPass.json",
     "RenderPass/VertGaussianBlurRenderPass.json",
     "RenderPass/HorizontalGaussianBlurRenderPass.json",
+    "RenderPass/GeometryRenderPass.json",
     "RenderPass/FrameBufferRenderPass.json"
   ],
   "GameObjectList": [

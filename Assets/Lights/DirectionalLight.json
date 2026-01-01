@@ -1,0 +1,8 @@
+{
+  "LightName": "TestDLight",
+  "LightId": "d6433982-e92d-4f75-8145-0b6eff0a2129",
+  "LightType": 0,
+  "LightColor": [ 0.0, 0.55, 0.9 ],
+  "LightDirection": [ 0.5, 0.2, 1.0 ],
+  "LightIntensity": 1.2
+}

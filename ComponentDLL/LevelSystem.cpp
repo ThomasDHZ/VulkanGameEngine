@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "LevelSystem.h"
 #include "GameObjectSystem.h"
-
 LevelSystem& levelSystem = LevelSystem::Get();
 
 LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
@@ -161,6 +160,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
+    nlohmann::json shaderLightJson = fileSystem.LoadJsonFile("RenderPass/GBufferRenderPass.json");
    // spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
     levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
@@ -183,6 +183,11 @@ void LevelSystem::LoadLevel(const char* levelPath)
     for (size_t x = 0; x < json["LoadTileSetVRAM"].size(); x++)
     {
         tileSetId = LoadTileSetVRAM(json["LoadTileSetVRAM"][x].get<String>().c_str());
+    }
+
+    for (size_t x = 0; x < json["LoadSceneLights"].size(); x++)
+    {
+        lightSystem.LoadSceneLights(json["LoadSceneLights"][x]);
     }
 
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
@@ -272,6 +277,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      VkDeviceSize instanceOffset[] = { 0 };
      spriteSystem.Update(deltaTime);
      meshSystem.Update(deltaTime);
+     lightSystem.Update(deltaTime);
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      for (auto& levelLayer : levelLayerList)
      {
@@ -325,6 +331,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
          .pClearValues = renderPass.ClearValueList.data()
      };
 
+     shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "DirectionalLightCount", lightSystem.DirectionalLightList.size());
+     shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "PointLightCount", lightSystem.PointLightList.size());
+     shaderSystem.UpdatePushConstantBuffer("gBufferSceneDataBuffer");
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
