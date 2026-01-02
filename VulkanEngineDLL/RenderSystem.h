@@ -32,7 +32,6 @@ private:
     VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
     void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);
     VkRenderPass BuildRenderPass(const RenderPassLoader& renderPassJsonLoader);
-    void BuildRenderPassAttachments(const RenderPassLoader& renderPassJsonLoader);
 
 public:
    
