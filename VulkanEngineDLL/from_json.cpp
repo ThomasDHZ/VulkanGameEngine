@@ -104,8 +104,8 @@ namespace nlohmann
         else if (j.contains("DepthStencil")) 
         {
             auto& depthStencil = j.at("DepthStencil");
-            depthStencil.at("Depth").get_to(clearValue.depthStencil.depth);
-            depthStencil.at("Stencil").get_to(clearValue.depthStencil.stencil);
+            depthStencil.at("depth").get_to(clearValue.depthStencil.depth);
+            depthStencil.at("stencil").get_to(clearValue.depthStencil.stencil);
         }
         else {
             throw std::runtime_error("Invalid VkClearValue: must contain 'color' or 'depthStencil'");

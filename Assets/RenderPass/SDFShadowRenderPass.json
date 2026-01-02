@@ -1,0 +1,47 @@
+{
+  "Name": "SDFShadowRenderPass",
+  "RenderPassId": "eba94793-75fe-46b7-991f-633d55010c30",
+  "RenderPipelineList": [
+    "Pipelines/SDFShadowPipeline.json"
+  ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "UseDefaultSwapChainResolution": true,
+  "IsRenderedToSwapchain": false,
+  "InputTextureList": [],
+  "RenderAttachmentList": [
+    {
+      "RenderedTextureId": "217ffbba-5d8c-4913-beb9-b3df6b0912b4",
+      "MipMapCount": 1,
+      "RenderTextureType": 1,
+      "RenderAttachmentType": 1,
+      "Format": 124,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 3,
+      "UseSampler": false,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": null
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 0
+    }
+  ],
+  "ClearValueList": [
+    {
+      "DepthStencil": {
+        "depth": 1.0,
+        "stencil": 0
+      }
+    }
+  ]
+}

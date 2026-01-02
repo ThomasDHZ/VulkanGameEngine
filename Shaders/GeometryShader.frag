@@ -71,21 +71,33 @@ mat3 TBN = mat3(
     vec3(0.0, 0.0, 1.0)   // Normal    (Z)
 );
 
-#include "Lights.glsl"
+struct DirectionalLightBuffer
+{
+    vec3 LightColor;
+    vec3 LightDirection;
+    float LightIntensity;
+};
+struct PointLightBuffer
+{
+    vec3 LightPosition;
+    vec3 LightColor;
+    float LightRadius;
+    float LightIntensity;
+};
 
 layout(binding = 0) uniform sampler2D TextureMap[];
 layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 void main()
 {
-    vec3 positionDataMap = texture(TextureMap[0], TexCoords).rgb;
-    vec3 albedoMap = texture(TextureMap[1], TexCoords).rgb;
-    vec3 normalMap = texture(TextureMap[2], TexCoords).rgb * 2.0f - 1.0f;
+    vec3  positionDataMap = texture(TextureMap[0], TexCoords).rgb;
+    vec3  albedoMap = texture(TextureMap[1], TexCoords).rgb;
+    vec3  normalMap = texture(TextureMap[2], TexCoords).rgb * 2.0f - 1.0f;
     float metallicMap = 0.0f;//texture(TextureMap[3], TexCoords).r;
     float roughnessMap = 0.5f;//texture(TextureMap[3], TexCoords).g;
     float ambientOcclusionMap = texture(TextureMap[3], TexCoords).b;
     float heightMap = texture(TextureMap[3], TexCoords).a;
-    vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
+    vec3  emissionMap = texture(TextureMap[4], TexCoords).rgb;
     float specularMap = texture(TextureMap[4], TexCoords).a;
     
     vec3 N = normalize(normalMap);

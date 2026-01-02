@@ -67,6 +67,30 @@ void LightSystem::LoadSceneLights(const String& directionalLightPath)
     }
 }
 
+void LightSystem::UpdateDirectionalLightOrthographicView(const DirectionalLight& directionalLight)
+{
+    vec3 lightDir = normalize(directionalLight.LightDirection);
+    mat4 lightProjection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f);
+    mat4 lightView = inverse(lookAt(vec3(0), lightDir, vec3(0, 1, 0)));
+
+    auto it = std::find_if(DirectionalLightList.begin(), DirectionalLightList.end(),
+        [directionalLight](const DirectionalLight& obj) {
+            return obj == directionalLight;
+        });
+    int lightIndex = std::distance(DirectionalLightList.begin(), it);
+
+    shaderSystem.UpdatePushConstantValue<mat4>("spfDirectionalLightPushConstant", "LightProjection", lightProjection);
+    shaderSystem.UpdatePushConstantValue<mat4>("spfDirectionalLightPushConstant", "LightView", lightView);
+    shaderSystem.UpdatePushConstantValue<vec3>("spfDirectionalLightPushConstant", "LightDirection", directionalLight.LightDirection);
+    shaderSystem.UpdatePushConstantValue<int>("spfDirectionalLightPushConstant", "LightBufferIndex", lightIndex);
+    shaderSystem.UpdatePushConstantBuffer("spfDirectionalLightPushConstant");
+}
+
+void LightSystem::UpdatePointLightOrthographicView(const PointLight& pointLight)
+{
+
+}
+
 const Vector<VkDescriptorBufferInfo> LightSystem::GetDirectionalLightPropertiesBuffer()
 {
     Vector<VkDescriptorBufferInfo> directionalLightPropertiesBuffer;

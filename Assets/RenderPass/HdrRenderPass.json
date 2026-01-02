@@ -54,7 +54,7 @@
         "Uint32_3": 1065353216
       },
       "DepthStencil": {
-        "depth": 0.0,
+        "depth": 1.0,
         "stencil": 0
       }
     }

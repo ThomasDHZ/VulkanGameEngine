@@ -275,8 +275,8 @@
     },
     {
       "DepthStencil": {
-        "Depth": 1.0,
-        "Stencil": 0
+        "depth": 1.0,
+        "stencil": 0
       }
     }
   ]

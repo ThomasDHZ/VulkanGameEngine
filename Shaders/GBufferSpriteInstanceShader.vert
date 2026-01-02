@@ -55,34 +55,8 @@ struct Vertex2D
 	vec2 UV;
 };
 
-struct MeshProperitiesBuffer
-{
-	int	   MaterialIndex;
-	mat4   MeshTransform;
-};
-
-struct MaterialProperitiesBuffer
-{
-	vec3 Albedo;
-	float Specular;
-	float Metallic;
-	float Roughness;
-	float AmbientOcclusion;
-	vec3 Emission;
-	float Alpha;
-	float HeightScale;
-	float Height;
-
-	uint AlbedoMap;
-	uint SpecularMap;
-	uint MetallicMap;
-	uint RoughnessMap;
-	uint AmbientOcclusionMap;
-	uint NormalMap;
-	uint AlphaMap;
-	uint EmissionMap;
-	uint HeightMap;
-};
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl"
 
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
