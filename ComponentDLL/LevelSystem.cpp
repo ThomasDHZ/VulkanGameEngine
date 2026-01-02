@@ -201,7 +201,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
-    sdfShaderRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SDFShadowRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    //sdfShaderRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SDFShadowRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     geometryRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferLightingRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
@@ -240,7 +240,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
   void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
  {
-      RenderSDFRenderPass(commandBuffer, sdfShaderRenderPassId, levelLayout.LevelLayoutId, deltaTime);
+     //RenderSDFRenderPass(commandBuffer, sdfShaderRenderPassId, levelLayout.LevelLayoutId, deltaTime);
      RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
      RenderGeometryRenderPass(commandBuffer, geometryRenderPassId);
      RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
@@ -255,8 +255,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
   void LevelSystem::RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
   {
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-      VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-      VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
+      VulkanPipeline sdfPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+      VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(gBufferRenderPassId)[0];
+      VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(gBufferRenderPassId)[1];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
       Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
       ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("spfPushConstant");

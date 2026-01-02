@@ -49,7 +49,6 @@ struct VulkanRenderPass
     Vector<VkGuid> InputTextureIdList;
     Vector<VkFramebuffer> FrameBufferList;
     Vector<VkClearValue> ClearValueList;
-    VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
     ivec2 RenderPassResolution = ivec2();
     bool                         UseDefaultSwapChainResolution = true;
     bool IsRenderedToSwapchain = false;

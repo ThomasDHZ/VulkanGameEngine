@@ -932,17 +932,17 @@ uint32_t VulkanSystem::GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t t
     return UINT32_MAX;
 }
 
-VkCommandBuffer VulkanSystem::BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool)
+VkCommandBuffer VulkanSystem::BeginSingleUseCommand()
 {
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
     VkCommandBufferAllocateInfo allocInfo =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = commandPool,
+        .commandPool = CommandPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
-    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(Device, &allocInfo, &commandBuffer));
 
     VkCommandBufferBeginInfo beginInfo =
     {
@@ -953,7 +953,7 @@ VkCommandBuffer VulkanSystem::BeginSingleUseCommand(VkDevice device, VkCommandPo
     return commandBuffer;
 }
 
-void VulkanSystem::EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
+void VulkanSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));  
 
@@ -962,10 +962,87 @@ void VulkanSystem::EndSingleUseCommand(VkDevice device, VkCommandPool commandPoo
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    VULKAN_THROW_IF_FAIL(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
-    VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(graphicsQueue));
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
+    VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(GraphicsQueue));
 
-    vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(Device, CommandPool, 1, &commandBuffer);
+}
+
+void VulkanSystem::StartFrame()
+{
+    VkCommandBufferBeginInfo commandBufferBeginInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+    };
+    vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
+
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
+    VULKAN_THROW_IF_FAIL(vkResetFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
+    VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], 0));
+    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], &commandBufferBeginInfo));
+    VkResult result = vkAcquireNextImageKHR(vulkanSystem.Device, vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        vulkanSystem.RebuildRendererFlag = true;
+    }
+    else if (result != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(result);
+    }
+}
+
+void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
+{
+    VkPipelineStageFlags waitStages[] =
+    {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
+
+    VkSubmitInfo submitInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
+        .pWaitDstStageMask = waitStages,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBufferSubmit,
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex]
+    };
+
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
+    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        submitResult == VK_SUBOPTIMAL_KHR)
+    {
+        vulkanSystem.RebuildRendererFlag = true;
+    }
+    else if (submitResult != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(submitResult);
+    }
+
+    VkPresentInfoKHR presentInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex],
+        .swapchainCount = 1,
+        .pSwapchains = &vulkanSystem.Swapchain,
+        .pImageIndices = &vulkanSystem.ImageIndex
+    };
+
+    VkResult result = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+        result == VK_SUBOPTIMAL_KHR)
+    {
+        vulkanSystem.RebuildRendererFlag = true;
+    }
+    else if (result != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(result);
+    }
 }
 
 void VulkanSystem::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator)

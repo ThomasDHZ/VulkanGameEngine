@@ -26,13 +26,52 @@ void RenderSystem::Update(void* windowHandle, LevelGuid& levelGuid, const float&
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
-    RenderPassGuid vulkanRenderPassId = CreateVulkanRenderPass(jsonPath.c_str(), renderPassResolution);
-    renderSystem.RenderPassLoaderJsonMap[vulkanRenderPassId] = jsonPath;
+    renderSystem.RenderPassLoaderJsonMap[renderPassLoader.RenderPassId] = jsonPath;
+   
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
+    {
+        .RenderPassId = renderPassLoader.RenderPassId,
+        .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
+        .InputTextureIdList = renderPassLoader.InputTextureList,
+        .ClearValueList = renderPassLoader.ClearValueList,
+        .RenderPassResolution = renderPassResolution,
+        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
+    };
+    BuildRenderPassAttachments(renderPassLoader);
+    vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader);
+    vulkanRenderPass.FrameBufferList = BuildFrameBuffer(vulkanRenderPass);
+    RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
+
     for (int x = 0; x < renderPassLoader.RenderPipelineList.size(); x++)
     {
         nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList[x].c_str());
-        ShaderPipelineDataDLL shaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(CreateRenderPipeline(renderSystem.RenderPassMap[vulkanRenderPassId], renderPassLoader.RenderPipelineList[x].c_str(), shaderPiplineInfo));
+        RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;
+        renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
+        renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
+        renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
+        renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+
+        VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+        PipelineBindingData(renderPipelineLoader);
+        VkDescriptorPool descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
+        Vector<VkDescriptorSetLayout> descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
+        Vector<VkDescriptorSet> descriptorSetList = AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+        UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
+        VkPipelineLayout pipelineLayout = CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+        VkPipeline pipeline = CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+
+        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline
+        {
+            .RenderPipelineId = renderPipelineLoader.PipelineId,
+            .DescriptorPool = descriptorPool,
+            .DescriptorSetLayoutList = descriptorSetLayoutList,
+            .DescriptorSetList = descriptorSetList,
+            .Pipeline = pipeline,
+            .PipelineLayout = pipelineLayout,
+            .PipelineCache = pipelineCache
+        });
     }
     return renderPassLoader.RenderPassId;
 }
@@ -68,390 +107,6 @@ const VulkanRenderPass RenderSystem::FindRenderPass(const RenderPassGuid& render
 const Vector<VulkanPipeline> RenderSystem::FindRenderPipelineList(const RenderPassGuid& renderPassGuid)
 {
     return RenderPipelineMap.at(renderPassGuid);
-}
-
-void RenderSystem::DestroyRenderPasses()
-{
-    for (auto& renderPass : renderSystem.RenderPassMap)
-    {
-        DestroyRenderPass(renderPass.second);
-    }
-    renderSystem.RenderPassMap.clear();
-}
-
-void RenderSystem::DestroyRenderPipelines()
-{
-    for (auto& renderPipelineList : renderSystem.RenderPipelineMap)
-    {
-        for (auto& renderPipeline : renderPipelineList.second)
-        {
-           DestroyPipeline(renderPipeline);
-        }
-    }
-    renderSystem.RenderPipelineMap.clear();
-}
-
-void RenderSystem::Destroy()
-{
-    DestroyRenderPasses();
-    DestroyRenderPipelines();
-    vulkanSystem.DestroyRenderer();
-}
-
-void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
-{
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, frameBufferList.data(), frameBufferList.size());
-}
-
-void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
-{
-    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &commandBuffer, 1);
-}
-
-void RenderSystem::DestroyBuffer(VkBuffer& buffer)
-{
-    vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
-}
-
-VkCommandBuffer RenderSystem::BeginSingleUseCommand()
-{
-    return vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
-}
-
-VkCommandBuffer RenderSystem::BeginSingleUseCommand(VkCommandPool& commandPool)
-{
-    return vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
-}
-
-void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
-{
-    vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, commandBuffer);
-}
-
-void RenderSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer, VkCommandPool& commandPool)
-{
-    vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, commandPool, vulkanSystem.GraphicsQueue, commandBuffer);
-}
-
-void RenderSystem::StartFrame()
-{
-    VkCommandBufferBeginInfo commandBufferBeginInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-    vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
-
-    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
-    VULKAN_THROW_IF_FAIL(vkResetFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
-    VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], 0));
-    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], &commandBufferBeginInfo));
-    VkResult result = vkAcquireNextImageKHR(vulkanSystem.Device, vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-        vulkanSystem.RebuildRendererFlag = true;
-    }
-    else if (result != VK_SUCCESS)
-    {
-        VULKAN_THROW_IF_FAIL(result);
-    }
-}
-
-void RenderSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
-{
-    VkPipelineStageFlags waitStages[] =
-    {
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-    };
-
-    VkSubmitInfo submitInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
-        .pWaitDstStageMask = waitStages,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &commandBufferSubmit,
-        .signalSemaphoreCount = 1,
-        .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex]
-    };
-
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
-    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
-    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
-        submitResult == VK_SUBOPTIMAL_KHR)
-    {
-        vulkanSystem.RebuildRendererFlag = true;
-    }
-    else if (submitResult != VK_SUCCESS)
-    {
-        VULKAN_THROW_IF_FAIL(submitResult);
-    }
-
-    VkPresentInfoKHR presentInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex],
-        .swapchainCount = 1,
-        .pSwapchains = &vulkanSystem.Swapchain,
-        .pImageIndices = &vulkanSystem.ImageIndex
-    };
-
-    VkResult result = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
-        result == VK_SUBOPTIMAL_KHR)
-    {
-        vulkanSystem.RebuildRendererFlag = true;
-    }
-    else if (result != VK_SUCCESS)
-    {
-        VULKAN_THROW_IF_FAIL(result);
-    }
-}
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer() 
-{ 
-    //Vector<MeshStruct> meshList;
-        //meshList.reserve(meshSystem.SpriteMeshList.size());
-        //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-        //    std::back_inserter(meshList),
-        //    [](const auto& pair) { return pair.second; });
-
-
-    Vector<VkDescriptorBufferInfo> vertexPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& vertexProperties = bufferSystem.VulkanBuffer[mesh.MeshVertexBufferId];
-    //        vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = vertexProperties.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-
-    return vertexPropertiesBuffer;
-};
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetIndexPropertiesBuffer() 
-{ 
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-    std::vector<VkDescriptorBufferInfo>	indexPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& indexProperties = bufferSystem.VulkanBuffer[mesh.MeshIndexBufferId];
-    //        indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = indexProperties.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-    return indexPropertiesBuffer;
-};
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer() 
-{ 
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-    std::vector<VkDescriptorBufferInfo>	transformPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& transformBuffer = bufferSystem.VulkanBuffer[mesh.MeshTransformBufferId];
-    //        transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = transformBuffer.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-
-    return transformPropertiesBuffer;
-};
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId) 
-{ 
-    Vector<VkDescriptorBufferInfo> meshPropertiesBuffer;
-    if (meshSystem.MeshList.empty())
-    {
-        meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-            {
-                .buffer = VK_NULL_HANDLE,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            });
-    }
-    else
-    {
-        for (auto& mesh : meshSystem.MeshList)
-        {
-            const VulkanBuffer& meshProperties = bufferSystem.FindVulkanBuffer(mesh.PropertiesBufferId);
-            meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-                {
-                    .buffer = meshProperties.Buffer,
-                    .offset = 0,
-                    .range = VK_WHOLE_SIZE
-                });
-        }
-    }
-    return meshPropertiesBuffer;
-};
-
-Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid) 
-{ 
-    Vector<Texture> textureList;
-    const VulkanRenderPass& renderPass = FindRenderPass(renderPassGuid);
-    if (renderPass.InputTextureIdList.size() > 0)
-    {
-        for (auto& inputTexture : renderPass.InputTextureIdList)
-        {
-            textureList.emplace_back(textureSystem.FindRenderedTexture(inputTexture));
-        }
-    }
-    else
-    {
-        textureList = textureSystem.TextureList();
-    }
-
-    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
-    if (textureList.empty())
-    {
-        VkSamplerCreateInfo NullSamplerInfo =
-        {
-            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-            .magFilter = VK_FILTER_NEAREST,
-            .minFilter = VK_FILTER_NEAREST,
-            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-            .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-            .mipLodBias = 0,
-            .anisotropyEnable = VK_TRUE,
-            .maxAnisotropy = 16.0f,
-            .compareEnable = VK_FALSE,
-            .compareOp = VK_COMPARE_OP_ALWAYS,
-            .minLod = 0,
-            .maxLod = 0,
-            .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-            .unnormalizedCoordinates = VK_FALSE,
-        };
-
-        VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
-        {
-            throw std::runtime_error("Failed to create Sampler.");
-        }
-
-        VkDescriptorImageInfo nullBuffer =
-        {
-            .sampler = nullSampler,
-            .imageView = VK_NULL_HANDLE,
-            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        };
-        texturePropertiesBuffer.emplace_back(nullBuffer);
-    }
-    else
-    {
-        for (auto& texture : textureList)
-        {
-            textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
-        }
-    }
-
-    return texturePropertiesBuffer;
-}
-
-VulkanPipeline RenderSystem::CreateRenderPipeline(VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
-{
-    nlohmann::json pipelineJson = fileSystem.LoadJsonFile(pipelineJsonFilePath);
-    RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
-    renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
-    renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;
-    renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
-    renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
-    renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
-    renderPipelineLoader.ShaderPiplineInfo = shaderPipelineData;
-
-    VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-    PipelineBindingData(renderPipelineLoader);
-    VkDescriptorPool descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
-    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
-    Vector<VkDescriptorSet> descriptorSetList = AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-    UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
-    VkPipelineLayout pipelineLayout = CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-    VkPipeline pipeline = CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
-
-    return VulkanPipeline
-    {
-        .RenderPipelineId = renderPipelineLoader.PipelineId,
-        .DescriptorPool = descriptorPool,
-        .DescriptorSetLayoutList = descriptorSetLayoutList,
-        .DescriptorSetList = descriptorSetList,
-        .Pipeline = pipeline,
-        .PipelineLayout = pipelineLayout,
-        .PipelineCache = pipelineCache
-    };
-}
-
-VulkanPipeline RenderSystem::RebuildSwapChain(VulkanPipeline& oldPipeline, VulkanRenderPass& vulkanRenderPass, const char* pipelineJsonFilePath, ShaderPipelineDataDLL& shaderPipelineData)
-{
-    DestroyPipeline(oldPipeline);
-    return CreateRenderPipeline(vulkanRenderPass, pipelineJsonFilePath, shaderPipelineData);
-}
-
-void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
-{
-    vulkanPipeline.RenderPipelineId = VkGuid();
-    vulkanSystem.DestroyPipeline(vulkanSystem.Device, &vulkanPipeline.Pipeline);
-    vulkanSystem.DestroyPipelineLayout(vulkanSystem.Device, &vulkanPipeline.PipelineLayout);
-    vulkanSystem.DestroyPipelineCache(vulkanSystem.Device, &vulkanPipeline.PipelineCache);
-    vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &vulkanPipeline.DescriptorPool);
 }
 
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
@@ -746,49 +401,6 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
     }
 }
 
-RenderPassGuid RenderSystem::CreateVulkanRenderPass(const char* renderPassJsonFilePath, ivec2& renderPassResolution)
-{
-    RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
-
-    Texture depthTexture;
-    Vector<Texture> renderedTextureList;
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
-    {
-        .RenderPassId = renderPassLoader.RenderPassId,
-        .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
-        .InputTextureIdList = renderPassLoader.InputTextureList,
-        .ClearValueList = renderPassLoader.ClearValueList,
-        .CommandBuffer = VK_NULL_HANDLE,
-        .RenderPassResolution = renderPassResolution,
-        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
-    };
-
-    vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader, renderedTextureList, depthTexture);
-    BuildRenderPassAttachments(renderPassLoader, renderedTextureList, depthTexture);
-    Vector<VkFramebuffer> frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
-    vulkanRenderPass.FrameBufferList = frameBufferList;
-
-    RenderPassAttachementTextures renderPassAttachments = RenderPassAttachementTextures
-    {
-        .RenderPassTextureCount = renderPassLoader.RenderAttachmentList.size(),
-        .RenderPassTexture = memorySystem.AddPtrBuffer<Texture>(renderedTextureList.data(), renderedTextureList.size(), __FILE__, __LINE__, __func__),
-        .DepthTexture = memorySystem.AddPtrBuffer<Texture>(&depthTexture, 1, __FILE__, __LINE__, __func__)
-    };
-
-    Vector<Texture> renderTextureList(renderPassAttachments.RenderPassTexture, renderPassAttachments.RenderPassTexture + renderPassAttachments.RenderPassTextureCount);
-    textureSystem.AddRenderedTexture(renderPassLoader.RenderPassId, renderTextureList);
-    if (renderPassAttachments.DepthTexture != VK_NULL_HANDLE)
-    {
-        textureSystem.AddDepthTexture(renderPassLoader.RenderPassId, *renderPassAttachments.DepthTexture);
-    }
-
-    RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
-    memorySystem.DeletePtr(renderPassAttachments.RenderPassTexture);
-    memorySystem.DeletePtr(renderPassAttachments.DepthTexture);
-
-    return vulkanRenderPass.RenderPassId;
-}
-
 VulkanRenderPass RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(renderPassJsonFilePath).get<RenderPassLoader>();
@@ -805,14 +417,14 @@ VulkanRenderPass RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPa
         vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &vulkanRenderPass.RenderPass);
         renderedTextureList.clear();
 
-        vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader, renderedTextureList, depthTexture);
-        BuildRenderPassAttachments(renderPassLoader, renderedTextureList, depthTexture);
-        frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
+        vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader);
+        BuildRenderPassAttachments(renderPassLoader);
+        frameBufferList = BuildFrameBuffer(vulkanRenderPass);
     }
     else
     {
         renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
-        frameBufferList = BuildFrameBuffer(vulkanRenderPass, renderedTextureList, depthTexture);
+        frameBufferList = BuildFrameBuffer(vulkanRenderPass);
     }
 
     vulkanRenderPass.InputTextureIdList = renderPassLoader.InputTextureList;
@@ -839,17 +451,16 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
 void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 {
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &renderPass.RenderPass);
-    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.CommandBuffer, 1);
+    //vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.CommandBuffer, 1);
     vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &renderPass.FrameBufferList[0], vulkanSystem.SwapChainImageCount);
 
     renderPass.RenderPassId = VkGuid();
     renderPass.SampleCount = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
     renderPass.RenderPass = VK_NULL_HANDLE;
-    renderPass.CommandBuffer = VK_NULL_HANDLE;
     renderPass.IsRenderedToSwapchain = false;
 }
 
-VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJsonLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJsonLoader)
 {
     Vector<VkAttachmentDescription> attachmentDescriptionList = Vector<VkAttachmentDescription>();
     Vector<VkAttachmentReference> inputAttachmentReferenceList = Vector<VkAttachmentReference>();
@@ -979,22 +590,30 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
     return renderPass;
 }
 
-void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPassLoader, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+void RenderSystem::BuildRenderPassAttachments(const RenderPassLoader& renderPassLoader)
 {
+    Texture         depthTexture;
+    Vector<Texture> renderedTextureList;
+    RenderPassGuid  renderPassId = renderPassLoader.RenderPassId;
     for (auto& renderPassAttachmentInfo : renderPassLoader.RenderAttachmentList)
     {
         switch (renderPassAttachmentInfo.RenderAttachmentType)
         {
-            case ColorRenderedTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
-            case InputAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
+            case ColorRenderedTexture:     renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
+            case InputAttachmentTexture:   renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
             case ResolveAttachmentTexture: renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight))); break;
-            case DepthRenderedTexture: depthTexture = textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight)); break;
+            case DepthRenderedTexture:     depthTexture = textureSystem.CreateRenderPassTexture(renderPassAttachmentInfo, ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight)); break;
         };
     }
+
+    textureSystem.AddRenderedTexture(renderPassId, renderedTextureList);
+    textureSystem.AddDepthTexture(renderPassId, depthTexture);
 }
 
-Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& renderPass, Vector<Texture>& renderedTextureList, Texture& depthTexture)
+Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& renderPass)
 {
+    Texture         depthTexture = textureSystem.FindDepthTexture(renderPass.RenderPassId);
+    Vector<Texture> renderedTextureList = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
     Vector<VkFramebuffer> frameBufferList = Vector<VkFramebuffer>(vulkanSystem.SwapChainImageCount);
     for (size_t x = 0; x < vulkanSystem.SwapChainImageCount; x++)
     {
@@ -1029,4 +648,253 @@ Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& ren
     }
 
     return frameBufferList;
+}
+
+void RenderSystem::Destroy()
+{
+    DestroyRenderPasses();
+    DestroyRenderPipelines();
+    vulkanSystem.DestroyRenderer();
+}
+
+void RenderSystem::DestroyRenderPasses()
+{
+    for (auto& renderPass : renderSystem.RenderPassMap)
+    {
+        DestroyRenderPass(renderPass.second);
+    }
+    renderSystem.RenderPassMap.clear();
+}
+
+void RenderSystem::DestroyRenderPipelines()
+{
+    for (auto& renderPipelineList : renderSystem.RenderPipelineMap)
+    {
+        for (auto& renderPipeline : renderPipelineList.second)
+        {
+            DestroyPipeline(renderPipeline);
+        }
+    }
+    renderSystem.RenderPipelineMap.clear();
+}
+
+void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
+{
+    vulkanPipeline.RenderPipelineId = VkGuid();
+    vulkanSystem.DestroyPipeline(vulkanSystem.Device, &vulkanPipeline.Pipeline);
+    vulkanSystem.DestroyPipelineLayout(vulkanSystem.Device, &vulkanPipeline.PipelineLayout);
+    vulkanSystem.DestroyPipelineCache(vulkanSystem.Device, &vulkanPipeline.PipelineCache);
+    vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &vulkanPipeline.DescriptorPool);
+}
+
+void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
+{
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, frameBufferList.data(), frameBufferList.size());
+}
+
+void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
+{
+    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &commandBuffer, 1);
+}
+
+void RenderSystem::DestroyBuffer(VkBuffer& buffer)
+{
+    vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
+}
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer()
+{
+    //Vector<MeshStruct> meshList;
+        //meshList.reserve(meshSystem.SpriteMeshList.size());
+        //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
+        //    std::back_inserter(meshList),
+        //    [](const auto& pair) { return pair.second; });
+
+
+    Vector<VkDescriptorBufferInfo> vertexPropertiesBuffer;
+    //if (meshList.empty())
+    //{
+    //    vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+    //        {
+    //            .buffer = VK_NULL_HANDLE,
+    //            .offset = 0,
+    //            .range = VK_WHOLE_SIZE
+    //        });
+    //}
+    //else
+    //{
+    //    for (auto& mesh : meshList)
+    //    {
+    //        const VulkanBufferStruct& vertexProperties = bufferSystem.VulkanBuffer[mesh.MeshVertexBufferId];
+    //        vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+    //            {
+    //                .buffer = vertexProperties.Buffer,
+    //                .offset = 0,
+    //                .range = VK_WHOLE_SIZE
+    //            });
+    //    }
+    //}
+
+    return vertexPropertiesBuffer;
+};
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetIndexPropertiesBuffer()
+{
+    //Vector<MeshStruct> meshList;
+    //meshList.reserve(meshSystem.SpriteMeshList.size());
+    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
+    //    std::back_inserter(meshList),
+    //    [](const auto& pair) { return pair.second; });
+
+    std::vector<VkDescriptorBufferInfo>	indexPropertiesBuffer;
+    //if (meshList.empty())
+    //{
+    //    indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+    //        {
+    //            .buffer = VK_NULL_HANDLE,
+    //            .offset = 0,
+    //            .range = VK_WHOLE_SIZE
+    //        });
+    //}
+    //else
+    //{
+    //    for (auto& mesh : meshList)
+    //    {
+    //        const VulkanBufferStruct& indexProperties = bufferSystem.VulkanBuffer[mesh.MeshIndexBufferId];
+    //        indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+    //            {
+    //                .buffer = indexProperties.Buffer,
+    //                .offset = 0,
+    //                .range = VK_WHOLE_SIZE
+    //            });
+    //    }
+    //}
+    return indexPropertiesBuffer;
+};
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer()
+{
+    //Vector<MeshStruct> meshList;
+    //meshList.reserve(meshSystem.SpriteMeshList.size());
+    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
+    //    std::back_inserter(meshList),
+    //    [](const auto& pair) { return pair.second; });
+
+    std::vector<VkDescriptorBufferInfo>	transformPropertiesBuffer;
+    //if (meshList.empty())
+    //{
+    //    transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+    //        {
+    //            .buffer = VK_NULL_HANDLE,
+    //            .offset = 0,
+    //            .range = VK_WHOLE_SIZE
+    //        });
+    //}
+    //else
+    //{
+    //    for (auto& mesh : meshList)
+    //    {
+    //        const VulkanBufferStruct& transformBuffer = bufferSystem.VulkanBuffer[mesh.MeshTransformBufferId];
+    //        transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+    //            {
+    //                .buffer = transformBuffer.Buffer,
+    //                .offset = 0,
+    //                .range = VK_WHOLE_SIZE
+    //            });
+    //    }
+    //}
+
+    return transformPropertiesBuffer;
+};
+
+Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId)
+{
+    Vector<VkDescriptorBufferInfo> meshPropertiesBuffer;
+    if (meshSystem.MeshList.empty())
+    {
+        meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+            {
+                .buffer = VK_NULL_HANDLE,
+                .offset = 0,
+                .range = VK_WHOLE_SIZE
+            });
+    }
+    else
+    {
+        for (auto& mesh : meshSystem.MeshList)
+        {
+            const VulkanBuffer& meshProperties = bufferSystem.FindVulkanBuffer(mesh.PropertiesBufferId);
+            meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
+                {
+                    .buffer = meshProperties.Buffer,
+                    .offset = 0,
+                    .range = VK_WHOLE_SIZE
+                });
+        }
+    }
+    return meshPropertiesBuffer;
+};
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid)
+{
+    Vector<Texture> textureList;
+    const VulkanRenderPass& renderPass = FindRenderPass(renderPassGuid);
+    if (renderPass.InputTextureIdList.size() > 0)
+    {
+        for (auto& inputTexture : renderPass.InputTextureIdList)
+        {
+            textureList.emplace_back(textureSystem.FindRenderedTexture(inputTexture));
+        }
+    }
+    else
+    {
+        textureList = textureSystem.TextureList();
+    }
+
+    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
+    if (textureList.empty())
+    {
+        VkSamplerCreateInfo NullSamplerInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .magFilter = VK_FILTER_NEAREST,
+            .minFilter = VK_FILTER_NEAREST,
+            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+            .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .mipLodBias = 0,
+            .anisotropyEnable = VK_TRUE,
+            .maxAnisotropy = 16.0f,
+            .compareEnable = VK_FALSE,
+            .compareOp = VK_COMPARE_OP_ALWAYS,
+            .minLod = 0,
+            .maxLod = 0,
+            .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+            .unnormalizedCoordinates = VK_FALSE,
+        };
+
+        VkSampler nullSampler = VK_NULL_HANDLE;
+        if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        {
+            throw std::runtime_error("Failed to create Sampler.");
+        }
+
+        VkDescriptorImageInfo nullBuffer =
+        {
+            .sampler = nullSampler,
+            .imageView = VK_NULL_HANDLE,
+            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+        texturePropertiesBuffer.emplace_back(nullBuffer);
+    }
+    else
+    {
+        for (auto& texture : textureList)
+        {
+            textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
+        }
+    }
+
+    return texturePropertiesBuffer;
 }

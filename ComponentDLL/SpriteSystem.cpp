@@ -213,10 +213,10 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 
 void SpriteSystem::Update(float deltaTime)
 {
-    VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand(vulkanSystem.CommandPool);
+    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
     UpdateSprites(deltaTime);
     UpdateSpriteBatchLayers(deltaTime);
-    renderSystem.EndSingleUseCommand(commandBuffer);
+    vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
 void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)

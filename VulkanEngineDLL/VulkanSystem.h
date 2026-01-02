@@ -99,36 +99,39 @@ public:
 
 	DLL_EXPORT VkInstance		CreateVulkanInstance();
 	DLL_EXPORT VkSurfaceKHR		CreateVulkanSurface(void* windowHandle, VkInstance instance);
-	DLL_EXPORT VkCommandBuffer  BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool);
-	DLL_EXPORT void				EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
+
+	DLL_EXPORT void				RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
+	DLL_EXPORT void				RebuildSwapChain(void* windowHandle);
+	DLL_EXPORT void				StartFrame();
+	DLL_EXPORT void				EndFrame(VkCommandBuffer& commandBufferSubmit);
+
+	DLL_EXPORT VkCommandBuffer  BeginSingleUseCommand();
+	DLL_EXPORT void				EndSingleUseCommand(VkCommandBuffer commandBuffer);
 	DLL_EXPORT uint32			GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+	DLL_EXPORT Vector<VkPresentModeKHR>    GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	DLL_EXPORT VkSurfaceCapabilitiesKHR    GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	DLL_EXPORT VkPhysicalDeviceProperties  GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
+	DLL_EXPORT VkPhysicalDeviceFeatures    GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
+	DLL_EXPORT VkPhysicalDeviceFeatures2   GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice);
+	DLL_EXPORT Vector<VkPhysicalDevice>    GetPhysicalDeviceList(VkInstance& instance);
+	DLL_EXPORT Vector<VkSurfaceFormatKHR>  GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	DLL_EXPORT Vector<VkPresentModeKHR>    GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+
 	DLL_EXPORT void				DestroyRenderer();
 	DLL_EXPORT void				DestroyRenderPass(VkDevice device, VkRenderPass* renderPass);
 	DLL_EXPORT void				DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count);
 	DLL_EXPORT void				DestroyDescriptorPool(VkDevice device, VkDescriptorPool* descriptorPool);
 	DLL_EXPORT void				DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, VkCommandBuffer* commandBufferList, uint32 count);
 	DLL_EXPORT void				DestroyBuffer(VkDevice device, VkBuffer* buffer);
+	DLL_EXPORT void				DestroyImageView(VkDevice device, VkImageView* imageView);
+	DLL_EXPORT void				DestroyImage(VkDevice device, VkImage* image);
+	DLL_EXPORT void				DestroySampler(VkDevice device, VkSampler* sampler);
+	DLL_EXPORT void				DestroyPipeline(VkDevice device, VkPipeline* pipeline);
+	DLL_EXPORT void				DestroyPipelineLayout(VkDevice device, VkPipelineLayout* pipelineLayout);
+	DLL_EXPORT void				DestroyDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout* descriptorSetLayout);
+	DLL_EXPORT void				DestroyPipelineCache(VkDevice device, VkPipelineCache* pipelineCache);
 	DLL_EXPORT void				FreeDeviceMemory(VkDevice device, VkDeviceMemory* memory);
-
-	void						RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
-	void						RebuildSwapChain(void* windowHandle);
-	Vector<VkPresentModeKHR>    GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	VkSurfaceCapabilitiesKHR    GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	VkPhysicalDeviceProperties  GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
-	VkPhysicalDeviceFeatures    GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
-	VkPhysicalDeviceFeatures2	GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice);
-
-	Vector<VkPhysicalDevice>    GetPhysicalDeviceList(VkInstance& instance);
-	Vector<VkSurfaceFormatKHR>  GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	Vector<VkPresentModeKHR>    GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-
-	void						DestroyImageView(VkDevice device, VkImageView* imageView);
-	void						DestroyImage(VkDevice device, VkImage* image);
-	void						DestroySampler(VkDevice device, VkSampler* sampler);
-	void						DestroyPipeline(VkDevice device, VkPipeline* pipeline);
-	void						DestroyPipelineLayout(VkDevice device, VkPipelineLayout* pipelineLayout);
-	void						DestroyDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout* descriptorSetLayout);
-	void						DestroyPipelineCache(VkDevice device, VkPipelineCache* pipelineCache);
 };
 extern DLL_EXPORT VulkanSystem& vulkanSystem;
 inline VulkanSystem& VulkanSystem::Get()

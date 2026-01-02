@@ -354,9 +354,9 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 	barrier.srcAccessMask = srcAccess;
 	barrier.dstAccessMask = dstAccess;
 
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
+	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
 	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	renderSystem.EndSingleUseCommand(commandBuffer);
+	vulkanSystem.EndSingleUseCommand(commandBuffer);
 
 	texture.textureImageLayout = newLayout;
 }
@@ -494,9 +494,9 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 				},
 			.imageExtent = imageCreateInfo.extent,
 		};
-		VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
+		VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
 		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-		renderSystem.EndSingleUseCommand(commandBuffer);
+		vulkanSystem.EndSingleUseCommand(commandBuffer);
 
 		if (texture.mipMapLevels > 1)
 		{
@@ -579,7 +579,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 		std::cout << "[TextureSystem WARNING] Format " << texture.textureByteFormat << " does not support linear blitting — mipmaps will be poor quality" << std::endl;
 	}
 
-	VkCommandBuffer commandBuffer = renderSystem.BeginSingleUseCommand();
+	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
 	VkImageMemoryBarrier ImageMemoryBarrier =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -676,7 +676,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	ImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &ImageMemoryBarrier);
-	renderSystem.EndSingleUseCommand(commandBuffer);
+	vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
 Texture TextureSystem::FindTexture(const RenderPassGuid& renderPassGuid)

@@ -191,7 +191,7 @@ void VulkanBufferSystem::VMAUpdateDynamicBuffer(uint32 bufferId, const void* dat
 
 void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkDeviceSize offset)
 {
-    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool);
+    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
     VkBufferCopy copyRegion =
     {
         .srcOffset = offset,
@@ -245,7 +245,7 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
         .size = size
     };
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, dstStageMask, 0, 0, nullptr, 1, &barrier, 0, nullptr);
-    vulkanSystem.EndSingleUseCommand(vulkanSystem.Device, vulkanSystem.CommandPool, vulkanSystem.GraphicsQueue, cmd);
+    vulkanSystem.EndSingleUseCommand(cmd);
 }
 
 void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
