@@ -209,6 +209,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    shadowDebugRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/ShadowDebugRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     
     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
 }
@@ -248,6 +249,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      RenderBloomPass(commandBuffer, bloomRenderPassId);
      RenderHdrPass(commandBuffer, hdrRenderPassId);
      RenderFrameBuffer(commandBuffer, frameBufferId);
+     RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
 
      //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
  }
@@ -326,6 +328,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
       }
       vkCmdEndRenderPass(commandBuffer);
+      textureSystem.TransitionImageLayout(textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
   }
 
  void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
@@ -551,6 +554,45 @@ void LevelSystem::LoadLevel(const char* levelPath)
      };
 
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+     vkCmdEndRenderPass(commandBuffer);
+ }
+
+ void LevelSystem::RenderShadowDebug(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
+ {
+     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
+     VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+     Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
+
+     VkViewport viewport
+     {
+         .x = 0.0f,
+         .y = 0.0f,
+         .width = static_cast<float>(renderPass.RenderPassResolution.x),
+         .height = static_cast<float>(renderPass.RenderPassResolution.y),
+         .minDepth = 0.0f,
+         .maxDepth = 1.0f
+     };
+
+     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
+     {
+         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+         .renderPass = renderPass.RenderPass,
+         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+         .renderArea = VkRect2D
+         {
+            .offset = VkOffset2D {.x = 0, .y = 0 },
+            .extent = VkExtent2D {.width = static_cast<uint>(renderPass.RenderPassResolution.x), .height = static_cast<uint>(renderPass.RenderPassResolution.y) }
+         },
+         .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+         .pClearValues = renderPass.ClearValueList.data()
+     };
+
+     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+     vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);

@@ -79,6 +79,7 @@ private:
         RenderPassGuid bloomRenderPassId;
         RenderPassGuid hdrRenderPassId;
         RenderPassGuid frameBufferId;
+        RenderPassGuid shadowDebugRenderPassId;
        
         RenderPassGuid levelWireFrameRenderPass2DId;
         RenderPassGuid spriteWireFrameRenderPass2DId;
@@ -91,6 +92,7 @@ private:
         DLL_EXPORT void                 RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
+        DLL_EXPORT void                 RenderShadowDebug(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 LoadLevel(const char* levelPath);
         DLL_EXPORT void                 Update(const float& deltaTime);
         DLL_EXPORT void                 DestroyLevel();
