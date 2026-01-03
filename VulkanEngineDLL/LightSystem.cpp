@@ -98,6 +98,9 @@ void LightSystem::UpdatePointLightOrthographicView(const PointLight& pointLight)
         -100.0f, 100.0f
     );
 
+
+    //float size = 2000.0f;
+    //mat4 lightProjection = glm::ortho(-size, size, -size, size, -100.0f, 100.0f);
     mat4 lightView = mat4(1.0f);
 
     auto it = std::find_if(PointLightList.begin(), PointLightList.end(),

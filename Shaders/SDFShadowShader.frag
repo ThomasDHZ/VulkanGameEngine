@@ -38,10 +38,10 @@ void main()
     float alpha = (material.AlphaMap != 0xFFFFFFFFu) 
         ? texture(TextureMap[material.AlphaMap], UV).r 
         : material.Alpha;
-
-    if (alpha <= 0.0f) {
-        discard;
-    }
+//
+//    if (alpha <= 0.0f) {
+//        discard;
+//    }
 
     vec2 lightPos = pointLightsBuffer[spfPointLightPushConstant.LightBufferIndex].pointLightProperties.LightPosition.xy;
 

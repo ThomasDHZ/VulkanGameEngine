@@ -151,7 +151,7 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
 
     float penumbra = 0.05f;
     float sdfValue = texture(TextureMap[5], lightUV).r;
-    float shadow = smoothstep(-penumbra, penumbra, sdfValue);
+    float shadow = smoothstep(-0.05, 0.05, sdfValue);
     Lo *= shadow;
 }
 
@@ -176,17 +176,6 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 bloomColor = color - emissionMap;
     bloomColor = emissionMap + max(vec3(0.0f), bloomColor - vec3(1.0f));
 
-     const PointLightBuffer pointLight = pointLightBuffer[0].pointLightProperties;
-      vec3 fragPos = positionDataMap.xyz;
-
-        vec2 lightUV = (fragPos.xy - pointLight.LightPosition.xy) / pointLight.LightRadius;
-    lightUV = lightUV * 0.5f + 0.5f;
-
-        float penumbra = 0.05f;
-    float sdfValue = texture(TextureMap[5], lightUV).r;
-    float shadow = smoothstep(-penumbra, penumbra, sdfValue);
-    Lo = vec3(shadow);
-
-    outColor = vec4(Lo, 1.0f);
+    outColor = vec4(color, 1.0f);
     outBloom = vec4(bloomColor, 1.0f);
 }

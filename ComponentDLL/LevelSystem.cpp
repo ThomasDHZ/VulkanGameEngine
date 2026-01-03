@@ -207,9 +207,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+   // shadowDebugRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/ShadowDebugRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-    shadowDebugRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/ShadowDebugRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     
     //    levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
 }
@@ -247,9 +247,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
      RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
      RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
      RenderBloomPass(commandBuffer, bloomRenderPassId);
+     //RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
      RenderHdrPass(commandBuffer, hdrRenderPassId);
      RenderFrameBuffer(commandBuffer, frameBufferId);
-     RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
 
      //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
  }
