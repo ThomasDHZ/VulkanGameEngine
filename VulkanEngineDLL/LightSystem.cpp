@@ -79,16 +79,37 @@ void LightSystem::UpdateDirectionalLightOrthographicView(const DirectionalLight&
         });
     int lightIndex = std::distance(DirectionalLightList.begin(), it);
 
+    shaderSystem.UpdatePushConstantValue<int>("spfDirectionalLightPushConstant",  "LightBufferIndex", lightIndex);
     shaderSystem.UpdatePushConstantValue<mat4>("spfDirectionalLightPushConstant", "LightProjection", lightProjection);
     shaderSystem.UpdatePushConstantValue<mat4>("spfDirectionalLightPushConstant", "LightView", lightView);
     shaderSystem.UpdatePushConstantValue<vec3>("spfDirectionalLightPushConstant", "LightDirection", directionalLight.LightDirection);
-    shaderSystem.UpdatePushConstantValue<int>("spfDirectionalLightPushConstant", "LightBufferIndex", lightIndex);
     shaderSystem.UpdatePushConstantBuffer("spfDirectionalLightPushConstant");
 }
 
 void LightSystem::UpdatePointLightOrthographicView(const PointLight& pointLight)
 {
+    float size = pointLight.LightRadius * 2.0f;
 
+    mat4 lightProjection = glm::ortho(
+        pointLight.LightPosition.x - size * 0.5f,
+        pointLight.LightPosition.x + size * 0.5f, 
+        pointLight.LightPosition.y - size * 0.5f,
+        pointLight.LightPosition.y + size * 0.5f,
+        -100.0f, 100.0f
+    );
+
+    mat4 lightView = mat4(1.0f);
+
+    auto it = std::find_if(PointLightList.begin(), PointLightList.end(),
+        [pointLight](const PointLight& obj) {
+            return obj == pointLight;
+        });
+    int lightIndex = std::distance(PointLightList.begin(), it);
+
+    shaderSystem.UpdatePushConstantValue<int>("spfPointLightPushConstant", "LightBufferIndex", lightIndex);
+    shaderSystem.UpdatePushConstantValue<mat4>("spfPointLightPushConstant", "LightProjection", lightProjection);
+    shaderSystem.UpdatePushConstantValue<mat4>("spfPointLightPushConstant", "LightView", lightView);
+    shaderSystem.UpdatePushConstantBuffer("spfPointLightPushConstant");
 }
 
 const Vector<VkDescriptorBufferInfo> LightSystem::GetDirectionalLightPropertiesBuffer()

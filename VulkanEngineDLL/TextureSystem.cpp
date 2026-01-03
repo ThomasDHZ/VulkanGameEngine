@@ -9,6 +9,7 @@
 #include <stb/stb_image.h> 
 #include <stb/stb_image_write.h>
 #include "JsonStruct.h"
+#include <imgui/backends/imgui_impl_vulkan.h>
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
@@ -113,7 +114,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		.mipMapLevels = renderAttachmentLoader.UseMipMaps ? renderAttachmentLoader.MipMapCount : 1,
 		.textureByteFormat = renderAttachmentLoader.Format,
 		.textureImageLayout = renderAttachmentLoader.FinalLayout,
-		.sampleCount = renderAttachmentLoader.SampleCount 
+		.sampleCount = renderAttachmentLoader.SampleCount
 	};
 
 	if (isDepthFormat)
@@ -185,21 +186,20 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	}
 
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
-	if (renderAttachmentLoader.UseSampler && (usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !isDepthFormat)
-	{
-		VkSamplerCreateInfo samplerInfo = {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = static_cast<float>(texture.mipMapLevels);
 
-		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
-	}
+	VkSamplerCreateInfo samplerInfo = {};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = static_cast<float>(texture.mipMapLevels);
+
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
+
 
 #ifndef NDEBUG
 	std::cout << "[TextureDebug] Created texture ID: " << texture.textureId.ToString()
@@ -292,6 +292,37 @@ void TextureSystem::TransitionImageLayout(const VkCommandBuffer& commandBuffer, 
 
 	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	texture.textureImageLayout = newLayout;
+}
+
+Texture TextureSystem::FindTexture(const VkGuid& textureId, int a)
+{
+	for (auto& pair : RenderedTextureListMap)
+	{
+		for (auto& texture : pair.second)
+		{
+			if (texture.textureId == textureId)
+			{
+				return texture;
+			}
+		}
+	}
+
+	for (auto& pair : DepthTextureMap)
+	{
+		if (pair.second.textureId == textureId)
+		{
+			return pair.second;
+		}
+	}
+
+	for (auto& pair : TextureMap)
+	{
+		if (pair.second.textureId == textureId)
+		{
+			return pair.second;
+		}
+	}
+	throw std::out_of_range("Texture with given ID not found");
 }
 
 void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)

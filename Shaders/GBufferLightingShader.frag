@@ -17,6 +17,7 @@ layout(location = 1) out vec4 outBloom;
 //layout(location = 2) in vec4 NormalMap;
 //layout(location = 3) in vec4 MatRoughAOHeightMap;
 //layout(location = 4) in vec4 EmissionMap;
+//layout(location = 4) in vec4 SDFMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -87,7 +88,7 @@ void main()
     float heightMap = texture(TextureMap[3], TexCoords).a;
     vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
     float specularMap = texture(TextureMap[4], TexCoords).a;
-    
+
     vec3 N = normalize(normalMap);
     vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
     
@@ -112,38 +113,47 @@ void main()
         Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
     }
 
-    for(int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
-    {
-        const PointLightBuffer pointLight = pointLightBuffer[x].pointLightProperties;
-        vec3 lightPos = pointLight.LightPosition;
-        vec3 L = lightPos - positionDataMap;
+for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
+{
+    const PointLightBuffer pointLight = pointLightBuffer[x].pointLightProperties;
 
-        float distance = length(L);
-        if (distance > pointLight.LightRadius)
-        {
-            continue;
-        }
+    vec3 fragPos = positionDataMap.xyz;
+    vec3 toLight = pointLight.LightPosition - fragPos;
+    float distance = length(toLight);
 
-        L = normalize(L + vec3(0.0001f));
-        vec3 H = normalize(V + L);
-
-        float attenuation = 1.0f - (distance / pointLight.LightRadius);
-        attenuation = max(0.0f, attenuation);
-        attenuation = attenuation * attenuation;
-
-        vec3 radiance = pointLight.LightColor * pointLight.LightIntensity * attenuation;
-
-        float NDF = DistributionGGX(N, H, roughnessMap);
-        float G = GeometrySmith(N, V, L, roughnessMap);
-        vec3 F = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughnessMap);
-
-        vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
-
-        vec3 kS = F;
-        vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
-        float NdotL = max(dot(N, L), 0.0f);
-        Lo += (kD * albedoMap / PI + specular) * radiance;
+    if (distance > pointLight.LightRadius) {
+        continue;
     }
+
+    vec3 L = normalize(toLight);
+    vec3 H = normalize(V + L);
+
+    float attenuation = 1.0f - (distance / pointLight.LightRadius);
+    attenuation = max(attenuation, 0.0f);
+    attenuation = attenuation * attenuation;
+
+    vec3 radiance = pointLight.LightColor * pointLight.LightIntensity * attenuation;
+
+    float NDF = DistributionGGX(N, H, roughnessMap);
+    float G   = GeometrySmith(N, V, L, roughnessMap);
+    vec3 F    = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughnessMap);
+
+    vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
+
+    vec3 kS = F;
+    vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
+
+    float NdotL = 1.0f;
+    Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
+
+    vec2 lightUV = (fragPos.xy - pointLight.LightPosition.xy) / pointLight.LightRadius;
+    lightUV = lightUV * 0.5f + 0.5f;
+
+    float penumbra = 0.05f;
+    float sdfValue = texture(TextureMap[5], lightUV).r;
+    float shadow = smoothstep(-penumbra, penumbra, sdfValue);
+    Lo *= shadow;
+}
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughnessMap);
     vec3 kS = F;
@@ -166,6 +176,17 @@ void main()
     vec3 bloomColor = color - emissionMap;
     bloomColor = emissionMap + max(vec3(0.0f), bloomColor - vec3(1.0f));
 
-    outColor = vec4(color, 1.0f);
+     const PointLightBuffer pointLight = pointLightBuffer[0].pointLightProperties;
+      vec3 fragPos = positionDataMap.xyz;
+
+        vec2 lightUV = (fragPos.xy - pointLight.LightPosition.xy) / pointLight.LightRadius;
+    lightUV = lightUV * 0.5f + 0.5f;
+
+        float penumbra = 0.05f;
+    float sdfValue = texture(TextureMap[5], lightUV).r;
+    float shadow = smoothstep(-penumbra, penumbra, sdfValue);
+    Lo = vec3(shadow);
+
+    outColor = vec4(Lo, 1.0f);
     outBloom = vec4(bloomColor, 1.0f);
 }

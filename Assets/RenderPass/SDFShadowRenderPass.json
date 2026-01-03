@@ -19,7 +19,7 @@
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 0,
-      "FinalLayout": 3,
+      "FinalLayout": 5,
       "UseSampler": false,
       "UseMipMaps": false,
       "SamplerCreateInfo": null

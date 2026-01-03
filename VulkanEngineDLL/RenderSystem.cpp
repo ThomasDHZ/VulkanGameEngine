@@ -834,7 +834,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     {
         for (auto& inputTexture : renderPass.InputTextureIdList)
         {
-            textureList.emplace_back(textureSystem.FindRenderedTexture(inputTexture));
+            textureList.emplace_back(textureSystem.FindTexture(inputTexture, 0));
         }
     }
     else
@@ -886,6 +886,6 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
             textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
         }
     }
-
+    
     return texturePropertiesBuffer;
 }

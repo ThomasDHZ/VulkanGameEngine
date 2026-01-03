@@ -108,8 +108,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     for (auto& pointLight : lightSystem.PointLightList)
     {
-        ImGui::SliderFloat("PLightPosition X", &pointLight.LightPosition.x, 0.0f, static_cast<float>(vulkanSystem.SwapChainResolution.width));
-        ImGui::SliderFloat("PLightPosition Y", &pointLight.LightPosition.y, 0.0f, static_cast<float>(vulkanSystem.SwapChainResolution.height));
+        ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -static_cast<float>(vulkanSystem.SwapChainResolution.width), static_cast<float>(vulkanSystem.SwapChainResolution.width));
         ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f);
         ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f);
         ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f);
@@ -140,6 +139,13 @@ void GameSystem::DebugUpdate(float deltaTime)
     ImGui::Text("L3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_THUMB) ? "Pressed" : "Released");
     ImGui::Text("R3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) ? "Pressed" : "Released");
     ImGui::Text("R2L2: (%.03f, %.03f)", r2L2.x, r2L2.y);
+
+
+    ImGui::Separator();
+
+    ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
+
+
     ImGui_EndFrame();
 }
 

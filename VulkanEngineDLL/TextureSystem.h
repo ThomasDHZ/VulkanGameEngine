@@ -74,6 +74,7 @@ public:
     DLL_EXPORT void                  GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
     DLL_EXPORT void                  TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
     DLL_EXPORT void                  TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
+    DLL_EXPORT Texture               FindTexture(const VkGuid& textureId, int a);
     DLL_EXPORT Texture               FindTexture(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT Texture&              FindDepthTexture(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT Texture&              FindRenderedTexture(const TextureGuid& textureGuid);

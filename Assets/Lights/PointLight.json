@@ -2,8 +2,8 @@
   "LightName": "TestPLight",
   "LightId": "a287fbf0-d642-49da-ba7d-167e0fed769a",
   "LightType": 1,
-  "LightPosition": [ 0.0, 500.0, 0.0 ],
+  "LightPosition": [ 960, 540, 0.0 ],
   "LightColor": [ 0.0, 0.55, 0.9 ],
-  "LightRadius": 200.0,
-  "LightIntensity": 2.0
+  "LightRadius": 2000.0,
+  "LightIntensity": 5.0
 }
