@@ -13,6 +13,7 @@ void LightSystem::Update(const float& deltaTime)
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightColor", directionalLight.LightColor);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightDirection", directionalLight.LightDirection);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "LightIntensity", directionalLight.LightIntensity);
+        shaderSystem.UpdateShaderStructValue<mat4>(shaderStruct, "LightSpaceMatrix", directionalLight.LightProjection * directionalLight.LightView);
         shaderSystem.UpdateShaderBuffer(shaderStruct, directionalLight.DirectionalLightBufferId);
     }
 
@@ -69,9 +70,10 @@ void LightSystem::LoadSceneLights(const String& directionalLightPath)
 
 void LightSystem::UpdateDirectionalLightOrthographicView(const DirectionalLight& directionalLight)
 {
-    vec3 lightDir = normalize(directionalLight.LightDirection);
-    mat4 lightProjection = glm::ortho(-1000.0f, 1000.0f, -1000.0f, 1000.0f);
-    mat4 lightView = inverse(lookAt(vec3(0), lightDir, vec3(0, 1, 0)));
+    float orthoSize = 1000.0f;  
+    vec3 lightDirection = normalize(directionalLight.LightDirection);
+    mat4 lightProjection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, -100.0f, 100.0f);
+    mat4 lightView = glm::lookAt(vec3(0.0f), lightDirection, vec3(0.0f, 1.0f, 0.0f));
 
     auto it = std::find_if(DirectionalLightList.begin(), DirectionalLightList.end(),
         [directionalLight](const DirectionalLight& obj) {
@@ -79,11 +81,10 @@ void LightSystem::UpdateDirectionalLightOrthographicView(const DirectionalLight&
         });
     int lightIndex = std::distance(DirectionalLightList.begin(), it);
 
-    shaderSystem.UpdatePushConstantValue<int>("spfDirectionalLightPushConstant",  "LightBufferIndex", lightIndex);
-    shaderSystem.UpdatePushConstantValue<mat4>("spfDirectionalLightPushConstant", "LightProjection", lightProjection);
-    shaderSystem.UpdatePushConstantValue<mat4>("spfDirectionalLightPushConstant", "LightView", lightView);
-    shaderSystem.UpdatePushConstantValue<vec3>("spfDirectionalLightPushConstant", "LightDirection", directionalLight.LightDirection);
-    shaderSystem.UpdatePushConstantBuffer("spfDirectionalLightPushConstant");
+    shaderSystem.UpdatePushConstantValue<int>("directionalLightPushConstant",  "LightBufferIndex", lightIndex);
+    shaderSystem.UpdatePushConstantValue<mat4>("directionalLightPushConstant", "LightProjection", lightProjection);
+    shaderSystem.UpdatePushConstantValue<mat4>("directionalLightPushConstant", "LightView", lightView);
+    shaderSystem.UpdatePushConstantBuffer("directionalLightPushConstant");
 }
 
 void LightSystem::UpdatePointLightOrthographicView(const PointLight& pointLight)

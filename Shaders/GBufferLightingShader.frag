@@ -17,7 +17,8 @@ layout(location = 1) out vec4 outBloom;
 //layout(location = 2) in vec4 NormalMap;
 //layout(location = 3) in vec4 MatRoughAOHeightMap;
 //layout(location = 4) in vec4 EmissionMap;
-//layout(location = 4) in vec4 SDFMap;
+//layout(location = 5) in vec4 DirectionalShadowMap;
+//layout(location = 6) in vec4 SDFShadowMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -88,6 +89,8 @@ void main()
     float heightMap = texture(TextureMap[3], TexCoords).a;
     vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
     float specularMap = texture(TextureMap[4], TexCoords).a;
+    float directionalShadowMap = texture(TextureMap[5], TexCoords).r;
+    float sdfShadowMap = texture(TextureMap[6], TexCoords).r;
 
     vec3 N = normalize(normalMap);
     vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
@@ -98,6 +101,8 @@ void main()
     for(int x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; x++)
     {
         const DirectionalLightBuffer directionalLight = directionalLightBuffer[x].directionalLightProperties;
+
+        vec3 fragPos = positionDataMap.xyz;
         vec3 L = normalize(directionalLight.LightDirection);
         vec3 H = normalize(V + L);
         vec3 radiance = directionalLight.LightColor * directionalLight.LightIntensity;
@@ -111,6 +116,28 @@ void main()
         vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
         float NdotL = max(dot(N, L), 0.0f);
         Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
+
+        vec4 lightSpacePos = directionalLight.LightSpaceMatrix * vec4(fragPos, 1.0);
+        vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+        projCoords = projCoords * 0.5 + 0.5;
+
+        float shadowDepth = texture(TextureMap[5], projCoords.xy).r;
+        float currentDepth = projCoords.z;
+
+        float bias = 0.0005;
+        float shadow = (currentDepth > shadowDepth + bias) ? 0.0 : 1.0;
+
+        shadow = 0.0;
+        vec2 texelSize = 1.0 / textureSize(TextureMap[5], 0);
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                vec2 offset = vec2(x, y) * texelSize;
+                float pcfDepth = texture(TextureMap[5], projCoords.xy + offset).r;
+                shadow += (currentDepth > pcfDepth + bias) ? 0.0 : 1.0;
+            }
+        }
+        shadow /= 9.0;
+        Lo *= shadow;
     }
 
 for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
@@ -143,16 +170,32 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 kS = F;
     vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallicMap);
 
-    float NdotL = 1.0f;
-    Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;
-
-    vec2 lightUV = (fragPos.xy - pointLight.LightPosition.xy) / pointLight.LightRadius;
-    lightUV = lightUV * 0.5f + 0.5f;
-
-    float penumbra = 0.05f;
-    float sdfValue = texture(TextureMap[5], lightUV).r;
-    float shadow = smoothstep(-0.05, 0.05, sdfValue);
-    Lo *= shadow;
+//    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+//    projCoords = projCoords * 0.5 + 0.5;
+//    float closestDepth = texture(TextureMap[5], projCoords.xy).r; 
+//    float currentDepth = projCoords.z;
+//
+//    vec3 lightDir = normalize(pointLight.LightPosition - fragPos);
+//    float bias = max(0.05 * (1.0 - dot(normalMap, lightDir)), 0.005);
+//    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+//
+//    vec2 texelSize = 1.0 / textureSize(TextureMap[5], 0);
+//    for(int x = -1; x <= 1; ++x)
+//    {
+//        for(int y = -1; y <= 1; ++y)
+//        {
+//            float pcfDepth = texture(TextureMap[5], projCoords.xy + vec2(x, y) * texelSize).r; 
+//            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+//        }    
+//    }
+//    shadow /= 9.0;
+//    
+//    if(projCoords.z > 1.0)
+//        shadow = 0.0;
+//        
+ //   float NdotL = max(dot(N, L), 0.0f);
+ //   Lo += (kD * albedoMap / PI + specular) * radiance * NdotL;// * visibility;
+//    Lo *= shadow;
 }
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughnessMap);

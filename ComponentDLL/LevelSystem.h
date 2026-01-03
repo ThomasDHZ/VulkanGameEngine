@@ -71,6 +71,7 @@ private:
         UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
         SharedPtr<Camera> OrthographicCamera;
 
+        RenderPassGuid directionalShadowRenderPassId;
         RenderPassGuid sdfShaderRenderPassId;
         RenderPassGuid gBufferRenderPassId;
         RenderPassGuid geometryRenderPassId;
@@ -85,6 +86,7 @@ private:
         RenderPassGuid spriteWireFrameRenderPass2DId;
 
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+        DLL_EXPORT void                 RenderDirectionalShadowRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderGeometryRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);

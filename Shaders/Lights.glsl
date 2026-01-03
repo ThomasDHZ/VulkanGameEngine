@@ -3,6 +3,7 @@ struct DirectionalLightBuffer
     vec3 LightColor;
     vec3 LightDirection;
     float LightIntensity;
+    mat4 LightSpaceMatrix;
 };
 
 struct PointLightBuffer

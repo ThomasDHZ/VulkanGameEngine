@@ -61,7 +61,7 @@ void main()
     vec3  emissionMap =			(material.EmissionMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.EmissionMap], UV).rgb		 : material.Emission;
 	float alphaMap =			(material.AlphaMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlphaMap], UV).r				 : material.Alpha;
 
-    if (albedoMap.a == 0.0)
+    if (alphaMap.r == 0.0)
 	{
         discard;
 	}

@@ -47,9 +47,9 @@ void main()
     float ambientOcclusionMap = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? texture(TextureMap[material.AmbientOcclusionMap], inPS_UV).r : material.AmbientOcclusion;
 	float heightMap =			(material.HeightMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.HeightMap], inPS_UV).r			 : material.Height;
     vec3  emissionMap =			(material.EmissionMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.EmissionMap], inPS_UV).rgb		 : material.Emission;
-	float alphaMap =			(material.AlphaMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlphaMap], inPS_UV).r			 : material.Alpha;
+	float alphaMap =			(material.AlphaMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlphaMap], inPS_UV).r				 : material.Alpha;
 
-    if (albedoMap.a == 0.0)
+    if (alphaMap.r == 0.0)
 	{
         discard;
 	}
