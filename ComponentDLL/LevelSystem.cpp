@@ -123,7 +123,14 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
 
         Vector<Vertex2D> vertexList(LevelLayerList[x].VertexList, LevelLayerList[x].VertexList + LevelLayerList[x].VertexListCount);
         Vector<uint> indexList(LevelLayerList[x].IndexList, LevelLayerList[x].IndexList + LevelLayerList[x].IndexListCount);
-        meshSystem.CreateMesh(MeshTypeEnum::Mesh_LevelMesh, vertexList, indexList, LevelLayerList[x].MaterialId);
+
+        Vertex vertexData =
+        {
+            .VertexType = VertexTypeEnum::kVertexType_Vertex2D,
+            .VertexDataSize = vertexList.size() * sizeof(Vertex2D),
+            .VertexData = vertexList.data()
+        };
+        meshSystem.CreateMesh(MeshTypeEnum::kMesh_LevelMesh, vertexData, indexList, LevelLayerList[x].MaterialId);
     }
 }
 
@@ -264,7 +271,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
-      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
+      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
       Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
       ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("directionalLightPushConstant");
 
@@ -342,7 +349,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
-      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
+      const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
       Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
       ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("spfPointLightPushConstant");
 
@@ -420,7 +427,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
      VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
      VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
-     const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
+     const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo

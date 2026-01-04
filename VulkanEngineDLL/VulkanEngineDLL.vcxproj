@@ -154,7 +154,6 @@
     <ClInclude Include="MemoryPoolSystem.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="Vertex.h" />
     <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="VulkanSystem.h" />

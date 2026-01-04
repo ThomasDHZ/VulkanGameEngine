@@ -3,12 +3,6 @@
 #include "VulkanSystem.h"
 #include <vk_mem_alloc.h>
 
-enum MeshTypeEnum
-{
-	Mesh_SpriteMesh,
-	Mesh_LevelMesh,
-	Mesh_LineMesh
-};
 
 enum BufferTypeEnum
 {

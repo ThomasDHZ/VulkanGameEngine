@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "SpriteSystem.h"
-#include "Vertex.h"
 
 SpriteSystem& spriteSystem = SpriteSystem::Get();
 
@@ -31,11 +30,18 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
         1, 3, 2
     };
 
+    Vertex vertexData =
+    {
+        .VertexType = VertexTypeEnum::kVertexType_SpriteInstanceVertex,
+        .VertexDataSize = sizeof(Vertex2D) * SpriteVertexList.size(),
+        .VertexData = SpriteVertexList.data(),
+    };
+
     SpriteLayer spriteLayer = SpriteLayer
     {
         .RenderPassId = renderPassId,
         .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = meshSystem.CreateMesh(MeshTypeEnum::Mesh_SpriteMesh, SpriteVertexList, SpriteIndexList)
+        .SpriteLayerMeshId = meshSystem.CreateMesh(kMesh_SpriteMesh, vertexData, SpriteIndexList)
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);

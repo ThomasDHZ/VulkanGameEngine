@@ -1,7 +1,6 @@
 #pragma once
 #include "Platform.h"
 #include "ShaderSystem.h"
-#include "Vertex.h"
 
 struct MeshPropertiesStruct
 {
@@ -9,14 +8,66 @@ struct MeshPropertiesStruct
 	alignas(16) mat4   MeshTransform = mat4(1.0f);
 };
 
-struct MeshDLL;
+enum MeshTypeEnum
+{
+	kMesh_SpriteMesh,
+	kMesh_LevelMesh,
+	kMesh_SkyBoxMesh,
+	kMesh_LineMesh,
+	kMesh_Undefined
+};
+
+enum VertexTypeEnum
+{
+	kVertexType_NullVertex,
+	kVertexType_Vertex2D,
+	kVertexType_SpriteInstanceVertex,
+	kVertexType_SkyBoxVertex,
+	kVertextype_Undefined
+};
+
+struct Vertex
+{
+	VertexTypeEnum VertexType = kVertexType_NullVertex;
+	uint64 VertexDataSize = UINT64_MAX;
+	void* VertexData = nullptr;
+};
+
+struct NullVertex
+{
+
+};
+
+struct Vertex2D
+{
+	vec2 Position = vec2(0.0f);
+	vec2 UV = vec2(0.0f);
+
+	Vertex2D()
+	{
+		Position = vec2(0.0f);
+		UV = vec2(0.0f);
+	}
+
+	Vertex2D(vec2 position, vec2 uv)
+	{
+		Position = position;
+		UV = uv;
+	}
+};
+
+struct SkyBoxVertex
+{
+	vec3 Position = glm::vec3(0.0f);
+};
+
 struct Mesh
 {
 	uint32 MeshId = UINT32_MAX;
 	uint32 ParentGameObjectId = UINT32_MAX;
 	uint32 MeshShaderBufferIndex = UINT32_MAX;
-	uint32 MeshTypeId = UINT32_MAX;
-	uint32 VertexTypeId = UINT32_MAX;
+	MeshTypeEnum MeshTypeId = kMesh_Undefined;
+	VertexTypeEnum VertexTypeId = kVertextype_Undefined;
 	uint32 MeshPropertiesId = UINT32_MAX;
 	uint32 MeshVertexBufferId = UINT32_MAX;
 	uint32 MeshIndexBufferId = UINT32_MAX;
@@ -52,14 +103,14 @@ private:
 
 	public:
 		Vector<Mesh>                 MeshList;
-		Vector<Vector<Vertex2D>>     Vertex2DList;
+		Vector<Vertex>				 VertexList;
 		Vector<Vector<uint>>         IndexList;
 		VulkanBuffer 				 MeshPropertiesBuffer;
 		VulkanBuffer				 TransformBuffer;
 
 		DLL_EXPORT void MeshSystemStartUp();
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList);
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vector<Vertex2D>& vertexList, Vector<uint32>& indexList, VkGuid& materialId);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vertex& vertexData, Vector<uint32>& indexList);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vertex& vertexData, Vector<uint32>& indexList, VkGuid& materialId);
 		DLL_EXPORT void Update(const float& deltaTime);
 		DLL_EXPORT void Destroy(uint meshId);
 		DLL_EXPORT void DestroyAllGameObjects();

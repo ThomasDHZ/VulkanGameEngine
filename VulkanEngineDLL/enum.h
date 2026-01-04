@@ -80,9 +80,3 @@ enum DescriptorBindingPropertiesEnum
     kIndexDescriptor,
     kTransformDescriptor
 };
-
-enum VertexTypeEnum
-{
-    NullVertex = 0,
-    SpriteInstanceVertex = 1,
-};

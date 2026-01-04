@@ -93,9 +93,6 @@
     <ClInclude Include="RenderSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EngineConfigSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
