@@ -201,6 +201,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
+    brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", ivec2(2048, 2048));
+    renderSystem.GenerateTexture(brdfRenderPassId);
+
     directionalShadowRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/DirectionalShadowRenderPass.json", ivec2(2048, 2048));
     sdfShaderRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SDFShadowRenderPass.json", ivec2(128, 128));
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));

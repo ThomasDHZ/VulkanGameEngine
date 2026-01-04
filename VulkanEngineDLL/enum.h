@@ -45,27 +45,10 @@ enum TextureUsageEnum
 
 enum TextureTypeEnum
 {
-    kType_UndefinedTexture,
-    kType_TextureAtlas,
-    kType_RenderedColorTexture,
-    kType_RenderedDepthTexture,
-    kType_ReadableTexture,
-    kType_DiffuseTextureMap,
-    kType_SpecularTextureMap,
-    kType_AlbedoTextureMap,
-    kType_MetallicTextureMap,
-    kType_RoughnessTextureMap,
-    kType_AmbientOcclusionTextureMap,
-    kType_NormalTextureMap,
-    kType_DepthTextureMap,
-    kType_AlphaTextureMap,
-    kType_EmissionTextureMap,
-    kType_PaletteRotationMap,
-    kType_CubeMapTexture,
-    kType_CubeMapDepthTexture,
-    kType_EnvironmentTexture,
-    kType_RenderedCubeMap,
-    kType_BakedTexture
+    TextureType_UNKNOWN,
+    TextureType_ColorTexture,
+    TextureType_DepthTexture,
+    TextureType_SkyboxTexture
 };
 
 enum RenderTextureTypeEnum

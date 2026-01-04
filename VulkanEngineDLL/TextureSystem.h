@@ -11,11 +11,12 @@ struct TextureLoader
     String TextureFilePath;
     VkGuid TextureId;
     VkFormat TextureByteFormat;
-    bool UsingSRGBFormat;
     VkImageAspectFlags ImageType;
     TextureTypeEnum TextureType;
-    bool UseMipMaps;
     VkSamplerCreateInfo SamplerCreateInfo;
+    bool UsingSRGBFormat;
+    bool UseMipMaps;
+    bool IsSkyBox;
 };
 
 struct Texture
@@ -35,7 +36,7 @@ struct Texture
     VmaAllocation TextureAllocation = VK_NULL_HANDLE;
 
     TextureUsageEnum textureUsage = TextureUsageEnum::kUse_Undefined;
-    TextureTypeEnum textureType = TextureTypeEnum::kType_UndefinedTexture;
+    TextureTypeEnum textureType = TextureTypeEnum::TextureType_UNKNOWN;
     VkFormat textureByteFormat = VK_FORMAT_UNDEFINED;
     VkImageLayout textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;

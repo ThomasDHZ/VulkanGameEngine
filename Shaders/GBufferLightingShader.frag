@@ -12,13 +12,14 @@ layout(location = 0) in  vec2 TexCoords;
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outBloom;
 
-//layout(location = 0) in vec4 PositionDataMap;
-//layout(location = 1) in vec4 AlbedoMap;
-//layout(location = 2) in vec4 NormalMap;
-//layout(location = 3) in vec4 MatRoughAOHeightMap;
-//layout(location = 4) in vec4 EmissionMap;
-//layout(location = 5) in vec4 DirectionalShadowMap;
-//layout(location = 6) in vec4 SDFShadowMap;
+const int PositionDataMapBinding = 0;
+const int AlbedoMapBinding = 1;
+const int NormalMapBinding = 2;
+const int MatRoughAOHeightMapBinding = 3;
+const int EmissionMapBinding = 4;
+const int BrdfMapBinding = 5;
+const int DirectionalShadowMapBinding = 6;
+const int SDFShadowMapBinding = 7;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -80,15 +81,16 @@ layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directional
 layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 void main()
 {
-    vec3 positionDataMap = texture(TextureMap[0], TexCoords).rgb;
-    vec3 albedoMap = texture(TextureMap[1], TexCoords).rgb;
-    vec3 normalMap = texture(TextureMap[2], TexCoords).rgb * 2.0f - 1.0f;
-    float metallicMap = 0.0f;//texture(TextureMap[3], TexCoords).r;
-    float roughnessMap = 0.5f;//texture(TextureMap[3], TexCoords).g;
-    float ambientOcclusionMap = texture(TextureMap[3], TexCoords).b;
-    float heightMap = texture(TextureMap[3], TexCoords).a;
-    vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
-    float specularMap = texture(TextureMap[4], TexCoords).a;
+    vec3 positionDataMap = texture(TextureMap[PositionDataMapBinding], TexCoords).rgb;
+    vec3 albedoMap = texture(TextureMap[AlbedoMapBinding], TexCoords).rgb;
+    vec3 normalMap = texture(TextureMap[NormalMapBinding], TexCoords).rgb * 2.0f - 1.0f;
+    float metallicMap = 0.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).r;
+    float roughnessMap = 0.5f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).g;
+    float ambientOcclusionMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).b;
+    float heightMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).a;
+    vec3 emissionMap = texture(TextureMap[EmissionMapBinding], TexCoords).rgb;
+    float specularMap = texture(TextureMap[EmissionMapBinding], TexCoords).a;
+    vec2  brdfMap = texture(TextureMap[BrdfMapBinding], TexCoords).xy;
 
     vec3 N = normalize(normalMap);
     vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
@@ -120,18 +122,18 @@ void main()
         vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
         projCoords = projCoords * 0.5 + 0.5;
 
-        float shadowDepth = texture(TextureMap[5], projCoords.xy).r;
+        float shadowDepth = texture(TextureMap[DirectionalShadowMapBinding], projCoords.xy).r;
         float currentDepth = projCoords.z;
 
         float bias = 0.0005;
          shadow = (currentDepth > shadowDepth + bias) ? 0.0 : 1.0;
 
         shadow = 0.0;
-        vec2 texelSize = 1.0 / textureSize(TextureMap[5], 0);
+        vec2 texelSize = 1.0 / textureSize(TextureMap[DirectionalShadowMapBinding], 0);
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 vec2 offset = vec2(x, y) * texelSize;
-                float pcfDepth = texture(TextureMap[5], projCoords.xy + offset).r;
+                float pcfDepth = texture(TextureMap[DirectionalShadowMapBinding], projCoords.xy + offset).r;
                 shadow += (currentDepth > pcfDepth + bias) ? 0.0 : 1.0;
             }
         }
@@ -171,19 +173,19 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
 
 //    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 //    projCoords = projCoords * 0.5 + 0.5;
-//    float closestDepth = texture(TextureMap[5], projCoords.xy).r; 
+//    float closestDepth = texture(TextureMap[SDFShadowMapBinding], projCoords.xy).r; 
 //    float currentDepth = projCoords.z;
 //
 //    vec3 lightDir = normalize(pointLight.LightPosition - fragPos);
 //    float bias = max(0.05 * (1.0 - dot(normalMap, lightDir)), 0.005);
 //    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
 //
-//    vec2 texelSize = 1.0 / textureSize(TextureMap[5], 0);
+//    vec2 texelSize = 1.0 / textureSize(TextureMap[SDFShadowMapBinding], 0);
 //    for(int x = -1; x <= 1; ++x)
 //    {
 //        for(int y = -1; y <= 1; ++y)
 //        {
-//            float pcfDepth = texture(TextureMap[5], projCoords.xy + vec2(x, y) * texelSize).r; 
+//            float pcfDepth = texture(TextureMap[SDFShadowMapBinding], projCoords.xy + vec2(x, y) * texelSize).r; 
 //            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
 //        }    
 //    }

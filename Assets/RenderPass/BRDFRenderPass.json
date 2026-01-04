@@ -2,14 +2,14 @@
   "Name": "BRDFRenderPass",
   "RenderPassId": "1c8acdab-f34f-41a1-977b-597ee9bd17ed",
   "RenderPipelineList": [ "Pipelines/BRDFPipeline.json" ],
-  "RenderPassWidth": 0,
-  "RenderPassHeight": 0,
-  "UseDefaultSwapChainResolution": true,
+  "RenderPassWidth": 2048,
+  "RenderPassHeight": 2048,
+  "UseDefaultSwapChainResolution": false,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
-      "RenderedTextureId": "8b39637f-d05c-4346-9827-d406f17c21b0",
+      "RenderedTextureId": "6958e3e9-4d24-408c-893a-bf53fbd53806",
       "MipMapCount": 1,
       "RenderTextureType": 1,
       "RenderAttachmentType": 0,

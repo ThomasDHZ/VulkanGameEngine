@@ -7,6 +7,7 @@
   "ImageType": 1,
   "TextureType": 5,
   "UseMipMaps": false,
+  "IsSkyBox": false,
   "SamplerCreateInfo": {
     "SType": 31,
     "MagFilter": 1,

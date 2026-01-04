@@ -3,6 +3,6 @@
   "LightId": "d6433982-e92d-4f75-8145-0b6eff0a2129",
   "LightType": 0,
   "LightColor": [ 0.8, 0.8, 0.9 ],
-  "LightDirection": [ -0.266, 0.249, 1.0 ],
-  "LightIntensity": 1.2
+  "LightDirection": [ 0.382, 0.556, 0.111 ],
+  "LightIntensity": 7.279
 }

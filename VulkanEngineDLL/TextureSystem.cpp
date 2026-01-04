@@ -54,6 +54,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		.height = height,
 		.depth = 1,
 		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
 		.textureByteFormat = finalFormat,
 		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,

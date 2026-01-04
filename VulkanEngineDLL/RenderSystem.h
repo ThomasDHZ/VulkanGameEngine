@@ -39,6 +39,7 @@ public:
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution);
     DLL_EXPORT VulkanRenderPass              RebuildSwapChain(VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT void                          Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
+    DLL_EXPORT void                          GenerateTexture(VkGuid& renderPassId);
     DLL_EXPORT const VulkanRenderPass        FindRenderPass(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT const Vector<VulkanPipeline>  FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
 

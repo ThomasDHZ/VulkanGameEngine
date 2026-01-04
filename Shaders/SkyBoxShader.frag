@@ -1,22 +1,21 @@
-#version 460
+  #version 450
 #extension GL_ARB_separate_shader_objects : enable
-#extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_EXT_debug_printf : enable
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
 
-layout(binding = 0) uniform sampler2D HDRSceneTexture;
+layout(location = 0) in vec3 TexCoords;
+layout(location = 0) out vec4 FragColor;
 
-layout(location = 0) in vec2 TexCoords;
-layout(location = 0) out vec4 outColor;
+layout(binding = 0) uniform samplerCube CubeMap;
 
-const float Gamma = 2.2;
-const float Exposure = 1.0;
+layout(push_constant) uniform SceneDataBuffer {
+    int MeshBufferIndex;
+    mat4 Projection;
+    mat4 View;
+    vec3 CameraPosition;
+} sceneData;
+
 void main() 
 {
-    vec3 hdrColor = texture(HDRSceneTexture, TexCoords).rgb;
-    vec3 finalColor = hdrColor;
-    vec3 mapped = vec3(1.0) - exp(-finalColor * Exposure);
-    mapped = pow(mapped, vec3(1.0 / Gamma));
-    outColor = vec4(mapped, 1.0);
+    vec3 color = texture(CubeMap, TexCoords).rgb;
+    FragColor = vec4(color, 1.0f);
 }

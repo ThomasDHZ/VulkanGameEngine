@@ -1,18 +1,21 @@
-#version 460
+  #version 450
 #extension GL_ARB_separate_shader_objects : enable
-//#extension GL_EXT_debug_printf : enable
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
-layout(binding = 0) uniform sampler2D HDRSceneTexture;
-layout(location = 0) out vec2 fragTexCoord;
 
-void main() 
-{
-//    if(gl_VertexIndex == 0)
-//	{
-//		debugPrintfEXT(": %i \n", 432);
-//	}
+layout (location = 0) in vec3 aPos;
+layout(location = 0) out vec3 TexCoords;
 
-    fragTexCoord = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-    gl_Position = vec4(fragTexCoord * 2.0f - 1.0f, 0.0f, 1.0f);
+layout(binding = 0) uniform samplerCube CubeMap;
+
+layout(push_constant) uniform SceneDataBuffer {
+    int MeshBufferIndex;
+    mat4 Projection;
+    mat4 View;
+    vec3 CameraPosition;
+} sceneData;
+
+void main() {
+	TexCoords = aPos;
+	vec4 pos = sceneData.Projection * sceneData.View * vec4(aPos, 1.0);
+    gl_Position = pos.xyww;
 }
