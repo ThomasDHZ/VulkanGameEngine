@@ -89,14 +89,13 @@ void main()
     float heightMap = texture(TextureMap[3], TexCoords).a;
     vec3 emissionMap = texture(TextureMap[4], TexCoords).rgb;
     float specularMap = texture(TextureMap[4], TexCoords).a;
-    float directionalShadowMap = texture(TextureMap[5], TexCoords).r;
-    float sdfShadowMap = texture(TextureMap[6], TexCoords).r;
 
     vec3 N = normalize(normalMap);
     vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
     
     vec3 Lo = vec3(0.0f); 
     vec3 F0 = vec3(0.04f);
+    float shadow =0.0f;
     F0 = mix(F0, albedoMap, metallicMap);
     for(int x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; x++)
     {
@@ -125,7 +124,7 @@ void main()
         float currentDepth = projCoords.z;
 
         float bias = 0.0005;
-        float shadow = (currentDepth > shadowDepth + bias) ? 0.0 : 1.0;
+         shadow = (currentDepth > shadowDepth + bias) ? 0.0 : 1.0;
 
         shadow = 0.0;
         vec2 texelSize = 1.0 / textureSize(TextureMap[5], 0);

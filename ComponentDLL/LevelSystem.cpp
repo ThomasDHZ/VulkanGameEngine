@@ -306,13 +306,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
           shaderSystem.UpdatePushConstantBuffer("directionalLightPushConstant");
 
           vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
-          //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-          //vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-          //vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
-          //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
-          //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
-          //vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-          //vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+          vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+          vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
+          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
+          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
+          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
+          vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+          vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
       }
       for (auto& spriteLayer : spriteSystem.SpriteLayerList)
       {
@@ -337,7 +337,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
   void LevelSystem::RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
   {
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-      VulkanPipeline sdfPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+      VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+      VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::Mesh_LevelMesh);
       Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
       ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("spfPointLightPushConstant");
@@ -382,11 +383,11 @@ void LevelSystem::LoadLevel(const char* levelPath)
           shaderSystem.UpdatePushConstantValue<uint>("spfPointLightPushConstant", "MeshBufferIndex", levelLayer.MeshId);
           shaderSystem.UpdatePushConstantBuffer("spfPointLightPushConstant");
 
-          vkCmdPushConstants(commandBuffer, sdfPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+          vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
           vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, sdfPipeline.Pipeline);
-          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, sdfPipeline.PipelineLayout, 0, sdfPipeline.DescriptorSetList.size(), sdfPipeline.DescriptorSetList.data(), 0, nullptr);
+          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
+          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
@@ -399,10 +400,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
           const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
-          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, sdfPipeline.Pipeline);
+          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
           vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
           vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, sdfPipeline.PipelineLayout, 0, sdfPipeline.DescriptorSetList.size(), sdfPipeline.DescriptorSetList.data(), 0, nullptr);
+          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, instanceOffset);
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);

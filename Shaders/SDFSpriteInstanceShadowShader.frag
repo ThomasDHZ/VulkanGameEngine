@@ -8,7 +8,7 @@
 layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
 layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
 layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
-layout(constant_id = 3) const uint DescriptorBindingType3 = 3;
+layout(constant_id = 3) const uint DescriptorBindingType3 = 4;
 
 layout (location = 0) in vec3  PS_Position;
 layout (location = 1) in vec2  PS_UV;
@@ -18,13 +18,13 @@ layout (location = 4) in vec4  PS_Color;
 layout (location = 5) in flat uint  PS_MaterialID;
 layout (location = 6) in vec4  PS_UVOffset;
 
-layout(push_constant) uniform SPFPointLightPushConstant 
+layout(push_constant) uniform DirectionalLightPushConstant 
 {
     int MeshBufferIndex;
     int LightBufferIndex;
     mat4 LightProjection;
     mat4 LightView;
-}spfPointLightPushConstant;
+}directionalLightPushConstant;
 
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
@@ -33,7 +33,7 @@ layout(push_constant) uniform SPFPointLightPushConstant
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
 layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 3) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 3) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightsBuffer[];
 void main()
 {
 	MaterialProperitiesBuffer material = materialBuffer[PS_MaterialID].materialProperties;

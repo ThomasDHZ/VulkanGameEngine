@@ -2,10 +2,11 @@
   "Name": "SDFShadowRenderPass",
   "RenderPassId": "eba94793-75fe-46b7-991f-633d55010c30",
   "RenderPipelineList": [
-    "Pipelines/SDFShadowPipeline.json"
+    "Pipelines/SDFLevelShadowPipeline.json",
+    "Pipelines/SDFSpriteInstanceShadowPipeline.json"
   ],
-  "RenderPassWidth": 128,
-  "RenderPassHeight": 128,
+  "RenderPassWidth": 1028,
+  "RenderPassHeight": 1028,
   "UseDefaultSwapChainResolution": true,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],

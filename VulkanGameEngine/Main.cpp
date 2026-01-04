@@ -32,7 +32,7 @@
 
 
             imGuiRenderer = ImGui_StartUp();
-            Texture& texture = textureSystem.FindDepthTexture(levelSystem.directionalShadowRenderPassId);
+            Texture& texture = textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId);
             texture.ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.textureSampler, texture.textureView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             while (!vulkanWindow->WindowShouldClose(vulkanWindow))
             {

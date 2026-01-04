@@ -1,9 +1,9 @@
 {
   "Name": "SDFShadowPipeline",
-  "PipelineId": "83fea7a8-09fd-449f-a161-6534ea63e6a1",
+  "PipelineId": "06f1e26a-4ea2-4a21-b1cc-40792d11801d",
   "ShaderList": [
-    "Shaders/SDFShadowShaderVert.spv",
-    "Shaders/SDFShadowShaderFrag.spv"
+    "Shaders/SDFSpriteInstanceShadowShaderVert.spv",
+    "Shaders/SDFSpriteInstanceShadowShaderfrag.spv"
   ],
   "VertexType": 0,
   "UseDynamicColorWrite": false,
