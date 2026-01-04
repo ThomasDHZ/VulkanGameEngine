@@ -134,51 +134,6 @@
         "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
-    },
-    {
-      "RenderedTextureId": "b8de6731-4fd0-4461-b9b9-bdf40c6944d6",
-      "MipMapCount": 1,
-      "RenderTextureType": 2,
-      "RenderAttachmentType": 0,
-      "Format": 97,
-      "SampleCount": 1,
-      "LoadOp": 1,
-      "StoreOp": 2,
-      "FinalLayout": 5,
-      "UseSampler": true,
-      "UseMipMaps": false,
-      "SamplerCreateInfo": {
-        "SType": 31,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
-        "AddressModeU": 2,
-        "AddressModeV": 2,
-        "AddressModeW": 2,
-        "MipLodBias": 0.0,
-        "AnisotropyEnable": true,
-        "MaxAnisotropy": 16.0,
-        "CompareEnable": false,
-        "CompareOp": 7,
-        "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
-        "UnnormalizedCoordinates": false
-      }
-    },
-    {
-      "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
-      "MipMapCount": 1,
-      "RenderTextureType": 3,
-      "RenderAttachmentType": 1,
-      "Format": 124,
-      "SampleCount": 1,
-      "LoadOp": 1,
-      "StoreOp": 0,
-      "FinalLayout": 3,
-      "UseSampler": false,
-      "UseMipMaps": false,
-      "SamplerCreateInfo": null
     }
   ],
   "SubpassDependencyList": [
@@ -271,12 +226,6 @@
         "Uint32_1": 0,
         "Uint32_2": 0,
         "Uint32_3": 1065353216
-      }
-    },
-    {
-      "DepthStencil": {
-        "depth": 1.0,
-        "stencil": 0
       }
     }
   ]

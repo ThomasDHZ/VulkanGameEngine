@@ -2,7 +2,9 @@
   "Name": "SDFShadowRenderPass",
   "RenderPassId": "208621ed-7291-40c4-92dd-2e2646aff84c",
   "RenderPipelineList": [
-    "Pipelines/DirectionalShadowPipeline.json"
+    "Pipelines/SpriteInstanceDirectionalShadowPipeline.json",
+    "Pipelines/LevelDirectionalShadowPipeline.json"
+
   ],
   "RenderPassWidth": 2048,
   "RenderPassHeight": 2048,
@@ -22,7 +24,24 @@
       "FinalLayout": 4,
       "UseSampler": false,
       "UseMipMaps": false,
-      "SamplerCreateInfo": null
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
     }
   ],
   "SubpassDependencyList": [

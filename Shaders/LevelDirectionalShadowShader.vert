@@ -8,7 +8,7 @@
 layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
 layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
 layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
-layout(constant_id = 3) const uint DescriptorBindingType3 = 4;
+layout(constant_id = 3) const uint DescriptorBindingType3 = 3;
 
 layout (location = 0)  in vec3  VS_Position;
 layout (location = 1)  in vec2  VS_UV;
@@ -31,7 +31,7 @@ layout(push_constant) uniform DirectionalLightPushConstant
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
 layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 3) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightsBuffer[];
+layout(binding = 3) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 void main()
 {
     int meshIndex = directionalLightPushConstant.MeshBufferIndex;
