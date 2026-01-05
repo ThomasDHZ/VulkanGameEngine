@@ -1,19 +1,20 @@
 {
-  "Name": "IrradianceRenderPass",
-  "RenderPassId": "f61f5871-bf26-4a72-9f4e-35811d425dc3",
+  "Name": "IrradiancePipeline",
+  "RenderPassId": "62504413-f55d-4a4f-9afe-71c915bf8e8b",
   "RenderPipelineList": [
     "Pipelines/IrradiancePipeline.json"
   ],
-  "RenderPassWidth": 0,
-  "RenderPassHeight": 0,
-  "UseDefaultSwapChainResolution": true,
+  "RenderPassWidth": 512,
+  "RenderPassHeight": 512,
+  "UseDefaultSwapChainResolution": false,
+  "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
-  "InputTextureList": [],
+  "InputTextureList": [ "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7" ],
   "RenderAttachmentList": [
     {
-      "RenderedTextureId": "0a342818-11cc-4601-9846-143a0e3d63fe",
+      "RenderedTextureId": "ffc7c231-b3b8-4f47-98ad-147d45ca6dc0",
       "MipMapCount": 1,
-      "RenderTextureType": 1,
+      "RenderTextureType": 2,
       "RenderAttachmentType": 0,
       "Format": 44,
       "SampleCount": 1,
@@ -50,10 +51,6 @@
         "Uint32_1": 0,
         "Uint32_2": 0,
         "Uint32_3": 1065353216
-      },
-      "DepthStencil": {
-        "depth": 0.0,
-        "stencil": 0
       }
     }
   ]

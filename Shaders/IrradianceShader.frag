@@ -1,55 +1,43 @@
 #version 460
+
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension VK_EXT_dynamic_color_write_enable : enable
+#extension GL_EXT_debug_printf : enable
+#extension GL_EXT_multiview : enable
 
-layout(location = 0) in vec2 UV;
-layout(location = 0) out vec4 vertColor;
-layout(location = 1) out vec4 horizontalColor;
+#include "Constants.glsl"
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
-layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
+layout(constant_id = 0) const uint DescriptorBindingType0 = SkyBoxDescriptor;
+layout(binding = 0) uniform samplerCube environmentMap;
 
-layout(binding = 0) uniform sampler2D vertTexture;
-layout(binding = 1) uniform sampler2D horizontalTexture;
+layout(location = 0) in vec3 WorldPos;
+layout(location = 0) out vec4 outColor;
 
-layout(push_constant) uniform BloomSettings
+layout(push_constant) uniform IrradianceShaderConstants {
+    float sampleDelta;
+} irradianceShaderConstants;
+
+void main() 
 {
-    uint  blurDirection;  // 1 = horizontal, 0 = vertical
-    float blurScale;     // Controls blur radius (e.g., 1.0–4.0)
-    float blurStrength;  // Overall intensity multiplier
-} bloomSettings;
+    vec3 N = normalize(WorldPos);
+    vec3 up    = abs(N.y) < 0.999f ? vec3(0.0f, 1.0f, 0.0f) : vec3(0.0f, 0.0f, 1.0f);
+    vec3 right = normalize(cross(up, N));
+    up         = cross(N, right);
 
-const float weights[3] = float[](0.227027, 0.1945946, 0.1216216);
+    vec3 irradiance = vec3(0.0f);
+    float sampleDelta = irradianceShaderConstants.sampleDelta > 0.0f ? irradianceShaderConstants.sampleDelta : 0.025f;
 
-void main()
-{
-    if(bloomSettings.blurDirection == 0)
+    float nrSamples = 0.0f;
+    for (float phi = 0.0f; phi < 2.0f * PI; phi += sampleDelta)
     {
-        vec2 texOffset = bloomSettings.blurScale / vec2(textureSize(vertTexture, 0));
-        texOffset *= (bloomSettings.blurDirection != 0u) ? vec2(0.0, 1.0) : vec2(1.0, 0.0);
-
-        vec3 result = texture(vertTexture, UV).rgb * weights[0];
-        result += texture(vertTexture, UV + texOffset * 1.0).rgb * weights[1];
-        result += texture(vertTexture, UV - texOffset * 1.0).rgb * weights[1];
-        result += texture(vertTexture, UV + texOffset * 2.0).rgb * weights[2];
-        result += texture(vertTexture, UV - texOffset * 2.0).rgb * weights[2];
-
-        vertColor = vec4(result * bloomSettings.blurStrength, 1.0);
-        horizontalColor = vec4(result * bloomSettings.blurStrength, 1.0);
+        for (float theta = 0.0f; theta < 0.5f * PI; theta += sampleDelta)
+        {
+            vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+            irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+            nrSamples++;
+        }
     }
-    else
-    {
-        vec2 texOffset = bloomSettings.blurScale / vec2(textureSize(horizontalTexture, 0));
-        texOffset *= (bloomSettings.blurDirection != 0u) ? vec2(0.0, 1.0) : vec2(1.0, 0.0);
-
-        vec3 result = texture(horizontalTexture, UV).rgb * weights[0];
-        result += texture(horizontalTexture, UV + texOffset * 1.0).rgb * weights[1];
-        result += texture(horizontalTexture, UV - texOffset * 1.0).rgb * weights[1];
-        result += texture(horizontalTexture, UV + texOffset * 2.0).rgb * weights[2];
-        result += texture(horizontalTexture, UV - texOffset * 2.0).rgb * weights[2];
-
-        vertColor = vec4(result * bloomSettings.blurStrength, 1.0);
-        horizontalColor = vec4(result * bloomSettings.blurStrength, 1.0);
-    }
+    irradiance = PI * irradiance * (1.0f / nrSamples);
+    outColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }

@@ -7,13 +7,14 @@
   "RenderPassWidth": 0,
   "RenderPassHeight": 0,
   "UseDefaultSwapChainResolution": true,
-  "IsRenderedToSwapchain": true,
+  "UseCubeMapMultiView": false,
+  "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7",
       "MipMapCount": 1,
-      "RenderTextureType": 1,
+      "RenderTextureType": 2,
       "RenderAttachmentType": 0,
       "Format": 44,
       "SampleCount": 1,

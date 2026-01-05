@@ -3,6 +3,7 @@
   "RenderPassId": "e26ff327-9a80-45b9-9ec1-6654d930f789",
   "RenderPipelineList": [ "Pipelines/SpriteInstanceWireFramePipeline.json", "Pipelines/LevelShader2DWireframePipeline.json" ],
   "IsRenderedToSwapchain": false,
+  "UseCubeMapMultiView": false,
   "InputTextureList": [],
   "RenderedTextureInfoModelList": [
     {

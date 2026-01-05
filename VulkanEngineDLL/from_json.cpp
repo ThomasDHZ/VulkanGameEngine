@@ -350,6 +350,7 @@ namespace nlohmann
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyModelList);
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("UseDefaultSwapChainResolution").get_to(model.UseDefaultSwapChainResolution);
+        j.at("UseCubeMapMultiView").get_to(model.UseCubeMapMultiView);
 
         if (model.UseDefaultSwapChainResolution &&
             j.contains("RenderPassWidth") &&

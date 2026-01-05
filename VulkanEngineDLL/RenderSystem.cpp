@@ -339,9 +339,25 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
         subPassList.emplace_back(subpass);
     }
 
+    VkRenderPassMultiviewCreateInfo multiviewCreateInfo;
+    if (renderPassJsonLoader.UseCubeMapMultiView)
+    {
+        const uint32_t viewMask = 0b00111111;
+        const uint32_t correlationMask = 0b00111111;
+        multiviewCreateInfo = VkRenderPassMultiviewCreateInfo
+        {
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
+            .subpassCount = 1,
+            .pViewMasks = &viewMask,
+            .correlationMaskCount = 1,
+            .pCorrelationMasks = &correlationMask,
+        };
+    }
+
     VkRenderPassCreateInfo renderPassInfo =
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .pNext = renderPassJsonLoader.UseCubeMapMultiView ? &multiviewCreateInfo : nullptr,
         .attachmentCount = static_cast<uint32>(attachmentDescriptionList.size()),
         .pAttachments = attachmentDescriptionList.data(),
         .subpassCount = static_cast<uint32>(subpassDescriptionList.size()),

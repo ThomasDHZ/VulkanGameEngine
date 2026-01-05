@@ -3,9 +3,12 @@
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_debug_printf : enable
 
+#include "Constants.glsl"
+
 layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
-layout(constant_id = 1) const uint DescriptorBindingType1 = 3;
-layout(constant_id = 2) const uint DescriptorBindingType2 = 4;
+layout(constant_id = 1) const uint DescriptorBindingType1 = SkyBoxDescriptor;
+layout(constant_id = 2) const uint DescriptorBindingType2 = 3;
+layout(constant_id = 3) const uint DescriptorBindingType3 = 4;
 
 layout(location = 0) in  vec2 TexCoords;
 
@@ -20,14 +23,13 @@ const int EmissionMapBinding = 4;
 const int BrdfMapBinding = 5;
 const int DirectionalShadowMapBinding = 6;
 const int SDFShadowMapBinding = 7;
+const int SkyBoxBinding = 8;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
 	uint DirectionalLightCount;
     uint PointLightCount;
 }gBufferSceneDataBuffer;
-
-const float PI = 3.14159265359;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -76,9 +78,10 @@ mat3 TBN = mat3(
 
 #include "Lights.glsl"
 
-layout(binding = 0) uniform sampler2D TextureMap[];
-layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 0) uniform sampler2D   TextureMap[];
+layout(binding = 1) uniform samplerCube CubeMap;
+layout(binding = 2) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 3) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 void main()
 {
     vec3 positionDataMap = texture(TextureMap[PositionDataMapBinding], TexCoords).rgb;

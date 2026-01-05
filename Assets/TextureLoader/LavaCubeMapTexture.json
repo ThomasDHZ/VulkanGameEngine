@@ -1,7 +1,7 @@
 {
   "TextureFilePath": [
     "Textures/hot_rt.png",
-    "Textures/hot_lt.png",
+    "Textures/hot_lf.png",
     "Textures/hot_up.png",
     "Textures/hot_dn.png",
     "Textures/hot_ft.png",

@@ -18,6 +18,12 @@ layout(push_constant) uniform SceneDataBuffer {
 
 void main() 
 {
-    vec3 color = texture(CubeMap, TexCoords).rgb;
-    FragColor = vec4(color, 1.0f);
+//    vec2 ndc = inUV * 2.0 - 1.0;   // comment this out if inUV already -1..1
+//    vec3 dir = normalize(cameraForward + cameraRight * ndc.x + cameraUp * ndc.y);
+//    vec3 color = texture(CubeMap, dir).rgb;
+
+    // For testing: output solid red first
+     FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+
+  //  FragColor = vec4(color, 1.0);
 }

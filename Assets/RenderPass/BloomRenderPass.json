@@ -7,6 +7,7 @@
   "RenderPassWidth": 0,
   "RenderPassHeight": 0,
   "UseDefaultSwapChainResolution": true,
+  "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [
     "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",

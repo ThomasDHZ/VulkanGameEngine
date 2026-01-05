@@ -83,7 +83,8 @@ struct RenderPassLoader
     uint32                       RenderPassWidth = -1;
     uint32                       RenderPassHeight = -1;
     bool UseDefaultSwapChainResolution = true;
-    bool IsRenderedToSwapchain;
+    bool UseCubeMapMultiView = false;
+    bool IsRenderedToSwapchain = false;
     Vector<String> RenderPipelineList;
     Vector<VkGuid> InputTextureList;
     Vector<RenderAttachmentLoader> RenderAttachmentList;
@@ -177,4 +178,5 @@ struct RenderPipelineLoader
     VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo = VkPipelineDepthStencilStateCreateInfo();
     VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel = VkPipelineColorBlendStateCreateInfo();
     bool UseDynamicColorWrite = false;
+    bool UseCubeMapMultiview = false;
 };

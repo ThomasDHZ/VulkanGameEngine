@@ -3,7 +3,7 @@
 #include "Constants.glsl"
 
 layout(location = 0) in vec3 aPos;
-layout(location = 0) out vec3 TexCoords;
+layout(location = 0) out vec2 TexCoords;
 
 layout(push_constant) uniform SceneDataBuffer {
     int MeshBufferIndex;
@@ -13,9 +13,6 @@ layout(push_constant) uniform SceneDataBuffer {
 } sceneData;
 
 void main() {
-    TexCoords = aPos;
-    const float largeScale = 5000.0;
-    mat4 viewRotOnly = mat4(mat3(sceneData.View));
-    vec4 pos = sceneData.Projection * viewRotOnly * vec4(aPos * largeScale, 1.0);
-    gl_Position = pos.xyww;
+    TexCoords = vec2((gl_VertexIndex & 1) << 1, gl_VertexIndex >> 1) * 2.0 - 1.0;
+    gl_Position = vec4(TexCoords, 0.9999, 1.0);
 }

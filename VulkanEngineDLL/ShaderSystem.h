@@ -142,6 +142,23 @@ public:
     }
 
     template<typename T>
+    void UpdatePushConstantValue(const String& pushConstName, const String& valueName, const Vector<T>& value)
+    {
+        ShaderPushConstantDLL& pushConst = FindShaderPushConstant(pushConstName);
+        ShaderVariableDLL& variable = FindShaderPushConstantStructVariable(pushConst, valueName);
+        static_assert(std::is_trivially_copyable_v<T>, "Push constant type must be trivially copyable");
+        if (variable.Value.size() != sizeof(T))
+        {
+            throw std::runtime_error(
+                "Push constant size mismatch for '" + valueName + "': "
+                "expected " + std::to_string(variable.Value.size()) + " bytes, "
+                "got " + std::to_string(sizeof(T)) + " bytes (type: " + typeid(T).name() + ")"
+            );
+        }
+        std::memcpy(variable.Value.data(), value.data(), variable.Value.size() * value.size());
+    }
+
+    template<typename T>
     void UpdateShaderStructValue(ShaderStructDLL& shaderStruct, const String& name, const T& value)
     {
         ShaderVariableDLL& variable = FindShaderPipelineStructVariable(shaderStruct, name);

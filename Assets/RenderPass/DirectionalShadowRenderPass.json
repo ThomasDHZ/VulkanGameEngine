@@ -9,6 +9,7 @@
   "RenderPassWidth": 2048,
   "RenderPassHeight": 2048,
   "UseDefaultSwapChainResolution": false,
+  "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderAttachmentList": [

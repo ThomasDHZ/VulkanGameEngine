@@ -358,6 +358,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      {
          uint memberSize = 0;
          size_t byteAlignment = 0;
+         size_t arraySize = variable.traits.array.dims[0];
          ShaderMemberType memberType;
          switch (variable.op)
          {
@@ -422,12 +423,39 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                  }
                  break;
              }
+             case SpvOpTypeArray:
+             {
+                 uint32 rowCount = variable.traits.numeric.matrix.row_count;
+                 uint32 colCount = variable.traits.numeric.matrix.column_count;
+                 memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
+                 if (rowCount == 2 && colCount == 2)
+                 {
+                     memberType = shaderMat2;
+                     byteAlignment = 8;
+                 }
+                 else if (rowCount == 3 && colCount == 3)
+                 {
+                     memberType = shaderMat3;
+                     byteAlignment = 16;
+                 }
+                 else if (rowCount == 4 && colCount == 4)
+                 {
+                     memberType = shaderMat4;
+                     byteAlignment = 16;
+                 }
+                 else
+                 {
+                     std::cerr << "Unsupported matrix size: " << rowCount << "x" << colCount << std::endl;
+                     byteAlignment = -1;
+                 }
+                 break;
+             }
          }
 
          shaderVariables.emplace_back(ShaderVariableDLL
              {
                  .Name = String(variable.struct_member_name),
-                 .Size = memberSize,
+                 .Size = arraySize == 0 ? memberSize : memberSize * arraySize,
                  .ByteAlignment = byteAlignment,
                  .Value = Vector<byte>(),
                  .MemberTypeEnum = memberType,
