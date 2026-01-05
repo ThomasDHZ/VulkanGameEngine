@@ -11,7 +11,7 @@
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": true,
+      "BlendEnable": false,
       "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
@@ -33,8 +33,8 @@
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
     "polygonMode": 0,
-    "cullMode": 0,
-    "frontFace": 0,
+    "cullMode": 2,
+    "frontFace": 1,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
     "depthBiasClamp": 0.0,
@@ -54,7 +54,7 @@
   "PipelineDepthStencilStateCreateInfo": {
     "sType": 25,
     "depthTestEnable": true,
-    "depthWriteEnable": true,
+    "depthWriteEnable": false,
     "depthCompareOp": 3,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,

@@ -97,28 +97,24 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vec
 
 uint MeshSystem::CreateSkyBox(VkGuid& materialId)
 {
-    Vector<SkyboxVertexLayout> skyBoxVertices =
-    {
-        {{1.0f, 1.0f, -1.0f}},   {{1.0f, 1.0f, -1.0f}},   {{1.0f, 1.0f, -1.0f}},
-        {{1.0f, -1.0f, -1.0f}},  {{1.0f, -1.0f, -1.0f}},  {{1.0f, -1.0f, -1.0f}},
-        {{1.0f, 1.0f, 1.0f}},    {{1.0f, 1.0f, 1.0f}},    {{1.0f, 1.0f, 1.0f}},
-        {{1.0f, -1.0f, 1.0f}},   {{1.0f, -1.0f, 1.0f}},   {{1.0f, -1.0f, 1.0f}},
-        {{-1.0f, 1.0f, -1.0f}},  {{-1.0f, 1.0f, -1.0f}},  {{-1.0f, 1.0f, -1.0f}},
-        {{-1.0f, -1.0f, -1.0f}}, {{-1.0f, -1.0f, -1.0f}}, {{-1.0f, -1.0f, -1.0f}},
-        {{-1.0f, 1.0f, 1.0f}},   {{-1.0f, 1.0f, 1.0f}},   {{-1.0f, 1.0f, 1.0f}},
-        {{-1.0f, -1.0f, 1.0f}},  {{-1.0f, -1.0f, 1.0f}},  {{-1.0f, -1.0f, 1.0f}}
+    Vector<SkyboxVertexLayout> skyBoxVertices = {
+        {{-1.0f, -1.0f, -1.0f}},
+        {{ 1.0f, -1.0f, -1.0f}},  
+        {{ 1.0f,  1.0f, -1.0f}},
+        {{-1.0f,  1.0f, -1.0f}},
+        {{-1.0f, -1.0f,  1.0f}},  
+        {{ 1.0f, -1.0f,  1.0f}}, 
+        {{ 1.0f,  1.0f,  1.0f}},
+        {{-1.0f,  1.0f,  1.0f}} 
     };
 
-    Vector<uint32_t> indexList
-    {
-        1,  14, 20, 1,  20,
-        7,  10, 6,  19, 10,
-        19, 23, 21, 18, 12,
-        21, 12, 15, 16, 3,
-        9,  16, 9,  22, 5,
-        2,  8,  5,  8,  11,
-        17, 13, 0,  17, 0,
-        4
+    Vector<uint32_t> indexList = {
+        0, 2, 1,   0, 3, 2,
+        4, 5, 6,   4, 6, 7,
+        4, 3, 0,   4, 7, 3,
+        1, 6, 5,   1, 2, 6,
+        0, 5, 4,   0, 1, 5,
+        3, 6, 2,   3, 7, 6
     };
 
     uint meshId = meshSystem.GetNextMeshIndex();

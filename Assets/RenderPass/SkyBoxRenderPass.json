@@ -7,7 +7,7 @@
   "RenderPassWidth": 0,
   "RenderPassHeight": 0,
   "UseDefaultSwapChainResolution": true,
-  "IsRenderedToSwapchain": false,
+  "IsRenderedToSwapchain": true,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
@@ -50,10 +50,6 @@
         "Uint32_1": 0,
         "Uint32_2": 0,
         "Uint32_3": 1065353216
-      },
-      "DepthStencil": {
-        "depth": 0.0,
-        "stencil": 0
       }
     }
   ]
