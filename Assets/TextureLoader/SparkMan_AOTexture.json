@@ -1,5 +1,5 @@
 {
-  "TextureFilePath": "Textures/SparkMan_AOTexture.png",
+  "TextureFilePath": [ "Textures/SparkMan_AOTexture.png" ],
   "TextureId": "cdc90171-1ff1-4f6c-bf2c-2aba17b3de6c",
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,

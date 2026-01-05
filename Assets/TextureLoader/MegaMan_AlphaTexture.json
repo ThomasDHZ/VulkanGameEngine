@@ -1,5 +1,5 @@
 {
-  "TextureFilePath": "Textures/MegaMan_Alpha.png",
+  "TextureFilePath": [ "Textures/MegaMan_Alpha.png" ],
   "TextureId": "f839ddbe-04e9-4b35-b733-8727294d9459",
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,

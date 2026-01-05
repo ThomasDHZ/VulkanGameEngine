@@ -1,6 +1,6 @@
 {
-  "TextureFilePath": "Textures/MegaMan_Specular.bmp",
-  "TextureId": "2e426d76-99c6-49e6-a965-8eee081946f9",
+  "TextureFilePath": [ "Textures/MegaMan_Specular.bmp" ],
+  "TextureId": "2e426d76-99c6-49e6-a965-8eee081946f9" ,
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,
   "SampleCount": 1,

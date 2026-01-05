@@ -78,5 +78,6 @@ enum DescriptorBindingPropertiesEnum
     kSpotLightDescriptor,
     kVertexDescsriptor,
     kIndexDescriptor,
-    kTransformDescriptor
+    kTransformDescriptor,
+    kSkyBoxDescriptor
 };

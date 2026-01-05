@@ -684,6 +684,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetGameObjectTransformBuffer();
             break;
         }
+        case kSkyBoxDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetSkyBoxTextureBuffer().size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetSkyBoxTextureBuffer();
+            break;
+        }
         default:
         {
             throw std::runtime_error("Binding case hasn't been handled yet");
@@ -962,5 +968,12 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
         }
     }
     
+    return texturePropertiesBuffer;
+}
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetSkyBoxTextureBuffer()
+{
+    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
+    textureSystem.GetTexturePropertiesBuffer(textureSystem.CubeMap, texturePropertiesBuffer);
     return texturePropertiesBuffer;
 }

@@ -1,5 +1,5 @@
 {
-  "TextureFilePath": "Textures/MegaMan_AO.bmp",
+  "TextureFilePath": [ "Textures/MegaMan_AO.bmp" ],
   "TextureId": "a10aecbd-1b29-4965-ab5b-521cb5e5f0f4",
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,

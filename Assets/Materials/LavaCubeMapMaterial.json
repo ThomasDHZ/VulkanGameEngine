@@ -1,0 +1,33 @@
+{
+  "Name": "LavaCubeMapMaterial",
+  "MaterialId": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
+  "ShaderMaterialBufferIndex": 0,
+  "MaterialBufferId": 0,
+  "AlbedoMapId": "64782092-bab5-4133-a0c9-9b6f206b68f0",
+  "SpecularMapId": "00000000-0000-0000-0000-000000000000",
+  "MetallicRoughnessMapId": "00000000-0000-0000-0000-000000000000",
+  "MetallicMapId": "00000000-0000-0000-0000-000000000000",
+  "RoughnessMapId": "00000000-0000-0000-0000-000000000000",
+  "AmbientOcclusionMapId": "00000000-0000-0000-0000-000000000000",
+  "NormalMapId": "00000000-0000-0000-0000-000000000000",
+  "AlphaMapId": "00000000-0000-0000-0000-000000000000",
+  "EmissionMapId": "00000000-0000-0000-0000-000000000000",
+  "HeightMapId": "00000000-0000-0000-0000-000000000000",
+  "Albedo": [
+    0.8,
+    0.8,
+    0.8
+  ],
+  "Specular": 0.0,
+  "Metallic": 0.0,
+  "Roughness": 0.5,
+  "AmbientOcclusion": 1.0,
+  "Emission": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "Alpha": 1.0,
+  "HeightScale": 0.04,
+  "Height": 0.0
+}

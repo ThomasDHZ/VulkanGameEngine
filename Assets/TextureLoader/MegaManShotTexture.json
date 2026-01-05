@@ -1,5 +1,5 @@
 {
-  "TextureFilePath": "Textures/MegaManShot.png",
+  "TextureFilePath": [ "Textures/MegaManShot.png" ],
   "TextureId": "cf0daea4-871d-4137-a9f9-8c6fda795325",
   "TextureByteFormat": 43,
   "UsingSRGBFormat": true,

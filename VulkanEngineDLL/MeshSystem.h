@@ -17,46 +17,46 @@ enum MeshTypeEnum
 	kMesh_Undefined
 };
 
-enum VertexTypeEnum
+enum VertexLayoutEnum
 {
-	kVertexType_NullVertex,
-	kVertexType_Vertex2D,
-	kVertexType_SpriteInstanceVertex,
-	kVertexType_SkyBoxVertex,
-	kVertextype_Undefined
+	kVertexLayout_NullVertex,
+	kVertexLayout_Vertex2D,
+	kVertexLayout_SpriteInstanceVertex,
+	kVertexLayout_SkyBoxVertex,
+	kVertexLayout_Undefined
 };
 
-struct Vertex
+struct VertexLayout
 {
-	VertexTypeEnum VertexType = kVertexType_NullVertex;
+	VertexLayoutEnum VertexType = kVertexLayout_NullVertex;
 	uint64 VertexDataSize = UINT64_MAX;
 	void* VertexData = nullptr;
 };
 
-struct NullVertex
+struct NullVertexLayout
 {
 
 };
 
-struct Vertex2D
+struct Vertex2DLayout
 {
 	vec2 Position = vec2(0.0f);
 	vec2 UV = vec2(0.0f);
 
-	Vertex2D()
+	Vertex2DLayout()
 	{
 		Position = vec2(0.0f);
 		UV = vec2(0.0f);
 	}
 
-	Vertex2D(vec2 position, vec2 uv)
+	Vertex2DLayout(vec2 position, vec2 uv)
 	{
 		Position = position;
 		UV = uv;
 	}
 };
 
-struct SkyBoxVertex
+struct SkyboxVertexLayout
 {
 	vec3 Position = glm::vec3(0.0f);
 };
@@ -67,7 +67,7 @@ struct Mesh
 	uint32 ParentGameObjectId = UINT32_MAX;
 	uint32 MeshShaderBufferIndex = UINT32_MAX;
 	MeshTypeEnum MeshTypeId = kMesh_Undefined;
-	VertexTypeEnum VertexTypeId = kVertextype_Undefined;
+	VertexLayoutEnum VertexLayout = kVertexLayout_NullVertex;
 	uint32 MeshPropertiesId = UINT32_MAX;
 	uint32 MeshVertexBufferId = UINT32_MAX;
 	uint32 MeshIndexBufferId = UINT32_MAX;
@@ -103,20 +103,21 @@ private:
 
 	public:
 		Vector<Mesh>                 MeshList;
-		Vector<Vertex>				 VertexList;
+		Vector<VertexLayout>		 VertexList;
 		Vector<Vector<uint>>         IndexList;
 		VulkanBuffer 				 MeshPropertiesBuffer;
 		VulkanBuffer				 TransformBuffer;
 
 		DLL_EXPORT void MeshSystemStartUp();
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vertex& vertexData, Vector<uint32>& indexList);
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, Vertex& vertexData, Vector<uint32>& indexList, VkGuid& materialId);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid& materialId);
+		DLL_EXPORT uint CreateSkyBox(VkGuid& materialId);
 		DLL_EXPORT void Update(const float& deltaTime);
 		DLL_EXPORT void Destroy(uint meshId);
 		DLL_EXPORT void DestroyAllGameObjects();
 		DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
 		DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-		DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexTypeEnum vertexType);
+		DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexLayoutEnum vertexType);
 };
 extern DLL_EXPORT MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()

@@ -28,14 +28,14 @@ struct LevelLoader
 struct LevelLayer
 {
     VkGuid				LevelId = VkGuid();
-    uint				MeshId ;
+    uint				MeshId;
     VkGuid				MaterialId = VkGuid();
     VkGuid				TileSetId = VkGuid();
     int					LevelLayerIndex;
     ivec2				LevelBounds;
     uint*               TileIdMap;
     Tile*               TileMap;
-    Vertex2D*           VertexList;
+    Vertex2DLayout*     VertexList;
     uint32*             IndexList;
     size_t				TileIdMapCount;
     size_t				TileMapCount;
@@ -62,7 +62,8 @@ private:
         VkGuid      LoadTileSetVRAM(const char* tileSetPath);
         void        LoadLevelLayout(const char* levelLayoutPath);
         void        LoadLevelMesh(VkGuid& tileSetId);
-        void        DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2D* VertexList, uint32* IndexList);
+        void        LoadSkyBox(const char* skyBoxMaterialPath);
+        void        DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2DLayout* VertexList, uint32* IndexList);
 
     public:
         LevelLayout levelLayout;
@@ -76,6 +77,7 @@ private:
         RenderPassGuid sdfShaderRenderPassId;
         RenderPassGuid gBufferRenderPassId;
         RenderPassGuid geometryRenderPassId;
+        RenderPassGuid skyBoxRenderPassId;
         RenderPassGuid verticalGaussianBlurRenderPassId;
         RenderPassGuid horizontalGaussianBlurRenderPassId;
         RenderPassGuid bloomRenderPassId;
@@ -87,10 +89,10 @@ private:
         RenderPassGuid spriteWireFrameRenderPass2DId;
 
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
-        DLL_EXPORT void                 RenderBRDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, const float deltaTime);
         DLL_EXPORT void                 RenderDirectionalShadowRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
+        DLL_EXPORT void                 RenderSkyBox(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderGeometryRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection);
         DLL_EXPORT void                 RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);

@@ -1,6 +1,6 @@
 {
-  "TextureFilePath": "Textures/AnimeGirl_NormalTexture.bmp",
-  "TextureId": "fb05d690-713c-4361-be3c-da487e97929c",
+  "TextureFilePath": ["Textures/AnimeGirl_NormalTexture.bmp"],
+  "TextureId":  "fb05d690-713c-4361-be3c-da487e97929c" ,
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,
   "SampleCount": 1,

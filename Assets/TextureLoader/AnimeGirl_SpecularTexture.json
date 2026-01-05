@@ -1,6 +1,6 @@
 {
-  "TextureFilePath": "Textures/AnimeGirl_SpecularTexture.bmp",
-  "TextureId": "6ed9450e-05b9-4253-b710-53ff04b4a9f5",
+  "TextureFilePath": ["Textures/AnimeGirl_SpecularTexture.bmp"],
+  "TextureId":  "6ed9450e-05b9-4253-b710-53ff04b4a9f5" ,
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,
   "SampleCount": 1,

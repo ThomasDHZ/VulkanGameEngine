@@ -16,12 +16,12 @@ uint32 SpriteSystem::GetNextSpriteIndex()
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
 {
-    Vector<Vertex2D> SpriteVertexList =
+    Vector<Vertex2DLayout> SpriteVertexList =
     {
-        Vertex2D(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
-        Vertex2D(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
-        Vertex2D(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
-        Vertex2D(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
+        Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
+        Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
+        Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
+        Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
     };
 
     Vector<uint32> SpriteIndexList =
@@ -30,10 +30,10 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
         1, 3, 2
     };
 
-    Vertex vertexData =
+    VertexLayout vertexData =
     {
-        .VertexType = VertexTypeEnum::kVertexType_SpriteInstanceVertex,
-        .VertexDataSize = sizeof(Vertex2D) * SpriteVertexList.size(),
+        .VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
+        .VertexDataSize = sizeof(Vertex2DLayout) * SpriteVertexList.size(),
         .VertexData = SpriteVertexList.data(),
     };
 

@@ -1,5 +1,5 @@
 {
-  "TextureFilePath": "Textures/SparkMan_MetallicTexture.png",
+  "TextureFilePath": [ "Textures/SparkMan_MetallicTexture.png" ],
   "TextureId": "1866bc4e-7ec6-4a46-aeb3-3e98c583203f",
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,

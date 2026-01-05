@@ -1,13 +1,20 @@
 {
-  "TextureFilePath": [ "Textures/SparkMan_NormalTexture.png" ],
-  "TextureId": "63e79b40-257e-43a0-98f7-f88d659c059a",
+  "TextureFilePath": [
+    "Textures/hot_rt.png",
+    "Textures/hot_lt.png",
+    "Textures/hot_up.png",
+    "Textures/hot_dn.png",
+    "Textures/hot_ft.png",
+    "Textures/hot_bk.png"
+  ],
+  "TextureId": "64782092-bab5-4133-a0c9-9b6f206b68f0",
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
   "UseMipMaps": false,
-  "IsSkyBox": false,
+  "IsSkyBox": true,
   "SamplerCreateInfo": {
     "SType": 31,
     "MagFilter": 1,

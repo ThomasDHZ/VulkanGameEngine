@@ -398,13 +398,17 @@ namespace nlohmann
 
     void from_json(const json& j, TextureLoader& model)
     {
-        model.TextureFilePath = j.at("TextureFilePath").get<String>().c_str();
+        for (int x = 0; x < j.at("TextureFilePath").size(); x++)
+        {
+            model.TextureFilePath.emplace_back(j["TextureFilePath"][x].get<String>().c_str());
+        }
         j.at("TextureId").get_to(model.TextureId);
         j.at("ImageType").get_to(model.ImageType);
         j.at("TextureByteFormat").get_to(model.TextureByteFormat);
         j.at("UsingSRGBFormat").get_to(model.UsingSRGBFormat);
         j.at("TextureType").get_to(model.TextureType);
         j.at("UseMipMaps").get_to(model.UseMipMaps);
+        j.at("IsSkyBox").get_to(model.IsSkyBox);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
     }
 }

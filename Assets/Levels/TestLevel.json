@@ -19,13 +19,18 @@
     "TextureLoader/AnimeGirl_MetallicTexture.json",
     "TextureLoader/AnimeGirl_NormalTexture.json",
     "TextureLoader/AnimeGirl_SpecularTexture.json",
-    "TextureLoader/AnimeGirl_AlphaTexture.json"
+    "TextureLoader/AnimeGirl_AlphaTexture.json",
+    "TextureLoader/LavaCubeMapTexture.json"
   ],
   "LoadMaterials": [
     "Materials/MegaManMaterial.json",
     "Materials/MegaManShotMaterial.json",
     "Materials/SparkManTileSetMaterial.json",
-    "Materials/AnimeGirlMaterial.json"
+    "Materials/AnimeGirlMaterial.json",
+    "Materials/LavaCubeMapMaterial.json"
+  ],
+  "LoadSkyBox": [
+    "SkyBoxes/LavaSkyBox.json"
   ],
   "LoadSpriteVRAM": [
     "Sprites/AnimeGirl.json",

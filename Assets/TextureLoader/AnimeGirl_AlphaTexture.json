@@ -1,5 +1,5 @@
 {
-  "TextureFilePath": "Textures/AnimeGirl_AlphaTexture.bmp",
+  "TextureFilePath": [ "Textures/AnimeGirl_AlphaTexture.bmp" ],
   "TextureId": "c30b9dc8-0bf6-42d6-afcf-121506e4185e",
   "TextureByteFormat": 37,
   "UsingSRGBFormat": false,

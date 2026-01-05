@@ -21,13 +21,47 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		return textureLoader.TextureId;
 	}
 
-	int width = 0;
-	int height = 0;
-	int colorChannels = 0;
-    Vector<byte> textureData = fileSystem.LoadImageFile(textureLoader.TextureFilePath.c_str(), width, height, colorChannels);
+	Vector<byte> textureData;
+	int expectedWidth = -1;
+	int expectedHeight = -1;
+	int expectedChannels = -1;
+
+	for (size_t i = 0; i < textureLoader.TextureFilePath.size(); ++i)
+	{
+		const auto& path = textureLoader.TextureFilePath[i];
+		int w = 0, h = 0, channels = 0;
+		Vector<byte> faceData = fileSystem.LoadImageFile(path, w, h, channels);
+
+		if (faceData.empty())
+		{
+			std::cerr << "[ERROR] Failed to load cubemap face: " << path << std::endl;
+			// Handle error - maybe load a default pink texture?
+			continue;
+		}
+
+		if (expectedWidth == -1)
+		{
+			expectedWidth = w;
+			expectedHeight = h;
+			expectedChannels = channels;
+		}
+		else if (w != expectedWidth || h != expectedHeight || channels != expectedChannels)
+		{
+			std::cerr << "[ERROR] Cubemap face size/format mismatch: " << path
+				<< " is " << w << "x" << h << " ch=" << channels
+				<< " but expected " << expectedWidth << "x" << expectedHeight << " ch=" << expectedChannels << std::endl;
+			// Critical error for cubemaps
+			// You might want to abort or fallback
+		}
+
+		textureData.insert(textureData.end(), faceData.begin(), faceData.end());
+	}
+
+	// Now set the texture dimensions from the validated size
+
 
 	VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
-	switch (colorChannels)
+	switch (expectedChannels)
 	{
 		case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
 		case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
@@ -35,7 +69,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
 		default:
 		{
-			std::cout << "[TextureSystem WARNING] Unsupported channel count: " << colorChannels << " for " << textureLoader.TextureFilePath << std::endl;
+			std::cout << "[TextureSystem WARNING] Unsupported channel count: " << expectedChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
 			detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
 			break;
 		}
@@ -50,20 +84,21 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	Texture texture = Texture
 	{
 		.textureId = textureLoader.TextureId,
-		.width = width,
-		.height = height,
+		.width = expectedWidth,
+		.height = expectedHeight,
 		.depth = 1,
-		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(expectedWidth, expectedHeight)))) + 1 : 1,
 		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
 		.textureByteFormat = finalFormat,
 		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-		.colorChannels = static_cast<ColorChannelUsed>(colorChannels)
+		.colorChannels = static_cast<ColorChannelUsed>(expectedChannels)
 	};
 
 	VkImageCreateInfo imageCreateInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.flags = textureLoader.IsSkyBox ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : static_cast<VkImageViewCreateFlags>(0),
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
 		.extent =
@@ -73,7 +108,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 			.depth = 1,
 		},
 		.mipLevels = texture.mipMapLevels,
-		.arrayLayers = 1,
+		.arrayLayers = textureLoader.IsSkyBox ? static_cast<uint>(6) : static_cast<uint>(1),
 		.samples = texture.sampleCount,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
@@ -82,11 +117,18 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	};
 	if (texture.mipMapLevels > 1) imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-	CreateTextureImage(texture, imageCreateInfo, textureData.data(), textureData.size());
+	CreateTextureImage(texture, imageCreateInfo, textureData.data(), textureData.size() / imageCreateInfo.arrayLayers);
 	CreateTextureView(texture, textureLoader.ImageType);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
-	TextureMap[textureLoader.TextureId] = texture;
+	if (textureLoader.IsSkyBox)
+	{
+		CubeMap = texture;
+	}
+	else
+	{
+		TextureMap[textureLoader.TextureId] = texture;
+	}
 
 #ifndef NDEBUG
 	std::cout << "[TextureDebug] Created Texture:" << texturePath
@@ -475,7 +517,7 @@ void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferInde
 	texture.textureBufferIndex = bufferIndex;
 }
 
-void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureSize)
+void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, byte* textureData, VkDeviceSize textureLayerSize)
 {
 	VmaAllocationCreateInfo allocInfo =
 	{
@@ -491,12 +533,12 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, &allocOut));
 	
 	texture.TextureAllocation = allocation;
-	if (textureData && textureSize > 0)
+	if (textureData && textureLayerSize > 0)
 	{
 		VkBufferCreateInfo stagingBufferInfo =
 		{
 			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-			.size = textureSize,
+			.size = textureLayerSize,
 			.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 		};
@@ -518,27 +560,41 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 			VULKAN_THROW_IF_FAIL(vmaMapMemory(bufferSystem.vmaAllocator, stagingAllocation, &mapped));
 		}
 
-		memcpy(mapped, textureData, textureSize);
-		vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAllocation, 0, textureSize);
+		memcpy(mapped, textureData, textureLayerSize * imageCreateInfo.arrayLayers);
+		vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAllocation, 0, textureLayerSize);
 		if (!stagingAllocOut.pMappedData)
 		{
 			vmaUnmapMemory(bufferSystem.vmaAllocator, stagingAllocation);
 		}
 
+		std::vector<VkBufferImageCopy> copyRegions;
+		copyRegions.reserve(imageCreateInfo.arrayLayers);
 		TransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		VkBufferImageCopy copyRegion =
+		for (uint32 layer = 0; layer < imageCreateInfo.arrayLayers; ++layer)
 		{
-			.imageSubresource = 
-				{
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = 0,
-					.baseArrayLayer = 0,
-					.layerCount = 1,
-				},
-			.imageExtent = imageCreateInfo.extent,
-		};
+			VkBufferImageCopy copyRegion
+			{
+				.bufferOffset = layer * textureLayerSize,
+				.bufferRowLength = 0,
+				.bufferImageHeight = 0,
+				.imageSubresource
+					{
+						.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+						.mipLevel = 0,
+						.baseArrayLayer = layer,
+						.layerCount = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? static_cast<uint>(6) : static_cast<uint>(1)
+					},
+				.imageOffset = { 0, 0, 0 },
+				.imageExtent = {
+					static_cast<uint32_t>(texture.width),
+					static_cast<uint32_t>(texture.height),
+					1
+				}
+			};
+			copyRegions.push_back(copyRegion);
+		}
 		VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
-		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
 		vulkanSystem.EndSingleUseCommand(commandBuffer);
 
 		if (texture.mipMapLevels > 1)
@@ -590,7 +646,7 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.image = texture.textureImage,
-		.viewType = VK_IMAGE_VIEW_TYPE_2D,
+		.viewType = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
 		.format = texture.textureByteFormat,
 		.subresourceRange =
 		{
@@ -598,7 +654,7 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 			.baseMipLevel = 0,
 			.levelCount = texture.mipMapLevels,
 			.baseArrayLayer = 0,
-			.layerCount = 1,
+			.layerCount = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? static_cast<uint>(6) : static_cast<uint>(1),
 		}
 	};
 
