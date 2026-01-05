@@ -14,8 +14,11 @@ public:
 	float Y;
 	float XOffset;
 	float YOffset;
+	float XLast;
+	float YLast;
 	int WheelOffset;
 	bool MouseButtonState[MAXMOUSEKEY];
+	bool IsDragging = false;
 
 	Mouse();
 	~Mouse();

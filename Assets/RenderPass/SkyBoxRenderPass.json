@@ -8,7 +8,7 @@
   "RenderPassHeight": 0,
   "UseDefaultSwapChainResolution": true,
   "UseCubeMapMultiView": false,
-  "IsRenderedToSwapchain": false,
+  "IsRenderedToSwapchain": true,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
@@ -39,8 +39,8 @@
   "ClearValueList": [
     {
       "Color": {
-        "Float32_0": 1.0,
-        "Float32_1": 0.0,
+        "Float32_0": 0.0,
+        "Float32_1": 1.0,
         "Float32_2": 0.0,
         "Float32_3": 1.0,
         "Int32_0": 0,

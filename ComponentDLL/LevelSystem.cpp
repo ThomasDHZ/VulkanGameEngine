@@ -157,13 +157,14 @@ void LevelSystem::DestroyLevel()
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    Camera_Update(*OrthographicCamera.get());
-
+    Camera_OrthographicUpdate(*OrthographicCamera.get());
+    Camera_PerspectiveUpdate(*PerspectiveCamera.get());
 }
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
     OrthographicCamera = std::make_shared<Camera>(Camera_OrthographicCamera2D(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
@@ -505,7 +506,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
      VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
      const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-     ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
+     ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("skyBoxViewData");
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {
@@ -533,8 +534,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
-         shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", skybox.MeshId);
-         shaderSystem.UpdatePushConstantBuffer("sceneData");
+         shaderSystem.UpdatePushConstantValue<uint>("skyBoxViewData", "MeshBufferIndex", skybox.MeshId);
+         shaderSystem.UpdatePushConstantBuffer("skyBoxViewData");
 
          vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);

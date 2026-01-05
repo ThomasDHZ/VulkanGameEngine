@@ -9,21 +9,16 @@ layout(location = 0) out vec4 FragColor;
 layout(constant_id = 0) const uint DescriptorBindingType0 = SkyBoxDescriptor;
 layout(binding = 0) uniform samplerCube CubeMap;
 
-layout(push_constant) uniform SceneDataBuffer {
+layout(push_constant) uniform SkyBoxViewData {
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
     vec3 CameraPosition;
-} sceneData;
+} skyBoxViewData;
 
 void main() 
 {
-//    vec2 ndc = inUV * 2.0 - 1.0;   // comment this out if inUV already -1..1
-//    vec3 dir = normalize(cameraForward + cameraRight * ndc.x + cameraUp * ndc.y);
-//    vec3 color = texture(CubeMap, dir).rgb;
-
-    // For testing: output solid red first
-     FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-
-  //  FragColor = vec4(color, 1.0);
+    vec3 sampleDir = vec3(TexCoords.x, TexCoords.y, -TexCoords.z);
+    vec3 color = texture(CubeMap, normalize(sampleDir)).rgb;
+    FragColor = vec4(color, 1.0f);
 }

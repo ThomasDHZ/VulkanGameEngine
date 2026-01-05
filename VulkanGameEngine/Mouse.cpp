@@ -14,7 +14,6 @@ Mouse::~Mouse()
 
 void Mouse::MouseMoveEvent(GLFWwindow* window, double x, double y)
 {
-
 	mouse.XOffset = mouse.XOffset - static_cast<float>(x);
 	mouse.YOffset = static_cast<float>(y) - mouse.XOffset;
 	mouse.X = static_cast<float>(x);

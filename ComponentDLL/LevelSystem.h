@@ -71,6 +71,7 @@ private:
         Vector<Vector<uint>> LevelTileMapList;
         UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
         SharedPtr<Camera> OrthographicCamera;
+        SharedPtr<Camera> PerspectiveCamera;
 
         RenderPassGuid brdfRenderPassId;
         RenderPassGuid directionalShadowRenderPassId;
