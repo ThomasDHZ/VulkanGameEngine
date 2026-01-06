@@ -1,5 +1,5 @@
 {
-  "Name": "SkyBoxPass",
+  "Name": "HdrRenderPass",
   "RenderPassId": "dbffd1c8-fdac-4b79-a192-465191af584f",
   "RenderPipelineList": [
     "Pipelines/SkyBoxPipeline.json"
@@ -8,13 +8,13 @@
   "RenderPassHeight": 0,
   "UseDefaultSwapChainResolution": true,
   "UseCubeMapMultiView": false,
-  "IsRenderedToSwapchain": true,
+  "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "RenderTextureType": 1,
       "RenderAttachmentType": 0,
       "Format": 44,
       "SampleCount": 1,
@@ -39,8 +39,8 @@
   "ClearValueList": [
     {
       "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 1.0,
+        "Float32_0": 1.0,
+        "Float32_1": 0.0,
         "Float32_2": 0.0,
         "Float32_3": 1.0,
         "Int32_0": 0,
@@ -51,6 +51,10 @@
         "Uint32_1": 0,
         "Uint32_2": 0,
         "Uint32_3": 1065353216
+      },
+      "DepthStencil": {
+        "depth": 1.0,
+        "stencil": 0
       }
     }
   ]
