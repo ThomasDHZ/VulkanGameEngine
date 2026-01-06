@@ -146,7 +146,7 @@ namespace nlohmann
         j.at("FinalLayout").get_to(model.FinalLayout);
         j.at("UseSampler").get_to(model.UseSampler);
         j.at("UseMipMaps").get_to(model.UseMipMaps);
-
+        j.at("IsCubeMapAttachment").get_to(model.IsCubeMapAttachment);
         if (model.UseMipMaps &&
             j.contains("MipMapCount"))
         {

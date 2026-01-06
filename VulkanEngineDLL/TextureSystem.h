@@ -21,26 +21,27 @@ struct TextureLoader
 
 struct Texture
 {
-    TextureGuid textureId;
-    int width = 1;
-    int height = 1;
-    int depth = 1;
-    uint32 mipMapLevels = 0;
-    uint32 textureBufferIndex = 0;
+    TextureGuid           textureId;
+    int                   width = 1;
+    int                   height = 1;
+    int                   depth = 1;
+    uint32                mipMapLevels = 0;
+    uint32                textureBufferIndex = 0;
 
-    VkImage textureImage = VK_NULL_HANDLE;
-    VkDeviceMemory textureMemory = VK_NULL_HANDLE;
-    VkImageView textureView = VK_NULL_HANDLE;
-    VkSampler textureSampler = VK_NULL_HANDLE;
-    VkDescriptorSet ImGuiDescriptorSet = VK_NULL_HANDLE;
-    VmaAllocation TextureAllocation = VK_NULL_HANDLE;
+    VkImage               textureImage = VK_NULL_HANDLE;
+    VkDeviceMemory        textureMemory = VK_NULL_HANDLE;
+    VkImageView           textureView = VK_NULL_HANDLE;
+    VkImageView           RenderedCubeMapView = VK_NULL_HANDLE;
+    VkSampler             textureSampler = VK_NULL_HANDLE;
+    VkDescriptorSet       ImGuiDescriptorSet = VK_NULL_HANDLE;
+    VmaAllocation         TextureAllocation = VK_NULL_HANDLE;
 
-    TextureUsageEnum textureUsage = TextureUsageEnum::kUse_Undefined;
-    TextureTypeEnum textureType = TextureTypeEnum::TextureType_UNKNOWN;
-    VkFormat textureByteFormat = VK_FORMAT_UNDEFINED;
-    VkImageLayout textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    TextureUsageEnum      textureUsage = TextureUsageEnum::kUse_Undefined;
+    TextureTypeEnum       textureType = TextureTypeEnum::TextureType_UNKNOWN;
+    VkFormat              textureByteFormat = VK_FORMAT_UNDEFINED;
+    VkImageLayout         textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
-    ColorChannelUsed colorChannels = ColorChannelUsed::ChannelRGBA;
+    ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
 struct RenderAttachmentLoader;
@@ -64,6 +65,7 @@ private:
 
 public:
     Texture                                                        CubeMap;
+    Texture                                                        IrradianceCubeMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;

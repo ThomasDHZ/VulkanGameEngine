@@ -8,7 +8,7 @@
   "RenderPassHeight": 0,
   "UseDefaultSwapChainResolution": true,
   "UseCubeMapMultiView": false,
-  "IsRenderedToSwapchain": true,
+  "IsRenderedToSwapchain": false,
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
@@ -22,7 +22,8 @@
       "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
-      "UseMipMaps": false
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false
     }
   ],
   "SubpassDependencyList": [

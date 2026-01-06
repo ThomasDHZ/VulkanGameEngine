@@ -12,5 +12,6 @@ const uint VertexDescsriptor = 6;
 const uint IndexDescriptor = 7;
 const uint TransformDescriptor = 8;
 const uint SkyBoxDescriptor = 9;
+const uint IrradianceCubeMapDescriptor = 10;
 
 #endif

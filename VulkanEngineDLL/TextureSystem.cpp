@@ -27,32 +27,8 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	Vector<byte> textureData;
 	for (size_t x = 0; x < textureLoader.TextureFilePath.size(); x++)
 	{
-	
-			int w = 0, h = 0, chan = 0;
-			Vector<byte> layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], w, h, chan);
-
-			std::cout << "[TextureLoad] Face " << x << ": " << textureLoader.TextureFilePath[x]
-				<< " -> " << w << "x" << h << "x" << chan
-				<< " (data size: " << layerData.size() << " bytes)" << std::endl;
-
-			if (layerData.empty() || w <= 0 || h <= 0 || chan <= 0)
-			{
-				std::cerr << "[ERROR] Failed to load texture face: " << textureLoader.TextureFilePath[x] << std::endl;
-			}
-
-			if (x == 0)
-			{
-				width = w;
-				height = h;
-				textureChannels = chan;
-			}
-			else if (w != width || h != height || chan != textureChannels)
-			{
-				std::cerr << "[ERROR] Cubemap faces must all have same dimensions and channels!" << std::endl;
-			}
-
-			textureData.insert(textureData.end(), layerData.begin(), layerData.end());
-		
+		Vector<byte> layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
+		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 	}
 
 	VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
@@ -151,8 +127,17 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		.mipMapLevels = renderAttachmentLoader.UseMipMaps ? renderAttachmentLoader.MipMapCount : 1,
 		.textureByteFormat = renderAttachmentLoader.Format,
 		.textureImageLayout = renderAttachmentLoader.FinalLayout,
-		.sampleCount = renderAttachmentLoader.SampleCount
+		.sampleCount = renderAttachmentLoader.SampleCount,
 	};
+
+	switch (renderAttachmentLoader.RenderTextureType)
+	{
+		case RenderType_DepthBufferTexture: texture.textureType = TextureType_DepthTexture; break;
+		case RenderType_GBufferTexture: texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_IrradianceTexture: texture.textureType = TextureType_IrradianceMapTexture; break;
+		case RenderType_OffscreenColorTexture: texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_SwapChainTexture: texture.textureType = TextureType_ColorTexture; break;
+	}
 
 	if (isDepthFormat)
 	{
@@ -177,7 +162,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		.format = texture.textureByteFormat,
 		.extent = { static_cast<uint32>(texture.width), static_cast<uint32>(texture.height), 1 },
 		.mipLevels = texture.mipMapLevels,
-		.arrayLayers = 1,
+		.arrayLayers = renderAttachmentLoader.IsCubeMapAttachment ? static_cast<uint>(6) : static_cast<uint>(1),
 		.samples = texture.sampleCount,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
@@ -221,8 +206,13 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	{
 		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
-
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
+
+	if (renderAttachmentLoader.IsCubeMapAttachment)
+	{
+		viewInfo.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.RenderedCubeMapView));
+	}
 
 	VkSamplerCreateInfo samplerInfo = {};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

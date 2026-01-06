@@ -14,7 +14,7 @@
     {
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
       "MipMapCount": 1,
-      "RenderTextureType": 1,
+      "RenderTextureType": 2,
       "RenderAttachmentType": 0,
       "Format": 44,
       "SampleCount": 1,
@@ -22,7 +22,8 @@
       "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
-      "UseMipMaps": false
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": true
     }
   ],
   "SubpassDependencyList": [
@@ -39,8 +40,8 @@
   "ClearValueList": [
     {
       "Color": {
-        "Float32_0": 1.0,
-        "Float32_1": 0.0,
+        "Float32_0": 0.0,
+        "Float32_1": 1.0,
         "Float32_2": 0.0,
         "Float32_3": 1.0,
         "Int32_0": 0,
@@ -51,10 +52,6 @@
         "Uint32_1": 0,
         "Uint32_2": 0,
         "Uint32_3": 1065353216
-      },
-      "DepthStencil": {
-        "depth": 0.0,
-        "stencil": 0
       }
     }
   ]

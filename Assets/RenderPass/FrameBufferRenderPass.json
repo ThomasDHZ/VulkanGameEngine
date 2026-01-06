@@ -22,7 +22,8 @@
       "StoreOp": 0,
       "FinalLayout": 1000001002,
       "UseSampler": false,
-      "UseMipMaps": false
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false
     }
   ],
   "SubpassDependencyList": [

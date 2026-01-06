@@ -23,6 +23,7 @@
       "FinalLayout": 2,
       "UseSampler": true,
       "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,

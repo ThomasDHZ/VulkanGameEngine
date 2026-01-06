@@ -58,6 +58,7 @@ public:
     Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>     GetSkyBoxTextureBuffer();
+    Vector<VkDescriptorImageInfo>     GetIrradianceMapTextureBuffer(const RenderPassGuid& renderPassGuid);
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

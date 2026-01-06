@@ -68,6 +68,7 @@ struct  RenderAttachmentLoader
     VkSamplerCreateInfo          SamplerCreateInfo = VkSamplerCreateInfo();
     bool                         UseSampler = true;
     bool                         UseMipMaps = false;
+    bool                         IsCubeMapAttachment = false;
 };
 
 struct RenderPassAttachementTextures

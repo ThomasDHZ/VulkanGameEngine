@@ -23,6 +23,7 @@
       "FinalLayout": 4,
       "UseSampler": false,
       "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
       "SamplerCreateInfo": null
     }
   ],

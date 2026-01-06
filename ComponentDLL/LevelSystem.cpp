@@ -228,7 +228,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     directionalShadowRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/DirectionalShadowRenderPass.json", ivec2(2048, 2048));
     sdfShaderRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SDFShadowRenderPass.json", ivec2(128, 128));
     skyBoxRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SkyBoxRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", ivec2(512,512));
+    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", ivec2(256, 256));
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     geometryRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferLightingRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
@@ -582,7 +582,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
-         shaderSystem.UpdatePushConstantValue<float>("irradianceShaderConstants", "sampleDelta", 0.025f);
+         shaderSystem.UpdatePushConstantValue<float>("irradianceShaderConstants", "sampleDelta", 0.1f);
          shaderSystem.UpdatePushConstantBuffer("irradianceShaderConstants");
 
          vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
@@ -605,7 +605,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "DirectionalLightCount", lightSystem.DirectionalLightList.size());
      shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "PointLightCount", lightSystem.PointLightList.size());
      shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
-         shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
+     shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
      shaderSystem.UpdatePushConstantBuffer("gBufferSceneDataBuffer");
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo

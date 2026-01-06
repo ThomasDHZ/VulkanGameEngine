@@ -251,6 +251,10 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
             initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             break;
+        case RenderType_IrradianceTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
         default:
             throw std::runtime_error("Unknown RenderTextureType");
         }
@@ -271,7 +275,8 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
         {
         case RenderAttachmentTypeEnum::ColorRenderedTexture:
         {
-            renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight)));
+            Texture texture = textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight));
+            renderedTextureList.emplace_back(texture);
             colorAttachmentReferenceList.emplace_back(VkAttachmentReference
                 {
                     .attachment = static_cast<uint32>(x),
@@ -706,6 +711,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetSkyBoxTextureBuffer();
             break;
         }
+        case kIrradianceMapDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIrradianceMapTextureBuffer(renderPipelineLoader.RenderPassId).size();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetIrradianceMapTextureBuffer(renderPipelineLoader.RenderPassId);
+            break;
+        }
         default:
         {
             throw std::runtime_error("Binding case hasn't been handled yet");
@@ -931,7 +942,11 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     {
         for (auto& inputTexture : renderPass.InputTextureIdList)
         {
-            textureList.emplace_back(textureSystem.FindTexture(inputTexture, 0));
+            Texture texture = textureSystem.FindTexture(inputTexture, 0);
+            if (!texture.RenderedCubeMapView)
+            {
+                textureList.emplace_back(texture);
+            }
         }
     }
     else
@@ -991,5 +1006,33 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetSkyBoxTextureBuffer()
 {
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
     textureSystem.GetTexturePropertiesBuffer(textureSystem.CubeMap, texturePropertiesBuffer);
+    return texturePropertiesBuffer;
+}
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetIrradianceMapTextureBuffer(const RenderPassGuid& renderPassGuid)
+{
+    Vector<Texture> textureList;
+    const VulkanRenderPass& renderPass = FindRenderPass(renderPassGuid);
+    if (renderPass.InputTextureIdList.size() > 0)
+    {
+        for (auto& inputTexture : renderPass.InputTextureIdList)
+        {
+            textureList.emplace_back(textureSystem.FindTexture(inputTexture, 0));
+        }
+    }
+
+    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
+    for (auto& texture : textureList)
+    {
+        if (texture.RenderedCubeMapView)
+        {
+            texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
+                {
+                    .sampler = texture.textureSampler,
+                    .imageView = texture.RenderedCubeMapView,
+                    .imageLayout = texture.textureImageLayout
+                });
+        }
+    }
     return texturePropertiesBuffer;
 }

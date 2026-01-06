@@ -30,17 +30,16 @@
             vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
             gameSystem.StartUp(vulkanWindow);
 
-
             imGuiRenderer = ImGui_StartUp();
-         //   Texture& texture = textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId);
-        //    texture.ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.textureSampler, texture.textureView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            Texture& texture = textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId);
+            texture.ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.textureSampler, texture.textureView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             while (!vulkanWindow->WindowShouldClose(vulkanWindow))
             {
                 const float frameTime = deltaTime.GetFrameTime();
                 vulkanWindow->PollEventHandler(vulkanWindow);
 
                 gameSystem.Update(frameTime);
-               // gameSystem.DebugUpdate(frameTime);
+                gameSystem.DebugUpdate(frameTime);
                 gameSystem.Draw(frameTime);
                 deltaTime.EndFrameTime();
             }

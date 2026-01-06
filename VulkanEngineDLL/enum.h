@@ -48,7 +48,8 @@ enum TextureTypeEnum
     TextureType_UNKNOWN,
     TextureType_ColorTexture,
     TextureType_DepthTexture,
-    TextureType_SkyboxTexture
+    TextureType_SkyboxTexture,
+    TextureType_IrradianceMapTexture
 };
 
 enum RenderTextureTypeEnum
@@ -57,7 +58,8 @@ enum RenderTextureTypeEnum
     RenderType_SwapChainTexture,
     RenderType_OffscreenColorTexture,
     RenderType_DepthBufferTexture,
-    RenderType_GBufferTexture
+    RenderType_GBufferTexture,
+    RenderType_IrradianceTexture
 };
 
 enum RenderAttachmentTypeEnum
@@ -79,5 +81,7 @@ enum DescriptorBindingPropertiesEnum
     kVertexDescsriptor,
     kIndexDescriptor,
     kTransformDescriptor,
-    kSkyBoxDescriptor
+    kSkyBoxDescriptor,
+    kIrradianceMapDescriptor,
+    kPrefilterMapDescriptor
 };

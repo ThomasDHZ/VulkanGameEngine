@@ -4,11 +4,7 @@
 #extension GL_EXT_debug_printf : enable
 
 #include "Constants.glsl"
-
-layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
-layout(constant_id = 1) const uint DescriptorBindingType1 = SkyBoxDescriptor;
-layout(constant_id = 2) const uint DescriptorBindingType2 = 3;
-layout(constant_id = 3) const uint DescriptorBindingType3 = 4;
+#include "Lights.glsl"
 
 layout(location = 0) in  vec2 TexCoords;
 
@@ -25,6 +21,20 @@ const int BrdfMapBinding = 6;
 const int DirectionalShadowMapBinding = 7;
 const int SDFShadowMapBinding = 8;
 
+layout(constant_id = 0) const uint DescriptorBindingType0 = 1;
+layout(binding = 0) uniform sampler2D   TextureMap[];
+
+layout(constant_id = 1) const uint DescriptorBindingType1 = 3;
+layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+
+layout(constant_id = 2) const uint DescriptorBindingType2 = 4;
+layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+
+layout(constant_id = 3) const uint DescriptorBindingType3 = SkyBoxDescriptor;
+layout(binding = 3) uniform samplerCube CubeMap;
+
+layout(constant_id = 4) const uint DescriptorBindingType4 = IrradianceCubeMapDescriptor;
+layout(binding = 4) uniform samplerCube IrradianceMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -79,12 +89,6 @@ mat3 TBN = mat3(
     vec3(0.0, 0.0, 1.0)   // Normal    (Z)
 );
 
-#include "Lights.glsl"
-
-layout(binding = 0) uniform sampler2D   TextureMap[];
-layout(binding = 1) uniform samplerCube CubeMap;
-layout(binding = 2) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 3) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 void main()
 {
     vec3 positionDataMap = texture(TextureMap[PositionDataMapBinding], TexCoords).rgb;
@@ -228,7 +232,7 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 kD = 1.0f - kS;
     kD *= 1.0f - metallicMap;
 
-    vec3 irradiance   = vec3(0.36f);
+    vec3 irradiance   = texture(IrradianceMap, N).rgb;
     vec3 diffuse      = irradiance * albedoMap;
 
     vec3  L       = normalize(directionalLightBuffer[0].directionalLightProperties.LightDirection);
