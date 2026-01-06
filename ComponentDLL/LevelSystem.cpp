@@ -508,6 +508,16 @@ void LevelSystem::LoadLevel(const char* levelPath)
      const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("skyBoxViewData");
 
+     VkViewport viewport
+     {
+         .x = 0.0f,
+         .y = 0.0f,
+         .width = static_cast<float>(renderPass.RenderPassResolution.x),
+         .height = static_cast<float>(renderPass.RenderPassResolution.y),
+         .minDepth = 0.0f,
+         .maxDepth = 1.0f
+     };
+
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -537,12 +547,14 @@ void LevelSystem::LoadLevel(const char* levelPath)
          shaderSystem.UpdatePushConstantValue<uint>("skyBoxViewData", "MeshBufferIndex", skybox.MeshId);
          shaderSystem.UpdatePushConstantBuffer("skyBoxViewData");
 
+         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+         vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
          vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
          vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-         vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+         vkCmdDraw(commandBuffer, indiceList.size(), 1, 0, 0);
      }
      vkCmdEndRenderPass(commandBuffer);
  }

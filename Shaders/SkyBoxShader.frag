@@ -20,5 +20,5 @@ void main()
 {
     vec3 sampleDir = vec3(TexCoords.x, TexCoords.y, -TexCoords.z);
     vec3 color = texture(CubeMap, normalize(sampleDir)).rgb;
-    FragColor = vec4(color, 1.0f);
+    FragColor = vec4(1.0, 0.0f, 0.0f, 1.0f);
 }
