@@ -20,15 +20,18 @@ const int AlbedoMapBinding = 1;
 const int NormalMapBinding = 2;
 const int MatRoughAOHeightMapBinding = 3;
 const int EmissionMapBinding = 4;
-const int BrdfMapBinding = 5;
-const int DirectionalShadowMapBinding = 6;
-const int SDFShadowMapBinding = 7;
-const int SkyBoxBinding = 8;
+const int DepthMapBinding = 5;
+const int BrdfMapBinding = 6;
+const int DirectionalShadowMapBinding = 7;
+const int SDFShadowMapBinding = 8;
+
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
 	uint DirectionalLightCount;
     uint PointLightCount;
+    mat4 InvProjection;
+    mat4 InvView;
 }gBufferSceneDataBuffer;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -85,8 +88,26 @@ layout(binding = 3) buffer PointLight { PointLightBuffer pointLightProperties; }
 void main()
 {
     vec3 positionDataMap = texture(TextureMap[PositionDataMapBinding], TexCoords).rgb;
-    vec3 albedoMap = texture(TextureMap[AlbedoMapBinding], TexCoords).rgb;
     vec3 normalMap = texture(TextureMap[NormalMapBinding], TexCoords).rgb * 2.0f - 1.0f;
+    float depthMap = texture(TextureMap[DepthMapBinding], TexCoords).r;
+
+bool isBackground = (depthMap >= 0.99999);
+if (isBackground)
+{
+    vec2 ndc = TexCoords * 2.0 - 1.0;
+    vec4 clipPos = vec4(ndc, 1.0, 1.0);
+    vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clipPos;
+    viewPos /= viewPos.w;
+    vec3 viewDir = normalize(viewPos.xyz);
+    vec3 worldDir = normalize(mat3(gBufferSceneDataBuffer.InvView) * viewDir);
+    // worldDir.z = -worldDir.z;  // Uncomment if sky looks mirrored front-back
+    vec3 skyColor = texture(CubeMap, worldDir).rgb;
+    outColor = vec4(skyColor, 1.0);
+    outBloom = vec4(0.0);
+    return;
+}
+
+    vec3 albedoMap = texture(TextureMap[AlbedoMapBinding], TexCoords).rgb;
     float metallicMap = 0.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).r;
     float roughnessMap = 0.5f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).g;
     float ambientOcclusionMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).b;

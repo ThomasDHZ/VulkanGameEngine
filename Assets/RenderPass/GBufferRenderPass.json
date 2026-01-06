@@ -166,6 +166,20 @@
         "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
+    },
+    {
+      "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
+      "MipMapCount": 1,
+      "RenderTextureType": 3,
+      "RenderAttachmentType": 1,
+      "Format": 124,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 3,
+      "UseSampler": false,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": null
     }
   ],
   "SubpassDependencyList": [

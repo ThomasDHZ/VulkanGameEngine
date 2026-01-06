@@ -18,7 +18,6 @@ layout(push_constant) uniform SkyBoxViewData {
 
 void main() 
 {
-    vec3 sampleDir = vec3(TexCoords.x, TexCoords.y, -TexCoords.z);
-    vec3 color = texture(CubeMap, normalize(sampleDir)).rgb;
+    vec3 color = texture(CubeMap, normalize(TexCoords)).rgb;
     FragColor = vec4(color, 1.0f);
 }

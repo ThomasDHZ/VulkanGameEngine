@@ -270,10 +270,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
   {
       RenderDirectionalShadowRenderPass(commandBuffer, directionalShadowRenderPassId, levelLayout.LevelLayoutId, deltaTime);
       RenderSDFRenderPass(commandBuffer, sdfShaderRenderPassId, levelLayout.LevelLayoutId, deltaTime);
-      RenderSkyBox(commandBuffer, skyBoxRenderPassId, deltaTime);
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
       RenderGeometryRenderPass(commandBuffer, geometryRenderPassId);
+      RenderSkyBox(commandBuffer, skyBoxRenderPassId, deltaTime);
       RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
       RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
       RenderBloomPass(commandBuffer, bloomRenderPassId);
@@ -604,6 +604,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
      shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "DirectionalLightCount", lightSystem.DirectionalLightList.size());
      shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "PointLightCount", lightSystem.PointLightList.size());
+     shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
+         shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
      shaderSystem.UpdatePushConstantBuffer("gBufferSceneDataBuffer");
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo

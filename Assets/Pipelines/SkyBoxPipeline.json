@@ -11,9 +11,10 @@
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
+      "_comment": "Attachment 0 - Final Color (e.g., swapchain)",
       "BlendEnable": false,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
       "DstAlphaBlendFactor": 0,
@@ -22,19 +23,18 @@
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
-    "BlendConstants": { "FixedElementField": 0.0 },
-    "SType": 26,
+    "sType": 26,
     "LogicOpEnable": false,
-    "LogicOp": 5,
-    "AttachmentCount": 1
+    "LogicOp": 0,
+    "AttachmentCount": 0
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
     "polygonMode": 0,
-    "cullMode": 2,
-    "frontFace": 1,
+    "cullMode": 0,
+    "frontFace": 0,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
     "depthBiasClamp": 0.0,
