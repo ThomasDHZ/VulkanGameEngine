@@ -273,7 +273,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
       RenderGeometryRenderPass(commandBuffer, geometryRenderPassId);
-      RenderSkyBox(commandBuffer, skyBoxRenderPassId, deltaTime);
+     // RenderSkyBox(commandBuffer, skyBoxRenderPassId, deltaTime);
       RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
       RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
       RenderBloomPass(commandBuffer, bloomRenderPassId);
@@ -556,6 +556,16 @@ void LevelSystem::LoadLevel(const char* levelPath)
      const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("irradianceShaderConstants");
 
+     VkViewport viewport
+     {
+         .x = 0.0f,
+         .y = 0.0f,
+         .width = static_cast<float>(renderPass.RenderPassResolution.x),
+         .height = static_cast<float>(renderPass.RenderPassResolution.y),
+         .minDepth = 0.0f,
+         .maxDepth = 1.0f
+     };
+
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -586,6 +596,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
          shaderSystem.UpdatePushConstantBuffer("irradianceShaderConstants");
 
          vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+         vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);

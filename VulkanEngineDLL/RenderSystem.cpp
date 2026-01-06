@@ -1029,7 +1029,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetIrradianceMapTextureBuffer(const 
             texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
                 {
                     .sampler = texture.textureSampler,
-                    .imageView = texture.RenderedCubeMapView,
+                    .imageView = texture.textureView,
                     .imageLayout = texture.textureImageLayout
                 });
         }
