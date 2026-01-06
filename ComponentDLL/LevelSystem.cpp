@@ -538,6 +538,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
          shaderSystem.UpdatePushConstantBuffer("skyBoxViewData");
 
          vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+         //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+         //vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
