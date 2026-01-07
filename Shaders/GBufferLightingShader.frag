@@ -235,7 +235,7 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 kD = 1.0f - kS;
     kD *= 1.0f - metallicMap;
 
-    vec3 irradiance   = texture(CubeMap, N).rgb;
+    vec3 irradiance   = texture(IrradianceMap, N).rgb;
     vec3 diffuse      = irradiance * albedoMap;
 
     const float MAX_REFLECTION_LOD = 4.0;

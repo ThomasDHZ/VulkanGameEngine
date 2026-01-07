@@ -208,20 +208,26 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	{
 		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
-	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 
-	if (renderAttachmentLoader.IsCubeMapAttachment)
+	if (renderAttachmentLoader.IsCubeMapAttachment && renderAttachmentLoader.RenderAttachmentType == ColorRenderedTexture)
 	{
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
-		viewInfo.subresourceRange =
-		{
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = 0,
-			.levelCount = texture.mipMapLevels,
-			.baseArrayLayer = 0,
-			.layerCount = 6,
-		};
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.RenderedCubeMapView));
+		VkImageViewCreateInfo arrayViewInfo = viewInfo;
+		arrayViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		arrayViewInfo.subresourceRange.layerCount = 6;
+		arrayViewInfo.subresourceRange.levelCount = 1;
+		arrayViewInfo.subresourceRange.baseMipLevel = 0;
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &arrayViewInfo, nullptr, &texture.AttachmentArrayView));
+
+		arrayViewInfo = viewInfo;
+		arrayViewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+		arrayViewInfo.subresourceRange.layerCount = 6;
+		arrayViewInfo.subresourceRange.levelCount = 1;
+		arrayViewInfo.subresourceRange.baseMipLevel = 0;
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &arrayViewInfo, nullptr, &texture.RenderedCubeMapView));
+	}
+	else
+	{
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 	}
 
 	VkSamplerCreateInfo samplerInfo = {};

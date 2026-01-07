@@ -413,7 +413,15 @@ Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& ren
             }
             else
             {
-                TextureAttachmentList.emplace_back(renderedTextureList[y].textureView);
+                if (renderedTextureList[y].textureType == TextureType_IrradianceMapTexture ||
+                    renderedTextureList[y].textureType == TextureType_PrefilterMapTexture)
+                {
+                    TextureAttachmentList.emplace_back(renderedTextureList[y].AttachmentArrayView);
+                }
+                else
+                {
+                    TextureAttachmentList.emplace_back(renderedTextureList[y].textureView);
+                }
             }
         }
         if (depthTexture.TextureAllocation != VK_NULL_HANDLE)
@@ -1038,7 +1046,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetIrradianceMapTextureBuffer(const 
     texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {
             .sampler = textureSystem.IrradianceCubeMap.textureSampler,
-            .imageView = textureSystem.IrradianceCubeMap.textureView,
+            .imageView = textureSystem.IrradianceCubeMap.RenderedCubeMapView,
             .imageLayout = textureSystem.IrradianceCubeMap.textureImageLayout
         });
     return texturePropertiesBuffer;
@@ -1050,7 +1058,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetPrefilterMapTextureBuffer(const R
     texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {
             .sampler = textureSystem.PrefilterCubeMap.textureSampler,
-            .imageView = textureSystem.PrefilterCubeMap.textureView,
+            .imageView = textureSystem.PrefilterCubeMap.RenderedCubeMapView,
             .imageLayout = textureSystem.PrefilterCubeMap.textureImageLayout
         });
     return texturePropertiesBuffer;

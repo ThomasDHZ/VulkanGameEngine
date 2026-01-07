@@ -30,10 +30,10 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1,
+      "SrcStageMask": 1024,
       "DstStageMask": 1024,
       "SrcAccessMask": 0,
-      "DstAccessMask": 64,
+      "DstAccessMask": 256,
       "DependencyFlags": 0
     }
   ],
@@ -41,7 +41,7 @@
     {
       "Color": {
         "Float32_0": 0.0,
-        "Float32_1": 1.0,
+        "Float32_1": 0.0,
         "Float32_2": 0.0,
         "Float32_3": 1.0,
         "Int32_0": 0,

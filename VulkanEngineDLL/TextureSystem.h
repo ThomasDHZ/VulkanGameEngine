@@ -32,6 +32,7 @@ struct Texture
     VkDeviceMemory        textureMemory = VK_NULL_HANDLE;
     VkImageView           textureView = VK_NULL_HANDLE;
     VkImageView           RenderedCubeMapView = VK_NULL_HANDLE;
+    VkImageView           AttachmentArrayView = VK_NULL_HANDLE;
     VkSampler             textureSampler = VK_NULL_HANDLE;
     VkDescriptorSet       ImGuiDescriptorSet = VK_NULL_HANDLE;
     VmaAllocation         TextureAllocation = VK_NULL_HANDLE;
