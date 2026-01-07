@@ -239,7 +239,7 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 diffuse      = irradiance * albedoMap;
 
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(PrefilterMap, R,  roughnessMap * MAX_REFLECTION_LOD).rgb;    
+    vec3 prefilteredColor = texture(PrefilterMap, R,  roughnessMap * MAX_REFLECTION_LOD).rgb;    
     vec2 brdf  = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0), roughnessMap)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
@@ -251,4 +251,4 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
 
     outColor = vec4(color, 1.0f);
     outBloom = vec4(bloomColor, 1.0f);
-}
+}p

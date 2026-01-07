@@ -207,7 +207,7 @@ VulkanRenderPass RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPa
     return vulkanRenderPass;
 }
 
-const VulkanRenderPass RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
+ VulkanRenderPass RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
 {
     return RenderPassMap.at(renderPassGuid);
 }

@@ -68,6 +68,8 @@ public:
     Texture                                                        CubeMap;
     Texture                                                        IrradianceCubeMap;
     Texture                                                        PrefilterCubeMap;
+    Vector<VkImageView>                                            PrefilterAttachmentImageViews;
+    Vector<VkFramebuffer>                                          PrefilterMipFramebufferList;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
