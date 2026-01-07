@@ -16,7 +16,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 5,
       "RenderAttachmentType": 0,
-      "Format": 97,
+      "Format": 44,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -30,10 +30,10 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1024,
+      "SrcStageMask": 1,
       "DstStageMask": 1024,
       "SrcAccessMask": 0,
-      "DstAccessMask": 256,
+      "DstAccessMask": 64,
       "DependencyFlags": 0
     }
   ],

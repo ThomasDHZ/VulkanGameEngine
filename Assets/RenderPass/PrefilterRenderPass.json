@@ -4,8 +4,8 @@
   "RenderPipelineList": [
     "Pipelines/PrefilterPipeline.json"
   ],
-  "RenderPassWidth": 0,
-  "RenderPassHeight": 0,
+  "RenderPassWidth": 256,
+  "RenderPassHeight": 256,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
@@ -13,16 +13,16 @@
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
-      "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "MipMapCount": 5,
+      "RenderTextureType": 6,
       "RenderAttachmentType": 0,
-      "Format": 44,
+      "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
-      "UseMipMaps": false,
+      "UseMipMaps": true,
       "IsCubeMapAttachment": true
     }
   ],
@@ -30,10 +30,10 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1024,
+      "SrcStageMask": 1,
       "DstStageMask": 1024,
       "SrcAccessMask": 0,
-      "DstAccessMask": 256,
+      "DstAccessMask": 64,
       "DependencyFlags": 0
     }
   ],

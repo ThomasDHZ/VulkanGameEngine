@@ -66,6 +66,7 @@ private:
 public:
     Texture                                                        CubeMap;
     Texture                                                        IrradianceCubeMap;
+    Texture                                                        PrefilterCubeMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;

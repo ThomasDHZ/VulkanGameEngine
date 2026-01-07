@@ -135,6 +135,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		case RenderType_DepthBufferTexture: texture.textureType = TextureType_DepthTexture; break;
 		case RenderType_GBufferTexture: texture.textureType = TextureType_ColorTexture; break;
 		case RenderType_IrradianceTexture: texture.textureType = TextureType_IrradianceMapTexture; break;
+		case RenderType_PrefilterTexture: texture.textureType = TextureType_PrefilterMapTexture; break;
 		case RenderType_OffscreenColorTexture: texture.textureType = TextureType_ColorTexture; break;
 		case RenderType_SwapChainTexture: texture.textureType = TextureType_ColorTexture; break;
 	}
@@ -158,6 +159,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	VkImageCreateInfo imageInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.flags = renderAttachmentLoader.IsCubeMapAttachment ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
 		.extent = { static_cast<uint32>(texture.width), static_cast<uint32>(texture.height), 1 },
@@ -210,7 +212,15 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 
 	if (renderAttachmentLoader.IsCubeMapAttachment)
 	{
-		viewInfo.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+		viewInfo.subresourceRange =
+		{
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.baseMipLevel = 0,
+			.levelCount = texture.mipMapLevels,
+			.baseArrayLayer = 0,
+			.layerCount = 6,
+		};
 		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.RenderedCubeMapView));
 	}
 
@@ -642,7 +652,6 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 			.layerCount = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? static_cast<uint>(6) : static_cast<uint>(1),
 		}
 	};
-
 	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 }
 

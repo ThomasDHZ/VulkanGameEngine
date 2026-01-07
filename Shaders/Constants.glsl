@@ -13,5 +13,6 @@ const uint IndexDescriptor = 7;
 const uint TransformDescriptor = 8;
 const uint SkyBoxDescriptor = 9;
 const uint IrradianceCubeMapDescriptor = 10;
+const uint PrefilterDescriptor = 11;
 
 #endif

@@ -36,6 +36,9 @@ layout(binding = 3) uniform samplerCube CubeMap;
 layout(constant_id = 4) const uint DescriptorBindingType4 = IrradianceCubeMapDescriptor;
 layout(binding = 4) uniform samplerCube IrradianceMap;
 
+layout(constant_id = 5) const uint DescriptorBindingType5 = PrefilterDescriptor;
+layout(binding = 5) uniform samplerCube PrefilterMap;
+
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
 	uint DirectionalLightCount;
@@ -118,11 +121,11 @@ if (isBackground)
     float heightMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).a;
     vec3 emissionMap = texture(TextureMap[EmissionMapBinding], TexCoords).rgb;
     float specularMap = texture(TextureMap[EmissionMapBinding], TexCoords).a;
-    vec2  brdfMap = texture(TextureMap[BrdfMapBinding], TexCoords).xy;
 
     vec3 N = normalize(normalMap);
     vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
-    
+    vec3 R = reflect(-V, N); 
+
     vec3 Lo = vec3(0.0f); 
     vec3 F0 = vec3(0.04f);
     float shadow =0.0f;
@@ -232,15 +235,13 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 kD = 1.0f - kS;
     kD *= 1.0f - metallicMap;
 
-    vec3 irradiance   = texture(IrradianceMap, N).rgb;
+    vec3 irradiance   = texture(CubeMap, N).rgb;
     vec3 diffuse      = irradiance * albedoMap;
 
-    vec3  L       = normalize(directionalLightBuffer[0].directionalLightProperties.LightDirection);
-    vec3  H       = normalize(V + L);
-    float NDF     = DistributionGGX(N, H, roughnessMap);
-    float G       = GeometrySmith(N, V, L, roughnessMap);
-    vec3 specular = (NDF * G * F) / (4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f);
-    specular *= specularMap;
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(PrefilterMap, R,  roughnessMap * MAX_REFLECTION_LOD).rgb;    
+    vec2 brdf  = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0), roughnessMap)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
     vec3 ambient = emissionMap + ((kD * diffuse + specular) * ambientOcclusionMap);
     vec3 color = ambient + Lo;

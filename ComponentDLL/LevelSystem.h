@@ -78,6 +78,7 @@ private:
         RenderPassGuid sdfShaderRenderPassId;
         RenderPassGuid skyBoxRenderPassId;
         RenderPassGuid irradianceMapRenderPassId;
+        RenderPassGuid prefilterMapRenderPassId;
         RenderPassGuid gBufferRenderPassId;
         RenderPassGuid geometryRenderPassId;
         RenderPassGuid verticalGaussianBlurRenderPassId;
@@ -95,6 +96,7 @@ private:
         DLL_EXPORT void                 RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderSkyBox(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
+        DLL_EXPORT void                 RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
         DLL_EXPORT void                 RenderGeometryRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection);
