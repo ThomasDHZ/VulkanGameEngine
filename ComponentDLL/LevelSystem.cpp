@@ -600,89 +600,117 @@ void LevelSystem::LoadLevel(const char* levelPath)
       VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
       ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
- 
-      meshSystem.Update(deltaTime);
-      lightSystem.Update(deltaTime);
-      spriteSystem.Update(deltaTime);
-      
+
+      // Assuming the skybox cube mesh is the first one (or however you store it)
+      const Mesh& skyboxMesh = skyBoxList[0];
+      const Vector<uint32>& indiceList = meshSystem.IndexList[skyboxMesh.IndexIndex];
+      const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshVertexBufferId).Buffer;
+      const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshIndexBufferId).Buffer;
+
       VkDeviceSize offsets[] = { 0 };
-      VkDeviceSize instanceOffset[] = { 0 };
-      uint skyboxSize = renderPass.RenderPassResolution.x;
-      for (uint32 mip = 0; mip < textureSystem.PrefilterCubeMap.PrefilterMipmapCount; ++mip)
+
+      // Base resolution of the prefilter cubemap (e.g., 1024)
+      uint32_t baseSize = renderPass.RenderPassResolution.x;  // Should be the same as y
+      uint32_t prefilterMipmapCount = textureSystem.PrefilterCubeMap.PrefilterMipmapCount;
+
+      for (uint32_t mip = 0; mip < prefilterMipmapCount; ++mip)
       {
-          VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-          {
-              .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-              .renderPass = renderPass.RenderPass,
-              .framebuffer = textureSystem.PrefilterCubeMap.PrefilterMipFramebufferList[mip],
-              .renderArea = VkRect2D
-              {
-                 .offset = VkOffset2D {.x = 0, .y = 0 },
-                 .extent = VkExtent2D {.width = static_cast<uint32_t>(renderPass.RenderPassResolution.x >> mip), .height = static_cast<uint32_t>(renderPass.RenderPassResolution.y >> mip) }
-              },
-              .clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
-              .pClearValues = renderPass.ClearValueList.data()
-          };
+          uint32_t mipWidth = baseSize >> mip;
+          uint32_t mipHeight = baseSize >> mip;
 
-          vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-          const Vector<uint32>& indiceList = meshSystem.IndexList[skyBoxList[0].IndexIndex];
-          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skyBoxList[0].MeshVertexBufferId).Buffer;
-          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skyBoxList[0].MeshIndexBufferId).Buffer;
+          // Update roughness for this mip level (0.0 at mip 0, 1.0 at last mip)
+          float roughness = static_cast<float>(mip) / static_cast<float>(prefilterMipmapCount - 1);
 
-          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", skyboxSize);
-          shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", static_cast<float>(mip) / static_cast<float>(textureSystem.PrefilterCubeMap.PrefilterMipmapCount - 1));
+          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", baseSize);
+          shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", roughness);
           shaderSystem.UpdatePushConstantBuffer(pushConstant);
 
-          vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+          VkRenderPassBeginInfo renderPassBeginInfo = {};
+          renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+          renderPassBeginInfo.renderPass = renderPass.RenderPass;
+          renderPassBeginInfo.framebuffer = textureSystem.PrefilterCubeMap.PrefilterMipFramebufferList[mip];
+          renderPassBeginInfo.renderArea.offset = { 0, 0 };
+          renderPassBeginInfo.renderArea.extent = { mipWidth, mipHeight };
+          renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size());
+          renderPassBeginInfo.pClearValues = renderPass.ClearValueList.data();
+
+          vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+          vkCmdPushConstants(commandBuffer,
+              skyboxPipeline.PipelineLayout,
+              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+              0,
+              pushConstant.PushConstantSize,
+              pushConstant.PushConstantBuffer.data());
+
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
+
+          vkCmdBindDescriptorSets(commandBuffer,
+              VK_PIPELINE_BIND_POINT_GRAPHICS,
+              skyboxPipeline.PipelineLayout,
+              0,
+              static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()),
+              skyboxPipeline.DescriptorSetList.data(),
+              0,
+              nullptr);
+
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-          VkViewport viewport
-          {
-              .x = 0.0f,
-              .y = 0.0f,
-              .width = static_cast<float>(renderPassBeginInfo.renderArea.extent.width),
-              .height = static_cast<float>(renderPassBeginInfo.renderArea.extent.height),
-              .minDepth = 0.0f,
-              .maxDepth = 1.0f
-          };
+
+          // Viewport and scissor matched to current mip size
+          VkViewport viewport = {};
+          viewport.x = 0.0f;
+          viewport.y = 0.0f;
+          viewport.width = static_cast<float>(mipWidth);
+          viewport.height = static_cast<float>(mipHeight);
+          viewport.minDepth = 0.0f;
+          viewport.maxDepth = 1.0f;
           vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-          vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-          vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+
+          VkRect2D scissor = {};
+          scissor.offset = { 0, 0 };
+          scissor.extent = { mipWidth, mipHeight };
+          vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+          // Single draw call renders all 6 faces thanks to multiview + layered framebuffer
+          vkCmdDrawIndexed(commandBuffer,
+              static_cast<uint32_t>(indiceList.size()),
+              1,         // instanceCount = 1
+              0,         // firstIndex
+              0,         // vertexOffset
+              0);        // firstInstance
+
           vkCmdEndRenderPass(commandBuffer);
-          VkImageMemoryBarrier mipBarrier = {};
-          mipBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-          mipBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-          mipBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-          mipBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-          mipBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-          mipBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-          mipBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-          mipBarrier.image = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage;
-          mipBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-          mipBarrier.subresourceRange.baseMipLevel = mip;
-          mipBarrier.subresourceRange.levelCount = 1;
-          mipBarrier.subresourceRange.baseArrayLayer = 0;
-          mipBarrier.subresourceRange.layerCount = 6;
-          vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &mipBarrier);
+
+          // No per-mip barrier needed here — Vulkan guarantees visibility within the same render pass sequence
+          // (and we're writing to different mip levels anyway)
       }
+
+      // Final layout transition: make all mips readable as shader texture (for sampling in lighting)
       VkImageMemoryBarrier finalBarrier = {};
       finalBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
       finalBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
       finalBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       finalBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       finalBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+      finalBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      finalBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       finalBarrier.image = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage;
       finalBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
       finalBarrier.subresourceRange.baseMipLevel = 0;
-      finalBarrier.subresourceRange.levelCount = textureSystem.PrefilterCubeMap.PrefilterMipmapCount;
+      finalBarrier.subresourceRange.levelCount = prefilterMipmapCount;
       finalBarrier.subresourceRange.baseArrayLayer = 0;
       finalBarrier.subresourceRange.layerCount = 6;
-      vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &finalBarrier);
+
+      vkCmdPipelineBarrier(commandBuffer,
+          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+          0,
+          0, nullptr,
+          0, nullptr,
+          1, &finalBarrier);
   }
  
-
  void LevelSystem::RenderGeometryRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
  {
      const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
@@ -690,6 +718,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
      Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
+     shaderSystem.UpdatePushConstantValue<int>(pushConstant, "UseHeightMap", UseHeightMap);
+     shaderSystem.UpdatePushConstantValue<float>(pushConstant, "HeightScale", HeightScale);
+     shaderSystem.UpdatePushConstantValue<vec3>(pushConstant, "ViewDirection", ViewDirection);
      shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "DirectionalLightCount", lightSystem.DirectionalLightList.size());
      shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "PointLightCount", lightSystem.PointLightList.size());
      shaderSystem.UpdatePushConstantValue<mat4>(pushConstant, "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));

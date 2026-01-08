@@ -57,6 +57,6 @@ void main()
 	PositionDataMap = vec4(gl_FragCoord.xy, 0.0, 1.0);
 	AlbedoMap = vec4(albedoMap.rgb, 1.0f);
 	NormalMap = vec4(normalMap, 1.0f);
-	MatRoughAOHeightMap = vec4(metallicMap, roughnessMap, ambientOcclusionMap, heightMap);
+	MatRoughAOHeightMap = vec4(heightMap, roughnessMap, ambientOcclusionMap, heightMap);
 	EmissionMap = vec4(emissionMap, specularMap);
 }

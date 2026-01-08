@@ -73,6 +73,9 @@ private:
         SharedPtr<Camera> OrthographicCamera;
         SharedPtr<Camera> PerspectiveCamera;
 
+        int UseHeightMap = 1;
+        float HeightScale = 0.04f;
+        vec3 ViewDirection = vec3(0.127f, 0.3f, 1.0f);
         RenderPassGuid brdfRenderPassId;
         RenderPassGuid directionalShadowRenderPassId;
         RenderPassGuid sdfShaderRenderPassId;

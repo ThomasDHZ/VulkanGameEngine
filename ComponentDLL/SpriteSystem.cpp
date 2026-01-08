@@ -16,7 +16,7 @@ uint32 SpriteSystem::GetNextSpriteIndex()
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
 {
-    Vector<Vertex2DLayout> SpriteVertexList =
+    Vector<Vertex2DLayout> spriteVertexList =
     {
         Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
         Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
@@ -24,7 +24,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
         Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
     };
 
-    Vector<uint32> SpriteIndexList =
+    Vector<uint32> spriteIndexList =
     {
         0, 3, 1,
         1, 3, 2
@@ -33,15 +33,15 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     VertexLayout vertexData =
     {
         .VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
-        .VertexDataSize = sizeof(Vertex2DLayout) * SpriteVertexList.size(),
-        .VertexData = SpriteVertexList.data(),
+        .VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
+        .VertexData = spriteVertexList.data(),
     };
 
     SpriteLayer spriteLayer = SpriteLayer
     {
         .RenderPassId = renderPassId,
         .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = meshSystem.CreateMesh(kMesh_SpriteMesh, vertexData, SpriteIndexList)
+        .SpriteLayerMeshId = meshSystem.CreateMesh(kMesh_SpriteMesh, vertexData, spriteIndexList)
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);

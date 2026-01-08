@@ -92,7 +92,8 @@ void main()
             float saTexel  = 4.0f * PI / (6.0f * prefilterSamplerProperties.CubeMapResolution * prefilterSamplerProperties.CubeMapResolution);
             float saSample = 1.0f / (float(SAMPLE_COUNT) * pdf + 0.0001f);
 
-            float mipLevel = prefilterSamplerProperties.Roughness == 0.0f ? 0.0f : 0.5f * log2(saSample / saTexel); 
+            float mipLevel = prefilterSamplerProperties.Roughness == 0.0f ? 0.0f : 0.5f * log2(saSample / saTexel);
+            mipLevel = max(mipLevel, 0.0f);
             
             prefilteredColor += textureLod(CubeMap, L, mipLevel).rgb * NdotL;
             totalWeight      += NdotL;

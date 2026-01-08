@@ -22,15 +22,12 @@ void TimeSystem::StartFrameTimer()
             std::this_thread::sleep_for(std::chrono::duration<double>(sleepDuration - 0.001));
         }
         currentTime = glfwGetTime();
-        while (currentTime < NextFrameTime) {
-            // Busy-wait
+        while (currentTime < NextFrameTime) 
+        {
             currentTime = glfwGetTime();
         }
     }
     FrameStartTime = glfwGetTime();
-
-    // Debug info
-    printf("Start Frame - currentTime: %f, NextFrameTime: %f\n", FrameStartTime, NextFrameTime);
 }
 
 void TimeSystem::EndFrameTimer() 
@@ -42,19 +39,19 @@ void TimeSystem::EndFrameTimer()
     if (RecentWorkTimes.size() > AverageWindow) RecentWorkTimes.pop_front();
 
     double sum = 0.0;
-    for (double t : RecentWorkTimes) sum += t;
+    for (double time : RecentWorkTimes)
+    {
+        sum += time;
+    }
 
     AverageWorkTime = sum / RecentWorkTimes.size();
     UncappedFPS = (AverageWorkTime > 0.0) ? 1.0 / AverageWorkTime : 0.0;
     NextFrameTime += TargetFrameTime;
 
     double nowTime = glfwGetTime();
-    if (NextFrameTime < nowTime) {
+    if (NextFrameTime < nowTime) 
+    {
         NextFrameTime = nowTime + TargetFrameTime;
     }
-
-    // Debug info
-    printf("End Frame - work_time: %f, Avg WorkTime: %f, FPS: %f\n",
-        work_time, AverageWorkTime, UncappedFPS);
 }
 

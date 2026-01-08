@@ -41,6 +41,9 @@ layout(binding = 5) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
+    int UseHeightMap;
+    float HeightScale;
+    vec3 ViewDirection;
 	uint DirectionalLightCount;
     uint PointLightCount;
     mat4 InvProjection;
@@ -92,38 +95,77 @@ mat3 TBN = mat3(
     vec3(0.0, 0.0, 1.0)   // Normal    (Z)
 );
 
-void main()
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS)
 {
-    vec3 positionDataMap = texture(TextureMap[PositionDataMapBinding], TexCoords).rgb;
-    vec3 normalMap = texture(TextureMap[NormalMapBinding], TexCoords).rgb * 2.0f - 1.0f;
-    float depthMap = texture(TextureMap[DepthMapBinding], TexCoords).r;
+    if (gBufferSceneDataBuffer.UseHeightMap == 0) return uv;
 
-bool isBackground = (depthMap >= 0.99999);
-if (isBackground)
-{
-    vec2 ndc = TexCoords * 2.0 - 1.0;
-    vec4 clipPos = vec4(ndc, 1.0, 1.0);
-    vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clipPos;
-    viewPos /= viewPos.w;
-    vec3 viewDir = normalize(viewPos.xyz);
-    vec3 worldDir = normalize(mat3(gBufferSceneDataBuffer.InvView) * viewDir);
-    // worldDir.z = -worldDir.z;  // Uncomment if sky looks mirrored front-back
-    vec3 skyColor = texture(CubeMap, worldDir).rgb;
-    outColor = vec4(skyColor, 1.0);
-    outBloom = vec4(0.0);
-    return;
+    const float minLayers = 8.0;
+    const float maxLayers = 32.0;
+    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
+
+    float layerDepth = 1.0 / numLayers;
+    float currentLayerDepth = 0.0;
+    vec2 P = viewDirTS.xy * gBufferSceneDataBuffer.HeightScale;
+    vec2 deltaUV = P / numLayers;
+
+    vec2 currentUV = uv;
+    float currentHeight = texture(TextureMap[MatRoughAOHeightMapBinding], currentUV).r;
+
+    int i = 0;
+    while (currentLayerDepth < currentHeight && i < 32) {
+        currentUV -= deltaUV;
+        currentHeight = texture(TextureMap[MatRoughAOHeightMapBinding], currentUV).r;
+        currentLayerDepth += layerDepth;
+        i++;
+    }
+
+    vec2 prevUV = currentUV + deltaUV;
+    float afterDepth = currentHeight - currentLayerDepth;
+    float beforeDepth = texture(TextureMap[MatRoughAOHeightMapBinding], prevUV).r - currentLayerDepth + layerDepth;
+    float weight = afterDepth / (afterDepth - beforeDepth + 0.0001);
+    vec2 finalUV = mix(currentUV, prevUV, weight);
+
+    return clamp(finalUV, vec2(0.01), vec2(0.99));
 }
 
-    vec3 albedoMap = texture(TextureMap[AlbedoMapBinding], TexCoords).rgb;
-    float metallicMap = 0.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).r;
-    float roughnessMap = 1.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).g;
-    float ambientOcclusionMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).b;
-    float heightMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).a;
-    vec3 emissionMap = texture(TextureMap[EmissionMapBinding], TexCoords).rgb;
-    float specularMap = texture(TextureMap[EmissionMapBinding], TexCoords).a;
+void main()
+{    
+    vec2 baseUV = TexCoords;
+    vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
+
+    vec2 offsetUV = baseUV;
+    if (gBufferSceneDataBuffer.UseHeightMap == 1) {
+        offsetUV = ParallaxOcclusionMapping(baseUV, V);
+        offsetUV = clamp(offsetUV, vec2(0.01), vec2(0.99));
+    }
+
+    float depthMap = texture(TextureMap[DepthMapBinding], baseUV).r;
+    bool isBackground = (depthMap >= 0.99999);
+
+    if (isBackground) {
+        vec2 ndc = baseUV * 2.0 - 1.0;
+        vec4 clipPos = vec4(ndc, 1.0, 1.0);
+        vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clipPos;
+        viewPos /= viewPos.w;
+        vec3 viewDir = normalize(viewPos.xyz);
+        vec3 worldDir = normalize(mat3(gBufferSceneDataBuffer.InvView) * viewDir);
+        vec3 skyColor = texture(CubeMap, worldDir).rgb;
+        outColor = vec4(skyColor, 1.0);
+        outBloom = vec4(0.0);
+        return;
+    }
+
+    vec3 positionDataMap = texture(TextureMap[PositionDataMapBinding], uv).rgb;
+    vec3 albedoMap = texture(TextureMap[AlbedoMapBinding], uv).rgb;
+    vec3 normalMap = texture(TextureMap[NormalMapBinding], uv).rgb * 2.0f - 1.0f;
+    float metallicMap = 0.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], uv).r;
+    float roughnessMap = 1.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], uv).g;
+    float ambientOcclusionMap = texture(TextureMap[MatRoughAOHeightMapBinding], uv).b;
+    float heightMap = texture(TextureMap[MatRoughAOHeightMapBinding], uv).a;
+    vec3 emissionMap = texture(TextureMap[EmissionMapBinding], uv).rgb;
+    float specularMap = texture(TextureMap[EmissionMapBinding], uv).a;
 
     vec3 N = normalize(normalMap);
-    vec3 V = normalize(vec3(0.3f, 0.3f, 1.0f)); 
     vec3 R = reflect(-V, N); 
 
     vec3 Lo = vec3(0.0f); 
@@ -249,6 +291,6 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
     vec3 bloomColor = color - emissionMap;
     bloomColor = emissionMap + max(vec3(0.0f), bloomColor - vec3(1.0f));
 
-    outColor = vec4(color, 1.0f);
+    outColor = vec4(color, 1.0);
     outBloom = vec4(bloomColor, 1.0f);
 }
