@@ -229,7 +229,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     sdfShaderRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SDFShadowRenderPass.json", ivec2(128, 128));
     skyBoxRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/SkyBoxRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", ivec2(256, 256));
-    prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", ivec2(128, 128));
+    prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", ivec2(1024, 1024));
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     geometryRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferLightingRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
@@ -367,7 +367,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
       Vector<Texture> renderPassTextures = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
-      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("spfPointLightPushConstant");
+      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("spfPointLightPushConstant");
 
       VkViewport viewport
       {
@@ -407,8 +407,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-          shaderSystem.UpdatePushConstantValue<uint>("spfPointLightPushConstant", "MeshBufferIndex", levelLayer.MeshId);
-          shaderSystem.UpdatePushConstantBuffer("spfPointLightPushConstant");
+          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", levelLayer.MeshId);
+          shaderSystem.UpdatePushConstantBuffer(pushConstant);
 
           vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
@@ -440,7 +440,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
-      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
+      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
 
       VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
       {
@@ -470,8 +470,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-          shaderSystem.UpdatePushConstantValue<uint>("sceneData", "MeshBufferIndex", levelLayer.MeshId);
-          shaderSystem.UpdatePushConstantBuffer("sceneData");
+          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", levelLayer.MeshId);
+          shaderSystem.UpdatePushConstantBuffer(pushConstant);
 
           vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
@@ -501,7 +501,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("skyBoxViewData");
+      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("skyBoxViewData");
 
       VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
       {
@@ -529,8 +529,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
-          shaderSystem.UpdatePushConstantValue<uint>("skyBoxViewData", "MeshBufferIndex", skybox.MeshId);
-          shaderSystem.UpdatePushConstantBuffer("skyBoxViewData");
+          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", skybox.MeshId);
+          shaderSystem.UpdatePushConstantBuffer(pushConstant);
 
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -544,7 +544,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("irradianceShaderConstants");
+      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("irradianceShaderConstants");
 
       VkViewport viewport
       {
@@ -583,8 +583,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
-          shaderSystem.UpdatePushConstantValue<float>("irradianceShaderConstants", "sampleDelta", 0.1f);
-          shaderSystem.UpdatePushConstantBuffer("irradianceShaderConstants");
+          shaderSystem.UpdatePushConstantValue<float>(pushConstant, "sampleDelta", 0.1f);
+          shaderSystem.UpdatePushConstantBuffer(pushConstant);
 
           vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
@@ -599,55 +599,22 @@ void LevelSystem::LoadLevel(const char* levelPath)
       VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
-      const uint cubeMapLevels = 5;
-      if (textureSystem.PrefilterMipFramebufferList.empty())
-      {
-          textureSystem.PrefilterMipFramebufferList.resize(cubeMapLevels);
-          textureSystem.PrefilterAttachmentImageViews.resize(cubeMapLevels);
-          for (uint32 mip = 0; mip < cubeMapLevels; ++mip)
-          {
-              VkImageViewCreateInfo viewInfo =
-              {
-                  .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                  .image = textureSystem.PrefilterCubeMap.textureImage,
-                  .viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY,
-                  .format = textureSystem.PrefilterCubeMap.textureByteFormat,
-                  .subresourceRange =
-                      {
-                          .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                          .baseMipLevel = mip,
-                          .levelCount = 1,
-                          .baseArrayLayer = 0,
-                          .layerCount = 6,
-                      }
-              };
-              vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &textureSystem.PrefilterAttachmentImageViews[mip]);
-              VkFramebufferCreateInfo frameBufferInfo =
-              {
-                  .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-                  .renderPass = renderPass.RenderPass,
-                  .attachmentCount = 1,
-                  .pAttachments = &textureSystem.PrefilterAttachmentImageViews[mip],
-                  .width = static_cast<uint32_t>(renderPass.RenderPassResolution.x >> mip),
-                  .height = static_cast<uint32_t>(renderPass.RenderPassResolution.y >> mip),
-                  .layers = 1,
-              };
-              vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &textureSystem.PrefilterMipFramebufferList[mip]);
-          }
-      }
-      VkDeviceSize offsets[] = { 0 };
-      VkDeviceSize instanceOffset[] = { 0 };
-      spriteSystem.Update(deltaTime);
+      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
+ 
       meshSystem.Update(deltaTime);
       lightSystem.Update(deltaTime);
-      for (uint32 mip = 0; mip < cubeMapLevels; ++mip)
+      spriteSystem.Update(deltaTime);
+      
+      VkDeviceSize offsets[] = { 0 };
+      VkDeviceSize instanceOffset[] = { 0 };
+      uint skyboxSize = renderPass.RenderPassResolution.x;
+      for (uint32 mip = 0; mip < textureSystem.PrefilterCubeMap.PrefilterMipmapCount; ++mip)
       {
           VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
           {
               .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
               .renderPass = renderPass.RenderPass,
-              .framebuffer = textureSystem.PrefilterMipFramebufferList[mip],
+              .framebuffer = textureSystem.PrefilterCubeMap.PrefilterMipFramebufferList[mip],
               .renderArea = VkRect2D
               {
                  .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -656,13 +623,16 @@ void LevelSystem::LoadLevel(const char* levelPath)
               .clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
               .pClearValues = renderPass.ClearValueList.data()
           };
+
           vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
           const Vector<uint32>& indiceList = meshSystem.IndexList[skyBoxList[0].IndexIndex];
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skyBoxList[0].MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skyBoxList[0].MeshIndexBufferId).Buffer;
-          shaderSystem.UpdatePushConstantValue<float>("prefilterSamplerProperties", "CubeMapResolution", static_cast<float>(renderPassBeginInfo.renderArea.extent.width));
-          shaderSystem.UpdatePushConstantValue<float>("prefilterSamplerProperties", "Roughness", static_cast<float>(mip) / static_cast<float>(cubeMapLevels - 1));
-          shaderSystem.UpdatePushConstantBuffer("prefilterSamplerProperties");
+
+          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", skyboxSize);
+          shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", static_cast<float>(mip) / static_cast<float>(textureSystem.PrefilterCubeMap.PrefilterMipmapCount - 1));
+          shaderSystem.UpdatePushConstantBuffer(pushConstant);
+
           vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
           vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
@@ -684,12 +654,12 @@ void LevelSystem::LoadLevel(const char* levelPath)
           VkImageMemoryBarrier mipBarrier = {};
           mipBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
           mipBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-          mipBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Stay in attachment for next mip
+          mipBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
           mipBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
           mipBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
           mipBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
           mipBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-          mipBarrier.image = textureSystem.PrefilterCubeMap.textureImage;
+          mipBarrier.image = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage;
           mipBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
           mipBarrier.subresourceRange.baseMipLevel = mip;
           mipBarrier.subresourceRange.levelCount = 1;
@@ -703,10 +673,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
       finalBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       finalBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       finalBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-      finalBarrier.image = textureSystem.PrefilterCubeMap.textureImage;
+      finalBarrier.image = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage;
       finalBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
       finalBarrier.subresourceRange.baseMipLevel = 0;
-      finalBarrier.subresourceRange.levelCount = cubeMapLevels;
+      finalBarrier.subresourceRange.levelCount = textureSystem.PrefilterCubeMap.PrefilterMipmapCount;
       finalBarrier.subresourceRange.baseArrayLayer = 0;
       finalBarrier.subresourceRange.layerCount = 6;
       vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &finalBarrier);
@@ -719,12 +689,12 @@ void LevelSystem::LoadLevel(const char* levelPath)
      VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
      Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
-     ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
-     shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "DirectionalLightCount", lightSystem.DirectionalLightList.size());
-     shaderSystem.UpdatePushConstantValue<uint>("gBufferSceneDataBuffer", "PointLightCount", lightSystem.PointLightList.size());
-     shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
-     shaderSystem.UpdatePushConstantValue<mat4>("gBufferSceneDataBuffer", "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
-     shaderSystem.UpdatePushConstantBuffer("gBufferSceneDataBuffer");
+     ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
+     shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "DirectionalLightCount", lightSystem.DirectionalLightList.size());
+     shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "PointLightCount", lightSystem.PointLightList.size());
+     shaderSystem.UpdatePushConstantValue<mat4>(pushConstant, "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
+     shaderSystem.UpdatePushConstantValue<mat4>(pushConstant, "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
+     shaderSystem.UpdatePushConstantBuffer(pushConstant);
 
      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
      {
@@ -753,10 +723,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
       const VulkanPipeline  pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
 
-      ShaderPushConstantDLL pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
-      shaderSystem.UpdatePushConstantValue<uint>("bloomSettings", "blurDirection", blurDirection);
-      shaderSystem.UpdatePushConstantValue<float>("bloomSettings", "blurScale", 1.0f);
-      shaderSystem.UpdatePushConstantValue<float>("bloomSettings", "blurStrength", 0.04f);
+      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
+      shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "blurDirection", blurDirection);
+      shaderSystem.UpdatePushConstantValue<float>(pushConstant, "blurScale", 1.0f);
+      shaderSystem.UpdatePushConstantValue<float>(pushConstant, "blurStrength", 0.04f);
 
       VkViewport viewport
       {

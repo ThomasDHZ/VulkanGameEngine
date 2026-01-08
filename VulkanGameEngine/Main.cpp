@@ -7,6 +7,7 @@
 #include "ImGuiRenderer.h"
 #include <DebugSystem.h>
 #include "ImGuiRenderer.h"
+#include "TimeSystem.h"
 
 #ifndef __ANDROID__
     int main()
@@ -24,6 +25,14 @@
         debugSystem.SetRootDirectory("Assets");
     #endif
 
+        const double TARGET_FPS = 60.0;
+        const double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
+        const int AVG_WINDOW = 60;
+
+        double next_frame_time = glfwGetTime();
+        std::deque<double> recent_work_times;
+        double avg_work_time = TARGET_FRAME_TIME;
+        double uncapped_fps = TARGET_FPS;
         try
         {
             vulkanWindow = new GameEngineWindow();
@@ -35,13 +44,12 @@
             texture.ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.textureSampler, texture.textureView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             while (!vulkanWindow->WindowShouldClose(vulkanWindow))
             {
-                const float frameTime = deltaTime.GetFrameTime();
+                timeSystem.StartFrameTimer();
                 vulkanWindow->PollEventHandler(vulkanWindow);
-
-                gameSystem.Update(frameTime);
-                gameSystem.DebugUpdate(frameTime);
-                gameSystem.Draw(frameTime);
-                deltaTime.EndFrameTime();
+                gameSystem.Update(timeSystem.DeltaTime);
+                gameSystem.DebugUpdate(timeSystem.DeltaTime);
+                gameSystem.Draw(timeSystem.DeltaTime);
+                timeSystem.EndFrameTimer();
             }
             vkDeviceWaitIdle(vulkanSystem.Device);
             gameSystem.Destroy();

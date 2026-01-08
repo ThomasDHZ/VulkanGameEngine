@@ -5,6 +5,7 @@
 #include "MeshSystem.h"
 #include "BufferSystem.h"
 #include "LightSystem.h"
+#include "RenderSystem.h"
 #include "from_json.h"
 
 RenderSystem& renderSystem = RenderSystem::Get();
@@ -287,7 +288,7 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
             }
             else if (texture.textureType == TextureType_PrefilterMapTexture)
             {
-                textureSystem.PrefilterCubeMap = texture;
+                textureSystem.PrefilterCubeMap.PrefilterCubeMap = texture;
                 renderedTextureList.emplace_back(texture);
             }
             else
@@ -390,6 +391,10 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
 
     VkRenderPass renderPass = VK_NULL_HANDLE;
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &renderPass));
+    if (textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage != VK_NULL_HANDLE)
+    {
+        textureSystem.CreatePrefilterSkyBoxTexture(renderPass, textureSystem.PrefilterCubeMap.PrefilterCubeMap);
+    }
 
     RenderPassGuid renderPassId = renderPassJsonLoader.RenderPassId;
     textureSystem.AddRenderedTexture(renderPassId, renderedTextureList);
@@ -1057,9 +1062,9 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetPrefilterMapTextureBuffer(const R
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
     texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {
-            .sampler = textureSystem.PrefilterCubeMap.textureSampler,
-            .imageView = textureSystem.PrefilterCubeMap.RenderedCubeMapView,
-            .imageLayout = textureSystem.PrefilterCubeMap.textureImageLayout
+            .sampler = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureSampler,
+            .imageView = textureSystem.PrefilterCubeMap.PrefilterCubeMap.RenderedCubeMapView,
+            .imageLayout = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImageLayout
         });
     return texturePropertiesBuffer;
 }

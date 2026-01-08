@@ -253,6 +253,58 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	return texture;
 }
 
+void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture)
+{
+	PrefilterSkyboxTexture skyboxTexture;
+	uint32 cubeMapMipLevels = texture.mipMapLevels;
+	if (skyboxTexture.PrefilterMipFramebufferList.empty())
+	{
+		skyboxTexture.PrefilterMipFramebufferList.resize(cubeMapMipLevels);
+		skyboxTexture.PrefilterAttachmentImageViews.resize(cubeMapMipLevels);
+		for (uint32 mip = 0; mip < cubeMapMipLevels; ++mip)
+		{
+			VkImageViewCreateInfo viewInfo =
+			{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+				.image = texture.textureImage,
+				.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY,
+				.format = texture.textureByteFormat,
+				.subresourceRange =
+					{
+						.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+						.baseMipLevel = mip,
+						.levelCount = 1,
+						.baseArrayLayer = 0,
+						.layerCount = 6,
+					}
+			};
+			vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &skyboxTexture.PrefilterAttachmentImageViews[mip]);
+
+			uint mipWidth = texture.width >> mip;
+			uint mipHeight = texture.height >> mip;
+			VkFramebufferCreateInfo frameBufferInfo =
+			{
+				.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+				.renderPass = renderPass,
+				.attachmentCount = 1,
+				.pAttachments = &skyboxTexture.PrefilterAttachmentImageViews[mip],
+				.width = static_cast<uint32_t>(mipWidth),
+				.height = static_cast<uint32_t>(mipHeight),
+				.layers = 1,
+			};
+			vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &skyboxTexture.PrefilterMipFramebufferList[mip]);
+		}
+	}
+
+	PrefilterCubeMap = PrefilterSkyboxTexture
+	{
+		.PrefilterMipmapCount = texture.mipMapLevels,
+		.PrefilterCubeMap = texture,
+		.PrefilterAttachmentImageViews = skyboxTexture.PrefilterAttachmentImageViews,
+		.PrefilterMipFramebufferList = skyboxTexture.PrefilterMipFramebufferList
+	};
+}
+
 void TextureSystem::Update(const float& deltaTime)
 {
 	int x = 0;

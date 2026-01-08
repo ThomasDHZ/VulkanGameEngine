@@ -5,7 +5,6 @@
 #include "FileSystem.h"
 #include <vk_mem_alloc.h>
 
-
 struct TextureLoader
 {
     Vector<String> TextureFilePath;
@@ -18,6 +17,7 @@ struct TextureLoader
     bool UseMipMaps;
     bool IsSkyBox;
 };
+
 
 struct Texture
 {
@@ -45,6 +45,14 @@ struct Texture
     ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
+struct PrefilterSkyboxTexture
+{
+    uint32                                                         PrefilterMipmapCount;
+    Texture                                                        PrefilterCubeMap;
+    Vector<VkImageView>                                            PrefilterAttachmentImageViews;
+    Vector<VkFramebuffer>                                          PrefilterMipFramebufferList;
+};
+
 struct RenderAttachmentLoader;
 class TextureSystem
 {
@@ -67,34 +75,33 @@ private:
 public:
     Texture                                                        CubeMap;
     Texture                                                        IrradianceCubeMap;
-    Texture                                                        PrefilterCubeMap;
-    Vector<VkImageView>                                            PrefilterAttachmentImageViews;
-    Vector<VkFramebuffer>                                          PrefilterMipFramebufferList;
+    PrefilterSkyboxTexture                                         PrefilterCubeMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
 
-    DLL_EXPORT VkGuid                CreateTexture(const String& texturePath);
-    DLL_EXPORT Texture               CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution);
-    DLL_EXPORT void                  AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
-    DLL_EXPORT void                  AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
-    DLL_EXPORT void                  Update(const float& deltaTime);
-    DLL_EXPORT void                  GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
-    DLL_EXPORT void                  TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
-    DLL_EXPORT void                  TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
-    DLL_EXPORT Texture               FindTexture(const VkGuid& textureId, int a);
-    DLL_EXPORT Texture               FindTexture(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT Texture&              FindDepthTexture(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT Texture&              FindRenderedTexture(const TextureGuid& textureGuid);
-    DLL_EXPORT Vector<Texture>&      FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT const bool            TextureExists(const RenderPassGuid& renderPassGuid) const;
-    DLL_EXPORT const bool            DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
-    DLL_EXPORT const bool            RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
-    DLL_EXPORT const bool            RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
-    DLL_EXPORT void                  DestroyTexture(Texture& texture);
-    DLL_EXPORT void                  DestroyAllTextures();
-    DLL_EXPORT const Vector<Texture> TextureList();
-    DLL_EXPORT const Vector<Texture> DepthTextureList();
+    DLL_EXPORT VkGuid                   CreateTexture(const String& texturePath);
+    DLL_EXPORT Texture                  CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution);
+    DLL_EXPORT void                     CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture);
+    DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
+    DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
+    DLL_EXPORT void                     Update(const float& deltaTime);
+    DLL_EXPORT void                     GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
+    DLL_EXPORT void                     TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
+    DLL_EXPORT void                     TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
+    DLL_EXPORT Texture                  FindTexture(const VkGuid& textureId, int a);
+    DLL_EXPORT Texture                  FindTexture(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT Texture&                 FindDepthTexture(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);
+    DLL_EXPORT Vector<Texture>&         FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT const bool               TextureExists(const RenderPassGuid& renderPassGuid) const;
+    DLL_EXPORT const bool               DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
+    DLL_EXPORT const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
+    DLL_EXPORT const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
+    DLL_EXPORT void                     DestroyTexture(Texture& texture);
+    DLL_EXPORT void                     DestroyAllTextures();
+    DLL_EXPORT const Vector<Texture>    TextureList();
+    DLL_EXPORT const Vector<Texture>    DepthTextureList();
 };
 extern DLL_EXPORT TextureSystem& textureSystem;
 inline TextureSystem& TextureSystem::Get()

@@ -116,7 +116,7 @@ if (isBackground)
 
     vec3 albedoMap = texture(TextureMap[AlbedoMapBinding], TexCoords).rgb;
     float metallicMap = 0.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).r;
-    float roughnessMap = 0.5f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).g;
+    float roughnessMap = 1.0f;//texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).g;
     float ambientOcclusionMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).b;
     float heightMap = texture(TextureMap[MatRoughAOHeightMapBinding], TexCoords).a;
     vec3 emissionMap = texture(TextureMap[EmissionMapBinding], TexCoords).rgb;
@@ -251,4 +251,4 @@ for (int x = 0; x < gBufferSceneDataBuffer.PointLightCount; x++)
 
     outColor = vec4(color, 1.0f);
     outBloom = vec4(bloomColor, 1.0f);
-}p
+}

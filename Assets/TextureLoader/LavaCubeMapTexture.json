@@ -13,7 +13,7 @@
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
-  "UseMipMaps": false,
+  "UseMipMaps": true,
   "IsSkyBox": true,
   "SamplerCreateInfo": {
     "SType": 31,

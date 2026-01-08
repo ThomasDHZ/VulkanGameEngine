@@ -8,6 +8,7 @@
 #include "Mouse.h"
 #include "GameController.h"
 #include <LevelSystem.h>
+#include "TimeSystem.h"
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
 #endif
@@ -92,8 +93,12 @@ void GameSystem::DebugUpdate(float deltaTime)
     vec2 rightStick = gameController.RightJoyStickMoved(GLFW_JOYSTICK_1);
     vec2 r2L2 = gameController.R2L2Pressed(GLFW_JOYSTICK_1);
 
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
     ImGui_StartFrame();
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Text("Capped FPS: %.1f", ImGui::GetIO().Framerate);
+    ImGui::Text("Potential FPS: %.1f", timeSystem.UncappedFPS);
+    ImGui::Text("Avg work time: %.3f ms", timeSystem.AverageWorkTime * 1000.0);
     
     ImGui::Separator();
 
