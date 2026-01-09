@@ -494,23 +494,33 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
     }
 
     Vector<const char*> DeviceExtensionList = GetRequiredDeviceExtensions(physicalDevice);
-    VkPhysicalDeviceFeatures deviceFeatures = 
-    {
-        .fillModeNonSolid = VK_TRUE,
-        .vertexPipelineStoresAndAtomics = VK_TRUE,
-        .fragmentStoresAndAtomics = VK_TRUE,
+    VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures =
+    { 
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+        .shaderInputAttachmentArrayDynamicIndexing = VK_TRUE,
+        .shaderUniformTexelBufferArrayDynamicIndexing = VK_TRUE,
+        .shaderStorageTexelBufferArrayDynamicIndexing = VK_TRUE,
+        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+        .shaderStorageBufferArrayNonUniformIndexing = VK_TRUE,
+        .shaderStorageImageArrayNonUniformIndexing = VK_TRUE,
+        .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
+        .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
+        .descriptorBindingPartiallyBound = VK_TRUE,
+        .descriptorBindingVariableDescriptorCount = VK_TRUE,
+        .runtimeDescriptorArray = VK_TRUE,
     };
-
+   
     VkPhysicalDeviceColorWriteEnableFeaturesEXT colorWriteFeatures
     {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
+        .pNext = &indexingFeatures,
         .colorWriteEnable = VK_TRUE
     };
+
 
     VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = &colorWriteFeatures,
-        .features = deviceFeatures
     };
 
     VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = {

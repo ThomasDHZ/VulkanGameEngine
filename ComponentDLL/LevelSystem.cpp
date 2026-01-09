@@ -922,3 +922,34 @@ void LevelSystem::LoadLevel(const char* levelPath)
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
  }
+
+
+ //So lately, I've been working on graphics rendering.
+ //Actually decided to with a PBR rendering system for a 2D game.
+ //Also just got paralax workng, might need to adjust the height map
+ //Somethings look a little off.
+ //Character was AI generate, later on I'll need to find a real artist//
+ //But this is good for prototyping.
+ //Got a way to adjust the view and heightscall, easier for prototyping to figure out what looks good.
+ //Trying to get shadows working, but haven't totally worked that out yet.
+ //Directional light depth pass
+ //Point light depth pass.
+ //Irradiance Pass
+ //Color pass 2 was the prefilter pass.
+ //GBuffer pass, still need to figure out why I'm getting those weird lines, probably something to do wtih changing the sampler settings.
+
+ //Position Data
+ //Color Data
+ //Normal Data
+ //R = Height Data, should be A but for some reason A isn't work right. R is supposed to be metalness.
+ //G = Roughness Just has a solid value right now
+ //B = Ambient Occlustion
+ //Depth pass
+
+ //GBuffer lighting pass just puts together the other passes and adds lighting data and background.
+ //Also got a bloom set up so it's not fully working yet.
+ //HDR Tone Mapping pass.
+ //And just passing to the frame buffer.
+ //It should look better when I can get more customised sprites made specificly for this kind of renderer.
+ //But pretty happy with how it's turnning out.
+ //Prefilter and Irradiance are updated in real time per frame.

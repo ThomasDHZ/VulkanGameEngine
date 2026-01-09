@@ -1064,7 +1064,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetPrefilterMapTextureBuffer(const R
         {
             .sampler = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureSampler,
             .imageView = textureSystem.PrefilterCubeMap.PrefilterCubeMap.RenderedCubeMapView,
-            .imageLayout = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImageLayout
+            .imageLayout = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImageLayout,
         });
     return texturePropertiesBuffer;
 }

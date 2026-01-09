@@ -1,3 +1,3 @@
-#include "MemoryPoolSystem.h"
-
-MemoryPoolSystem& memoryPoolSystem = MemoryPoolSystem::Get();
+//#include "MemoryPoolSystem.h"
+//
+//MemoryPoolSystem& memoryPoolSystem = MemoryPoolSystem::Get();

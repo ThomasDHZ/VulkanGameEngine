@@ -99,33 +99,34 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS)
 {
     if (gBufferSceneDataBuffer.UseHeightMap == 0) return uv;
 
-    const float minLayers = 8.0;
-    const float maxLayers = 32.0;
+    const float minLayers = 16.0f;
+    const float maxLayers = 64.0f;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
-    float layerDepth = 1.0 / numLayers;
-    float currentLayerDepth = 0.0;
+    float layerDepth = 1.0f / numLayers;
+    float currentLayerDepth = 0.0f;
     vec2 P = viewDirTS.xy * gBufferSceneDataBuffer.HeightScale;
     vec2 deltaUV = P / numLayers;
 
     vec2 currentUV = uv;
     float currentHeight = texture(TextureMap[MatRoughAOHeightMapBinding], currentUV).r;
 
-    int i = 0;
-    while (currentLayerDepth < currentHeight && i < 32) {
+    int x = 0;
+    while (currentLayerDepth < currentHeight && x < 32) {
         currentUV -= deltaUV;
         currentHeight = texture(TextureMap[MatRoughAOHeightMapBinding], currentUV).r;
         currentLayerDepth += layerDepth;
-        i++;
+        x++;
     }
 
     vec2 prevUV = currentUV + deltaUV;
     float afterDepth = currentHeight - currentLayerDepth;
     float beforeDepth = texture(TextureMap[MatRoughAOHeightMapBinding], prevUV).r - currentLayerDepth + layerDepth;
-    float weight = afterDepth / (afterDepth - beforeDepth + 0.0001);
+    float weight = afterDepth / (afterDepth - beforeDepth + 0.0001f);
     vec2 finalUV = mix(currentUV, prevUV, weight);
+    finalUV = clamp(finalUV, vec2(0.005f), vec2(0.995f));
 
-    return clamp(finalUV, vec2(0.01), vec2(0.99));
+    return clamp(finalUV, vec2(0.01f), vec2(0.99f));
 }
 
 void main()
@@ -133,10 +134,10 @@ void main()
     vec2 baseUV = TexCoords;
     vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
 
-    vec2 offsetUV = baseUV;
+    vec2 uv = baseUV;
     if (gBufferSceneDataBuffer.UseHeightMap == 1) {
-        offsetUV = ParallaxOcclusionMapping(baseUV, V);
-        offsetUV = clamp(offsetUV, vec2(0.01), vec2(0.99));
+        uv = ParallaxOcclusionMapping(baseUV, V);
+        uv = clamp(uv, vec2(0.01), vec2(0.99));
     }
 
     float depthMap = texture(TextureMap[DepthMapBinding], baseUV).r;
