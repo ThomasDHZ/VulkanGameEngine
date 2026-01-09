@@ -128,14 +128,12 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
         renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
         renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
 
-        VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+        VulkanPipeline vulkanPipeline;
+        vulkanPipeline.PipelineCache = VK_NULL_HANDLE;
         PipelineBindingData(renderPipelineLoader);
-        VkDescriptorPool descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
-        Vector<VkDescriptorSetLayout> descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
-        Vector<VkDescriptorSet> descriptorSetList = AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-        UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
-        VkPipelineLayout pipelineLayout = CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
-        VkPipeline pipeline = CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+        CreatePipelineDescriptorSets(vulkanPipeline);
+        CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+        CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
         renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline
         {
@@ -450,108 +448,132 @@ Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& ren
     return frameBufferList;
 }
 
-
-VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
+void RenderSystem::CreatePipelineDescriptorSets(VulkanPipeline& vulkanPipeline)
 {
-    Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
-    for (const auto& binding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
+    Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>
     {
-        descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize{
-            .type = binding.DescripterType,
-            .descriptorCount = static_cast<uint32>(binding.DescriptorCount)
-            });
-    }
-
-    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-    VkDescriptorPoolCreateInfo poolCreateInfo = VkDescriptorPoolCreateInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .maxSets = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.empty() ? 100 : static_cast<uint32>(descriptorPoolSizeList.size()) * 100,
-        .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
-        .pPoolSizes = descriptorPoolSizeList.data()
+        VkDescriptorSetLayoutBinding
+        {
+           .binding = 0,
+           .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+           .descriptorCount = 1,
+           .stageFlags = VK_SHADER_STAGE_ALL,
+           .pImmutableSamplers = nullptr
+        },
+        VkDescriptorSetLayoutBinding
+        {
+           .binding = 1,
+           .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+           .descriptorCount = 65536,
+           .stageFlags = VK_SHADER_STAGE_ALL,
+           .pImmutableSamplers = nullptr
+        },
+         VkDescriptorSetLayoutBinding
+        {
+           .binding = 2,
+           .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+           .descriptorCount = 1024,
+           .stageFlags = VK_SHADER_STAGE_ALL,
+           .pImmutableSamplers = nullptr
+        },
     };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolCreateInfo, nullptr, &descriptorPool));
-    return descriptorPool;
-}
 
-Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader)
-{
-    Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
-    for (auto& descriptorBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
+    Vector<VkDescriptorBindingFlags> bindingFlags = Vector<VkDescriptorBindingFlags>
     {
-        descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
+        VkDescriptorBindingFlags{0},
+        VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT},
+        VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT}
+    };
+
+    Vector<VkDescriptorBufferInfo> descriptorBuffer = Vector<VkDescriptorBufferInfo>
+    {
+        VkDescriptorBufferInfo
             {
-                .binding = descriptorBinding.Binding,
-                .descriptorType = descriptorBinding.DescripterType,
-                .descriptorCount = static_cast<uint32>(descriptorBinding.DescriptorCount),
-                .stageFlags = descriptorBinding.ShaderStageFlags,
-                .pImmutableSamplers = nullptr
-            });
+                .buffer = VK_NULL_HANDLE,
+                .offset = 0,
+                .range = VK_WHOLE_SIZE
+            },
+
+    };
+
+    if (meshSystem.MeshList.empty())
+    {
+        VkDescriptorBufferInfo
+            {
+                .buffer = VK_NULL_HANDLE,
+                .offset = 0,
+                .range = VK_WHOLE_SIZE
+            },
+        
     }
 
-    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo
+    {
+        Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
+        for (const auto& binding : descriptorSetLayoutBindingList)
+        {
+            descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize{
+                .type = binding.descriptorType,
+                .descriptorCount = static_cast<uint32>(binding.descriptorCount)
+                });
+        }
+
+        VkDescriptorPoolCreateInfo poolCreateInfo = VkDescriptorPoolCreateInfo
+        {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .maxSets = vulkanSystem.MaxFramesInFlight,
+            .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
+            .pPoolSizes = descriptorPoolSizeList.data()
+        };
+        VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolCreateInfo, nullptr, &vulkanPipeline.DescriptorPool));
+    }
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo descriptorSetFlags =
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .bindingCount = static_cast<uint32>(bindingFlags.size()),
+        .pBindingFlags = bindingFlags.data()
+    };
+
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
+        .pNext = &descriptorSetFlags,
+        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
         .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList.size()),
         .pBindings = descriptorSetLayoutBindingList.data()
     };
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &descriptorSetLayoutCreateInfo, nullptr, &vulkanPipeline.DescriptorSetLayout));
 
-    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(1);
-    for (auto& descriptorSetLayout : descriptorSetLayoutList)
-    {
-        VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
-    }
-
-    return descriptorSetLayoutList;
-}
-
-Vector<VkDescriptorSet> RenderSystem::AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
-{
-    VkDescriptorSetAllocateInfo allocInfo = 
+    VkDescriptorSetAllocateInfo allocInfo =
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
         .pNext = nullptr,
-        .descriptorPool = descriptorPool,
-        .descriptorSetCount = static_cast<uint32>(descriptorSetLayoutCount),
-        .pSetLayouts = descriptorSetLayoutList
+        .descriptorPool = vulkanPipeline.DescriptorPool,
+        .descriptorSetCount = 1u,
+        .pSetLayouts = &vulkanPipeline.DescriptorSetLayout
     };
+    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &vulkanPipeline.DescriptorSet));
 
-    Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(1, VK_NULL_HANDLE);
-    for (auto& descriptorSet : descriptorSetList)
+    Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
+    for (auto& descriptorSetBinding : descriptorSetLayoutBindingList)
     {
-        VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSet));
+        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+            {
+                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                .pNext = nullptr,
+                .dstSet = vulkanPipeline.DescriptorSet,
+                .dstBinding = descriptorSetBinding.binding,
+                .dstArrayElement = 0,
+                .descriptorCount = static_cast<uint32>(descriptorSetBinding.descriptorCount),
+                .descriptorType = descriptorSetBinding.descriptorType,
+                .pImageInfo = descriptorSetBinding.pImageInfo,
+                .pBufferInfo = descriptorSetBinding.DescriptorBufferInfo.data(),
+                .pTexelBufferView = nullptr
+            });
     }
-    return descriptorSetList;
-}
-
-void RenderSystem::UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
-{
-    Span<VkDescriptorSet> descriptorSetLayouts(descriptorSetList, descriptorSetCount);
-    for (auto& descriptorSet : descriptorSetLayouts)
-    {
-        Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
-        for (auto& descriptorSetBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
-        {
-            writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-                {
-                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                    .pNext = nullptr,
-                    .dstSet = descriptorSet,
-                    .dstBinding = descriptorSetBinding.Binding,
-                    .dstArrayElement = 0,
-                    .descriptorCount = static_cast<uint32>(descriptorSetBinding.DescriptorCount),
-                    .descriptorType = descriptorSetBinding.DescripterType,
-                    .pImageInfo = descriptorSetBinding.DescriptorImageInfo.data(),
-                    .pBufferInfo = descriptorSetBinding.DescriptorBufferInfo.data(),
-                    .pTexelBufferView = nullptr
-                });
-        }
-        vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
-    }
+    VULKAN_THROW_IF_FAIL(vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr));
 }
 
 VkPipelineLayout RenderSystem::CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)

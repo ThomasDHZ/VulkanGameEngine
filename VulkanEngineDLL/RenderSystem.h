@@ -24,10 +24,7 @@ private:
     void RecreateSwapchain(void* windowHandle, RenderPassGuid& renderPassGuid, LevelGuid& levelGuid, const float& deltaTime);
     void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     Vector<VkFramebuffer> BuildFrameBuffer(const VulkanRenderPass& renderPass);
-    VkDescriptorPool CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader);
-    Vector<VkDescriptorSetLayout> CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader);
-    Vector<VkDescriptorSet> AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
-    void UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
+    void CreatePipelineDescriptorSets(VulkanPipeline& renderPipelineLoader);
     VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
     VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
     void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);

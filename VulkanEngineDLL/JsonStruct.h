@@ -95,13 +95,13 @@ struct RenderPassLoader
 
 struct VulkanPipeline
 {
-    VkGuid RenderPipelineId;
-    VkDescriptorPool DescriptorPool = VK_NULL_HANDLE;
-    Vector<VkDescriptorSetLayout> DescriptorSetLayoutList = Vector<VkDescriptorSetLayout>();
-    Vector<VkDescriptorSet> DescriptorSetList = Vector<VkDescriptorSet>();
-    VkPipeline Pipeline = VK_NULL_HANDLE;
-    VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-    VkPipelineCache PipelineCache = VK_NULL_HANDLE;
+    VkGuid                RenderPipelineId = VkGuid();
+    VkDescriptorPool      DescriptorPool = VK_NULL_HANDLE;
+    VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSet       DescriptorSet = VK_NULL_HANDLE;
+    VkPipeline            Pipeline = VK_NULL_HANDLE;
+    VkPipelineLayout      PipelineLayout = VK_NULL_HANDLE;
+    VkPipelineCache       PipelineCache = VK_NULL_HANDLE;
 };
 
 struct ShaderVariableDLL
