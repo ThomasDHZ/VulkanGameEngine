@@ -21,12 +21,14 @@ struct TextureLoader
 
 struct Texture
 {
-    TextureGuid           textureId;
+    TextureGuid           textureGuid = TextureGuid();
+    RenderPassGuid        renderPassGuid = RenderPassGuid();
+    size_t                textureIndex = SIZE_MAX;
+
     int                   width = 1;
     int                   height = 1;
     int                   depth = 1;
     uint32                mipMapLevels = 0;
-    uint32                textureBufferIndex = 0;
 
     VkImage               textureImage = VK_NULL_HANDLE;
     VkDeviceMemory        textureMemory = VK_NULL_HANDLE;
@@ -78,14 +80,13 @@ public:
     PrefilterSkyboxTexture                                         PrefilterCubeMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
-    UnorderedMap<RenderPassGuid, Texture>                          TextureMap;
+    Vector<Texture>                                                TextureList;
 
     DLL_EXPORT VkGuid                   CreateTexture(const String& texturePath);
     DLL_EXPORT Texture                  CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution);
     DLL_EXPORT void                     CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
-    DLL_EXPORT void                     Update(const float& deltaTime);
     DLL_EXPORT void                     GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
     DLL_EXPORT void                     TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
     DLL_EXPORT void                     TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
@@ -100,7 +101,6 @@ public:
     DLL_EXPORT const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
     DLL_EXPORT void                     DestroyTexture(Texture& texture);
     DLL_EXPORT void                     DestroyAllTextures();
-    DLL_EXPORT const Vector<Texture>    TextureList();
     DLL_EXPORT const Vector<Texture>    DepthTextureList();
 };
 extern DLL_EXPORT TextureSystem& textureSystem;

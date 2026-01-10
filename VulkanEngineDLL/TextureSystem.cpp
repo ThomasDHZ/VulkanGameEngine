@@ -54,7 +54,8 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 
 	Texture texture = Texture
 	{
-		.textureId = textureLoader.TextureId,
+		.textureGuid = textureLoader.TextureId,
+		.textureIndex = TextureList.size(),
 		.width = width,
 		.height = height,
 		.depth = 1,
@@ -98,16 +99,16 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	}
 	else
 	{
-		TextureMap[textureLoader.TextureId] = texture;
+		TextureList.emplace_back(texture);
 	}
 
-#ifndef NDEBUG
-	std::cout << "[TextureDebug] Created Texture:" << texturePath
-		<< " Texture ID: " << texture.textureId.ToString()
-		<< " Image: " << texture.textureImage
-		<< " Format: " << texture.textureByteFormat
-		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
-#endif
+//#ifndef NDEBUG
+//	std::cout << "[TextureDebug] Created Texture:" << texturePath
+//		<< " Texture ID: " << texture.textureId.ToString()
+//		<< " Image: " << texture.textureImage
+//		<< " Format: " << texture.textureByteFormat
+//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+//#endif
 
 	return textureLoader.TextureId;
 }
@@ -120,7 +121,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	Texture texture =
 	{
-		.textureId = renderAttachmentLoader.RenderedTextureId,
+		.textureGuid = renderAttachmentLoader.RenderedTextureId,
 		.width = renderAttachmentResolution.x,
 		.height = renderAttachmentResolution.y,
 		.depth = 1,
@@ -244,12 +245,12 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
 
 
-#ifndef NDEBUG
-	std::cout << "[TextureDebug] Created texture ID: " << texture.textureId.ToString()
-		<< " Image: " << texture.textureImage
-		<< " Format: " << texture.textureByteFormat
-		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
-#endif
+//#ifndef NDEBUG
+//	std::cout << "[TextureDebug] Created texture ID: " << texture.textureGuid.ToString()
+//		<< " Image: " << texture.textureImage
+//		<< " Format: " << texture.textureByteFormat
+//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+//#endif
 	return texture;
 }
 
@@ -301,16 +302,6 @@ void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass,
 		.PrefilterAttachmentImageViews = std::move(skyboxTexture.PrefilterAttachmentImageViews),
 		.PrefilterMipFramebufferList = std::move(skyboxTexture.PrefilterMipFramebufferList)
 	};
-}
-
-void TextureSystem::Update(const float& deltaTime)
-{
-	int x = 0;
-	for (auto& [id, texture] : TextureMap)
-	{
-		UpdateTextureBufferIndex(texture, x);
-		x++;
-	}
 }
 
 void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
@@ -399,7 +390,7 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId, int a)
 	{
 		for (auto& texture : pair.second)
 		{
-			if (texture.textureId == textureId)
+			if (texture.textureGuid == textureId)
 			{
 				return texture;
 			}
@@ -408,17 +399,17 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId, int a)
 
 	for (auto& pair : DepthTextureMap)
 	{
-		if (pair.second.textureId == textureId)
+		if (pair.second.textureGuid == textureId)
 		{
 			return pair.second;
 		}
 	}
 
-	for (auto& pair : TextureMap)
+	for (auto& texture : TextureList)
 	{
-		if (pair.second.textureId == textureId)
+		if (texture.textureGuid == textureId)
 		{
-			return pair.second;
+			return texture;
 		}
 	}
 	throw std::out_of_range("Texture with given ID not found");
@@ -519,11 +510,11 @@ void TextureSystem::AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& dep
 
 void TextureSystem::DestroyAllTextures()
 {
-	for (auto& pair : TextureMap)
+	for (auto& texture : TextureList)
 	{
-		DestroyTexture(pair.second);
+		DestroyTexture(texture);
 	}
-	TextureMap.clear();
+	TextureList.clear();
 
 	for (auto& pair : DepthTextureMap)
 	{
@@ -541,17 +532,6 @@ void TextureSystem::DestroyAllTextures()
 	RenderedTextureListMap.clear();
 }
 
-const Vector<Texture> TextureSystem::TextureList()
-{
-	Vector<Texture> list;
-	list.reserve(TextureMap.size());
-	for (const auto& pair : TextureMap)
-	{
-		list.emplace_back(pair.second);
-	}
-	return list;
-}
-
 const Vector<Texture> TextureSystem::DepthTextureList()
 {
 	Vector<Texture> list;
@@ -561,11 +541,6 @@ const Vector<Texture> TextureSystem::DepthTextureList()
 		list.emplace_back(pair.second);
 	}
 	return list;
-}
-
-void TextureSystem::UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex)
-{
-	texture.textureBufferIndex = bufferIndex;
 }
 
 void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount)
@@ -828,9 +803,14 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
-Texture TextureSystem::FindTexture(const RenderPassGuid& renderPassGuid)
+Texture TextureSystem::FindTexture(const TextureGuid& textureGuid)
 {
-	return TextureMap.at(renderPassGuid);
+	auto it = std::find_if(TextureList.begin(), TextureList.end(),
+		[&textureGuid](const Texture& texture)
+		{
+			return texture.textureGuid == textureGuid;
+		});
+	return *it;
 }
 
 Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& renderPassGuid)
@@ -846,7 +826,7 @@ Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 		auto it = std::find_if(textureList.begin(), textureList.end(),
 			[&textureGuid](const Texture& texture)
 			{
-				return texture.textureId == textureGuid;
+				return texture.textureGuid == textureGuid;
 			});
 		if (it != textureList.end())
 			return *it;
@@ -859,14 +839,19 @@ Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& re
 	return RenderedTextureListMap.at(renderPassGuid);
 }
 
-const bool TextureSystem::TextureExists(const RenderPassGuid& renderPassGuid) const
-{
-	return TextureMap.contains(renderPassGuid);
-}
-
 const bool TextureSystem::DepthTextureExists(const RenderPassGuid& renderPassGuid) const
 {
 	return DepthTextureMap.contains(renderPassGuid);
+}
+
+const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
+{
+	auto it = std::find_if(TextureList.begin(), TextureList.end(),
+		[&textureGuid](const Texture& texture)
+		{
+			return texture.textureGuid == textureGuid;
+		});
+	return it != TextureList.end();
 }
 
 const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const
@@ -875,7 +860,7 @@ const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPass
 	if (it != RenderedTextureListMap.end())
 	{
 		return std::any_of(it->second.begin(), it->second.end(),
-			[&textureGuid](const Texture& texture) { return texture.textureId == textureGuid; });
+			[&textureGuid](const Texture& texture) { return texture.textureGuid == textureGuid; });
 	}
 	return RenderedTextureListMap.contains(textureGuid);
 }

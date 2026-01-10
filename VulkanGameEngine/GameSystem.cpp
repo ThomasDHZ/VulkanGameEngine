@@ -61,7 +61,6 @@ void GameSystem::Update(float deltaTime)
     inputSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
-    textureSystem.Update(deltaTime);
     materialSystem.Update(deltaTime);
     renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 

@@ -987,7 +987,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     }
     else
     {
-        textureList = textureSystem.TextureList();
+        textureList = textureSystem.TextureList;
     }
 
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;

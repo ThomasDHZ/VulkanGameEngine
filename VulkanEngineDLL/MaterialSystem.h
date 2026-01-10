@@ -4,9 +4,9 @@
 
 struct Material
 {
-    int VectorMapKey;
     VkGuid materialGuid = VkGuid();
-    uint ShaderMaterialBufferIndex;
+    VkGuid RenderPassGuid = VkGuid();
+    size_t ShaderMaterialBufferIndex = SIZE_MAX;
     int MaterialBufferId;
 
     VkGuid AlbedoMapId = VkGuid();
@@ -47,15 +47,14 @@ private:
     MaterialSystem(MaterialSystem&&) = delete;
     MaterialSystem& operator=(MaterialSystem&&) = delete;
 
-    UnorderedMap<MaterialGuid, Material> MaterialMap;
+    Vector<Material> MaterialList;
     void Material_DestroyBuffer(VulkanBuffer& materialBuffer);
 
 public:
-    DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
+    DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT const bool MaterialMapExists(const MaterialGuid& materialGuid) const;
-    DLL_EXPORT const Material& FindMaterial(const MaterialGuid& materialGuid);
-    DLL_EXPORT const Vector<Material>& MaterialList();
+    DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
     DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer();
     DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
     DLL_EXPORT void DestroyAllMaterials();
