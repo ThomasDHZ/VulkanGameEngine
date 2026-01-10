@@ -11,6 +11,7 @@
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
 #endif
+#include <MemoryPoolSystem.h>
 
 #ifndef __ANDROID__
 GameSystem gameSystem = GameSystem();
@@ -51,6 +52,7 @@ void GameSystem::StartUp(void* windowHandle)
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
+    memoryPoolSystem.AddSceneDataBuffer();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 

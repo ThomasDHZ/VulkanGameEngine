@@ -96,9 +96,6 @@ struct RenderPassLoader
 struct VulkanPipeline
 {
     VkGuid                RenderPipelineId = VkGuid();
-    VkDescriptorPool      DescriptorPool = VK_NULL_HANDLE;
-    VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
-    VkDescriptorSet       DescriptorSet = VK_NULL_HANDLE;
     VkPipeline            Pipeline = VK_NULL_HANDLE;
     VkPipelineLayout      PipelineLayout = VK_NULL_HANDLE;
     VkPipelineCache       PipelineCache = VK_NULL_HANDLE;

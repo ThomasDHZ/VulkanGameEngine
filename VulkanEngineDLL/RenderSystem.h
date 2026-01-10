@@ -17,6 +17,9 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
+    VkDescriptorPool      DescriptorPool = VK_NULL_HANDLE;
+    VkDescriptorSetLayout DescriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSet       DescriptorSet = VK_NULL_HANDLE;
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
@@ -25,8 +28,8 @@ private:
     void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     Vector<VkFramebuffer> BuildFrameBuffer(const VulkanRenderPass& renderPass);
     void CreatePipelineDescriptorSets(VulkanPipeline& renderPipelineLoader);
-    VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
-    VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
+    void CreatePipelineLayout(VulkanPipeline& vulkanPipeline, RenderPipelineLoader& renderPipelineLoader);
+    void CreatePipeline(VulkanPipeline& vulkanPipeline, RenderPipelineLoader& renderPipelineLoader);
     void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);
     VkRenderPass BuildRenderPass(const RenderPassLoader& renderPassJsonLoader);
 
@@ -34,10 +37,11 @@ public:
    
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution);
+    DLL_EXPORT void                          AddTextureToBindlessArray(VkDescriptorSet bindlessSet, uint32_t binding, Texture& texture);
     DLL_EXPORT VulkanRenderPass              RebuildSwapChain(VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT void                          Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
     DLL_EXPORT void                          GenerateTexture(VkGuid& renderPassId);
-    DLL_EXPORT  VulkanRenderPass        FindRenderPass(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT  VulkanRenderPass             FindRenderPass(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT const Vector<VulkanPipeline>  FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
 
     DLL_EXPORT void                          Destroy();

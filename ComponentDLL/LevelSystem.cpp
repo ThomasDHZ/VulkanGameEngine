@@ -325,7 +325,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
       vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, 1, &levelPipeline.DescriptorSet, 0, nullptr);
       for (auto& levelLayer : levelLayerList)
       {
           const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
@@ -343,7 +343,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       }
 
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, 1, &spritePipeline.DescriptorSet, 0, nullptr);
       for (auto& spriteLayer : spriteSystem.SpriteLayerList)
       {
           const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
@@ -400,7 +400,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
       vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, 1, &levelPipeline.DescriptorSet, 0, nullptr);
       for (auto& levelLayer : levelLayerList)
       {
           const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
@@ -417,7 +417,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       }
 
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, 1, &spritePipeline.DescriptorSet, 0, nullptr);
       for (auto& spriteLayer : spriteSystem.SpriteLayerList)
       {
           const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
@@ -463,7 +463,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       lightSystem.Update(deltaTime);
       vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, 1, &levelPipeline.DescriptorSet, 0, nullptr);
       for (auto& levelLayer : levelLayerList)
       {
           const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
@@ -480,7 +480,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       }
 
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, 1, &spritePipeline.DescriptorSet, 0, nullptr);
       for (auto& spriteLayer : spriteSystem.SpriteLayerList)
       {
           const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
@@ -522,7 +522,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, 1, &skyboxPipeline.DescriptorSet, 0, nullptr);
       for (auto& skybox : skyBoxList)
       {
           const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
@@ -576,7 +576,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
       vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, 1, &skyboxPipeline.DescriptorSet, 0, nullptr);
       for (auto& skybox : skyBoxList)
       {
           const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
@@ -644,16 +644,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
               pushConstant.PushConstantBuffer.data());
 
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-
-          vkCmdBindDescriptorSets(commandBuffer,
-              VK_PIPELINE_BIND_POINT_GRAPHICS,
-              skyboxPipeline.PipelineLayout,
-              0,
-              static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()),
-              skyboxPipeline.DescriptorSetList.data(),
-              0,
-              nullptr);
-
+          vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, 1, &skyboxPipeline.DescriptorSet, 0, nullptr);
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -744,7 +735,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, 1, &pipeline.DescriptorSet, 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
  }
@@ -788,7 +779,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
       vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, 1, &pipeline.DescriptorSet, 0, nullptr);
       vkCmdDraw(commandBuffer, 6, 1, 0, 0);
       vkCmdEndRenderPass(commandBuffer);
   }
@@ -827,7 +818,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
       vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, 1, &pipeline.DescriptorSet, 0, nullptr);
       vkCmdDraw(commandBuffer, 6, 1, 0, 0);
       vkCmdEndRenderPass(commandBuffer);
   }
@@ -853,7 +844,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, 1, &pipeline.DescriptorSet, 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
  }
@@ -879,7 +870,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, 1, &pipeline.DescriptorSet, 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
  }
@@ -918,38 +909,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
      vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, 1, &pipeline.DescriptorSet, 0, nullptr);
      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
      vkCmdEndRenderPass(commandBuffer);
  }
-
-
- //So lately, I've been working on graphics rendering.
- //Actually decided to with a PBR rendering system for a 2D game.
- //Also just got paralax workng, might need to adjust the height map
- //Somethings look a little off.
- //Character was AI generate, later on I'll need to find a real artist//
- //But this is good for prototyping.
- //Got a way to adjust the view and heightscall, easier for prototyping to figure out what looks good.
- //Trying to get shadows working, but haven't totally worked that out yet.
- //Directional light depth pass
- //Point light depth pass.
- //Irradiance Pass
- //Color pass 2 was the prefilter pass.
- //GBuffer pass, still need to figure out why I'm getting those weird lines, probably something to do wtih changing the sampler settings.
-
- //Position Data
- //Color Data
- //Normal Data
- //R = Height Data, should be A but for some reason A isn't work right. R is supposed to be metalness.
- //G = Roughness Just has a solid value right now
- //B = Ambient Occlustion
- //Depth pass
-
- //GBuffer lighting pass just puts together the other passes and adds lighting data and background.
- //Also got a bloom set up so it's not fully working yet.
- //HDR Tone Mapping pass.
- //And just passing to the frame buffer.
- //It should look better when I can get more customised sprites made specificly for this kind of renderer.
- //But pretty happy with how it's turnning out.
- //Prefilter and Irradiance are updated in real time per frame.

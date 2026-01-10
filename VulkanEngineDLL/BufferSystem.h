@@ -43,7 +43,7 @@ extern DLL_EXPORT int NextBufferId;
 
 struct Vertex2D;
 struct SpriteInstance;
-struct MeshPropertiesStruct;
+struct MeshPropertiesBuffer;
 class VulkanBufferSystem
 {
 public:
@@ -70,7 +70,7 @@ private:
         {
             return BufferType_Mat4;
         }
-        else if constexpr (std::is_same_v<T, MeshPropertiesStruct>)
+        else if constexpr (std::is_same_v<T, MeshPropertiesBuffer>)
         {
             return BufferType_MeshPropertiesStruct;
         }

@@ -98,20 +98,19 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	}
 	else
 	{
-		TextureMap[textureLoader.TextureId] = texture;
+		TextureList.emplace_back(texture);
+		AddTextureToBindlessArray(VK_NULL_HANDLE, textureLoader.IsSkyBox ? 2 : 1, texture);
 	}
 
-#ifndef NDEBUG
-	std::cout << "[TextureDebug] Created Texture:" << texturePath
-		<< " Texture ID: " << texture.textureId.ToString()
-		<< " Image: " << texture.textureImage
-		<< " Format: " << texture.textureByteFormat
-		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
-#endif
-
+//#ifndef NDEBUG
+//	std::cout << "[TextureDebug] Created Texture:" << texturePath
+//		<< " Texture ID: " << texture.textureId.ToString()
+//		<< " Image: " << texture.textureImage
+//		<< " Format: " << texture.textureByteFormat
+//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+//#endif
 	return textureLoader.TextureId;
 }
-
 
 Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution)
 {

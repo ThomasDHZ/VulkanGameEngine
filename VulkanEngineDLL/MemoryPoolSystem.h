@@ -1,16 +1,62 @@
-//#pragma once
-//#include "Platform.h"
-//#include "ShaderSystem.h"
-//
-//struct ShaderStructMemoryPool
-//{
-//	uint32 ShaderStructId = MAXUINT32;
-//	uint32 ShaderStructData = MAXUINT32;
-//	uint32 BufferId = MAXUINT32;
-//	size_t ObjectSize = 0;
-//	uint32 ObjectCount = 0;
-//};
-//
+#pragma once
+#include "Platform.h"
+#include "ShaderSystem.h"
+
+struct MeshPropertiesBuffer
+{
+	alignas(8)  size_t ShaderMaterialBufferIndex = 0;
+	alignas(16) mat4   MeshTransform = mat4(1.0f);
+};
+
+struct MaterialProperitiesBuffer
+{
+	alignas(16) vec3 Albedo;
+	alignas(8) float Specular;
+	alignas(8) float Metallic;
+	alignas(8) float Roughness;
+	alignas(8) float AmbientOcclusion;
+	alignas(16) vec3 Emission;
+	alignas(8) float Alpha;
+	alignas(8) float HeightScale;
+	alignas(8) float Height;
+
+	alignas(8) uint AlbedoMap;
+	alignas(8) uint SpecularMap;
+	alignas(8) uint MetallicMap;
+	alignas(8) uint RoughnessMap;
+	alignas(8) uint AmbientOcclusionMap;
+	alignas(8) uint NormalMap;
+	alignas(8) uint AlphaMap;
+	alignas(8) uint EmissionMap;
+	alignas(8) int HeightMap;
+};
+
+struct DirectionalLightBuffer
+{
+	alignas(16) vec3 LightColor;
+	alignas(16) vec3 LightDirection;
+	alignas(8) float LightIntensity;
+	alignas(16) mat4 LightSpaceMatrix;
+};
+
+struct PointLightBuffer
+{
+	alignas(16) vec3 LightPosition;
+	alignas(16) vec3 LightColor;
+	alignas(8) float LightRadius;
+	alignas(8) float LightIntensity;
+};
+
+
+struct ShaderStructMemoryPool
+{
+	uint32 ShaderStructId = MAXUINT32;
+	uint32 ShaderStructData = MAXUINT32;
+	uint32 BufferId = MAXUINT32;
+	size_t ObjectSize = 0;
+	uint32 ObjectCount = 0;
+};
+
 //template <typename T>
 //size_t GetMemberOffset(const String& name)
 //{
@@ -39,24 +85,24 @@
 //            return reflectMap; \
 //        } \
 //    };
-//
-//class MemoryPoolSystem
-//{
-//public:
-//	static MemoryPoolSystem& Get();
-//
-//private:
-//	MemoryPoolSystem() = default;
-//	~MemoryPoolSystem() = default;
-//	MemoryPoolSystem(const MemoryPoolSystem&) = delete;
-//	MemoryPoolSystem& operator=(const MemoryPoolSystem&) = delete;
-//	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
-//	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
-//
-//	static constexpr uint32 FailedToFind = static_cast<uint32>(-1);
-//	static constexpr byte  MemoryBlockUsed = 1;
-//	static constexpr byte  FreeMemoryBlock = 0;
-//
+
+class MemoryPoolSystem
+{
+public:
+	static MemoryPoolSystem& Get();
+
+private:
+	MemoryPoolSystem() = default;
+	~MemoryPoolSystem() = default;
+	MemoryPoolSystem(const MemoryPoolSystem&) = delete;
+	MemoryPoolSystem& operator=(const MemoryPoolSystem&) = delete;
+	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
+	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
+
+	static constexpr uint32 FailedToFind = static_cast<uint32>(-1);
+	static constexpr byte  MemoryBlockUsed = 1;
+	static constexpr byte  FreeMemoryBlock = 0;
+
 //	template <typename T>
 //	uint32 FindNextFreeMemoryBlockIndex(ShaderStructMemoryPool<T>& memoryPool)
 //	{
@@ -98,8 +144,11 @@
 //				shaderStruct.Name, currentOffset, shaderStruct.ShaderBufferSize);
 //		}
 //	}
-//public:
-//
+public:
+	uint sceneDataBufferId;
+	Vector<byte> SceneDataBuffer;
+
+	DLL_EXPORT void AddSceneDataBuffer();
 //	Vector<ShaderStructMemoryPool>          PipelineShaderStructMemoryPoolMap;
 //	Vector<Vector<byte>>					MemoryBlockPtr;
 //	Vector<Vector<byte>>					MemoryBlockInUse;
@@ -182,10 +231,10 @@
 //
 //		std::cout << std::endl << std::endl;
 //	}
-//};
-//extern DLL_EXPORT MemoryPoolSystem& memoryPoolSystem;
-//inline MemoryPoolSystem& MemoryPoolSystem::Get()
-//{
-//	static MemoryPoolSystem instance;
-//	return instance;
-//}
+};
+extern DLL_EXPORT MemoryPoolSystem& memoryPoolSystem;
+inline MemoryPoolSystem& MemoryPoolSystem::Get()
+{
+	static MemoryPoolSystem instance;
+	return instance;
+}

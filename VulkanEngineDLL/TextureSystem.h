@@ -22,6 +22,7 @@ struct TextureLoader
 struct Texture
 {
     TextureGuid           textureId;
+    uint32                textureIndex = MAXUINT32;
     int                   width = 1;
     int                   height = 1;
     int                   depth = 1;
@@ -73,6 +74,8 @@ private:
     void GenerateMipmaps(Texture& texture);
 
 public:
+    Vector<Texture>                                                TextureList;
+
     Texture                                                        CubeMap;
     Texture                                                        IrradianceCubeMap;
     PrefilterSkyboxTexture                                         PrefilterCubeMap;
@@ -100,7 +103,7 @@ public:
     DLL_EXPORT const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
     DLL_EXPORT void                     DestroyTexture(Texture& texture);
     DLL_EXPORT void                     DestroyAllTextures();
-    DLL_EXPORT const Vector<Texture>    TextureList();
+   // DLL_EXPORT const Vector<Texture>    TextureList();
     DLL_EXPORT const Vector<Texture>    DepthTextureList();
 };
 extern DLL_EXPORT TextureSystem& textureSystem;
