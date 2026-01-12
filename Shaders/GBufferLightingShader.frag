@@ -22,31 +22,31 @@ const int DirectionalShadowMapBinding = 7;
 const int SDFShadowMapBinding = 8;
 
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = TextureDescriptor;
-layout(constant_id = 1) const uint DescriptorBindingType1 = DirectionalLightDescriptor;
-layout(constant_id = 2) const uint DescriptorBindingType2 = PointLightDescriptor;
-layout(constant_id = 3) const uint DescriptorBindingType3 = SkyBoxDescriptor;
-layout(constant_id = 4) const uint DescriptorBindingType4 = IrradianceCubeMapDescriptor;
-layout(constant_id = 5) const uint DescriptorBindingType5 = PrefilterDescriptor;
-layout(constant_id = 6) const uint DescriptorBindingType6 = SubpassInputDescriptor;
-layout(constant_id = 7) const uint DescriptorBindingType7 = SubpassInputDescriptor;
-layout(constant_id = 8) const uint DescriptorBindingType8 = SubpassInputDescriptor;
-layout(constant_id = 9) const uint DescriptorBindingType9 = SubpassInputDescriptor;
-layout(constant_id = 10) const uint DescriptorBindingType10 = SubpassInputDescriptor;
-layout(constant_id = 11) const uint DescriptorBindingType11 = SubpassInputDescriptor;
+layout(constant_id = 0) const uint DescriptorBindingType0 = SubpassInputDescriptor;
+layout(constant_id = 1) const uint DescriptorBindingType1 = SubpassInputDescriptor;
+layout(constant_id = 2) const uint DescriptorBindingType2 = SubpassInputDescriptor;
+layout(constant_id = 3) const uint DescriptorBindingType3 = SubpassInputDescriptor;
+layout(constant_id = 4) const uint DescriptorBindingType4 = SubpassInputDescriptor;
+layout(constant_id = 5) const uint DescriptorBindingType5 = SubpassInputDescriptor;
+layout(constant_id = 6) const uint DescriptorBindingType6 = TextureDescriptor;
+layout(constant_id = 7) const uint DescriptorBindingType7 = DirectionalLightDescriptor;
+layout(constant_id = 8) const uint DescriptorBindingType8 = PointLightDescriptor;
+layout(constant_id = 9) const uint DescriptorBindingType9 = SkyBoxDescriptor;
+layout(constant_id = 10) const uint DescriptorBindingType10 = IrradianceCubeMapDescriptor;
+layout(constant_id = 11) const uint DescriptorBindingType11 = PrefilterDescriptor;
 
-layout(binding = 0) uniform sampler2D   TextureMap[];
-layout(binding = 1) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 2) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 3) uniform samplerCube CubeMap;
-layout(binding = 4) uniform samplerCube IrradianceMap;
-layout(binding = 5) uniform samplerCube PrefilterMap;
-layout(input_attachment_index = 0, binding = 6) uniform subpassInput positionInput;
-layout(input_attachment_index = 1, binding = 7) uniform subpassInput normalInput;
-layout(input_attachment_index = 2, binding = 8) uniform subpassInput albedoInput;
-layout(input_attachment_index = 3, binding = 9) uniform subpassInput matRoughInput;
-layout(input_attachment_index = 4, binding = 10) uniform subpassInput emissionInput;
-layout(input_attachment_index = 5, binding = 11) uniform subpassInput depthInput;
+layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput; 
+layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput; 
+layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;  
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughInput;  
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput emissionInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput depthInput;
+layout(binding = 6) uniform sampler2D   TextureMap[];
+layout(binding = 7) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 8) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 9) uniform samplerCube CubeMap;
+layout(binding = 10) uniform samplerCube IrradianceMap;
+layout(binding = 11) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {

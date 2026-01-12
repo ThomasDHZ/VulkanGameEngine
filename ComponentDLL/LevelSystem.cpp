@@ -173,11 +173,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
-    nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
-    nlohmann::json shaderLightJson = fileSystem.LoadJsonFile("RenderPass/GBufferLightingRenderPass.json");
-    // spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
-    levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
     for (size_t x = 0; x < json["LoadTextures"].size(); x++)
@@ -253,10 +248,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
       RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
       RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
       RenderBloomPass(commandBuffer, bloomRenderPassId);
-      //RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
       RenderHdrPass(commandBuffer, hdrRenderPassId);
       RenderFrameBuffer(commandBuffer, frameBufferId);
 
+      //RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
       //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
   }
 

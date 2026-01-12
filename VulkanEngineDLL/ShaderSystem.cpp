@@ -283,6 +283,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBindingDLL
                  {
                      .Name = name,
+                     .DescriptorSet = descriptorBinding->set,
                      .Binding = descriptorBinding->binding,
                      .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                      .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->default_literals),

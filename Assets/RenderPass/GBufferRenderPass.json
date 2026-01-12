@@ -18,7 +18,7 @@
       "RenderedTextureId": "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentType": [ 0, 2 ],
+      "RenderAttachmentType": [ 0, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -50,7 +50,7 @@
       "RenderedTextureId": "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentType": [ 0, 2 ],
+      "RenderAttachmentType": [ 0, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -82,7 +82,7 @@
       "RenderedTextureId": "f7084167-9c9f-47bf-b1f6-e6723c20c352",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentType": [ 0, 2 ],
+      "RenderAttachmentType": [ 0, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -114,7 +114,7 @@
       "RenderedTextureId": "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentType": [ 0, 2 ],
+      "RenderAttachmentType": [ 0, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -146,7 +146,7 @@
       "RenderedTextureId": "b8de6731-4fd0-4461-b9b9-bdf40c6944d6",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentType": [ 0, 2 ],
+      "RenderAttachmentType": [ 0, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -173,6 +173,21 @@
         "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
+    },
+    {
+      "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
+      "MipMapCount": 1,
+      "RenderTextureType": 3,
+      "RenderAttachmentType": [ 3, 1 ],
+      "Format": 124,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 3,
+      "UseSampler": false,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "SamplerCreateInfo": null
     },
     {
       "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
@@ -237,21 +252,6 @@
         "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
-    },
-    {
-      "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
-      "MipMapCount": 1,
-      "RenderTextureType": 3,
-      "RenderAttachmentType": [ 1, 1 ],
-      "Format": 124,
-      "SampleCount": 1,
-      "LoadOp": 1,
-      "StoreOp": 0,
-      "FinalLayout": 3,
-      "UseSampler": false,
-      "UseMipMaps": false,
-      "IsCubeMapAttachment": false,
-      "SamplerCreateInfo": null
     }
   ],
   "SubpassDependencyList": [
@@ -365,41 +365,41 @@
       }
     },
     {
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0,
-        "Int32_0": 0,
-        "Int32_1": 0,
-        "Int32_2": 0,
-        "Int32_3": 1065353216,
-        "Uint32_0": 0,
-        "Uint32_1": 0,
-        "Uint32_2": 0,
-        "Uint32_3": 1065353216
-      }
-    },
-    {
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0,
-        "Int32_0": 0,
-        "Int32_1": 0,
-        "Int32_2": 0,
-        "Int32_3": 1065353216,
-        "Uint32_0": 0,
-        "Uint32_1": 0,
-        "Uint32_2": 0,
-        "Uint32_3": 1065353216
-      }
-    },
-    {
       "DepthStencil": {
         "depth": 1.0,
         "stencil": 0
+      }
+    },
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
+      }
+    },
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
       }
     }
   ]

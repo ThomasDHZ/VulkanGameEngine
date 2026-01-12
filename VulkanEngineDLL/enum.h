@@ -67,9 +67,9 @@ enum RenderTextureTypeEnum
 enum RenderAttachmentTypeEnum
 {
     ColorRenderedTexture,
-    DepthRenderedTexture,
     InputAttachmentTexture,
     ResolveAttachmentTexture,
+    DepthRenderedTexture,
     SkipSubPass
 };
 

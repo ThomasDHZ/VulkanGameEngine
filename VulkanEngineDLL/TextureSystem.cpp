@@ -116,65 +116,74 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 
 Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution)
 {
-	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
+		(renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	bool hasStencil = (renderAttachmentLoader.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderAttachmentLoader.Format == VK_FORMAT_D24_UNORM_S8_UINT);
-	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
-	Texture texture =
-	{
+
+	// Base usage flags required for all render pass textures
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |                   // Critical: allows subpassLoad() + future sampling
+		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |          // Required for input attachments
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |              // For copies/mipmaps
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+	Texture texture = {
 		.textureGuid = renderAttachmentLoader.RenderedTextureId,
 		.width = renderAttachmentResolution.x,
 		.height = renderAttachmentResolution.y,
 		.depth = 1,
 		.mipMapLevels = renderAttachmentLoader.UseMipMaps ? renderAttachmentLoader.MipMapCount : 1,
 		.textureByteFormat = renderAttachmentLoader.Format,
-		.textureImageLayout = renderAttachmentLoader.FinalLayout,
 		.sampleCount = renderAttachmentLoader.SampleCount,
+		// Layout will be set below based on type (final layout from JSON)
 	};
 
+	// Set texture type based on render type
 	switch (renderAttachmentLoader.RenderTextureType)
 	{
-		case RenderType_DepthBufferTexture: texture.textureType = TextureType_DepthTexture; break;
-		case RenderType_GBufferTexture: texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_IrradianceTexture: texture.textureType = TextureType_IrradianceMapTexture; break;
-		case RenderType_PrefilterTexture: texture.textureType = TextureType_PrefilterMapTexture; break;
-		case RenderType_OffscreenColorTexture: texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_SwapChainTexture: texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
+	case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
+	case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
+	case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
 	}
 
+	// Add usage flags and set final layout based on whether it's depth or color
 	if (isDepthFormat)
 	{
 		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  // Typical final for readable depth
 		texture.colorChannels = ColorChannelUsed::ChannelR;
 	}
 	else
 	{
 		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;  // Typical for color + sampled/input
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 	}
+
+	// Extra for mipmaps (already have TRANSFER_SRC/DST, but explicit is good)
 	if (texture.mipMapLevels > 1)
 	{
-		usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
 
-	VkImageCreateInfo imageInfo =
-	{
+	VkImageCreateInfo imageInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.flags = renderAttachmentLoader.IsCubeMapAttachment ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
-		.extent = { static_cast<uint32>(texture.width), static_cast<uint32>(texture.height), 1 },
+		.extent = { static_cast<uint32_t>(texture.width), static_cast<uint32_t>(texture.height), 1 },
 		.mipLevels = texture.mipMapLevels,
-		.arrayLayers = renderAttachmentLoader.IsCubeMapAttachment ? static_cast<uint>(6) : static_cast<uint>(1),
+		.arrayLayers = renderAttachmentLoader.IsCubeMapAttachment ? 6u : 1u,
 		.samples = texture.sampleCount,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.initialLayout = texture.textureImageLayout,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,  // Best practice for new images
 	};
 
-	VmaAllocationCreateInfo allocInfo =
-	{
+	VmaAllocationCreateInfo allocInfo = {
 		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
 	};
 
@@ -182,14 +191,13 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	texture.TextureAllocation = allocation;
 
-	VkImageViewCreateInfo viewInfo =
-	{
+	// Image view creation
+	VkImageViewCreateInfo viewInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.image = texture.textureImage,
 		.viewType = VK_IMAGE_VIEW_TYPE_2D,
 		.format = texture.textureByteFormat,
-		.subresourceRange =
-		{
+		.subresourceRange = {
 			.baseMipLevel = 0,
 			.levelCount = texture.mipMapLevels,
 			.baseArrayLayer = 0,
@@ -210,9 +218,10 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	if (renderAttachmentLoader.IsCubeMapAttachment && 
-		(	renderAttachmentLoader.RenderTextureType == RenderTextureTypeEnum::RenderType_IrradianceTexture ||
-			renderAttachmentLoader.RenderTextureType == RenderTextureTypeEnum::RenderType_PrefilterTexture))
+	// Handle cube map views if needed
+	if (renderAttachmentLoader.IsCubeMapAttachment &&
+		(renderAttachmentLoader.RenderTextureType == RenderType_IrradianceTexture ||
+			renderAttachmentLoader.RenderTextureType == RenderType_PrefilterTexture))
 	{
 		VkImageViewCreateInfo arrayViewInfo = viewInfo;
 		arrayViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
@@ -221,18 +230,19 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		arrayViewInfo.subresourceRange.baseMipLevel = 0;
 		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &arrayViewInfo, nullptr, &texture.AttachmentArrayView));
 
-		arrayViewInfo = viewInfo;
-		arrayViewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
-		arrayViewInfo.subresourceRange.layerCount = 6;
-		arrayViewInfo.subresourceRange.levelCount = 1;
-		arrayViewInfo.subresourceRange.baseMipLevel = 0;
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &arrayViewInfo, nullptr, &texture.RenderedCubeMapView));
+		VkImageViewCreateInfo cubeViewInfo = viewInfo;
+		cubeViewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+		cubeViewInfo.subresourceRange.layerCount = 6;
+		cubeViewInfo.subresourceRange.levelCount = 1;
+		cubeViewInfo.subresourceRange.baseMipLevel = 0;
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &cubeViewInfo, nullptr, &texture.RenderedCubeMapView));
 	}
 	else
 	{
 		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 	}
 
+	// Sampler creation (unchanged)
 	VkSamplerCreateInfo samplerInfo = {};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -243,16 +253,8 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.minLod = 0.0f;
 	samplerInfo.maxLod = static_cast<float>(texture.mipMapLevels);
-
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
 
-
-//#ifndef NDEBUG
-//	std::cout << "[TextureDebug] Created texture ID: " << texture.textureGuid.ToString()
-//		<< " Image: " << texture.textureImage
-//		<< " Format: " << texture.textureByteFormat
-//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
-//#endif
 	return texture;
 }
 
