@@ -286,7 +286,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                      .Binding = descriptorBinding->binding,
                      .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
                      .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->default_literals),
-                     .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
+                     .DescripterType = descriptorBinding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT ? static_cast<VkDescriptorType>(descriptorBinding->descriptor_type) : VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT
                  });
          }
          else

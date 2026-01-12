@@ -521,6 +521,11 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
     VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = &colorWriteFeatures,
+        .features = 
+        {
+            .vertexPipelineStoresAndAtomics = VK_TRUE,
+            .fragmentStoresAndAtomics = VK_TRUE
+        },
     };
 
     VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = {

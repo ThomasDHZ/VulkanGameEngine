@@ -116,7 +116,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 
 Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution)
 {
-	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	bool hasStencil = (renderAttachmentLoader.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderAttachmentLoader.Format == VK_FORMAT_D24_UNORM_S8_UINT);
 	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	Texture texture =
@@ -210,7 +210,9 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	if (renderAttachmentLoader.IsCubeMapAttachment && renderAttachmentLoader.RenderAttachmentType == ColorRenderedTexture)
+	if (renderAttachmentLoader.IsCubeMapAttachment && 
+		(	renderAttachmentLoader.RenderTextureType == RenderTextureTypeEnum::RenderType_IrradianceTexture ||
+			renderAttachmentLoader.RenderTextureType == RenderTextureTypeEnum::RenderType_PrefilterTexture))
 	{
 		VkImageViewCreateInfo arrayViewInfo = viewInfo;
 		arrayViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
@@ -269,7 +271,7 @@ void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass,
 			VkImageViewCreateInfo viewInfo = {};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = texture.textureImage;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;  // ? Better
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
 			viewInfo.format = texture.textureByteFormat;
 			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			viewInfo.subresourceRange.baseMipLevel = mip;
@@ -289,7 +291,7 @@ void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass,
 			frameBufferInfo.pAttachments = &skyboxTexture.PrefilterAttachmentImageViews[mip];
 			frameBufferInfo.width = mipWidth;
 			frameBufferInfo.height = mipHeight;
-			frameBufferInfo.layers = 6;  // ? CRITICAL FIX
+			frameBufferInfo.layers = 1;
 
 			vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &skyboxTexture.PrefilterMipFramebufferList[mip]);
 		}

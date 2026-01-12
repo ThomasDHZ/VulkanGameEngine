@@ -56,19 +56,19 @@ struct VulkanRenderPass
 
 struct  RenderAttachmentLoader
 {
-    VkGuid                       RenderedTextureId = VkGuid();
-    uint32                       MipMapCount = -1;
-    RenderTextureTypeEnum        RenderTextureType = RenderType_UNKNOWN;
-    RenderAttachmentTypeEnum     RenderAttachmentType = ColorRenderedTexture;
-    VkFormat                     Format = VK_FORMAT_R8G8B8A8_UNORM;
-    VkSampleCountFlagBits        SampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkAttachmentLoadOp           LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    VkAttachmentStoreOp          StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-    VkImageLayout                FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    VkSamplerCreateInfo          SamplerCreateInfo = VkSamplerCreateInfo();
-    bool                         UseSampler = true;
-    bool                         UseMipMaps = false;
-    bool                         IsCubeMapAttachment = false;
+    VkGuid                               RenderedTextureId = VkGuid();
+    uint32                               MipMapCount = UINT32_MAX;
+    RenderTextureTypeEnum                RenderTextureType = RenderType_UNKNOWN;
+    Vector<RenderAttachmentTypeEnum>     RenderAttachmentType = Vector<RenderAttachmentTypeEnum>();
+    VkFormat                             Format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkAttachmentLoadOp                   LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    VkAttachmentStoreOp                  StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+    VkImageLayout                        FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkSamplerCreateInfo                  SamplerCreateInfo = VkSamplerCreateInfo();
+    bool                                 UseSampler = true;
+    bool                                 UseMipMaps = false;
+    bool                                 IsCubeMapAttachment = false;
 };
 
 struct RenderPassAttachementTextures
@@ -81,8 +81,9 @@ struct RenderPassAttachementTextures
 struct RenderPassLoader
 {
     VkGuid RenderPassId;
-    uint32                       RenderPassWidth = -1;
-    uint32                       RenderPassHeight = -1;
+    uint32                       RenderPassWidth = UINT32_MAX;
+    uint32                       RenderPassHeight = UINT32_MAX;
+    uint32                       RenderPassCount = UINT32_MAX;
     bool UseDefaultSwapChainResolution = true;
     bool UseCubeMapMultiView = false;
     bool IsRenderedToSwapchain = false;
@@ -90,6 +91,8 @@ struct RenderPassLoader
     Vector<VkGuid> InputTextureList;
     Vector<RenderAttachmentLoader> RenderAttachmentList;
     Vector<VkSubpassDependency> SubpassDependencyModelList;
+    Vector<VkDescriptorSet> SharedDescriptorSetList = Vector<VkDescriptorSet>();
+    Vector<VkDescriptorSetLayout> SharedDescriptorSetLayoutList = Vector<VkDescriptorSetLayout>();
     Vector<VkClearValue> ClearValueList;
 };
 
@@ -133,7 +136,8 @@ struct ShaderDescriptorSetDLL
 struct ShaderDescriptorBindingDLL
 {
     String                          Name;
-    uint32                          Binding;
+    uint32                          DescriptorSet = UINT32_MAX;
+    uint32                          Binding = UINT32_MAX;
     size_t                          DescriptorCount;
     VkShaderStageFlags              ShaderStageFlags;
     DescriptorBindingPropertiesEnum DescriptorBindingType;
@@ -167,6 +171,7 @@ struct RenderPipelineLoader
     VkGuid PipelineId = VkGuid();
     VkGuid RenderPassId = VkGuid();
     VkGuid LevelId = VkGuid();
+    uint32 SubPassId = UINT32_MAX;
     ivec2 RenderPassResolution = ivec2();
     VkRenderPass RenderPass = VK_NULL_HANDLE;
     ShaderPipelineDataDLL ShaderPiplineInfo;

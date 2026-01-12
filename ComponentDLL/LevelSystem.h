@@ -83,7 +83,6 @@ private:
         RenderPassGuid irradianceMapRenderPassId;
         RenderPassGuid prefilterMapRenderPassId;
         RenderPassGuid gBufferRenderPassId;
-        RenderPassGuid geometryRenderPassId;
         RenderPassGuid verticalGaussianBlurRenderPassId;
         RenderPassGuid horizontalGaussianBlurRenderPassId;
         RenderPassGuid bloomRenderPassId;
@@ -101,7 +100,6 @@ private:
         DLL_EXPORT void                 RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
-        DLL_EXPORT void                 RenderGeometryRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection);
         DLL_EXPORT void                 RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);

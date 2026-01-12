@@ -7,12 +7,13 @@ const uint TextureDescriptor = 1;
 const uint MaterialDescriptor = 2;
 const uint DirectionalLightDescriptor = 3;
 const uint PointLightDescriptor = 4;
-const uint kSpotLightDescriptor = 5;
+const uint SpotLightDescriptor = 5;
 const uint VertexDescsriptor = 6;
 const uint IndexDescriptor = 7;
 const uint TransformDescriptor = 8;
 const uint SkyBoxDescriptor = 9;
 const uint IrradianceCubeMapDescriptor = 10;
 const uint PrefilterDescriptor = 11;
+const uint SubpassInputDescriptor= 12;
 
 #endif
