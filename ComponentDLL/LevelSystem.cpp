@@ -231,7 +231,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", ivec2(256, 256));
     prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", ivec2(256, 256));
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-    geometryRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferLightingRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
@@ -274,7 +273,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
       RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
-      RenderGeometryRenderPass(commandBuffer, geometryRenderPassId);
       RenderSkyBox(commandBuffer, skyBoxRenderPassId, deltaTime);
       RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
       RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
@@ -437,8 +435,23 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
+      VulkanPipeline lightingPipeline = renderSystem.FindRenderPipelineList(renderPassId)[2];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
-      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("sceneData");
+
+      ShaderPushConstantDLL& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
+      shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "Projection", OrthographicCamera->ProjectionMatrix);
+      shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "View", OrthographicCamera->ViewMatrix);
+      shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "CameraPosition", OrthographicCamera->Position);
+
+      ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
+      shaderSystem.UpdatePushConstantValue<int>(gBufferSceneDataBuffer, "UseHeightMap", UseHeightMap);
+      shaderSystem.UpdatePushConstantValue<float>(gBufferSceneDataBuffer, "HeightScale", HeightScale);
+      shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "ViewDirection", ViewDirection);
+      shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "DirectionalLightCount", lightSystem.DirectionalLightList.size());
+      shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "PointLightCount", lightSystem.PointLightList.size());
+      shaderSystem.UpdatePushConstantValue<mat4>(gBufferSceneDataBuffer, "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
+      shaderSystem.UpdatePushConstantValue<mat4>(gBufferSceneDataBuffer, "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
+      shaderSystem.UpdatePushConstantBuffer(gBufferSceneDataBuffer);
 
       VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
       {
@@ -468,10 +481,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
           const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
           const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
-          shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", levelLayer.MeshId);
-          shaderSystem.UpdatePushConstantBuffer(pushConstant);
+          shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
+          shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
 
-          vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+          vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
           vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
@@ -491,6 +504,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
           vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
       }
+      vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.Pipeline);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.PipelineLayout, 0, lightingPipeline.DescriptorSetList.size(), lightingPipeline.DescriptorSetList.data(), 0, nullptr);
+      vkCmdDraw(commandBuffer, 6, 1, 0, 0);
       vkCmdEndRenderPass(commandBuffer);
   }
 
@@ -708,44 +725,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
           0, nullptr,
           1, &finalBarrier);
   }
- 
- void LevelSystem::RenderGeometryRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
- {
-     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-     VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-     Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
-
-     ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
-     shaderSystem.UpdatePushConstantValue<int>(pushConstant, "UseHeightMap", UseHeightMap);
-     shaderSystem.UpdatePushConstantValue<float>(pushConstant, "HeightScale", HeightScale);
-     shaderSystem.UpdatePushConstantValue<vec3>(pushConstant, "ViewDirection", ViewDirection);
-     shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "DirectionalLightCount", lightSystem.DirectionalLightList.size());
-     shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "PointLightCount", lightSystem.PointLightList.size());
-     shaderSystem.UpdatePushConstantValue<mat4>(pushConstant, "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
-     shaderSystem.UpdatePushConstantValue<mat4>(pushConstant, "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
-     shaderSystem.UpdatePushConstantBuffer(pushConstant);
-
-     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-     {
-         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-         .renderPass = renderPass.RenderPass,
-         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
-         .renderArea = VkRect2D
-         {
-            .offset = VkOffset2D {.x = 0, .y = 0 },
-            .extent = VkExtent2D {.width = static_cast<uint>(renderPass.RenderPassResolution.x), .height = static_cast<uint>(renderPass.RenderPassResolution.y) }
-         },
-         .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-         .pClearValues = renderPass.ClearValueList.data()
-     };
-
-     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-     vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
-     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
-     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-     vkCmdEndRenderPass(commandBuffer);
- }
 
   void LevelSystem::RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection)
   {

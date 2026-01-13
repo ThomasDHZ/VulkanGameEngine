@@ -623,9 +623,9 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
         .pDynamicState = &pipelineDynamicStateCreateInfo,
         .layout = pipelineLayout,
         .renderPass = renderPipelineLoader.RenderPass,
-        .subpass = 0,
+        .subpass = renderPipelineLoader.SubPassId,
         .basePipelineHandle = VK_NULL_HANDLE,
-        .basePipelineIndex = 0,
+        .basePipelineIndex = 0
     };
 
     VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(vulkanSystem.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
@@ -708,6 +708,19 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
         {
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetPrefilterMapTextureBuffer(renderPipelineLoader.RenderPassId).size();
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetPrefilterMapTextureBuffer(renderPipelineLoader.RenderPassId);
+            break;
+        }
+        case kSubpassInputDescriptor:
+        {
+            Texture inputTexture = textureSystem.FindRenderedTextureList(renderPipelineLoader.RenderPassId)[x];
+            VkDescriptorImageInfo descriptorImage = VkDescriptorImageInfo
+            {
+                .sampler = inputTexture.textureSampler,
+                .imageView = inputTexture.textureView,
+                .imageLayout = inputTexture.textureImageLayout,
+            };
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = Vector<VkDescriptorImageInfo>{ descriptorImage };
             break;
         }
         default:

@@ -169,6 +169,7 @@ struct RenderPipelineLoader
     VkGuid PipelineId = VkGuid();
     VkGuid RenderPassId = VkGuid();
     VkGuid LevelId = VkGuid();
+    uint32 SubPassId = UINT32_MAX;
     ivec2 RenderPassResolution = ivec2();
     VkRenderPass RenderPass = VK_NULL_HANDLE;
     ShaderPipelineDataDLL ShaderPiplineInfo;

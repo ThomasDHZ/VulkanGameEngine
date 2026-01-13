@@ -375,9 +375,10 @@ namespace nlohmann
         }
     }
 
-    void from_json(const json& j, RenderPipelineLoader& model)
+  void from_json(const json& j, RenderPipelineLoader& model)
     {
         j.at("PipelineId").get_to(model.PipelineId);
+        j.at("SubPassId").get_to(model.SubPassId);
         j.at("UseDynamicColorWrite").get_to(model.UseDynamicColorWrite);
         j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
         j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);

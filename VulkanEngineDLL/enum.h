@@ -67,9 +67,9 @@ enum RenderTextureTypeEnum
 enum RenderAttachmentTypeEnum
 {
     ColorRenderedTexture,
-    DepthRenderedTexture,
     InputAttachmentTexture,
     ResolveAttachmentTexture,
+    DepthRenderedTexture,
     SkipSubPass
 };
 
@@ -86,5 +86,6 @@ enum DescriptorBindingPropertiesEnum
     kTransformDescriptor,
     kSkyBoxDescriptor,
     kIrradianceMapDescriptor,
-    kPrefilterMapDescriptor
+    kPrefilterMapDescriptor,
+    kSubpassInputDescriptor
 };
