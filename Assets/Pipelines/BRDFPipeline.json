@@ -6,7 +6,6 @@
     "Shaders/BRDFShaderFrag.spv"
   ],
   "VertexType": 0,
-  "SubPassId": 0,
   "UseDynamicColorWrite": false,
   "ViewportList": [],
   "ScissorList": [],

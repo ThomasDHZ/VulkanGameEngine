@@ -6,7 +6,6 @@
     "Shaders/GBufferLightingShaderFrag.spv"
   ],
   "VertexType": 0,
-  "SubPassId": 1,
   "UseDynamicColorWrite": false,
   "ViewportList": [
     {

@@ -6,7 +6,6 @@
     "Shaders/SpriteObjectPickerShaderFrag.spv"
   ],
   "VertexType": 1,
-  "SubPassId": 0,
   "UseDynamicColorWrite": false,
   "ViewportList": [
     {

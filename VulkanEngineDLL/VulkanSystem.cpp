@@ -17,7 +17,7 @@ VulkanSystem& vulkanSystem = VulkanSystem::Get();
 
 uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 {
-	uint32 version = GetPhysicalDeviceProperties(physicalDevice).apiVersion;
+    uint32 version = GetPhysicalDeviceProperties(physicalDevice).apiVersion;
 #ifndef __ANDROID__
     if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 4)) return VK_API_VERSION_1_4;
 #endif
@@ -33,11 +33,11 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
     vulkanSystem.RebuildRendererFlag = false;
     vulkanSystem.Instance = instance;
     vulkanSystem.Surface = surface;
-	//GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
+    //GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
     vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     bufferSystem.vmaAllocator = SetUpVmaAllocation();
-	vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
+    vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
     SetUpSwapChain(windowHandle);
     vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
     SetUpCommandBuffers();
@@ -85,7 +85,7 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
         extent = { 1280, 720 };
     }
 #endif
-    extent.width  = std::max(surfaceCapabilities.minImageExtent.width, std::min(surfaceCapabilities.maxImageExtent.width, extent.width));
+    extent.width = std::max(surfaceCapabilities.minImageExtent.width, std::min(surfaceCapabilities.maxImageExtent.width, extent.width));
     extent.height = std::max(surfaceCapabilities.minImageExtent.height, std::min(surfaceCapabilities.maxImageExtent.height, extent.height));
     return extent;
 }
@@ -128,192 +128,192 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
     return vmaAllocator;
 }
 
- void VulkanSystem::DestroyRenderer()
- {
-     DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
-     DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
-     DestroyFences(vulkanSystem.Device, &vulkanSystem.AcquireImageSemaphores[0], &vulkanSystem.PresentImageSemaphores[0], &vulkanSystem.InFlightFences[0], vulkanSystem.SwapChainImageCount);
-     DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
-     DestroyDevice(vulkanSystem.Device);
-     DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
-     DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);
-     DestroyInstance(&vulkanSystem.Instance);
- }
+void VulkanSystem::DestroyRenderer()
+{
+    DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
+    DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
+    DestroyFences(vulkanSystem.Device, &vulkanSystem.AcquireImageSemaphores[0], &vulkanSystem.PresentImageSemaphores[0], &vulkanSystem.InFlightFences[0], vulkanSystem.SwapChainImageCount);
+    DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
+    DestroyDevice(vulkanSystem.Device);
+    DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
+    DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);
+    DestroyInstance(&vulkanSystem.Instance);
+}
 
-  VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
-  {
-      if (!windowHandle || !instance) 
-      {
-          fprintf(stderr, "Invalid window handle (%p) or instance (%p)\n", windowHandle, instance);
-          return VK_NULL_HANDLE;
-      }
+VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
+{
+    if (!windowHandle || !instance)
+    {
+        fprintf(stderr, "Invalid window handle (%p) or instance (%p)\n", windowHandle, instance);
+        return VK_NULL_HANDLE;
+    }
 
-      VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
 #if defined(_WIN32)
-      VkWin32SurfaceCreateInfoKHR surfaceCreateInfo =
-      {
-          .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-          .pNext = nullptr,
-          .hinstance = GetModuleHandle(nullptr),
-          .hwnd = (HWND)windowHandle
-      };
-      Vector<VkPresentModeKHR>(vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface));
+    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+        .pNext = nullptr,
+        .hinstance = GetModuleHandle(nullptr),
+        .hwnd = (HWND)windowHandle
+    };
+    Vector<VkPresentModeKHR>(vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface));
 
 #elif defined(__linux__) && !defined(__ANDROID__)
-      GLFWwindow* window = (GLFWwindow*)windowHandle;
-      glfwCreateWindowSurface(instance, window, nullptr, &surface);
+    GLFWwindow* window = (GLFWwindow*)windowHandle;
+    glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
 #elif defined(__ANDROID__)
-      VkAndroidSurfaceCreateInfoKHR surfaceInfo =
-      {
-              .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-              .pNext = nullptr,
-              .window = (ANativeWindow*)windowHandle
-      };
+    VkAndroidSurfaceCreateInfoKHR surfaceInfo =
+    {
+            .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+            .pNext = nullptr,
+            .window = (ANativeWindow*)windowHandle
+    };
 
-      if (vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS)
-      {
-          __android_log_print(ANDROID_LOG_ERROR, "Vulkan", "Failed to create Android surface!");
-          return VK_NULL_HANDLE;
-      }
+    if (vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS)
+    {
+        __android_log_print(ANDROID_LOG_ERROR, "Vulkan", "Failed to create Android surface!");
+        return VK_NULL_HANDLE;
+    }
 #endif
 
-      return surface;
-  }
+    return surface;
+}
 
-  Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()
-  {
-      uint32 count = 0;
-      vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
-      Vector<VkExtensionProperties> availableExtensionList(count);
-      vkEnumerateInstanceExtensionProperties(nullptr, &count, availableExtensionList.data());
+Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()
+{
+    uint32 count = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+    Vector<VkExtensionProperties> availableExtensionList(count);
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, availableExtensionList.data());
 
-      Vector<const char*> extensions;
-      auto AddExtensionIfSupported = [&](const char* ext)
-          {
-              for (const auto& extension : availableExtensionList)
-                  if (strcmp(extension.extensionName, ext) == 0)
-                  {
-                      extensions.push_back(ext);
-                      std::cout << "Enabling instance extension: " << ext << '\n';
-                      return;
-                  }
-              std::cout << "Extension not supported: " << ext << '\n';
-          };
-      AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
-      AddExtensionIfSupported(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
+    Vector<const char*> extensions;
+    auto AddExtensionIfSupported = [&](const char* ext)
+        {
+            for (const auto& extension : availableExtensionList)
+                if (strcmp(extension.extensionName, ext) == 0)
+                {
+                    extensions.push_back(ext);
+                    std::cout << "Enabling instance extension: " << ext << '\n';
+                    return;
+                }
+            std::cout << "Extension not supported: " << ext << '\n';
+        };
+    AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
+    AddExtensionIfSupported(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
 #if defined(_WIN32)
-      AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+    AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
 #elif defined(__linux__) && !defined(__ANDROID__)
-      AddExtensionIfSupported("VK_KHR_xcb_surface");
-      AddExtensionIfSupported("VK_KHR_wayland_surface");
+    AddExtensionIfSupported("VK_KHR_xcb_surface");
+    AddExtensionIfSupported("VK_KHR_wayland_surface");
 
 #elif defined(__ANDROID__)
-      AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+    AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #endif
 
 #if !defined(NDEBUG) && !defined(__ANDROID__)
-      AddExtensionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    AddExtensionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-      if (extensions.empty() ||
-          (extensions.size() == 1 && extensions[0] == VK_KHR_SURFACE_EXTENSION_NAME)) 
-      {
-          throw std::runtime_error("No platform surface extension available — cannot create window.");
-      }
-      return extensions;
-  }
+    if (extensions.empty() ||
+        (extensions.size() == 1 && extensions[0] == VK_KHR_SURFACE_EXTENSION_NAME))
+    {
+        throw std::runtime_error("No platform surface extension available — cannot create window.");
+    }
+    return extensions;
+}
 
-  Vector<const char*> VulkanSystem::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
-  {
-      uint32 count = 0;
-      vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
-      std::vector<VkExtensionProperties> availableDeviceExtensions(count);
-      vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, availableDeviceExtensions.data());
+Vector<const char*> VulkanSystem::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
+{
+    uint32 count = 0;
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
+    std::vector<VkExtensionProperties> availableDeviceExtensions(count);
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, availableDeviceExtensions.data());
 
-      std::vector<const char*> enabledDeviceExtensions;
-      auto AddDeviceExtensionIfSupported = [&](const char* ext)
-          {
-              for (const auto& deviceExtensions : availableDeviceExtensions)
-              {
-                  if (strcmp(deviceExtensions.extensionName, ext) == 0)
-                  {
-                      enabledDeviceExtensions.push_back(ext);
-                      std::cout << "[Device] Enabling: " << ext << '\n';
-                      return true;
-                  }
-              }
-              std::cout << "[Device] Missing:   " << ext << '\n';
-              return false;
-          };
+    std::vector<const char*> enabledDeviceExtensions;
+    auto AddDeviceExtensionIfSupported = [&](const char* ext)
+        {
+            for (const auto& deviceExtensions : availableDeviceExtensions)
+            {
+                if (strcmp(deviceExtensions.extensionName, ext) == 0)
+                {
+                    enabledDeviceExtensions.push_back(ext);
+                    std::cout << "[Device] Enabling: " << ext << '\n';
+                    return true;
+                }
+            }
+            std::cout << "[Device] Missing:   " << ext << '\n';
+            return false;
+        };
 
-      if (!AddDeviceExtensionIfSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
-      {
-          throw std::runtime_error("FATAL: Swapchain extension not supported!");
-      }
-      AddDeviceExtensionIfSupported(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+    if (!AddDeviceExtensionIfSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+    {
+        throw std::runtime_error("FATAL: Swapchain extension not supported!");
+    }
+    AddDeviceExtensionIfSupported(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
 
-      return enabledDeviceExtensions;
-  }
+    return enabledDeviceExtensions;
+}
 
-  VkBool32 VKAPI_CALL VulkanSystem::DebugCallBack(
-      VkDebugUtilsMessageSeverityFlagBitsEXT      MessageSeverity,
-      VkDebugUtilsMessageTypeFlagsEXT             MessageType,
-      const VkDebugUtilsMessengerCallbackDataEXT* CallBackData,
-      void* UserData)
-  {
-      const char* severityStr = "";
-      const char* colorCode = "";
+VkBool32 VKAPI_CALL VulkanSystem::DebugCallBack(
+    VkDebugUtilsMessageSeverityFlagBitsEXT      MessageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT             MessageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* CallBackData,
+    void* UserData)
+{
+    const char* severityStr = "";
+    const char* colorCode = "";
 
-      switch (MessageSeverity)
-      {
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-          severityStr = "VERBOSE";
-          colorCode = "\033[34m";  // blue
-          break;
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-          severityStr = "INFO";
-          colorCode = "\033[32m";  // green
-          break;
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-          severityStr = "WARNING";
-          colorCode = "\033[33m";  // yellow
-          break;
-      case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-          severityStr = "ERROR";
-          colorCode = "\033[31m";  // red
-          break;
-      default:
-          severityStr = "UNKNOWN";
-          colorCode = "\033[35m";  // magenta
-          break;
-      }
+    switch (MessageSeverity)
+    {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        severityStr = "VERBOSE";
+        colorCode = "\033[34m";  // blue
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        severityStr = "INFO";
+        colorCode = "\033[32m";  // green
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        severityStr = "WARNING";
+        colorCode = "\033[33m";  // yellow
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        severityStr = "ERROR";
+        colorCode = "\033[31m";  // red
+        break;
+    default:
+        severityStr = "UNKNOWN";
+        colorCode = "\033[35m";  // magenta
+        break;
+    }
 
 #ifdef _WIN32
-      HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-      CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-      WORD originalAttributes = 7; 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    WORD originalAttributes = 7;
 
-      if (hConsole != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(hConsole, &consoleInfo))
-          originalAttributes = consoleInfo.wAttributes;
+    if (hConsole != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(hConsole, &consoleInfo))
+        originalAttributes = consoleInfo.wAttributes;
 
-      WORD color = originalAttributes;
-      if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)   color = FOREGROUND_RED;
-      else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) color = FOREGROUND_RED | FOREGROUND_GREEN;
-      else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)    color = FOREGROUND_GREEN;
-      else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) color = FOREGROUND_BLUE;
+    WORD color = originalAttributes;
+    if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)   color = FOREGROUND_RED;
+    else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) color = FOREGROUND_RED | FOREGROUND_GREEN;
+    else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)    color = FOREGROUND_GREEN;
+    else if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) color = FOREGROUND_BLUE;
 
-      SetConsoleTextAttribute(hConsole, color);
-      fprintf(stderr, "%s: ", severityStr);
-      SetConsoleTextAttribute(hConsole, originalAttributes);
-      fprintf(stderr, "%s\n", CallBackData->pMessage);
+    SetConsoleTextAttribute(hConsole, color);
+    fprintf(stderr, "%s: ", severityStr);
+    SetConsoleTextAttribute(hConsole, originalAttributes);
+    fprintf(stderr, "%s\n", CallBackData->pMessage);
 #else
-      // Linux / macOS: ANSI escape codes (works in every terminal)
-      fprintf(stderr, "%s%s: \033[0m%s\n", colorCode, severityStr, CallBackData->pMessage);
+    // Linux / macOS: ANSI escape codes (works in every terminal)
+    fprintf(stderr, "%s%s: \033[0m%s\n", colorCode, severityStr, CallBackData->pMessage);
 #endif
-      return VK_FALSE;
-  }
+    return VK_FALSE;
+}
 
 Vector<VkSurfaceFormatKHR> VulkanSystem::GetSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
@@ -341,44 +341,44 @@ VkInstance VulkanSystem::CreateVulkanInstance()
     Vector<VkValidationFeatureDisableEXT> disabledList;
 
 #ifndef NDEBUG
-     enabledList =
-     {
-         VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-         VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-         VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
-         VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT
-     };
+    enabledList =
+    {
+        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT
+    };
 
-     disabledList =
-     {
-         VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT,
-         VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT,
-         VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT
-     };
+    disabledList =
+    {
+        VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT,
+        VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT,
+        VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT
+    };
 
-     debugInfo =
-     {
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                           VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                       VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-        .pfnUserCallback = DebugCallBack
-     };
+    debugInfo =
+    {
+       .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+       .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+       .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+       .pfnUserCallback = DebugCallBack
+    };
 #endif
 
-     VkValidationFeaturesEXT validationFeatures = {
-           .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
-           .pNext = nullptr,
-           .enabledValidationFeatureCount = static_cast<uint32_t>(enabledList.size()),
-           .pEnabledValidationFeatures = enabledList.data(),
-           .disabledValidationFeatureCount = static_cast<uint32_t>(disabledList.size()),
-           .pDisabledValidationFeatures = disabledList.data()
-     };
+    VkValidationFeaturesEXT validationFeatures = {
+          .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+          .pNext = nullptr,
+          .enabledValidationFeatureCount = static_cast<uint32_t>(enabledList.size()),
+          .pEnabledValidationFeatures = enabledList.data(),
+          .disabledValidationFeatureCount = static_cast<uint32_t>(disabledList.size()),
+          .pDisabledValidationFeatures = disabledList.data()
+    };
 
 #ifndef NDEBUG
-     validationFeatures.pNext = &debugInfo;
+    validationFeatures.pNext = &debugInfo;
 #endif
 
     Vector<const char*> extensionNames = GetRequiredInstanceExtensions();
@@ -398,7 +398,7 @@ VkInstance VulkanSystem::CreateVulkanInstance()
 
 
     Vector<const char*> validationLayers = GetValidationLayerProperties();
-    VkInstanceCreateInfo createInfo = 
+    VkInstanceCreateInfo createInfo =
     {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = &validationFeatures,
@@ -450,7 +450,7 @@ VkPhysicalDevice VulkanSystem::SetUpPhysicalDevice(VkInstance instance, VkSurfac
     Vector<VkPhysicalDevice> physicalDeviceList = GetPhysicalDeviceList(instance);
     for (auto& physicalDevice : physicalDeviceList)
     {
-		VkPhysicalDeviceProperties physicalDeviceProperties = GetPhysicalDeviceProperties(physicalDevice);
+        VkPhysicalDeviceProperties physicalDeviceProperties = GetPhysicalDeviceProperties(physicalDevice);
         VkPhysicalDeviceFeatures physicalDeviceFeatures = GetPhysicalDeviceFeatures(physicalDevice);
         GetQueueFamilies(physicalDevice, surface, graphicsFamily, presentFamily);
         Vector<VkSurfaceFormatKHR> surfaceFormatList = GetSurfaceFormats(physicalDevice, surface);
@@ -495,7 +495,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
 
     Vector<const char*> DeviceExtensionList = GetRequiredDeviceExtensions(physicalDevice);
     VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures =
-    { 
+    {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
         .shaderInputAttachmentArrayDynamicIndexing = VK_TRUE,
         .shaderUniformTexelBufferArrayDynamicIndexing = VK_TRUE,
@@ -509,7 +509,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .descriptorBindingVariableDescriptorCount = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
     };
-   
+
     VkPhysicalDeviceColorWriteEnableFeaturesEXT colorWriteFeatures
     {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
@@ -521,7 +521,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
     VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = &colorWriteFeatures,
-        .features = 
+        .features =
         {
             .vertexPipelineStoresAndAtomics = VK_TRUE,
             .fragmentStoresAndAtomics = VK_TRUE
@@ -540,7 +540,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .scalarBlockLayout = VK_TRUE,
         .separateDepthStencilLayouts = VK_TRUE,
         .timelineSemaphore = VK_TRUE,
-        .bufferDeviceAddress = VK_TRUE, 
+        .bufferDeviceAddress = VK_TRUE,
         .vulkanMemoryModel = VK_TRUE,
         .vulkanMemoryModelDeviceScope = VK_TRUE,
     };
@@ -582,11 +582,11 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .pQueueCreateInfos = queueCreateInfoList.data(),
         .enabledExtensionCount = static_cast<uint32>(DeviceExtensionList.size()),
         .ppEnabledExtensionNames = DeviceExtensionList.data(),
-        .pEnabledFeatures = nullptr  
+        .pEnabledFeatures = nullptr
     };
 
 #ifndef NDEBUG
-	Vector<const char*> validationLayers = GetValidationLayerProperties();
+    Vector<const char*> validationLayers = GetValidationLayerProperties();
     deviceCreateInfo.enabledLayerCount = static_cast<uint32>(validationLayers.size());
     deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
 #endif
@@ -677,7 +677,7 @@ void VulkanSystem::GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKH
     }
 }
 
-void VulkanSystem::GetRayTracingCapability(VkPhysicalDevice gpuDevice, Vector<String> &featureList, Vector<const char*>& deviceExtensionList)
+void VulkanSystem::GetRayTracingCapability(VkPhysicalDevice gpuDevice, Vector<String>& featureList, Vector<const char*>& deviceExtensionList)
 {
     if (RequestRayTracingSupport)
     {
@@ -772,10 +772,10 @@ Vector<const char*> VulkanSystem::GetValidationLayerProperties()
                 }
             }
             std::cout << "Extension not supported: " << ext << '\n';
-         //   __android_log_print(ANDROID_LOG_WARN, "Vulkan", "Validation layers not available - running without validation");
+            //   __android_log_print(ANDROID_LOG_WARN, "Vulkan", "Validation layers not available - running without validation");
         };
     AddExtensionIfSupported("VK_LAYER_KHRONOS_validation");
-    
+
     return extensions;
 }
 
@@ -797,14 +797,14 @@ void VulkanSystem::SetUpSwapChain()
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
     uint32 imageCount = surfaceCapabilities.minImageCount + 1;
-    if (surfaceCapabilities.maxImageCount > 0) 
+    if (surfaceCapabilities.maxImageCount > 0)
     {
         imageCount = std::min(imageCount, surfaceCapabilities.maxImageCount);
     }
     imageCount = std::max(imageCount, surfaceCapabilities.minImageCount);
 
     VkExtent2D extent = surfaceCapabilities.currentExtent;
-    if (extent.width == UINT32_MAX) 
+    if (extent.width == UINT32_MAX)
     {
         extent.width = std::clamp(static_cast<uint32>(configSystem.WindowResolution.x), surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
         extent.height = std::clamp(static_cast<uint32>(configSystem.WindowResolution.y), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
@@ -812,7 +812,7 @@ void VulkanSystem::SetUpSwapChain()
 
     SwapChainResolution = extent;
     SwapChainImageCount = imageCount;
-	MaxFramesInFlight = SwapChainImageCount;
+    MaxFramesInFlight = SwapChainImageCount;
 
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
@@ -833,8 +833,8 @@ void VulkanSystem::SetUpSwapChain()
 
     if (vulkanSystem.GraphicsFamily != vulkanSystem.PresentFamily)
     {
-        Vector<uint32> queueFamilyIndices = 
-        { 
+        Vector<uint32> queueFamilyIndices =
+        {
             vulkanSystem.GraphicsFamily,
             vulkanSystem.PresentFamily
         };
@@ -854,13 +854,13 @@ void VulkanSystem::SetUpSwapChainImages()
 {
     uint32 swapChainImageCount = UINT32_MAX;
     VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(Device, Swapchain, &swapChainImageCount, nullptr));
-	SwapChainImages.resize(swapChainImageCount);
+    SwapChainImages.resize(swapChainImageCount);
     VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(Device, Swapchain, &swapChainImageCount, SwapChainImages.data()));
 }
 
 void VulkanSystem::SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat)
 {
-	SwapChainImageViews.resize(SwapChainImageCount, VK_NULL_HANDLE);
+    SwapChainImageViews.resize(SwapChainImageCount, VK_NULL_HANDLE);
     for (size_t x = 0; x < SwapChainImageCount; x++)
     {
         VkImageViewCreateInfo swapChainViewInfo =
@@ -902,9 +902,9 @@ void VulkanSystem::SetUpSemaphores()
     };
 
 
-	InFlightFences.resize(MaxFramesInFlight, VK_NULL_HANDLE);
-	AcquireImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
-	PresentImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
+    InFlightFences.resize(MaxFramesInFlight, VK_NULL_HANDLE);
+    AcquireImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
+    PresentImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
     for (int x = 0; x < MaxFramesInFlight; x++)
     {
         VULKAN_THROW_IF_FAIL(vkCreateFence(Device, &fenceInfo, NULL, &InFlightFences[x]));
@@ -970,7 +970,7 @@ VkCommandBuffer VulkanSystem::BeginSingleUseCommand()
 
 void VulkanSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));  
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

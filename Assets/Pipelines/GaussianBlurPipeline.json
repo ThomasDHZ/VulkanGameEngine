@@ -6,7 +6,6 @@
     "Shaders/GaussianBlurShaderFrag.spv"
   ],
   "VertexType": 0,
-  "SubPassId": 0,
   "UseDynamicColorWrite": true,
   "ViewportList": [],
   "ScissorList": [],

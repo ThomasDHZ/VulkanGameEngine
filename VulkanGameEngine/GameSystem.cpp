@@ -148,7 +148,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     ImGui::Separator();
 
-    //ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
+    ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
 
 
     ImGui_EndFrame();

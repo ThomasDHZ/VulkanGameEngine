@@ -6,7 +6,6 @@
     "Shaders/GBufferLevelShader2DFrag.spv"
   ],
   "VertexType": 1,
-  "SubPassId": 0,
   "UseDynamicColorWrite": false,
   "ViewportList": [
     {

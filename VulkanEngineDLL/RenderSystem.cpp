@@ -113,8 +113,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
         .RenderPassResolution = renderPassResolution,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
     };
-    vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader);
-    vulkanRenderPass.FrameBufferList = BuildFrameBuffer(vulkanRenderPass);
+    BuildRenderPass(vulkanRenderPass, renderPassLoader);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
 
     for(auto& renderPipeline : renderPassLoader.RenderPipelineList)
@@ -190,13 +189,13 @@ VulkanRenderPass RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPa
         vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &vulkanRenderPass.RenderPass);
         renderedTextureList.clear();
 
-        vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader);
-        frameBufferList = BuildFrameBuffer(vulkanRenderPass);
+        //vulkanRenderPass.RenderPass = BuildRenderPass(renderPassLoader);
+      //  frameBufferList = BuildFrameBuffer(vulkanRenderPass);
     }
     else
     {
         renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
-        frameBufferList = BuildFrameBuffer(vulkanRenderPass);
+     //   frameBufferList = BuildFrameBuffer(vulkanRenderPass);
     }
 
     vulkanRenderPass.InputTextureIdList = renderPassLoader.InputTextureList;
@@ -218,55 +217,18 @@ const Vector<VulkanPipeline> RenderSystem::FindRenderPipelineList(const RenderPa
     return RenderPipelineMap.at(renderPassGuid);
 }
 
-VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJsonLoader)
+void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader)
 {
-    Vector<VkAttachmentReference>   depthReference = Vector<VkAttachmentReference>(renderPassJsonLoader.RenderPassCount, { VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_UNDEFINED });
-    Vector<Vector<VkAttachmentReference>>   inputAttachmentReferenceList = Vector < Vector<VkAttachmentReference>>(renderPassJsonLoader.RenderPassCount);
-    Vector<Vector<VkAttachmentReference>>   colorAttachmentReferenceList = Vector < Vector<VkAttachmentReference>>(renderPassJsonLoader.RenderPassCount);
-    Vector<Vector<VkAttachmentReference>>   resolveAttachmentReferenceList = Vector < Vector<VkAttachmentReference>>(renderPassJsonLoader.RenderPassCount);
-    Vector<Vector<VkSubpassDescription>>   preserveAttachmentReferenceList = Vector < Vector<VkSubpassDescription>>(renderPassJsonLoader.RenderPassCount);
-   
-    Vector<VkSubpassDescription> subPassDescriptionList = Vector<VkSubpassDescription>();
-    for (int x = 0; x < renderPassJsonLoader.RenderPassCount; x++)
-    {
-        inputAttachmentReferenceList.emplace_back(Vector<VkAttachmentReference>());
-        colorAttachmentReferenceList.emplace_back(Vector<VkAttachmentReference>());
-        resolveAttachmentReferenceList.emplace_back(Vector<VkAttachmentReference>());
-        preserveAttachmentReferenceList.emplace_back(Vector<VkSubpassDescription>());
-        for (int y = 0; y < renderPassJsonLoader.RenderAttachmentList.size(); y++)
-        {
-            RenderAttachmentLoader renderAttachment = renderPassJsonLoader.RenderAttachmentList[y];
-            switch (renderAttachment.RenderAttachmentType[x])
-            {
-                case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
-                case RenderAttachmentTypeEnum::InputAttachmentTexture: inputAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }); break;
-                case RenderAttachmentTypeEnum::ResolveAttachmentTexture: resolveAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
-                case RenderAttachmentTypeEnum::DepthRenderedTexture: depthReference.emplace_back(VkAttachmentReference{ .attachment = (uint)(y), .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL }); break;
-                case RenderAttachmentTypeEnum::SkipSubPass: break;
-                default:
-                {
-                    throw std::runtime_error("Case doesn't exist: RenderedTextureType");
-                }
-            }
-        }
-
-        subPassDescriptionList.emplace_back(VkSubpassDescription{
-                    .flags = 0,
-                    .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList[x].size()),
-                    .pInputAttachments = inputAttachmentReferenceList[x].empty() ? nullptr : inputAttachmentReferenceList[x].data(),
-                    .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList[x].size()),
-                    .pColorAttachments = colorAttachmentReferenceList[x].data(),
-                    .pResolveAttachments = resolveAttachmentReferenceList[x].empty() ? nullptr : resolveAttachmentReferenceList[x].data(),
-                    .pDepthStencilAttachment = (depthReference[x].attachment == VK_ATTACHMENT_UNUSED) ? nullptr : &depthReference[x],
-                    .preserveAttachmentCount = 0,
-                    .pPreserveAttachments = nullptr
-            });
-    }
-
     Texture                         depthTexture;
-    Vector<Texture>                 renderedTextureList = Vector<Texture>();
+    Vector<Texture>                 renderedTextureList;
+    Vector<Texture>                 frameBufferTextureList;
     Vector<VkAttachmentDescription> attachmentDescriptionList = Vector<VkAttachmentDescription>();
+    Vector<VkAttachmentReference>   inputAttachmentReferenceList = Vector<VkAttachmentReference>();
+    Vector<VkAttachmentReference>   colorAttachmentReferenceList = Vector<VkAttachmentReference>();
+    Vector<VkAttachmentReference>   resolveAttachmentReferenceList = Vector<VkAttachmentReference>();
+    Vector<VkSubpassDescription>    preserveAttachmentReferenceList = Vector<VkSubpassDescription>();
+    Vector<VkAttachmentReference>   depthReference = Vector<VkAttachmentReference>();
+
     for (int x = 0; x < renderPassJsonLoader.RenderAttachmentList.size(); x++)
     {
         VkImageLayout initialLayout;
@@ -274,13 +236,32 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
         RenderAttachmentLoader renderAttachment = renderPassJsonLoader.RenderAttachmentList[x];
         switch (renderAttachment.RenderTextureType)
         {
-            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR; break;
-            case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-            case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-            case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;  break;
-            case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-            case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-            default: throw std::runtime_error("Unknown RenderTextureType");
+        case RenderType_SwapChainTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR;
+            break;
+        case RenderType_OffscreenColorTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            break;
+        case RenderType_DepthBufferTexture:
+            initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            break;
+        case RenderType_GBufferTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
+        case RenderType_IrradianceTexture:
+            initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
+        case RenderType_PrefilterTexture:
+            initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
+        default:
+            throw std::runtime_error("Unknown RenderTextureType");
         }
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
@@ -295,25 +276,96 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
                 .finalLayout = finalLayout
             });
 
-        Texture texture = textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight));
-        if (texture.textureType == TextureType_IrradianceMapTexture)
+        switch (renderAttachment.RenderAttachmentType)
         {
-            textureSystem.IrradianceCubeMap = texture;
-            renderedTextureList.emplace_back(texture);
-        }
-        else if (texture.textureType == TextureType_PrefilterMapTexture)
+        case RenderAttachmentTypeEnum::ColorRenderedTexture:
         {
-            textureSystem.PrefilterCubeMap.PrefilterCubeMap = texture;
-            renderedTextureList.emplace_back(texture);
+            Texture texture = textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight));
+            if (texture.textureType == TextureType_IrradianceMapTexture)
+            {
+                textureSystem.IrradianceCubeMap = texture;
+                renderedTextureList.emplace_back(texture);
+                frameBufferTextureList.emplace_back(texture);
+            }
+            else if (texture.textureType == TextureType_PrefilterMapTexture)
+            {
+                textureSystem.PrefilterCubeMap.PrefilterCubeMap = texture;
+                renderedTextureList.emplace_back(texture);
+                frameBufferTextureList.emplace_back(texture);
+            }
+            else
+            {
+                renderedTextureList.emplace_back(texture);
+                frameBufferTextureList.emplace_back(texture);
+            }
+            colorAttachmentReferenceList.emplace_back(VkAttachmentReference
+                {
+                    .attachment = static_cast<uint32>(x),
+                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                });
+            break;
         }
-        else if (texture.textureType == TextureType_DepthTexture)
+        case RenderAttachmentTypeEnum::InputAttachmentTexture:
         {
-            depthTexture = texture;
+            renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight)));
+            frameBufferTextureList.emplace_back(renderedTextureList.back());
+            inputAttachmentReferenceList.emplace_back(VkAttachmentReference
+                {
+                    .attachment = static_cast<uint32>(x),
+                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                });
+            break;
         }
-        else
+        case RenderAttachmentTypeEnum::ResolveAttachmentTexture:
         {
-            renderedTextureList.emplace_back(texture);
+            renderedTextureList.emplace_back(textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight)));
+            frameBufferTextureList.emplace_back(renderedTextureList.back());
+            resolveAttachmentReferenceList.emplace_back(VkAttachmentReference
+                {
+                    .attachment = static_cast<uint32>(x),
+                    .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                });
+            break;
         }
+        case RenderAttachmentTypeEnum::DepthRenderedTexture:
+        {
+            depthTexture = textureSystem.CreateRenderPassTexture(renderAttachment, ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight));
+            frameBufferTextureList.emplace_back(depthTexture);
+            depthReference.emplace_back(VkAttachmentReference
+                {
+                    .attachment = (uint)(x),
+                    .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
+                });
+            break;
+        }
+        default:
+        {
+            throw std::runtime_error("Case doesn't exist: RenderedTextureType");
+        }
+        }
+    }
+
+    Vector<VkSubpassDescription> subpassDescriptionList =
+    {
+        VkSubpassDescription
+        {
+            .flags = 0,
+            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+            .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
+            .pInputAttachments = inputAttachmentReferenceList.data(),
+            .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList.size()),
+            .pColorAttachments = colorAttachmentReferenceList.data(),
+            .pResolveAttachments = resolveAttachmentReferenceList.data(),
+            .pDepthStencilAttachment = depthReference.empty() ? nullptr : depthReference.data(),
+            .preserveAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList.size()),
+            .pPreserveAttachments = nullptr,
+        }
+    };
+
+    Vector<VkSubpassDependency> subPassList = Vector<VkSubpassDependency>();
+    for (VkSubpassDependency subpass : renderPassJsonLoader.SubpassDependencyModelList)
+    {
+        subPassList.emplace_back(subpass);
     }
 
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo;
@@ -331,45 +383,34 @@ VkRenderPass RenderSystem::BuildRenderPass(const RenderPassLoader& renderPassJso
         };
     }
 
-    Vector<VkSubpassDependency> subPassDependencyList = Vector<VkSubpassDependency>();
-    for (VkSubpassDependency subpass : renderPassJsonLoader.SubpassDependencyModelList)
+    VkRenderPassCreateInfo renderPassInfo =
     {
-        subPassDependencyList.emplace_back(subpass);
-    }
-
-    VkRenderPassCreateInfo renderPassInfo = {
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            .pNext = renderPassJsonLoader.UseCubeMapMultiView ? &multiviewCreateInfo : nullptr,
-            .attachmentCount = static_cast<uint32>(attachmentDescriptionList.size()),
-            .pAttachments = attachmentDescriptionList.data(),
-            .subpassCount = static_cast<uint32>(subPassDescriptionList.size()),
-            .pSubpasses = subPassDescriptionList.data(),
-            .dependencyCount = static_cast<uint32>(subPassDependencyList.size()),
-            .pDependencies = subPassDependencyList.data(),
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .pNext = renderPassJsonLoader.UseCubeMapMultiView ? &multiviewCreateInfo : nullptr,
+        .attachmentCount = static_cast<uint32>(attachmentDescriptionList.size()),
+        .pAttachments = attachmentDescriptionList.data(),
+        .subpassCount = static_cast<uint32>(subpassDescriptionList.size()),
+        .pSubpasses = subpassDescriptionList.data(),
+        .dependencyCount = static_cast<uint32>(subPassList.size()),
+        .pDependencies = subPassList.data(),
     };
 
-    VkRenderPass renderPass = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &renderPass));
+    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &renderPass.RenderPass));
     if (textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage != VK_NULL_HANDLE)
     {
-        textureSystem.CreatePrefilterSkyBoxTexture(renderPass, textureSystem.PrefilterCubeMap.PrefilterCubeMap);
+        textureSystem.CreatePrefilterSkyBoxTexture(renderPass.RenderPass, textureSystem.PrefilterCubeMap.PrefilterCubeMap);
     }
 
     RenderPassGuid renderPassId = renderPassJsonLoader.RenderPassId;
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(renderPassId, renderedTextureList);
     if (depthTexture.textureImage != VK_NULL_HANDLE)textureSystem.AddDepthTexture(renderPassId, depthTexture);
-    return renderPass;
-}
 
-Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& renderPass)
-{
-    Texture         depthTexture = textureSystem.DepthTextureExists(renderPass.RenderPassId) ? textureSystem.FindDepthTexture(renderPass.RenderPassId) : Texture();
-    Vector<Texture> renderedTextureList = textureSystem.FindRenderedTextureList(renderPass.RenderPassId);
-    Vector<VkFramebuffer> frameBufferList = Vector<VkFramebuffer>(vulkanSystem.SwapChainImageCount);
+
+    renderPass.FrameBufferList.resize(vulkanSystem.SwapChainImageCount);
     for (size_t x = 0; x < vulkanSystem.SwapChainImageCount; x++)
     {
         std::vector<VkImageView> TextureAttachmentList;
-        for (int y = 0; y < renderedTextureList.size(); y++)
+        for (int y = 0; y < frameBufferTextureList.size(); y++)
         {
             if (renderPass.IsRenderedToSwapchain)
             {
@@ -377,20 +418,20 @@ Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& ren
             }
             else
             {
-                if (renderedTextureList[y].textureType == TextureType_IrradianceMapTexture ||
-                    renderedTextureList[y].textureType == TextureType_PrefilterMapTexture)
+                if (frameBufferTextureList[y].textureType == TextureType_IrradianceMapTexture ||
+                    frameBufferTextureList[y].textureType == TextureType_PrefilterMapTexture)
                 {
-                    TextureAttachmentList.emplace_back(renderedTextureList[y].AttachmentArrayView);
+                    TextureAttachmentList.emplace_back(frameBufferTextureList[y].AttachmentArrayView);
+                }
+                else if (frameBufferTextureList[y].textureType == TextureType_DepthTexture)
+                {
+                    TextureAttachmentList.emplace_back(frameBufferTextureList[y].textureView);
                 }
                 else
                 {
-                    TextureAttachmentList.emplace_back(renderedTextureList[y].textureView);
+                    TextureAttachmentList.emplace_back(frameBufferTextureList[y].textureView);
                 }
             }
-        }
-        if (depthTexture.TextureAllocation != VK_NULL_HANDLE)
-        {
-            TextureAttachmentList.emplace_back(depthTexture.textureView);
         }
 
         VkFramebufferCreateInfo framebufferInfo =
@@ -403,12 +444,10 @@ Vector<VkFramebuffer> RenderSystem::BuildFrameBuffer(const VulkanRenderPass& ren
             .height = static_cast<uint32_t>(renderPass.RenderPassResolution.y),
             .layers = 1,
         };
-        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &framebufferInfo, nullptr, &frameBufferList[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &framebufferInfo, nullptr, &renderPass.FrameBufferList[x]));
     }
 
-    return frameBufferList;
 }
-
 
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
 {
@@ -454,7 +493,7 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
-        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV,
+        .flags = 0,
         .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList.size()),
         .pBindings = descriptorSetLayoutBindingList.data()
     };
@@ -521,7 +560,7 @@ VkPipelineLayout RenderSystem::CreatePipelineLayout(RenderPipelineLoader& render
     {
         pushConstantRangeList.emplace_back(VkPushConstantRange
             {
-                .stageFlags = VK_SHADER_STAGE_ALL,
+                .stageFlags = renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].ShaderStageFlags,
                 .offset = 0,
                 .size = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize)
             });
@@ -625,9 +664,9 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
         .pDynamicState = &pipelineDynamicStateCreateInfo,
         .layout = pipelineLayout,
         .renderPass = renderPipelineLoader.RenderPass,
-        .subpass = renderPipelineLoader.SubPassId,
+        .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE,
-        .basePipelineIndex = 0
+        .basePipelineIndex = 0,
     };
 
     VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(vulkanSystem.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
@@ -710,45 +749,6 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
         {
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetPrefilterMapTextureBuffer(renderPipelineLoader.RenderPassId).size();
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetPrefilterMapTextureBuffer(renderPipelineLoader.RenderPassId);
-            break;
-        }
-        case kSubpassInputDescriptor:
-        {
-            VkSamplerCreateInfo NullSamplerInfo =
-            {
-                .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-                .magFilter = VK_FILTER_NEAREST,
-                .minFilter = VK_FILTER_NEAREST,
-                .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-                .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-                .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-                .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-                .mipLodBias = 0,
-                .anisotropyEnable = VK_TRUE,
-                .maxAnisotropy = 16.0f,
-                .compareEnable = VK_FALSE,
-                .compareOp = VK_COMPARE_OP_ALWAYS,
-                .minLod = 0,
-                .maxLod = 0,
-                .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-                .unnormalizedCoordinates = VK_FALSE,
-            };
-
-            VkSampler nullSampler = VK_NULL_HANDLE;
-            if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
-            {
-                throw std::runtime_error("Failed to create Sampler.");
-            }
-
-            VkDescriptorImageInfo nullBuffer =
-            {
-                .sampler = nullSampler,
-                .imageView = VK_NULL_HANDLE,
-                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            };
-
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = Vector<VkDescriptorImageInfo> { nullBuffer };
             break;
         }
         default:
