@@ -1,6 +1,6 @@
 #ifndef CONSTANTS_GLSL
 #define CONSTANTS_GLSL
-
+#extension GL_ARB_separate_shader_objects : enable
 const float PI = 3.14159265359;
 const uint MeshPropertiesDescriptor = 0;
 const uint TextureDescriptor = 1;

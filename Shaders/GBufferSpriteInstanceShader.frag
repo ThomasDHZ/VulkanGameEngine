@@ -37,6 +37,44 @@ layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshPropertie
 layout(binding = 1) uniform sampler2D TextureMap[];
 layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
+mat3 GetTBN() 
+{
+    vec3 T = normalize(vec3(1.0f, 0.0f, 0.0f));
+    vec3 B = normalize(vec3(0.0f, 1.0f, 0.0f));
+    vec3 N = normalize(cross(T, B));
+    return mat3(T, B, N);
+}
+
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx) 
+{
+    float heightScale = .015f;
+    if (heightScale < 0.001f || heightIdx == 0xFFFFFFFFu) return uv;
+
+    ivec2 texSize = textureSize(TextureMap[heightIdx], 0);
+    float numLayers = mix(48.0f, 32.0f, abs(viewDirTS.z));
+    vec2 P = viewDirTS.xy * heightScale;
+    vec2 deltaUV = P / numLayers;
+
+    vec2 currentUV = uv;
+    float layerDepth = 1.0f / numLayers;
+    float currentLayerDepth = 0.0f;
+    float currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0f).r;
+
+    for (int x = 0; x < 48; ++x) {
+        if (currentLayerDepth > currentHeight) break;
+        currentUV -= deltaUV;
+        currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0f).r;
+        currentLayerDepth += layerDepth;
+    }
+
+    vec2 prevUV = currentUV + deltaUV;
+    float afterDepth = currentHeight - currentLayerDepth;
+    float beforeDepth = textureLod(TextureMap[heightIdx], prevUV, 0.0f).r - currentLayerDepth + layerDepth;
+    float weight = afterDepth / (afterDepth + beforeDepth + 1e-5f);
+
+    return clamp(mix(currentUV, prevUV, weight), 0.005f, 0.995f);
+}
+
 void main()
 {
 	MaterialProperitiesBuffer material = materialBuffer[PS_MaterialID].materialProperties;
@@ -51,24 +89,27 @@ void main()
 		UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
     }
 
-    vec4  albedoMap =			(material.AlbedoMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlbedoMap], UV).rgba			 : vec4(material.Albedo, 1.0f);
-    vec3  normalMap =			(material.NormalMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.NormalMap], UV).rgb			 : vec3(0.0, 0.0, 1.0);
-	float specularMap =			(material.SpecularMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.SpecularMap], UV).r			 : material.Specular;
-    float metallicMap =			(material.MetallicMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.MetallicMap], UV).r			 : material.Metallic;
-    float roughnessMap =		(material.RoughnessMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.RoughnessMap], UV).r			 : material.Roughness;
-    float ambientOcclusionMap = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? texture(TextureMap[material.AmbientOcclusionMap], UV).r	 : material.AmbientOcclusion;
-	float heightMap =			(material.HeightMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.HeightMap], UV).r			 : material.Height;
-    vec3  emissionMap =			(material.EmissionMap		  != 0xFFFFFFFFu) ? texture(TextureMap[material.EmissionMap], UV).rgb		 : material.Emission;
-	float alphaMap =			(material.AlphaMap			  != 0xFFFFFFFFu) ? texture(TextureMap[material.AlphaMap], UV).r				 : material.Alpha;
+    mat3 TBN = GetTBN();                   
+    mat3 worldToTangent = transpose(TBN);  
+    vec3 viewDirWS = normalize(sceneData.CameraPosition - PS_Position);
+    vec3 viewDirTS = normalize(worldToTangent * viewDirWS);
+    vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.HeightMap);
 
-    if (alphaMap.r == 0.0)
-	{
-        discard;
-	}
+    vec3 albedo = (material.AlbedoMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap], finalUV, 0.0f).rgb : material.Albedo;
+    vec3 normalTS = (material.NormalMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap], finalUV, 0.0f).xyz * 2.0f - 1.0f : vec3(0,0,1);
+    float metallic = (material.MetallicMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap], finalUV, 0.0f).r : material.Metallic;
+    float roughness = (material.RoughnessMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.RoughnessMap], finalUV, 0.0f).r : material.Roughness;
+    float ao = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap], finalUV, 0.0f).r : material.AmbientOcclusion;
+    vec3 emission = (material.EmissionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap], finalUV, 0.0f).rgb : material.Emission;
+    float height = (material.HeightMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap], finalUV, 0.0f).r : 0.0;
+	float alphaMap =			(material.AlphaMap			  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap], finalUV, 0.0f).r				 : material.Alpha;
 
-	PositionDataMap = vec4(gl_FragCoord.xy, 0.0, 1.0);
-	AlbedoMap = vec4(albedoMap.rgb, 1.0f);
-	NormalMap = vec4(normalMap, 1.0f);
-	MatRoughAOHeightMap = vec4(metallicMap, roughnessMap, ambientOcclusionMap, heightMap);
-	EmissionMap = vec4(emissionMap, specularMap);
+    if (alphaMap.r == 0.0) discard;
+    vec3 normalWS = normalize(TBN * normalTS);
+
+    PositionDataMap = vec4(PS_Position, 1.0f);
+    AlbedoMap = vec4(albedo, 1.0f);
+    NormalMap = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    MatRoughAOHeightMap = vec4(metallic, roughness, ao, height);
+    EmissionMap = vec4(emission, 1.0f);
 }

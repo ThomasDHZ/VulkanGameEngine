@@ -1,4 +1,5 @@
 #version 460
+#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_debug_printf : enable
@@ -11,15 +12,9 @@ layout(location = 0) in  vec2 TexCoords;
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outBloom;
 
-const int PositionDataMapBinding = 0;
-const int AlbedoMapBinding = 1;
-const int NormalMapBinding = 2;
-const int MatRoughAOHeightMapBinding = 3;
-const int EmissionMapBinding = 4;
-const int DepthMapBinding = 5;
-const int BrdfMapBinding = 6;
-const int DirectionalShadowMapBinding = 7;
-const int SDFShadowMapBinding = 8;
+const int BrdfMapBinding = 1;
+const int DirectionalShadowMapBinding = 2;
+const int SDFShadowMapBinding = 3;
 
 
 layout(constant_id = 0) const uint DescriptorBindingType0 = SubpassInputDescriptor;
@@ -98,81 +93,34 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + ((max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0));
 }
 
-mat3 TBN = mat3(
-    vec3(1.0, 0.0, 0.0),  // Tangent  (X)
-    vec3(0.0, 1.0, 0.0),  // Bitangent (Y)
-    vec3(0.0, 0.0, 1.0)   // Normal    (Z)
-);
-
-vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS)
-{
-    if (gBufferSceneDataBuffer.UseHeightMap == 0) return uv;
-
-    const float minLayers = 16.0f;
-    const float maxLayers = 64.0f;
-    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-
-    float layerDepth = 1.0f / numLayers;
-    float currentLayerDepth = 0.0f;
-    vec2 P = viewDirTS.xy * gBufferSceneDataBuffer.HeightScale;
-    vec2 deltaUV = P / numLayers;
-
-    vec2 currentUV = uv;
-    float currentHeight = subpassLoad(matRoughInput).r;
-
-    int x = 0;
-    while (currentLayerDepth < currentHeight && x < 32) {
-        currentUV -= deltaUV;
-        currentHeight = subpassLoad(matRoughInput).r;
-        currentLayerDepth += layerDepth;
-        x++;
-    }
-
-    vec2 prevUV = currentUV + deltaUV;
-    float afterDepth = currentHeight - currentLayerDepth;
-    float beforeDepth = subpassLoad(matRoughInput).r - currentLayerDepth + layerDepth;
-    float weight = afterDepth / (afterDepth - beforeDepth + 0.0001f);
-    vec2 finalUV = mix(currentUV, prevUV, weight);
-    finalUV = clamp(finalUV, vec2(0.005f), vec2(0.995f));
-
-    return clamp(finalUV, vec2(0.01f), vec2(0.99f));
-}
-
 void main()
 {    
-    vec2 baseUV = TexCoords;
     vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
 
-    vec2 uv = baseUV;
-    if (gBufferSceneDataBuffer.UseHeightMap == 1) {
-        uv = ParallaxOcclusionMapping(baseUV, V);
-        uv = clamp(uv, vec2(0.01), vec2(0.99));
-    }
+//    float depthMap = texture(TextureMap[DepthMapBinding], baseUV).r;
+//    bool isBackground = (depthMap >= 0.99999);
+//
+//    if (isBackground) {
+//        vec2 ndc = baseUV * 2.0 - 1.0;
+//        vec4 clipPos = vec4(ndc, 1.0, 1.0);
+//        vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clipPos;
+//        viewPos /= viewPos.w;
+//        vec3 viewDir = normalize(viewPos.xyz);
+//        vec3 worldDir = normalize(mat3(gBufferSceneDataBuffer.InvView) * viewDir);
+//        vec3 skyColor = texture(CubeMap, worldDir).rgb;
+//        outColor = vec4(skyColor, 1.0);
+//        outBloom = vec4(0.0);
+//        return;
+//    }
 
-    float depthMap = texture(TextureMap[DepthMapBinding], baseUV).r;
-    bool isBackground = (depthMap >= 0.99999);
-
-    if (isBackground) {
-        vec2 ndc = baseUV * 2.0 - 1.0;
-        vec4 clipPos = vec4(ndc, 1.0, 1.0);
-        vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clipPos;
-        viewPos /= viewPos.w;
-        vec3 viewDir = normalize(viewPos.xyz);
-        vec3 worldDir = normalize(mat3(gBufferSceneDataBuffer.InvView) * viewDir);
-        vec3 skyColor = texture(CubeMap, worldDir).rgb;
-        outColor = vec4(skyColor, 1.0);
-        outBloom = vec4(0.0);
-        return;
-    }
-
-    vec3 positionDataMap = subpassLoad(positionInput).rgb;
-    vec3 albedoMap = subpassLoad(albedoInput).rgb;
-    vec3 normalMap =subpassLoad(normalInput).rgb * 2.0f - 1.0f;
-    float metallicMap = 0.0f;//subpassLoad(matRoughInput).r;
-    float roughnessMap = 1.0f;//subpassLoad(matRoughInput).g;
+    vec3  positionDataMap = subpassLoad(positionInput).rgb;
+    vec3  albedoMap = subpassLoad(albedoInput).rgb;
+    vec3  normalMap =subpassLoad(normalInput).rgb * 2.0f - 1.0f;
+    float metallicMap = 0.0f;//subpassLoad(matRoughInput, pixelOffset).r;
+    float roughnessMap = 1.0f;//subpassLoad(matRoughInput, pixelOffset).g;
     float ambientOcclusionMap = subpassLoad(matRoughInput).b;
     float heightMap = subpassLoad(matRoughInput).a;
-    vec3 emissionMap = subpassLoad(emissionInput).rgb;
+    vec3  emissionMap = subpassLoad(emissionInput).rgb;
     float specularMap = subpassLoad(emissionInput).a;
 
     vec3 N = normalize(normalMap);
