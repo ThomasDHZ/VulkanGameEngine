@@ -138,7 +138,7 @@ namespace nlohmann
     void from_json(const json& j, RenderAttachmentLoader& model) {
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
         j.at("RenderTextureType").get_to(model.RenderTextureType);
-        j.at("RenderAttachmentType").get_to(model.RenderAttachmentType);
+        j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
         j.at("Format").get_to(model.Format);
         j.at("SampleCount").get_to(model.SampleCount);
         j.at("LoadOp").get_to(model.LoadOp);
@@ -344,6 +344,7 @@ namespace nlohmann
     void from_json(const json& j, RenderPassLoader& model)
     {
         j.at("RenderPassId").get_to(model.RenderPassId);
+        j.at("SubPassCount").get_to(model.SubPassCount);
         j.at("IsRenderedToSwapchain").get_to(model.IsRenderedToSwapchain);
         j.at("RenderPipelineList").get_to(model.RenderPipelineList);
         j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);

@@ -69,7 +69,8 @@ enum RenderAttachmentTypeEnum
     ColorRenderedTexture,
     DepthRenderedTexture,
     InputAttachmentTexture,
-    ResolveAttachmentTexture
+    ResolveAttachmentTexture,
+    SkipSubPass
 };
 
 enum DescriptorBindingPropertiesEnum

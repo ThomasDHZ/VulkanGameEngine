@@ -356,7 +356,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
       }
       vkCmdEndRenderPass(commandBuffer);
-      textureSystem.TransitionImageLayout(textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
+     // textureSystem.TransitionImageLayout(textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
   }
 
   void LevelSystem::RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
@@ -429,7 +429,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
           vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
       }
       vkCmdEndRenderPass(commandBuffer);
-      textureSystem.TransitionImageLayout(textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
+//textureSystem.TransitionImageLayout(textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
   }
 
   void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
