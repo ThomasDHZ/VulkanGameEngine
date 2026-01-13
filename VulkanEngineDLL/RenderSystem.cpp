@@ -7,6 +7,7 @@
 #include "LightSystem.h"
 #include "RenderSystem.h"
 #include "from_json.h"
+#include <unordered_set>
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -413,7 +414,7 @@ VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .maxSets = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.empty() ? 100 : static_cast<uint32>(descriptorPoolSizeList.size()) * 100,
+        .maxSets = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.empty() ? 1000 : static_cast<uint32>(descriptorPoolSizeList.size()) * 1000,
         .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
         .pPoolSizes = descriptorPoolSizeList.data()
     };
@@ -423,10 +424,16 @@ VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader
 
 Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader)
 {
-    Vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindingList = Vector<VkDescriptorSetLayoutBinding>();
+    std::unordered_set<int> uniqueValues;
+    std::for_each(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.begin(), renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.end(), [&](const ShaderDescriptorBindingDLL& binding) {
+        uniqueValues.insert(binding.DescriptorSet);
+        });
+    size_t countDistinct = uniqueValues.size();
+
+    Vector<Vector<VkDescriptorSetLayoutBinding>> descriptorSetLayoutBindingList = Vector<Vector<VkDescriptorSetLayoutBinding>>(countDistinct);
     for (auto& descriptorBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
     {
-        descriptorSetLayoutBindingList.emplace_back(VkDescriptorSetLayoutBinding
+        descriptorSetLayoutBindingList[descriptorBinding.DescriptorSet].emplace_back(VkDescriptorSetLayoutBinding
             {
                 .binding = descriptorBinding.Binding,
                 .descriptorType = descriptorBinding.DescripterType,
@@ -436,19 +443,23 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
             });
     }
 
-    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo
+    Vector<VkDescriptorSetLayoutCreateInfo> descriptorSetLayoutCreateInfoList = Vector<VkDescriptorSetLayoutCreateInfo>(countDistinct);
+    for (int x = 0; x < descriptorSetLayoutCreateInfoList.size(); x++)
     {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList.size()),
-        .pBindings = descriptorSetLayoutBindingList.data()
-    };
+        descriptorSetLayoutCreateInfoList[x] = VkDescriptorSetLayoutCreateInfo
+        {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV,
+            .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList[x].size()),
+            .pBindings = descriptorSetLayoutBindingList[x].data()
+        };
+    }
 
-    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(1);
-    for (auto& descriptorSetLayout : descriptorSetLayoutList)
+    Vector<VkDescriptorSetLayout> descriptorSetLayoutList = Vector<VkDescriptorSetLayout>(descriptorSetLayoutCreateInfoList.size());
+    for (int x = 0; x < descriptorSetLayoutList.size(); x++)
     {
-        VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
+        vkCreateDescriptorSetLayout(vulkanSystem.Device, &descriptorSetLayoutCreateInfoList[x], nullptr, &descriptorSetLayoutList[x]);
     }
 
     return descriptorSetLayoutList;
@@ -456,36 +467,37 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
 
 Vector<VkDescriptorSet> RenderSystem::AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {
-    VkDescriptorSetAllocateInfo allocInfo = 
+    Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(descriptorSetLayoutCount, VK_NULL_HANDLE);
+    for (int x = 0; x < descriptorSetLayoutCount; x++)
     {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .pNext = nullptr,
-        .descriptorPool = descriptorPool,
-        .descriptorSetCount = static_cast<uint32>(descriptorSetLayoutCount),
-        .pSetLayouts = descriptorSetLayoutList
-    };
-
-    Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(1, VK_NULL_HANDLE);
-    for (auto& descriptorSet : descriptorSetList)
-    {
-        VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSet));
+        VkDescriptorSetAllocateInfo allocInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+            .pNext = nullptr,
+            .descriptorPool = descriptorPool,
+            .descriptorSetCount = 1,
+            .pSetLayouts = &descriptorSetLayoutList[x]
+        };
+        vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSetList[x]);
     }
     return descriptorSetList;
 }
 
 void RenderSystem::UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount)
 {
+
     Span<VkDescriptorSet> descriptorSetLayouts(descriptorSetList, descriptorSetCount);
-    for (auto& descriptorSet : descriptorSetLayouts)
+    for (int x = 0; x < descriptorSetLayouts.size(); x++)
     {
         Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
         for (auto& descriptorSetBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
         {
+            if (descriptorSetBinding.DescriptorSet != x) continue;
             writeDescriptorSet.emplace_back(VkWriteDescriptorSet
                 {
                     .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                     .pNext = nullptr,
-                    .dstSet = descriptorSet,
+                    .dstSet = descriptorSetLayouts[x],
                     .dstBinding = descriptorSetBinding.Binding,
                     .dstArrayElement = 0,
                     .descriptorCount = static_cast<uint32>(descriptorSetBinding.DescriptorCount),

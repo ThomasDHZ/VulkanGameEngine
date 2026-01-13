@@ -134,7 +134,8 @@ struct ShaderDescriptorSetDLL
 struct ShaderDescriptorBindingDLL
 {
     String                          Name;
-    uint32                          Binding;
+    uint32                          DescriptorSet = UINT32_MAX;
+    uint32                          Binding = UINT32_MAX;
     size_t                          DescriptorCount;
     VkShaderStageFlags              ShaderStageFlags;
     DescriptorBindingPropertiesEnum DescriptorBindingType;
