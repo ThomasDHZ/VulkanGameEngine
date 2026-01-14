@@ -19,6 +19,8 @@ layout(push_constant) uniform SceneDataBuffer {
     mat4 Projection;
     mat4 View;
     vec3 CameraPosition;
+    int   UseHeightMap;
+    float HeightScale;
 } sceneData;
 
 #include "MeshPropertiesBuffer.glsl"

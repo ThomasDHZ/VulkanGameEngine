@@ -2,7 +2,10 @@
   "LightName": "TestDLight",
   "LightId": "d6433982-e92d-4f75-8145-0b6eff0a2129",
   "LightType": 0,
-  "LightColor": [ 0.8, 0.8, 0.9 ],
-  "LightDirection": [ 0.382, 0.556, 0.111 ],
-  "LightIntensity": 7.279
+  "LightColor": [ 1.00, 0.95, 0.90 ],
+  "LightDirection": [ -0.7, -0.7, 1.0 ],
+  "LightIntensity": 5.0,
+  "ShadowStrength": 0.70,
+  "ShadowBias": 0.015,
+  "ShadowSoftness": 0.30
 }

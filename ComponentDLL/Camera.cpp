@@ -1,43 +1,30 @@
 #include "pch.h"
 #include "Camera.h"
 
-Camera CameraOrthographic_OrthograpCamera_OrthographicCamera2DhicCamera2D(const vec2& viewScreenSize)
+Camera Camera_CreatePixelPerfectOrthographic(const glm::ivec2& renderResolution, const glm::vec2& worldPosition)
 {
-	return Camera
-	{
-		.Width = viewScreenSize.x,
-		.Height = viewScreenSize.y,
-		.AspectRatio = viewScreenSize.x / viewScreenSize.y,
-		.Zoom = 1.0f,
-		.Position = vec3(0.0f),
-		.ViewScreenSize = viewScreenSize,
-		.ProjectionMatrix = glm::ortho(0.0f, viewScreenSize.x, viewScreenSize.y, 0.0f),
-		.ViewMatrix = mat4(1.0f)
-	};
+	Camera cam{};
+	cam.Width = static_cast<float>(renderResolution.x);
+	cam.Height = static_cast<float>(renderResolution.y);
+	cam.AspectRatio = cam.Width / cam.Height;
+	cam.Zoom = 1.0f;
+	cam.Position = glm::vec3(worldPosition.x, worldPosition.y, 0.0f);
+	cam.ViewScreenSize = glm::vec2(renderResolution);
+
+	cam.ProjectionMatrix = glm::ortho(0.0f, cam.Width, cam.Height, 0.0f, -1000.0f, 1000.0f);
+	cam.ViewMatrix = glm::translate(glm::mat4(1.0f), -cam.Position);
+
+	return cam;
 }
 
-Camera Camera_OrthographicCamera2D(const vec2& viewScreenSize, const vec2& position)
+void Camera_UpdateOrthographicPixelPerfect(Camera& camera)
 {
-	return Camera
-	{
-		.Width = viewScreenSize.x,
-		.Height = viewScreenSize.y,
-		.AspectRatio = viewScreenSize.x / viewScreenSize.y,
-		.Zoom = 1.0f,
-		.Position = vec3(position.x, position.y, 0.0f),
-		.ViewScreenSize = viewScreenSize,
-		.ProjectionMatrix = glm::ortho(0.0f, viewScreenSize.x, viewScreenSize.y, 0.0f),
-		.ViewMatrix = mat4(1.0f)
-	};
-}
+	camera.ProjectionMatrix = glm::ortho(0.0f, camera.Width, camera.Height, 0.0f, -1000.0f, 1000.0f);
+	camera.ViewMatrix = glm::translate(glm::mat4(1.0f), -camera.Position);
 
-void Camera_OrthographicUpdate(Camera& camera)
-{
-	mat4 view = mat4(1.0f);
-	camera.ProjectionMatrix = glm::ortho(0.0f, camera.Width, camera.Height, 0.0f);
-	shaderSystem.UpdatePushConstantValue<mat4>("sceneData", "Projection", camera.ProjectionMatrix);
-	shaderSystem.UpdatePushConstantValue<mat4>("sceneData", "View", view);
-	shaderSystem.UpdatePushConstantValue<vec3>("sceneData", "CameraPosition", camera.Position);
+	shaderSystem.UpdatePushConstantValue<glm::mat4>("sceneData", "Projection", camera.ProjectionMatrix);
+	shaderSystem.UpdatePushConstantValue<glm::mat4>("sceneData", "View", camera.ViewMatrix);
+	shaderSystem.UpdatePushConstantValue<glm::vec3>("sceneData", "CameraPosition", camera.Position);
 }
 
 Camera Camera_PerspectiveCamera(const vec2& viewScreenSize, const glm::vec3& position)

@@ -4,8 +4,8 @@
   "RenderPipelineList": [
     "Pipelines/IrradiancePipeline.json"
   ],
-  "RenderPassWidth": 256,
-  "RenderPassHeight": 256,
+  "RenderPassWidth": 128,
+  "RenderPassHeight": 128,
   "SubPassCount": 1,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,

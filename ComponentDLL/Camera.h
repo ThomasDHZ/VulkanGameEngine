@@ -26,9 +26,8 @@ struct Camera
 	mat4 ViewMatrix;
 };
 
-DLL_EXPORT Camera Camera_OrthographicCamera2D(const vec2& viewScreenSize);
-DLL_EXPORT Camera Camera_OrthographicCamera2D(const vec2& viewScreenSize, const vec2& position);
-DLL_EXPORT void Camera_OrthographicUpdate(Camera& camera);
+DLL_EXPORT Camera Camera_CreatePixelPerfectOrthographic(const glm::ivec2& renderResolution, const glm::vec2& worldPosition = glm::vec2(0.0f));
+DLL_EXPORT void Camera_UpdateOrthographicPixelPerfect(Camera& camera);
 
 DLL_EXPORT Camera Camera_PerspectiveCamera(const vec2& viewScreenSize, const glm::vec3& position);
 DLL_EXPORT void Camera_PerspectiveUpdate(Camera& camera);

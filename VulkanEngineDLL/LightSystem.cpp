@@ -11,9 +11,11 @@ void LightSystem::Update(const float& deltaTime)
     {
         ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(directionalLight.DirectionalLightBufferId);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightColor", directionalLight.LightColor);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightDirection", directionalLight.LightDirection);
+        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightDirection", glm::normalize(directionalLight.LightDirection));
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "LightIntensity", directionalLight.LightIntensity);
-        shaderSystem.UpdateShaderStructValue<mat4>(shaderStruct, "LightSpaceMatrix", directionalLight.LightProjection * directionalLight.LightView);
+        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ShadowStrength", directionalLight.ShadowStrength);
+        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ShadowBias", directionalLight.ShadowBias);
+        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ShadowSoftness", directionalLight.ShadowSoftness);
         shaderSystem.UpdateShaderBuffer(shaderStruct, directionalLight.DirectionalLightBufferId);
     }
 

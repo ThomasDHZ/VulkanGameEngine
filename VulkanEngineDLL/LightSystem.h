@@ -13,8 +13,9 @@ struct DirectionalLight
     vec3   LightColor = vec3(1.0f, 1.0f, 1.0f);
     vec3   LightDirection = vec3(0.3f, 0.3f, 1.0f);
     float  LightIntensity = 1.5f;
-    mat4   LightProjection = mat4(1.0f);
-    mat4   LightView = mat4(1.0f);
+    float ShadowStrength = 1.0f;
+    float ShadowBias = 0.012f;
+    float ShadowSoftness = 0.008f;
 
     bool operator==(const DirectionalLight& rhs) const
     {
