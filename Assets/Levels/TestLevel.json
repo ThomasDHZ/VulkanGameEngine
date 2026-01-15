@@ -19,6 +19,7 @@
     "TextureLoader/AnimeGirl_MetallicTexture.json",
     "TextureLoader/AnimeGirl_NormalTexture.json",
     "TextureLoader/AnimeGirl_SpecularTexture.json",
+    "TextureLoader/AnimeGirl_SpecularTexture.json",
     "TextureLoader/AnimeGirl_AlphaTexture.json",
     "TextureLoader/LavaCubeMapTexture.json"
   ],

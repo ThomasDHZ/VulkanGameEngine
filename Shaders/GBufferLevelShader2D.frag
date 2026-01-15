@@ -51,10 +51,12 @@ layout(binding = 12) uniform samplerCube CubeMap;
 layout(binding = 13) uniform samplerCube IrradianceMap;
 layout(binding = 14) uniform samplerCube PrefilterMap;
 
-layout(push_constant) uniform SceneDataBuffer {
+layout(push_constant) uniform SceneDataBuffer 
+{
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
+    vec3  ViewDirection;
     vec3 CameraPosition;
     int   UseHeightMap;
     float HeightScale;
@@ -66,46 +68,47 @@ mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
     vec2 duv1  = dFdx(uv);
     vec2 duv2  = dFdy(uv);
 
-    vec3 N = vec3(0.0, 0.0, 1.0);
-
+    vec3 N = vec3(0.0f, 0.0f, 1.0f);
     vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
     vec3 B = -normalize(cross(N, T));
 
     return mat3(T, B, N);
 }
 
-vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx) 
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
-    if (sceneData.UseHeightMap == 0 || sceneData.HeightScale < 0.001 || heightIdx == 0xFFFFFFFFu)
+    if (sceneData.HeightScale < 0.001f || heightIdx == 0xFFFFFFFFu) 
         return uv;
 
-    const float minLayers = 16.0;
-    const float maxLayers = 96.0;
-    float numLayers = mix(maxLayers, minLayers, max(0.0, viewDirTS.z));
+    const float minLayers = 8.0;
+    const float maxLayers = 64.0;
+    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
-    float layerDepth = 1.0 / numLayers;
-    float currentLayerDepth = 0.0;
-
-    vec2 P = viewDirTS.xy * (sceneData.HeightScale * max(0.1, viewDirTS.z));
-    vec2 deltaUV = P / numLayers;
+vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
+vec2 deltaUV = shiftDirection / numLayers;
 
     vec2 currentUV = uv;
-    float currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).r;
+    float currentLayerDepth = 0.0;
+    float currentHeight = 1.0 - texture(TextureMap[heightIdx], currentUV).r;
 
-    for (float i = 0.0; i < numLayers; ++i) {
-        if (currentLayerDepth > currentHeight) break;
-        currentUV += deltaUV;
-        currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).r;
-        currentLayerDepth += layerDepth;
+    for (int i = 0; i < 64; ++i)
+    {
+        currentUV -= deltaUV;
+        currentHeight = 1.0 -texture(TextureMap[heightIdx], currentUV).r;
+        currentLayerDepth += 1.0 / numLayers;
+
+        if (currentLayerDepth >= currentHeight)
+            break;
     }
 
-    vec2 prevUV = currentUV - deltaUV;
+    vec2 prevUV = currentUV + deltaUV;
     float afterHeight  = currentHeight - currentLayerDepth;
-    float beforeHeight = textureLod(TextureMap[heightIdx], prevUV, 0.0).r - (currentLayerDepth - layerDepth);
-    float weight = afterHeight / (afterHeight + beforeHeight + 1e-6);
+    float beforeHeight = 1.0 - texture(TextureMap[heightIdx], prevUV).r - (currentLayerDepth - 1.0/numLayers);
 
+    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5);
     vec2 finalUV = mix(currentUV, prevUV, weight);
-    return clamp(finalUV, 0.001, 0.999);
+
+    return clamp(finalUV, 0.005, 0.995);
 }
 
 void main()
@@ -116,7 +119,7 @@ void main()
     
        mat3 TBN = CalculateTBN(WorldPos, TexCoords);
 
-    vec3 viewDirWS = normalize(sceneData.CameraPosition - WorldPos);
+    vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
 
     vec2 finalUV = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.HeightMap);

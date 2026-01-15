@@ -280,13 +280,14 @@ void LevelSystem::LoadLevel(const char* levelPath)
       ShaderPushConstantDLL& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
       shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
       shaderSystem.UpdatePushConstantValue<float>(sceneDataPushConstant, "HeightScale", HeightScale);
-      shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "Projection", OrthographicCamera->ProjectionMatrix);
-      shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "View", OrthographicCamera->ViewMatrix);
-      shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "CameraPosition", OrthographicCamera->Position);
+      shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "ViewDirection", ViewDirection);
+      shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "Projection", OrthographicCamera->ProjectionMatrix); 
+      shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "View", OrthographicCamera->ViewMatrix); 
+      shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "CameraPosition", OrthographicCamera->Position); 
 
       ShaderPushConstantDLL& skyBoxPushConstant = shaderSystem.FindShaderPushConstant("skyBoxViewData");
-      shaderSystem.UpdatePushConstantValue<mat4>(skyBoxPushConstant, "InverseProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
-      shaderSystem.UpdatePushConstantValue<mat4>(skyBoxPushConstant, "InverseView", glm::inverse(PerspectiveCamera->ViewMatrix));
+      shaderSystem.UpdatePushConstantValue<mat4>(skyBoxPushConstant, "InverseProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix)); 
+      shaderSystem.UpdatePushConstantValue<mat4>(skyBoxPushConstant, "InverseView", glm::inverse(PerspectiveCamera->ViewMatrix)); 
       shaderSystem.UpdatePushConstantBuffer(skyBoxPushConstant);
       
       ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
@@ -294,7 +295,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "ViewDirection", ViewDirection);
       shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "DirectionalLightCount", lightSystem.DirectionalLightList.size());
       shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "PointLightCount", lightSystem.PointLightList.size());
-      shaderSystem.UpdatePushConstantValue<mat4>(gBufferSceneDataBuffer, "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix));
+      shaderSystem.UpdatePushConstantValue<mat4>(gBufferSceneDataBuffer, "InvProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix)); 
       shaderSystem.UpdatePushConstantValue<mat4>(gBufferSceneDataBuffer, "InvView", glm::inverse(PerspectiveCamera->ViewMatrix));
       shaderSystem.UpdatePushConstantBuffer(gBufferSceneDataBuffer);
 

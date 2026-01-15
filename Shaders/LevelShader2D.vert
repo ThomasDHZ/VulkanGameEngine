@@ -15,10 +15,12 @@ layout (location = 1)  in vec2  VS_UV;
 layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
 
-layout(push_constant) uniform SceneDataBuffer {
+layout(push_constant) uniform SceneDataBuffer 
+{
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
+    vec3  ViewDirection;
     vec3 CameraPosition;
     int   UseHeightMap;
     float HeightScale;

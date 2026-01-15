@@ -58,13 +58,16 @@ layout (location = 4) out vec4  PS_Color;
 layout (location = 5) out uint  PS_MaterialID;
 layout (location = 6) out vec4  PS_UVOffset;
 
-layout(push_constant) uniform SceneDataBuffer
+layout(push_constant) uniform SceneDataBuffer 
 {
-    int	 MeshBufferIndex;
-	mat4 Projection;
-	mat4 View;
-	vec3 CameraPosition;
-}sceneData;
+    int MeshBufferIndex;
+    mat4 Projection;
+    mat4 View;
+    vec3  ViewDirection;
+    vec3 CameraPosition;
+    int   UseHeightMap;
+    float HeightScale;
+} sceneData;
 
 struct Vertex2D
 {

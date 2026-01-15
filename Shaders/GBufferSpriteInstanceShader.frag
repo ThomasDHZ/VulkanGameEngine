@@ -42,84 +42,101 @@ layout(push_constant) uniform SceneDataBuffer
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
+    vec3  ViewDirection;
     vec3 CameraPosition;
     int   UseHeightMap;
     float HeightScale;
 } sceneData;
 
-mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
-    vec3 dp1   = dFdx(worldPos);
-    vec3 dp2   = dFdy(worldPos);
-    vec2 duv1  = dFdx(uv);
-    vec2 duv2  = dFdy(uv);
+mat3 TBN = mat3(
+    vec3(1.0, 0.0, 0.0),   // Tangent   (along X/UV.x)
+    vec3(0.0, 1.0, 0.0),   // Bitangent (along Y/UV.y)
+    vec3(0.0, 0.0, 1.0)    // Normal    (+Z)
+);
 
-    vec3 N = vec3(0.0, 0.0, 1.0);
-
-    vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
-    vec3 B = -normalize(cross(N, T));
-
-    return mat3(T, B, N);
-}
-
-vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx) 
+float ComputeParallaxShadow(vec2 uv, vec3 lightDirTS, uint heightIdx, float currentHeightAtPixel)
 {
-    if (sceneData.UseHeightMap == 0 || sceneData.HeightScale < 0.001 || heightIdx == 0xFFFFFFFFu)
-        return uv;
+    if (sceneData.HeightScale < 0.001f || heightIdx == 0xFFFFFFFFu)
+        return 1.0f;
 
-    const float minLayers = 16.0;
-    const float maxLayers = 96.0;
-    float numLayers = mix(maxLayers, minLayers, max(0.0, viewDirTS.z));
+    vec3 lightTS = normalize(lightDirTS);
+    if (lightTS.z <= 0.0f) return 1.0f;
 
-    float layerDepth = 1.0 / numLayers;
-    float currentLayerDepth = 0.0;
+    const float shadowLayers = 32.0f;
+    vec2 shiftDir = lightTS.xy * sceneData.HeightScale * 0.8f;
+    vec2 deltaUV_light = shiftDir / shadowLayers;
 
-    vec2 P = viewDirTS.xy * (sceneData.HeightScale * max(0.1, viewDirTS.z));
-    vec2 deltaUV = P / numLayers;
+    vec2 shadowUV = uv;
+    float shadowDepth = currentHeightAtPixel;
+    float occlusion = 0.0f;
 
-    vec2 currentUV = uv;
-    float currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).r;
+    for (int i = 0; i < 32; ++i)
+    {
+        shadowUV += deltaUV_light;
+        float sampledHeight = 1.0f - textureLod(TextureMap[heightIdx], shadowUV, 0.0f).r;
+        if (sampledHeight > shadowDepth)
+        {
+            occlusion = 1.0f - (shadowDepth / sampledHeight);
+            break;
+        }
 
-    for (float i = 0.0; i < numLayers; ++i) {
-        if (currentLayerDepth > currentHeight) break;
-        currentUV += deltaUV;
-        currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).r;
-        currentLayerDepth += layerDepth;
+        shadowDepth += (1.0f / shadowLayers) * sceneData.HeightScale;
     }
 
-    vec2 prevUV = currentUV - deltaUV;
-    float afterHeight  = currentHeight - currentLayerDepth;
-    float beforeHeight = textureLod(TextureMap[heightIdx], prevUV, 0.0).r - (currentLayerDepth - layerDepth);
-    float weight = afterHeight / (afterHeight + beforeHeight + 1e-6);
+    return 1.0f - occlusion * 0.7f;
+}
 
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
+{
+    if (sceneData.UseHeightMap == 0) return uv;
+
+    const float minLayers = 16.0f;
+    const float maxLayers = 96.0f;
+    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
+
+    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0f;
+    shiftDirection = clamp(shiftDirection, vec2(-0.06f), vec2(0.06f));
+
+    vec2 deltaUV = shiftDirection / numLayers;
+
+    vec2 currentUV = uv;
+    float currentLayerDepth = 0.0f;
+    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx], currentUV, 0.0f).r;
+
+    for (int i = 0; i < 96; ++i) {
+        currentUV -= deltaUV;
+        currentHeight = 1.0f - textureLod(TextureMap[heightIdx], currentUV, 0.0f).r;
+        currentLayerDepth += 1.0f / numLayers;
+        if (currentLayerDepth >= currentHeight) break;
+    }
+
+    vec2 prevUV = currentUV + deltaUV;
+    float afterHeight = currentHeight - currentLayerDepth;
+    float beforeHeight = 1.0 - textureLod(TextureMap[heightIdx], prevUV, 0.0).r - (currentLayerDepth - 1.0/numLayers);
+
+    // Sharper mix
+    float weight = step(0.5, afterHeight / (afterHeight + beforeHeight + 1e-5));
     vec2 finalUV = mix(currentUV, prevUV, weight);
-    return clamp(finalUV, 0.001, 0.999);
+
+    return clamp(finalUV, 0.01, 0.99);
 }
 
 void main() {
     MaterialProperitiesBuffer material = materialBuffer[PS_MaterialID].materialProperties;
 
     vec2 UV = PS_UV;
-    if (PS_FlipSprite.x == 1)
-        UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
-    if (PS_FlipSprite.y == 1)
-        UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
+    if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
+    if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-    mat3 TBN = CalculateTBN(PS_Position, UV);
+    vec3  viewDirWS = normalize(sceneData.ViewDirection);
+    vec3  viewDirTS = normalize(transpose(TBN) * viewDirWS);
+    vec2  finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.HeightMap);
+    float parallaxShader =  ComputeParallaxShadow(UV, )
 
-    vec3 viewDirWS = normalize(sceneData.CameraPosition - PS_Position);
-    vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
+    vec3 albedo = (material.AlbedoMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap], finalUV, 0.0).rgb : material.Albedo;
+    vec3 normalTS = (material.NormalMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap], finalUV, 0.0).xyz * 2.0 - 1.0 : vec3(0.0, 0.0, 1.0);
 
-    vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.HeightMap);
-
-    vec3 albedo = (material.AlbedoMap != 0xFFFFFFFFu) ?
-        textureLod(TextureMap[material.AlbedoMap], finalUV, 0.0).rgb : material.Albedo;
-
-    vec3 normalTS = (material.NormalMap != 0xFFFFFFFFu) ?
-        textureLod(TextureMap[material.NormalMap], finalUV, 0.0).xyz * 2.0 - 1.0 :
-        vec3(0.0, 0.0, 1.0);
-
-    if (PS_FlipSprite.x == 1)
-        normalTS.x = -normalTS.x;
+    if (PS_FlipSprite.x == 1) normalTS.x = -normalTS.x;
 
     float metallic   = (material.MetallicMap   != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],   finalUV, 0.0).r : material.Metallic;
     float roughness  = (material.RoughnessMap  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.RoughnessMap],  finalUV, 0.0).r : material.Roughness;
@@ -135,7 +152,6 @@ void main() {
     normalWS.xy *= normalStrength;
     normalWS = normalize(normalWS);
 
-    // Output
     PositionDataMap     = vec4(PS_Position, 1.0);
     AlbedoMap           = vec4(albedo, 1.0);
     NormalMap           = vec4(normalWS * 0.5 + 0.5, 1.0);

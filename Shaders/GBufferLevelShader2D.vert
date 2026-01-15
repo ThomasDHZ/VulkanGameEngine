@@ -20,10 +20,12 @@ layout (location = 1) out vec2  PS_UV;
 layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
 layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 
-layout(push_constant) uniform SceneDataBuffer {
+layout(push_constant) uniform SceneDataBuffer 
+{
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
+          vec3  ViewDirection;
     vec3 CameraPosition;
     int   UseHeightMap;
     float HeightScale;

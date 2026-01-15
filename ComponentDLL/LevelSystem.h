@@ -74,8 +74,8 @@ private:
         SharedPtr<Camera> PerspectiveCamera;
 
         int UseHeightMap = 1;
-        float HeightScale = 0.04f;
-        vec3 ViewDirection = vec3(0.136f, 0.2f, 1.0f);
+        float HeightScale = 0.051f;
+        vec3 ViewDirection = vec3(0.086f, -0.111f, 1.0f);
         RenderPassGuid brdfRenderPassId;
         RenderPassGuid irradianceMapRenderPassId;
         RenderPassGuid prefilterMapRenderPassId;

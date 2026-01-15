@@ -14,10 +14,12 @@ layout(location = 1) in vec2 inPS_UV;
 
 layout(location = 0) out vec4 outColor;
 
-layout(push_constant) uniform SceneDataBuffer {
+layout(push_constant) uniform SceneDataBuffer 
+{
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
+    vec3  ViewDirection;
     vec3 CameraPosition;
     int   UseHeightMap;
     float HeightScale;

@@ -67,13 +67,16 @@ layout(binding = 12) uniform samplerCube CubeMap;
 layout(binding = 13) uniform samplerCube IrradianceMap;
 layout(binding = 14) uniform samplerCube PrefilterMap;
 
-layout(push_constant) uniform SceneDataBuffer
+layout(push_constant) uniform SceneDataBuffer 
 {
-    int	 MeshBufferIndex;
-	mat4 Projection;
-	mat4 View;
-	vec3 CameraPosition;
-}sceneData;
+    int MeshBufferIndex;
+    mat4 Projection;
+    mat4 View;
+          vec3  ViewDirection;
+    vec3 CameraPosition;
+    int   UseHeightMap;
+    float HeightScale;
+} sceneData;
 
 struct Vertex2D
 {
