@@ -25,30 +25,32 @@ layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDesc
 layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
 layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MaterialDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = DirectionalLightDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = PointLightDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = TextureDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = PrefilterDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = MeshPropertiesDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = MaterialDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = DirectionalLightDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = PointLightDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = TextureDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = SkyBoxDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = IrradianceCubeMapDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput emissionInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput depthInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput skyBoxInput;
-layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 9)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 10)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 11) uniform sampler2D TextureMap[];
-layout(binding = 12) uniform samplerCube CubeMap;
-layout(binding = 13) uniform samplerCube IrradianceMap;
-layout(binding = 14) uniform samplerCube PrefilterMap;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughAOInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput parallaxUVInfoInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput emissionInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput depthInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput skyBoxInput;
+layout(binding = 8)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 9)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 10)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 11)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 12) uniform sampler2D TextureMap[];
+layout(binding = 13) uniform samplerCube CubeMap;
+layout(binding = 14) uniform samplerCube IrradianceMap;
+layout(binding = 15) uniform samplerCube PrefilterMap;
 
 
 layout(push_constant) uniform GBufferSceneDataBuffer
@@ -116,9 +118,9 @@ vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
 
 float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
 {
-    vec4 matData = subpassLoad(matRoughInput);
+    vec4 parallaxInfo = subpassLoad(parallaxUVInfoInput);
+    float currentHeight = parallaxInfo.z;
 
-    float currentHeight = matData.r;
     if (currentHeight < 0.001f) return 1.0f;
 
     mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
@@ -129,16 +131,19 @@ float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
 
     const int maxSteps = 32;
     const float stepSize = 0.05f;
-
     float shadow = 1.0f;
     vec2 marchUV = screenUV;
     vec2 deltaUV = lightDirTS.xy * stepSize;
     float bias = directionalLightBuffer[lightIndex].directionalLightProperties.ShadowBias * 0.4f;
+
+    float rayHeight = currentHeight;
+
     for (int x = 0; x < maxSteps; ++x)
     {
         marchUV += deltaUV;
-        float marchedHeight = matData.r + bias * float(x);
-        if (marchedHeight > currentHeight + bias * 0.3f)
+        rayHeight += stepSize;
+
+        if (rayHeight > currentHeight + bias * 0.3f)
         {
             shadow *= 0.3f + 0.1f * float(x) / float(maxSteps);
             break;
@@ -150,45 +155,54 @@ float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
 void main()
 {
     vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
-    
+
     float depth = subpassLoad(depthInput).r;
-    if (depth >= 0.99995f) 
+    if (depth >= 0.99995f)
     {
         outColor = vec4(subpassLoad(skyBoxInput).rgb, 1.0);
         return;
     }
 
-    vec3  position = subpassLoad(positionInput).rgb;
-    vec3  albedo = subpassLoad(albedoInput).rgb;
-    vec3  normal = subpassLoad(normalInput).rgb * 2.0f - 1.0f;
-    float metallic = 0.0f;//subpassLoad(matRoughInput, pixelOffset).r;
-    float roughness = 1.0f;//subpassLoad(matRoughInput, pixelOffset).g;
-    float ambientOcclusion = subpassLoad(matRoughInput).b;
-    float height = subpassLoad(matRoughInput).r;
-    vec3  emission = subpassLoad(emissionInput).rgb;
+    vec4 parallaxInfo = subpassLoad(parallaxUVInfoInput);
+    vec2 parallaxOffset = parallaxInfo.xy;
+    float shiftedHeight = parallaxInfo.z;  
 
+    vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
+    vec2 finalUV = screenUV + parallaxOffset;
+
+    vec3 position = subpassLoad(positionInput).rgb;
+    vec3 albedo = subpassLoad(albedoInput).rgb;  // or sample at finalUV if desired
+    float metallic = 0.0f;
+    float roughness = 1.0f;
+    float ambientOcclusion = subpassLoad(matRoughAOInput).b;
+    vec3 emission = subpassLoad(emissionInput).rgb;
+
+    vec3 normal = subpassLoad(normalInput).rgb * 2.0f - 1.0f;
     vec3 N = normalize(normal);
+   
+    mat3 TBN = ReconstructTBN(N);
+   
     vec3 R = reflect(-V, N);
-
     vec3 Lo = vec3(0.0f);
     vec3 F0 = mix(vec3(0.04f), albedo, metallic);
+
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
     {
         const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
-        vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
-
         vec3 L = normalize(light.LightDirection);
         vec3 H = normalize(V + L);
-
         float NdotL = max(dot(N, L), 0.0f);
         if (NdotL <= 0.0f) continue;
 
         float selfShadow = SelfShadow(screenUV, N, int(x));
-        vec3 radiance = light.LightColor * light.LightIntensity * selfShadow;
-        
+        vec3 microNormalWS = N;
+        float microShadow = max(dot(N, L), 0.0f);
+        float combinedShadow = selfShadow * (0.4f + 0.6f * microShadow); 
+
+        vec3 radiance = light.LightColor * light.LightIntensity * combinedShadow;
+
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
-
         vec3 F = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughness);
         vec3 specular = (NDF * G * F) / max(4.0f * max(dot(N, V), 0.0f) * NdotL, 0.0001f);
         vec3 kS = F;
@@ -222,7 +236,7 @@ void main()
         vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallic);
         float NdotL = max(dot(N, L), 0.0f);
 
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+       // Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);

@@ -43,6 +43,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.Roughness = json["Roughness"];
     material.AmbientOcclusion = json["AmbientOcclusion"];
     material.Alpha = json["Alpha"];
+    material.NormalStrength = json["NormalStrength"];
     material.HeightScale = json["HeightScale"];
     material.Height = json["Height"];
     MaterialList.emplace_back(material);
@@ -70,6 +71,7 @@ void MaterialSystem::Update(const float& deltaTime)
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Roughness", material.Roughness);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "AmbientOcclusion", material.AmbientOcclusion);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Alpha", material.Alpha);
+        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "NormalStrength", material.NormalStrength);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "HeightScale", material.HeightScale);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Height", material.Height);
 

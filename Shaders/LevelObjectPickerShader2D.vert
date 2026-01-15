@@ -15,6 +15,8 @@ layout (location = 1)  in vec2  VS_UV;
 layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
 
+#include "MaterialPropertiesBuffer.glsl"
+
 layout(push_constant) uniform SceneDataBuffer 
 {
     int MeshBufferIndex;
@@ -30,29 +32,6 @@ struct MeshProperitiesBuffer
 {
 	int	   MaterialIndex;
 	mat4   MeshTransform;
-};
-
-struct MaterialProperitiesBuffer
-{
-	vec3 Albedo;
-	float Specular;
-	float Metallic;
-	float Roughness;
-	float AmbientOcclusion;
-	vec3 Emission;
-	float Alpha;
-	float HeightScale;
-	float Height;
-
-	uint AlbedoMap;
-	uint SpecularMap;
-	uint MetallicMap;
-	uint RoughnessMap;
-	uint AmbientOcclusionMap;
-	uint NormalMap;
-	uint AlphaMap;
-	uint EmissionMap;
-	uint HeightMap;
 };
 
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];

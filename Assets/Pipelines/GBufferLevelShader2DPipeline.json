@@ -76,7 +76,18 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 4 - Emission (G-buffer write)",
+      "_comment": "Attachment 4 - UV/Height (G-buffer write)",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 5 - Emission (G-buffer write)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

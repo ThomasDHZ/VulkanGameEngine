@@ -5,6 +5,8 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
+#include "MaterialPropertiesBuffer.glsl"
+
 layout (location = 0)   in vec2  VS_SpritePosition;
 layout (location = 1)   in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
 layout (location = 2)   in vec2  VS_SpriteSize;
@@ -39,27 +41,6 @@ struct MeshProperitiesBuffer
 {
 	int	   MaterialIndex;
 	mat4   MeshTransform;
-};
-
-struct MaterialProperitiesBuffer
-{
-	vec3 Albedo;
-	float Metallic;
-	float Roughness;
-	float AmbientOcclusion;
-	vec3 Emission;
-	float Alpha;
-	float HeightScale;
-
-	uint AlbedoMap;
-	uint MetallicRoughnessMap;
-	uint MetallicMap;
-	uint RoughnessMap;
-	uint AmbientOcclusionMap;
-	uint NormalMap;
-	uint AlphaMap;
-	uint EmissionMap;
-	uint HeightMap;
 };
 
 struct Vertex2D

@@ -25,6 +25,7 @@ struct Material
     float Roughness = 0.5f;
     float AmbientOcclusion = 1.0f;
     float Alpha = 1.0f;
+    float NormalStrength = 0.5;
     float HeightScale = 0.04f;
     float Height = 0.0f;
     vec3  Emission = vec3(0.0f);

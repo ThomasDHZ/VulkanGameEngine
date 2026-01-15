@@ -28,6 +28,7 @@
     0.0
   ],
   "Alpha": 1.0,
-  "HeightScale": 0.04,
+  "NormalStrength": 0.5,
+  "HeightScale": 0.051,
   "Height": 0.0
 }

@@ -7,6 +7,7 @@ struct MaterialProperitiesBuffer
 	float AmbientOcclusion;
 	vec3 Emission;
 	float Alpha;
+	float NormalStrength;
 	float HeightScale;
 	float Height;
 

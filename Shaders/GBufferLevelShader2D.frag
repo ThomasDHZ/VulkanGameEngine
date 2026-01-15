@@ -11,8 +11,9 @@ layout(location = 1) in vec2 TexCoords;
 layout(location = 0) out vec4 PositionDataMap;
 layout(location = 1) out vec4 AlbedoMap;
 layout(location = 2) out vec4 NormalMap;
-layout(location = 3) out vec4 MatRoughAOHeightMap;
-layout(location = 4) out vec4 EmissionMap;
+layout(location = 3) out vec4 MatRoughAOMap;
+layout(location = 4) out vec4 ParallaxUVInfoMap;
+layout(location = 5) out vec4 EmissionMap;
 
 #include "Lights.glsl"
 #include "Constants.glsl"
@@ -26,30 +27,32 @@ layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDesc
 layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
 layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MaterialDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = DirectionalLightDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = PointLightDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = TextureDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = PrefilterDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = MeshPropertiesDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = MaterialDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = DirectionalLightDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = PointLightDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = TextureDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = SkyBoxDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = IrradianceCubeMapDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput emissionInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput depthInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput skyBoxInput;
-layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 9)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 10)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 11) uniform sampler2D TextureMap[];
-layout(binding = 12) uniform samplerCube CubeMap;
-layout(binding = 13) uniform samplerCube IrradianceMap;
-layout(binding = 14) uniform samplerCube PrefilterMap;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughAOInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput ParallaxUVInfoInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput emissionInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput depthInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput skyBoxInput;
+layout(binding = 8)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 9)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 10)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 11)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 12) uniform sampler2D TextureMap[];
+layout(binding = 13) uniform samplerCube CubeMap;
+layout(binding = 14) uniform samplerCube IrradianceMap;
+layout(binding = 15) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer 
 {
@@ -124,13 +127,8 @@ void main()
 
     vec2 finalUV = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.HeightMap);
 
-    vec3 albedo = (material.AlbedoMap != 0xFFFFFFFFu) ?
-        textureLod(TextureMap[material.AlbedoMap], finalUV, 0.0).rgb : material.Albedo;
-
-    vec3 normalTS = (material.NormalMap != 0xFFFFFFFFu) ?
-        textureLod(TextureMap[material.NormalMap], finalUV, 0.0).xyz * 2.0 - 1.0 :
-        vec3(0.0, 0.0, 1.0);
-    
+    vec3 albedo = (material.AlbedoMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap], finalUV, 0.0).rgb : material.Albedo;
+    vec3 normalTS = (material.NormalMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap], finalUV, 0.0).xyz * 2.0 - 1.0 : vec3(0.0, 0.0, 1.0);
     float metallic = (material.MetallicMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap], finalUV, 0.0f).r : material.Metallic;
     float roughness = (material.RoughnessMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.RoughnessMap], finalUV, 0.0f).r : material.Roughness;
     float ao = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap], finalUV, 0.0f).r : material.AmbientOcclusion;
@@ -141,13 +139,13 @@ void main()
     if (alpha < 0.5f) discard;
 
     vec3 normalWS = normalize(TBN * normalTS);
-    const float normalStrength = 0.5; 
-    normalWS.xy *= normalStrength;
+    normalWS.xy *= material.NormalStrength;
     normalWS = normalize(normalWS);
     
-    PositionDataMap = vec4(WorldPos, 1.0f);
-    AlbedoMap = vec4(albedo, 1.0f);
-    NormalMap = vec4(normalWS * 0.5f + 0.5f, 1.0f);
-    MatRoughAOHeightMap = vec4(metallic, roughness, ao, height);
-    EmissionMap = vec4(emission, 1.0f);
+    PositionDataMap     = vec4(WorldPos, 1.0f);
+    AlbedoMap           = vec4(albedo, 1.0f);
+    NormalMap           = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    MatRoughAOMap       = vec4(metallic, roughness, ao, 1.0f);
+    ParallaxUVInfoMap   = vec4(finalUV - TexCoords, height, 1.0f);
+    EmissionMap         = vec4(emission, 1.0f);
 }

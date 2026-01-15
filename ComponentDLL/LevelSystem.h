@@ -75,7 +75,7 @@ private:
 
         int UseHeightMap = 1;
         float HeightScale = 0.051f;
-        vec3 ViewDirection = vec3(0.086f, -0.111f, 1.0f);
+        vec3 ViewDirection = vec3(0.037f, -0.062f, 1.0f);
         RenderPassGuid brdfRenderPassId;
         RenderPassGuid irradianceMapRenderPassId;
         RenderPassGuid prefilterMapRenderPassId;
