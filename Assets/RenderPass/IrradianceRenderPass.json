@@ -10,7 +10,7 @@
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
-  "InputTextureList": [ "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7" ],
+  "InputTextureList": [],
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "ffc7c231-b3b8-4f47-98ad-147d45ca6dc0",

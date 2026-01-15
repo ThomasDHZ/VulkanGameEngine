@@ -4,9 +4,10 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
-layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
-layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
+#include "Lights.glsl"
+#include "Constants.glsl"
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl"
 
 layout (location = 0) in vec3  PS_Position;
 layout (location = 1) in vec2  PS_UV;
@@ -22,6 +23,20 @@ layout(location = 2) out vec4 NormalMap;
 layout(location = 3) out vec4 MatRoughAOHeightMap;
 layout(location = 4) out vec4 EmissionMap;
 
+layout(constant_id = 0)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
+layout(constant_id = 1)   const uint DescriptorBindingType8   = MaterialDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType11  = TextureDescriptor;
+layout(constant_id = 3)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
+layout(constant_id = 4)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
+layout(constant_id = 5)  const uint DescriptorBindingType14  = PrefilterDescriptor;
+
+layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 11) uniform sampler2D TextureMap[];
+layout(binding = 12) uniform samplerCube CubeMap;
+layout(binding = 13) uniform samplerCube IrradianceMap;
+layout(binding = 14) uniform samplerCube PrefilterMap;
+
 layout(push_constant) uniform SceneDataBuffer
 {
 	int	 MeshBufferIndex;
@@ -29,13 +44,6 @@ layout(push_constant) uniform SceneDataBuffer
 	mat4 View;
 	vec3 CameraPosition;
 }sceneData;
-
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
-
-layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 mat3 GetTBN() 
 {

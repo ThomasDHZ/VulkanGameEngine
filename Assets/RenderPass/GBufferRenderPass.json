@@ -4,11 +4,12 @@
   "RenderPipelineList": [
     "Pipelines/GBufferSpriteInstancePipeline.json",
     "Pipelines/GBufferLevelShader2DPipeline.json",
+    "Pipelines/SkyBoxPipeline.json",
     "Pipelines/GBufferLightingPipeline.json"
   ],
   "RenderPassWidth": 0,
   "RenderPassHeight": 0,
-  "SubPassCount": 2,
+  "SubPassCount": 3,
   "UseDefaultSwapChainResolution": true,
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
@@ -18,7 +19,7 @@
       "RenderedTextureId": "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -50,7 +51,7 @@
       "RenderedTextureId": "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -82,7 +83,7 @@
       "RenderedTextureId": "f7084167-9c9f-47bf-b1f6-e6723c20c352",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -114,7 +115,7 @@
       "RenderedTextureId": "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -146,7 +147,7 @@
       "RenderedTextureId": "b8de6731-4fd0-4461-b9b9-bdf40c6944d6",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -178,7 +179,7 @@
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "RenderTextureType": 3,
-      "RenderAttachmentTypes": [ 3, 1 ],
+      "RenderAttachmentTypes": [ 3, 1, 1 ],
       "Format": 124,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -190,10 +191,24 @@
       "SamplerCreateInfo": null
     },
     {
+      "RenderedTextureId": "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 4, 0, 1 ],
+      "Format": 97,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false
+    },
+    {
       "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 4, 0 ],
+      "RenderAttachmentTypes": [ 4, 4, 0 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
@@ -225,7 +240,7 @@
       "RenderedTextureId": "f4e743d7-2dbc-4c34-ad54-0ee462e5dad2",
       "MipMapCount": 1,
       "RenderTextureType": 2,
-      "RenderAttachmentTypes": [ 4, 0 ],
+      "RenderAttachmentTypes": [ 4, 4, 0 ],
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 2,
@@ -258,15 +273,24 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1,
-      "DstStageMask": 1024,
+      "SrcStageMask": 8192,
+      "DstStageMask": 1536,
       "SrcAccessMask": 0,
-      "DstAccessMask": 256,
+      "DstAccessMask": 1280,
       "DependencyFlags": 1
     },
     {
       "SrcSubpass": 0,
       "DstSubpass": 1,
+      "SrcStageMask": 1536,
+      "DstStageMask": 128,
+      "SrcAccessMask": 1024,
+      "DstAccessMask": 512,
+      "DependencyFlags": 1
+    },
+    {
+      "SrcSubpass": 0,
+      "DstSubpass": 2,
       "SrcStageMask": 1024,
       "DstStageMask": 128,
       "SrcAccessMask": 256,
@@ -275,6 +299,15 @@
     },
     {
       "SrcSubpass": 1,
+      "DstSubpass": 2,
+      "SrcStageMask": 1024,
+      "DstStageMask": 128,
+      "SrcAccessMask": 256,
+      "DstAccessMask": 16,
+      "DependencyFlags": 1
+    },
+    {
+      "SrcSubpass": 2,
       "DstSubpass": 4294967295,
       "SrcStageMask": 1024,
       "DstStageMask": 8192,
@@ -368,6 +401,22 @@
       "DepthStencil": {
         "depth": 1.0,
         "stencil": 0
+      }
+    },
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 1.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0,
+        "Int32_0": 0,
+        "Int32_1": 0,
+        "Int32_2": 0,
+        "Int32_3": 1065353216,
+        "Uint32_0": 0,
+        "Uint32_1": 0,
+        "Uint32_2": 0,
+        "Uint32_3": 1065353216
       }
     },
     {

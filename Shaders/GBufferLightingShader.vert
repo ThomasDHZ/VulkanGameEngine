@@ -4,6 +4,11 @@
 
 layout(location = 0) out vec2 fragTexCoord;
 
+#include "Lights.glsl"
+#include "Constants.glsl"
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl"
+
 void main() 
 {
     fragTexCoord = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);

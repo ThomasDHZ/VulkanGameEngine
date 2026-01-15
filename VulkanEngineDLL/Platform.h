@@ -7,6 +7,7 @@
 #if defined(__linux__) && !defined(__ANDROID__)
     #define VK_ENABLE_BETA_EXTENSIONS
 #endif
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan.h>
 #include <stdio.h>

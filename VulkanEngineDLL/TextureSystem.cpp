@@ -251,7 +251,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	return texture;
 }
 
-void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture)
+void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture, uint attachmentCount)
 {
 	PrefilterSkyboxTexture skyboxTexture;
 	uint32 cubeMapMipLevels = texture.mipMapLevels;
@@ -266,29 +266,30 @@ void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass,
 			VkImageViewCreateInfo viewInfo = {};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = texture.textureImage;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;  // ? Better
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY; 
 			viewInfo.format = texture.textureByteFormat;
 			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			viewInfo.subresourceRange.baseMipLevel = mip;
 			viewInfo.subresourceRange.levelCount = 1;
 			viewInfo.subresourceRange.baseArrayLayer = 0;
 			viewInfo.subresourceRange.layerCount = 6;
-
 			vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &skyboxTexture.PrefilterAttachmentImageViews[mip]);
 
-			uint32_t mipWidth = texture.width >> mip;
-			uint32_t mipHeight = texture.height >> mip;
+			if (attachmentCount == 1)
+			{
+				uint32_t mipWidth = texture.width >> mip;
+				uint32_t mipHeight = texture.height >> mip;
 
-			VkFramebufferCreateInfo frameBufferInfo = {};
-			frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			frameBufferInfo.renderPass = renderPass;
-			frameBufferInfo.attachmentCount = 1;
-			frameBufferInfo.pAttachments = &skyboxTexture.PrefilterAttachmentImageViews[mip];
-			frameBufferInfo.width = mipWidth;
-			frameBufferInfo.height = mipHeight;
-			frameBufferInfo.layers = 6;  // ? CRITICAL FIX
-
-			vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &skyboxTexture.PrefilterMipFramebufferList[mip]);
+				VkFramebufferCreateInfo frameBufferInfo = {};
+				frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+				frameBufferInfo.renderPass = renderPass;
+				frameBufferInfo.attachmentCount = 1;
+				frameBufferInfo.pAttachments = &skyboxTexture.PrefilterAttachmentImageViews[mip];
+				frameBufferInfo.width = mipWidth;
+				frameBufferInfo.height = mipHeight;
+				frameBufferInfo.layers = 1;
+				vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &skyboxTexture.PrefilterMipFramebufferList[mip]);
+			}
 		}
 	}
 

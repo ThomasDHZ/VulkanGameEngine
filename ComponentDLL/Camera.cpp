@@ -61,8 +61,4 @@ void Camera_PerspectiveUpdate(Camera& camera)
 	const auto 	Aspect = camera.Width / camera.Height;
 	camera.ProjectionMatrix = glm::perspective(glm::radians(90.0f), camera.Width / camera.Height, 0.1f, 10000.0f);
 	camera.ProjectionMatrix[1][1] *= -1;
-
-	shaderSystem.UpdatePushConstantValue<mat4>("skyBoxViewData", "Projection", camera.ProjectionMatrix);
-	shaderSystem.UpdatePushConstantValue<mat4>("skyBoxViewData", "View", camera.ViewMatrix);
-	shaderSystem.UpdatePushConstantValue<vec3>("skyBoxViewData", "CameraPosition", camera.Position);
 }

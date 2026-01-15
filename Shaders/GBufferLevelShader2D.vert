@@ -5,15 +5,20 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = 0;
-layout(constant_id = 1) const uint DescriptorBindingType1 = 1;
-layout(constant_id = 2) const uint DescriptorBindingType2 = 2;
-
 layout (location = 0)  in vec2  VS_Position;
 layout (location = 1)  in vec2  VS_UV;
 
 layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
+
+
+#include "Lights.glsl"
+#include "Constants.glsl"
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl"
+
+layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
+layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 
 layout(push_constant) uniform SceneDataBuffer {
     int MeshBufferIndex;
@@ -23,13 +28,6 @@ layout(push_constant) uniform SceneDataBuffer {
     int   UseHeightMap;
     float HeightScale;
 } sceneData;
-
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
-
-layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
 
 void main()
 {

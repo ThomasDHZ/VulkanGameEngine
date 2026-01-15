@@ -300,6 +300,11 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              );
          }
      }
+
+     std::sort(shaderDescriptorSetBinding.begin(), shaderDescriptorSetBinding.end(),
+         [](const ShaderDescriptorBindingDLL& a, const ShaderDescriptorBindingDLL& b) {
+             return a.Binding < b.Binding;
+         });
  }
 
  void ShaderSystem::LoadShaderDescriptorSets(const SpvReflectShaderModule& module, Vector<ShaderStructDLL>& shaderStructList)

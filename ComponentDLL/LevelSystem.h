@@ -77,15 +77,12 @@ private:
         float HeightScale = 0.04f;
         vec3 ViewDirection = vec3(0.136f, 0.2f, 1.0f);
         RenderPassGuid brdfRenderPassId;
-        //RenderPassGuid directionalShadowRenderPassId;
-        //RenderPassGuid sdfShaderRenderPassId;
-        RenderPassGuid skyBoxRenderPassId;
         RenderPassGuid irradianceMapRenderPassId;
         RenderPassGuid prefilterMapRenderPassId;
         RenderPassGuid gBufferRenderPassId;
-        RenderPassGuid verticalGaussianBlurRenderPassId;
-        RenderPassGuid horizontalGaussianBlurRenderPassId;
-        RenderPassGuid bloomRenderPassId;
+        //RenderPassGuid verticalGaussianBlurRenderPassId;
+        //RenderPassGuid horizontalGaussianBlurRenderPassId;
+        //RenderPassGuid bloomRenderPassId;
         RenderPassGuid hdrRenderPassId;
         RenderPassGuid frameBufferId;
         RenderPassGuid shadowDebugRenderPassId;
@@ -94,9 +91,6 @@ private:
         RenderPassGuid spriteWireFrameRenderPass2DId;
 
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
-        /*DLL_EXPORT void                 RenderDirectionalShadowRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
-        DLL_EXPORT void                 RenderSDFRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);*/
-        DLL_EXPORT void                 RenderSkyBox(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);

@@ -6,6 +6,11 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
+#include "Lights.glsl"
+#include "Constants.glsl"
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl"
+
 layout(constant_id = 0) const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;
 layout(constant_id = 2) const uint VertexAttributeLocation1 = 0;
@@ -21,9 +26,21 @@ layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 
-layout(constant_id = 14) const uint DescriptorBindingType0 = 0; 
-layout(constant_id = 15) const uint DescriptorBindingType1 = 1;
-layout(constant_id = 16) const uint DescriptorBindingType2 = 2;
+layout(constant_id = 14)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
+layout(constant_id = 15)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
+layout(constant_id = 16)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
+layout(constant_id = 17)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
+layout(constant_id = 18)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
+layout(constant_id = 19)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
+layout(constant_id = 20)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
+layout(constant_id = 21)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
+layout(constant_id = 22)   const uint DescriptorBindingType8   = MaterialDescriptor;
+layout(constant_id = 23)   const uint DescriptorBindingType9   = DirectionalLightDescriptor;
+layout(constant_id = 24)   const uint DescriptorBindingType10  = PointLightDescriptor;
+layout(constant_id = 25)   const uint DescriptorBindingType11  = TextureDescriptor;
+layout(constant_id = 26)   const uint DescriptorBindingType12  = SkyBoxDescriptor;
+layout(constant_id = 27)   const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
+layout(constant_id = 28)   const uint DescriptorBindingType14  = PrefilterDescriptor;
 
 layout (location = 0)  in vec2  VS_SpritePosition;
 layout (location = 1)  in vec4  VS_UVOffset; // vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
@@ -55,38 +72,15 @@ struct Vertex2D
 	vec2 UV;
 };
 
-struct MeshProperitiesBuffer
-{
-	int	   MaterialIndex;
-	mat4   MeshTransform;
-};
 
-struct MaterialProperitiesBuffer
-{
-	vec3 Albedo;
-	float Specular;
-	float Metallic;
-	float Roughness;
-	float AmbientOcclusion;
-	vec3 Emission;
-	float Alpha;
-	float HeightScale;
-	float Height;
-
-	uint AlbedoMap;
-	uint SpecularMap;
-	uint MetallicMap;
-	uint RoughnessMap;
-	uint AmbientOcclusionMap;
-	uint NormalMap;
-	uint AlphaMap;
-	uint EmissionMap;
-	uint HeightMap;
-};
-
-layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 9)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 0)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 11) uniform sampler2D TextureMap[];
+layout(binding = 12) uniform samplerCube CubeMap;
+layout(binding = 13) uniform samplerCube IrradianceMap;
+layout(binding = 14) uniform samplerCube PrefilterMap;
 
 void main() 
 {

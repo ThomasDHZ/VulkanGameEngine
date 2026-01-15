@@ -4,8 +4,10 @@
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_debug_printf : enable
 
-#include "Constants.glsl"
 #include "Lights.glsl"
+#include "Constants.glsl"
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl"
 
 const int BrdfMapBinding              = 1;
 const int DirectionalShadowMapBinding = 2;
@@ -16,18 +18,21 @@ layout(location = 0) in vec2 TexCoords;
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outBloom;
 
-layout(constant_id = 0) const uint DescriptorBindingType0 = SubpassInputDescriptor;
-layout(constant_id = 1) const uint DescriptorBindingType1 = SubpassInputDescriptor;
-layout(constant_id = 2) const uint DescriptorBindingType2 = SubpassInputDescriptor;
-layout(constant_id = 3) const uint DescriptorBindingType3 = SubpassInputDescriptor;
-layout(constant_id = 4) const uint DescriptorBindingType4 = SubpassInputDescriptor;
-layout(constant_id = 5) const uint DescriptorBindingType5 = SubpassInputDescriptor;
-layout(constant_id = 6) const uint DescriptorBindingType6 = TextureDescriptor;
-layout(constant_id = 7) const uint DescriptorBindingType7 = DirectionalLightDescriptor;
-layout(constant_id = 8) const uint DescriptorBindingType8 = PointLightDescriptor;
-layout(constant_id = 9) const uint DescriptorBindingType9 = SkyBoxDescriptor;
-layout(constant_id = 10) const uint DescriptorBindingType10 = IrradianceCubeMapDescriptor;
-layout(constant_id = 11) const uint DescriptorBindingType11 = PrefilterDescriptor;
+layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
+layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
+layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
+layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
+layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
+layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
+layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = MaterialDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = DirectionalLightDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = PointLightDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = TextureDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
@@ -35,14 +40,16 @@ layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput
 layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughInput;
 layout(input_attachment_index = 4, binding = 4) uniform subpassInput emissionInput;
 layout(input_attachment_index = 5, binding = 5) uniform subpassInput depthInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput skyBoxInput;
+layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 9)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 10)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 11) uniform sampler2D TextureMap[];
+layout(binding = 12) uniform samplerCube CubeMap;
+layout(binding = 13) uniform samplerCube IrradianceMap;
+layout(binding = 14) uniform samplerCube PrefilterMap;
 
-layout(binding = 6) uniform sampler2D TextureMap[];
-layout(binding = 7) buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 8) buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-
-layout(binding = 9) uniform samplerCube CubeMap;
-layout(binding = 10) uniform samplerCube IrradianceMap;
-layout(binding = 11) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -143,7 +150,13 @@ float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
 void main()
 {
     vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
-    vec3 skyColor = SampleSkyboxViewDependent(V);
+    
+    float depth = subpassLoad(depthInput).r;
+    if (depth >= 0.99995f) 
+    {
+        outColor = vec4(subpassLoad(skyBoxInput).rgb, 1.0);
+        return;
+    }
 
     vec3  position = subpassLoad(positionInput).rgb;
     vec3  albedo = subpassLoad(albedoInput).rgb;
@@ -153,7 +166,6 @@ void main()
     float ambientOcclusion = subpassLoad(matRoughInput).b;
     float height = subpassLoad(matRoughInput).r;
     vec3  emission = subpassLoad(emissionInput).rgb;
-    float depth = subpassLoad(depthInput).r;
 
     vec3 N = normalize(normal);
     vec3 R = reflect(-V, N);
@@ -228,7 +240,6 @@ void main()
     vec3 ambient = emission + (kD * diffuse + specular) * ambientOcclusion;
 
     vec3 color = ambient + Lo;
-   // color = mix(skyColor * 0.4f, color, clamp(subpassLoad(depthInput).r * 1.2f, 0.0, 1.0));
     outColor = vec4(color, 1.0f);
 
     vec3 bloomColor = max(vec3(0.0f), color - vec3(1.0f));

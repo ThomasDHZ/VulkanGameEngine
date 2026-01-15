@@ -6,13 +6,12 @@
     "Shaders/SkyBoxShaderFrag.spv"
   ],
   "VertexType": 0,
-  "SubPassId": 0,
+  "SubPassId": 1,
   "UseDynamicColorWrite": false,
   "ViewportList": [],
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "_comment": "Attachment 0 - Final Color (e.g., swapchain)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -54,9 +53,9 @@
   },
   "PipelineDepthStencilStateCreateInfo": {
     "sType": 25,
-    "depthTestEnable": true,
+    "depthTestEnable": false,
     "depthWriteEnable": false,
-    "depthCompareOp": 3,
+    "depthCompareOp": 2,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {
@@ -78,7 +77,7 @@
       "reference": 0
     },
     "minDepthBounds": 0.0,
-    "maxDepthBounds": 0.0,
+    "maxDepthBounds": 1.0,
     "flags": 0
   },
   "PipelineInputAssemblyStateCreateInfo": {
