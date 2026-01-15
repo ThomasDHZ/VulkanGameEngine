@@ -80,9 +80,9 @@ private:
         RenderPassGuid irradianceMapRenderPassId;
         RenderPassGuid prefilterMapRenderPassId;
         RenderPassGuid gBufferRenderPassId;
-        //RenderPassGuid verticalGaussianBlurRenderPassId;
-        //RenderPassGuid horizontalGaussianBlurRenderPassId;
-        //RenderPassGuid bloomRenderPassId;
+        RenderPassGuid verticalGaussianBlurRenderPassId;
+        RenderPassGuid horizontalGaussianBlurRenderPassId;
+        RenderPassGuid bloomRenderPassId;
         RenderPassGuid hdrRenderPassId;
         RenderPassGuid frameBufferId;
         RenderPassGuid shadowDebugRenderPassId;

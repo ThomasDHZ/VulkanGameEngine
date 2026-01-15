@@ -228,9 +228,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", ivec2(128, 128));
     prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", ivec2(128, 128));
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-  /*  verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+    verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
-    bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));*/
+    bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
     
@@ -244,9 +244,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
       RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
-      //RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
-      //RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
-      //RenderBloomPass(commandBuffer, bloomRenderPassId);
+      RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
+      RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
+      RenderBloomPass(commandBuffer, bloomRenderPassId);
       RenderHdrPass(commandBuffer, hdrRenderPassId);
       RenderFrameBuffer(commandBuffer, frameBufferId);
 
