@@ -116,7 +116,7 @@ vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
     return textureLod(CubeMap, skyDir, lod).rgb;
 }
 
-float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
+float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, int lightIndex)
 {
     vec4 parallaxInfo = subpassLoad(parallaxUVInfoInput);
     float currentHeight = parallaxInfo.z;
@@ -132,7 +132,7 @@ float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
     const int maxSteps = 32;
     const float stepSize = 0.05f;
     float shadow = 1.0f;
-    vec2 marchUV = screenUV;
+    vec2 marchUV = finalUV;
     vec2 deltaUV = lightDirTS.xy * stepSize;
     float bias = directionalLightBuffer[lightIndex].directionalLightProperties.ShadowBias * 0.4f;
 
@@ -150,6 +150,43 @@ float SelfShadow(vec2 screenUV, vec3 normalWS, int lightIndex)
         }
     }
     return shadow;
+}
+
+float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight)
+{
+    if (currentHeight < 0.001f) return 1.0f;
+
+    float NdotLTS = dot(lightDirTS, vec3(0,0,1));
+    if (NdotLTS < 0.08f) return 0.5f; // softer threshold for point lights
+
+    const int maxSteps = 24;
+    const float stepSize = 0.035f;
+    const float startOffset = -0.03f;
+    const float shadowBias = 0.015f;
+
+    float shadow = 1.0f;
+    vec2 marchUV = finalUV;
+    vec2 deltaUV = lightDirTS.xy * stepSize;
+
+    float rayHeight = currentHeight + startOffset;
+
+    for (int x = 0; x < maxSteps; ++x)
+    {
+        marchUV += deltaUV;
+        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0))))
+            break;
+
+        rayHeight += stepSize;
+
+        if (rayHeight > currentHeight + shadowBias)
+        {
+            float falloff = float(x) / float(maxSteps);
+            shadow *= 0.45f + 0.55f * (1.0f - falloff);
+            break;
+        }
+    }
+
+    return clamp(shadow, 0.0f, 1.0f);
 }
 
 void main()
@@ -194,7 +231,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0f);
         if (NdotL <= 0.0f) continue;
 
-        float selfShadow = SelfShadow(screenUV, N, int(x));
+        float selfShadow = DirectionalSelfShadow(finalUV, N, int(x));
         vec3 microNormalWS = N;
         float microShadow = max(dot(N, L), 0.0f);
         float combinedShadow = selfShadow * (0.4f + 0.6f * microShadow); 
@@ -213,30 +250,36 @@ void main()
     for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
     {
         const PointLightBuffer light = pointLightBuffer[x].pointLightProperties;
-
         vec3 toLight = light.LightPosition - position;
         float distance = length(toLight);
-
         if (distance > light.LightRadius) continue;
 
         vec3 L = normalize(toLight);
         vec3 H = normalize(V + L);
+        float NdotL = max(dot(N, L), 0.0f);
+        if (NdotL <= 0.0f) continue;
 
         float attenuation = 1.0f - (distance / light.LightRadius);
         attenuation = max(attenuation, 0.0f);
         attenuation *= attenuation;
 
-        vec3 radiance = light.LightColor * light.LightIntensity * attenuation;
+        vec3 lightDirTS = normalize(transpose(ReconstructTBN(N)) * L);
+        float pomSelfShadow = PointSelfShadow(finalUV, lightDirTS, shiftedHeight);
+        
+        float distanceFactor = 1.0 - (distance / light.LightRadius);
+        float softFactor = smoothstep(0.0, 0.2, distanceFactor);
+
+        float combinedShadow = pomSelfShadow * softFactor;
+        vec3 radiance = light.LightColor * light.LightIntensity * attenuation * combinedShadow;
+
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
-
         vec3 F = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughness);
-        vec3 specular = (NDF * G * F) / max(4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f), 0.0001f);
+        vec3 specular = (NDF * G * F) / max(4.0f * max(dot(N, V), 0.0f) * NdotL, 0.0001f);
         vec3 kS = F;
         vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallic);
-        float NdotL = max(dot(N, L), 0.0f);
 
-       // Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
@@ -251,7 +294,7 @@ void main()
 
     vec2 brdf = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0f), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-    vec3 ambient = emission + (kD * diffuse + specular) * ambientOcclusion;
+    vec3 ambient = emission + max((kD * diffuse + specular) * ambientOcclusion, vec3(0.02) * albedo);
 
     vec3 color = ambient + Lo;
     outColor = vec4(color, 1.0f);
