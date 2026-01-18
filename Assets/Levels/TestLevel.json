@@ -22,7 +22,7 @@
     "TextureLoader/AnimeGirl_SpecularTexture.json",
     "TextureLoader/AnimeGirl_SpecularTexture.json",
     "TextureLoader/AnimeGirl_AlphaTexture.json",
-    "TextureLoader/OceanSkyBoxTexture.json"
+    "TextureLoader/LavaCubeMapTexture.json"
   ],
   "LoadMaterials": [
     "Materials/MegaManMaterial.json",

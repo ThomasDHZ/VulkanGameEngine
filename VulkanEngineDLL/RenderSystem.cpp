@@ -100,18 +100,18 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution)
+RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
     renderSystem.RenderPassLoaderJsonMap[renderPassLoader.RenderPassId] = jsonPath;
-   
+
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
         .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
         .InputTextureIdList = renderPassLoader.InputTextureList,
         .ClearValueList = renderPassLoader.ClearValueList,
-        .RenderPassResolution = renderPassResolution,
+        .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassWidth),
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
     };
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
@@ -403,19 +403,9 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
             }
             else
             {
-                if (frameBufferTextureList[y].textureType == TextureType_IrradianceMapTexture ||
-                    frameBufferTextureList[y].textureType == TextureType_PrefilterMapTexture)
-                {
-                    TextureAttachmentList.emplace_back(frameBufferTextureList[y].AttachmentArrayView);
-                }
-                else if (frameBufferTextureList[y].textureType == TextureType_DepthTexture)
-                {
-                    TextureAttachmentList.emplace_back(frameBufferTextureList[y].textureView);
-                }
-                else
-                {
-                    TextureAttachmentList.emplace_back(frameBufferTextureList[y].textureView);
-                }
+                if (frameBufferTextureList[y].textureType == TextureType_PrefilterMapTexture)  TextureAttachmentList.emplace_back(frameBufferTextureList[y].AttachmentArrayView);
+                else if (frameBufferTextureList[y].textureType == TextureType_IrradianceMapTexture)  TextureAttachmentList.emplace_back(frameBufferTextureList[y].RenderedCubeMapView);
+                else TextureAttachmentList.emplace_back(frameBufferTextureList[y].textureView);
             }
         }
 

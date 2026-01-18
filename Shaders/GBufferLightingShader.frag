@@ -221,28 +221,19 @@ void main()
     vec3 position = subpassLoad(positionInput).rgb;
     vec3 albedo = subpassLoad(albedoInput).rgb;
     float metallic = subpassLoad(matRoughAOInput).r;
-    float smoothness = subpassLoad(matRoughAOInput).g;
-
-    float roughness = 1.0 - smoothness;
-    roughness = clamp(roughness * roughness, 0.1, 1.0);
-
+    float roughness = subpassLoad(matRoughAOInput).g;
     float ambientOcclusion = subpassLoad(matRoughAOInput).b;
     vec3 emission = subpassLoad(emissionInput).rgb;
 
-    float sheenTint = 0.5f;
-    float sheenIntensity = 0.4f; 
-    float subsurfaceScatteringStrength = 0.7f; 
-    float subsurfaceScatteringWrap = 0.5f;
-
     vec3 normal = subpassLoad(normalInput).rgb * 2.0f - 1.0f;
     vec3 N = normalize(normal);
-   
-    mat3 TBN = ReconstructTBN(N);
-   
-    vec3 R = reflect(-V, N);
-    vec3 Lo = vec3(0.0f);
-    vec3 F0 = mix(vec3(0.04f), albedo, metallic);
 
+    mat3 TBN = ReconstructTBN(N);
+    vec3 R = reflect(-V, N);
+
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);    // Standard dielectric
+
+    vec3 Lo = vec3(0.0f);
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
     {
         const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
@@ -252,6 +243,7 @@ void main()
         float NdotV = max(dot(N, V), 0.0f);
         float NdotL = max(dot(N, L), 0.0f);
         float LdotH = max(dot(L, H), 0.0f);
+
         if (NdotL <= 0.0f) continue;
 
         float selfShadow = DirectionalSelfShadow(finalUV, N, int(x));
@@ -260,21 +252,24 @@ void main()
         vec3 radiance = light.LightColor * light.LightIntensity * combinedShadow;
 
         float NDF = DistributionGGX(N, H, roughness);
-        float G   = GeometrySmith(N, V, L, roughness);
-        vec3 F    = fresnelSchlickRoughness(NdotV, F0, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = fresnelSchlickRoughness(NdotV, F0, roughness);
         vec3 specular = (NDF * G * F) / max(4.0f * NdotV * NdotL, 0.0001f);
 
         float disneyDiff = DisneyDiffuse(NdotV, NdotL, LdotH, roughness);
         vec3 diffuse = albedo * disneyDiff;
 
-        float NdotL_wrap = max(NdotL + subsurfaceScatteringWrap, 0.0) / (1.0 + subsurfaceScatteringWrap);
-        vec3 subSurfaceScatteringColor = albedo * vec3(1.2, 0.6, 0.4);
-        vec3 subSurfaceScatteringContrib = subSurfaceScatteringColor * subsurfaceScatteringStrength * NdotL_wrap;
+        float subsurfaceStrength = 0.7f;
+        float subsurfaceWrap = 0.5f;
+        float NdotL_wrap = max(NdotL + subsurfaceWrap, 0.0) / (1.0 + subsurfaceWrap);
+        vec3 sssColor = albedo * vec3(1.0, 0.7, 0.6);
+        vec3 sssContrib = sssColor * subsurfaceStrength * NdotL_wrap;
 
-        vec3 baseDiffuse = mix(diffuse, subSurfaceScatteringContrib, subsurfaceScatteringStrength) * (1.0 - metallic);
+        vec3 baseDiffuse = mix(diffuse, sssContrib, subsurfaceStrength) * (1.0 - metallic);
 
-        vec3 sheenColor = mix(vec3(1.0), albedo, 0.5); 
-        float sheenFactor = pow(1.0 - NdotV, 5.0); 
+        float sheenIntensity = 0.4f;
+        vec3 sheenColor = mix(vec3(1.0), albedo, 0.5);
+        float sheenFactor = pow(1.0 - NdotV, 5.0);
         vec3 sheenContrib = sheenColor * sheenIntensity * sheenFactor;
 
         Lo += (baseDiffuse + specular + sheenContrib) * radiance * NdotL;
@@ -315,7 +310,7 @@ void main()
     }
 
     vec3 sheenColor = mix(vec3(1.0), albedo, 0.5);
-    vec3 subSurfaceScatteringColor = albedo * vec3(1.2, 0.6, 0.4);
+    float sheenIntensity = 0.4f;
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
     vec3 kS = F;
@@ -324,19 +319,21 @@ void main()
     vec3 irradiance = texture(IrradianceMap, N).rgb;
     vec3 diffuseIBL = (albedo / PI) * irradiance;
 
-    const float MAX_REFLECTION_LOD = 8.0f;
-    vec3 prefilteredColor = textureLod(PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    float maxLod = textureQueryLevels(PrefilterMap) - 1.0;
+    float lod = roughness * maxLod;
+    lod = clamp(lod, 0.0, maxLod);
+    vec3 prefilteredColor = textureLod(PrefilterMap, R, lod).rgb;
+
     vec2 brdf = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0f), roughness)).rg;
     vec3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
     vec3 iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
-    vec3 iblSSSContrib = subsurfaceScatteringStrength * irradiance * subSurfaceScatteringColor;
 
-    vec3 ambientDiffuse = kD * (diffuseIBL + iblSSSContrib);
-    vec3 ambientSpecular = specularIBL;
-    vec3 ambientSheen = iblSheenContrib;
-    vec3 ambient = emission + (ambientDiffuse + ambientSpecular + ambientSheen) * ambientOcclusion;
+    float subsurfaceStrength = 0.7f;
+    vec3 iblSSSContrib = subsurfaceStrength * irradiance * (albedo * vec3(1.0, 0.7, 0.6));
+
+    vec3 ambient = emission + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion;
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3 color = ambient + Lo;
