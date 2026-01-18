@@ -4,8 +4,8 @@
   "RenderPipelineList": [
     "Pipelines/PrefilterPipeline.json"
   ],
-  "RenderPassWidth": 128,
-  "RenderPassHeight": 128,
+  "RenderPassWidth": 256,
+  "RenderPassHeight": 256,
   "SubPassCount": 1,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,
@@ -14,7 +14,7 @@
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
-      "MipMapCount": 4,
+      "MipMapCount": 8,
       "RenderTextureType": 6,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 97,

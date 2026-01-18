@@ -98,6 +98,10 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0f, 1.0f), 5.0f);
 }
 
+float SchlickWeight(float cosTheta) {
+    return pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
 mat3 ReconstructTBN(vec3 normalWS)
 {
     vec3 N = normalWS;
@@ -189,6 +193,13 @@ float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight)
     return clamp(shadow, 0.0f, 1.0f);
 }
 
+float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
+    float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
+    float lightScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotL, 5.0));
+    float viewScatter  = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotV, 5.0));
+    return (lightScatter * viewScatter) / PI;
+}
+
 void main()
 {
     vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
@@ -208,11 +219,20 @@ void main()
     vec2 finalUV = screenUV + parallaxOffset;
 
     vec3 position = subpassLoad(positionInput).rgb;
-    vec3 albedo = subpassLoad(albedoInput).rgb;  // or sample at finalUV if desired
-    float metallic = 0.0f;
-    float roughness = 1.0f;
+    vec3 albedo = subpassLoad(albedoInput).rgb;
+    float metallic = subpassLoad(matRoughAOInput).r;
+    float smoothness = subpassLoad(matRoughAOInput).g;
+
+    float roughness = 1.0 - smoothness;
+    roughness = clamp(roughness * roughness, 0.1, 1.0);
+
     float ambientOcclusion = subpassLoad(matRoughAOInput).b;
     vec3 emission = subpassLoad(emissionInput).rgb;
+
+    float sheenTint = 0.5f;
+    float sheenIntensity = 0.4f; 
+    float subsurfaceScatteringStrength = 0.7f; 
+    float subsurfaceScatteringWrap = 0.5f;
 
     vec3 normal = subpassLoad(normalInput).rgb * 2.0f - 1.0f;
     vec3 N = normalize(normal);
@@ -228,24 +248,36 @@ void main()
         const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
         vec3 L = normalize(light.LightDirection);
         vec3 H = normalize(V + L);
+
+        float NdotV = max(dot(N, V), 0.0f);
         float NdotL = max(dot(N, L), 0.0f);
+        float LdotH = max(dot(L, H), 0.0f);
         if (NdotL <= 0.0f) continue;
 
         float selfShadow = DirectionalSelfShadow(finalUV, N, int(x));
-        vec3 microNormalWS = N;
-        float microShadow = max(dot(N, L), 0.0f);
-        float combinedShadow = selfShadow * (0.4f + 0.6f * microShadow); 
-
+        float microShadow = NdotL;
+        float combinedShadow = selfShadow * (0.4f + 0.6f * microShadow);
         vec3 radiance = light.LightColor * light.LightIntensity * combinedShadow;
 
         float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = fresnelSchlickRoughness(max(dot(H, V), 0.0f), F0, roughness);
-        vec3 specular = (NDF * G * F) / max(4.0f * max(dot(N, V), 0.0f) * NdotL, 0.0001f);
-        vec3 kS = F;
-        vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallic);
+        float G   = GeometrySmith(N, V, L, roughness);
+        vec3 F    = fresnelSchlickRoughness(NdotV, F0, roughness);
+        vec3 specular = (NDF * G * F) / max(4.0f * NdotV * NdotL, 0.0001f);
 
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        float disneyDiff = DisneyDiffuse(NdotV, NdotL, LdotH, roughness);
+        vec3 diffuse = albedo * disneyDiff;
+
+        float NdotL_wrap = max(NdotL + subsurfaceScatteringWrap, 0.0) / (1.0 + subsurfaceScatteringWrap);
+        vec3 subSurfaceScatteringColor = albedo * vec3(1.2, 0.6, 0.4);
+        vec3 subSurfaceScatteringContrib = subSurfaceScatteringColor * subsurfaceScatteringStrength * NdotL_wrap;
+
+        vec3 baseDiffuse = mix(diffuse, subSurfaceScatteringContrib, subsurfaceScatteringStrength) * (1.0 - metallic);
+
+        vec3 sheenColor = mix(vec3(1.0), albedo, 0.5); 
+        float sheenFactor = pow(1.0 - NdotV, 5.0); 
+        vec3 sheenContrib = sheenColor * sheenIntensity * sheenFactor;
+
+        Lo += (baseDiffuse + specular + sheenContrib) * radiance * NdotL;
     }
     for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
     {
@@ -279,22 +311,33 @@ void main()
         vec3 kS = F;
         vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallic);
 
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+       // Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
+
+    vec3 sheenColor = mix(vec3(1.0), albedo, 0.5);
+    vec3 subSurfaceScatteringColor = albedo * vec3(1.2, 0.6, 0.4);
 
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
     vec3 kS = F;
     vec3 kD = (vec3(1.0f) - kS) * (1.0f - metallic);
 
     vec3 irradiance = texture(IrradianceMap, N).rgb;
-    vec3 diffuse = irradiance * albedo;
+    vec3 diffuseIBL = (albedo / PI) * irradiance;
 
-    const float MAX_REFLECTION_LOD = 4.0f;
+    const float MAX_REFLECTION_LOD = 8.0f;
     vec3 prefilteredColor = textureLod(PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-
     vec2 brdf = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0f), roughness)).rg;
-    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-    vec3 ambient = emission + max((kD * diffuse + specular) * ambientOcclusion, vec3(0.02) * albedo);
+    vec3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
+
+    float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
+    vec3 iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
+    vec3 iblSSSContrib = subsurfaceScatteringStrength * irradiance * subSurfaceScatteringColor;
+
+    vec3 ambientDiffuse = kD * (diffuseIBL + iblSSSContrib);
+    vec3 ambientSpecular = specularIBL;
+    vec3 ambientSheen = iblSheenContrib;
+    vec3 ambient = emission + (ambientDiffuse + ambientSpecular + ambientSheen) * ambientOcclusion;
+    ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3 color = ambient + Lo;
     outColor = vec4(color, 1.0f);

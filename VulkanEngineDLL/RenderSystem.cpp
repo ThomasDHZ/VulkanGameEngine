@@ -328,7 +328,6 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
         }
-        int a = 234;
     }
 
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo;
