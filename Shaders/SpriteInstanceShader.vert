@@ -9,7 +9,7 @@
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(constant_id = 0) const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;

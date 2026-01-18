@@ -41,7 +41,7 @@ layout (location = 4) out vec4  PS_Color;
 layout (location = 5) out uint  PS_MaterialID;
 layout (location = 6) out vec4  PS_UVOffset;
 
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(push_constant) uniform SceneDataBuffer 
 {

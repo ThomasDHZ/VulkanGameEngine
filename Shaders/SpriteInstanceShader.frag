@@ -18,7 +18,7 @@ layout (location = 6) in flat vec4  PS_UVOffset;
 
 layout(location = 0) out vec4 OutputColor;
 
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(push_constant) uniform SceneDataBuffer 
 {

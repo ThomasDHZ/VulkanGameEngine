@@ -7,7 +7,7 @@
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 const int BrdfMapBinding              = 1;
 const int DirectionalShadowMapBinding = 2;
@@ -325,7 +325,7 @@ void main()
        // Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
 
-    vec3 sheenColor = mix(vec3(1.0), albedo, 0.5);
+    vec3  sheenColor = mix(vec3(1.0), albedo, 0.5);
     float sheenIntensity = 0.4f;
 
     vec3  F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);

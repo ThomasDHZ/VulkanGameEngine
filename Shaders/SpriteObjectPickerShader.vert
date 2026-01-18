@@ -5,8 +5,8 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-#include "MaterialPropertiesBuffer.glsl"
-
+#include "MaterialPropertiesBuffer.glsl" 
+ 
 layout (location = 0)   in vec2  VS_SpritePosition;
 layout (location = 1)   in vec4  VS_UVOffset; //vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
 layout (location = 2)   in vec2  VS_SpriteSize;

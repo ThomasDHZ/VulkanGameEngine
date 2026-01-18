@@ -5,7 +5,7 @@
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(location = 0) in vec2 TexCoords;
 layout(location = 0) out vec4 FragColor;

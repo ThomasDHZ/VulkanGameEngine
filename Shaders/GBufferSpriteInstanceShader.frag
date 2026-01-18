@@ -7,7 +7,7 @@
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout (location = 0) in vec3  PS_Position;
 layout (location = 1) in vec2  PS_UV;

@@ -14,7 +14,7 @@ layout(location = 1) in vec2 inPS_UV;
 
 layout(location = 0) out vec4 outColor;
 
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(push_constant) uniform SceneDataBuffer 
 {

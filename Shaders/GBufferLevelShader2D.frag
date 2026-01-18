@@ -18,7 +18,7 @@ layout(location = 5) out vec4 EmissionMap;
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
 layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;

@@ -26,8 +26,8 @@ layout(push_constant) uniform SceneDataBuffer
 } sceneData;
 
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
-
+#include "MaterialPropertiesBuffer.glsl" 
+ 
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 1) uniform sampler2D TextureMap[];
 layout(binding = 2) buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];

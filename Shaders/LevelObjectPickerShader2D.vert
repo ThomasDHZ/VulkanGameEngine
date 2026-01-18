@@ -15,7 +15,7 @@ layout (location = 1)  in vec2  VS_UV;
 layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
 
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(push_constant) uniform SceneDataBuffer 
 {

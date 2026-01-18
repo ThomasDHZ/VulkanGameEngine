@@ -9,19 +9,6 @@ struct Material
     size_t ShaderMaterialBufferIndex = SIZE_MAX;
     int MaterialBufferId;
 
-    VkGuid AlbedoMap = VkGuid();
-    VkGuid MetallicMap = VkGuid();
-    VkGuid RoughnessMap = VkGuid();
-    VkGuid ThicknessMap = VkGuid();
-    VkGuid SubSurfaceScatteringMap = VkGuid();
-    VkGuid SheenMap = VkGuid();
-    VkGuid ClearCoatMap = VkGuid();
-    VkGuid AmbientOcclusionMap = VkGuid();
-    VkGuid NormalMap = VkGuid();
-    VkGuid AlphaMap = VkGuid();
-    VkGuid EmissionMap = VkGuid();
-    VkGuid HeightMap = VkGuid();
-
     vec3 Albedo = vec3(0.8f, 0.8f, 0.8f);
     vec3 SheenColor = vec3(0.9f, 0.9f, 0.95f);
     vec3 SubSurfaceScattering = vec3(1.0f, 0.5f, 0.4f);
@@ -38,6 +25,19 @@ struct Material
     float HeightScale = 0.05f;
     float Height = 0.0f;
     float Alpha = 1.0f;
+
+    VkGuid AlbedoMapId = VkGuid();
+    VkGuid MetallicMapId = VkGuid();
+    VkGuid RoughnessMapId = VkGuid();
+    VkGuid ThicknessMapId = VkGuid();
+    VkGuid SubSurfaceScatteringMapId = VkGuid();
+    VkGuid SheenMapId = VkGuid();
+    VkGuid ClearCoatMapId = VkGuid();
+    VkGuid AmbientOcclusionMapId = VkGuid();
+    VkGuid NormalMapId = VkGuid();
+    VkGuid AlphaMapId = VkGuid();
+    VkGuid EmissionMapId = VkGuid();
+    VkGuid HeightMapId = VkGuid();
 
     Material() = default;
     Material(const Material&) = default;

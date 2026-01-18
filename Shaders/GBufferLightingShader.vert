@@ -7,7 +7,7 @@ layout(location = 0) out vec2 fragTexCoord;
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 
 void main() 
 {

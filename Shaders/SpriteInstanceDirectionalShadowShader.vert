@@ -56,7 +56,7 @@ layout(push_constant) uniform DirectionalLightPushConstant
 }directionalLightPushConstant;
 
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
 #include "Lights.glsl"
 
 layout(binding = 0) buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
