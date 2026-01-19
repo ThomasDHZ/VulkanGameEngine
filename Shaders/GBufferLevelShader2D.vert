@@ -17,15 +17,39 @@ layout (location = 1) out vec2  PS_UV;
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MeshPropertiesDescriptor;
-layout(binding = 8)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(constant_id = 0)   const uint DescriptorBindingType0 = SubpassInputDescriptor;
+layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
+layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
+layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
+layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
+layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
+layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = MeshPropertiesDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = TextureDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = SkyBoxDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
+layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
+
+layout(binding = 9)   buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 13) uniform sampler2D TextureMap[];
+layout(binding = 14) uniform samplerCube CubeMap;
+layout(binding = 15) uniform samplerCube IrradianceMap;
+layout(binding = 16) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer 
 {
     int MeshBufferIndex;
     mat4 Projection;
     mat4 View;
-          vec3  ViewDirection;
+    vec3  ViewDirection;
     vec3 CameraPosition;
     int   UseHeightMap;
     float HeightScale;

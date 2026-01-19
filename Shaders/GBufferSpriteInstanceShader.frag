@@ -7,9 +7,9 @@
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
+#include "MaterialPropertiesBuffer.glsl"
 
-layout (location = 0) in vec3  PS_Position;
+layout (location = 0) in vec3  WorldPos;
 layout (location = 1) in vec2  PS_UV;
 layout (location = 2) in vec2  PS_SpriteSize;
 layout (location = 3) in flat ivec2 PS_FlipSprite;
@@ -17,48 +17,51 @@ layout (location = 4) in vec4  PS_Color;
 layout (location = 5) in flat uint  PS_MaterialID;
 layout (location = 6) in flat vec4  PS_UVOffset;
 
-layout(location = 0) out vec4 PositionDataMap;
-layout(location = 1) out vec4 AlbedoMap;
-layout(location = 2) out vec4 NormalMap;
-layout(location = 3) out vec4 MatRoughAOMap;
-layout(location = 4) out vec4 ParallaxUVInfoMap;
-layout(location = 5) out vec4 EmissionMap;
+layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_UNORM
+layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
+layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
+layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
+layout(location = 5) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
+layout(location = 6) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
 
-layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
-layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
-layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
-layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
-layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MeshPropertiesDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = MaterialDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = DirectionalLightDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = PointLightDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = TextureDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = SkyBoxDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = IrradianceCubeMapDescriptor;
-layout(constant_id = 15)  const uint DescriptorBindingType15  = PrefilterDescriptor;
+layout(constant_id = 14) const uint DescriptorBindingType0   = SubpassInputDescriptor;
+layout(constant_id = 15) const uint DescriptorBindingType1   = SubpassInputDescriptor;
+layout(constant_id = 16) const uint DescriptorBindingType2   = SubpassInputDescriptor;
+layout(constant_id = 17) const uint DescriptorBindingType3   = SubpassInputDescriptor;
+layout(constant_id = 18) const uint DescriptorBindingType4   = SubpassInputDescriptor;
+layout(constant_id = 19) const uint DescriptorBindingType5   = SubpassInputDescriptor;
+layout(constant_id = 20) const uint DescriptorBindingType6   = SubpassInputDescriptor;
+layout(constant_id = 21) const uint DescriptorBindingType7   = SubpassInputDescriptor;
+layout(constant_id = 22) const uint DescriptorBindingType8   = SubpassInputDescriptor;
+layout(constant_id = 23) const uint DescriptorBindingType9   = MeshPropertiesDescriptor;
+layout(constant_id = 24) const uint DescriptorBindingType10  = MaterialDescriptor;
+layout(constant_id = 25) const uint DescriptorBindingType11  = DirectionalLightDescriptor;
+layout(constant_id = 26) const uint DescriptorBindingType12  = PointLightDescriptor;
+layout(constant_id = 27) const uint DescriptorBindingType13  = TextureDescriptor;
+layout(constant_id = 28) const uint DescriptorBindingType14  = SkyBoxDescriptor;
+layout(constant_id = 29) const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
+layout(constant_id = 30) const uint DescriptorBindingType16  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughAOInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput ParallaxUVInfoInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput emissionInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput depthInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput skyBoxInput;
-layout(binding = 8)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 9)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 10)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 11)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 12) uniform sampler2D TextureMap[];
-layout(binding = 13) uniform samplerCube CubeMap;
-layout(binding = 14) uniform samplerCube IrradianceMap;
-layout(binding = 15) uniform samplerCube PrefilterMap;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput parallaxInfoInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput emissionInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput depthInput;
+layout(input_attachment_index = 8, binding = 8) uniform subpassInput skyBoxInput;
+layout(binding = 9)   buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 13) uniform sampler2D TextureMap[];
+layout(binding = 14) uniform samplerCube CubeMap;
+layout(binding = 15) uniform samplerCube IrradianceMap;
+layout(binding = 16) uniform samplerCube PrefilterMap;
 
-layout(push_constant) uniform SceneDataBuffer 
+layout(push_constant) uniform SceneDataBuffer
 {
     int MeshBufferIndex;
     mat4 Projection;
@@ -110,6 +113,18 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
     return clamp(finalUV, 0.01f, 0.99f);
 }
 
+vec2 OctahedronEncode(vec3 normal) 
+{
+    vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
+    return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
+}
+
+float PackTwo8bitsTo16bit(float a, float b)
+{
+    uint packed = packUnorm2x16(vec2(a, b));
+    return float(packed) / 65535.0f;
+}
+
 void main() {
     MaterialProperitiesBuffer material = materialBuffer[PS_MaterialID].materialProperties;
 
@@ -117,30 +132,35 @@ void main() {
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
     if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-    vec3  viewDirWS = normalize(sceneData.ViewDirection);
-    vec3  viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2  finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.HeightMap);
+    vec3 viewDirWS = normalize(sceneData.ViewDirection);
+    vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
+    vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.HeightMap);
 
-    vec4  albedo     = (material.AlbedoMap           != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap],           finalUV, 0.0f)                   : vec4(material.Albedo, 1.0f);
-    vec3  normalTS   = (material.NormalMap           != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap],           finalUV, 0.0f).xyz * 2.0f - 1.0f : vec3(0.0f, 0.0f, 1.0f);
-    float metallic   = (material.MetallicMap         != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap], finalUV, 0.0f).r :material.Metallic;
-    float roughness  = (material.MetallicMap         != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap], finalUV, 0.0f).g : material.Roughness;
-    float ao         = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap], finalUV, 0.0f).r                 : material.AmbientOcclusion;
-    vec3  emission   = (material.EmissionMap         != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap],         finalUV, 0.0f).rgb               : material.Emission;
-    float height     = (material.HeightMap           != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap],           finalUV, 0.0f).r                 : 0.5f;
-    float alpha      = (material.AlphaMap            != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap],            finalUV, 0.0f).r                 : material.Alpha;
+    vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap],                    finalUV, 0.0f)                 : vec4(material.Albedo, material.Alpha);
+    float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],                  finalUV, 0.0f).r               : material.Metallic;
+    float roughness                 = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],                  finalUV, 0.0f).g               : material.Roughness;
+    float thickness                 = (material.ThicknessMap                 != 0xFFFFFFFFu) ? textureLod(TextureMap[material.ThicknessMap],                 finalUV, 0.0f).r               : material.Thickness;
+    vec3  subSurfaceScatteringColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.SubSurfaceScatteringColorMap], finalUV, 0.0f).rgb             : material.SubSurfaceScatteringColor;
+    vec3  sheenColor                = (material.SheenMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.SheenMap],                     finalUV, 0.0f).rgb             : material.SheenColor;
+    float clearcoatTint             = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.ClearCoatMap],                 finalUV, 0.0f).r               : material.ClearcoatTint;
+    float ambientOcclusion          = (material.AmbientOcclusionMap          != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap],          finalUV, 0.0f).r               : material.AmbientOcclusion;
+    vec3  normalMap                 = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap],                    finalUV, 0.0f).xyz * 2.0 - 1.0 : vec3(0.0f, 0.0f, 1.0f) * 2.0 - 1.0;
+    float alpha                     = (material.AlphaMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap],                     finalUV, 0.0f).r               : material.Alpha;
+    vec3  emission                  = (material.EmissionMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap],                  finalUV, 0.0f).rgb             : vec3(0.0f);
+    float height                    = (material.HeightMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap],                    finalUV, 0.0f).r               : material.Height;
 
-    if (PS_FlipSprite.x == 1) normalTS.x = -normalTS.x;
-    if (alpha < 0.01f) discard;
+    if (PS_FlipSprite.x == 1) normalMap.x = -normalMap.x;
+    if (albedo.a < 0.5f) discard;
 
-    vec3 normalWS = normalize(TBN * normalTS);
-    normalWS.xy *= material.NormalStrength;
-    normalWS = normalize(normalWS);
-
-    PositionDataMap     = vec4(PS_Position, 1.0f);
-    AlbedoMap           = albedo;
-    NormalMap           = vec4(normalWS * 0.5f + 0.5f, 1.0f);
-    MatRoughAOMap       = vec4(metallic, roughness, ao, 1.0f);
-    ParallaxUVInfoMap   = vec4(finalUV - UV, height, 1.0f);
-    EmissionMap         = vec4(emission, 1.0f);
+    vec3 normal = normalize(TBN * normalMap);
+    normal.xy *= material.NormalStrength;
+    normal = normalize(normal);
+    
+    outPosition       = vec4(WorldPos, 1.0f);
+    outAlbedo         = albedo;
+    outNormalData     = vec4(OctahedronEncode(normal * 0.5f + 0.5f), height, material.NormalStrength);
+    outPackedMRO      = vec4(PackTwo8bitsTo16bit(metallic, roughness), PackTwo8bitsTo16bit(ambientOcclusion, clearcoatTint), PackTwo8bitsTo16bit(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0f);
+    outPackedSheenSSS = vec4(PackTwo8bitsTo16bit(sheenColor.r, sheenColor.g), PackTwo8bitsTo16bit(sheenColor.b, material.SheenIntensity), PackTwo8bitsTo16bit(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), PackTwo8bitsTo16bit(subSurfaceScatteringColor.b, thickness));
+    outParallaxInfo   = vec4(finalUV - UV, 1.0f, 1.0f);
+    outEmission       = vec4(emission, material.ClearcoatRoughness);
 }
