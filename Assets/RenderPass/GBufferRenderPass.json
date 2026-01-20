@@ -54,7 +54,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0, 4, 1 ],
-      "Format": 37,
+      "Format": 91,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
@@ -64,9 +64,9 @@
       "IsCubeMapAttachment": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 0,
-        "MinFilter": 0,
-        "MipmapMode": 0,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
@@ -77,7 +77,7 @@
         "CompareOp": 7,
         "MinLod": 0.0,
         "MaxLod": 1000.0,
-        "BorderColor": 3,
+        "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
     },
@@ -104,8 +104,8 @@
         "AddressModeV": 2,
         "AddressModeW": 2,
         "MipLodBias": 0.0,
-        "AnisotropyEnable": true,
-        "MaxAnisotropy": 16.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
@@ -182,7 +182,7 @@
     },
     {
       "TextureAttachment": 5,
-      "RenderedTextureId": "cc998bff-1df2-4839-b43f-6b85f7593568",
+      "RenderedTextureId": "30994c6d-772e-4622-b4dd-7f5e6fa475ad",
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0, 4, 1 ],
@@ -215,7 +215,7 @@
     },
     {
       "TextureAttachment": 6,
-      "RenderedTextureId": "30994c6d-772e-4622-b4dd-7f5e6fa475ad",
+      "RenderedTextureId": "cc998bff-1df2-4839-b43f-6b85f7593568",
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0, 4, 1 ],
@@ -280,7 +280,7 @@
       }
     },
     {
-      "TextureAttachment": 8,
+      "TextureAttachment": 0,
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "RenderTextureType": 3,

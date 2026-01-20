@@ -40,11 +40,11 @@ layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescrip
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughAOInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput parallaxUVInfoInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput emissionInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput tempInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput tempInput2;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
 layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
 layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
@@ -223,9 +223,9 @@ void main()
 
     vec3 position = subpassLoad(positionInput).rgb;
     vec3 albedo = subpassLoad(albedoInput).rgb;
-    float metallic = subpassLoad(matRoughAOInput).r;
-    float roughness = subpassLoad(matRoughAOInput).g;
-    float ambientOcclusion = subpassLoad(matRoughAOInput).b;
+    float metallic = subpassLoad(packedMROInput).r;
+    float roughness = subpassLoad(packedMROInput).g;
+    float ambientOcclusion = subpassLoad(packedMROInput).b;
     vec3 emission = subpassLoad(emissionInput).rgb;
 
     float clearcoatStrength   = 0.0;  // 0.0–0.5 typical (how visible the coat is)

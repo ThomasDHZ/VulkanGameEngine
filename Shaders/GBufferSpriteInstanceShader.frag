@@ -9,7 +9,7 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout (location = 0) in vec3  PS_Position;
+layout (location = 0) in vec3  WorldPos;
 layout (location = 1) in vec2  PS_UV;
 layout (location = 2) in vec2  PS_SpriteSize;
 layout (location = 3) in flat ivec2 PS_FlipSprite;
@@ -17,14 +17,14 @@ layout (location = 4) in vec4  PS_Color;
 layout (location = 5) in flat uint  PS_MaterialID;
 layout (location = 6) in flat vec4  PS_UVOffset;
 
-layout(location = 0) out vec4 PositionDataMap;
-layout(location = 1) out vec4 AlbedoMap;
-layout(location = 2) out vec4 NormalMap;
-layout(location = 3) out vec4 MatRoughAOMap;
-layout(location = 4) out vec4 ParallaxUVInfoMap;
-layout(location = 5) out vec4 EmissionMap;
-layout(location = 6) out vec4 TempMap;
-layout(location = 7) out vec4 TempMap2;
+layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_UNORM
+layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
+layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
+layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
+layout(location = 5) out vec4 TempMap;
+layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
 
 layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
 layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
@@ -48,11 +48,11 @@ layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescrip
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughAOInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput parallaxUVInfoInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput emissionInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput tempInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput tempInput2;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
 layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
 layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
@@ -143,12 +143,12 @@ void main() {
     normalWS.xy *= material.NormalStrength;
     normalWS = normalize(normalWS);
 
-    PositionDataMap     = vec4(PS_Position, 1.0f);
-    AlbedoMap           = albedo;
-    NormalMap           = vec4(normalWS * 0.5f + 0.5f, 1.0f);
-    MatRoughAOMap       = vec4(metallic, roughness, ao, 1.0f);
-    ParallaxUVInfoMap   = vec4(finalUV - UV, height, 1.0f);
-    EmissionMap         = vec4(emission, 1.0f);
-    TempMap             = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    TempMap2            = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    outPosition     = vec4(WorldPos, 1.0f);
+    outAlbedo           = albedo;
+    outNormalData           = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    outPackedMRO       = vec4(metallic, roughness, ao, 1.0f);
+    outPackedSheenSSS             = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    TempMap            = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    outParallaxInfo   = vec4(finalUV - PS_UV, height, 1.0f);
+    outEmission         = vec4(emission, 1.0f);
 }
