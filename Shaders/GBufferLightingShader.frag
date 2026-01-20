@@ -67,10 +67,11 @@ layout(push_constant) uniform GBufferSceneDataBuffer
     mat4  InvView;
 } gBufferSceneDataBuffer;
 
-vec2 Unpack8bitPair(float channel)
-{
-    uint packed = uint(round(channel * 65535.0));
-    return unpackUnorm2x16(packed);
+vec2 UnpackTwoHalfUnorm(float packed) {
+    uint combined = uint(packed * 65535.0 + 0.5);
+    uint u_hi = (combined >> 8) & 0xFFu;
+    uint u_lo = combined & 0xFFu;
+    return vec2(float(u_hi) / 255.0, float(u_lo) / 255.0);
 }
 
 vec3 OctahedronDecode(vec2 f)
@@ -232,14 +233,14 @@ void main()
     const vec4 packedMRO = subpassLoad(packedMROInput);
     const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
 
-    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
-    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
-    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = Unpack8bitPair(packedMRO.b);
+    const vec2 unpackMRO_Metallic_Rough                        = UnpackTwoHalfUnorm(packedMRO.r);
+    const vec2 unpackMRO_AO_ClearCoatTint                      = UnpackTwoHalfUnorm(packedMRO.g);
+    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = UnpackTwoHalfUnorm(packedMRO.b);
 
-    const vec2 SheenSSS_SheenColorR_SheenColorG                = Unpack8bitPair(packedSheenSSS.r);
-    const vec2 SheenSSS_SheenColorB_SheenIntensity             = Unpack8bitPair(packedSheenSSS.g);
-    const vec2 SheenSSS_SSSR_SSSG                              = Unpack8bitPair(packedSheenSSS.b);
-    const vec2 SheenSSS_SSSB_Thickness                         = Unpack8bitPair(packedSheenSSS.a);
+    const vec2 SheenSSS_SheenColorR_SheenColorG                = UnpackTwoHalfUnorm(packedSheenSSS.r);
+    const vec2 SheenSSS_SheenColorB_SheenIntensity             = UnpackTwoHalfUnorm(packedSheenSSS.g);
+    const vec2 SheenSSS_SSSR_SSSG                              = UnpackTwoHalfUnorm(packedSheenSSS.b);
+    const vec2 SheenSSS_SSSB_Thickness                         = UnpackTwoHalfUnorm(packedSheenSSS.a);
 
     const vec3  position            = subpassLoad(positionInput).rgb;
     const vec3  albedo              = subpassLoad(albedoInput).rgb;
@@ -247,27 +248,27 @@ void main()
     const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
     const vec3  emission            = subpassLoad(emissionInput).rgb;
 
-     float metallic = unpackMRO_Metallic_Rough.x;
-float roughness = unpackMRO_Metallic_Rough.y;
-float ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
-float clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
-float clearcoatStrength2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.x;
-float clearcoatRoughness2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.y;
-vec3 sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
-float sheenIntensity2 = SheenSSS_SheenColorB_SheenIntensity.y;
-vec3 subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
-float thickness = SheenSSS_SSSB_Thickness.y;
+    float metallic = unpackMRO_Metallic_Rough.x;
+    float roughness = unpackMRO_Metallic_Rough.y;
+    float ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
+    float clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
+    float clearcoatStrength2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.x;
+    float clearcoatRoughness2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.y;
+    vec3 sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
+    float sheenIntensity2 = SheenSSS_SheenColorB_SheenIntensity.y;
+    vec3 subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
+    float thickness = SheenSSS_SSSB_Thickness.y;
 
-vec2 f = (normalData.xy * 2.0) - 1.0;
-vec3 normal = OctahedronDecode(f);
-float normalStrength = normalData.z;  // not used in lighting yet?
+    vec2 f = (normalData.xy * 2.0) - 1.0;
+    vec3 normal = OctahedronDecode(f);
+    float normalStrength = normalData.z;  // not used in lighting yet?
 
-vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
+    vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
 
-vec2 parallaxOffset = parallaxInfo.xy;
-float shiftedHeight = parallaxInfo.z;
-vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
-vec2 finalUV = screenUV + parallaxOffset;
+    vec2 parallaxOffset = parallaxInfo.xy;
+    float shiftedHeight = parallaxInfo.z;
+    vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
+    vec2 finalUV = screenUV + parallaxOffset;
 
 
     float clearcoatStrength   = 0.0;

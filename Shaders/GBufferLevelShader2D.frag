@@ -124,10 +124,11 @@ vec2 OctahedronEncode(vec3 normal)
     return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
 }
 
-float PackTwo8bitsTo16bit(float a, float b)
-{
-    uint packed = packUnorm2x16(vec2(a, b));
-    return float(packed) / 65535.0f;
+float PackTwoHalfUnorm(float hi, float lo) {
+    uint u_hi = uint(hi * 255.0 + 0.5);
+    uint u_lo = uint(lo * 255.0 + 0.5);
+    uint combined = (u_hi << 8) | u_lo;
+    return float(combined) / 65535.0;
 }
 
 void main()
@@ -162,9 +163,9 @@ void main()
 
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedo;
-    outNormalData = vec4((OctahedronEncode(normalWS) * 0.5) + 0.5, material.NormalStrength, height);
-    outPackedMRO = vec4(PackTwo8bitsTo16bit(metallic, roughness), PackTwo8bitsTo16bit(ambientOcclusion, clearcoatTint), PackTwo8bitsTo16bit(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
-    outPackedSheenSSS = vec4(PackTwo8bitsTo16bit(sheenColor.r, sheenColor.g), PackTwo8bitsTo16bit(sheenColor.b, material.SheenIntensity), PackTwo8bitsTo16bit(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), PackTwo8bitsTo16bit(subSurfaceScatteringColor.b, thickness));
+    outNormalData = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    outPackedMRO = vec4(PackTwoHalfUnorm(metallic, roughness), PackTwoHalfUnorm(ambientOcclusion, clearcoatTint), PackTwoHalfUnorm(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
+    outPackedSheenSSS = vec4(PackTwoHalfUnorm(sheenColor.r, sheenColor.g), PackTwoHalfUnorm(sheenColor.b, material.SheenIntensity), PackTwoHalfUnorm(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), PackTwoHalfUnorm(subSurfaceScatteringColor.b, thickness));
     outParallaxInfo = vec4(finalUV - TexCoords, height, 0.0);
     outEmission = vec4(emission, material.ClearcoatRoughness);
 }
