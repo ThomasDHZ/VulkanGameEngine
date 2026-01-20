@@ -34,16 +34,16 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
 	switch (textureChannels)
 	{
-		case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
-		case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
-		case 3: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
-		case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
-		default:
-		{
-			std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
-			detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-			break;
-		}
+	case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
+	case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
+	case 3: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
+	case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+	default:
+	{
+		std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
+		detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+		break;
+	}
 	}
 
 	VkFormat finalFormat = detectedFormat;
@@ -102,13 +102,13 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		TextureList.emplace_back(texture);
 	}
 
-//#ifndef NDEBUG
-//	std::cout << "[TextureDebug] Created Texture:" << texturePath
-//		<< " Texture ID: " << texture.textureId.ToString()
-//		<< " Image: " << texture.textureImage
-//		<< " Format: " << texture.textureByteFormat
-//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
-//#endif
+	//#ifndef NDEBUG
+	//	std::cout << "[TextureDebug] Created Texture:" << texturePath
+	//		<< " Texture ID: " << texture.textureId.ToString()
+	//		<< " Image: " << texture.textureImage
+	//		<< " Format: " << texture.textureByteFormat
+	//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+	//#endif
 
 	return textureLoader.TextureId;
 }
@@ -121,9 +121,9 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	bool hasStencil = (renderAttachmentLoader.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderAttachmentLoader.Format == VK_FORMAT_D24_UNORM_S8_UINT);
 
 	// Base usage flags required for all render pass textures
-	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |                  
-		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |       
-		VK_IMAGE_USAGE_TRANSFER_SRC_BIT | 
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |
+		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	Texture texture = {
@@ -155,7 +155,7 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	else
 	{
 		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; 
+		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 	}
 
@@ -223,12 +223,12 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 				.image = texture.textureImage,
 				.viewType = VK_IMAGE_VIEW_TYPE_CUBE,
 				.format = texture.textureByteFormat,
-				.components = 
-				{ 
-					VK_COMPONENT_SWIZZLE_IDENTITY, 
-					VK_COMPONENT_SWIZZLE_IDENTITY, 
-					VK_COMPONENT_SWIZZLE_IDENTITY, 
-					VK_COMPONENT_SWIZZLE_IDENTITY 
+				.components =
+				{
+					VK_COMPONENT_SWIZZLE_IDENTITY,
+					VK_COMPONENT_SWIZZLE_IDENTITY,
+					VK_COMPONENT_SWIZZLE_IDENTITY,
+					VK_COMPONENT_SWIZZLE_IDENTITY
 				},
 				.subresourceRange =
 					{
@@ -292,21 +292,27 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	{
 		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 
-		VkSamplerCreateInfo samplerInfo = {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = static_cast<float>(texture.mipMapLevels);
-		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
+		if (renderAttachmentLoader.UseSampler)
+		{
+			VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderAttachmentLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
+		}
+		else
+		{
+			VkSamplerCreateInfo samplerInfo =
+			{
+				.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+				.magFilter = VK_FILTER_LINEAR,
+				.minFilter = VK_FILTER_LINEAR,
+				.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+				.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+				.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+				.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+				.minLod = 0.0f,
+				.maxLod = static_cast<float>(texture.mipMapLevels)
+			};
+			VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
+		}
 	}
-
-
-
 	return texture;
 }
 
@@ -325,7 +331,7 @@ void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass,
 			VkImageViewCreateInfo viewInfo = {};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = texture.textureImage;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY; 
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
 			viewInfo.format = texture.textureByteFormat;
 			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			viewInfo.subresourceRange.baseMipLevel = mip;
@@ -479,7 +485,7 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 	{
 		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
-	
+
 	VkImageMemoryBarrier barrier =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -493,7 +499,7 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 			.aspectMask = aspectMask,
 			.baseMipLevel = baseMipLevel,
 			.levelCount = levelCount,
-			.baseArrayLayer = 0, 
+			.baseArrayLayer = 0,
 			.layerCount = VK_REMAINING_ARRAY_LAYERS
 		}
 	};
@@ -511,7 +517,7 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
 	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-			newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
 		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
 		dstAccess = VK_ACCESS_SHADER_READ_BIT;
@@ -519,7 +525,7 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
 	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-			newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
 	{
 		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
 		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
@@ -527,7 +533,7 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
 	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
-			newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
 		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
 		dstAccess = VK_ACCESS_SHADER_READ_BIT;
@@ -614,7 +620,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	VmaAllocationInfo allocOut = {};
 	VmaAllocation allocation = VK_NULL_HANDLE;
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, &allocOut));
-	
+
 	texture.TextureAllocation = allocation;
 	if (textureData.size() > 0)
 	{
@@ -704,7 +710,7 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 
 	if (aspect == 0)
 	{
-		std::cout << "CreateTextureView: imageAspectFlags not set — using auto-detect." << std::endl;
+		std::cout << "CreateTextureView: imageAspectFlags not set ? using auto-detect." << std::endl;
 
 		bool isDepthFormat = (texture.textureByteFormat >= VK_FORMAT_D16_UNORM &&
 			texture.textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
@@ -757,7 +763,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	vkGetPhysicalDeviceFormatProperties(vulkanSystem.PhysicalDevice, texture.textureByteFormat, &formatProperties);
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 	{
-		std::cout << "[TextureSystem WARNING] Format " << texture.textureByteFormat << " does not support linear blitting — mipmaps will be poor quality" << std::endl;
+		std::cout << "[TextureSystem WARNING] Format " << texture.textureByteFormat << " does not support linear blitting ? mipmaps will be poor quality" << std::endl;
 	}
 
 	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();

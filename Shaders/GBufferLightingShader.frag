@@ -26,14 +26,16 @@ layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDesc
 layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
 layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MeshPropertiesDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = MaterialDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = DirectionalLightDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = PointLightDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = TextureDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = SkyBoxDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = IrradianceCubeMapDescriptor;
-layout(constant_id = 15)  const uint DescriptorBindingType15  = PrefilterDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = SubpassInputDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = MeshPropertiesDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = MaterialDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = DirectionalLightDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = PointLightDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = TextureDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = SkyBoxDescriptor;
+layout(constant_id = 16)  const uint DescriptorBindingType16  = IrradianceCubeMapDescriptor;
+layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
@@ -41,17 +43,18 @@ layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput
 layout(input_attachment_index = 3, binding = 3) uniform subpassInput matRoughAOInput;
 layout(input_attachment_index = 4, binding = 4) uniform subpassInput parallaxUVInfoInput;
 layout(input_attachment_index = 5, binding = 5) uniform subpassInput emissionInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput depthInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput skyBoxInput;
-layout(binding = 8)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 9)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 10)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 11)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 12) uniform sampler2D TextureMap[];
-layout(binding = 13) uniform samplerCube CubeMap;
-layout(binding = 14) uniform samplerCube IrradianceMap;
-layout(binding = 15) uniform samplerCube PrefilterMap;
-
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput tempInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput tempInput2;
+layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
+layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
+layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 11)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 12)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 13)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 14) uniform sampler2D TextureMap[];
+layout(binding = 15) uniform samplerCube CubeMap;
+layout(binding = 16) uniform samplerCube IrradianceMap;
+layout(binding = 17) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {

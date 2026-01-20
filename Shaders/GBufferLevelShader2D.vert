@@ -17,8 +17,8 @@ layout (location = 1) out vec2  PS_UV;
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MeshPropertiesDescriptor;
-layout(binding = 8)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(constant_id = 10)   const uint DescriptorBindingType10   = MeshPropertiesDescriptor;
+layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 
 layout(push_constant) uniform SceneDataBuffer 
 {
