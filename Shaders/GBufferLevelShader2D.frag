@@ -5,11 +5,6 @@
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
-
 layout(location = 0) in vec3 WorldPos; 
 layout(location = 1) in vec2 TexCoords;    
 
@@ -18,10 +13,16 @@ layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha             
 layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 6) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
+layout(location = 5) out vec4 TempMap;               //vec4(                                                                                    ) - R16G16B16A16_UNORM
+layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
 
-layout(constant_id = 0)   const uint DescriptorBindingType0 = SubpassInputDescriptor;
+#include "Lights.glsl"
+#include "Constants.glsl"
+#include "MeshPropertiesBuffer.glsl"
+#include "MaterialPropertiesBuffer.glsl" 
+
+layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
 layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
 layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
 layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
@@ -30,32 +31,34 @@ layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDesc
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
 layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = MeshPropertiesDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = TextureDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = SkyBoxDescriptor;
-layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
-layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = SubpassInputDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = MeshPropertiesDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = MaterialDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = DirectionalLightDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = PointLightDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = TextureDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = SkyBoxDescriptor;
+layout(constant_id = 16)  const uint DescriptorBindingType16  = IrradianceCubeMapDescriptor;
+layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
 layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
 layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput parallaxInfoInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput emissionInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput depthInput;
-layout(input_attachment_index = 8, binding = 8) uniform subpassInput skyBoxInput;
-layout(binding = 9)   buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 13) uniform sampler2D TextureMap[];
-layout(binding = 14) uniform samplerCube CubeMap;
-layout(binding = 15) uniform samplerCube IrradianceMap;
-layout(binding = 16) uniform samplerCube PrefilterMap;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
+layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
+layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
+layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 11)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
+layout(binding = 12)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 13)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 14) uniform sampler2D TextureMap[];
+layout(binding = 15) uniform samplerCube CubeMap;
+layout(binding = 16) uniform samplerCube IrradianceMap;
+layout(binding = 17) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer 
 {
@@ -68,24 +71,16 @@ layout(push_constant) uniform SceneDataBuffer
     float HeightScale;
 } sceneData;
 
-//mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
-//    vec3 dp1   = dFdx(worldPos);
-//    vec3 dp2   = dFdy(worldPos);
-//    vec2 duv1  = dFdx(uv);
-//    vec2 duv2  = dFdy(uv);
-//
-//    vec3 N = vec3(0.0f, 0.0f, 1.0f);
-//    vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
-//    vec3 B = -normalize(cross(N, T));
-//
-//    return mat3(T, B, N);
-//}
-
-mat3 TBN = mat3(
-    vec3(1.0, 0.0, 0.0),   // Tangent   (along X/UV.x)
-    vec3(0.0, 1.0, 0.0),   // Bitangent (along Y/UV.y)
-    vec3(0.0, 0.0, 1.0)    // Normal    (+Z)
-);
+mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
+    vec3 dp1 = dFdx(worldPos);
+    vec3 dp2 = dFdy(worldPos);
+    vec2 duv1 = dFdx(uv);
+    vec2 duv2 = dFdy(uv);
+    vec3 N = vec3(0.0f, 0.0f, 1.0f);  
+    vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
+    vec3 B = -normalize(cross(N, T));
+    return mat3(T, B, N);
+}
 
 vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
@@ -96,20 +91,21 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
     const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
-    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
-    vec2 deltaUV = shiftDirection / numLayers;
+vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
+vec2 deltaUV = shiftDirection / numLayers;
 
     vec2 currentUV = uv;
     float currentLayerDepth = 0.0;
     float currentHeight = 1.0 - texture(TextureMap[heightIdx], currentUV).r;
 
-    for (int x = 0; x < 64; ++x)
+    for (int i = 0; i < 64; ++i)
     {
         currentUV -= deltaUV;
         currentHeight = 1.0 -texture(TextureMap[heightIdx], currentUV).r;
         currentLayerDepth += 1.0 / numLayers;
 
-        if (currentLayerDepth >= currentHeight)  break;
+        if (currentLayerDepth >= currentHeight)
+            break;
     }
 
     vec2 prevUV = currentUV + deltaUV;
@@ -128,10 +124,11 @@ vec2 OctahedronEncode(vec3 normal)
     return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
 }
 
-float PackTwo8bitsTo16bit(float a, float b)
-{
-    uint packed = packUnorm2x16(vec2(a, b));
-    return float(packed) / 65535.0f;
+float Pack8bitPair(float high, float low) {
+    uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
+    uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
+    uint combined = (u_high << 8) | u_low;  // high in MSBs, low in LSBs
+    return float(combined) / 65535.0;
 }
 
 void main()
@@ -140,6 +137,7 @@ void main()
     uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
     MaterialProperitiesBuffer material = materialBuffer[matId].materialProperties;
 
+    mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.HeightMap);
@@ -157,17 +155,17 @@ void main()
     vec3  emission                  = (material.EmissionMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap],                  finalUV, 0.0f).rgb             : vec3(0.0f);
     float height                    = (material.HeightMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap],                    finalUV, 0.0f).r               : material.Height;
 
-    if (albedo.a < 0.5f) discard;
+    if (alpha < 0.1) discard; 
 
-    vec3 normal = normalize(TBN * normalMap);
-    normal.xy *= material.NormalStrength;
-    normal = normalize(normal);
-    
-    outPosition       = vec4(WorldPos, 1.0f);
-    outAlbedo         = albedo;
-    outNormalData     = vec4(OctahedronEncode(normal * 0.5f + 0.5f), height, material.NormalStrength);
-    outPackedMRO      = vec4(PackTwo8bitsTo16bit(metallic, roughness), PackTwo8bitsTo16bit(ambientOcclusion, clearcoatTint), PackTwo8bitsTo16bit(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0f);
-    outPackedSheenSSS = vec4(PackTwo8bitsTo16bit(sheenColor.r, sheenColor.g), PackTwo8bitsTo16bit(sheenColor.b, material.SheenIntensity), PackTwo8bitsTo16bit(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), PackTwo8bitsTo16bit(subSurfaceScatteringColor.b, thickness));
-    outParallaxInfo   = vec4(finalUV - TexCoords, 1.0f, 1.0f);
-    outEmission       = vec4(emission, material.ClearcoatRoughness);
+    vec3 normalWS = normalize(TBN * normalMap);
+    normalWS.xy *= material.NormalStrength;
+    normalWS = normalize(normalWS);
+
+    outPosition = vec4(WorldPos, 1.0);
+    outAlbedo = albedo;
+    outNormalData = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
+    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
+    outParallaxInfo = vec4(finalUV - TexCoords, height, 0.0);
+    outEmission = vec4(emission, material.ClearcoatRoughness);
 }

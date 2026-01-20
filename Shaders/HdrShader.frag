@@ -16,7 +16,7 @@ void main()
 {
     vec3 hdrColor = texture(HDRSceneTexture, TexCoords).rgb;
     vec3 finalColor = hdrColor;
-    vec3 mapped = vec3(1.0) - exp(-finalColor * Exposure);
+    vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
     mapped = pow(mapped, vec3(1.0 / Gamma));
     outColor = vec4(mapped, 1.0);
 }

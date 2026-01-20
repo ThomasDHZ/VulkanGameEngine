@@ -11,9 +11,9 @@ struct Material
 
     vec3 Albedo = vec3(0.8f, 0.8f, 0.8f);
     vec3 SheenColor = vec3(0.9f, 0.9f, 0.95f);
-    vec3 SubSurfaceScattering = vec3(1.0f, 0.5f, 0.4f);
+    vec3 SubSurfaceScatteringColor = vec3(1.0f, 0.5f, 0.4f);
     vec3 Emission = vec3(0.0f, 0.0f, 0.0f);
-    vec3 ClearcoatTint = vec3(1.0f, 1.0f, 1.0f);
+    float ClearcoatTint = 1.0f;
     float Metallic = 0.0f;
     float Roughness = 0.6f;
     float AmbientOcclusion = 1.0f;

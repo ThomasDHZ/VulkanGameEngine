@@ -29,9 +29,9 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 
     material.Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]);
     material.SheenColor = vec3(json["SheenColor"][0], json["SheenColor"][1], json["SheenColor"][2]);
-    material.SubSurfaceScattering = vec3(json["SubSurfaceScattering"][0], json["SubSurfaceScattering"][1], json["SubSurfaceScattering"][2]);
+    material.SubSurfaceScatteringColor = vec3(json["SubSurfaceScatteringColor"][0], json["SubSurfaceScatteringColor"][1], json["SubSurfaceScatteringColor"][2]);
     material.Emission = vec3(json["Emission"][0], json["Emission"][1], json["Emission"][2]);
-    material.ClearcoatTint = vec3(json["ClearcoatTint"][0], json["ClearcoatTint"][1], json["ClearcoatTint"][2]);
+    material.ClearcoatTint = json["ClearcoatTint"];
     material.Metallic = json["Metallic"];
     material.Roughness = json["Roughness"];
     material.AmbientOcclusion = json["AmbientOcclusion"];
@@ -48,7 +48,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.MetallicMapId = VkGuid(json["MetallicMapId"].get<std::string>());
     material.RoughnessMapId = VkGuid(json["RoughnessMapId"].get<std::string>());
     material.ThicknessMapId = VkGuid(json["ThicknessMapId"].get<std::string>());
-    material.SubSurfaceScatteringMapId = VkGuid(json["SubSurfaceScatteringMapId"].get<std::string>());
+    material.SubSurfaceScatteringMapId = VkGuid(json["SubSurfaceScatteringColorMapId"].get<std::string>());
     material.SheenMapId = VkGuid(json["SheenMapId"].get<std::string>());
     material.ClearCoatMapId = VkGuid(json["ClearCoatMapId"].get<std::string>());
     material.AmbientOcclusionMapId = VkGuid(json["AmbientOcclusionMapId"].get<std::string>());
@@ -81,9 +81,9 @@ void MaterialSystem::Update(const float& deltaTime)
         ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Albedo", material.Albedo);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SheenColor", material.SheenColor);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SubSurfaceScattering", material.SubSurfaceScattering);
+        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SubSurfaceScatteringColor", material.SubSurfaceScatteringColor);
         shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Emission", material.Emission);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "ClearcoatTint", material.ClearcoatTint);
+        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ClearcoatTint", material.ClearcoatTint);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Metallic", material.Metallic);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Roughness", material.Roughness);
         shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "AmbientOcclusion", material.AmbientOcclusion);
@@ -99,7 +99,7 @@ void MaterialSystem::Update(const float& deltaTime)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "MetallicMap", MetallicMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "RoughnessMap", RoughnessMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ThicknessMap", ThicknessMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringMap", SubSurfaceScatteringMapId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringColorMap", SubSurfaceScatteringMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SheenMap", SheenMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ClearCoatMap", ClearCoatMapId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AmbientOcclusionMap", AmbientOcclusionMapId);
