@@ -75,11 +75,9 @@ vec2 Unpack8bitPair(float channel)
 
 vec3 OctahedronDecode(vec2 f)
 {
-    f = f * 2.0 - 1.0;
-
     vec3 n;
     n.xy = f.xy;
-    n.z  = 1.0 - abs(f.x) - abs(f.y);
+    n.z = 1.0 - abs(f.x) - abs(f.y);
     n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
     return normalize(n);
 }
@@ -299,7 +297,7 @@ vec2 finalUV = screenUV + parallaxOffset;
         float selfShadow = DirectionalSelfShadow(finalUV, N, int(x));
         float microShadow = NdotL;
         float combinedShadow = selfShadow * (0.4f + 0.6f * microShadow);
-        vec3 radiance = light.LightColor * light.LightIntensity * combinedShadow;
+        vec3 radiance = light.LightColor * light.LightIntensity;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
@@ -360,7 +358,7 @@ vec2 finalUV = screenUV + parallaxOffset;
         float softFactor = smoothstep(0.0, 0.2, distanceFactor);
 
         float combinedShadow = pomSelfShadow * softFactor;
-        vec3 radiance = light.LightColor * light.LightIntensity * attenuation * combinedShadow;
+        vec3 radiance = light.LightColor * light.LightIntensity * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
