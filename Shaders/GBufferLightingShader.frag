@@ -67,11 +67,11 @@ layout(push_constant) uniform GBufferSceneDataBuffer
     mat4  InvView;
 } gBufferSceneDataBuffer;
 
-vec2 UnpackTwoHalfUnorm(float packed) {
+vec2 Unpack8bitPair(float packed) {
     uint combined = uint(packed * 65535.0 + 0.5);
-    uint u_hi = (combined >> 8) & 0xFFu;
-    uint u_lo = combined & 0xFFu;
-    return vec2(float(u_hi) / 255.0, float(u_lo) / 255.0);
+    float high = float((combined >> 8) & 0xFFu) / 255.0;
+    float low  = float(combined & 0xFFu) / 255.0;
+    return vec2(high, low);
 }
 
 vec3 OctahedronDecode(vec2 f)
@@ -233,14 +233,14 @@ void main()
     const vec4 packedMRO = subpassLoad(packedMROInput);
     const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
 
-    const vec2 unpackMRO_Metallic_Rough                        = UnpackTwoHalfUnorm(packedMRO.r);
-    const vec2 unpackMRO_AO_ClearCoatTint                      = UnpackTwoHalfUnorm(packedMRO.g);
-    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = UnpackTwoHalfUnorm(packedMRO.b);
+    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
+    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
+    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = Unpack8bitPair(packedMRO.b);
 
-    const vec2 SheenSSS_SheenColorR_SheenColorG                = UnpackTwoHalfUnorm(packedSheenSSS.r);
-    const vec2 SheenSSS_SheenColorB_SheenIntensity             = UnpackTwoHalfUnorm(packedSheenSSS.g);
-    const vec2 SheenSSS_SSSR_SSSG                              = UnpackTwoHalfUnorm(packedSheenSSS.b);
-    const vec2 SheenSSS_SSSB_Thickness                         = UnpackTwoHalfUnorm(packedSheenSSS.a);
+    const vec2 SheenSSS_SheenColorR_SheenColorG                = Unpack8bitPair(packedSheenSSS.r);
+    const vec2 SheenSSS_SheenColorB_SheenIntensity             = Unpack8bitPair(packedSheenSSS.g);
+    const vec2 SheenSSS_SSSR_SSSG                              = Unpack8bitPair(packedSheenSSS.b);
+    const vec2 SheenSSS_SSSB_Thickness                         = Unpack8bitPair(packedSheenSSS.a);
 
     const vec3  position            = subpassLoad(positionInput).rgb;
     const vec3  albedo              = subpassLoad(albedoInput).rgb;
@@ -411,7 +411,7 @@ void main()
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
-    outColor = vec4(metallic, 0.0f, 0.0f, 1.0f);
+    outColor = vec4(color, 1.0f);
 
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
     outBloom = vec4(bloomColor, 1.0f);

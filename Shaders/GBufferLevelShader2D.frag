@@ -13,7 +13,7 @@ layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha             
 layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 TempMap;
+layout(location = 5) out vec4 TempMap;               //vec4(                                                                                    ) - R16G16B16A16_UNORM
 layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
 layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
 
@@ -124,10 +124,10 @@ vec2 OctahedronEncode(vec3 normal)
     return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
 }
 
-float PackTwoHalfUnorm(float hi, float lo) {
-    uint u_hi = uint(hi * 255.0 + 0.5);
-    uint u_lo = uint(lo * 255.0 + 0.5);
-    uint combined = (u_hi << 8) | u_lo;
+float Pack8bitPair(float high, float low) {
+    uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
+    uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
+    uint combined = (u_high << 8) | u_low;  // high in MSBs, low in LSBs
     return float(combined) / 65535.0;
 }
 
@@ -164,8 +164,8 @@ void main()
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedo;
     outNormalData = vec4(normalWS * 0.5f + 0.5f, 1.0f);
-    outPackedMRO = vec4(PackTwoHalfUnorm(metallic, roughness), PackTwoHalfUnorm(ambientOcclusion, clearcoatTint), PackTwoHalfUnorm(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
-    outPackedSheenSSS = vec4(PackTwoHalfUnorm(sheenColor.r, sheenColor.g), PackTwoHalfUnorm(sheenColor.b, material.SheenIntensity), PackTwoHalfUnorm(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), PackTwoHalfUnorm(subSurfaceScatteringColor.b, thickness));
+    outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
+    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
     outParallaxInfo = vec4(finalUV - TexCoords, height, 0.0);
     outEmission = vec4(emission, material.ClearcoatRoughness);
 }
