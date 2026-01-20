@@ -32,7 +32,7 @@ layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDesc
 layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
 layout(constant_id = 9)   const uint DescriptorBindingType9   = SubpassInputDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10   = MeshPropertiesDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = MeshPropertiesDescriptor;
 layout(constant_id = 11)  const uint DescriptorBindingType11  = MaterialDescriptor;
 layout(constant_id = 12)  const uint DescriptorBindingType12  = DirectionalLightDescriptor;
 layout(constant_id = 13)  const uint DescriptorBindingType13  = PointLightDescriptor;
@@ -72,15 +72,13 @@ layout(push_constant) uniform SceneDataBuffer
 } sceneData;
 
 mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
-    vec3 dp1   = dFdx(worldPos);
-    vec3 dp2   = dFdy(worldPos);
-    vec2 duv1  = dFdx(uv);
-    vec2 duv2  = dFdy(uv);
-
-    vec3 N = vec3(0.0f, 0.0f, 1.0f);
+    vec3 dp1 = dFdx(worldPos);
+    vec3 dp2 = dFdy(worldPos);
+    vec2 duv1 = dFdx(uv);
+    vec2 duv2 = dFdy(uv);
+    vec3 N = vec3(0.0f, 0.0f, 1.0f);  
     vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
     vec3 B = -normalize(cross(N, T));
-
     return mat3(T, B, N);
 }
 
@@ -120,40 +118,53 @@ vec2 deltaUV = shiftDirection / numLayers;
     return clamp(finalUV, 0.005, 0.995);
 }
 
+vec2 OctahedronEncode(vec3 normal) 
+{
+    vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
+    return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
+}
+
+float PackTwo8bitsTo16bit(float a, float b)
+{
+    uint packed = packUnorm2x16(vec2(a, b));
+    return float(packed) / 65535.0f;
+}
+
 void main()
 {
     int meshIdx = sceneData.MeshBufferIndex;
     uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
     MaterialProperitiesBuffer material = materialBuffer[matId].materialProperties;
-    
-       mat3 TBN = CalculateTBN(WorldPos, TexCoords);
 
+    mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-
     vec2 finalUV = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.HeightMap);
 
-    vec4  albedo     = (material.AlbedoMap           != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap],           finalUV, 0.0f)                   : vec4(material.Albedo, 1.0f);
-    vec3 normalTS = (material.NormalMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap], finalUV, 0.0).xyz * 2.0 - 1.0 : vec3(0.0, 0.0, 1.0);
-    float metallic   = (material.MetallicMap         != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap], finalUV, 0.0f).r : material.Metallic;
-    float roughness  = (material.MetallicMap         != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap], finalUV, 0.0f).g : material.Roughness;
-    float ao = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap], finalUV, 0.0f).r : material.AmbientOcclusion;
-    vec3 emission = (material.EmissionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap], finalUV, 0.0f).rgb : material.Emission;
-    float height = (material.HeightMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap], finalUV, 0.0f).r : 0.5f;
-    float alpha = (material.AlphaMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap], finalUV, 0.0f).r : material.Alpha;
-    
-    if (alpha < 0.5f) discard;
+    vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap],                    finalUV, 0.0f)                 : vec4(material.Albedo, material.Alpha);
+    float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],                  finalUV, 0.0f).r               : material.Metallic;
+    float roughness                 = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],                  finalUV, 0.0f).g               : material.Roughness;
+    float thickness                 = (material.ThicknessMap                 != 0xFFFFFFFFu) ? textureLod(TextureMap[material.ThicknessMap],                 finalUV, 0.0f).r               : material.Thickness;
+    vec3  subSurfaceScatteringColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(TextureMap[material.SubSurfaceScatteringColorMap], finalUV, 0.0f).rgb             : material.SubSurfaceScatteringColor;
+    vec3  sheenColor                = (material.SheenMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.SheenMap],                     finalUV, 0.0f).rgb             : material.SheenColor;
+    float clearcoatTint             = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.ClearCoatMap],                 finalUV, 0.0f).r               : material.ClearcoatTint;
+    float ambientOcclusion          = (material.AmbientOcclusionMap          != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap],          finalUV, 0.0f).r               : material.AmbientOcclusion;
+    vec3  normalMap                 = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap],                    finalUV, 0.0f).xyz * 2.0 - 1.0 : vec3(0.0f, 0.0f, 1.0f) * 2.0 - 1.0;
+    float alpha                     = (material.AlphaMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap],                     finalUV, 0.0f).r               : material.Alpha;
+    vec3  emission                  = (material.EmissionMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap],                  finalUV, 0.0f).rgb             : vec3(0.0f);
+    float height                    = (material.HeightMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap],                    finalUV, 0.0f).r               : material.Height;
 
-    vec3 normalWS = normalize(TBN * normalTS);
+    if (alpha < 0.1) discard; 
+
+    vec3 normalWS = normalize(TBN * normalMap);
     normalWS.xy *= material.NormalStrength;
     normalWS = normalize(normalWS);
-    
-    outPosition     = vec4(WorldPos, 1.0f);
-    outAlbedo           = albedo;
-    outNormalData           = vec4(normalWS * 0.5f + 0.5f, 1.0f);
-    outPackedMRO       = vec4(metallic, roughness, ao, 1.0f);
-    outPackedSheenSSS             = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    TempMap            = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    outParallaxInfo   = vec4(finalUV - TexCoords, height, 1.0f);
-    outEmission         = vec4(emission, 1.0f);
+
+    outPosition = vec4(WorldPos, 1.0);
+    outAlbedo = albedo;
+    outNormalData = vec4((OctahedronEncode(normalWS) * 0.5) + 0.5, material.NormalStrength, height);
+    outPackedMRO = vec4(PackTwo8bitsTo16bit(metallic, roughness), PackTwo8bitsTo16bit(ambientOcclusion, clearcoatTint), PackTwo8bitsTo16bit(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
+    outPackedSheenSSS = vec4(PackTwo8bitsTo16bit(sheenColor.r, sheenColor.g), PackTwo8bitsTo16bit(sheenColor.b, material.SheenIntensity), PackTwo8bitsTo16bit(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), PackTwo8bitsTo16bit(subSurfaceScatteringColor.b, thickness));
+    outParallaxInfo = vec4(finalUV - TexCoords, height, 0.0);
+    outEmission = vec4(emission, material.ClearcoatRoughness);
 }

@@ -58,13 +58,31 @@ layout(binding = 17) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
-    vec2  InvertResolution;
-    vec3  ViewDirection;
+    vec2  InvertResolution; 
+    vec3  PerspectiveViewDirection;
+    vec3  OrthographicCameraPosition;
     uint  DirectionalLightCount;
     uint  PointLightCount;
     mat4  InvProjection;
     mat4  InvView;
 } gBufferSceneDataBuffer;
+
+vec2 Unpack8bitPair(float channel)
+{
+    uint packed = uint(round(channel * 65535.0));
+    return unpackUnorm2x16(packed);
+}
+
+vec3 OctahedronDecode(vec2 f)
+{
+    f = f * 2.0 - 1.0;
+
+    vec3 n;
+    n.xy = f.xy;
+    n.z  = 1.0 - abs(f.x) - abs(f.y);
+    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
+    return normalize(n);
+}
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -205,39 +223,65 @@ float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
 
 void main()
 {
-    vec3 V = normalize(gBufferSceneDataBuffer.ViewDirection);
 
-    float depth = subpassLoad(depthInput).r;
+    const float depth = subpassLoad(depthInput).r;
     if (depth >= 0.99995f)
     {
         outColor = vec4(subpassLoad(skyBoxInput).rgb, 1.0);
         return;
     }
 
-    vec4 parallaxInfo = subpassLoad(parallaxUVInfoInput);
-    vec2 parallaxOffset = parallaxInfo.xy;
-    float shiftedHeight = parallaxInfo.z;  
+    const vec4 packedMRO = subpassLoad(packedMROInput);
+    const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
 
-    vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
-    vec2 finalUV = screenUV + parallaxOffset;
+    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
+    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
+    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = Unpack8bitPair(packedMRO.b);
 
-    vec3 position = subpassLoad(positionInput).rgb;
-    vec3 albedo = subpassLoad(albedoInput).rgb;
-    float metallic = subpassLoad(packedMROInput).r;
-    float roughness = subpassLoad(packedMROInput).g;
-    float ambientOcclusion = subpassLoad(packedMROInput).b;
-    vec3 emission = subpassLoad(emissionInput).rgb;
+    const vec2 SheenSSS_SheenColorR_SheenColorG                = Unpack8bitPair(packedSheenSSS.r);
+    const vec2 SheenSSS_SheenColorB_SheenIntensity             = Unpack8bitPair(packedSheenSSS.g);
+    const vec2 SheenSSS_SSSR_SSSG                              = Unpack8bitPair(packedSheenSSS.b);
+    const vec2 SheenSSS_SSSB_Thickness                         = Unpack8bitPair(packedSheenSSS.a);
 
-    float clearcoatStrength   = 0.0;  // 0.0–0.5 typical (how visible the coat is)
+    const vec3  position            = subpassLoad(positionInput).rgb;
+    const vec3  albedo              = subpassLoad(albedoInput).rgb;
+    const vec4  normalData          = subpassLoad(normalInput);
+    const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
+    const vec3  emission            = subpassLoad(emissionInput).rgb;
+
+     float metallic = unpackMRO_Metallic_Rough.x;
+float roughness = unpackMRO_Metallic_Rough.y;
+float ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
+float clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
+float clearcoatStrength2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.x;
+float clearcoatRoughness2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.y;
+vec3 sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
+float sheenIntensity2 = SheenSSS_SheenColorB_SheenIntensity.y;
+vec3 subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
+float thickness = SheenSSS_SSSB_Thickness.y;
+
+vec2 f = (normalData.xy * 2.0) - 1.0;
+vec3 normal = OctahedronDecode(f);
+float normalStrength = normalData.z;  // not used in lighting yet?
+
+vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
+
+vec2 parallaxOffset = parallaxInfo.xy;
+float shiftedHeight = parallaxInfo.z;
+vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
+vec2 finalUV = screenUV + parallaxOffset;
+
+
+    float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;
 
-    vec3 normal = subpassLoad(normalInput).rgb * 2.0f - 1.0f;
+    
     vec3 N = normalize(normal);
 
     mat3 TBN = ReconstructTBN(N);
     vec3 R = reflect(-V, N);
 
-    vec3 F0 = mix(vec3(0.04), albedo, metallic);    // Standard dielectric
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);  
 
     vec3 Lo = vec3(0.0f);
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)

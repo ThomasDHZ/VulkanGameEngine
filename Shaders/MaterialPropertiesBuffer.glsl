@@ -1,10 +1,10 @@
 struct MaterialProperitiesBuffer
 {
-    vec3 Albedo;
-    vec3 SheenColor;
-    vec3 SubSurfaceScattering;
-    vec3 Emission;
-    vec3 ClearcoatTint;
+    vec3  Albedo;
+    vec3  SheenColor;
+    vec3  SubSurfaceScatteringColor;
+    vec3  Emission;
+    float ClearcoatTint;
     float Metallic;
     float Roughness;
     float AmbientOcclusion;
@@ -21,7 +21,7 @@ struct MaterialProperitiesBuffer
     uint MetallicMap;
     uint RoughnessMap;
     uint ThicknessMap;
-    uint SubSurfaceScatteringMap;
+    uint SubSurfaceScatteringColorMap;
     uint SheenMap;
     uint ClearCoatMap;
     uint AmbientOcclusionMap;
