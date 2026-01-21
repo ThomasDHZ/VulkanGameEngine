@@ -1,6 +1,8 @@
 {
   "WindowResolution": [ 1920, 1080 ],
   "ShaderSourceDirectory": "../Shaders",
+  "MaterialSourceDirectory": "../Materials",
+  "MaterialDstDirectory": "../Material2",
   "CompilerLocation": "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe",
   "CompilerBuildParams": "--target-env=vulkan1.4 --target-spv=spv1.6",
   "CompiledShaderOutputDirectory": "../Assets/Shaders/"

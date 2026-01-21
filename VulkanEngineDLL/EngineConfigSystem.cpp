@@ -12,6 +12,8 @@
     ConfigSystem::ConfigSystem() : WindowResolution(glm::ivec2(1280, 720)),
     EngineBasePath(),
     ShaderSourceDirectory(EngineBasePath + "../Assets/Shaders"),
+    MaterialSourceDirectory(EngineBasePath + "../Assets/Materials"),
+    MaterialDstDirectory(EngineBasePath + "../Assets/Material2"),
     CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
     CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
     CompiledShaderOutputDirectory("../Assets/Shaders/")

@@ -160,10 +160,11 @@ void main()
     vec3 normalWS = normalize(TBN * normalMap);
     normalWS.xy *= material.NormalStrength;
     normalWS = normalize(normalWS);
+    vec2 encodedNormal = OctahedronEncode(normalWS);
 
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedo;
-    outNormalData = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    outNormalData = vec4((encodedNormal * 0.5f) + 0.5f, 0.0f, 1.0f);
     outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
     outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
     outParallaxInfo = vec4(finalUV - TexCoords, height, 0.0);

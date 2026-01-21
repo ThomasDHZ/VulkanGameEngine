@@ -7,6 +7,7 @@
 #include "MeshSystem.h"
 #include "Mouse.h"
 #include "GameController.h"
+#include "AssetCreatorSystem.h"
 #include <LevelSystem.h>
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
@@ -51,6 +52,7 @@ void GameSystem::StartUp(void* windowHandle)
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
+    assetCreatorSystem.Run();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 

@@ -36,6 +36,7 @@ public:
    
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);
+    DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT VulkanRenderPass              RebuildSwapChain(VulkanRenderPass& vulkanRenderPass, const char* renderPassJsonFilePath, ivec2& renderPassResolution, Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT void                          Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
     DLL_EXPORT void                          GenerateTexture(VkGuid& renderPassId);

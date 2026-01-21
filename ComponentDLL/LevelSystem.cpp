@@ -257,10 +257,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
   void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
   {
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-      VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-      VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
-      VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[2];
-      VulkanPipeline lightingPipeline = renderSystem.FindRenderPipelineList(renderPassId)[3];
+      VulkanPipeline spritePipeline      = renderSystem.FindRenderPipelineList(renderPassId)[0];
+      VulkanPipeline levelPipeline       = renderSystem.FindRenderPipelineList(renderPassId)[1];
+      VulkanPipeline skyboxPipeline      = renderSystem.FindRenderPipelineList(renderPassId)[2];
+      VulkanPipeline lightingPipeline    = renderSystem.FindRenderPipelineList(renderPassId)[3];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
 
       VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
@@ -292,7 +292,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       
       ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
       shaderSystem.UpdatePushConstantValue<vec2>(gBufferSceneDataBuffer, "InvertResolution", vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y)));
-
       shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "OrthographicCameraPosition", OrthographicCamera->Position);
       shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "PerspectiveViewDirection", ViewDirection);
       shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "DirectionalLightCount", lightSystem.DirectionalLightList.size());

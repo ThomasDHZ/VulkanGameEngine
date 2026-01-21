@@ -22,7 +22,7 @@ layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha             
 layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 TempMap;
+layout(location = 5) out vec4 TempMap;               //vec4(                                                                                    ) - R16G16B16A16_UNORM
 layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
 layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
 
@@ -158,10 +158,11 @@ void main() {
     vec3 normalWS = normalize(TBN * normalMap);
     normalWS.xy *= material.NormalStrength;
     normalWS = normalize(normalWS);
+    vec2 encodedNormal = OctahedronEncode(normalWS);
 
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedo;
-    outNormalData = vec4(normalWS * 0.5f + 0.5f, 1.0f);
+    outNormalData = vec4((encodedNormal * 0.5f) + 0.5f, 0.0f, 1.0f);
     outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
     outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
     outParallaxInfo = vec4(finalUV - UV, height, 0.0);

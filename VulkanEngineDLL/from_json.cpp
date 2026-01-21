@@ -88,18 +88,27 @@ namespace nlohmann
     void from_json(const json& j, VkClearValue& clearValue) {
         if (j.contains("Color")) {
             auto& color = j.at("Color");
-            color.at("Int32_0").get_to(clearValue.color.int32[0]);
-            color.at("Int32_1").get_to(clearValue.color.int32[1]);
-            color.at("Int32_2").get_to(clearValue.color.int32[2]);
-            color.at("Int32_3").get_to(clearValue.color.int32[3]);
-            color.at("Float32_0").get_to(clearValue.color.float32[0]);
-            color.at("Float32_1").get_to(clearValue.color.float32[1]);
-            color.at("Float32_2").get_to(clearValue.color.float32[2]);
-            color.at("Float32_3").get_to(clearValue.color.float32[3]);
-            color.at("Uint32_0").get_to(clearValue.color.uint32[0]);
-            color.at("Uint32_1").get_to(clearValue.color.uint32[1]);
-            color.at("Uint32_2").get_to(clearValue.color.uint32[2]);
-            color.at("Uint32_3").get_to(clearValue.color.uint32[3]);
+            if (j.contains("Int32_0")) 
+            {
+                color.at("Int32_0").get_to(clearValue.color.int32[0]);
+                color.at("Int32_1").get_to(clearValue.color.int32[1]);
+                color.at("Int32_2").get_to(clearValue.color.int32[2]);
+                color.at("Int32_3").get_to(clearValue.color.int32[3]);
+            }
+            if (j.contains("Float32_0"))
+            {
+                color.at("Float32_0").get_to(clearValue.color.float32[0]);
+                color.at("Float32_1").get_to(clearValue.color.float32[1]);
+                color.at("Float32_2").get_to(clearValue.color.float32[2]);
+                color.at("Float32_3").get_to(clearValue.color.float32[3]);
+            }
+            if (j.contains("Uint32_0"))
+            {
+                color.at("Uint32_0").get_to(clearValue.color.uint32[0]);
+                color.at("Uint32_1").get_to(clearValue.color.uint32[1]);
+                color.at("Uint32_2").get_to(clearValue.color.uint32[2]);
+                color.at("Uint32_3").get_to(clearValue.color.uint32[3]);
+            }
         }
         else if (j.contains("DepthStencil")) 
         {

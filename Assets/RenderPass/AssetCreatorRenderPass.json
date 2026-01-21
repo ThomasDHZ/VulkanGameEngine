@@ -1,0 +1,239 @@
+{
+  "Name": "AssetCreatorRenderPass",
+  "RenderPassId": "7a0a75fb-69fa-4907-b829-22d91432fdbc",
+  "RenderPipelineList": [
+    "Pipelines/AssetCreatorPipeline.json"
+  ],
+  "RenderPassWidth": 0,
+  "RenderPassHeight": 0,
+  "SubPassCount": 1,
+  "UseDefaultSwapChainResolution": false,
+  "UseCubeMapMultiView": false,
+  "IsRenderedToSwapchain": false,
+  "InputTextureList": [],
+  "RenderAttachmentList": [
+    {
+      "TextureAttachment": 1,
+      "RenderedTextureId": "a1b9565e-2a3e-4605-91ae-c650b9a97c90",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 29,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": true,
+        "MaxAnisotropy": 16.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": 2,
+      "RenderedTextureId": "7b9721cd-7133-4fe5-ac24-6009ad677f6e",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": 3,
+      "RenderedTextureId": "434e63f8-57d3-4c2e-80f7-86bb0f7ff3f6",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": 4,
+      "RenderedTextureId": "1b8bb2b2-bf95-4557-9e7a-243e285fb45a",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": 7,
+      "RenderedTextureId": "0f9cd196-62cc-4ad1-95ca-13af53d93d4d",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 29,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1024,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 0
+    }
+  ],
+  "ClearValueList": [
+    {
+      "TextureAttachment": 0,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 1,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0
+      }
+    },
+    {
+      "TextureAttachment": 2,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 1.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 3,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.5,
+        "Float32_2": 1.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 4,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    }
+  ]
+}

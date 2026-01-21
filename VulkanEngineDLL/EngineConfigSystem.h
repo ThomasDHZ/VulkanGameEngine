@@ -12,6 +12,8 @@ public:
     const ivec2 WindowResolution;
     const String EngineBasePath;
     const String ShaderSourceDirectory;
+    const String MaterialSourceDirectory;
+    const String MaterialDstDirectory;
     const String CompilerLocation;
     const String CompilerBuildParams;
     const String CompiledShaderOutputDirectory;

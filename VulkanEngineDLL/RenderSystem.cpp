@@ -151,6 +151,54 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     return renderPassLoader.RenderPassId;
 }
 
+RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader)
+{
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass
+    {
+        .RenderPassId = renderPassLoader.RenderPassId,
+        .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
+        .InputTextureIdList = renderPassLoader.InputTextureList,
+        .ClearValueList = renderPassLoader.ClearValueList,
+        .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassWidth),
+        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
+    };
+    BuildRenderPass(vulkanRenderPass, renderPassLoader);
+    RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
+
+    for (auto& renderPipeline : renderPassLoader.RenderPipelineList)
+    {
+        nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPipeline.c_str());
+        RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = vulkanRenderPass.SampleCount;
+        renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = vulkanRenderPass.SampleCount;
+        renderPipelineLoader.RenderPassId = vulkanRenderPass.RenderPassId;
+        renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
+        renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
+        renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+
+        VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+        PipelineBindingData(renderPipelineLoader);
+        VkDescriptorPool descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
+        Vector<VkDescriptorSetLayout> descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
+        Vector<VkDescriptorSet> descriptorSetList = AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+        UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
+        VkPipelineLayout pipelineLayout = CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
+        VkPipeline pipeline = CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
+
+        renderSystem.RenderPipelineMap[renderPassLoader.RenderPassId].emplace_back(VulkanPipeline
+            {
+                .RenderPipelineId = renderPipelineLoader.PipelineId,
+                .DescriptorPool = descriptorPool,
+                .DescriptorSetLayoutList = descriptorSetLayoutList,
+                .DescriptorSetList = descriptorSetList,
+                .Pipeline = pipeline,
+                .PipelineLayout = pipelineLayout,
+                .PipelineCache = pipelineCache
+            });
+    }
+    return renderPassLoader.RenderPassId;
+}
+
 void RenderSystem::RecreateSwapchain(void* windowHandle, RenderPassGuid& spriteRenderPass2DGuid, LevelGuid& levelGuid, const float& deltaTime) 
 { 
     vkDeviceWaitIdle(vulkanSystem.Device);

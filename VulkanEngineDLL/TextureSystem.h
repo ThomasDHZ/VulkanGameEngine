@@ -102,6 +102,7 @@ public:
     DLL_EXPORT void                     DestroyTexture(Texture& texture);
     DLL_EXPORT void                     DestroyAllTextures();
     DLL_EXPORT const Vector<Texture>    DepthTextureList();
+    DLL_EXPORT const Vector<Texture>    GetTextureList() { return TextureList; }
 };
 extern DLL_EXPORT TextureSystem& textureSystem;
 inline TextureSystem& TextureSystem::Get()

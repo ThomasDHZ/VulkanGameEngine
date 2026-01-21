@@ -30,13 +30,10 @@
   ],
   "SubpassDependencyList": [
     {
-      "SrcSubpass": 4294967295,
-      "DstSubpass": 0,
-      "SrcStageMask": 1024,
-      "DstStageMask": 1024,
-      "SrcAccessMask": 0,
-      "DstAccessMask": 256,
-      "DependencyFlags": 0
+      "Float32_0": 0.0,
+      "Float32_1": 0.0,
+      "Float32_2": 0.0,
+      "Float32_3": 0.0
     }
   ],
   "ClearValueList": [
