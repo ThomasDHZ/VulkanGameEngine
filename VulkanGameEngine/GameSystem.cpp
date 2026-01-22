@@ -161,11 +161,11 @@ void GameSystem::DebugUpdate(float deltaTime)
 
 void GameSystem::Draw(float deltaTime)
 {
+    assetCreatorSystem.Draw();
     vulkanSystem.StartFrame();
     VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-    //assetCreatorSystem.Draw(commandBuffer);
-    levelSystem.Draw(commandBuffer, deltaTime, assetCreatorSystem.vulkanRenderPass, assetCreatorSystem.vulkanRenderPipeline);
-    ImGui_Draw(commandBuffer, imGuiRenderer);
+    //levelSystem.Draw(commandBuffer, deltaTime, assetCreatorSystem.vulkanRenderPass, assetCreatorSystem.vulkanRenderPipeline);
+    //ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }
 

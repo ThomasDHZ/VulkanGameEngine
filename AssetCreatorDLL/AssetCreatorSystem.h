@@ -28,7 +28,7 @@ public:
     DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture);
     DLL_EXPORT void BuildRenderPass(const String& materialPath);
     DLL_EXPORT void Run(String materialPath);
-    DLL_EXPORT void Draw(VkCommandBuffer commandBuffer);
+    DLL_EXPORT void Draw();
 };
 extern DLL_EXPORT AssetCreatorSystem& assetCreatorSystem;
 inline AssetCreatorSystem& AssetCreatorSystem::Get()

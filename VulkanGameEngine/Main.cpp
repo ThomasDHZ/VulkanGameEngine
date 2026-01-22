@@ -38,7 +38,7 @@ int main()
             const float frameTime = deltaTime.GetFrameTime();
             vulkanWindow->PollEventHandler(vulkanWindow);
 
-            gameSystem.Update(frameTime);
+           // gameSystem.Update(frameTime);
             gameSystem.DebugUpdate(frameTime);
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();

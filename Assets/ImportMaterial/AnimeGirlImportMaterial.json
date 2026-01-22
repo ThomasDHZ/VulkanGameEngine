@@ -10,7 +10,7 @@
   "ClearCoatMap": null,
   "AmbientOcclusionMap": "TextureLoader/AnimeGirl_AOTexture.json",
   "NormalMap": "TextureLoader/AnimeGirl_NormalTexture.json",
-  "AlphaMap": "TextureLoader/AnimeGirl_AlphaTexture.json",
+  "AlphaMap": null,
   "EmissionMap": null,
   "HeightMap": "TextureLoader/AnimeGirl_HeightTexture.json",
   "Albedo": [ 0.8, 0.8, 0.8 ],

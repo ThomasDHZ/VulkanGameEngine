@@ -181,9 +181,9 @@ void AssetCreatorSystem::BuildRenderPass(const String& materialPath)
 
 void AssetCreatorSystem::Run(String materialPath)
 {
-    //const String inDir = configSystem.MaterialSourceDirectory.c_str();
-    //std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
-    //std::filesystem::create_directories(outDir);
+    const String inDir = configSystem.MaterialSourceDirectory.c_str();
+    std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
+    std::filesystem::create_directories(outDir);
 
     //Vector<Material> materialList;
     //Vector<String> ext = { "json" };
@@ -200,49 +200,14 @@ void AssetCreatorSystem::Run(String materialPath)
     //    }
 
         BuildRenderPass(materialPath);
-    /*    Draw();
-        fileSystem.ExportTexture(vulkanRenderPass.RenderPassId);
-    }*/
+        //Draw();
+        //fileSystem.ExportTexture(vulkanRenderPass.RenderPassId);
+    //}
 }
 
-void AssetCreatorSystem::Draw(VkCommandBuffer commandBuffer)
+void AssetCreatorSystem::Draw()
 {
-    const VulkanRenderPass renderPass = vulkanRenderPass;
-    VulkanPipeline pipeline = vulkanRenderPipeline;
-
-    VkViewport viewport
-    {
-        .x = 0.0f,
-        .y = 0.0f,
-        .width = static_cast<float>(renderPass.RenderPassResolution.x),
-        .height = static_cast<float>(renderPass.RenderPassResolution.y),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
-    };
-
-    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = renderPass.RenderPass,
-        .framebuffer = renderPass.FrameBufferList[0],
-        .renderArea = VkRect2D
-        {
-           .offset = VkOffset2D {.x = 0, .y = 0 },
-           .extent = VkExtent2D {.width = static_cast<uint>(vulkanRenderPass.RenderPassResolution.x), .height = static_cast<uint>(vulkanRenderPass.RenderPassResolution.y) }
-        },
-        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-        .pClearValues = renderPass.ClearValueList.data()
-    };
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    vkCmdEndRenderPass(commandBuffer);
-
-  /*  VkCommandBufferBeginInfo beginInfo =
+    VkCommandBufferBeginInfo beginInfo =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
@@ -287,24 +252,17 @@ void AssetCreatorSystem::Draw(VkCommandBuffer commandBuffer)
         .flags = 0
     };
 
+ 
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.PipelineLayout, 0, vulkanRenderPipeline.DescriptorSetList.size(), vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    vkCmdEndRenderPass(commandBuffer);*/
-
-    //vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    //vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-    //vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.Pipeline);
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.PipelineLayout, 0, vulkanRenderPipeline.DescriptorSetList.size(), vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
-    //vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-    //vkCmdEndRenderPass(commandBuffer);
-    //VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
-    //VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
-    //VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
-    //VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
-    //vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+    vkCmdEndRenderPass(commandBuffer);
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
 }
