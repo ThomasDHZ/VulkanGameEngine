@@ -8,6 +8,7 @@ class RenderSystem
 {
 public:
     static RenderSystem& Get();
+    friend class AssetCreatorSystem;
 
 private:
     RenderSystem() = default;
@@ -21,16 +22,16 @@ private:
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
 
-    void RecreateSwapchain(void* windowHandle, RenderPassGuid& renderPassGuid, LevelGuid& levelGuid, const float& deltaTime);
-    void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
-    VkDescriptorPool CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader);
-    Vector<VkDescriptorSetLayout> CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader);
-    Vector<VkDescriptorSet> AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
-    void UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
-    VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
-    VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
-    void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);
-    void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
+    DLL_EXPORT void RecreateSwapchain(void* windowHandle, RenderPassGuid& renderPassGuid, LevelGuid& levelGuid, const float& deltaTime);
+    DLL_EXPORT void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
+    DLL_EXPORT VkDescriptorPool CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader);
+    DLL_EXPORT Vector<VkDescriptorSetLayout> CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader);
+    DLL_EXPORT Vector<VkDescriptorSet> AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
+    DLL_EXPORT  void UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
+    DLL_EXPORT  VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
+    DLL_EXPORT  VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
+    DLL_EXPORT void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);
+    DLL_EXPORT void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
 
 public:
    

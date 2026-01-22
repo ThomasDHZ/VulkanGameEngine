@@ -156,6 +156,8 @@ namespace nlohmann
         j.at("UseSampler").get_to(model.UseSampler);
         j.at("UseMipMaps").get_to(model.UseMipMaps);
         j.at("IsCubeMapAttachment").get_to(model.IsCubeMapAttachment);
+        j.at("IsTextureToExport").get_to(model.IsTextureToExport);
+
         if (model.UseMipMaps &&
             j.contains("MipMapCount"))
         {

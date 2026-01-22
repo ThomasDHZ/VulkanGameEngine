@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="AssetCreatorSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssetCreatorSystem.h">
+    <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AssetCreatorSystem.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

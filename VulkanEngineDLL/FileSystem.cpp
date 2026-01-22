@@ -12,6 +12,9 @@
 #define STBI_NO_STDIO
 #endif
 #include "stb_image.h"
+#include <stb_image_write.h>
+#include "VulkanSystem.h"
+#include "BufferSystem.h"
 
 FileSystem& fileSystem = FileSystem::Get();
 
@@ -138,6 +141,195 @@ Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& 
     Vector<byte> result(data, data + (w * h * 4));
     stbi_image_free(data);
     return result;
+}
+
+void FileSystem::ExportTexture(VkGuid& renderPassId)
+{
+    Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
+
+    int index = 0;
+        std::cout << "[Run] Found " << attachmentTextureList.size() << " rendered textures for RenderPassId " << renderPassId.ToString() << std::endl;
+    for (auto& texture : attachmentTextureList)
+    {
+
+            std::cout << "  [" << 0 << "] VkImage = 0x" << std::hex << texture.textureImage << std::dec
+                << " | " << texture.width << "x" << texture.height
+                << " | channels=" << texture.colorChannels
+                << " | format=" << texture.textureByteFormat
+                << " | layout=" << texture.textureImageLayout << std::endl;
+
+            // Export with unique name so we can see which one is black
+            String fname = "debug_export_" + std::to_string(0) + "_" + std::to_string(texture.width) + "x" + std::to_string(texture.height) + ".png";
+
+        VkDevice device = vulkanSystem.Device;
+        VmaAllocator allocator = bufferSystem.vmaAllocator;
+
+        VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+
+        // ??????????????????????????????????????????????????????????????
+        // 1. Transition image from current layout ? TRANSFER_SRC_OPTIMAL
+        // ??????????????????????????????????????????????????????????????
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = texture.textureImageLayout;
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = texture.textureImage;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        // Choose correct src access mask based on incoming layout
+        if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        {
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        }
+        else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        }
+        else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_GENERAL)
+        {
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        }
+        else
+        {
+            // Fallback for unknown/transitioned layouts (safe but may produce warning)
+            barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+        }
+
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmd,
+            VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,     // broad but safe
+            VK_PIPELINE_STAGE_TRANSFER_BIT,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier);
+
+        // ??????????????????????????????????????????????????????????????
+        // 2. Create staging buffer – tightly packed (no row padding)
+        // ??????????????????????????????????????????????????????????????
+        VkDeviceSize bytesPerPixel = 4;  // default RGBA8 / SRGB8_A8
+
+        // Adjust size for other formats if needed (expand as your engine grows)
+        if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
+            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
+            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT)
+        {
+            bytesPerPixel = 16;
+        }
+        else if (texture.textureByteFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
+            texture.textureByteFormat == VK_FORMAT_R16G16B16A16_UNORM)
+        {
+            bytesPerPixel = 8;
+        }
+        // Add more cases for your supported formats
+
+        VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture.width) * texture.height * bytesPerPixel;
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = bufferSize;
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo allocInfo{};
+        allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
+            | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+        VkBuffer stagingBuffer = VK_NULL_HANDLE;
+        VmaAllocation stagingAlloc = VK_NULL_HANDLE;
+        VmaAllocationInfo allocOut{};
+
+        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo,
+            &stagingBuffer, &stagingAlloc, &allocOut));
+
+        void* mappedData = allocOut.pMappedData;
+        bool needsUnmap = false;
+
+        if (!mappedData)
+        {
+            VULKAN_THROW_IF_FAIL(vmaMapMemory(allocator, stagingAlloc, &mappedData));
+            needsUnmap = true;
+        }
+
+        // ??????????????????????????????????????????????????????????????
+        // 3. Copy image ? staging buffer (tightly packed)
+        // ??????????????????????????????????????????????????????????????
+        VkBufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;  // 0 = tightly packed rows
+        region.bufferImageHeight = 0;  // 0 = tightly packed
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = { 0, 0, 0 };
+        region.imageExtent = {
+            static_cast<uint32_t>(texture.width),
+            static_cast<uint32_t>(texture.height),
+            1
+        };
+
+        vkCmdCopyImageToBuffer(cmd,
+            texture.textureImage,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            stagingBuffer,
+            1,
+            &region);
+
+        // Submit & wait
+        vulkanSystem.EndSingleUseCommand(cmd);
+
+        // ??????????????????????????????????????????????????????????????
+        // 4. Copy from mapped memory to contiguous vector + flip Y
+        // ??????????????????????????????????????????????????????????????
+        std::vector<uint8_t> pixels(static_cast<size_t>(texture.width) * texture.height * texture.colorChannels);
+
+        uint8_t* src = static_cast<uint8_t*>(mappedData);
+        for (uint32_t y = 0; y < texture.height; ++y)
+        {
+            uint8_t* dst = pixels.data() + (texture.height - 1 - y) * texture.width * texture.colorChannels;
+            memcpy(dst, src, texture.width * texture.colorChannels);
+            src += texture.width * texture.colorChannels;  // no padding — tight packing
+        }
+
+        // ??????????????????????????????????????????????????????????????
+        // 5. Cleanup mapping & buffer
+        // ??????????????????????????????????????????????????????????????
+        if (needsUnmap)
+        {
+            vmaUnmapMemory(allocator, stagingAlloc);
+        }
+
+        vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
+
+        // ??????????????????????????????????????????????????????????????
+        // 6. Write PNG file
+        // ??????????????????????????????????????????????????????????????
+        stbi_flip_vertically_on_write(false);  // already flipped manually
+
+        String fd = "C:/Users/DHZ/Desktop/my_render_pass_output" + std::to_string(index) + ".png";
+        int success = stbi_write_png(fd.c_str(),
+            static_cast<int>(texture.width),
+            static_cast<int>(texture.height),
+            static_cast<int>(texture.colorChannels),
+            pixels.data(),
+            static_cast<int>(texture.width * texture.colorChannels));
+
+        if (!success)
+        {
+            std::cerr << "Failed to write PNG: " << std::endl;
+        }
+        index++;
+    }
+    int a = 34;
 }
 
 String FileSystem::File_GetFileExtention(const char* fileName)

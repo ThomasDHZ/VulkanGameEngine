@@ -29,6 +29,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -62,6 +63,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -95,6 +97,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -128,6 +131,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -161,6 +165,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -194,6 +199,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -227,6 +233,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -260,6 +267,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -293,6 +301,7 @@
       "UseSampler": false,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": null
     },
     {
@@ -308,7 +317,8 @@
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
-      "IsCubeMapAttachment": false
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false
     },
     {
       "TextureAttachment": 10,
@@ -324,6 +334,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
@@ -357,6 +368,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,

@@ -14,6 +14,7 @@ public:
     const String ShaderSourceDirectory;
     const String MaterialSourceDirectory;
     const String MaterialDstDirectory;
+    const String TextureAssetRenderer;
     const String CompilerLocation;
     const String CompilerBuildParams;
     const String CompiledShaderOutputDirectory;

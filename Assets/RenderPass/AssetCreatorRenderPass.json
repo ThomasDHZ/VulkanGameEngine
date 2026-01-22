@@ -7,7 +7,7 @@
   "RenderPassWidth": 0,
   "RenderPassHeight": 0,
   "SubPassCount": 1,
-  "UseDefaultSwapChainResolution": false,
+  "UseDefaultSwapChainResolution": true,
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
@@ -18,7 +18,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 29,
+      "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
@@ -26,8 +26,9 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
       "SamplerCreateInfo": {
-        "SType": 31,
+        "SType": 37,
         "MagFilter": 1,
         "MinFilter": 1,
         "MipmapMode": 1,
@@ -51,7 +52,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 91,
+      "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
@@ -59,6 +60,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -84,7 +86,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 91,
+      "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
@@ -92,6 +94,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -117,7 +120,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 91,
+      "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
@@ -125,6 +128,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -150,7 +154,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 29,
+      "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
@@ -158,6 +162,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,
@@ -193,17 +198,17 @@
     {
       "TextureAttachment": 0,
       "Color": {
-        "Float32_0": 0.0,
+        "Float32_0": 1.0,
         "Float32_1": 0.0,
         "Float32_2": 0.0,
-        "Float32_3": 0.0
+        "Float32_3": 1.0
       }
     },
     {
       "TextureAttachment": 1,
       "Color": {
         "Float32_0": 0.0,
-        "Float32_1": 0.0,
+        "Float32_1": 1.0,
         "Float32_2": 0.0,
         "Float32_3": 1.0
       }
@@ -214,25 +219,25 @@
         "Float32_0": 0.0,
         "Float32_1": 0.0,
         "Float32_2": 1.0,
-        "Float32_3": 0.0
+        "Float32_3": 1.0
       }
     },
     {
       "TextureAttachment": 3,
       "Color": {
-        "Float32_0": 0.0,
+        "Float32_0": 1.0,
         "Float32_1": 0.5,
         "Float32_2": 1.0,
-        "Float32_3": 0.0
+        "Float32_3": 1.0
       }
     },
     {
       "TextureAttachment": 4,
       "Color": {
         "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+        "Float32_1": 1.0,
+        "Float32_2": 1.0,
+        "Float32_3": 1.0
       }
     }
   ]

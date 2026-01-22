@@ -27,6 +27,7 @@
       "UseSampler": false,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,

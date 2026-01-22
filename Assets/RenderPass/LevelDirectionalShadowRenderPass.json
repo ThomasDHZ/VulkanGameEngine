@@ -25,6 +25,7 @@
       "UseSampler": false,
       "UseMipMaps": false,
       "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
       "SamplerCreateInfo": null
     }
   ],

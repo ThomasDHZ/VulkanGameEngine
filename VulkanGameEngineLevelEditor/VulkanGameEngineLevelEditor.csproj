@@ -54,10 +54,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.4\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
-    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.4\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.0.0" />
     <PackageReference Include="CS-Script.Core" Version="2.0.0" />
     <PackageReference Include="GlmSharp" Version="0.9.8" />
@@ -71,8 +67,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="5.0.0" />
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.2" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="8.0.0-preview.7.23375.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
@@ -87,14 +83,14 @@
     <PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.22.0" />
     <PackageReference Include="StbImageSharp" Version="2.30.15" />
     <PackageReference Include="StbImageWriteSharp" Version="1.16.7" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="10.0.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="10.0.2" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="10.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" Version="10.0.2" />
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
     <PackageReference Include="System.Runtime.Handles" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.0" />
-    <PackageReference Include="System.Text.Json" Version="10.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.2" />
+    <PackageReference Include="System.Text.Json" Version="10.0.2" />
     <PackageReference Include="Ultz.Bcl.Half" Version="1.0.0" />
     <PackageReference Include="Ultz.Bcl.Half.Fallback" Version="1.0.0" />
     <PackageReference Include="Ultz.Native.GLFW" Version="3.4.0" />

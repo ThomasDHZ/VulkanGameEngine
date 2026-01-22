@@ -113,6 +113,55 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	return textureLoader.TextureId;
 }
 
+//VkGuid TextureSystem::CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels)
+//{
+//	Texture texture = Texture
+//	{
+//		.textureGuid = VkGuid(),
+//		.textureIndex = TextureList.size(),
+//		.width = textureResolution.x,
+//		.height = textureResolution.y,
+//		.depth = 1,
+//		.mipMapLevels = 1,
+//		.textureType = TextureType_ColorTexture,
+//		.textureByteFormat = textureFormat,
+//		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+//		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+//		.colorChannels = colorChannels
+//	};
+//
+//	VkImageCreateInfo imageCreateInfo =
+//	{
+//		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+//		.flags = 0,
+//		.imageType = VK_IMAGE_TYPE_2D,
+//		.format = texture.textureByteFormat,
+//		.extent =
+//		{
+//			.width = static_cast<uint32>(textureResolution.x),
+//			.height = static_cast<uint32>(textureResolution.y),
+//			.depth = 1,
+//		},
+//		.mipLevels = texture.mipMapLevels,
+//		.arrayLayers = 1,
+//		.samples = texture.sampleCount,
+//		.tiling = VK_IMAGE_TILING_LINEAR,
+//		.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+//		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+//		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+//	};
+//
+//	Vector<byte> byteData;
+//	for (size_t x = 0; x < textureResolution.x * textureResolution.y; x++)
+//	{
+//		Vector<byte> pixelData = { clearColorPixel.Red, clearColorPixel.Green, clearColorPixel.Blue, clearColorPixel.Alpha };
+//		byteData.insert(byteData.end(), pixelData.begin(), pixelData.end());
+//	}
+//	CreateTextureImage(texture, imageCreateInfo, byteData, byteData.size());
+//	CreateTextureView(texture, VK_IMAGE_ASPECT_COLOR_BIT);
+//
+//	return textureLoader.TextureId;
+//}
 
 Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution)
 {

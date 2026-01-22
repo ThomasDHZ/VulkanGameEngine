@@ -14,6 +14,7 @@
     ShaderSourceDirectory(EngineBasePath + "../Assets/Shaders"),
     MaterialSourceDirectory(EngineBasePath + "../Assets/Materials"),
     MaterialDstDirectory(EngineBasePath + "../Assets/Material2"),
+    TextureAssetRenderer(EngineBasePath + "../Assets/RenderPass/AssetCreatorRenderPass.json"),
     CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
     CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
     CompiledShaderOutputDirectory("../Assets/Shaders/")
@@ -23,6 +24,9 @@
 
     ConfigSystem::ConfigSystem(const nlohmann::json& j) : WindowResolution(ParseWindowResolution(j)),
     ShaderSourceDirectory(j.at("ShaderSourceDirectory").get<String>()),
+    MaterialSourceDirectory(j.at("MaterialSourceDirectory").get<String>()),
+    MaterialDstDirectory(j.at("MaterialDstDirectory").get<String>()),
+    TextureAssetRenderer(j.at("TextureAssetRenderer").get<String>()),
     CompilerLocation(j.at("CompilerLocation").get<String>()),
     CompilerBuildParams(j.at("CompilerBuildParams").get<String>()),
     CompiledShaderOutputDirectory(j.at("CompiledShaderOutputDirectory").get<String>())

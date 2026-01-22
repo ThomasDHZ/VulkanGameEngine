@@ -69,6 +69,7 @@ struct  RenderAttachmentLoader
     bool                                 UseSampler = true;
     bool                                 UseMipMaps = false;
     bool                                 IsCubeMapAttachment = false;
+    bool                                 IsTextureToExport = false;
 };
 
 struct RenderPassAttachementTextures

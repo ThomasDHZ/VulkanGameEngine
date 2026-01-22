@@ -83,6 +83,7 @@ public:
     Vector<Texture>                                                TextureList;
 
     DLL_EXPORT VkGuid                   CreateTexture(const String& texturePath);
+    //DLL_EXPORT VkGuid                   CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels);
     DLL_EXPORT Texture                  CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution);
     DLL_EXPORT void                     CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture, uint attachmentCount);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);

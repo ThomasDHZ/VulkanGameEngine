@@ -24,7 +24,8 @@
       "FinalLayout": 1000001002,
       "UseSampler": false,
       "UseMipMaps": false,
-      "IsCubeMapAttachment": false
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false
     }
   ],
   "SubpassDependencyList": [
