@@ -61,7 +61,7 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 
     VramSpriteGuid materialId = VramSpriteGuid(json["MaterialId"].get<String>().c_str());
     const Material& material = materialSystem.FindMaterial(materialId);
-    const Texture& texture = textureSystem.FindTexture(material.AlbedoMapId);
+    const Texture& texture = textureSystem.FindTexture(material.AlbedoDataId);
     spriteSystem.SpriteAnimationMap[vramId] = vramSystem.LoadSpriteAnimations(spriteVramPath.c_str());
     spriteSystem.SpriteVramList.emplace_back(vramSystem.LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
     return vramId;

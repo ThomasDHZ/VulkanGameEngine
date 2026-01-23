@@ -18,7 +18,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
         return materialId;
     }
 
-    ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
+    ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer2");
     uint32 bufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     shaderSystem.PipelineShaderStructMap[bufferId] = shaderStruct;
 
@@ -26,37 +26,11 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.materialGuid = materialId;
     material.ShaderMaterialBufferIndex = MaterialList.size();
     material.MaterialBufferId = bufferId;
-
-    material.Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]);
-    material.SheenColor = vec3(json["SheenColor"][0], json["SheenColor"][1], json["SheenColor"][2]);
-    material.SubSurfaceScatteringColor = vec3(json["SubSurfaceScatteringColor"][0], json["SubSurfaceScatteringColor"][1], json["SubSurfaceScatteringColor"][2]);
-    material.Emission = vec3(json["Emission"][0], json["Emission"][1], json["Emission"][2]);
-    material.ClearcoatTint = json["ClearcoatTint"];
-    material.Metallic = json["Metallic"];
-    material.Roughness = json["Roughness"];
-    material.AmbientOcclusion = json["AmbientOcclusion"];
-    material.ClearcoatStrength = json["ClearcoatStrength"];
-    material.ClearcoatRoughness = json["ClearcoatRoughness"];
-    material.Thickness = json["Thickness"];
-    material.SheenIntensity = json["SheenIntensity"];
-    material.NormalStrength = json["NormalStrength"];
-    material.HeightScale = json["HeightScale"];
-    material.Height = json["Height"];
-    material.Alpha = json["Alpha"];
-
-    material.AlbedoMapId = VkGuid(json["AlbedoMapId"].get<std::string>());
-    material.MetallicMapId = VkGuid(json["MetallicMapId"].get<std::string>());
-    material.RoughnessMapId = VkGuid(json["RoughnessMapId"].get<std::string>());
-    material.ThicknessMapId = VkGuid(json["ThicknessMapId"].get<std::string>());
-    material.SubSurfaceScatteringMapId = VkGuid(json["SubSurfaceScatteringColorMapId"].get<std::string>());
-    material.SheenMapId = VkGuid(json["SheenMapId"].get<std::string>());
-    material.ClearCoatMapId = VkGuid(json["ClearCoatMapId"].get<std::string>());
-    material.AmbientOcclusionMapId = VkGuid(json["AmbientOcclusionMapId"].get<std::string>());
-    material.NormalMapId = VkGuid(json["NormalMapId"].get<std::string>());
-    material.AlphaMapId = VkGuid(json["AlphaMapId"].get<std::string>());
-    material.EmissionMapId = VkGuid(json["EmissionMapId"].get<std::string>());
-    material.HeightMapId = VkGuid(json["HeightMapId"].get<std::string>());
-
+    material.AlbedoDataId =         !json["AlbedoData"].is_null()         ? textureSystem.CreateTexture(json["AlbedoData"])         : VkGuid();
+    material.NormalDataId =         !json["NormalData"].is_null()         ? textureSystem.CreateTexture(json["NormalData"])         : VkGuid();
+    material.PackedMRODataId =      !json["PackedMROData"].is_null()      ? textureSystem.CreateTexture(json["PackedMROData"])      : VkGuid();
+    material.PackedSheenSSSDataId = !json["PackedSheenSSSData"].is_null() ? textureSystem.CreateTexture(json["PackedSheenSSSData"]) : VkGuid();
+    material.EmissionDataId =       !json["EmissionData"].is_null()       ? textureSystem.CreateTexture(json["EmissionData"])       : VkGuid();
     MaterialList.emplace_back(material);
     return materialId;
 }
@@ -65,48 +39,19 @@ void MaterialSystem::Update(const float& deltaTime)
 {
     for (auto& material : MaterialList)
     {
-        const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureIndex : SIZE_MAX;
-        const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureIndex : SIZE_MAX;
-        const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.RoughnessMapId).textureIndex : SIZE_MAX;
-        const uint ThicknessMapId = material.ThicknessMapId != VkGuid() ? textureSystem.FindTexture(material.ThicknessMapId).textureIndex : SIZE_MAX;
-        const uint SubSurfaceScatteringMapId = material.SubSurfaceScatteringMapId != VkGuid() ? textureSystem.FindTexture(material.SubSurfaceScatteringMapId).textureIndex : SIZE_MAX;
-        const uint SheenMapId = material.SheenMapId != VkGuid() ? textureSystem.FindTexture(material.SheenMapId).textureIndex : SIZE_MAX;
-        const uint ClearCoatMapId = material.ClearCoatMapId != VkGuid() ? textureSystem.FindTexture(material.ClearCoatMapId).textureIndex : SIZE_MAX;
-        const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? textureSystem.FindTexture(material.AmbientOcclusionMapId).textureIndex : SIZE_MAX;
-        const uint NormalMapId = material.NormalMapId != VkGuid() ? textureSystem.FindTexture(material.NormalMapId).textureIndex : SIZE_MAX;
-        const uint AlphaMapId = material.AlphaMapId != VkGuid() ? textureSystem.FindTexture(material.AlphaMapId).textureIndex : SIZE_MAX;
-        const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureIndex : SIZE_MAX;
-        const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureIndex : SIZE_MAX;
+        const uint albedoDataId =         material.AlbedoDataId != VkGuid()          ? textureSystem.FindTexture(material.AlbedoDataId, 0).textureIndex         : SIZE_MAX;
+        const uint normalDataId =         material.NormalDataId != VkGuid()          ? textureSystem.FindTexture(material.NormalDataId, 0).textureIndex         : SIZE_MAX;
+        const uint packedMRODataId =      material.PackedMRODataId != VkGuid()       ? textureSystem.FindTexture(material.PackedMRODataId, 0).textureIndex      : SIZE_MAX;
+        const uint packedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid()  ? textureSystem.FindTexture(material.PackedSheenSSSDataId, 0).textureIndex : SIZE_MAX;
+        const uint emissionDataId =       material.EmissionDataId != VkGuid()        ? textureSystem.FindTexture(material.EmissionDataId, 0).textureIndex       : SIZE_MAX;
+
 
         ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Albedo", material.Albedo);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SheenColor", material.SheenColor);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SubSurfaceScatteringColor", material.SubSurfaceScatteringColor);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Emission", material.Emission);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ClearcoatTint", material.ClearcoatTint);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Metallic", material.Metallic);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Roughness", material.Roughness);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "AmbientOcclusion", material.AmbientOcclusion);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ClearcoatStrength", material.ClearcoatStrength);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ClearcoatRoughness", material.ClearcoatRoughness);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "SheenIntensity", material.SheenIntensity);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Thickness", material.Thickness);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "NormalStrength", material.NormalStrength);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "HeightScale", material.HeightScale);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Height", material.Height);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Alpha", material.Alpha);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoMap", AlbedoMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "MetallicMap", MetallicMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "RoughnessMap", RoughnessMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ThicknessMap", ThicknessMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringColorMap", SubSurfaceScatteringMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SheenMap", SheenMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ClearCoatMap", ClearCoatMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AmbientOcclusionMap", AmbientOcclusionMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalMap", NormalMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlphaMap", AlphaMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionMap", EmissionMapId);
-        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "HeightMap", HeightMapId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoDataId", albedoDataId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalDataId", normalDataId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "PackedMRODataId", packedMRODataId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "PackedSheenSSSDataId", packedSheenSSSDataId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionDataId", emissionDataId);
         shaderSystem.UpdateShaderBuffer(shaderStruct, material.MaterialBufferId);
     }
 }

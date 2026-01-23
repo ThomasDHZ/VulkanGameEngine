@@ -12,7 +12,7 @@
 
 AssetCreatorSystem& assetCreatorSystem = AssetCreatorSystem::Get();
 
-void AssetCreatorSystem::MaterialUpdate(Material& material)
+void AssetCreatorSystem::MaterialUpdate(ImportMaterial& material)
 {
     const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureIndex : SIZE_MAX;
     const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureIndex : SIZE_MAX;

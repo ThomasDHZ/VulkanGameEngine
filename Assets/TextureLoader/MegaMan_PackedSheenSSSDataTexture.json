@@ -1,0 +1,29 @@
+{
+  "TextureFilePath": [ "Textures/MegaManImportMaterialjson.json3.png" ],
+  "TextureId": "3e5f6a1b-795d-404d-94d9-b091424014ea",
+  "TextureByteFormat": 37,
+  "UsingSRGBFormat": false,
+  "SampleCount": 1,
+  "ImageType": 1,
+  "TextureType": 5,
+  "UseMipMaps": false,
+  "IsSkyBox": false,
+  "SamplerCreateInfo": {
+    "SType": 31,
+    "MagFilter": 0,
+    "MinFilter": 0,
+    "MipmapMode": 1,
+    "AddressModeU": 2,
+    "AddressModeV": 2,
+    "AddressModeW": 2,
+    "MipLodBias": 0.0,
+    "AnisotropyEnable": false,
+    "MaxAnisotropy": 0.0,
+    "CompareEnable": false,
+    "CompareOp": 7,
+    "MinLod": 0.0,
+    "MaxLod": 1.0,
+    "BorderColor": 0,
+    "UnnormalizedCoordinates": false
+  }
+}

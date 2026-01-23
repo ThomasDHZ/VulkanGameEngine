@@ -1,23 +1,7 @@
 {
   "LevelID": "a4ff0086-0069-4265-9a81-b38fb9e6b5be",
   "LoadTextures": [
-    "TextureLoader/MegaMan_DiffuseTexture.json",
-    "TextureLoader/MegaMan_AOTexture.json",
-    "TextureLoader/MegaMan_metallicTexture.json",
-    "TextureLoader/MegaMan_NormalTexture.json",
-    "TextureLoader/MegaMan_AlphaTexture.json",
-    "TextureLoader/MegaManShotTexture.json",
-    "TextureLoader/SparkMan_DiffuseTexture.json",
-    "TextureLoader/SparkMan_AOTexture.json",
-    "TextureLoader/SparkMan_MetallicTexture.json",
-    "TextureLoader/SparkMan_NormalTexture.json",
-    "TextureLoader/SparkMan_AlphaTexture.json",
-    "TextureLoader/SparkMan_HeightTexture.json",
-    "TextureLoader/AnimeGirl_DiffuseTexture.json",
-    "TextureLoader/AnimeGirl_AOTexture.json",
-    "TextureLoader/AnimeGirl_MetallicTexture.json",
-    "TextureLoader/AnimeGirl_NormalTexture.json",
-    "TextureLoader/AnimeGirl_AlphaTexture.json",
+
     "TextureLoader/LavaCubeMapTexture.json"
   ],
   "LoadMaterials": [

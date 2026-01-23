@@ -93,7 +93,7 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
         return tileSetId;
 
     const Material& material = materialSystem.FindMaterial(materialId);
-    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoMapId);
+    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoDataId);
 
     LevelTileSetMap[tileSetId] = vramSystem.LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
     vramSystem.LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);

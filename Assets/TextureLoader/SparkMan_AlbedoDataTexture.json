@@ -1,0 +1,29 @@
+{
+  "TextureFilePath": [ "Textures/SparkManTileSetImportMaterialjson.json0.png" ],
+  "TextureId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
+  "TextureByteFormat": 43,
+  "UsingSRGBFormat": false,
+  "SampleCount": 1,
+  "ImageType": 1,
+  "TextureType": 5,
+  "UseMipMaps": false,
+  "IsSkyBox": false,
+  "SamplerCreateInfo": {
+    "SType": 31,
+    "MagFilter": 0,
+    "MinFilter": 0,
+    "MipmapMode": 1,
+    "AddressModeU": 2,
+    "AddressModeV": 2,
+    "AddressModeW": 2,
+    "MipLodBias": 0.0,
+    "AnisotropyEnable": false,
+    "MaxAnisotropy": 0.0,
+    "CompareEnable": false,
+    "CompareOp": 7,
+    "MinLod": 0.0,
+    "MaxLod": 1.0,
+    "BorderColor": 0,
+    "UnnormalizedCoordinates": false
+  }
+}
