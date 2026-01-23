@@ -1,7 +1,7 @@
 {
   "TextureFilePath": [ "Textures/AnimeGirl_DiffuseTexture.png" ],
-  "TextureId":  "3390cc1f-e1f9-431f-a094-88c0490026a1" ,
-  "TextureByteFormat": 43,
+  "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
+  "TextureByteFormat": 37,
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,

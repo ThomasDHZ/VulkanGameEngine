@@ -39,7 +39,7 @@ void main()
 {
     MaterialProperitiesBuffer material = importMaterialBuffer.importMaterialProperties;
 
-    vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap],                    UV, 0.0f)                   : vec4(material.Albedo, material.Alpha);
+    vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlbedoMap],                    UV, 0.0f)                   : vec4(material.Albedo, 1.0f);
     float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],                  UV, 0.0f).r                 : material.Metallic;
     float roughness                 = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.MetallicMap],                  UV, 0.0f).g                 : material.Roughness;
     float thickness                 = (material.ThicknessMap                 != 0xFFFFFFFFu) ? textureLod(TextureMap[material.ThicknessMap],                 UV, 0.0f).r                 : material.Thickness;
@@ -48,21 +48,15 @@ void main()
     float clearcoatTint             = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.ClearCoatMap],                 UV, 0.0f).r                 : material.ClearcoatTint;
     float ambientOcclusion          = (material.AmbientOcclusionMap          != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AmbientOcclusionMap],          UV, 0.0f).r                 : material.AmbientOcclusion;
     vec3  normalMap                 = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.NormalMap],                    UV, 0.0f).xyz               : vec3(0.0f, 0.0f, 1.0f);
-    float alpha                     = (material.AlphaMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap],                     UV, 0.0f).r                 : material.Alpha;
     vec3  emission                  = (material.EmissionMap                  != 0xFFFFFFFFu) ? textureLod(TextureMap[material.EmissionMap],                  UV, 0.0f).rgb               : vec3(0.0f);
     float height                    = (material.HeightMap                    != 0xFFFFFFFFu) ? textureLod(TextureMap[material.HeightMap],                    UV, 0.0f).r                 : material.Height;
+    //albedo.a                        = (material.AlphaMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap],                     UV, 0.0f).a                 : material.Alpha;
 
     vec2 encodedNormal = OctahedronEncode(normalMap);
 
     outAlbedo = albedo;
-    outNormalData = vec4(0.5, 0.5, 1.0, 1.0); // Visible blue-ish
-    outPackedMRO = vec4(1.0, 0.0, 1.0, 1.0); // Magenta
-    outPackedSheenSSS = vec4(0.0, 1.0, 1.0, 1.0); // Cyan
-    outEmission = vec4(1.0, 1.0, 0.0, 1.0); // Yellow
-
-//        outAlbedo = albedo;
-//    outNormalData = vec4((encodedNormal * 0.5f) + 0.5f, material.NormalStrength, height);
-//    outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
-//    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
-//    outEmission = vec4(emission, material.ClearcoatRoughness);
+    outNormalData = vec4((encodedNormal * 0.5f) + 0.5f, material.NormalStrength, height);
+    outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
+    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
+    outEmission = vec4(emission, material.ClearcoatRoughness);
 }

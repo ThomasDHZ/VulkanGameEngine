@@ -12,7 +12,7 @@
   "ClearCoatMapId": "00000000-0000-0000-0000-000000000000",
   "AmbientOcclusionMapId": "69cbf740-e41a-4c45-901b-58d209b12272",
   "NormalMapId": "fb05d690-713c-4361-be3c-da487e97929c",
-  "AlphaMapId": "00000000-0000-0000-0000-000000000000",
+  "AlphaMapId": "c30b9dc8-0bf6-42d6-afcf-121506e4185e",
   "EmissionMapId": "00000000-0000-0000-0000-000000000000",
   "HeightMapId": "fb05d690-713c-4361-be3c-da487e97929c",
   "Albedo": [ 0.8, 0.8, 0.8 ],

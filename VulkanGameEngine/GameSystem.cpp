@@ -53,7 +53,7 @@ void GameSystem::StartUp(void* windowHandle)
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
     levelSystem.LoadLevel("Levels/TestLevel.json");
-    assetCreatorSystem.Run("ImportMaterial/AnimeGirlImportMaterial.json");
+   // assetCreatorSystem.Run("ImportMaterial/AnimeGirlImportMaterial.json");
 }
 
 #ifndef __ANDROID__
@@ -161,11 +161,10 @@ void GameSystem::DebugUpdate(float deltaTime)
 
 void GameSystem::Draw(float deltaTime)
 {
-    assetCreatorSystem.Draw();
     vulkanSystem.StartFrame();
     VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-    //levelSystem.Draw(commandBuffer, deltaTime, assetCreatorSystem.vulkanRenderPass, assetCreatorSystem.vulkanRenderPipeline);
-    //ImGui_Draw(commandBuffer, imGuiRenderer);
+    levelSystem.Draw(commandBuffer, deltaTime, assetCreatorSystem.vulkanRenderPass, assetCreatorSystem.vulkanRenderPipeline);
+    ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }
 

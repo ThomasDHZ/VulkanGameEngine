@@ -59,11 +59,11 @@ void AssetCreatorSystem::MaterialUpdate(Material& material)
     shaderSystem.UpdateShaderBuffer(shaderStruct, material.MaterialBufferId);
 }
 
-VkDescriptorImageInfo AssetCreatorSystem::GetTextureDescriptorbinding(Texture texture)
+VkDescriptorImageInfo AssetCreatorSystem::GetTextureDescriptorbinding(Texture texture, VkSampler sampler)
 {
     return VkDescriptorImageInfo
     {
-        .sampler = texture.textureSampler,
+        .sampler = sampler,
         .imageView = texture.textureView,
         .imageLayout = texture.textureImageLayout
     };
@@ -74,7 +74,7 @@ void AssetCreatorSystem::BuildRenderPass(const String& materialPath)
     nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
     ivec2 materialSetResolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
 
-    Material material;
+   
     material.Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]);
     material.SheenColor = vec3(json["SheenColor"][0], json["SheenColor"][1], json["SheenColor"][2]);
     material.SubSurfaceScatteringColor = vec3(json["SubSurfaceScatteringColor"][0], json["SubSurfaceScatteringColor"][1], json["SubSurfaceScatteringColor"][2]);
@@ -105,23 +105,22 @@ void AssetCreatorSystem::BuildRenderPass(const String& materialPath)
     material.HeightMapId = !json["HeightMap"].is_null() ? textureSystem.CreateTexture(json["HeightMap"]) :  VkGuid();
 
     Vector<VkDescriptorImageInfo>                       textureBindingList = Vector<VkDescriptorImageInfo>();
-    if (material.AlbedoMapId != VkGuid())               textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.AlbedoMapId)));
-    if (material.MetallicMapId != VkGuid())             textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.MetallicMapId)));
-    if (material.RoughnessMapId != VkGuid())            textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.RoughnessMapId)));
-    if (material.ThicknessMapId != VkGuid())            textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.ThicknessMapId)));
-    if (material.SubSurfaceScatteringMapId != VkGuid()) textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.SubSurfaceScatteringMapId)));
-    if (material.SheenMapId != VkGuid())                textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.SheenMapId)));
-    if (material.ClearCoatMapId != VkGuid())            textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.ClearCoatMapId)));
-    if (material.AmbientOcclusionMapId != VkGuid())     textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.AmbientOcclusionMapId)));
-    if (material.NormalMapId != VkGuid())               textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.NormalMapId)));
-    if (material.AlphaMapId != VkGuid())                textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.AlphaMapId)));
-    if (material.EmissionMapId != VkGuid())             textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.EmissionMapId)));
-    if (material.HeightMapId != VkGuid())               textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.HeightMapId)));
-
+    if (material.AlbedoMapId != VkGuid())               textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.AlbedoMapId), GetAlbedoMapSamplerSettings()));
+    if (material.MetallicMapId != VkGuid())             textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.MetallicMapId), GetPackedORMMapSamplerSettings()));
+    if (material.RoughnessMapId != VkGuid())            textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.RoughnessMapId), GetPackedORMMapSamplerSettings()));
+    if (material.ThicknessMapId != VkGuid())            textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.ThicknessMapId), GetThicknessMapSamplerSettings()));
+    if (material.SubSurfaceScatteringMapId != VkGuid()) textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.SubSurfaceScatteringMapId), GetSubSurfaceScatteringMapSamplerSettings()));
+    if (material.SheenMapId != VkGuid())                textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.SheenMapId), GetSheenMapSamplerSettings()));
+    if (material.ClearCoatMapId != VkGuid())            textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.ClearCoatMapId), GetClearCoatMapSamplerSettings()));
+    if (material.AmbientOcclusionMapId != VkGuid())     textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.AmbientOcclusionMapId), GetPackedORMMapSamplerSettings()));
+    if (material.NormalMapId != VkGuid())               textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.NormalMapId), GetNormalMapSamplerSettings()));
+    if (material.AlphaMapId != VkGuid())                textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.AlphaMapId), GetAlphaMapSamplerSettings()));
+    if (material.EmissionMapId != VkGuid())             textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.EmissionMapId), GetEmissionMapSamplerSettings()));
+    if (material.HeightMapId != VkGuid())               textureBindingList.emplace_back(GetTextureDescriptorbinding(textureSystem.FindTexture(material.HeightMapId), GetParallaxMapSamplerSettings()));
 
     ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
-    uint32 bufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    shaderSystem.PipelineShaderStructMap[bufferId] = shaderStruct;
+    material.MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    shaderSystem.PipelineShaderStructMap[material.MaterialBufferId] = shaderStruct;
 
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(configSystem.TextureAssetRenderer.c_str()).get<RenderPassLoader>();
     renderPassLoader.RenderPassWidth = materialSetResolution.x;
@@ -151,7 +150,7 @@ void AssetCreatorSystem::BuildRenderPass(const String& materialPath)
     {
         VkDescriptorBufferInfo
         {
-            .buffer = bufferSystem.FindVulkanBuffer(bufferId).Buffer,
+            .buffer = bufferSystem.FindVulkanBuffer(material.MaterialBufferId).Buffer,
             .offset = 0,
             .range = VK_WHOLE_SIZE
         }
@@ -185,28 +184,29 @@ void AssetCreatorSystem::Run(String materialPath)
     std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
     std::filesystem::create_directories(outDir);
 
-    //Vector<Material> materialList;
-    //Vector<String> ext = { "json" };
-    //VkGuid dummyGuid = VkGuid();
-    //Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
-    //for (auto& materialPath : materialFiles)
-    //{
-    //    std::filesystem::path src = materialPath;
-    //    std::filesystem::path dst = outDir / (src.filename().stem().string() + fileSystem.GetFileExtention(materialPath.c_str()) + ".json");
-    //    if (std::filesystem::exists(dst) &&
-    //        std::filesystem::last_write_time(dst) >= std::filesystem::last_write_time(src))
-    //    {
-    //        continue;
-    //    }
+    Vector<Material> materialList;
+    Vector<String> ext = { "json" };
+    VkGuid dummyGuid = VkGuid();
+    Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
+    for (auto& materialPath : materialFiles)
+    {
+        std::filesystem::path src = materialPath;
+        std::filesystem::path dst = outDir / (src.filename().stem().string() + fileSystem.GetFileExtention(materialPath.c_str()) + ".json");
+        if (std::filesystem::exists(dst) &&
+            std::filesystem::last_write_time(dst) >= std::filesystem::last_write_time(src))
+        {
+            continue;
+        }
 
         BuildRenderPass(materialPath);
-        //Draw();
-        //fileSystem.ExportTexture(vulkanRenderPass.RenderPassId);
-    //}
+        Draw();
+        fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, dst.string());
+    }
 }
 
 void AssetCreatorSystem::Draw()
 {
+    MaterialUpdate(material);
     VkCommandBufferBeginInfo beginInfo =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -265,4 +265,174 @@ void AssetCreatorSystem::Draw()
     VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
     VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+}
+
+VkSampler AssetCreatorSystem::GetAlbedoMapSamplerSettings()
+{
+    VkSamplerCreateInfo samplerCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = -0.5f,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = 16.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE
+    };
+
+    VkSampler sampler = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
+    return sampler;
+}
+
+VkSampler AssetCreatorSystem::GetNormalMapSamplerSettings()
+{
+    VkSamplerCreateInfo samplerCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = -0.75f,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = 16.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+        .unnormalizedCoordinates = VK_FALSE
+    };
+
+    VkSampler sampler = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
+    return sampler;
+}
+
+VkSampler AssetCreatorSystem::GetPackedORMMapSamplerSettings()
+{
+    VkSamplerCreateInfo samplerCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = 8.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+        .unnormalizedCoordinates = VK_FALSE
+    };
+
+    VkSampler sampler = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
+    return sampler;
+}
+
+VkSampler AssetCreatorSystem::GetParallaxMapSamplerSettings()
+{
+    VkSamplerCreateInfo samplerCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = -0.5f,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = 12.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+        .unnormalizedCoordinates = VK_FALSE
+    };
+
+    VkSampler sampler = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
+    return sampler;
+}
+
+VkSampler AssetCreatorSystem::GetAlphaMapSamplerSettings()
+{
+    VkSamplerCreateInfo samplerCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = 8.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0.0f,
+        .maxLod = VK_LOD_CLAMP_NONE,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+        .unnormalizedCoordinates = VK_FALSE
+    };
+
+    VkSampler sampler = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
+    return sampler;
+}
+
+VkSampler AssetCreatorSystem::GetThicknessMapSamplerSettings()
+{
+    return GetPackedORMMapSamplerSettings();
+}
+
+VkSampler AssetCreatorSystem::GetSubSurfaceScatteringMapSamplerSettings()
+{
+    return GetPackedORMMapSamplerSettings();
+}
+
+VkSampler AssetCreatorSystem::GetSheenMapSamplerSettings()
+{
+    return GetPackedORMMapSamplerSettings();
+}
+
+VkSampler AssetCreatorSystem::GetClearCoatMapSamplerSettings()
+{
+    return GetPackedORMMapSamplerSettings();
+}
+
+VkSampler AssetCreatorSystem::GetEmissionMapSamplerSettings()
+{
+    return GetAlbedoMapSamplerSettings();
 }

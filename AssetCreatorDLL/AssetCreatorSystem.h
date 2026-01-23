@@ -20,12 +20,22 @@ private:
     AssetCreatorSystem(AssetCreatorSystem&&) = delete;
     AssetCreatorSystem& operator=(AssetCreatorSystem&&) = delete;
     
-
+    VkSampler GetAlbedoMapSamplerSettings();
+    VkSampler GetNormalMapSamplerSettings();
+    VkSampler GetPackedORMMapSamplerSettings();
+    VkSampler GetParallaxMapSamplerSettings();
+    VkSampler GetAlphaMapSamplerSettings();
+    VkSampler GetThicknessMapSamplerSettings();
+    VkSampler GetSubSurfaceScatteringMapSamplerSettings();
+    VkSampler GetSheenMapSamplerSettings();
+    VkSampler GetClearCoatMapSamplerSettings();
+    VkSampler GetEmissionMapSamplerSettings();
 public:
-     VulkanRenderPass vulkanRenderPass;
-     VulkanPipeline   vulkanRenderPipeline;
+    Material material;
+    VulkanRenderPass vulkanRenderPass;
+    VulkanPipeline   vulkanRenderPipeline;
     DLL_EXPORT void MaterialUpdate(Material& material);
-    DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture);
+    DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture, VkSampler sampler);
     DLL_EXPORT void BuildRenderPass(const String& materialPath);
     DLL_EXPORT void Run(String materialPath);
     DLL_EXPORT void Draw();
