@@ -72,14 +72,21 @@ private:
     VkSampler GetSheenMapSamplerSettings();
     VkSampler GetClearCoatMapSamplerSettings();
     VkSampler GetEmissionMapSamplerSettings();
+
+
 public:
     ImportMaterial material;
     VulkanRenderPass vulkanRenderPass;
     VulkanPipeline   vulkanRenderPipeline;
+    Vector<Texture> textureList;
+    Vector<VkDescriptorImageInfo>                       textureBindingList = Vector<VkDescriptorImageInfo>();
+    DLL_EXPORT void CleanRenderPass();
+    DLL_EXPORT void LoadMaterial(const String& materialPath);
     DLL_EXPORT void MaterialUpdate(ImportMaterial& material);
+    DLL_EXPORT void UpdateDescriptorSets();
     DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture, VkSampler sampler);
-    DLL_EXPORT void BuildRenderPass(const String& materialPath);
-    DLL_EXPORT void Run(String materialPath);
+    DLL_EXPORT void BuildRenderPass(ivec2 renderPassResolution);
+    DLL_EXPORT void Run();
     DLL_EXPORT void Draw();
 };
 extern DLL_EXPORT AssetCreatorSystem& assetCreatorSystem;

@@ -1,0 +1,36 @@
+{
+  "TextureFilePath": [
+    "Textures/hot_rt.png",
+    "Textures/hot_lf.png",
+    "Textures/hot_up.png",
+    "Textures/hot_dn.png",
+    "Textures/hot_ft.png",
+    "Textures/hot_bk.png"
+  ],
+  "TextureId": "64782092-bab5-4133-a0c9-9b6f206b68f0",
+  "TextureByteFormat": 43,
+  "UsingSRGBFormat": false,
+  "SampleCount": 1,
+  "ImageType": 1,
+  "TextureType": 5,
+  "UseMipMaps": true,
+  "IsSkyBox": true,
+  "SamplerCreateInfo": {
+    "SType": 31,
+    "MagFilter": 1,
+    "MinFilter": 1,
+    "MipmapMode": 1,
+    "AddressModeU": 2,
+    "AddressModeV": 2,
+    "AddressModeW": 2,
+    "MipLodBias": 0.0,
+    "AnisotropyEnable": true,
+    "MaxAnisotropy": 16.0,
+    "CompareEnable": false,
+    "CompareOp": 7,
+    "MinLod": 0.0,
+    "MaxLod": 1000.0,
+    "BorderColor": 1,
+    "UnnormalizedCoordinates": false
+  }
+}
