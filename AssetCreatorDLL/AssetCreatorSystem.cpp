@@ -19,9 +19,6 @@ void AssetCreatorSystem::Run()
     std::filesystem::create_directories(outDir);
 
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String> { configSystem.TextureAssetRenderer });
-    ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
-    material.MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    shaderSystem.PipelineShaderStructMap[material.MaterialBufferId] = shaderStruct;
 
     Vector<String> ext = { "json" };
     Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
@@ -45,12 +42,7 @@ void AssetCreatorSystem::Run()
         Draw();
         fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, dst.string());
 
-        for (auto& texture : textureList)
-        {
-          // vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
-           vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
-        }
-        textureList.clear();
+
         textureBindingList.clear();
         std::cout << "Baked: " << src.filename() << std::endl;
     }
@@ -60,7 +52,6 @@ void AssetCreatorSystem::Run()
 
 void AssetCreatorSystem::Draw()
 {
-    MaterialUpdate(material);
     VkCommandBufferBeginInfo beginInfo =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -144,11 +135,100 @@ void AssetCreatorSystem::CleanRenderPass()
     }
 }
 
+Texture AssetCreatorSystem::LoadTexture(const String& texturePath, size_t bindingNumber)
+{
+    TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
+
+    int width = 0;
+    int height = 0;
+    int textureChannels = 0;
+    Vector<byte> textureData;
+    for (size_t x = 0; x < textureLoader.TextureFilePath.size(); x++)
+    {
+        Vector<byte> layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
+        textureData.insert(textureData.end(), layerData.begin(), layerData.end());
+    }
+
+    VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
+    switch (textureChannels)
+    {
+    case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
+    case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
+    case 3: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
+    case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+    default:
+    {
+        std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
+        detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+        break;
+    }
+    }
+
+    VkFormat finalFormat = detectedFormat;
+    if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
+    {
+        finalFormat = textureLoader.TextureByteFormat;
+    }
+
+    Texture texture = Texture
+    {
+        .textureGuid = textureLoader.TextureId,
+        .textureIndex = bindingNumber,
+        .width = width,
+        .height = height,
+        .depth = 1,
+        .mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+        .textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+        .textureByteFormat = finalFormat,
+        .textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .sampleCount = VK_SAMPLE_COUNT_1_BIT,
+        .colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+    };
+
+    VkImageCreateInfo imageCreateInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .flags = textureLoader.IsSkyBox ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : static_cast<VkImageViewCreateFlags>(0),
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = texture.textureByteFormat,
+        .extent =
+        {
+            .width = static_cast<uint32>(texture.width),
+            .height = static_cast<uint32>(texture.height),
+            .depth = 1,
+        },
+        .mipLevels = texture.mipMapLevels,
+        .arrayLayers = textureLoader.IsSkyBox ? static_cast<uint>(6) : static_cast<uint>(1),
+        .samples = texture.sampleCount,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .initialLayout = texture.textureImageLayout
+    };
+    if (texture.mipMapLevels > 1) imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    CreateTextureImage(texture, imageCreateInfo, textureData, textureLoader.TextureFilePath.size());
+    CreateTextureView(texture, textureLoader.ImageType);
+    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
+
+    //#ifndef NDEBUG
+    //	std::cout << "[TextureDebug] Created Texture:" << texturePath
+    //		<< " Texture ID: " << texture.textureId.ToString()
+    //		<< " Image: " << texture.textureImage
+    //		<< " Format: " << texture.textureByteFormat
+    //		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
+    //#endif
+
+    return texture;
+}
 void AssetCreatorSystem::LoadMaterial(const String& materialPath)
 {
+    shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer");
+
     nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
     ivec2 materialSetResolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
     material.materialGuid = json["MaterialGuid"];
+    material.MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     material.Albedo = vec3(json["Albedo"][0], json["Albedo"][1], json["Albedo"][2]);
     material.SheenColor = vec3(json["SheenColor"][0], json["SheenColor"][1], json["SheenColor"][2]);
     material.SubSurfaceScatteringColor = vec3(json["SubSurfaceScatteringColor"][0], json["SubSurfaceScatteringColor"][1], json["SubSurfaceScatteringColor"][2]);
@@ -165,86 +245,7 @@ void AssetCreatorSystem::LoadMaterial(const String& materialPath)
     material.HeightScale = json["HeightScale"];
     material.Height = json["Height"];
     material.Alpha = json["Alpha"];
-    material.AlbedoMapId = !json["AlbedoMap"].is_null() ? textureSystem.CreateTexture(json["AlbedoMap"]) : VkGuid();
-    material.MetallicMapId = !json["MetallicMap"].is_null() ? textureSystem.CreateTexture(json["MetallicMap"]) : VkGuid();
-    material.RoughnessMapId = !json["RoughnessMap"].is_null() ? textureSystem.CreateTexture(json["RoughnessMap"]) : VkGuid();
-    material.ThicknessMapId = !json["ThicknessMap"].is_null() ? textureSystem.CreateTexture(json["ThicknessMap"]) : VkGuid();
-    material.SubSurfaceScatteringMapId = !json["SubSurfaceScatteringMap"].is_null() ? textureSystem.CreateTexture(json["SubSurfaceScatteringMap"]) : VkGuid();
-    material.SheenMapId = !json["SheenMap"].is_null() ? textureSystem.CreateTexture(json["SheenMap"]) : VkGuid();
-    material.ClearCoatMapId = !json["ClearCoatMap"].is_null() ? textureSystem.CreateTexture(json["ClearCoatMap"]) : VkGuid();
-    material.AmbientOcclusionMapId = !json["AmbientOcclusionMap"].is_null() ? textureSystem.CreateTexture(json["AmbientOcclusionMap"]) : VkGuid();
-    material.NormalMapId = !json["NormalMap"].is_null() ? textureSystem.CreateTexture(json["NormalMap"]) : VkGuid();
-    material.AlphaMapId = !json["AlphaMap"].is_null() ? textureSystem.CreateTexture(json["AlphaMap"]) : VkGuid();
-    material.EmissionMapId = !json["EmissionMap"].is_null() ? textureSystem.CreateTexture(json["EmissionMap"]) : VkGuid();
-    material.HeightMapId = !json["HeightMap"].is_null() ? textureSystem.CreateTexture(json["HeightMap"]) : VkGuid();
 
-    if (material.AlbedoMapId != VkGuid())
-    {
-        textureList.emplace_back(textureSystem.FindTexture(material.AlbedoMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetAlbedoMapSamplerSettings()));
-    }
-    if (material.MetallicMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.MetallicMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetPackedORMMapSamplerSettings()));
-    }
-    if (material.RoughnessMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.RoughnessMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetPackedORMMapSamplerSettings()));
-    }
-    if (material.ThicknessMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.ThicknessMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetThicknessMapSamplerSettings()));
-    }
-    if (material.SubSurfaceScatteringMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.SubSurfaceScatteringMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetSubSurfaceScatteringMapSamplerSettings()));
-    }
-    if (material.SheenMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.SheenMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetSheenMapSamplerSettings()));
-    }
-    if (material.ClearCoatMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.ClearCoatMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetClearCoatMapSamplerSettings()));
-    }
-    if (material.AmbientOcclusionMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.AmbientOcclusionMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetPackedORMMapSamplerSettings()));
-    }
-    if (material.NormalMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.NormalMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetNormalMapSamplerSettings()));
-    }
-    if (material.AlphaMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.AlphaMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetAlphaMapSamplerSettings()));
-    }
-    if (material.EmissionMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.EmissionMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetEmissionMapSamplerSettings()));
-    }
-    if (material.HeightMapId != VkGuid()) {
-        textureList.emplace_back(textureSystem.FindTexture(material.HeightMapId));
-        textureBindingList.emplace_back(GetTextureDescriptorbinding(textureList.back(), GetParallaxMapSamplerSettings()));
-    }
-}
-
-void AssetCreatorSystem::MaterialUpdate(ImportMaterial& material)
-{
-    const uint AlbedoMapId = material.AlbedoMapId != VkGuid() ? textureSystem.FindTexture(material.AlbedoMapId).textureIndex : SIZE_MAX;
-    const uint MetallicMapId = material.MetallicMapId != VkGuid() ? textureSystem.FindTexture(material.MetallicMapId).textureIndex : SIZE_MAX;
-    const uint RoughnessMapId = material.RoughnessMapId != VkGuid() ? textureSystem.FindTexture(material.RoughnessMapId).textureIndex : SIZE_MAX;
-    const uint ThicknessMapId = material.ThicknessMapId != VkGuid() ? textureSystem.FindTexture(material.ThicknessMapId).textureIndex : SIZE_MAX;
-    const uint SubSurfaceScatteringMapId = material.SubSurfaceScatteringMapId != VkGuid() ? textureSystem.FindTexture(material.SubSurfaceScatteringMapId).textureIndex : SIZE_MAX;
-    const uint SheenMapId = material.SheenMapId != VkGuid() ? textureSystem.FindTexture(material.SheenMapId).textureIndex : SIZE_MAX;
-    const uint ClearCoatMapId = material.ClearCoatMapId != VkGuid() ? textureSystem.FindTexture(material.ClearCoatMapId).textureIndex : SIZE_MAX;
-    const uint AmbientOcclusionMapId = material.AmbientOcclusionMapId != VkGuid() ? textureSystem.FindTexture(material.AmbientOcclusionMapId).textureIndex : SIZE_MAX;
-    const uint NormalMapId = material.NormalMapId != VkGuid() ? textureSystem.FindTexture(material.NormalMapId).textureIndex : SIZE_MAX;
-    const uint AlphaMapId = material.AlphaMapId != VkGuid() ? textureSystem.FindTexture(material.AlphaMapId).textureIndex : SIZE_MAX;
-    const uint EmissionMapId = material.EmissionMapId != VkGuid() ? textureSystem.FindTexture(material.EmissionMapId).textureIndex : SIZE_MAX;
-    const uint HeightMapId = material.HeightMapId != VkGuid() ? textureSystem.FindTexture(material.HeightMapId).textureIndex : SIZE_MAX;
-
-    ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
     shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "Albedo", material.Albedo);
     shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SheenColor", material.SheenColor);
     shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "SubSurfaceScatteringColor", material.SubSurfaceScatteringColor);
@@ -261,18 +262,205 @@ void AssetCreatorSystem::MaterialUpdate(ImportMaterial& material)
     shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "HeightScale", material.HeightScale);
     shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Height", material.Height);
     shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "Alpha", material.Alpha);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoMap", AlbedoMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "MetallicMap", MetallicMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "RoughnessMap", RoughnessMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ThicknessMap", ThicknessMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringColorMap", SubSurfaceScatteringMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SheenMap", SheenMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ClearCoatMap", ClearCoatMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AmbientOcclusionMap", AmbientOcclusionMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalMap", NormalMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlphaMap", AlphaMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionMap", EmissionMapId);
-    shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "HeightMap", HeightMapId);
+
+    VkSamplerCreateInfo NullSamplerInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_NEAREST,
+        .minFilter = VK_FILTER_NEAREST,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = 16.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .minLod = 0,
+        .maxLod = 0,
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+
+    VkSampler nullSampler = VK_NULL_HANDLE;
+    if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
+    {
+        throw std::runtime_error("Failed to create Sampler.");
+    }
+
+
+
+    if (!json["AlbedoMap"].is_null())
+    {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoMap", 1);
+        material.AlbedoMap = LoadTexture(json["AlbedoMap"], 1);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.AlbedoMap, GetAlbedoMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+        {
+            .sampler = nullSampler,
+            .imageView = VK_NULL_HANDLE,
+            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        });
+    }
+    if (!json["MetallicMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "MetallicMap", 1);
+        material.MetallicMap = LoadTexture(json["MetallicMap"], 2);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.MetallicMap, GetPackedORMMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["RoughnessMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "RoughnessMap", 1);
+        material.RoughnessMap = LoadTexture(json["RoughnessMap"], 3);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.RoughnessMap, GetPackedORMMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["ThicknessMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ThicknessMap", 1);
+        material.ThicknessMap = LoadTexture(json["ThicknessMap"], 4);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.ThicknessMap, GetThicknessMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["SubSurfaceScatteringColorMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringColorMap", 1);
+        material.SubSurfaceScatteringMap = LoadTexture(json["SubSurfaceScatteringColorMap"], 5);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.SubSurfaceScatteringMap, GetSubSurfaceScatteringMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["SheenMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SheenMap", 1);
+        material.SheenMap = LoadTexture(json["SheenMap"], 6);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.SheenMap, GetSheenMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["ClearCoatMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ClearCoatMap", 1);
+        material.ClearCoatMap = LoadTexture(json["ClearCoatMap"], 7);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.ClearCoatMap, GetClearCoatMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["AmbientOcclusionMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AmbientOcclusionMap", 1);
+        material.AmbientOcclusionMap = LoadTexture(json["AmbientOcclusionMap"], 8);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.AmbientOcclusionMap, GetPackedORMMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["NormalMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalMap", 1);
+        material.NormalMap = LoadTexture(json["NormalMap"], 9);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.NormalMap, GetNormalMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["AlphaMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlphaMap", 1);
+        material.AlphaMap = LoadTexture(json["AlphaMap"], 10);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.AlphaMap, GetAlphaMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["EmissionMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionMap", 1);
+        material.EmissionMap = LoadTexture(json["EmissionMap"], 11);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.EmissionMap, GetEmissionMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+    if (!json["HeightMap"].is_null()) {
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "HeightMap", 1);
+        material.HeightMap = LoadTexture(json["HeightMap"], 12);
+        textureBindingList.emplace_back(GetTextureDescriptorbinding(material.HeightMap, GetParallaxMapSamplerSettings()));
+    }
+    else
+    {
+        textureBindingList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = nullSampler,
+                .imageView = VK_NULL_HANDLE,
+                .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            });
+    }
+
     shaderSystem.UpdateShaderBuffer(shaderStruct, material.MaterialBufferId);
 }
 
@@ -287,30 +475,21 @@ void AssetCreatorSystem::UpdateDescriptorSets()
         .range = VK_WHOLE_SIZE
     };
 
-    Vector<VkWriteDescriptorSet> descriptorSetList
-    {
-        VkWriteDescriptorSet
-        {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = vulkanRenderPipeline.DescriptorSetList[0],
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorCount = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .pBufferInfo = &materialDescriptorSet,
-        },
-        VkWriteDescriptorSet
-        {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = vulkanRenderPipeline.DescriptorSetList[0],
-            .dstBinding = 1,  
-            .dstArrayElement = 0,
-            .descriptorCount = static_cast<uint32_t>(textureBindingList.size()),
-            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = textureBindingList.data(),
-        }
-    };
-
+    Vector<VkWriteDescriptorSet> descriptorSetList;
+    VkDescriptorSet targetSet = vulkanRenderPipeline.DescriptorSetList[0];
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 0, 0, 1,  VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         nullptr, &materialDescriptorSet,  nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 1, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[0],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 2, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[1],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 3, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[2],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 4, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[3],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 5, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[4],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 6, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[5],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 7, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[6],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 8, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[7],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 9, 0, 1,  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[8],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 10, 0, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[9],  nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 11, 0, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[10], nullptr, nullptr });
+    descriptorSetList.emplace_back(VkWriteDescriptorSet{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, targetSet, 12, 0, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &textureBindingList[11], nullptr, nullptr });
     vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32_t>(descriptorSetList.size()), descriptorSetList.data(), 0, nullptr);
 }
 
@@ -340,21 +519,25 @@ void AssetCreatorSystem::BuildRenderPass(ivec2 renderPassResolution)
     renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
     renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
     renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+
     renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[0].DescriptorCount = 1;
     renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[0].DescriptorBufferInfo = {};
-    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[1].DescriptorCount = 64;
-    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[1].DescriptorImageInfo = {};
+    for(int x = 1; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
+    { 
+        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = {};
+    }
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
     Vector<VkDescriptorSet> descriptorSetList(1, VK_NULL_HANDLE);
     VkDescriptorPool descriptorPool = renderSystem.CreatePipelineDescriptorPool(renderPipelineLoader);
     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = renderSystem.CreatePipelineDescriptorSetLayout(renderPipelineLoader);
 
-    uint32_t variableCounts[1] = { 1 };
+    Vector<uint32> variableCounts(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(), 1);
     VkDescriptorSetVariableDescriptorCountAllocateInfo varAllocInfo = {};
     varAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
     varAllocInfo.descriptorSetCount = static_cast<uint32_t>(descriptorSetLayoutList.size());
-    varAllocInfo.pDescriptorCounts = variableCounts;
+    varAllocInfo.pDescriptorCounts = variableCounts.data();
 
     for (int x = 0; x < descriptorSetLayoutList.size(); x++)
     {
@@ -369,7 +552,6 @@ void AssetCreatorSystem::BuildRenderPass(ivec2 renderPassResolution)
         vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSetList[x]);
     }
 
-    //renderSystem.UpdatePipelineDescriptorSets(renderPipelineLoader, descriptorSetList.data(), descriptorSetList.size());
     VkPipelineLayout pipelineLayout = renderSystem.CreatePipelineLayout(renderPipelineLoader, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
     VkPipeline pipeline = renderSystem.CreatePipeline(renderPipelineLoader, pipelineCache, pipelineLayout, descriptorSetList.data(), descriptorSetList.size());
 
@@ -383,6 +565,145 @@ void AssetCreatorSystem::BuildRenderPass(ivec2 renderPassResolution)
         .PipelineLayout = pipelineLayout,
         .PipelineCache = pipelineCache
     };
+}
+
+void AssetCreatorSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount)
+{
+    VmaAllocationCreateInfo allocInfo =
+    {
+        .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
+    };
+    if (imageCreateInfo.extent.width * imageCreateInfo.extent.height > 1024 * 1024)
+    {
+        allocInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+    }
+
+    VmaAllocationInfo allocOut = {};
+    VmaAllocation allocation = VK_NULL_HANDLE;
+    VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, &allocOut));
+
+    texture.TextureAllocation = allocation;
+    if (textureData.size() > 0)
+    {
+        VkBufferCreateInfo stagingBufferInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .size = textureData.size(),
+            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+        };
+
+        VmaAllocationCreateInfo stagingAllocInfo =
+        {
+            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+            .usage = VMA_MEMORY_USAGE_AUTO
+        };
+
+        VmaAllocationInfo stagingAllocOut;
+        VkBuffer stagingBuffer = VK_NULL_HANDLE;
+        VmaAllocation stagingAllocation = VK_NULL_HANDLE;
+        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingBufferInfo, &stagingAllocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocOut));
+
+        void* mapped = stagingAllocOut.pMappedData;
+        if (!mapped)
+        {
+            VULKAN_THROW_IF_FAIL(vmaMapMemory(bufferSystem.vmaAllocator, stagingAllocation, &mapped));
+        }
+
+        memcpy(mapped, textureData.data(), textureData.size());
+        vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAllocation, 0, textureData.size());
+        if (!stagingAllocOut.pMappedData)
+        {
+            vmaUnmapMemory(bufferSystem.vmaAllocator, stagingAllocation);
+        }
+
+        std::vector<VkBufferImageCopy> copyRegions;
+        copyRegions.reserve(imageCreateInfo.arrayLayers);
+        TransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        for (uint32 layer = 0; layer < imageCreateInfo.arrayLayers; ++layer)
+        {
+            VkBufferImageCopy copyRegion
+            {
+                .bufferOffset = layer * (textureData.size() / layerCount),
+                .bufferRowLength = 0,
+                .bufferImageHeight = 0,
+                .imageSubresource
+                    {
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .mipLevel = 0,
+                        .baseArrayLayer = layer,
+                        .layerCount = 1
+                    },
+                .imageOffset = { 0, 0, 0 },
+                .imageExtent = {
+                    static_cast<uint32_t>(texture.width),
+                    static_cast<uint32_t>(texture.height),
+                    1
+                }
+            };
+            copyRegions.push_back(copyRegion);
+        }
+        VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+        vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
+        vulkanSystem.EndSingleUseCommand(commandBuffer);
+
+        if (texture.mipMapLevels > 1)
+        {
+            TransitionImageLayout(texture, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 1);
+        }
+        else
+        {
+            TransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+
+        vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAllocation);
+        texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
+}
+
+void AssetCreatorSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)
+{
+    VkImageAspectFlags aspect = imageAspectFlags;
+
+    if (aspect == 0)
+    {
+        std::cout << "CreateTextureView: imageAspectFlags not set ? using auto-detect." << std::endl;
+
+        bool isDepthFormat = (texture.textureByteFormat >= VK_FORMAT_D16_UNORM &&
+            texture.textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
+            (texture.textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+
+        if (isDepthFormat)
+        {
+            aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+            if (texture.textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+                texture.textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT)
+            {
+                aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+            }
+        }
+        else
+        {
+            aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+        }
+    }
+
+    VkImageViewCreateInfo viewInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .image = texture.textureImage,
+        .viewType = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
+        .format = texture.textureByteFormat,
+        .subresourceRange =
+        {
+            .aspectMask = aspect,
+            .baseMipLevel = 0,
+            .levelCount = texture.mipMapLevels,
+            .baseArrayLayer = 0,
+            .layerCount = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? static_cast<uint>(6) : static_cast<uint>(1),
+        }
+    };
+    VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
 }
 
 VkDescriptorImageInfo AssetCreatorSystem::GetTextureDescriptorbinding(Texture texture, VkSampler sampler)
@@ -565,3 +886,75 @@ VkSampler AssetCreatorSystem::GetEmissionMapSamplerSettings()
     return GetAlbedoMapSamplerSettings();
 }
 
+void AssetCreatorSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
+{
+    VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    if (texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL || texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+    {
+        aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
+
+    VkImageMemoryBarrier barrier =
+    {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .oldLayout = texture.textureImageLayout,
+        .newLayout = newLayout,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = texture.textureImage,
+        .subresourceRange =
+        {
+            .aspectMask = aspectMask,
+            .baseMipLevel = baseMipLevel,
+            .levelCount = levelCount,
+            .baseArrayLayer = 0,
+            .layerCount = VK_REMAINING_ARRAY_LAYERS
+        }
+    };
+
+    VkAccessFlags srcAccess = 0;
+    VkAccessFlags dstAccess = 0;
+    VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+        newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        srcAccess = 0;
+        dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+        srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+        newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+        dstAccess = VK_ACCESS_SHADER_READ_BIT;
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+        newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+        dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+        newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
+        dstAccess = VK_ACCESS_SHADER_READ_BIT;
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+
+    barrier.srcAccessMask = srcAccess;
+    barrier.dstAccessMask = dstAccess;
+
+    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+    vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    vulkanSystem.EndSingleUseCommand(commandBuffer);
+
+    texture.textureImageLayout = newLayout;
+}

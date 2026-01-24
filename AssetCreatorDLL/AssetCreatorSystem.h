@@ -31,18 +31,18 @@ struct ImportMaterial
     float Height = 0.0f;
     float Alpha = 1.0f;
 
-    VkGuid AlbedoMapId = VkGuid();
-    VkGuid MetallicMapId = VkGuid();
-    VkGuid RoughnessMapId = VkGuid();
-    VkGuid ThicknessMapId = VkGuid();
-    VkGuid SubSurfaceScatteringMapId = VkGuid();
-    VkGuid SheenMapId = VkGuid();
-    VkGuid ClearCoatMapId = VkGuid();
-    VkGuid AmbientOcclusionMapId = VkGuid();
-    VkGuid NormalMapId = VkGuid();
-    VkGuid AlphaMapId = VkGuid();
-    VkGuid EmissionMapId = VkGuid();
-    VkGuid HeightMapId = VkGuid();
+    Texture AlbedoMap;
+    Texture MetallicMap;
+    Texture RoughnessMap;
+    Texture ThicknessMap;
+    Texture SubSurfaceScatteringMap;
+    Texture SheenMap;
+    Texture ClearCoatMap;
+    Texture AmbientOcclusionMap;
+    Texture NormalMap;
+    Texture AlphaMap;
+    Texture EmissionMap;
+    Texture HeightMap;
 
     ImportMaterial() = default;
     ImportMaterial(const ImportMaterial&) = default;
@@ -75,14 +75,29 @@ private:
 
 
 public:
+    ShaderStructDLL shaderStruct;
     ImportMaterial material;
     VulkanRenderPass vulkanRenderPass;
     VulkanPipeline   vulkanRenderPipeline;
-    Vector<Texture> textureList;
+    Texture AlbedoMap;
+    Texture MetallicMap;
+    Texture RoughnessMap;
+    Texture ThicknessMap;
+    Texture SubSurfaceScatteringMap;
+    Texture SheenMap;
+    Texture ClearCoatMap;
+    Texture AmbientOcclusionMap;
+    Texture NormalMap;
+    Texture AlphaMap;
+    Texture EmissionMap;
+    Texture HeightMap;
     Vector<VkDescriptorImageInfo>                       textureBindingList = Vector<VkDescriptorImageInfo>();
+    DLL_EXPORT void                     TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
+    DLL_EXPORT void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount);
+    DLL_EXPORT void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
     DLL_EXPORT void CleanRenderPass();
+    DLL_EXPORT Texture LoadTexture(const String& texturePath, size_t bindingNumber);
     DLL_EXPORT void LoadMaterial(const String& materialPath);
-    DLL_EXPORT void MaterialUpdate(ImportMaterial& material);
     DLL_EXPORT void UpdateDescriptorSets();
     DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture, VkSampler sampler);
     DLL_EXPORT void BuildRenderPass(ivec2 renderPassResolution);
