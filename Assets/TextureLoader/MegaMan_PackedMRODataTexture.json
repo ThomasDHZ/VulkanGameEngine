@@ -1,7 +1,7 @@
 {
-  "TextureFilePath": [ "Textures/MegaManImportMaterial2.png" ],
+  "TextureFilePath": [ "Textures/MegaManImportMaterial2_16Bit.png" ],
   "TextureId": "d0e8f652-1ae0-43b4-8562-9b6f68b026c3",
-  "TextureByteFormat": 37,
+  "TextureByteFormat": 91,
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,

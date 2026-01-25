@@ -21,6 +21,9 @@
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaterialBakerSystem.h">
@@ -28,6 +31,9 @@
     </ClInclude>
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

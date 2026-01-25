@@ -7,22 +7,50 @@
 
 #include "Constants.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
-layout(constant_id = 0)  const uint DescriptorBindingType0  = MaterialDescriptor;
-layout(constant_id = 1)  const uint DescriptorBindingType1  = TextureDescriptor;
-layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
-layout(constant_id = 3)  const uint DescriptorBindingType3  = TextureDescriptor;
-layout(constant_id = 4)  const uint DescriptorBindingType4  = TextureDescriptor;
-layout(constant_id = 5)  const uint DescriptorBindingType5  = TextureDescriptor;
-layout(constant_id = 6)  const uint DescriptorBindingType6  = TextureDescriptor;
-layout(constant_id = 7)  const uint DescriptorBindingType7  = TextureDescriptor;
-layout(constant_id = 8)  const uint DescriptorBindingType8  = TextureDescriptor;
-layout(constant_id = 9)  const uint DescriptorBindingType9  = TextureDescriptor;
-layout(constant_id = 10) const uint DescriptorBindingType10 = TextureDescriptor;
-layout(constant_id = 11) const uint DescriptorBindingType11 = TextureDescriptor;
-layout(constant_id = 12) const uint DescriptorBindingType12 = TextureDescriptor;
+
+layout(constant_id = 0)  const uint Using16BitPackedDataAttachmentR0   = 0;
+layout(constant_id = 1)  const uint Using16BitPackedDataAttachmentG0   = 0;
+layout(constant_id = 2)  const uint Using16BitPackedDataAttachmentB0   = 0;
+layout(constant_id = 3)  const uint Using16BitPackedDataAttachmentA0   = 0;
+
+layout(constant_id = 4)  const uint Using16BitPackedDataAttachmentR1   = 1;
+layout(constant_id = 5)  const uint Using16BitPackedDataAttachmentG1   = 1;
+layout(constant_id = 6)  const uint Using16BitPackedDataAttachmentB1   = 0;
+layout(constant_id = 7)  const uint Using16BitPackedDataAttachmentA1   = 0;
+
+layout(constant_id = 8)  const uint Using16BitPackedDataAttachmentR2   = 1;
+layout(constant_id = 9)  const uint Using16BitPackedDataAttachmentG2   = 1;
+layout(constant_id = 10) const uint Using16BitPackedDataAttachmentB2   = 1;
+layout(constant_id = 11) const uint Using16BitPackedDataAttachmentA2   = 0;
+
+layout(constant_id = 12) const uint Using16BitPackedDataAttachmentR3   = 1;
+layout(constant_id = 13) const uint Using16BitPackedDataAttachmentG3   = 1;
+layout(constant_id = 14) const uint Using16BitPackedDataAttachmentB3   = 1;
+layout(constant_id = 15) const uint Using16BitPackedDataAttachmentA3   = 0;
+
+layout(constant_id = 16) const uint Using16BitPackedDataAttachmentR4   = 0;
+layout(constant_id = 17) const uint Using16BitPackedDataAttachmentG4   = 0;
+layout(constant_id = 18) const uint Using16BitPackedDataAttachmentB4   = 0;
+layout(constant_id = 19) const uint Using16BitPackedDataAttachmentA4   = 0;
+
+layout(constant_id = 20) const uint DescriptorBindingType0  = MaterialDescriptor;
+layout(constant_id = 21) const uint DescriptorBindingType1  = TextureDescriptor;
+layout(constant_id = 22) const uint DescriptorBindingType2  = TextureDescriptor;
+layout(constant_id = 23) const uint DescriptorBindingType3  = TextureDescriptor;
+layout(constant_id = 24) const uint DescriptorBindingType4  = TextureDescriptor;
+layout(constant_id = 25) const uint DescriptorBindingType5  = TextureDescriptor;
+layout(constant_id = 26) const uint DescriptorBindingType6  = TextureDescriptor;
+layout(constant_id = 27) const uint DescriptorBindingType7  = TextureDescriptor;
+layout(constant_id = 28) const uint DescriptorBindingType8  = TextureDescriptor;
+layout(constant_id = 29) const uint DescriptorBindingType9  = TextureDescriptor;
+layout(constant_id = 30) const uint DescriptorBindingType10 = TextureDescriptor;
+layout(constant_id = 31) const uint DescriptorBindingType11 = TextureDescriptor;
+layout(constant_id = 32) const uint DescriptorBindingType12 = TextureDescriptor;
+
+
+
 
 layout(location = 0) in vec2 UV;    
-
 
 layout(location = 0) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
 layout(location = 1) out vec4 outNormalData;         //Normal/NormalStrength/Height                                                               - R16G16B16A16_UNORM

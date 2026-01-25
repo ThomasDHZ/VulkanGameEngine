@@ -508,7 +508,6 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     renderPipelineLoader.RenderPass = vulkanRenderPass.RenderPass;
     renderPipelineLoader.RenderPassResolution = vulkanRenderPass.RenderPassResolution;
     renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String> { pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
-
     renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[0].DescriptorCount = 1;
     renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[0].DescriptorBufferInfo = {};
     for(int x = 1; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)

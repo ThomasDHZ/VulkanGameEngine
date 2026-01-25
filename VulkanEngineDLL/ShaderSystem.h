@@ -95,8 +95,6 @@ private:
     ShaderStructDLL                             LoadShaderPipelineStruct(const SpvReflectTypeDescription& shaderInfo);
     Vector<ShaderVariableDLL>                   LoadShaderStructVariables(const SpvReflectTypeDescription& shaderInfo, size_t& returnBufferSize);
     Vector<ShaderStructDLL>                     LoadProtoTypeStructs(const Vector<String>& pipelineShaderList);
-    Vector<SpvReflectSpecializationConstant*>   LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
-    Vector<SpvReflectSpecializationConstant*>   FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
 
 public:
 	
@@ -105,6 +103,7 @@ public:
     DLL_EXPORT VkPipelineShaderStageCreateInfo  LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
     DLL_EXPORT ShaderPipelineDataDLL            LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths);
     DLL_EXPORT void                             LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
+    DLL_EXPORT Vector<SpvReflectSpecializationConstant*>   LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
     DLL_EXPORT bool                             CompileShaders(const String& fileDirectory, const String& outputDirectory);
     DLL_EXPORT void                             UpdatePushConstantBuffer(const String& pushConstantName);
     DLL_EXPORT void                             UpdatePushConstantBuffer(ShaderPushConstantDLL& pushConstantStruct);
@@ -116,6 +115,7 @@ public:
     DLL_EXPORT ShaderStructDLL&                 FindShaderStruct(int vulkanBufferId);
     DLL_EXPORT ShaderVariableDLL&               FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName);
     DLL_EXPORT ShaderVariableDLL&               FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName);
+    DLL_EXPORT Vector<SpvReflectSpecializationConstant*>   FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
     DLL_EXPORT bool                             ShaderModuleExists(const String& shaderFile);
     DLL_EXPORT bool                             ShaderPushConstantExists(const String& pushConstantName);
     DLL_EXPORT bool                             ShaderStructPrototypeExists(const String& structKey);

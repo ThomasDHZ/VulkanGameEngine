@@ -416,6 +416,7 @@ namespace nlohmann
         {
             model.TextureFilePath.emplace_back(j["TextureFilePath"][x].get<String>().c_str());
         }
+
         j.at("TextureId").get_to(model.TextureId);
         j.at("ImageType").get_to(model.ImageType);
         j.at("TextureByteFormat").get_to(model.TextureByteFormat);

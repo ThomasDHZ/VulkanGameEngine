@@ -171,17 +171,19 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
             }
         };
 
-        VkDeviceSize bytesPerPixel = 4;
+        size_t bytesPerPixel = 4;
+        bool is16BitFormat = false;
         if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
             texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
-            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT)
-        {
+            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) {
             bytesPerPixel = 16;
+            std::cerr << "Warning: 32-bit float format not yet supported for PNG export\n";
+            continue;
         }
         else if (texture.textureByteFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
-                 texture.textureByteFormat == VK_FORMAT_R16G16B16A16_UNORM)
-        {
+            texture.textureByteFormat == VK_FORMAT_R16G16B16A16_UNORM) {
             bytesPerPixel = 8;
+            is16BitFormat = true;
         }
 
         if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -241,13 +243,76 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
         vkCmdCopyImageToBuffer(command, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
         vulkanSystem.EndSingleUseCommand(command);
 
-        std::vector<uint8_t> pixels(static_cast<size_t>(texture.width) * texture.height * texture.colorChannels);
-        byte* src = static_cast<byte*>(mappedData);
-        for (uint32_t y = 0; y < texture.height; ++y)
+        Vector<byte> png;
+        String fileName = filePath + std::to_string(x) + (is16BitFormat ? "_16bit.png" : "_8bit.png");
+        if (!is16BitFormat)
         {
-            byte* dst = pixels.data() + (texture.height - 1 - y) * texture.width * texture.colorChannels;
-            memcpy(dst, src, texture.width * texture.colorChannels);
-            src += texture.width * texture.colorChannels; 
+            // 8-bit path (albedo, emission)
+            Vector<uint8> pixels(texture.width * texture.height * 4);
+            const uint8* src = static_cast<const uint8*>(mappedData);
+
+            for (uint32 y = 0; y < texture.height; ++y)
+            {
+                uint8* dstRow = pixels.data() + y * texture.width * 4;  // ? no flip
+                memcpy(dstRow, src, texture.width * 4);
+                src += texture.width * 4;
+            }
+
+            std::vector<unsigned char> pngData;
+            unsigned error = lodepng::encode(pngData,
+                pixels.data(),
+                texture.width,
+                texture.height,
+                LCT_RGBA,
+                8);
+
+            if (error)
+            {
+                std::cerr << "lodepng encode error (8-bit): " << lodepng_error_text(error) << "\n";
+            }
+            else
+            {
+                lodepng::save_file(pngData, fileName);
+            }
+        }
+        else
+        {
+            // 16-bit lossless path
+            Vector<uint16> pixels16(texture.width * texture.height * 4);
+            const uint16* src = static_cast<const uint16*>(mappedData);
+
+            for (uint32 y = 0; y < texture.height; ++y)
+            {
+                uint16* dstRow = pixels16.data() + y * texture.width * 4;  // ? no flip
+                for (uint32 px = 0; px < texture.width; ++px)
+                {
+                    for (uint32 ch = 0; ch < 4; ++ch)
+                    {
+                        uint16 value = src[px * 4 + ch];
+                        // Always swap to big-endian for PNG 16-bit
+                        uint16 swapped = ((value >> 8) & 0xFF) | ((value & 0xFF) << 8);
+                        dstRow[px * 4 + ch] = swapped;
+                    }
+                }
+                src += texture.width * 4;
+            }
+
+            std::vector<unsigned char> pngData;
+            unsigned error = lodepng::encode(pngData,
+                reinterpret_cast<unsigned char*>(pixels16.data()),
+                texture.width,
+                texture.height,
+                LCT_RGBA,
+                16);
+
+            if (error)
+            {
+                std::cerr << "lodepng encode error (16-bit): " << lodepng_error_text(error) << "\n";
+            }
+            else
+            {
+                lodepng::save_file(pngData, fileName);
+            }
         }
 
         if (needsUnmap)
@@ -255,20 +320,6 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
             vmaUnmapMemory(allocator, stagingAlloc);
         }
         vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
-
-        std::vector<unsigned char> png;
-        unsigned bitDepth = (bytesPerPixel == 16) ? 16 : 8;
-        String fileName = filePath + std::to_string(x) + ".png";
-        unsigned error = lodepng::encode(png, pixels.data(), texture.width, texture.height, LCT_RGBA, bitDepth);
-        if (!error) {
-            lodepng::save_file(png, fileName);
-        }
-
-        //int success = stbi_write_png(fileName.c_str(),  static_cast<int>(texture.width), static_cast<int>(texture.height), static_cast<int>(texture.colorChannels), pixels.data(), static_cast<int>(texture.width * texture.colorChannels));
-        //if (!success)
-        //{
-        //    std::cerr << "Failed to write PNG: " << std::endl;
-        //}
     }
 }
 

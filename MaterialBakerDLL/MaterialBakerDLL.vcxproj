@@ -133,10 +133,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="MaterialBakerSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h" />
     <ClInclude Include="MaterialBakerSystem.h" />
   </ItemGroup>
