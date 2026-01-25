@@ -34,3 +34,12 @@
 [submodule "External/entt"]
 	path = External/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "external/zlib"]
+	path = external/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "external/libpng"]
+	path = external/libpng
+	url = https://github.com/pnggroup/libpng.git
+[submodule "external/LodePNG"]
+	path = external/LodePNG
+	url = https://github.com/lvandeve/lodepng.git

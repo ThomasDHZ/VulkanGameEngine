@@ -15,6 +15,7 @@
 #include <stb_image_write.h>
 #include "VulkanSystem.h"
 #include "BufferSystem.h"
+#include <lodepng.h>
 
 FileSystem& fileSystem = FileSystem::Get();
 
@@ -255,12 +256,19 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
         }
         vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
 
+        std::vector<unsigned char> png;
+        unsigned bitDepth = (bytesPerPixel == 16) ? 16 : 8;
         String fileName = filePath + std::to_string(x) + ".png";
-        int success = stbi_write_png(fileName.c_str(),  static_cast<int>(texture.width), static_cast<int>(texture.height), static_cast<int>(texture.colorChannels), pixels.data(), static_cast<int>(texture.width * texture.colorChannels));
-        if (!success)
-        {
-            std::cerr << "Failed to write PNG: " << std::endl;
+        unsigned error = lodepng::encode(png, pixels.data(), texture.width, texture.height, LCT_RGBA, bitDepth);
+        if (!error) {
+            lodepng::save_file(png, fileName);
         }
+
+        //int success = stbi_write_png(fileName.c_str(),  static_cast<int>(texture.width), static_cast<int>(texture.height), static_cast<int>(texture.colorChannels), pixels.data(), static_cast<int>(texture.width * texture.colorChannels));
+        //if (!success)
+        //{
+        //    std::cerr << "Failed to write PNG: " << std::endl;
+        //}
     }
 }
 

@@ -123,6 +123,9 @@
     <ClInclude Include="SkyBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\LodePNG\lodepng.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
@@ -193,6 +196,9 @@
     </ClCompile>
     <ClCompile Include="SkyBox.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\LodePNG\lodepng.cpp">
+      <Filter>Header Files\External</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

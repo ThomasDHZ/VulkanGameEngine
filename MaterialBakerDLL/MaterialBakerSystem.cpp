@@ -9,6 +9,7 @@
 #include <TextureSystem.h>
 #include <from_json.h>
 #include <stb_image_write.h>
+#include <lodepng.h>
 
 MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
 

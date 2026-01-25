@@ -67,7 +67,7 @@ void main()
     float thickness                 = (material.ThicknessMap                 != 0xFFFFFFFFu) ? textureLod(ThicknessMap,                 UV, 0.0f).r                 : material.Thickness;
     vec3  subSurfaceScatteringColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(SubSurfaceScatteringMap,      UV, 0.0f).rgb               : material.SubSurfaceScatteringColor;
     vec3  sheenColor                = (material.SheenMap                     != 0xFFFFFFFFu) ? textureLod(SheenMap,                     UV, 0.0f).rgb               : material.SheenColor;
-    float clearcoatTint             = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(ClearCoatMap,                 UV, 0.0f).r                 : material.ClearcoatTint;
+    float clearcoatTint             = (material.ClearCoatMap                 != 0xFFFFFFFFu) ? textureLod(ClearCoatMap,                 UV, 0.0f).r                 : material.ClearcoatTint;
     float ambientOcclusion          = (material.AmbientOcclusionMap          != 0xFFFFFFFFu) ? textureLod(AmbientOcclusionMap,          UV, 0.0f).r                 : material.AmbientOcclusion;
     vec3  normalMap                 = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(NormalMap,                    UV, 0.0f).xyz               : vec3(0.0f, 0.0f, 1.0f);
     vec3  emission                  = (material.EmissionMap                  != 0xFFFFFFFFu) ? textureLod(EmissionMap,                  UV, 0.0f).rgb               : vec3(0.0f);
