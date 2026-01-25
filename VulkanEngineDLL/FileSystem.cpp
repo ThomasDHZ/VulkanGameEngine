@@ -143,7 +143,7 @@ Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& 
     return result;
 }
 
-void FileSystem::ExportTexture(VkGuid& renderPassId, const String& dstLocation)
+void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
 {
     stbi_flip_vertically_on_write(true);  
     Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
@@ -255,14 +255,8 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& dstLocation)
         }
         vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
 
-        String fileName = dstLocation + std::to_string(x) + ".png";
-        int success = stbi_write_png(fileName.c_str(),
-            static_cast<int>(texture.width),
-            static_cast<int>(texture.height),
-            static_cast<int>(texture.colorChannels),
-            pixels.data(),
-            static_cast<int>(texture.width * texture.colorChannels));
-
+        String fileName = filePath + std::to_string(x) + ".png";
+        int success = stbi_write_png(fileName.c_str(),  static_cast<int>(texture.width), static_cast<int>(texture.height), static_cast<int>(texture.colorChannels), pixels.data(), static_cast<int>(texture.width * texture.colorChannels));
         if (!success)
         {
             std::cerr << "Failed to write PNG: " << std::endl;

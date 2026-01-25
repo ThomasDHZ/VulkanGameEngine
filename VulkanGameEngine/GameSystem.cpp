@@ -7,7 +7,7 @@
 #include "MeshSystem.h"
 #include "Mouse.h"
 #include "GameController.h"
-#include "AssetCreatorSystem.h"
+#include <MaterialBakerSystem.h>
 #include <LevelSystem.h>
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
@@ -52,7 +52,10 @@ void GameSystem::StartUp(void* windowHandle)
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
-    assetCreatorSystem.Run();
+#if defined(_WIN32)
+    shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
+    //materialBakerSystem.Run();
+#endif
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 
@@ -163,7 +166,7 @@ void GameSystem::Draw(float deltaTime)
 {
     vulkanSystem.StartFrame();
     VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-    levelSystem.Draw(commandBuffer, deltaTime, assetCreatorSystem.vulkanRenderPass, assetCreatorSystem.vulkanRenderPipeline);
+    levelSystem.Draw(commandBuffer, deltaTime);
     ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }

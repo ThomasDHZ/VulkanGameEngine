@@ -239,7 +239,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 }
 
 
-  void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime, VulkanRenderPass vulkanRenderPass, VulkanPipeline vulkanPipeline)
+  void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
   {
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);

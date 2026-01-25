@@ -8,7 +8,7 @@ class RenderSystem
 {
 public:
     static RenderSystem& Get();
-    friend class AssetCreatorSystem;
+    friend class MaterialBakerSystem;
 
 private:
     RenderSystem() = default;

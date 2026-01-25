@@ -1,10 +1,13 @@
 #version 460
-#extension GL_ARB_separate_shader_objects : enable
-//#extension GL_EXT_debug_printf : enable
-
 layout(location = 0) out vec2 fragTexCoord;
-void main() 
+
+void main()
 {
-    fragTexCoord = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-    gl_Position = vec4(fragTexCoord * 2.0f - 1.0f, 0.0f, 1.0f);
+    float u = -1.0;
+    float v = -1.0;
+    if (gl_VertexIndex == 1) u = 3.0;
+    if (gl_VertexIndex == 2) v = 3.0;
+
+    gl_Position = vec4(u, v, 0.0, 1.0);
+    fragTexCoord = (vec2(u, v) * 0.5) + 0.5;
 }
