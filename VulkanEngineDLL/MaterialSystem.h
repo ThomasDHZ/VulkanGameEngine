@@ -12,6 +12,7 @@ struct Material
     VkGuid NormalDataId = VkGuid();
     VkGuid PackedMRODataId = VkGuid();
     VkGuid PackedSheenSSSDataId = VkGuid();
+    VkGuid UnusedDataId = VkGuid();
     VkGuid EmissionDataId = VkGuid();
 
     Material() = default;

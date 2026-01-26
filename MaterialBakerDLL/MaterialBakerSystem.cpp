@@ -63,20 +63,20 @@ void MaterialBakerSystem::Run()
                 return std::filesystem::last_write_time(texPath) < dstTime;
             };
 
-        if (is_newer(src) ||
-            is_newer(albedoMapSrc) ||
-            is_newer(metallicMapSrc) ||
-            is_newer(roughnessMapSrc) ||
-            is_newer(thicknessMapSrc) ||
-            is_newer(subSurfaceScatteringColorMapSrc) ||
-            is_newer(sheenMapSrc) ||
-            is_newer(clearCoatMapSrc) ||
-            is_newer(ambientOcclusionMapSrc) ||
-            is_newer(normalMapSrc) ||
-            is_newer(alphaMapSrc) ||
-            is_newer(emissionMapSrc) ||
-            is_newer(heightMapSrc))
-        {
+        //if (is_newer(src) ||
+        //    is_newer(albedoMapSrc) ||
+        //    is_newer(metallicMapSrc) ||
+        //    is_newer(roughnessMapSrc) ||
+        //    is_newer(thicknessMapSrc) ||
+        //    is_newer(subSurfaceScatteringColorMapSrc) ||
+        //    is_newer(sheenMapSrc) ||
+        //    is_newer(clearCoatMapSrc) ||
+        //    is_newer(ambientOcclusionMapSrc) ||
+        //    is_newer(normalMapSrc) ||
+        //    is_newer(alphaMapSrc) ||
+        //    is_newer(emissionMapSrc) ||
+        //    is_newer(heightMapSrc))
+        //{
             LoadMaterial(materialPath);
 
             CleanRenderPass();
@@ -89,11 +89,11 @@ void MaterialBakerSystem::Run()
             textureBindingList.clear();
 
             std::cout << "Baked: " << src.filename() << std::endl;
-        }
+     /*   }
         else
         {
             continue; 
-        }
+        }*/
     }
 }
 

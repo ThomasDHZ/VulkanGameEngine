@@ -149,6 +149,40 @@
       }
     },
     {
+      "TextureAttachment": 5,
+      "RenderedTextureId": "c98eb24f-ccba-4dfe-8e31-6d76a9622d76",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
       "TextureAttachment": 7,
       "RenderedTextureId": "0f9cd196-62cc-4ad1-95ca-13af53d93d4d",
       "MipMapCount": 1,
@@ -233,6 +267,15 @@
     },
     {
       "TextureAttachment": 4,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 1.0,
+        "Float32_2": 1.0,
+        "Float32_3": 1.0
+      }
+    },
+    {
+      "TextureAttachment": 5,
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 1.0,

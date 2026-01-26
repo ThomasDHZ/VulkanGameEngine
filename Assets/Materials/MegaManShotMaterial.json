@@ -7,5 +7,6 @@
   "NormalData": "TextureLoader/MegaManShot_NormalDataTexture.json",
   "PackedMROData": "TextureLoader/MegaManShot_PackedMRODataTexture.json",
   "PackedSheenSSSData": "TextureLoader/MegaManShot_PackedSheenSSSDataTexture.json",
+  "UnusedData": "TextureLoader/MegaManShot_UnusedDataTexture.json",
   "EmissionData": "TextureLoader/MegaManShot_EmissionDataTexture.json"
 }

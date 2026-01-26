@@ -7,5 +7,6 @@
   "NormalData": "TextureLoader/AnimeGirl_NormalDataTexture.json",
   "PackedMROData": "TextureLoader/AnimeGirl_PackedMRODataTexture.json",
   "PackedSheenSSSData": "TextureLoader/AnimeGirl_PackedSheenSSSDataTexture.json",
+  "UnusedData": "TextureLoader/AnimeGirl_UnusedDataTexture.json",
   "EmissionData": "TextureLoader/AnimeGirl_EmissionDataTexture.json"
 }

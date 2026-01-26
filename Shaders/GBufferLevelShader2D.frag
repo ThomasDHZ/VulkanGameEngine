@@ -13,7 +13,7 @@ layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha             
 layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 TempMap;               //vec4(                                                                                    ) - R16G16B16A16_UNORM
+layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
 layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
 layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_SRGB
 
@@ -152,6 +152,7 @@ void main()
     vec4 normalData =         textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;  
     vec4 packedMROData =      textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;
     vec4 packedSheenSSSData = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;  
+    vec4 tempMapData        = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;  
     vec4 emissionData =       textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;   
 
     if (albedoData.a < 0.1f) discard; 
@@ -171,6 +172,7 @@ void main()
     outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalStrength, normalData.a);
     outPackedMRO = packedMROData;
     outPackedSheenSSS = packedSheenSSSData;
+    outTempMap = tempMapData;
     outParallaxInfo = vec4(finalUV - TexCoords, 0.0f, 1.0f);
     outEmission = emissionData;
 }

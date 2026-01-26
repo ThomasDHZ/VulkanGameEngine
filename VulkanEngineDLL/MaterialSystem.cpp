@@ -30,6 +30,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.NormalDataId =         !json["NormalData"].is_null()         ? textureSystem.CreateTexture(json["NormalData"])         : VkGuid();
     material.PackedMRODataId =      !json["PackedMROData"].is_null()      ? textureSystem.CreateTexture(json["PackedMROData"])      : VkGuid();
     material.PackedSheenSSSDataId = !json["PackedSheenSSSData"].is_null() ? textureSystem.CreateTexture(json["PackedSheenSSSData"]) : VkGuid();
+    material.UnusedDataId =           !json["UnusedData"].is_null()           ? textureSystem.CreateTexture(json["UnusedData"])           : VkGuid();
     material.EmissionDataId =       !json["EmissionData"].is_null()       ? textureSystem.CreateTexture(json["EmissionData"])       : VkGuid();
     MaterialList.emplace_back(material);
     return materialId;
@@ -43,6 +44,7 @@ void MaterialSystem::Update(const float& deltaTime)
         const uint normalDataId =         material.NormalDataId != VkGuid()          ? textureSystem.FindTexture(material.NormalDataId, 0).textureIndex         : SIZE_MAX;
         const uint packedMRODataId =      material.PackedMRODataId != VkGuid()       ? textureSystem.FindTexture(material.PackedMRODataId, 0).textureIndex      : SIZE_MAX;
         const uint packedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid()  ? textureSystem.FindTexture(material.PackedSheenSSSDataId, 0).textureIndex : SIZE_MAX;
+        const uint unusedDataId =           material.PackedSheenSSSDataId != VkGuid()  ? textureSystem.FindTexture(material.UnusedDataId, 0).textureIndex           : SIZE_MAX;
         const uint emissionDataId =       material.EmissionDataId != VkGuid()        ? textureSystem.FindTexture(material.EmissionDataId, 0).textureIndex       : SIZE_MAX;
 
 
@@ -51,6 +53,7 @@ void MaterialSystem::Update(const float& deltaTime)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalDataId", normalDataId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "PackedMRODataId", packedMRODataId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "PackedSheenSSSDataId", packedSheenSSSDataId);
+        shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "UnusedDataId", unusedDataId);
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionDataId", emissionDataId);
         shaderSystem.UpdateShaderBuffer(shaderStruct, material.MaterialBufferId);
     }

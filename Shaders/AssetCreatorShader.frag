@@ -56,7 +56,8 @@ layout(location = 0) out vec4 outAlbedo;             //Albedo/Alpha             
 layout(location = 1) out vec4 outNormalData;         //Normal/NormalStrength/Height                                                               - R16G16B16A16_UNORM
 layout(location = 2) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 4) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_SRGB
+layout(location = 4) out vec4 outUnused;             //unused for now                                                                             - R16G16B16A16_UNORM
+layout(location = 5) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_SRGB
 
 layout(binding = 0)  buffer  MaterialProperities { MaterialProperitiesBuffer importMaterialProperties; } importMaterialBuffer;
 layout(binding = 1)  uniform sampler2D AlbedoMap;
@@ -109,5 +110,6 @@ void main()
     outNormalData = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
     outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
     outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
+    outUnused = vec4(1.0f, 0.0f, 0.0f, 1.0f);
     outEmission = vec4(emission, material.ClearcoatRoughness);
 }

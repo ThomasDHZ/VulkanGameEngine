@@ -7,5 +7,6 @@
   "NormalData": "TextureLoader/SparkMan_NormalDataTexture.json",
   "PackedMROData": "TextureLoader/SparkMan_PackedMRODataTexture.json",
   "PackedSheenSSSData": "TextureLoader/SparkMan_PackedSheenSSSDataTexture.json",
+  "UnusedData": "TextureLoader/SparkMan_UnusedDataTexture.json",
   "EmissionData": "TextureLoader/SparkMan_EmissionDataTexture.json"
 }
