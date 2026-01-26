@@ -1,6 +1,7 @@
 {
   "WindowResolution": [ 1920, 1080 ],
   "ShaderSourceDirectory": "../Shaders",
+  "AssetDirectory": "../Assets/",
   "MaterialSourceDirectory": "../Assets/ImportMaterials",
   "MaterialDstDirectory": "../Assets/Textures",
   "TextureAssetRenderer": "../Assets/RenderPass/AssetCreatorRenderPass.json",

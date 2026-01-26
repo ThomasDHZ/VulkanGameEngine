@@ -10,19 +10,21 @@
 
 #ifndef PLATFORM_ANDROID
     ConfigSystem::ConfigSystem() : WindowResolution(glm::ivec2(1280, 720)),
-    EngineBasePath(),
-    ShaderSourceDirectory(EngineBasePath + "../Assets/Shaders"),
-    MaterialSourceDirectory(EngineBasePath + "../Assets/Materials"),
-    MaterialDstDirectory(EngineBasePath + "../Assets/Material2"),
-    TextureAssetRenderer(EngineBasePath + "../Assets/RenderPass/AssetCreatorRenderPass.json"),
-    CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
-    CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
-    CompiledShaderOutputDirectory("../Assets/Shaders/")
+        EngineBasePath(),
+        AssetDirectory(EngineBasePath + "../Assets/"),
+        ShaderSourceDirectory(EngineBasePath + "../Assets/Shaders"),
+        MaterialSourceDirectory(EngineBasePath + "../Assets/Materials"),
+        MaterialDstDirectory(EngineBasePath + "../Assets/Material2"),
+        TextureAssetRenderer(EngineBasePath + "../Assets/RenderPass/AssetCreatorRenderPass.json"),
+        CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
+        CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
+        CompiledShaderOutputDirectory("../Assets/Shaders/")
     {
 
     }
 
     ConfigSystem::ConfigSystem(const nlohmann::json& j) : WindowResolution(ParseWindowResolution(j)),
+    AssetDirectory(j.at("AssetDirectory").get<String>()),
     ShaderSourceDirectory(j.at("ShaderSourceDirectory").get<String>()),
     MaterialSourceDirectory(j.at("MaterialSourceDirectory").get<String>()),
     MaterialDstDirectory(j.at("MaterialDstDirectory").get<String>()),

@@ -41,6 +41,7 @@ public:
 	DLL_EXPORT bool			  FileExists(const String& filePath);
     DLL_EXPORT nlohmann::json LoadConfig(const String& configPath);
 	DLL_EXPORT nlohmann::json LoadJsonFile(const String& filePath);
+	DLL_EXPORT Vector<byte>   LoadPNG(const String& filePath, uint& width, uint& height, uint& bitsPerChannel, int& channelCount);
     DLL_EXPORT Vector<byte>   LoadImageFile(const String& filePath, int& width, int& height, int& channelCount);
 	DLL_EXPORT void			  ExportTexture(VkGuid& renderPassId, const String& filePath);
 	DLL_EXPORT String		  File_GetFileExtention(const char* fileName);

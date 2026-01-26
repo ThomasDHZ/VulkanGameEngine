@@ -11,6 +11,7 @@ public:
 #ifndef PLATFORM_ANDROID
     const ivec2 WindowResolution;
     const String EngineBasePath;
+    const String AssetDirectory;
     const String ShaderSourceDirectory;
     const String MaterialSourceDirectory;
     const String MaterialDstDirectory;

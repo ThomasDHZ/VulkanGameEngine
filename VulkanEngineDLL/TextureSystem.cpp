@@ -23,11 +23,26 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 
 	int width = 0;
 	int height = 0;
+	uint bitDepth = 0;
 	int textureChannels = 0;
 	Vector<byte> textureData;
 	for (size_t x = 0; x < textureLoader.TextureFilePath.size(); x++)
 	{
-		Vector<byte> layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
+		Vector<byte> layerData;
+		String ext = fileSystem.GetFileExtention(textureLoader.TextureFilePath[x].c_str());
+		if (ext == "png" && textureLoader.TextureFilePath.size() == 1)
+		{
+			uint uWidth = 0;
+			uint uHeight = 0;
+			layerData = fileSystem.LoadPNG(textureLoader.TextureFilePath[x], uWidth, uHeight, bitDepth, textureChannels);
+			width = static_cast<int>(uWidth);
+			height = static_cast<int>(uHeight);
+		}
+		else
+		{
+			bitDepth = 4;
+			layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
+		}
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 	}
 
@@ -36,8 +51,26 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	{
 	case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
 	case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
-	case 3: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
-	case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+	case 3:
+	{
+		switch (bitDepth)
+		{
+			case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
+			case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16_SFLOAT : VK_FORMAT_R16G16B16_UNORM; break;
+			case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32_SFLOAT : VK_FORMAT_R32G32B32_UINT; break;
+		}
+		break;
+	}
+	case 4:
+	{
+		switch (bitDepth)
+		{
+		case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+		case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16B16A16_UNORM; break;
+		case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32A32_SFLOAT : VK_FORMAT_R32G32B32A32_UINT; break;
+		}
+		break;
+	}
 	default:
 	{
 		std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;

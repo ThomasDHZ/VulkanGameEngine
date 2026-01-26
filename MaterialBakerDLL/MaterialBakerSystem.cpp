@@ -15,7 +15,7 @@ MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
 
 void MaterialBakerSystem::Run()
 {
-    InitDummyAndSamplers(); 
+    InitDummyAndSamplers();
 
     const String inDir = configSystem.MaterialSourceDirectory.c_str();
     std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
@@ -26,31 +26,74 @@ void MaterialBakerSystem::Run()
     Vector<String> ext = { "json" };
     Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
 
+
     for (auto& materialPath : materialFiles)
     {
-        std::filesystem::path src = materialPath;
-        std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
-        std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
-        if (std::filesystem::exists(dst) &&
-            std::filesystem::last_write_time(dst) >= std::filesystem::last_write_time(src))
-        {
-            continue;
-        }
-
-        LoadMaterial(materialPath);
         nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
         ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
 
-        CleanRenderPass();
-        BuildRenderPass(resolution);
-        UpdateDescriptorSets();
-        Draw();
-        fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
+        std::filesystem::path src = materialPath;
+        std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
+        std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
 
-        CleanInputResources();         
-        textureBindingList.clear();
+        std::filesystem::path albedoMapSrc = !json["AlbedoMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["AlbedoMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path metallicMapSrc = !json["MetallicMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["MetallicMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path roughnessMapSrc = !json["RoughnessMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["RoughnessMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path thicknessMapSrc = !json["ThicknessMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["ThicknessMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path subSurfaceScatteringColorMapSrc = !json["SubSurfaceScatteringColorMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["SubSurfaceScatteringColorMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path sheenMapSrc = !json["SheenMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["SheenMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path clearCoatMapSrc = !json["ClearCoatMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["ClearCoatMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path ambientOcclusionMapSrc = !json["AmbientOcclusionMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["AmbientOcclusionMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path normalMapSrc = !json["NormalMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["NormalMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path alphaMapSrc = !json["AlphaMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["AlphaMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path emissionMapSrc = !json["EmissionMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["EmissionMap"].get<String>()) : std::filesystem::path();
+        std::filesystem::path heightMapSrc = !json["HeightMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["HeightMap"].get<String>()) : std::filesystem::path();
 
-        std::cout << "Baked: " << src.filename() << std::endl;
+        
+
+        auto srcTime = std::filesystem::last_write_time(src);
+        auto dstTime = std::filesystem::last_write_time(std::filesystem::path(configSystem.AssetDirectory + materialPath));
+        auto is_newer = [&](const std::filesystem::path& texPath) -> bool 
+            {
+                if (texPath.empty() || !std::filesystem::exists(texPath)) 
+                {
+                    return false;
+                }
+                auto time = std::filesystem::last_write_time(texPath);
+                return std::filesystem::last_write_time(texPath) < dstTime;
+            };
+
+        if (is_newer(src) ||
+            is_newer(albedoMapSrc) ||
+            is_newer(metallicMapSrc) ||
+            is_newer(roughnessMapSrc) ||
+            is_newer(thicknessMapSrc) ||
+            is_newer(subSurfaceScatteringColorMapSrc) ||
+            is_newer(sheenMapSrc) ||
+            is_newer(clearCoatMapSrc) ||
+            is_newer(ambientOcclusionMapSrc) ||
+            is_newer(normalMapSrc) ||
+            is_newer(alphaMapSrc) ||
+            is_newer(emissionMapSrc) ||
+            is_newer(heightMapSrc))
+        {
+            LoadMaterial(materialPath);
+
+            CleanRenderPass();
+            BuildRenderPass(resolution);
+            UpdateDescriptorSets();
+            Draw();
+            fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
+
+            CleanInputResources();
+            textureBindingList.clear();
+
+            std::cout << "Baked: " << src.filename() << std::endl;
+        }
+        else
+        {
+            continue; 
+        }
     }
 }
 
