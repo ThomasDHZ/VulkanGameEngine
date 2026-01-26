@@ -1,15 +1,15 @@
 {
   "TextureFilePath": [
-    "Textures/hot_rt.png",
-    "Textures/hot_lf.png",
+    "Textures/hot_ft.png",
+    "Textures/hot_bk.png",
     "Textures/hot_up.png",
     "Textures/hot_dn.png",
-    "Textures/hot_ft.png",
-    "Textures/hot_bk.png"
+    "Textures/hot_rt.png",
+    "Textures/hot_lf.png"
   ],
   "TextureId": "64782092-bab5-4133-a0c9-9b6f206b68f0",
   "TextureByteFormat": 43,
-  "UsingSRGBFormat": false,
+  "UsingSRGBFormat": true,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,

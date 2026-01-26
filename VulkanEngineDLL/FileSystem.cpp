@@ -111,17 +111,14 @@ nlohmann::json FileSystem::LoadJsonFile(const String& filePath)
     return nlohmann::json::parse(rawJson);
 }
 
-Vector<byte> FileSystem::LoadPNG(const String& filePath,
-    uint& width,
-    uint& height,
-    uint& bitsPerChannel,
-    int& channelCount)
+Vector<byte> FileSystem::LoadPNG(const String& filePath, uint& width, uint& height, uint& bitsPerChannel, int& channelCount)
 {
-    width = 0;
-    height = 0;
-    bitsPerChannel = 0;
-    channelCount = 0;
+    // ... load fileBuffer ...
 
+    LodePNGState state;
+    lodepng_state_init(&state);
+
+    unsigned w = 0, h = 0;
     std::vector<unsigned char> fileBuffer;
     unsigned error = lodepng::load_file(fileBuffer, filePath.c_str());
     if (error)
@@ -131,43 +128,22 @@ Vector<byte> FileSystem::LoadPNG(const String& filePath,
         return Vector<byte>();
     }
 
-    LodePNGState state;
-    lodepng_state_init(&state);
+     error = lodepng_inspect(&w, &h, &state, fileBuffer.data(), fileBuffer.size());
+    if (error) { /* handle */ }
 
-    // First inspect to get original info (width, height, bitdepth, colortype)
-    unsigned w = 0, h = 0;
-    error = lodepng_inspect(&w, &h, &state, fileBuffer.data(), fileBuffer.size());
-    if (error)
-    {
-        std::cerr << "Inspect failed for '" << filePath << "': "
-            << lodepng_error_text(error) << "\n";
-        lodepng_state_cleanup(&state);
-        return Vector<byte>();
-    }
+    bool use16bit = (state.info_png.color.bitdepth == 16);
 
-    // Force output to RGBA (lodepng will add full-opacity alpha if missing,
-    // convert grayscale/palette to RGBA, etc.)
     state.info_raw.colortype = LCT_RGBA;
-
-    // Preserve precision: use 16-bit output only if the original PNG uses 16-bit
-    // Otherwise output 8-bit (lodepng will upscale lower bitdepths like 1/2/4 to 8)
-    uint originalBitDepth = state.info_png.color.bitdepth;
-    state.info_raw.bitdepth = (originalBitDepth > 8) ? 16 : 8;
+    state.info_raw.bitdepth = use16bit ? 16 : 8;
 
     unsigned char* rawImage = nullptr;
     error = lodepng_decode(&rawImage, &w, &h, &state, fileBuffer.data(), fileBuffer.size());
-    if (error)
-    {
-        std::cerr << "Decode failed for '" << filePath << "': "
-            << lodepng_error_text(error) << "\n";
-        lodepng_state_cleanup(&state);
-        return Vector<byte>();
-    }
+    if (error) { /* handle */ free(rawImage); /* cleanup */ }
 
     width = w;
     height = h;
-    bitsPerChannel = state.info_raw.bitdepth;  // Will be 8 or 16
-    channelCount = 4;                          // Always 4 after conversion
+    bitsPerChannel = state.info_raw.bitdepth;   // now correct: 8 or 16
+    channelCount = 4;
 
     size_t bytesPerPixel = (bitsPerChannel / 8) * 4;
     size_t totalBytes = static_cast<size_t>(w) * h * bytesPerPixel;
@@ -176,27 +152,22 @@ Vector<byte> FileSystem::LoadPNG(const String& filePath,
 
     if (bitsPerChannel == 16)
     {
-        // PNG stores 16-bit samples in big-endian; swap to little-endian for correct uint16_t values
-        // Apply to all 4 channels (RGBA)
-        uint16_t* src16 = reinterpret_cast<uint16_t*>(rawImage);
-        uint16_t* dst16 = reinterpret_cast<uint16_t*>(result.data());
-
-        size_t sampleCount = static_cast<size_t>(w) * h * 4;
-        for (size_t i = 0; i < sampleCount; ++i)
+        uint16_t* src = reinterpret_cast<uint16_t*>(rawImage);
+        uint16_t* dst = reinterpret_cast<uint16_t*>(result.data());
+        size_t count = static_cast<size_t>(w) * h * 4;
+        for (size_t i = 0; i < count; ++i)
         {
-            uint16_t v = src16[i];
-            dst16[i] = ((v >> 8) & 0xFF) | ((v & 0xFF) << 8);
+            uint16_t v = src[i];
+            dst[i] = (v >> 8) | (v << 8);   // swap bytes
         }
     }
     else
     {
-        // 8-bit: direct copy (no endian issues)
         std::memcpy(result.data(), rawImage, totalBytes);
     }
 
     free(rawImage);
     lodepng_state_cleanup(&state);
-
     return result;
 }
 

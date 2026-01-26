@@ -1,8 +1,8 @@
 {
   "TextureFilePath": [ "ImportTextures/SparkMan_DiffuseTexture.png" ],
   "TextureId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",
-  "TextureByteFormat": 43,
-  "UsingSRGBFormat": true,
+  "TextureByteFormat": 37,
+  "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,

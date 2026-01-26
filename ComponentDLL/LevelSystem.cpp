@@ -228,9 +228,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
-    verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json");
+   /* verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json");
-    bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json");
+    bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json");*/
     hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json");
     
@@ -244,9 +244,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
       RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
-      RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
-      RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
-      RenderBloomPass(commandBuffer, bloomRenderPassId);
+      //RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
+      //RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
+      //RenderBloomPass(commandBuffer, bloomRenderPassId);
       RenderHdrPass(commandBuffer, hdrRenderPassId);
       RenderFrameBuffer(commandBuffer, frameBufferId);
 

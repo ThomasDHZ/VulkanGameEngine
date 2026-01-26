@@ -9,7 +9,7 @@
   ],
   "TextureId": "34b65c06-7b11-4c56-abbe-68ce031fade2",
   "TextureByteFormat": 43,
-  "UsingSRGBFormat": false,
+  "UsingSRGBFormat": true,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,

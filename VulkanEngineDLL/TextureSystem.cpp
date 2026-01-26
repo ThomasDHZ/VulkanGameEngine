@@ -23,7 +23,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 
 	int width = 0;
 	int height = 0;
-	uint bitDepth = 0;
+	uint bitsPerChannel = 0;
 	int textureChannels = 0;
 	Vector<byte> textureData;
 	for (size_t x = 0; x < textureLoader.TextureFilePath.size(); x++)
@@ -34,13 +34,13 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		{
 			uint uWidth = 0;
 			uint uHeight = 0;
-			layerData = fileSystem.LoadPNG(textureLoader.TextureFilePath[x], uWidth, uHeight, bitDepth, textureChannels);
+			layerData = fileSystem.LoadPNG(textureLoader.TextureFilePath[x], uWidth, uHeight, bitsPerChannel, textureChannels);
 			width = static_cast<int>(uWidth);
 			height = static_cast<int>(uHeight);
 		}
 		else
 		{
-			bitDepth = 4;
+			bitsPerChannel = 8;
 			layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
 		}
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
@@ -53,9 +53,9 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
 	case 3:
 	{
-		switch (bitDepth)
+		switch (bitsPerChannel)
 		{
-			case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
+			case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
 			case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16_SFLOAT : VK_FORMAT_R16G16B16_UNORM; break;
 			case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32_SFLOAT : VK_FORMAT_R32G32B32_UINT; break;
 		}
@@ -63,11 +63,10 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	}
 	case 4:
 	{
-		switch (bitDepth)
+		switch (bitsPerChannel)
 		{
-		case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
-		case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16B16A16_UNORM; break;
-		case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32A32_SFLOAT : VK_FORMAT_R32G32B32A32_UINT; break;
+			case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+			case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16B16A16_UNORM; break;
 		}
 		break;
 	}
