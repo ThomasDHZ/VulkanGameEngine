@@ -92,6 +92,7 @@ void main()
     vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(AlbedoMap,                    UV, 0.0f)                   : vec4(material.Albedo, 1.0f);
     float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(MetallicMap,                  UV, 0.0f).r                 : material.Metallic;
     float roughness                 = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(MetallicMap,                  UV, 0.0f).g                 : material.Roughness;
+    vec3  normalMapRaw              = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(NormalMap,                    UV, 0.0f).rgb               : vec3(0.5f, 0.5f, 1.0f);
     float thickness                 = (material.ThicknessMap                 != 0xFFFFFFFFu) ? textureLod(ThicknessMap,                 UV, 0.0f).r                 : material.Thickness;
     vec3  subSurfaceScatteringColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(SubSurfaceScatteringMap,      UV, 0.0f).rgb               : material.SubSurfaceScatteringColor;
     vec3  sheenColor                = (material.SheenMap                     != 0xFFFFFFFFu) ? textureLod(SheenMap,                     UV, 0.0f).rgb               : material.SheenColor;
@@ -99,16 +100,13 @@ void main()
     float ambientOcclusion          = (material.AmbientOcclusionMap          != 0xFFFFFFFFu) ? textureLod(AmbientOcclusionMap,          UV, 0.0f).r                 : material.AmbientOcclusion;
     vec3  emission                  = (material.EmissionMap                  != 0xFFFFFFFFu) ? textureLod(EmissionMap,                  UV, 0.0f).rgb               : vec3(0.0f);
     float height                    = (material.HeightMap                    != 0xFFFFFFFFu) ? textureLod(HeightMap,                    UV, 0.0f).r                 : material.Height;
-    //albedo.a                        = (material.AlphaMap                     != 0xFFFFFFFFu) ? textureLod(TextureMap[material.AlphaMap],                     UV, 0.0f).a                 : material.Alpha;
-    vec3 normalMap                  = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(NormalMap,                    UV, 0.0f).xyz               : vec3(0.0f, 0.0f, 1.0f);
-    if (material.NormalMap != 0xFFFFFFFFu) {
-        normalMap = normalMap * 2.0f - 1.0f;
-    }
-    normalMap = normalize(normalMap);
-    vec2 encodedNormal = OctahedronEncode(normalMap);
+
+    vec3 tangentNormal = normalMapRaw * 2.0 - 1.0;
+    tangentNormal = normalize(tangentNormal);
+    vec2 encodedNormal = OctahedronEncode(tangentNormal);
 
     outAlbedo = albedo;
-    outNormalData = vec4((encodedNormal * 0.5f) + 0.5f, material.NormalStrength, height);
+    outNormalData = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
     outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
     outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
     outEmission = vec4(emission, material.ClearcoatRoughness);

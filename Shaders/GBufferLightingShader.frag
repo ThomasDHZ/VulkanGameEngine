@@ -38,13 +38,13 @@ layout(constant_id = 16)  const uint DescriptorBindingType16  = IrradianceCubeMa
 layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;       //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;         //Albedo/Alpha                                                                               - R8G8B8A8_UNORM
+layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;         //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
 layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;      //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput; //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
 layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;           //vec4(                                                                                    ) - R16G16B16A16_UNORM
 layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput; //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;       //Emission                                                                                   - R8G8B8A8_UNORM
+layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;       //Emission                                                                                   - R8G8B8A8_SRGB
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
 layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
 layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];

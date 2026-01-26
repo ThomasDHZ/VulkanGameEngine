@@ -18,13 +18,13 @@ layout (location = 5) in flat uint  PS_MaterialID;
 layout (location = 6) in flat vec4  PS_UVOffset;
 
 layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_UNORM
+layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
 layout(location = 2) out vec4 outNormalData;         //Normal/NormalStrength                                                                      - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
 layout(location = 5) out vec4 TempMap;               //vec4(                                                                                    ) - R16G16B16A16_UNORM
 layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_UNORM
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_SRGB
 
 layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
 layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
@@ -108,7 +108,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     vec2 prevUV = currentUV + deltaUV;
     float afterHeight = currentHeight - currentLayerDepth;
-    float beforeHeight = 1.0f - textureLod(TextureMap[heightIdx], prevUV, 0.0f).r - (currentLayerDepth - 1.0f/numLayers);
+    float beforeHeight = 1.0f - textureLod(TextureMap[heightIdx], prevUV, 0.0f).a - (currentLayerDepth - 1.0f/numLayers); 
 
     float weight = step(0.5, afterHeight / (afterHeight + beforeHeight + 1e-5f));
     vec2 finalUV = mix(currentUV, prevUV, weight);
@@ -157,16 +157,20 @@ void main() {
 
     if (albedoData.a < 0.1f) discard; 
 
-    vec2 f = (normalData.xy * 2.0f) - 1.0f;
-    vec3 normal = normalize(OctahedronDecode(f));
-    vec3 normalWS = normalize(TBN * normal);
-    normalWS.xy *= normalData.g;
-    normalWS = normalize(normalWS);
-    vec2 encodedNormal = OctahedronEncode(normalWS);
+    vec2 f = normalData.xy * 2.0 - 1.0;
+    float normalStrength = normalData.b;
+    
+    vec3 tangentNormal = OctahedronDecode(f);
+    tangentNormal.xy *= normalStrength;
+    tangentNormal = normalize(tangentNormal);
+
+    vec3 normalWS = normalize(TBN * tangentNormal);
+    vec2 encodedNormalWS = OctahedronEncode(normalWS);
+
 
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedoData;
-    outNormalData = vec4((encodedNormal * 0.5f) + 0.5f, normalData.b, normalData.a);
+    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalStrength, normalData.a);
     outPackedMRO = packedMROData;
     outPackedSheenSSS = packedSheenSSSData;
     outParallaxInfo = vec4(finalUV - UV, 0.0f, 1.0f);
