@@ -22,27 +22,29 @@ layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDesc
 layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
 layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
 layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 4)   const uint DescriptorBindingType4  = MeshPropertiesDescriptor;
-layout(constant_id = 5)   const uint DescriptorBindingType5  = MaterialDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6  = DirectionalLightDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7  = PointLightDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8  = TextureDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9  = SkyBoxDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = IrradianceCubeMapDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = PrefilterDescriptor;
+layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
+layout(constant_id = 5)   const uint DescriptorBindingType5  = MeshPropertiesDescriptor;
+layout(constant_id = 6)   const uint DescriptorBindingType6  = MaterialDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7  = DirectionalLightDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8  = PointLightDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9  = TextureDescriptor;
+layout(constant_id = 10)   const uint DescriptorBindingType10  = SkyBoxDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = IrradianceCubeMapDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
-layout(input_attachment_index = 2, binding = 2) uniform subpassInput depthInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput skyBoxInput;
-layout(binding = 4)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 5)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
-layout(binding = 6)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 7)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 8) uniform sampler2D TextureMap[];
-layout(binding = 9) uniform samplerCube CubeMap;
-layout(binding = 10) uniform samplerCube IrradianceMap;
-layout(binding = 11) uniform samplerCube PrefilterMap;
+layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput depthInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput skyBoxInput;
+layout(binding = 5)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 6)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 7)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 8)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 9) uniform sampler2D TextureMap[];
+layout(binding = 10) uniform samplerCube CubeMap;
+layout(binding = 11) uniform samplerCube IrradianceMap;
+layout(binding = 12) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -62,15 +64,16 @@ layout(push_constant) uniform GBufferSceneDataBuffer
 //    return vec2(high, low);
 //}
 
-//vec3 OctahedronDecode(vec2 f)
-//{
-//    vec3 n;
-//    n.xy = f.xy;
-//    n.z = 1.0 - abs(f.x) - abs(f.y);
-//    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
-//    return normalize(n);
-//}
-//
+vec3 OctahedronDecode(vec2 f)
+{
+    vec3 n = vec3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
+    if (n.z < 0.0)
+    {
+        n.xy = (1.0 - abs(n.yx)) * sign(n.xy);
+    }
+    return normalize(n);
+}
+
 //float DistributionGGX(vec3 N, vec3 H, float roughness)
 //{
 //    float a = roughness * roughness;
@@ -232,7 +235,7 @@ void main()
 
     const vec3  position            = subpassLoad(positionInput).rgb;
     const vec3  albedo              = subpassLoad(albedoInput).rgb;
-//    const vec4  normalData          = subpassLoad(normalInput);
+    const vec4  normalData          = subpassLoad(normalInput);
 //    const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
 //    const vec3  emission            = subpassLoad(emissionInput).rgb;
 
@@ -247,8 +250,8 @@ void main()
 //    vec3 subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
 //    float thickness = SheenSSS_SSSB_Thickness.y;
 //
-//    vec2 f = (normalData.xy * 2.0) - 1.0;
-//    vec3 N = normalize(OctahedronDecode(f));
+    vec2 f = (normalData.xy * 2.0) - 1.0;
+    vec3 N = normalize(OctahedronDecode(f));
 //    float normalStrength = normalData.z;  // not used in lighting yet?
 //
 //    vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
@@ -396,7 +399,7 @@ void main()
 //    ambient = max(ambient, vec3(0.02) * albedo);
 //
 //    vec3  color = ambient + Lo;
-    outColor = vec4(albedo, 1.0f);
+ outColor = vec4(N * 0.5 + 0.5, 1.0);
 
 //    vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
 //    outBloom = vec4(bloomColor, 1.0f);

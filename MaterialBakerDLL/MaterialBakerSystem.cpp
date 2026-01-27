@@ -493,7 +493,17 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
-    shaderSystem.UpdateShaderBuffer(shaderStruct, material.MaterialBufferId);
+
+    size_t offset = 0;
+    VulkanBuffer vulkanBuffer = bufferSystem.FindVulkanBuffer(material.MaterialBufferId);
+    for (const auto& shaderStrucVar : shaderStruct.ShaderBufferVariableList)
+    {
+        offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
+        void* dest = static_cast<byte*>(shaderStruct.ShaderStructBuffer.data()) + offset;
+        memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
+        offset += shaderStrucVar.Size;
+    }
+    bufferSystem.VMAUpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
 }
 
 void MaterialBakerSystem::UpdateDescriptorSets()

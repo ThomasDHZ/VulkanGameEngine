@@ -27,42 +27,20 @@ layout (location = 4) out vec4  PS_Color;
 layout (location = 5) out uint  PS_MaterialID;
 layout (location = 6) out vec4  PS_UVOffset;
 
-layout(constant_id = 0) const uint VertexAttributeLocation0 = 0;
-layout(constant_id = 1) const uint VertexInputRateLocation0 = 1;
-layout(constant_id = 2) const uint VertexAttributeLocation1 = 0;
-layout(constant_id = 3) const uint VertexInputRateLocation1 = 1;
-layout(constant_id = 4) const uint VertexAttributeLocation2 = 0;
-layout(constant_id = 5) const uint VertexInputRateLocation2 = 1;
-layout(constant_id = 6) const uint VertexAttributeLocation3 = 0;
-layout(constant_id = 7) const uint VertexInputRateLocation3 = 1;
-layout(constant_id = 8) const uint VertexAttributeLocation4 = 0;
-layout(constant_id = 9) const uint VertexInputRateLocation4 = 1;
+layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
+layout(constant_id = 1)  const uint VertexInputRateLocation0 = 1;
+layout(constant_id = 2)  const uint VertexAttributeLocation1 = 0;
+layout(constant_id = 3)  const uint VertexInputRateLocation1 = 1;
+layout(constant_id = 4)  const uint VertexAttributeLocation2 = 0;
+layout(constant_id = 5)  const uint VertexInputRateLocation2 = 1;
+layout(constant_id = 6)  const uint VertexAttributeLocation3 = 0;
+layout(constant_id = 7)  const uint VertexInputRateLocation3 = 1;
+layout(constant_id = 8)  const uint VertexAttributeLocation4 = 0;
+layout(constant_id = 9)  const uint VertexInputRateLocation4 = 1;
 layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
 layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
-
-layout(constant_id = 14)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
-layout(constant_id = 15)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
-layout(constant_id = 16)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
-layout(constant_id = 17)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 18)   const uint DescriptorBindingType4  = MeshPropertiesDescriptor;
-layout(constant_id = 19)   const uint DescriptorBindingType5  = MaterialDescriptor;
-layout(constant_id = 20)   const uint DescriptorBindingType6  = DirectionalLightDescriptor;
-layout(constant_id = 21)   const uint DescriptorBindingType7  = PointLightDescriptor;
-layout(constant_id = 22)   const uint DescriptorBindingType8  = TextureDescriptor;
-layout(constant_id = 23)   const uint DescriptorBindingType9  = SkyBoxDescriptor;
-layout(constant_id = 24)  const uint DescriptorBindingType10  = IrradianceCubeMapDescriptor;
-layout(constant_id = 25)  const uint DescriptorBindingType11  = PrefilterDescriptor;
-
-layout(binding = 4)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 5)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
-layout(binding = 6)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 7)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 8) uniform sampler2D TextureMap[];
-layout(binding = 9) uniform samplerCube CubeMap;
-layout(binding = 10) uniform samplerCube IrradianceMap;
-layout(binding = 11) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer 
 {

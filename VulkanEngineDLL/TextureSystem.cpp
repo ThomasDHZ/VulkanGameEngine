@@ -47,42 +47,42 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	}
 
 	VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
-	switch (textureChannels)
-	{
-	case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
-	case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
-	case 3:
-	{
-		switch (bitsPerChannel)
-		{
-			case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
-			case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16_SFLOAT : VK_FORMAT_R16G16B16_UNORM; break;
-			case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32_SFLOAT : VK_FORMAT_R32G32B32_UINT; break;
-		}
-		break;
-	}
-	case 4:
-	{
-		switch (bitsPerChannel)
-		{
-			case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
-			case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16B16A16_UNORM; break;
-		}
-		break;
-	}
-	default:
-	{
-		std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
-		detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-		break;
-	}
-	}
+	//switch (textureChannels)
+	//{
+	//case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
+	//case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
+	//case 3:
+	//{
+	//	switch (bitsPerChannel)
+	//	{
+	//		case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
+	//		case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16_SFLOAT : VK_FORMAT_R16G16B16_UNORM; break;
+	//		case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32_SFLOAT : VK_FORMAT_R32G32B32_UINT; break;
+	//	}
+	//	break;
+	//}
+	//case 4:
+	//{
+	//	switch (bitsPerChannel)
+	//	{
+	//		case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
+	//		case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16B16A16_UNORM; break;
+	//	}
+	//	break;
+	//}
+	//default:
+	//{
+	//	std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
+	//	detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+	//	break;
+	//}
+	//}
 
 	VkFormat finalFormat = detectedFormat;
-	if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
-	{
+	//if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
+	//{
 		finalFormat = textureLoader.TextureByteFormat;
-	}
+	//}
 
 	Texture texture = Texture
 	{
