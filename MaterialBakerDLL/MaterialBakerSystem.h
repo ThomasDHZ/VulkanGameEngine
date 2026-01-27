@@ -96,7 +96,7 @@ public:
     DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture, VkSampler sampler);
     DLL_EXPORT void BuildRenderPass(ivec2 renderPassResolution);
     DLL_EXPORT void Run();
-    DLL_EXPORT void Draw();
+    DLL_EXPORT void Draw(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void CleanInputResources();
 };
 

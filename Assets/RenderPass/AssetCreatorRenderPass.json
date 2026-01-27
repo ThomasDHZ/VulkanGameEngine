@@ -13,7 +13,7 @@
   "InputTextureList": [],
   "RenderAttachmentList": [
     {
-      "TextureAttachment": "1, Needs to be in UNORM for SRGB to come out right in shading",
+      "TextureAttachment": "0, Needs to be in UNORM for SRGB to come out right in shading",
       "RenderedTextureId": "a1b9565e-2a3e-4605-91ae-c650b9a97c90",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -47,7 +47,7 @@
       }
     },
     {
-      "TextureAttachment": 2,
+      "TextureAttachment": 1,
       "RenderedTextureId": "7b9721cd-7133-4fe5-ac24-6009ad677f6e",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -81,7 +81,7 @@
       }
     },
     {
-      "TextureAttachment": 3,
+      "TextureAttachment": 2,
       "RenderedTextureId": "434e63f8-57d3-4c2e-80f7-86bb0f7ff3f6",
       "MipMapCount": 1,
       "RenderTextureType": 2,

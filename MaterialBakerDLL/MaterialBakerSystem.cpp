@@ -26,7 +26,6 @@ void MaterialBakerSystem::Run()
     Vector<String> ext = { "json" };
     Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
 
-
     for (auto& materialPath : materialFiles)
     {
         nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
@@ -49,13 +48,13 @@ void MaterialBakerSystem::Run()
         std::filesystem::path emissionMapSrc = !json["EmissionMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["EmissionMap"].get<String>()) : std::filesystem::path();
         std::filesystem::path heightMapSrc = !json["HeightMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["HeightMap"].get<String>()) : std::filesystem::path();
 
-        
+
 
         auto srcTime = std::filesystem::last_write_time(src);
         auto dstTime = std::filesystem::last_write_time(std::filesystem::path(configSystem.AssetDirectory + materialPath));
-        auto is_newer = [&](const std::filesystem::path& texPath) -> bool 
+        auto is_newer = [&](const std::filesystem::path& texPath) -> bool
             {
-                if (texPath.empty() || !std::filesystem::exists(texPath)) 
+                if (texPath.empty() || !std::filesystem::exists(texPath))
                 {
                     return false;
                 }
@@ -77,27 +76,37 @@ void MaterialBakerSystem::Run()
         //    is_newer(emissionMapSrc) ||
         //    is_newer(heightMapSrc))
         //{
-            LoadMaterial(materialPath);
+        LoadMaterial(materialPath);
 
-            CleanRenderPass();
-            BuildRenderPass(resolution);
-            UpdateDescriptorSets();
-            Draw();
-            fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
+        CleanRenderPass();
+        BuildRenderPass(resolution);
+        UpdateDescriptorSets();
+        vulkanSystem.StartFrame();
+        VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+           Draw(commandBuffer);
+        vulkanSystem.EndFrame(commandBuffer);
+           fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
 
-            CleanInputResources();
-            textureBindingList.clear();
+           CleanInputResources();
+           textureBindingList.clear();
 
-            std::cout << "Baked: " << src.filename() << std::endl;
-     /*   }
-        else
+         ///  std::cout << "Baked: " << src.filename() << std::endl;
+    }
+  /*      else
         {
             continue; 
         }*/
-    }
+    //}
+    auto materialPath = materialFiles[0];
+    nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
+    ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
+    LoadMaterial(materialPath);
+    CleanRenderPass();
+    BuildRenderPass(resolution);
+    UpdateDescriptorSets();
 }
 
-void MaterialBakerSystem::Draw()
+void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer)
 {
     VkCommandBufferBeginInfo beginInfo =
     {
@@ -130,7 +139,7 @@ void MaterialBakerSystem::Draw()
     };
 
     VkFence fence = VK_NULL_HANDLE;
-    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+   // VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
     VkSubmitInfo submitInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -152,11 +161,11 @@ void MaterialBakerSystem::Draw()
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.PipelineLayout, 0, vulkanRenderPipeline.DescriptorSetList.size(), vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
-    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
-    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
-    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
-    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+    //VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    //VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
+    //VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+    //VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+    //vkDestroyFence(vulkanSystem.Device, fence, nullptr);
 }
 
 void MaterialBakerSystem::CleanRenderPass()

@@ -5,19 +5,16 @@
     "TextureLoader/LavaCubeMapTexture.json"
   ],
   "LoadMaterials": [
-    "Materials/MegaManMaterial.json",
-    "Materials/MegaManShotMaterial.json",
-    "Materials/SparkManTileSetMaterial.json",
     "Materials/AnimeGirlMaterial.json",
+    "Materials/SparkManTileSetMaterial.json",
     "Materials/LavaCubeMapMaterial.json"
   ],
   "LoadSkyBox": [
     "SkyBoxes/LavaSkyBox.json"
   ],
   "LoadSpriteVRAM": [
-    "Sprites/AnimeGirl.json",
-    "Sprites/MegaManShotSprite.json"
-  ],
+    "Sprites/AnimeGirl.json"
+   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
   ],

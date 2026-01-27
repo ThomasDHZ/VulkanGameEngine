@@ -59,12 +59,12 @@ layout(push_constant) uniform GBufferSceneDataBuffer
     mat4  InvView;
 } gBufferSceneDataBuffer;
 
-//vec2 Unpack8bitPair(float packed) {
-//    uint combined = uint(packed * 65535.0 + 0.5);
-//    float high = float((combined >> 8) & 0xFFu) / 255.0;
-//    float low  = float(combined & 0xFFu) / 255.0;
-//    return vec2(high, low);
-//}
+vec2 Unpack8bitPair(float packed) {
+    uint combined = uint(packed * 65535.0 + 0.5);
+    float high = float((combined >> 8) & 0xFFu) / 255.0;
+    float low  = float(combined & 0xFFu) / 255.0;
+    return vec2(high, low);
+}
 
 vec3 OctahedronDecode(vec2 f)
 {
@@ -223,11 +223,11 @@ void main()
         return;
     }
 //
-//    const vec4 packedMRO = subpassLoad(packedMROInput);
+    const vec4 packedMRO = subpassLoad(packedMROInput);
 //    const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
-//
-//    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
-//    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
+
+    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
+    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
 //    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = Unpack8bitPair(packedMRO.b);
 //
 //    const vec2 SheenSSS_SheenColorR_SheenColorG                = Unpack8bitPair(packedSheenSSS.r);
@@ -241,10 +241,10 @@ void main()
 //    const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
 //    const vec3  emission            = subpassLoad(emissionInput).rgb;
 
-//    float metallic = unpackMRO_Metallic_Rough.x;
-//    float roughness = unpackMRO_Metallic_Rough.y;
-//    float ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
-//    float clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
+    float metallic = unpackMRO_Metallic_Rough.x;
+    float roughness = unpackMRO_Metallic_Rough.y;
+    float ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
+    float clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
 //    float clearcoatStrength2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.x;
 //    float clearcoatRoughness2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.y;
 //    vec3 sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
@@ -401,7 +401,7 @@ void main()
 //    ambient = max(ambient, vec3(0.02) * albedo);
 //
 //    vec3  color = ambient + Lo;
- outColor = vec4(N * 0.5 + 0.5, 1.0);
+ outColor = vec4(metallic, roughness, ambientOcclusion, 1.0);
 
 //    vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
 //    outBloom = vec4(bloomColor, 1.0f);
