@@ -151,9 +151,42 @@
         "UnnormalizedCoordinates": false
       }
     },
-
     {
       "TextureAttachment": 4,
+      "RenderedTextureId": "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": 5,
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "RenderTextureType": 3,
@@ -170,7 +203,7 @@
       "SamplerCreateInfo": null
     },
     {
-      "TextureAttachment": 5,
+      "TextureAttachment": 6,
       "RenderedTextureId": "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -186,7 +219,7 @@
       "IsTextureToExport": false
     },
     {
-      "TextureAttachment": 6,
+      "TextureAttachment": 7,
       "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -306,13 +339,22 @@
     },
     {
       "TextureAttachment": 4,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 5,
       "DepthStencil": {
         "depth": 1.0,
         "stencil": 0
       }
     },
     {
-      "TextureAttachment": 5,
+      "TextureAttachment": 6,
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
