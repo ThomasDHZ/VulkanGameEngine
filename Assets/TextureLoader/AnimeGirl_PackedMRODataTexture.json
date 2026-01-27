@@ -1,7 +1,7 @@
 {
-  "TextureFilePath": [ "Textures/AnimeGirlImportMaterial2_16bit.png" ],
+  "TextureFilePath": [ "Textures/AnimeGirlImportMaterial2_8bit.png" ],
   "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
-  "TextureByteFormat": 91,
+  "TextureByteFormat": 37,
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,

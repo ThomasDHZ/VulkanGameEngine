@@ -23,24 +23,23 @@ layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDesc
 layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
 layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
 layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = MaterialDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = DirectionalLightDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = PointLightDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = TextureDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = PrefilterDescriptor;
+layout(constant_id = 6)   const uint DescriptorBindingType6   = MeshPropertiesDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7   = MaterialDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = DirectionalLightDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = PointLightDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = IrradianceCubeMapDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = PrefilterDescriptor;
 
-layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
-layout(binding = 9)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 10)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 11) uniform sampler2D TextureMap[];
-layout(binding = 12) uniform samplerCube CubeMap;
-layout(binding = 13) uniform samplerCube IrradianceMap;
-layout(binding = 14) uniform samplerCube PrefilterMap;
+layout(binding = 6)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 7)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 8)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 9)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 10) uniform sampler2D TextureMap[];
+layout(binding = 11) uniform samplerCube CubeMap;
+layout(binding = 12) uniform samplerCube IrradianceMap;
+layout(binding = 13) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer 
 {

@@ -267,7 +267,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       {
           .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
           .renderPass = renderPass.RenderPass,
-          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+          .framebuffer = renderPass.FrameBufferList.front(),
           .renderArea = VkRect2D
           {
              .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -376,7 +376,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       {
           .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
           .renderPass = renderPass.RenderPass,
-          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+          .framebuffer = renderPass.FrameBufferList.front(),
           .renderArea = VkRect2D
           {
              .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -426,7 +426,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
       uint32_t baseSize = renderPass.RenderPassResolution.x;
       uint32_t prefilterMipmapCount = textureSystem.PrefilterCubeMap.PrefilterMipmapCount;
-
       for (uint32_t mip = 0; mip < prefilterMipmapCount; ++mip)
       {
           uint32_t mipWidth = baseSize >> mip;
@@ -519,7 +518,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       {
           .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
           .renderPass = renderPass.RenderPass,
-          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+          .framebuffer = renderPass.FrameBufferList.front(),
           .renderArea = VkRect2D
           {
              .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -559,7 +558,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       {
           .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
           .renderPass = renderPass.RenderPass,
-          .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+          .framebuffer = renderPass.FrameBufferList.front(),
           .renderArea = VkRect2D
           {
              .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -587,7 +586,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
          .renderPass = renderPass.RenderPass,
-         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+         .framebuffer = renderPass.FrameBufferList.front(),
          .renderArea = VkRect2D
          {
             .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -650,7 +649,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
      {
          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
          .renderPass = renderPass.RenderPass,
-         .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
+         .framebuffer = renderPass.FrameBufferList.front(),
          .renderArea = VkRect2D
          {
             .offset = VkOffset2D {.x = 0, .y = 0 },

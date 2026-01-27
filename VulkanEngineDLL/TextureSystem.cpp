@@ -412,7 +412,7 @@ void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass,
 			VkImageViewCreateInfo viewInfo = {};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = texture.textureImage;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 			viewInfo.format = texture.textureByteFormat;
 			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			viewInfo.subresourceRange.baseMipLevel = mip;
