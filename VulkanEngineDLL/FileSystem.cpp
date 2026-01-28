@@ -240,8 +240,9 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
             std::cerr << "Warning: 32-bit float format not yet supported for PNG export\n";
             continue;
         }
-        else if (texture.textureByteFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
-            texture.textureByteFormat == VK_FORMAT_R16G16B16A16_UNORM) {
+        else if (texture.textureByteFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
+            texture.textureByteFormat <= VK_FORMAT_R16G16B16A16_SFLOAT)  // covers 91-97 inclusive
+        {
             bytesPerPixel = 8;
             is16BitFormat = true;
         }

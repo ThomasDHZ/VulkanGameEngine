@@ -15,7 +15,7 @@ layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/C
 layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
 layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
 layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 #include "Lights.glsl"
 #include "Constants.glsl"
@@ -161,7 +161,7 @@ void main()
     vec4 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;   
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
     vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
-    vec4 emissionData       = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;    
+    vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;    
     if (albedoData.a < 0.1f) discard; 
 
     vec2 f = normalData.xy * 2.0 - 1.0;

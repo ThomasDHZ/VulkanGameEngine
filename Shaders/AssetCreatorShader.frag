@@ -57,7 +57,7 @@ layout(location = 1) out vec4 outNormalData;         //Normal/Height/unused     
 layout(location = 2) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
 layout(location = 3) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
 layout(location = 4) out vec4 outUnused;             //unused for now                                                                             - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 5) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 layout(binding = 0)  buffer  MaterialProperities { MaterialProperitiesBuffer importMaterialProperties; } importMaterialBuffer;
 layout(binding = 1)  uniform sampler2D AlbedoMap;
