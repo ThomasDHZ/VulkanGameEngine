@@ -81,32 +81,25 @@ void MaterialBakerSystem::Run()
         CleanRenderPass();
         BuildRenderPass(resolution);
         UpdateDescriptorSets();
-        vulkanSystem.StartFrame();
+       // vulkanSystem.StartFrame();
         VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
            Draw(commandBuffer);
-        vulkanSystem.EndFrame(commandBuffer);
+       // vulkanSystem.EndFrame(commandBuffer);
            fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
 
            CleanInputResources();
            textureBindingList.clear();
 
-         ///  std::cout << "Baked: " << src.filename() << std::endl;
+           std::cout << "Baked: " << src.filename() << std::endl;
     }
   /*      else
         {
             continue; 
         }*/
-    //}
-    auto materialPath = materialFiles[0];
-    nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
-    ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
-    LoadMaterial(materialPath);
-    CleanRenderPass();
-    BuildRenderPass(resolution);
-    UpdateDescriptorSets();
+    
 }
 
-void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer)
+void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer2)
 {
     VkCommandBufferBeginInfo beginInfo =
     {
@@ -128,7 +121,7 @@ void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer)
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = vulkanRenderPass.RenderPass,
-        .framebuffer = vulkanRenderPass.FrameBufferList[vulkanSystem.ImageIndex],
+        .framebuffer = vulkanRenderPass.FrameBufferList[0],
         .renderArea = VkRect2D
         {
            .offset = VkOffset2D {.x = 0, .y = 0 },
@@ -139,7 +132,7 @@ void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer)
     };
 
     VkFence fence = VK_NULL_HANDLE;
-   // VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
     VkSubmitInfo submitInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -161,11 +154,11 @@ void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.PipelineLayout, 0, vulkanRenderPipeline.DescriptorSetList.size(), vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
-    //VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
-    //VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
-    //VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
-    //VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
-    //vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
 }
 
 void MaterialBakerSystem::CleanRenderPass()
@@ -994,7 +987,7 @@ void MaterialBakerSystem::CleanInputResources()
             vkDestroySampler(vulkanSystem.Device, tex.textureSampler, nullptr);
             tex.textureSampler = VK_NULL_HANDLE;
         }
-        if (tex.textureViewList.front() != VK_NULL_HANDLE) {
+        if (!tex.textureViewList.empty()) {
             vkDestroyImageView(vulkanSystem.Device, tex.textureViewList.front(), nullptr);
             tex.textureViewList.front() = VK_NULL_HANDLE;
         }

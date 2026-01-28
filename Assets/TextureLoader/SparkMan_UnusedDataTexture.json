@@ -1,11 +1,11 @@
 {
-  "TextureFilePath": [ "Textures/AnimeGirlImportMaterial4_16Bit.png" ],
-  "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
+  "TextureFilePath": [ "Textures/SparkManTileSetImportMaterial4_16Bit.png" ],
+  "TextureId": "81488c15-03df-44ec-9ab7-be6dd0e41f65",
   "TextureByteFormat": 91,
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
-  "TextureType": 5,
+  "TextureType": 1,
   "UseMipMaps": false,
   "IsSkyBox": false,
   "SamplerCreateInfo": {

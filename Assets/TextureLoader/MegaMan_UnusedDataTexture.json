@@ -1,11 +1,11 @@
 {
-  "TextureFilePath": [ "Textures/AnimeGirlImportMaterial4_16Bit.png" ],
-  "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
+  "TextureFilePath": [ "Textures/MegaManImportMaterial4_16Bit.png" ],
+  "TextureId": "5960a489-1f27-4481-b1cb-5f8625052cc7",
   "TextureByteFormat": 91,
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
-  "TextureType": 5,
+  "TextureType": 1,
   "UseMipMaps": false,
   "IsSkyBox": false,
   "SamplerCreateInfo": {

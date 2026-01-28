@@ -5,7 +5,7 @@
   "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
-  "TextureType": 5,
+  "TextureType": 1,
   "UseMipMaps": false,
   "IsSkyBox": false,
   "SamplerCreateInfo": {

@@ -113,6 +113,6 @@ void main()
     //outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
   //  outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
 
-    outUnused = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    outUnused = vec4(0.75f, 0.25f, 0.5f, 1.0f);
     outEmission = vec4(emission, material.ClearcoatRoughness);
 }

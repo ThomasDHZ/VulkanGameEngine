@@ -186,6 +186,40 @@
       }
     },
     {
+      "TextureAttachment": "Attachment 5: Unused Attachment",
+      "RenderedTextureId": "30994c6d-772e-4622-b4dd-7f5e6fa475ad",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 1,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
       "TextureAttachment": 5,
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
@@ -348,9 +382,11 @@
     },
     {
       "TextureAttachment": 5,
-      "DepthStencil": {
-        "depth": 1.0,
-        "stencil": 0
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
       }
     },
     {
@@ -361,7 +397,16 @@
       }
     },
     {
-      "TextureAttachment": 7,
+      "TextureAttachment": 6,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 6,
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
