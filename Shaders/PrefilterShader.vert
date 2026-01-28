@@ -5,6 +5,11 @@
 layout (location = 0) in vec3 aPos;
 layout(location = 0) out vec3 WorldPos;
 
+layout(push_constant) uniform PrefilterSamplerProperties {
+    uint CubeMapResolution;
+    float Roughness;
+} prefilterSamplerProperties;
+
 // Standard 90° perspective projection (shared for all views)
 const mat4 captureProjection = mat4(
     1.0, 0.0, 0.0, 0.0,

@@ -412,6 +412,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
   void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
   {
+
       VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
       const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
@@ -426,11 +427,31 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
       uint32_t baseSize = renderPass.RenderPassResolution.x;
       uint32_t prefilterMipmapCount = textureSystem.PrefilterCubeMap.mipMapLevels;
+
+      VkImageMemoryBarrier initialBarrier{};
+      initialBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+      initialBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      initialBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      initialBarrier.srcAccessMask = 0;
+      initialBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      initialBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      initialBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      initialBarrier.image = textureSystem.PrefilterCubeMap.textureImage;
+      initialBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      initialBarrier.subresourceRange.baseMipLevel = 0;
+      initialBarrier.subresourceRange.levelCount = prefilterMipmapCount;
+      initialBarrier.subresourceRange.baseArrayLayer = 0;
+      initialBarrier.subresourceRange.layerCount = 6;
+
+      vkCmdPipelineBarrier(
+          commandBuffer,
+          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+          0, 0, nullptr, 0, nullptr, 1, &initialBarrier);
       for (uint32_t mip = 0; mip < prefilterMipmapCount; ++mip)
       {
           uint32_t mipWidth = baseSize >> mip;
           uint32_t mipHeight = baseSize >> mip;
-
           float roughness = static_cast<float>(mip) / static_cast<float>(prefilterMipmapCount - 1);
 
           shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", baseSize);
@@ -470,12 +491,12 @@ void LevelSystem::LoadLevel(const char* levelPath)
           vkCmdEndRenderPass(commandBuffer);
       }
 
-      VkImageMemoryBarrier finalBarrier = {};
-      finalBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-      finalBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-      finalBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-      finalBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-      finalBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    VkImageMemoryBarrier finalBarrier = {};
+    finalBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    finalBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    finalBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    finalBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    finalBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
       finalBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       finalBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       finalBarrier.image = textureSystem.FindRenderedTextureList(renderPassId).front().textureImage;

@@ -57,7 +57,7 @@ layout(binding = 11) uniform samplerCube CubeMap;
 layout(binding = 12) uniform samplerCube IrradianceMap;
 layout(binding = 13) uniform samplerCube PrefilterMap;
 
-layout(push_constant) uniform SceneDataBuffer 
+layout(push_constant) uniform SceneDataBuffer
 {
     int   MeshBufferIndex;
     mat4  Projection;
@@ -66,6 +66,7 @@ layout(push_constant) uniform SceneDataBuffer
     vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
+    int   Buffer1;
 } sceneData;
 
 mat3 TBN = mat3(

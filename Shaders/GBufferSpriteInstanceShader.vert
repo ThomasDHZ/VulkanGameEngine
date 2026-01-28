@@ -42,15 +42,16 @@ layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 
-layout(push_constant) uniform SceneDataBuffer 
+layout(push_constant) uniform SceneDataBuffer
 {
-    int MeshBufferIndex;
-    mat4 Projection;
-    mat4 View;
-          vec3  ViewDirection;
-    vec3 CameraPosition;
+    int   MeshBufferIndex;
+    mat4  Projection;
+    mat4  View;
+    vec3  ViewDirection;
+    vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
+    int   Buffer1;
 } sceneData;
 
 struct Vertex2D

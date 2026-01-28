@@ -280,7 +280,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
             {
             case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
             case RenderAttachmentTypeEnum::InputAttachmentTexture: {
-                bool is_depth = (renderAttachment.Format >= VK_FORMAT_D16_UNORM && renderAttachment.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT); // Adjust for your formats
+                bool is_depth = (renderAttachment.Format >= VK_FORMAT_D16_UNORM && renderAttachment.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT);
                 VkImageLayout input_layout = is_depth ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 inputAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = input_layout });
                 break;
@@ -324,8 +324,8 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
         case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
         case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
         case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;  break;
-        case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-        case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+        case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+        case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
         default: throw std::runtime_error("Unknown RenderTextureType");
         }
 
@@ -337,7 +337,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
                 .storeOp = renderAttachment.StoreOp,
                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                .initialLayout = initialLayout,
                 .finalLayout = finalLayout
             });
 
@@ -385,46 +385,40 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
     Vector<VkSubpassDependency> subPassDependencyList = Vector<VkSubpassDependency>();
     if (renderPassJsonLoader.RenderPipelineList[0] == "Pipelines/GBufferSpriteInstancePipeline.json") {
         subPassDependencyList = {
-            // External -> Subpass 0: Sync initial clear and layout transition for depth/color
-            { VK_SUBPASS_EXTERNAL, 0,
-              VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-              VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              0,
-              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-              VK_DEPENDENCY_BY_REGION_BIT
-            },
-            // Subpass 0 -> 1: Sync depth/color writes to input reads (skybox reads depth)
-            { 0, 1,
-              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-              VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-              VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-              VK_DEPENDENCY_BY_REGION_BIT
-            },
-            // Subpass 0 -> 2: Direct sync for lighting (bypass subpass 1 if no writes there)
-            { 0, 2,
-              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-              VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-              VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-              VK_DEPENDENCY_BY_REGION_BIT
-            },
-            // Subpass 1 -> 2: Sync any skybox writes (color) to lighting inputs
-            { 1, 2,
-              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-              VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-              VK_DEPENDENCY_BY_REGION_BIT
-            },
-            // Subpass 2 -> External: Sync final stores
-            { 2, VK_SUBPASS_EXTERNAL,
-              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-              0,
-              VK_DEPENDENCY_BY_REGION_BIT
-            }
+     { VK_SUBPASS_EXTERNAL, 0,
+       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+       0,
+       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+       VK_DEPENDENCY_BY_REGION_BIT },
+
+     { 0, 1,
+       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+       VK_DEPENDENCY_BY_REGION_BIT },
+
+     { 0, 2,
+       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+       VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+       VK_DEPENDENCY_BY_REGION_BIT },
+
+     { 1, 2,
+       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+       VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+       VK_DEPENDENCY_BY_REGION_BIT },
+
+     { 2, VK_SUBPASS_EXTERNAL,
+       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+       0,
+       VK_DEPENDENCY_BY_REGION_BIT }
         };
     }
     else
@@ -642,7 +636,7 @@ VkPipelineLayout RenderSystem::CreatePipelineLayout(RenderPipelineLoader& render
             {
                 .stageFlags = renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].ShaderStageFlags,
                 .offset = 0,
-                .size = static_cast<uint>(renderPipelineLoader.ShaderPiplineInfo.PushConstantList[0].PushConstantSize)
+                .size = 256u
             });
     }
 

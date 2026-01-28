@@ -11,6 +11,8 @@ layout(location = 0) out vec2 fragTexCoord;
 layout(push_constant) uniform SkyBoxViewData {
     mat4 InverseProjection;
     mat4 InverseView;
+    mat3 Buffer1;
+    int  Buffer2;
 } skyBoxViewData;
 
 void main() 

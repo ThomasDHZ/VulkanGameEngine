@@ -41,15 +41,16 @@ layout(binding = 11) uniform samplerCube CubeMap;
 layout(binding = 12) uniform samplerCube IrradianceMap;
 layout(binding = 13) uniform samplerCube PrefilterMap;
 
-layout(push_constant) uniform SceneDataBuffer 
+layout(push_constant) uniform SceneDataBuffer
 {
-    int MeshBufferIndex;
-    mat4 Projection;
-    mat4 View;
+    int   MeshBufferIndex;
+    mat4  Projection;
+    mat4  View;
     vec3  ViewDirection;
-    vec3 CameraPosition;
+    vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
+    int   Buffer1;
 } sceneData;
 
 void main()
