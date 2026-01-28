@@ -72,49 +72,49 @@ layout(push_constant) uniform SceneDataBuffer
     int   Buffer1;
 } sceneData;
 
-//mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
-//    vec3 dp1 = dFdx(worldPos);
-//    vec3 dp2 = dFdy(worldPos);
-//    vec2 duv1 = dFdx(uv);
-//    vec2 duv2 = dFdy(uv);
-//    vec3 N = vec3(0.0f, 0.0f, 1.0f);  
-//    vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
-//    vec3 B = -normalize(cross(N, T));
-//    return mat3(T, B, N);
-//}
-//
-//vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
-//{
-//    const float minLayers = 8.0;
-//    const float maxLayers = 64.0;
-//    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-//
-//vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
-//vec2 deltaUV = shiftDirection / numLayers;
-//
-//    vec2 currentUV = uv;
-//    float currentLayerDepth = 0.0;
-//    float currentHeight = 1.0 - texture(TextureMap[heightIdx], currentUV).a;
-//
-//    for (int i = 0; i < 64; ++i)
-//    {
-//        currentUV -= deltaUV;
-//        currentHeight = 1.0 -texture(TextureMap[heightIdx], currentUV).a;
-//        currentLayerDepth += 1.0 / numLayers;
-//
-//        if (currentLayerDepth >= currentHeight)
-//            break;
-//    }
-//
-//    vec2 prevUV = currentUV + deltaUV;
-//    float afterHeight  = currentHeight - currentLayerDepth;
-//    float beforeHeight = 1.0 - texture(TextureMap[heightIdx], prevUV).a - (currentLayerDepth - 1.0/numLayers);
-//
-//    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5);
-//    vec2 finalUV = mix(currentUV, prevUV, weight);
-//
-//    return clamp(finalUV, 0.005, 0.995);
-//}
+mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
+    vec3 dp1 = dFdx(worldPos);
+    vec3 dp2 = dFdy(worldPos);
+    vec2 duv1 = dFdx(uv);
+    vec2 duv2 = dFdy(uv);
+    vec3 N = vec3(0.0f, 0.0f, 1.0f);  
+    vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
+    vec3 B = -normalize(cross(N, T));
+    return mat3(T, B, N);
+}
+
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
+{
+    const float minLayers = 8.0;
+    const float maxLayers = 64.0;
+    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
+
+vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
+vec2 deltaUV = shiftDirection / numLayers;
+
+    vec2 currentUV = uv;
+    float currentLayerDepth = 0.0;
+    float currentHeight = 1.0 - texture(TextureMap[heightIdx], currentUV).a;
+
+    for (int i = 0; i < 64; ++i)
+    {
+        currentUV -= deltaUV;
+        currentHeight = 1.0 -texture(TextureMap[heightIdx], currentUV).a;
+        currentLayerDepth += 1.0 / numLayers;
+
+        if (currentLayerDepth >= currentHeight)
+            break;
+    }
+
+    vec2 prevUV = currentUV + deltaUV;
+    float afterHeight  = currentHeight - currentLayerDepth;
+    float beforeHeight = 1.0 - texture(TextureMap[heightIdx], prevUV).a - (currentLayerDepth - 1.0/numLayers);
+
+    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5);
+    vec2 finalUV = mix(currentUV, prevUV, weight);
+
+    return clamp(finalUV, 0.005, 0.995);
+}
 
 vec2 OctahedronEncode(vec3 normal) 
 {
@@ -150,11 +150,10 @@ void main()
     uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
     MaterialProperitiesBuffer2 material = materialBuffer[matId].materialProperties;
 
-
-    //mat3 TBN = CalculateTBN(WorldPos, TexCoords);
-    //vec3 viewDirWS = normalize(sceneData.ViewDirection);
-   // vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV =  TexCoords;//ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
+    mat3 TBN = CalculateTBN(WorldPos, TexCoords);
+    vec3 viewDirWS = normalize(sceneData.ViewDirection);
+    vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
+    vec2 finalUV =  ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
 
     vec4 albedoData           = textureLod(TextureMap[material.AlbedoDataId],         finalUV, 0.0f).rgba;    
     vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
@@ -171,19 +170,15 @@ void main()
     tangentNormal.xy *= normalStrength;
     tangentNormal = normalize(tangentNormal);
 
-   // vec3 normalWS = normalize(TBN * tangentNormal);
-    vec2 encodedNormalWS = OctahedronEncode(tangentNormal);
-
-
-        const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMROData.r);
-    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMROData.g);
+    vec3 normalWS = normalize(TBN * tangentNormal);
+    vec2 encodedNormalWS = OctahedronEncode(normalWS);
 
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedoData;
     outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalStrength, 1.0f);
-    outPackedMRO = vec4(unpackMRO_Metallic_Rough.r, unpackMRO_Metallic_Rough.g, unpackMRO_AO_ClearCoatTint.r, unpackMRO_AO_ClearCoatTint.g);
+    outPackedMRO = packedMROData;
     outPackedSheenSSS = packedSheenSSSData;
     outTempMap = tempMapData;
-    outParallaxInfo = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    outParallaxInfo = vec4(finalUV - TexCoords, 0.0f, 1.0);
     outEmission = emissionData;
 }
