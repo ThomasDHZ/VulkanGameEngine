@@ -21,7 +21,7 @@ layout(location = 0) out vec4 outPosition;           //Position                 
 layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
 layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                      - R16G16B16A16_UNORM 
 layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-//layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
+layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
 //layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
 //layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
 //layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R8G8B8A8_SRGB
@@ -33,29 +33,31 @@ layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDesc
 layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
 layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
 layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = MeshPropertiesDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = MaterialDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = DirectionalLightDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = PointLightDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = IrradianceCubeMapDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = PrefilterDescriptor;
+layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
+layout(constant_id = 7)   const uint DescriptorBindingType7   = MeshPropertiesDescriptor;
+layout(constant_id = 8)   const uint DescriptorBindingType8   = MaterialDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = DirectionalLightDescriptor;
+layout(constant_id = 10)   const uint DescriptorBindingType10   = PointLightDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = TextureDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
 layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
 layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput depthInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput skyBoxInput;
-layout(binding = 6)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 7)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
-layout(binding = 8)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 9)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 10) uniform sampler2D TextureMap[];
-layout(binding = 11) uniform samplerCube CubeMap;
-layout(binding = 12) uniform samplerCube IrradianceMap;
-layout(binding = 13) uniform samplerCube PrefilterMap;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSS;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput depthInput;
+layout(input_attachment_index = 6, binding = 6) uniform subpassInput skyBoxInput;
+layout(binding = 7)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 8)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 9)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 10)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 11) uniform sampler2D TextureMap[];
+layout(binding = 12) uniform samplerCube CubeMap;
+layout(binding = 13) uniform samplerCube IrradianceMap;
+layout(binding = 14) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -171,7 +173,7 @@ void main() {
     vec4 albedoData           = textureLod(TextureMap[material.AlbedoDataId],         finalUV, 0.0f).rgba;    
     vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
     vec4 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;   
-//    vec4 packedSheenSSSData = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
+    vec4 packedSheenSSSData = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
 //    vec4 tempMapData        = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
 //    vec4 emissionData       = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;    
     if (albedoData.a < 0.1f) discard; 
@@ -194,7 +196,7 @@ void main() {
     outAlbedo = albedoData;
     outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalStrength, 1.0f);
     outPackedMRO = vec4(unpackMRO_Metallic_Rough.r, unpackMRO_Metallic_Rough.g, unpackMRO_AO_ClearCoatTint.r, unpackMRO_AO_ClearCoatTint.g);
-//    outPackedSheenSSS = packedSheenSSSData;
+    outPackedSheenSSS = packedSheenSSSData;
 //    outTempMap = tempMapData;
 //    outParallaxInfo = vec4(finalUV - UV, 0.0f, 1.0f);
 //    outEmission = emissionData;
