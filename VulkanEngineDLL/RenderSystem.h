@@ -34,7 +34,7 @@ private:
     DLL_EXPORT void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
 
 public:
-   
+
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
@@ -59,8 +59,8 @@ public:
     Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>     GetSkyBoxTextureBuffer();
-    Vector<VkDescriptorImageInfo>     GetIrradianceMapTextureBuffer(const RenderPassGuid& renderPassGuid);
-    Vector<VkDescriptorImageInfo>     GetPrefilterMapTextureBuffer(const RenderPassGuid& renderPassGuid);
+    Vector<VkDescriptorImageInfo>     GetIrradianceMapTextureBuffer();
+    Vector<VkDescriptorImageInfo>     GetPrefilterMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

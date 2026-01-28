@@ -32,7 +32,7 @@ struct Texture
 
     VkImage               textureImage = VK_NULL_HANDLE;
     VkDeviceMemory        textureMemory = VK_NULL_HANDLE;
-    VkImageView           textureView = VK_NULL_HANDLE;
+    Vector<VkImageView>   textureViewList;
     VkImageView           RenderedCubeMapView = VK_NULL_HANDLE;
     VkImageView           AttachmentArrayView = VK_NULL_HANDLE;
     VkSampler             textureSampler = VK_NULL_HANDLE;
@@ -47,13 +47,13 @@ struct Texture
     ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
-struct PrefilterSkyboxTexture
-{
-    uint32                                                         PrefilterMipmapCount;
-    Texture                                                        PrefilterCubeMap;
-    Vector<VkImageView>                                            PrefilterAttachmentImageViews;
-    Vector<VkFramebuffer>                                          PrefilterMipFramebufferList;
-};
+//struct PrefilterSkyboxTexture
+//{
+//    uint32                                                         PrefilterMipmapCount;
+//    Texture                                                        PrefilterCubeMap;
+//    Vector<VkImageView>                                            PrefilterAttachmentImageViews;
+//    Vector<VkFramebuffer>                                          PrefilterMipFramebufferList;
+//};
 
 struct RenderAttachmentLoader;
 class TextureSystem
@@ -71,20 +71,20 @@ private:
 
     void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount);
-    void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
+    void CreateTextureView(Texture& texture, bool usingMultiView, VkImageAspectFlags imageAspectFlags);
     void GenerateMipmaps(Texture& texture);
 
 public:
     Texture                                                        CubeMap;
     Texture                                                        IrradianceCubeMap;
-    PrefilterSkyboxTexture                                         PrefilterCubeMap;
+    Texture                                                        PrefilterCubeMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     Vector<Texture>                                                TextureList;
 
     DLL_EXPORT VkGuid                   CreateTexture(const String& texturePath);
     //DLL_EXPORT VkGuid                   CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels);
-    DLL_EXPORT Texture                  CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution);
+    DLL_EXPORT Texture                  CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, bool useMultiView, ivec2 renderAttachmentResolution);
     DLL_EXPORT void                     CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture, uint attachmentCount);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);

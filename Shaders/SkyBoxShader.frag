@@ -25,7 +25,12 @@ layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor
 layout(constant_id = 12)  const uint DescriptorBindingType12  = IrradianceCubeMapDescriptor;
 layout(constant_id = 13)  const uint DescriptorBindingType13  = PrefilterDescriptor;
 
-layout(input_attachment_index = 0, binding = 4) uniform subpassInput depthInput;
+layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
+layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
+layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
+layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
+layout(input_attachment_index = 4, binding = 4) uniform subpassInput depthInput;
+layout(input_attachment_index = 5, binding = 5) uniform subpassInput skyBoxInput;
 layout(binding = 6)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
 layout(binding = 7)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
 layout(binding = 8)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];

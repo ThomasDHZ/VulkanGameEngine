@@ -425,7 +425,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       VkDeviceSize offsets[] = { 0 };
 
       uint32_t baseSize = renderPass.RenderPassResolution.x;
-      uint32_t prefilterMipmapCount = textureSystem.PrefilterCubeMap.PrefilterMipmapCount;
+      uint32_t prefilterMipmapCount = textureSystem.PrefilterCubeMap.mipMapLevels;
       for (uint32_t mip = 0; mip < prefilterMipmapCount; ++mip)
       {
           uint32_t mipWidth = baseSize >> mip;
@@ -440,7 +440,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
           VkRenderPassBeginInfo renderPassBeginInfo = {};
           renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
           renderPassBeginInfo.renderPass = renderPass.RenderPass;
-          renderPassBeginInfo.framebuffer = textureSystem.PrefilterCubeMap.PrefilterMipFramebufferList[mip];
+          renderPassBeginInfo.framebuffer = renderPass.FrameBufferList[mip];
           renderPassBeginInfo.renderArea.offset = { 0, 0 };
           renderPassBeginInfo.renderArea.extent = { mipWidth, mipHeight };
           renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size());
@@ -478,7 +478,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       finalBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
       finalBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       finalBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      finalBarrier.image = textureSystem.PrefilterCubeMap.PrefilterCubeMap.textureImage;
+      finalBarrier.image = textureSystem.FindRenderedTextureList(renderPassId).front().textureImage;
       finalBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
       finalBarrier.subresourceRange.baseMipLevel = 0;
       finalBarrier.subresourceRange.levelCount = prefilterMipmapCount;

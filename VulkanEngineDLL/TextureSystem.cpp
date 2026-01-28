@@ -81,7 +81,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	VkFormat finalFormat = detectedFormat;
 	//if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
 	//{
-		finalFormat = textureLoader.TextureByteFormat;
+	finalFormat = textureLoader.TextureByteFormat;
 	//}
 
 	Texture texture = Texture
@@ -122,17 +122,11 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	if (texture.mipMapLevels > 1) imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 	CreateTextureImage(texture, imageCreateInfo, textureData, textureLoader.TextureFilePath.size());
-	CreateTextureView(texture, textureLoader.ImageType);
+	CreateTextureView(texture, false, textureLoader.ImageType);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
-	if (textureLoader.IsSkyBox)
-	{
-		CubeMap = texture;
-	}
-	else
-	{
-		TextureList.emplace_back(texture);
-	}
+	if (textureLoader.IsSkyBox) CubeMap = texture;
+	else TextureList.emplace_back(texture);
 
 	//#ifndef NDEBUG
 	//	std::cout << "[TextureDebug] Created Texture:" << texturePath
@@ -195,7 +189,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 //	return textureLoader.TextureId;
 //}
 
-Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, ivec2 renderAttachmentResolution)
+Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, bool useMultiView, ivec2 renderAttachmentResolution)
 {
 	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
 		(renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
@@ -268,184 +262,42 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	texture.TextureAllocation = allocation;
 
-	VkImageViewCreateInfo viewInfo = {
-		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-		.image = texture.textureImage,
-		.viewType = VK_IMAGE_VIEW_TYPE_2D,
-		.format = texture.textureByteFormat,
-		.subresourceRange = {
-			.baseMipLevel = 0,
-			.levelCount = texture.mipMapLevels,
-			.baseArrayLayer = 0,
-			.layerCount = 1
-		}
-	};
-
+	VkImageAspectFlags aspectMask;
 	if (isDepthFormat)
 	{
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		if (hasStencil)
 		{
-			viewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
 	}
 	else
 	{
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	if (renderAttachmentLoader.IsCubeMapAttachment && renderAttachmentLoader.RenderTextureType == RenderType_PrefilterTexture)
+	CreateTextureView(texture, useMultiView, aspectMask);
+	if (renderAttachmentLoader.UseSampler)
 	{
-		for (uint32_t mip = 0; mip < texture.mipMapLevels; ++mip)
-		{
-			VkImageViewCreateInfo renderPassAttachmentInfo =
-			{
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = texture.textureImage,
-				.viewType = VK_IMAGE_VIEW_TYPE_CUBE,
-				.format = texture.textureByteFormat,
-				.components =
-				{
-					VK_COMPONENT_SWIZZLE_IDENTITY,
-					VK_COMPONENT_SWIZZLE_IDENTITY,
-					VK_COMPONENT_SWIZZLE_IDENTITY,
-					VK_COMPONENT_SWIZZLE_IDENTITY
-				},
-				.subresourceRange =
-					{
-						.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-						.baseMipLevel = mip,
-						.levelCount = 1,
-						.baseArrayLayer = 0,
-						.layerCount = 6
-					}
-			};
-			VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &renderPassAttachmentInfo, nullptr, &texture.AttachmentArrayView));
-		}
-
-		VkImageViewCreateInfo prefilterViewInfo =
-		{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image = texture.textureImage,
-			.viewType = VK_IMAGE_VIEW_TYPE_CUBE,
-			.format = texture.textureByteFormat,
-			.components =
-			{
-				VK_COMPONENT_SWIZZLE_IDENTITY,
-				VK_COMPONENT_SWIZZLE_IDENTITY,
-				VK_COMPONENT_SWIZZLE_IDENTITY,
-				VK_COMPONENT_SWIZZLE_IDENTITY
-			},
-			.subresourceRange =
-			{
-				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-				.baseMipLevel = 0,
-				.levelCount = texture.mipMapLevels,
-				.baseArrayLayer = 0,
-				.layerCount = 6
-			}
-		};
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &prefilterViewInfo, nullptr, &texture.RenderedCubeMapView));
-		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderAttachmentLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
-	}
-	else if (renderAttachmentLoader.IsCubeMapAttachment && renderAttachmentLoader.RenderTextureType == RenderType_IrradianceTexture)
-	{
-		VkImageViewCreateInfo irradianceViewInfo =
-		{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image = texture.textureImage,
-			.viewType = VK_IMAGE_VIEW_TYPE_CUBE,
-			.format = texture.textureByteFormat,
-			.components = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY },
-			.subresourceRange =
-			{
-				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-				.baseMipLevel = 0,
-				.levelCount = 1,
-				.baseArrayLayer = 0,
-				.layerCount = 6,
-			}
-		};
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &irradianceViewInfo, nullptr, &texture.RenderedCubeMapView));
 		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderAttachmentLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
 	}
 	else
 	{
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
-
-		if (renderAttachmentLoader.UseSampler)
+		VkSamplerCreateInfo samplerInfo =
 		{
-			VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderAttachmentLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
-		}
-		else
-		{
-			VkSamplerCreateInfo samplerInfo =
-			{
-				.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-				.magFilter = VK_FILTER_LINEAR,
-				.minFilter = VK_FILTER_LINEAR,
-				.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-				.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-				.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-				.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-				.minLod = 0.0f,
-				.maxLod = static_cast<float>(texture.mipMapLevels)
-			};
-			VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
-		}
+			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+			.magFilter = VK_FILTER_LINEAR,
+			.minFilter = VK_FILTER_LINEAR,
+			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+			.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			.minLod = 0.0f,
+			.maxLod = static_cast<float>(texture.mipMapLevels)
+		};
+		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
 	}
 	return texture;
-}
-
-void TextureSystem::CreatePrefilterSkyBoxTexture(const VkRenderPass& renderPass, Texture& texture, uint attachmentCount)
-{
-	PrefilterSkyboxTexture skyboxTexture;
-	uint32 cubeMapMipLevels = texture.mipMapLevels;
-
-	if (skyboxTexture.PrefilterMipFramebufferList.empty())
-	{
-		skyboxTexture.PrefilterMipFramebufferList.resize(cubeMapMipLevels);
-		skyboxTexture.PrefilterAttachmentImageViews.resize(cubeMapMipLevels);
-
-		for (uint32 mip = 0; mip < cubeMapMipLevels; ++mip)
-		{
-			VkImageViewCreateInfo viewInfo = {};
-			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			viewInfo.image = texture.textureImage;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-			viewInfo.format = texture.textureByteFormat;
-			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			viewInfo.subresourceRange.baseMipLevel = mip;
-			viewInfo.subresourceRange.levelCount = 1;
-			viewInfo.subresourceRange.baseArrayLayer = 0;
-			viewInfo.subresourceRange.layerCount = 6;
-			vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &skyboxTexture.PrefilterAttachmentImageViews[mip]);
-
-			if (attachmentCount == 1)
-			{
-				uint32_t mipWidth = texture.width >> mip;
-				uint32_t mipHeight = texture.height >> mip;
-
-				VkFramebufferCreateInfo frameBufferInfo = {};
-				frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				frameBufferInfo.renderPass = renderPass;
-				frameBufferInfo.attachmentCount = 1;
-				frameBufferInfo.pAttachments = &skyboxTexture.PrefilterAttachmentImageViews[mip];
-				frameBufferInfo.width = mipWidth;
-				frameBufferInfo.height = mipHeight;
-				frameBufferInfo.layers = 1;
-				vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &skyboxTexture.PrefilterMipFramebufferList[mip]);
-			}
-		}
-	}
-
-	PrefilterCubeMap = PrefilterSkyboxTexture
-	{
-		.PrefilterMipmapCount = texture.mipMapLevels,
-		.PrefilterCubeMap = texture,
-		.PrefilterAttachmentImageViews = std::move(skyboxTexture.PrefilterAttachmentImageViews),
-		.PrefilterMipFramebufferList = std::move(skyboxTexture.PrefilterMipFramebufferList)
-	};
 }
 
 void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
@@ -453,7 +305,7 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 	textureDescriptorList.emplace_back(VkDescriptorImageInfo
 		{
 			.sampler = texture.textureSampler,
-			.imageView = texture.textureView,
+			.imageView = texture.textureViewList.front(),
 			.imageLayout = texture.textureImageLayout
 		});
 }
@@ -635,7 +487,7 @@ void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLay
 void TextureSystem::DestroyTexture(Texture& texture)
 {
 	if (texture.textureSampler) vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
-	if (texture.textureView) vkDestroyImageView(vulkanSystem.Device, texture.textureView, nullptr);
+	if (texture.textureViewList.front()) vkDestroyImageView(vulkanSystem.Device, texture.textureViewList.front(), nullptr);
 	if (texture.textureImage && texture.TextureAllocation)
 	{
 		vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
@@ -785,10 +637,9 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	}
 }
 
-void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags)
+void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkImageAspectFlags imageAspectFlags)
 {
 	VkImageAspectFlags aspect = imageAspectFlags;
-
 	if (aspect == 0)
 	{
 		std::cout << "CreateTextureView: imageAspectFlags not set ? using auto-detect." << std::endl;
@@ -812,22 +663,37 @@ void TextureSystem::CreateTextureView(Texture& texture, VkImageAspectFlags image
 		}
 	}
 
-	VkImageViewCreateInfo viewInfo =
+	for (uint32_t mip = 0; mip < texture.mipMapLevels; ++mip)
 	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-		.image = texture.textureImage,
-		.viewType = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
-		.format = texture.textureByteFormat,
-		.subresourceRange =
+		VkImageView imageView = VK_NULL_HANDLE;
+		VkImageViewCreateInfo viewInfo = {};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = texture.textureImage;
+
+		// For rendering into a specific mip ? usually use 2D_ARRAY for layered cubemap rendering
+		// or VK_IMAGE_VIEW_TYPE_CUBE if you render one face at a time
+		if (texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ||
+			texture.textureType == TextureTypeEnum::TextureType_IrradianceMapTexture ||
+			texture.textureType == TextureTypeEnum::TextureType_PrefilterMapTexture)
 		{
-			.aspectMask = aspect,
-			.baseMipLevel = 0,
-			.levelCount = texture.mipMapLevels,
-			.baseArrayLayer = 0,
-			.layerCount = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? static_cast<uint>(6) : static_cast<uint>(1),
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;   // ? Recommended for layered rendering
+			// Alternative: VK_IMAGE_VIEW_TYPE_CUBE if rendering per-face without GS
 		}
-	};
-	VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
+		else
+		{
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		}
+
+		viewInfo.format = texture.textureByteFormat;
+		viewInfo.subresourceRange.aspectMask = aspect;
+		viewInfo.subresourceRange.baseMipLevel = mip;
+		viewInfo.subresourceRange.levelCount = 1;               // ? Critical: only this mip
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = usingMultiView ? 6u : 1u;
+
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView));
+		texture.textureViewList.emplace_back(imageView);
+	}
 }
 
 void TextureSystem::GenerateMipmaps(Texture& texture)

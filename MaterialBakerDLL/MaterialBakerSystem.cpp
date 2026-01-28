@@ -322,7 +322,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedAlbedoSampler,
-            .imageView = dummyTextureColor.textureView,
+            .imageView = dummyTextureColor.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -338,7 +338,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "MetallicMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -354,7 +354,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "RoughnessMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -370,7 +370,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ThicknessMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -386,7 +386,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringColorMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -402,7 +402,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SheenMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -418,7 +418,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ClearCoatMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -434,7 +434,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AmbientOcclusionMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedPackedORMSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -450,7 +450,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedNormalSampler,
-            .imageView = dummyTextureNormal.textureView,
+            .imageView = dummyTextureNormal.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -466,7 +466,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlphaMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedAlphaSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -482,7 +482,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedAlbedoSampler,
-            .imageView = dummyTextureColor.textureView,
+            .imageView = dummyTextureColor.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -498,7 +498,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "HeightMap", 0xFFFFFFFFu);
         textureBindingList.emplace_back(VkDescriptorImageInfo{
             .sampler = cachedParallaxSampler,
-            .imageView = dummyTextureScalar.textureView,
+            .imageView = dummyTextureScalar.textureViewList.front(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             });
     }
@@ -738,6 +738,7 @@ void MaterialBakerSystem::CreateTextureView(Texture& texture, VkImageAspectFlags
         }
     }
 
+    VkImageView imageView = VK_NULL_HANDLE;
     VkImageViewCreateInfo viewInfo =
     {
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -753,7 +754,8 @@ void MaterialBakerSystem::CreateTextureView(Texture& texture, VkImageAspectFlags
             .layerCount = texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ? static_cast<uint>(6) : static_cast<uint>(1),
         }
     };
-    VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &texture.textureView));
+    VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView));
+    texture.textureViewList.emplace_back(imageView);
 }
 
 VkDescriptorImageInfo MaterialBakerSystem::GetTextureDescriptorbinding(Texture texture, VkSampler sampler)
@@ -761,7 +763,7 @@ VkDescriptorImageInfo MaterialBakerSystem::GetTextureDescriptorbinding(Texture t
     return VkDescriptorImageInfo
     {
         .sampler = sampler,
-        .imageView = texture.textureView,
+        .imageView = texture.textureViewList.front(),
         .imageLayout = texture.textureImageLayout
     };
 }
@@ -992,9 +994,9 @@ void MaterialBakerSystem::CleanInputResources()
             vkDestroySampler(vulkanSystem.Device, tex.textureSampler, nullptr);
             tex.textureSampler = VK_NULL_HANDLE;
         }
-        if (tex.textureView != VK_NULL_HANDLE) {
-            vkDestroyImageView(vulkanSystem.Device, tex.textureView, nullptr);
-            tex.textureView = VK_NULL_HANDLE;
+        if (tex.textureViewList.front() != VK_NULL_HANDLE) {
+            vkDestroyImageView(vulkanSystem.Device, tex.textureViewList.front(), nullptr);
+            tex.textureViewList.front() = VK_NULL_HANDLE;
         }
         if (tex.textureImage != VK_NULL_HANDLE) {
             vmaDestroyImage(bufferSystem.vmaAllocator, tex.textureImage, tex.TextureAllocation);
