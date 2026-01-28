@@ -220,7 +220,75 @@
       }
     },
     {
-      "TextureAttachment": 5,
+      "TextureAttachment": "Attachment 6: ParallaxInfo",
+      "RenderedTextureId": "cc998bff-1df2-4839-b43f-6b85f7593568",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 7: Emission",
+      "RenderedTextureId": "f4fa0605-e15a-4d65-8337-869f108deeb3",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 0, 4, 1 ],
+      "Format": 91,
+      "SampleCount": 1,
+      "LoadOp": 1,
+      "StoreOp": 2,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 8: Depth",
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "RenderTextureType": 3,
@@ -237,7 +305,7 @@
       "SamplerCreateInfo": null
     },
     {
-      "TextureAttachment": 6,
+      "TextureAttachment": "Attachment 9: Background",
       "RenderedTextureId": "3ae704f8-1f8d-44ac-bc2a-7983a9a08fe7",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -253,7 +321,7 @@
       "IsTextureToExport": false
     },
     {
-      "TextureAttachment": 7,
+      "TextureAttachment": "Attachment 10: OutColor",
       "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
       "MipMapCount": 1,
       "RenderTextureType": 2,
@@ -261,6 +329,40 @@
       "Format": 37,
       "SampleCount": 1,
       "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 11: OutBloom",
+      "RenderedTextureId": "f4e743d7-2dbc-4c34-ad54-0ee462e5dad2",
+      "MipMapCount": 1,
+      "RenderTextureType": 2,
+      "RenderAttachmentTypes": [ 4, 4, 0 ],
+      "Format": 97,
+      "SampleCount": 1,
+      "LoadOp": 2,
       "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
@@ -336,7 +438,7 @@
   ],
   "ClearValueList": [
     {
-      "TextureAttachment": 0,
+      "TextureAttachment": "Attachment 0: Position",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -345,7 +447,7 @@
       }
     },
     {
-      "TextureAttachment": 1,
+      "TextureAttachment": "Attachment 1: Albedo",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -354,7 +456,7 @@
       }
     },
     {
-      "TextureAttachment": 2,
+      "TextureAttachment": "Attachment 2: NormalData",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -363,7 +465,7 @@
       }
     },
     {
-      "TextureAttachment": 3,
+      "TextureAttachment": "Attachment 3: PackedMRO",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -372,7 +474,7 @@
       }
     },
     {
-      "TextureAttachment": 4,
+      "TextureAttachment": "Attachment 4: PackedSheenSSS",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -381,7 +483,7 @@
       }
     },
     {
-      "TextureAttachment": 5,
+      "TextureAttachment": "Attachment 5: Unused Attachment",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -390,14 +492,32 @@
       }
     },
     {
-      "TextureAttachment": 6,
+      "TextureAttachment": "Attachment 6: ParallaxInfo",
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 7: Emission",
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 8: Depth",
       "DepthStencil": {
         "depth": 1.0,
         "stencil": 0
       }
     },
     {
-      "TextureAttachment": 6,
+      "TextureAttachment": "Attachment 9: Background",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,
@@ -406,7 +526,16 @@
       }
     },
     {
-      "TextureAttachment": 6,
+      "TextureAttachment": "Attachment 10: OutColor",
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 11: OutBloom",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,

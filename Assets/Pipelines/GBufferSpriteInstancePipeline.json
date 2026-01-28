@@ -32,7 +32,7 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "_comment": "Attachment 0 - PositionData",
+      "TextureAttachment": "Attachment 0: Position",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -43,7 +43,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 1 - PositionData",
+      "TextureAttachment": "Attachment 1: Albedo",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -54,7 +54,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 2 - PositionData",
+      "TextureAttachment": "Attachment 2: NormalData",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -65,7 +65,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 3 - PositionData",
+      "TextureAttachment": "Attachment 3: PackedMRO",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -76,7 +76,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 4 - PositionData",
+      "TextureAttachment": "Attachment 4: PackedSheenSSS",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -87,7 +87,29 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 5 - PositionData",
+      "TextureAttachment": "Attachment 5: Unused Attachment",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 6: ParallaxInfo",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 7: Emission",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

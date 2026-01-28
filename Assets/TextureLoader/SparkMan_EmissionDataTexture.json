@@ -1,7 +1,7 @@
 {
-  "TextureFilePath": [ "Textures/SparkManTileSetImportMaterial5_8Bit.png" ],
+  "TextureFilePath": [ "Textures/SparkManTileSetImportMaterial5_16Bit.png" ],
   "TextureId": "6ab4746e-d5b8-4e4b-aeef-a9eece72d299",
-  "TextureByteFormat": 43,
+  "TextureByteFormat": 97,
   "UsingSRGBFormat": true,
   "SampleCount": 1,
   "ImageType": 1,
