@@ -46,44 +46,6 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 	}
 
-	VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
-	//switch (textureChannels)
-	//{
-	//case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
-	//case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
-	//case 3:
-	//{
-	//	switch (bitsPerChannel)
-	//	{
-	//		case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
-	//		case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16_SFLOAT : VK_FORMAT_R16G16B16_UNORM; break;
-	//		case 32: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R32G32B32_SFLOAT : VK_FORMAT_R32G32B32_UINT; break;
-	//	}
-	//	break;
-	//}
-	//case 4:
-	//{
-	//	switch (bitsPerChannel)
-	//	{
-	//		case 8: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
-	//		case 16: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16B16A16_UNORM; break;
-	//	}
-	//	break;
-	//}
-	//default:
-	//{
-	//	std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
-	//	detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-	//	break;
-	//}
-	//}
-
-	VkFormat finalFormat = detectedFormat;
-	//if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
-	//{
-	finalFormat = textureLoader.TextureByteFormat;
-	//}
-
 	Texture texture = Texture
 	{
 		.textureGuid = textureLoader.TextureId,
@@ -93,7 +55,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 		.depth = 1,
 		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
 		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-		.textureByteFormat = finalFormat,
+		.textureByteFormat = textureLoader.TextureByteFormat,
 		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
 		.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
@@ -213,12 +175,12 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 
 	switch (renderAttachmentLoader.RenderTextureType)
 	{
-	case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
-	case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
-	case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
-	case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
-	case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
-	case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
+		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
+		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
+		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
 	}
 
 	if (isDepthFormat)
@@ -310,77 +272,7 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 		});
 }
 
-void TextureSystem::TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
-{
-	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	if (texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL || texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
-	{
-		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	}
-
-	VkImageMemoryBarrier barrier =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.oldLayout = texture.textureImageLayout,
-		.newLayout = newLayout,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = texture.textureImage,
-		.subresourceRange =
-		{
-			.aspectMask = aspectMask,
-			.baseMipLevel = baseMipLevel,
-			.levelCount = levelCount,
-			.baseArrayLayer = 0,
-			.layerCount = VK_REMAINING_ARRAY_LAYERS
-		}
-	};
-
-	VkAccessFlags srcAccess = 0;
-	VkAccessFlags dstAccess = 0;
-	VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-	{
-		srcAccess = 0;
-		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
-		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
-		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
-		dstAccess = VK_ACCESS_SHADER_READ_BIT;
-		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-	{
-		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
-		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
-		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
-		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
-		dstAccess = VK_ACCESS_SHADER_READ_BIT;
-		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-
-	barrier.srcAccessMask = srcAccess;
-	barrier.dstAccessMask = dstAccess;
-
-	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	texture.textureImageLayout = newLayout;
-}
-
-Texture TextureSystem::FindTexture(const VkGuid& textureId, int a)
+Texture TextureSystem::FindTexture(const VkGuid& textureId)
 {
 	for (auto& pair : RenderedTextureListMap)
 	{
@@ -411,89 +303,6 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId, int a)
 	throw std::out_of_range("Texture with given ID not found");
 }
 
-void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
-{
-	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	if (texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL || texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
-	{
-		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	}
-
-	VkImageMemoryBarrier barrier =
-	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.oldLayout = texture.textureImageLayout,
-		.newLayout = newLayout,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = texture.textureImage,
-		.subresourceRange =
-		{
-			.aspectMask = aspectMask,
-			.baseMipLevel = baseMipLevel,
-			.levelCount = levelCount,
-			.baseArrayLayer = 0,
-			.layerCount = VK_REMAINING_ARRAY_LAYERS
-		}
-	};
-
-	VkAccessFlags srcAccess = 0;
-	VkAccessFlags dstAccess = 0;
-	VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-	{
-		srcAccess = 0;
-		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
-		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
-		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
-		dstAccess = VK_ACCESS_SHADER_READ_BIT;
-		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-	{
-		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
-		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
-		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
-		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
-		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
-		dstAccess = VK_ACCESS_SHADER_READ_BIT;
-		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-
-	barrier.srcAccessMask = srcAccess;
-	barrier.dstAccessMask = dstAccess;
-
-	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
-	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	vulkanSystem.EndSingleUseCommand(commandBuffer);
-
-	texture.textureImageLayout = newLayout;
-}
-
-void TextureSystem::DestroyTexture(Texture& texture)
-{
-	if (texture.textureSampler) vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
-	if (texture.textureViewList.front()) vkDestroyImageView(vulkanSystem.Device, texture.textureViewList.front(), nullptr);
-	if (texture.textureImage && texture.TextureAllocation)
-	{
-		vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
-	}
-}
-
 void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
 {
 	RenderedTextureListMap[renderPassGuid] = renderedTextureList;
@@ -502,30 +311,6 @@ void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Te
 void TextureSystem::AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture)
 {
 	DepthTextureMap[renderPassGuid] = depthTexture;
-}
-
-void TextureSystem::DestroyAllTextures()
-{
-	for (auto& texture : TextureList)
-	{
-		DestroyTexture(texture);
-	}
-	TextureList.clear();
-
-	for (auto& pair : DepthTextureMap)
-	{
-		DestroyTexture(pair.second);
-	}
-	DepthTextureMap.clear();
-
-	for (auto& list : RenderedTextureListMap)
-	{
-		for (auto& texture : list.second)
-		{
-			DestroyTexture(texture);
-		}
-	}
-	RenderedTextureListMap.clear();
 }
 
 const Vector<Texture> TextureSystem::DepthTextureList()
@@ -670,14 +455,11 @@ void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkI
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = texture.textureImage;
 
-		// For rendering into a specific mip ? usually use 2D_ARRAY for layered cubemap rendering
-		// or VK_IMAGE_VIEW_TYPE_CUBE if you render one face at a time
 		if (texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ||
 			texture.textureType == TextureTypeEnum::TextureType_IrradianceMapTexture ||
 			texture.textureType == TextureTypeEnum::TextureType_PrefilterMapTexture)
 		{
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;   // ? Recommended for layered rendering
-			// Alternative: VK_IMAGE_VIEW_TYPE_CUBE if rendering per-face without GS
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 		}
 		else
 		{
@@ -687,13 +469,114 @@ void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkI
 		viewInfo.format = texture.textureByteFormat;
 		viewInfo.subresourceRange.aspectMask = aspect;
 		viewInfo.subresourceRange.baseMipLevel = mip;
-		viewInfo.subresourceRange.levelCount = 1;               // ? Critical: only this mip
+		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = usingMultiView ? 6u : 1u;
 
 		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView));
 		texture.textureViewList.emplace_back(imageView);
 	}
+}
+
+//Texture TextureSystem::FindTexture(const TextureGuid& textureGuid)
+//{
+//	auto it = std::find_if(TextureList.begin(), TextureList.end(),
+//		[&textureGuid](const Texture& texture)
+//		{
+//			return texture.textureGuid == textureGuid;
+//		});
+//	return *it;
+//}
+
+Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& renderPassGuid)
+{
+	return DepthTextureMap.at(renderPassGuid);
+}
+
+Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
+{
+	for (auto& pair : RenderedTextureListMap)
+	{
+		auto& textureList = pair.second;
+		auto it = std::find_if(textureList.begin(), textureList.end(),
+			[&textureGuid](const Texture& texture)
+			{
+				return texture.textureGuid == textureGuid;
+			});
+		if (it != textureList.end())
+			return *it;
+	}
+	throw std::out_of_range("Texture with given ID not found");
+}
+
+Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
+{
+	return RenderedTextureListMap.at(renderPassGuid);
+}
+
+const bool TextureSystem::DepthTextureExists(const RenderPassGuid& renderPassGuid) const
+{
+	return DepthTextureMap.contains(renderPassGuid);
+}
+
+const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
+{
+	auto it = std::find_if(TextureList.begin(), TextureList.end(),
+		[&textureGuid](const Texture& texture)
+		{
+			return texture.textureGuid == textureGuid;
+		});
+	return it != TextureList.end();
+}
+
+const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const
+{
+	auto it = RenderedTextureListMap.find(renderPassGuid);
+	if (it != RenderedTextureListMap.end())
+	{
+		return std::any_of(it->second.begin(), it->second.end(),
+			[&textureGuid](const Texture& texture) { return texture.textureGuid == textureGuid; });
+	}
+	return RenderedTextureListMap.contains(textureGuid);
+}
+
+const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const
+{
+	return RenderedTextureListMap.find(renderPassGuid) != RenderedTextureListMap.end();
+}
+
+void TextureSystem::DestroyTexture(Texture& texture)
+{
+	if (texture.textureSampler) vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
+	if (texture.textureViewList.front()) vkDestroyImageView(vulkanSystem.Device, texture.textureViewList.front(), nullptr);
+	if (texture.textureImage && texture.TextureAllocation)
+	{
+		vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
+	}
+}
+
+void TextureSystem::DestroyAllTextures()
+{
+	for (auto& texture : TextureList)
+	{
+		DestroyTexture(texture);
+	}
+	TextureList.clear();
+
+	for (auto& pair : DepthTextureMap)
+	{
+		DestroyTexture(pair.second);
+	}
+	DepthTextureMap.clear();
+
+	for (auto& list : RenderedTextureListMap)
+	{
+		for (auto& texture : list.second)
+		{
+			DestroyTexture(texture);
+		}
+	}
+	RenderedTextureListMap.clear();
 }
 
 void TextureSystem::GenerateMipmaps(Texture& texture)
@@ -813,69 +696,145 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
-Texture TextureSystem::FindTexture(const TextureGuid& textureGuid)
+void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
 {
-	auto it = std::find_if(TextureList.begin(), TextureList.end(),
-		[&textureGuid](const Texture& texture)
-		{
-			return texture.textureGuid == textureGuid;
-		});
-	return *it;
-}
-
-Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& renderPassGuid)
-{
-	return DepthTextureMap.at(renderPassGuid);
-}
-
-Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
-{
-	for (auto& pair : RenderedTextureListMap)
+	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	if (texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL || texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
 	{
-		auto& textureList = pair.second;
-		auto it = std::find_if(textureList.begin(), textureList.end(),
-			[&textureGuid](const Texture& texture)
-			{
-				return texture.textureGuid == textureGuid;
-			});
-		if (it != textureList.end())
-			return *it;
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
-	throw std::out_of_range("Texture with given ID not found");
-}
 
-Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
-{
-	return RenderedTextureListMap.at(renderPassGuid);
-}
-
-const bool TextureSystem::DepthTextureExists(const RenderPassGuid& renderPassGuid) const
-{
-	return DepthTextureMap.contains(renderPassGuid);
-}
-
-const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
-{
-	auto it = std::find_if(TextureList.begin(), TextureList.end(),
-		[&textureGuid](const Texture& texture)
-		{
-			return texture.textureGuid == textureGuid;
-		});
-	return it != TextureList.end();
-}
-
-const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const
-{
-	auto it = RenderedTextureListMap.find(renderPassGuid);
-	if (it != RenderedTextureListMap.end())
+	VkImageMemoryBarrier barrier =
 	{
-		return std::any_of(it->second.begin(), it->second.end(),
-			[&textureGuid](const Texture& texture) { return texture.textureGuid == textureGuid; });
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		.oldLayout = texture.textureImageLayout,
+		.newLayout = newLayout,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = texture.textureImage,
+		.subresourceRange =
+		{
+			.aspectMask = aspectMask,
+			.baseMipLevel = baseMipLevel,
+			.levelCount = levelCount,
+			.baseArrayLayer = 0,
+			.layerCount = VK_REMAINING_ARRAY_LAYERS
+		}
+	};
+
+	VkAccessFlags srcAccess = 0;
+	VkAccessFlags dstAccess = 0;
+	VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		srcAccess = 0;
+		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
-	return RenderedTextureListMap.contains(textureGuid);
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+
+	barrier.srcAccessMask = srcAccess;
+	barrier.dstAccessMask = dstAccess;
+
+	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vulkanSystem.EndSingleUseCommand(commandBuffer);
+
+	texture.textureImageLayout = newLayout;
 }
 
-const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const
+void TextureSystem::TransitionImageLayout(const VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
 {
-	return RenderedTextureListMap.find(renderPassGuid) != RenderedTextureListMap.end();
+	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	if (texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL || texture.textureImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+	{
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
+
+	VkImageMemoryBarrier barrier =
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		.oldLayout = texture.textureImageLayout,
+		.newLayout = newLayout,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = texture.textureImage,
+		.subresourceRange =
+		{
+			.aspectMask = aspectMask,
+			.baseMipLevel = baseMipLevel,
+			.levelCount = levelCount,
+			.baseArrayLayer = 0,
+			.layerCount = VK_REMAINING_ARRAY_LAYERS
+		}
+	};
+
+	VkAccessFlags srcAccess = 0;
+	VkAccessFlags dstAccess = 0;
+	VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		srcAccess = 0;
+		dstAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_WRITE_BIT;
+		dstAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		srcAccess = VK_ACCESS_TRANSFER_READ_BIT;
+		dstAccess = VK_ACCESS_SHADER_READ_BIT;
+		srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+
+	barrier.srcAccessMask = srcAccess;
+	barrier.dstAccessMask = dstAccess;
+
+	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	texture.textureImageLayout = newLayout;
 }

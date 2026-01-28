@@ -362,8 +362,8 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
         }
         else
         {
-        renderedTextureList.emplace_back(texture);
-        frameBufferTextureList.emplace_back(texture);
+            renderedTextureList.emplace_back(texture);
+            frameBufferTextureList.emplace_back(texture);
         }
     }
 
@@ -445,28 +445,19 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
             .dependencyCount = static_cast<uint32>(subPassDependencyList.size()),
             .pDependencies = subPassDependencyList.data(),
     };
-
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &renderPass.RenderPass));
-    //if (textureSystem.PrefilterCubeMap.textureImage != VK_NULL_HANDLE)
-    //{
-    //    textureSystem.CreatePrefilterSkyBoxTexture(renderPass.RenderPass, textureSystem.PrefilterCubeMap.PrefilterCubeMap, renderPassJsonLoader.RenderAttachmentList.size());
-    //}
 
     RenderPassGuid renderPassId = renderPassJsonLoader.RenderPassId;
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(renderPassId, renderedTextureList);
     if (depthTexture.textureImage != VK_NULL_HANDLE)textureSystem.AddDepthTexture(renderPassId, depthTexture);
     if (renderPass.IsRenderedToSwapchain)
     {
-        // Standard swapchain pass
         renderPass.FrameBufferList.resize(vulkanSystem.SwapChainImageCount);
 
         for (size_t i = 0; i < vulkanSystem.SwapChainImageCount; ++i)
         {
             std::vector<VkImageView> attachments;
             attachments.emplace_back(vulkanSystem.SwapChainImageViews[i]);
-
-            // Optional: add shared offscreen attachments (e.g., depth)
-            // for (const auto& tex : frameBufferTextureList) attachments.emplace_back(tex.textureView);
 
             VkFramebufferCreateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -484,18 +475,9 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
         frameBufferTextureList[0].textureType == TextureType_IrradianceMapTexture ||
         frameBufferTextureList[0].textureType == TextureType_PrefilterMapTexture)
     {
-        // Safety check — make sure there's only one texture or handle multi-attachment differently
-        if (frameBufferTextureList.size() > 1)
-        {
-            // Log warning or handle extra attachments (depth, etc.)
-            // For now assume single attachment for these special cube passes
-        }
-
         uint32_t mipLevels = frameBufferTextureList[0].mipMapLevels;
         uint32_t baseSize = frameBufferTextureList[0].width;
-
         renderPass.FrameBufferList.resize(mipLevels);
-
         for (uint32_t mip = 0; mip < mipLevels; ++mip)
         {
             uint32_t mipWidth = std::max(1u, baseSize >> mip);
@@ -511,33 +493,29 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
             info.pAttachments = attachments.data();
             info.width = mipWidth;
             info.height = mipHeight;
-            info.layers = renderPassJsonLoader.UseCubeMapMultiView ? 1u : 6u;   // Good if using VK_IMAGE_VIEW_TYPE_2D_ARRAY + geometry shader outputting gl_Layer
+            info.layers = renderPassJsonLoader.UseCubeMapMultiView ? 1u : 6u;
 
             VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &renderPass.FrameBufferList[mip]));
         }
     }
     else
     {
-        // Regular offscreen: single framebuffer
         renderPass.FrameBufferList.resize(1);
 
         std::vector<VkImageView> attachments;
         for (const auto& texture : frameBufferTextureList)
         {
-            for (uint32_t mip = 0; mip < texture.mipMapLevels; ++mip)
-            {
-                attachments.emplace_back(texture.textureViewList[mip]);
-            }
-            VkFramebufferCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            info.renderPass = renderPass.RenderPass;
-            info.attachmentCount = static_cast<uint32_t>(attachments.size());
-            info.pAttachments = attachments.data();
-            info.width = renderPass.RenderPassResolution.x;
-            info.height = renderPass.RenderPassResolution.y;
-            info.layers = 1;  // Or 6 for layered cubemap offscreen passes
-            VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &renderPass.FrameBufferList[0]));
+            attachments.emplace_back(texture.textureViewList.front());
         }
+        VkFramebufferCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        info.renderPass = renderPass.RenderPass;
+        info.attachmentCount = static_cast<uint32_t>(attachments.size());
+        info.pAttachments = attachments.data();
+        info.width = renderPass.RenderPassResolution.x;
+        info.height = renderPass.RenderPassResolution.y;
+        info.layers = 1;
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &renderPass.FrameBufferList[0]));
     }
 }
 
@@ -1091,7 +1069,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     {
         for (auto& inputTexture : renderPass.InputTextureIdList)
         {
-            Texture texture = textureSystem.FindTexture(inputTexture, 0);
+            Texture texture = textureSystem.FindTexture(inputTexture);
             if (!texture.RenderedCubeMapView)
             {
                 textureList.emplace_back(texture);

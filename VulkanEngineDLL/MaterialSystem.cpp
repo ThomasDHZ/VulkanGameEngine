@@ -40,12 +40,12 @@ void MaterialSystem::Update(const float& deltaTime)
 {
     for (auto& material : MaterialList)
     {
-        const uint albedoDataId =         material.AlbedoDataId != VkGuid()          ? textureSystem.FindTexture(material.AlbedoDataId, 0).textureIndex         : SIZE_MAX;
-        const uint normalDataId =         material.NormalDataId != VkGuid()          ? textureSystem.FindTexture(material.NormalDataId, 0).textureIndex         : SIZE_MAX;
-        const uint packedMRODataId =      material.PackedMRODataId != VkGuid()       ? textureSystem.FindTexture(material.PackedMRODataId, 0).textureIndex      : SIZE_MAX;
-        const uint packedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid()  ? textureSystem.FindTexture(material.PackedSheenSSSDataId, 0).textureIndex : SIZE_MAX;
-        const uint unusedDataId =         material.UnusedDataId != VkGuid()          ? textureSystem.FindTexture(material.UnusedDataId, 0).textureIndex         : SIZE_MAX;
-        const uint emissionDataId =       material.EmissionDataId != VkGuid()        ? textureSystem.FindTexture(material.EmissionDataId, 0).textureIndex       : SIZE_MAX;
+        const uint albedoDataId =         material.AlbedoDataId != VkGuid()          ? textureSystem.FindTexture(material.AlbedoDataId).textureIndex         : SIZE_MAX;
+        const uint normalDataId =         material.NormalDataId != VkGuid()          ? textureSystem.FindTexture(material.NormalDataId).textureIndex         : SIZE_MAX;
+        const uint packedMRODataId =      material.PackedMRODataId != VkGuid()       ? textureSystem.FindTexture(material.PackedMRODataId).textureIndex      : SIZE_MAX;
+        const uint packedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid()  ? textureSystem.FindTexture(material.PackedSheenSSSDataId).textureIndex : SIZE_MAX;
+        const uint unusedDataId =         material.UnusedDataId != VkGuid()          ? textureSystem.FindTexture(material.UnusedDataId).textureIndex         : SIZE_MAX;
+        const uint emissionDataId =       material.EmissionDataId != VkGuid()        ? textureSystem.FindTexture(material.EmissionDataId).textureIndex       : SIZE_MAX;
 
 
         ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(material.MaterialBufferId);
