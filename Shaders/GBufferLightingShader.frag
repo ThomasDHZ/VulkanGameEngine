@@ -246,7 +246,7 @@ void main()
     const vec3  albedo              = subpassLoad(albedoInput).rgb;
     const vec4  normalData          = subpassLoad(normalInput);
     const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
-    const vec3  emission            = subpassLoad(emissionInput).rgb;
+    const vec4  emission            = subpassLoad(emissionInput).rgba;
 
     float metallic = unpackMRO_Metallic_Rough.x;
     float roughness = unpackMRO_Metallic_Rough.y;
@@ -261,7 +261,6 @@ void main()
 
     vec2 f = (normalData.xy * 2.0) - 1.0;
     vec3 normal = OctahedronDecode(f);
-    float normalStrength = normalData.z;  // not used in lighting yet?
 
     vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
 
@@ -407,12 +406,12 @@ void main()
 
     vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
 
-    vec3  ambient = emission + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
+    vec3  ambient = emission.rgb + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
-    outColor = vec4(color, 1.0f);
+    outColor = vec4(color, 1.0);
 
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
-    outBloom = vec4(bloomColor, 1.0f);
-}
+    outBloom = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+} 

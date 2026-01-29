@@ -117,7 +117,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     return clamp(finalUV, 0.0f, 1.0f);
 }
-
+ 
 vec2 OctahedronEncode(vec3 normal) 
 {
     vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
