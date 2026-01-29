@@ -85,6 +85,8 @@ mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
 
 vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
+    float height = textureLod(TextureMap[heightIdx],       TexCoords, 0.0f).g;  
+
     const float minLayers = 8.0;
     const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
@@ -94,12 +96,12 @@ vec2 deltaUV = shiftDirection / numLayers;
 
     vec2 currentUV = uv;
     float currentLayerDepth = 0.0;
-    float currentHeight = 1.0 - texture(TextureMap[heightIdx], currentUV).a;
+    float currentHeight = 1.0 - textureLod(TextureMap[heightIdx],       TexCoords, 0.0f).g;
 
     for (int i = 0; i < 64; ++i)
     {
         currentUV -= deltaUV;
-        currentHeight = 1.0 -texture(TextureMap[heightIdx], currentUV).a;
+        currentHeight = 1.0 - textureLod(TextureMap[heightIdx],       TexCoords, 0.0f).g;
         currentLayerDepth += 1.0 / numLayers;
 
         if (currentLayerDepth >= currentHeight)

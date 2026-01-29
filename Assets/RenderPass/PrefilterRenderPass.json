@@ -20,7 +20,7 @@
       "Format": 97,
       "SampleCount": 1,
       "LoadOp": 1,
-      "StoreOp": 0,
+      "StoreOp": 2,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": true,
@@ -53,7 +53,7 @@
       "SrcStageMask": 1,
       "DstStageMask": 1024,
       "SrcAccessMask": 0,
-      "DstAccessMask": 64,
+      "DstAccessMask": 256,
       "DependencyFlags": 0
     }
   ],

@@ -98,12 +98,12 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     vec2 currentUV = uv;
     float currentLayerDepth = 0.0f;
-    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx], currentUV, 0.0f).a;
+    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
 
     for (int x = 0; x < 96; ++x) 
     {
         currentUV -= deltaUV;
-        currentHeight = 1.0f - textureLod(TextureMap[heightIdx], currentUV, 0.0f).a;
+        currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
         currentLayerDepth += 1.0f / numLayers;
         if (currentLayerDepth >= currentHeight) break;
     }

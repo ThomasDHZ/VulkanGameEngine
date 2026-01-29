@@ -61,7 +61,8 @@ enum RenderTextureTypeEnum
     RenderType_DepthBufferTexture,
     RenderType_GBufferTexture,
     RenderType_IrradianceTexture,
-    RenderType_PrefilterTexture
+    RenderType_PrefilterTexture,
+    RenderType_GeneralTexture
 };
 
 enum RenderAttachmentTypeEnum

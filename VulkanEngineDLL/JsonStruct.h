@@ -50,6 +50,7 @@ struct VulkanRenderPass
     Vector<VkFramebuffer> FrameBufferList;
     Vector<VkClearValue> ClearValueList;
     ivec2 RenderPassResolution = ivec2();
+    uint  MaxPushConstantSize = 0;
     bool                         UseDefaultSwapChainResolution = true;
     bool IsRenderedToSwapchain = false;
 };

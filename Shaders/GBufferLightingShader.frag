@@ -213,7 +213,8 @@ float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight)
     return clamp(shadow, 0.0f, 1.0f);
 }
 
-float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
+float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) 
+{
     float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
     float lightScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotL, 5.0));
     float viewScatter  = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotV, 5.0));
@@ -222,14 +223,12 @@ float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
 
 void main()
 {
-
     const float depth = subpassLoad(depthInput).r;
     if (depth >= 0.99995f)
     {
         outColor = vec4(subpassLoad(skyBoxInput).rgb, 1.0);
         return;
     }
-
     const vec4 packedMRO = subpassLoad(packedMROInput);
     const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
 
@@ -269,19 +268,15 @@ void main()
     vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
     vec2 finalUV = screenUV + parallaxOffset;
 
-
     float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;
 
-    
     vec3 N = normalize(normal);
-
     mat3 TBN = ReconstructTBN(N);
     vec3 R = reflect(-V, N);
 
-    vec3 F0 = mix(vec3(0.04), albedo, metallic);  
-
     vec3 Lo = vec3(0.0f);
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);  
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
     {
         const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
@@ -413,5 +408,5 @@ void main()
     outColor = vec4(color, 1.0);
 
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
-    outBloom = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    outBloom = vec4(emission.rgb, 1.0f);
 } 
