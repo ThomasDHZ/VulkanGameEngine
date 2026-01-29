@@ -249,7 +249,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       //RenderBloomPass(commandBuffer, bloomRenderPassId);
       RenderHdrPass(commandBuffer, hdrRenderPassId);
       RenderFrameBuffer(commandBuffer, frameBufferId);
-
       //RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
       //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
   }
@@ -259,8 +258,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
       VulkanPipeline spritePipeline      = renderSystem.FindRenderPipelineList(renderPassId)[0];
       VulkanPipeline levelPipeline       = renderSystem.FindRenderPipelineList(renderPassId)[1];
-      VulkanPipeline skyboxPipeline      = renderSystem.FindRenderPipelineList(renderPassId)[2];
-      VulkanPipeline lightingPipeline    = renderSystem.FindRenderPipelineList(renderPassId)[3];
+      VulkanPipeline lightingPipeline    = renderSystem.FindRenderPipelineList(renderPassId)[2];
       const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
 
       VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
@@ -285,11 +283,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "View", OrthographicCamera->ViewMatrix); 
       shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "CameraPosition", OrthographicCamera->Position); 
 
-      ShaderPushConstantDLL& skyBoxPushConstant = shaderSystem.FindShaderPushConstant("skyBoxViewData");
-      shaderSystem.UpdatePushConstantValue<mat4>(skyBoxPushConstant, "InverseProjection", glm::inverse(PerspectiveCamera->ProjectionMatrix)); 
-      shaderSystem.UpdatePushConstantValue<mat4>(skyBoxPushConstant, "InverseView", glm::inverse(PerspectiveCamera->ViewMatrix)); 
-      shaderSystem.UpdatePushConstantBuffer(skyBoxPushConstant);
-      
       ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
       shaderSystem.UpdatePushConstantValue<vec2>(gBufferSceneDataBuffer, "InvertResolution", vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y)));
       shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "OrthographicCameraPosition", OrthographicCamera->Position);
@@ -340,14 +333,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
       }
       vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
-      vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, skyBoxPushConstant.PushConstantSize, skyBoxPushConstant.PushConstantBuffer.data());
-      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
-      vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-      vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
-
-      vkCmdPushConstants(commandBuffer, lightingPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, gBufferSceneDataBuffer.PushConstantSize, gBufferSceneDataBuffer.PushConstantBuffer.data());
+      vkCmdPushConstants(commandBuffer, lightingPipeline.PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, gBufferSceneDataBuffer.PushConstantSize, gBufferSceneDataBuffer.PushConstantBuffer.data());
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.Pipeline);
       vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.PipelineLayout, 0, lightingPipeline.DescriptorSetList.size(), lightingPipeline.DescriptorSetList.data(), 0, nullptr);
       vkCmdDraw(commandBuffer, 3, 1, 0, 0);

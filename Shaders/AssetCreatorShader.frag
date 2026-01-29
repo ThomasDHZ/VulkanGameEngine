@@ -109,7 +109,7 @@ void main()
     outAlbedo = albedo;
     outNormalData = vec4(encodedNormal * 0.5 + 0.5, height, 1.0f);
     outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
-    outPackedSheenSSS = vec4(Pack8bitPair(1.0f, 0.5f), Pack8bitPair(0.25f, 0.00f), Pack8bitPair(0.5f, 1.0f), Pack8bitPair(0.25f, thickness));
+    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, 1.00f), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
     outUnused = vec4(1.0f, 0.0f, 0.0f, 1.0f);
     outEmission = vec4(emission, material.ClearcoatRoughness); 
 }

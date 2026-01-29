@@ -6,7 +6,7 @@
     "Shaders/GBufferLightingShaderFrag.spv"
   ],
   "VertexType": 0,
-  "SubPassId": 2,
+  "SubPassId": 1,
   "UseDynamicColorWrite": false,
   "ViewportList": [
     {
@@ -32,7 +32,7 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "TextureAttachment": "Attachment 10: OutColor",
+      "TextureAttachment": "Attachment 9: OutColor",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -43,7 +43,7 @@
       "ColorWriteMask": 15
     },
     {
-      "TextureAttachment": "Attachment 11: OutBloom",
+      "TextureAttachment": "Attachment 10: OutBloom",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

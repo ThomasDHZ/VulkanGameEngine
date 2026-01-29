@@ -31,15 +31,14 @@ layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDesc
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
 layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = SubpassInputDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = MeshPropertiesDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = MaterialDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = DirectionalLightDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = PointLightDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = TextureDescriptor;
-layout(constant_id = 15)  const uint DescriptorBindingType15  = SkyBoxDescriptor;
-layout(constant_id = 16)  const uint DescriptorBindingType16  = IrradianceCubeMapDescriptor;
-layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9  = MeshPropertiesDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = TextureDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = SkyBoxDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
+layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
@@ -50,15 +49,14 @@ layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
 layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
 layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
-layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
-layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 11)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
-layout(binding = 12)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 13)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 14) uniform sampler2D TextureMap[];
-layout(binding = 15) uniform samplerCube CubeMap;
-layout(binding = 16) uniform samplerCube IrradianceMap;
-layout(binding = 17) uniform samplerCube PrefilterMap;
+layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 13) uniform sampler2D TextureMap[];
+layout(binding = 14) uniform samplerCube CubeMap;
+layout(binding = 15) uniform samplerCube IrradianceMap;
+layout(binding = 16) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -81,41 +79,6 @@ mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
     vec3 T = normalize(dp1 * duv2.t - dp2 * duv1.t);
     vec3 B = -normalize(cross(N, T));
     return mat3(T, B, N);
-}
-
-vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
-{
-    float height = textureLod(TextureMap[heightIdx],       TexCoords, 0.0f).g;  
-
-    const float minLayers = 8.0;
-    const float maxLayers = 64.0;
-    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-
-vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
-vec2 deltaUV = shiftDirection / numLayers;
-
-    vec2 currentUV = uv;
-    float currentLayerDepth = 0.0;
-    float currentHeight = 1.0 - textureLod(TextureMap[heightIdx],       TexCoords, 0.0f).g;
-
-    for (int i = 0; i < 64; ++i)
-    {
-        currentUV -= deltaUV;
-        currentHeight = 1.0 - textureLod(TextureMap[heightIdx],       TexCoords, 0.0f).g;
-        currentLayerDepth += 1.0 / numLayers;
-
-        if (currentLayerDepth >= currentHeight)
-            break;
-    }
-
-    vec2 prevUV = currentUV + deltaUV;
-    float afterHeight  = currentHeight - currentLayerDepth;
-    float beforeHeight = 1.0 - texture(TextureMap[heightIdx], prevUV).a - (currentLayerDepth - 1.0/numLayers);
-
-    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5);
-    vec2 finalUV = mix(currentUV, prevUV, weight);
-
-    return clamp(finalUV, 0.005, 0.995);
 }
 
 vec2 OctahedronEncode(vec3 normal) 
@@ -152,12 +115,14 @@ void main()
     uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
     MaterialProperitiesBuffer2 material = materialBuffer[matId].materialProperties;
 
+//    vec2 dx = dFdx(TexCoords);
+//    vec2 dy = dFdy(TexCoords);
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV =  ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
+    vec2 finalUV = TexCoords;// ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId,dx, dy);
 
-    vec4 albedoData           = textureLod(TextureMap[material.AlbedoDataId],         finalUV, 0.0f).rgba;    
+    vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],         finalUV, -0.5f).rgba;    
     vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
     vec4 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;   
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
