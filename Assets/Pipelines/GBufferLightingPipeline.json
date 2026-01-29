@@ -43,7 +43,7 @@
       "ColorWriteMask": 15
     },
     {
-      "TextureAttachment": "Attachment 10: OutBloom",
+      "TextureAttachment": "Attachment 11: OutBloom",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

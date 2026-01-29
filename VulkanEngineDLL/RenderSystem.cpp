@@ -315,15 +315,24 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
     Vector<VkAttachmentDescription> attachmentDescriptionList = Vector<VkAttachmentDescription>();
     for (int x = 0; x < renderPassJsonLoader.RenderAttachmentList.size(); x++)
     {
-        VkImageLayout initialLayout;
+        VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;  // default for new images
         VkImageLayout finalLayout;
         RenderAttachmentLoader renderAttachment = renderPassJsonLoader.RenderAttachmentList[x];
         switch (renderAttachment.RenderTextureType)
         {
         case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR; break;
-        case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-        case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;  break;
+        case RenderType_GBufferTexture:
+            finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+            break;
+        case RenderType_OffscreenColorTexture:
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
+        case RenderType_DepthBufferTexture:
+        {
+            initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  // or ATTACHMENT_OPTIMAL if you read it later
+            break;
+        }
         case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
         case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
         default: throw std::runtime_error("Unknown RenderTextureType");

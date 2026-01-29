@@ -411,8 +411,8 @@ void main()
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
-    vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
-    outColor = vec4(bloomColor, 1.0f);
+    outColor = vec4(color, 1.0f);
 
+    vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
     outBloom = vec4(bloomColor, 1.0f);
 }
