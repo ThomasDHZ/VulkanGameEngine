@@ -13,12 +13,16 @@
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
-VkGuid TextureSystem::CreateTexture(const String& texturePath)
+Texture TextureSystem::CreateTexture(const String& texturePath)
 {
-	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
+	return CreateTexture(fileSystem.LoadJsonFile(texturePath.c_str()).get<TextureLoader>());
+}
+
+Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
+{
 	if (TextureExists(textureLoader.TextureId))
 	{
-		return textureLoader.TextureId;
+		return FindTexture(textureLoader.TextureId);
 	}
 
 	int width = 0;
@@ -98,7 +102,7 @@ VkGuid TextureSystem::CreateTexture(const String& texturePath)
 	//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
 	//#endif
 
-	return textureLoader.TextureId;
+	return texture;
 }
 
 //VkGuid TextureSystem::CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels)
@@ -838,3 +842,4 @@ void TextureSystem::TransitionImageLayout(const VkCommandBuffer& commandBuffer, 
 	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	texture.textureImageLayout = newLayout;
 }
+

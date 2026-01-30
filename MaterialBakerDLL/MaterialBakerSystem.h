@@ -90,7 +90,7 @@ public:
     DLL_EXPORT void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount);
     DLL_EXPORT void CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
     DLL_EXPORT void CleanRenderPass();
-    DLL_EXPORT Texture LoadTexture(const String& texturePath, size_t bindingNumber);
+    DLL_EXPORT Texture LoadTexture(TextureLoader textureLoader, size_t bindingNumber);
     DLL_EXPORT void LoadMaterial(const String& materialPath);
     DLL_EXPORT void UpdateDescriptorSets();
     DLL_EXPORT VkDescriptorImageInfo GetTextureDescriptorbinding(Texture texture, VkSampler sampler);

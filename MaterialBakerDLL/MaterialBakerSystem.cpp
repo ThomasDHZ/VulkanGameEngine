@@ -10,6 +10,7 @@
 #include <from_json.h>
 #include <stb_image_write.h>
 #include <lodepng.h>
+#include <from_json.h>
 
 MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
 
@@ -34,21 +35,6 @@ void MaterialBakerSystem::Run()
         std::filesystem::path src = materialPath;
         std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
         std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
-
-        std::filesystem::path albedoMapSrc = !json["AlbedoMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["AlbedoMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path metallicMapSrc = !json["MetallicMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["MetallicMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path roughnessMapSrc = !json["RoughnessMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["RoughnessMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path thicknessMapSrc = !json["ThicknessMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["ThicknessMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path subSurfaceScatteringColorMapSrc = !json["SubSurfaceScatteringColorMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["SubSurfaceScatteringColorMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path sheenMapSrc = !json["SheenMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["SheenMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path clearCoatMapSrc = !json["ClearCoatMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["ClearCoatMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path ambientOcclusionMapSrc = !json["AmbientOcclusionMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["AmbientOcclusionMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path normalMapSrc = !json["NormalMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["NormalMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path alphaMapSrc = !json["AlphaMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["AlphaMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path emissionMapSrc = !json["EmissionMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["EmissionMap"].get<String>()) : std::filesystem::path();
-        std::filesystem::path heightMapSrc = !json["HeightMap"].is_null() ? std::filesystem::path(configSystem.AssetDirectory + json["HeightMap"].get<String>()) : std::filesystem::path();
-
-
 
         auto srcTime = std::filesystem::last_write_time(src);
         auto dstTime = std::filesystem::last_write_time(std::filesystem::path(configSystem.AssetDirectory + materialPath));
@@ -184,10 +170,8 @@ void MaterialBakerSystem::CleanRenderPass()
     }
 }
 
-Texture MaterialBakerSystem::LoadTexture(const String& texturePath, size_t bindingNumber)
+Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader, size_t bindingNumber)
 {
-    TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str());
-
     int width = 0;
     int height = 0;
     int textureChannels = 0;
@@ -307,7 +291,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["AlbedoMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlbedoMap", 1);
-        material.AlbedoMap = LoadTexture(json["AlbedoMap"], 1);
+        material.AlbedoMap = LoadTexture(json["AlbedoMap"].get<TextureLoader>(), 1);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.AlbedoMap, cachedAlbedoSampler));
     }
     else
@@ -323,7 +307,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["MetallicMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "MetallicMap", 1);
-        material.MetallicMap = LoadTexture(json["MetallicMap"], 2);
+        material.MetallicMap = LoadTexture(json["MetallicMap"].get<TextureLoader>(), 2);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.MetallicMap, cachedPackedORMSampler));
     }
     else
@@ -339,7 +323,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["RoughnessMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "RoughnessMap", 1);
-        material.RoughnessMap = LoadTexture(json["RoughnessMap"], 3);
+        material.RoughnessMap = LoadTexture(json["RoughnessMap"].get<TextureLoader>(), 3);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.RoughnessMap, cachedPackedORMSampler));
     }
     else
@@ -355,7 +339,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["ThicknessMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ThicknessMap", 1);
-        material.ThicknessMap = LoadTexture(json["ThicknessMap"], 4);
+        material.ThicknessMap = LoadTexture(json["ThicknessMap"].get<TextureLoader>(), 4);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.ThicknessMap, cachedPackedORMSampler));
     }
     else
@@ -371,7 +355,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["SubSurfaceScatteringColorMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SubSurfaceScatteringColorMap", 1);
-        material.SubSurfaceScatteringMap = LoadTexture(json["SubSurfaceScatteringColorMap"], 5);
+        material.SubSurfaceScatteringMap = LoadTexture(json["SubSurfaceScatteringColorMap"].get<TextureLoader>(), 5);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.SubSurfaceScatteringMap, cachedPackedORMSampler));
     }
     else
@@ -387,7 +371,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["SheenMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "SheenMap", 1);
-        material.SheenMap = LoadTexture(json["SheenMap"], 6);
+        material.SheenMap = LoadTexture(json["SheenMap"].get<TextureLoader>(), 6);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.SheenMap, cachedPackedORMSampler));
     }
     else
@@ -403,7 +387,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["ClearCoatMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "ClearCoatMap", 1);
-        material.ClearCoatMap = LoadTexture(json["ClearCoatMap"], 7);
+        material.ClearCoatMap = LoadTexture(json["ClearCoatMap"].get<TextureLoader>(), 7);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.ClearCoatMap, cachedPackedORMSampler));
     }
     else
@@ -419,7 +403,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["AmbientOcclusionMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AmbientOcclusionMap", 1);
-        material.AmbientOcclusionMap = LoadTexture(json["AmbientOcclusionMap"], 8);
+        material.AmbientOcclusionMap = LoadTexture(json["AmbientOcclusionMap"].get<TextureLoader>(), 8);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.AmbientOcclusionMap, cachedPackedORMSampler));
     }
     else
@@ -435,7 +419,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["NormalMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "NormalMap", 1);
-        material.NormalMap = LoadTexture(json["NormalMap"], 9);
+        material.NormalMap = LoadTexture(json["NormalMap"].get<TextureLoader>(), 9);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.NormalMap, cachedNormalSampler));
     }
     else
@@ -451,7 +435,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["AlphaMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "AlphaMap", 1);
-        material.AlphaMap = LoadTexture(json["AlphaMap"], 10);
+        material.AlphaMap = LoadTexture(json["AlphaMap"].get<TextureLoader>(), 10);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.AlphaMap, cachedAlphaSampler));
     }
     else
@@ -467,7 +451,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["EmissionMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "EmissionMap", 1);
-        material.EmissionMap = LoadTexture(json["EmissionMap"], 11);
+        material.EmissionMap = LoadTexture(json["EmissionMap"].get<TextureLoader>(), 11);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.EmissionMap, cachedAlbedoSampler));
     }
     else
@@ -483,7 +467,7 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
     if (!json["HeightMap"].is_null())
     {
         shaderSystem.UpdateShaderStructValue<uint>(shaderStruct, "HeightMap", 1);
-        material.HeightMap = LoadTexture(json["HeightMap"], 12);
+        material.HeightMap = LoadTexture(json["HeightMap"].get<TextureLoader>(), 12);
         textureBindingList.emplace_back(GetTextureDescriptorbinding(material.HeightMap, cachedParallaxSampler));
     }
     else
