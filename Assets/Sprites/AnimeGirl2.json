@@ -1,0 +1,43 @@
+{
+  "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
+  "MaterialId": "192a11d5-d0dc-4ead-a257-0feb60d50ff0",
+  "SpriteLayer": 0,
+  "SpriteScale": [ 1.0, 1.0 ],
+  "SpritePixelSize": [
+    464,
+    688
+  ],
+  "SpriteColor": [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+  ],
+  "AnimationList": [
+    {
+      "AnimationId": 0,
+      "FrameHoldTime": 0.2,
+      "FrameList": [
+        [ 4, 0 ],
+
+        [ 0, 1 ],
+        [ 1, 1 ],
+        [ 2, 1 ],
+        [ 3, 1 ],
+        [ 4, 1 ],
+
+        [ 0, 2 ],
+        [ 1, 2 ],
+        [ 2, 2 ],
+        [ 3, 2 ],
+        [ 4, 2 ],
+
+        [ 0, 3 ],
+        [ 1, 3 ],
+        [ 2, 3 ],
+        [ 3, 3 ],
+        [ 4, 3 ]
+      ]
+    }
+  ]
+}

@@ -12,6 +12,8 @@ struct MaterialProperitiesBuffer
     float ClearcoatRoughness;
     float SheenIntensity;
     float Thickness;
+    float Anisotropy;
+    float AnisotropyRotation;
     float NormalStrength;
     float HeightScale;
     float Height;
@@ -24,6 +26,7 @@ struct MaterialProperitiesBuffer
     uint SubSurfaceScatteringColorMap;
     uint SheenMap;
     uint ClearCoatMap;
+    uint AnisotropyMap;
     uint AmbientOcclusionMap;
     uint NormalMap;
     uint AlphaMap;
