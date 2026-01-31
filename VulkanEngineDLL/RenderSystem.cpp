@@ -108,12 +108,13 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
-        .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
+        .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
         .InputTextureIdList = renderPassLoader.InputTextureList,
         .ClearValueList = renderPassLoader.ClearValueList,
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassWidth),
-        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
+        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
     };
+    RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
 
@@ -160,11 +161,17 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
-        .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
+        .SubPassCount = UINT32_MAX,
+        .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
+        .RenderPass = VK_NULL_HANDLE,
         .InputTextureIdList = renderPassLoader.InputTextureList,
+        .FrameBufferList = Vector<VkFramebuffer>(),
         .ClearValueList = renderPassLoader.ClearValueList,
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassWidth),
-        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
+        .MaxPushConstantSize = 0,
+        .UseDefaultSwapChainResolution = renderPassLoader.UseDefaultSwapChainResolution,
+        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView
     };
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
@@ -279,7 +286,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
 
         for (int y = 0; y < renderPassJsonLoader.RenderAttachmentList.size(); y++)
         {
-            RenderAttachmentLoader renderAttachment = renderPassJsonLoader.RenderAttachmentList[y];
+            RenderPassAttachmentTexture renderAttachment = renderPassJsonLoader.RenderAttachmentList[y];
             switch (renderAttachment.RenderAttachmentTypes[x])
             {
             case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
@@ -317,33 +324,28 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
     Vector<Texture> renderedTextureList;
     Vector<Texture> frameBufferTextureList;
     Vector<VkAttachmentDescription> attachmentDescriptionList;
-
     for (int x = 0; x < renderPassJsonLoader.RenderAttachmentList.size(); x++)
     {
-        const RenderAttachmentLoader& renderAttachment = renderPassJsonLoader.RenderAttachmentList[x];
+        const RenderPassAttachmentTexture& renderAttachment = renderPassJsonLoader.RenderAttachmentList[x];
 
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         switch (renderAttachment.RenderTextureType)
         {
-        case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR; break;
-        case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-        case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-        case RenderType_PrefilterTexture:
-            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            break;
-        case RenderType_GeneralTexture:        initialLayout = VK_IMAGE_LAYOUT_GENERAL;                          finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-        default: throw std::runtime_error("Unknown RenderTextureType");
+            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR; break;
+            case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
+            case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+            case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
+            case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+            case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
+            case RenderType_GeneralTexture:        initialLayout = VK_IMAGE_LAYOUT_GENERAL;                          finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+            default: throw std::runtime_error("Unknown RenderTextureType");
         }
-        
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
             {
             .format = renderAttachment.Format,
-            .samples = renderAttachment.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderAttachment.SampleCount,
+            .samples = renderPass.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPass.SampleCount,
             .loadOp = renderAttachment.LoadOp,
             .storeOp = renderAttachment.StoreOp,
             .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -352,8 +354,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& renderPass, const RenderPas
             .finalLayout = finalLayout
            });
 
-        Texture texture = textureSystem.CreateRenderPassTexture(renderAttachment, renderPassJsonLoader.UseCubeMapMultiView,
-        ivec2(renderPassJsonLoader.RenderPassWidth, renderPassJsonLoader.RenderPassHeight));
+        Texture texture = textureSystem.CreateRenderPassTexture(renderPass, x);
         if (texture.textureType == TextureType_IrradianceMapTexture)
         {
             textureSystem.IrradianceCubeMap = texture;

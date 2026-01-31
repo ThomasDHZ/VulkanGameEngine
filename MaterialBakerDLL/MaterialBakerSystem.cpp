@@ -530,7 +530,7 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
-        .SampleCount = renderPassLoader.RenderAttachmentList[0].SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.RenderAttachmentList[0].SampleCount,
+        .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
         .InputTextureIdList = renderPassLoader.InputTextureList,
         .ClearValueList = renderPassLoader.ClearValueList,
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight),

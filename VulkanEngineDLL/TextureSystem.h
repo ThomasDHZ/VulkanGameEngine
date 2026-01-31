@@ -47,14 +47,7 @@ struct Texture
     ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
 };
 
-//struct PrefilterSkyboxTexture
-//{
-//    uint32                                                         PrefilterMipmapCount;
-//    Texture                                                        PrefilterCubeMap;
-//    Vector<VkImageView>                                            PrefilterAttachmentImageViews;
-//    Vector<VkFramebuffer>                                          PrefilterMipFramebufferList;
-//};
-
+struct VulkanRenderPass;
 struct RenderAttachmentLoader;
 class TextureSystem
 {
@@ -85,7 +78,7 @@ public:
     DLL_EXPORT Texture                   CreateTexture(const String& texturePath);
     DLL_EXPORT Texture                   CreateTexture(TextureLoader textureLoader);
     //DLL_EXPORT VkGuid                 CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels);
-    DLL_EXPORT Texture                  CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, bool useMultiView, ivec2 renderAttachmentResolution);
+    DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
     DLL_EXPORT void                     GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);

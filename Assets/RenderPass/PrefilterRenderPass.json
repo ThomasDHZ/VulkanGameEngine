@@ -11,6 +11,7 @@
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [],
+  "SampleCount": 1,
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
@@ -18,7 +19,6 @@
       "RenderTextureType": 6,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 97,
-      "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 2,
       "FinalLayout": 5,

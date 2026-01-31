@@ -43,34 +43,52 @@ struct BlendConstantsModel
 
 struct VulkanRenderPass
 {
-    RenderPassGuid RenderPassId = VkGuid();
-    VkSampleCountFlagBits SampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkRenderPass RenderPass = VK_NULL_HANDLE;
-    Vector<VkGuid> InputTextureIdList;
-    Vector<VkFramebuffer> FrameBufferList;
-    Vector<VkClearValue> ClearValueList;
-    ivec2 RenderPassResolution = ivec2();
-    uint  MaxPushConstantSize = 0;
-    bool                         UseDefaultSwapChainResolution = true;
-    bool IsRenderedToSwapchain = false;
+    RenderPassGuid                       RenderPassId = VkGuid();
+    uint32                               SubPassCount = UINT32_MAX;
+    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkRenderPass                         RenderPass = VK_NULL_HANDLE;
+    Vector<VkGuid>                       InputTextureIdList;
+    Vector<VkFramebuffer>                FrameBufferList;
+    Vector<VkClearValue>                 ClearValueList;
+    Vector<VkSubpassDependency>          SubpassDependencyModelList;
+    ivec2                                RenderPassResolution = ivec2();
+    uint                                 MaxPushConstantSize = 0;
+    bool                                 UseDefaultSwapChainResolution = true;
+    bool                                 IsRenderedToSwapchain = false;
+    bool                                 UseCubeMapMultiView = false;
 };
 
-struct  RenderAttachmentLoader
+struct RenderPassAttachmentTexture
 {
-    VkGuid                               RenderedTextureId = VkGuid();
     uint32                               MipMapCount = UINT32_MAX;
     RenderTextureTypeEnum                RenderTextureType = RenderType_UNKNOWN;
     Vector<RenderAttachmentTypeEnum>     RenderAttachmentTypes = Vector<RenderAttachmentTypeEnum>();
     VkFormat                             Format = VK_FORMAT_R8G8B8A8_UNORM;
-    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkAttachmentLoadOp                   LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     VkAttachmentStoreOp                  StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-    VkImageLayout                        FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     VkSamplerCreateInfo                  SamplerCreateInfo = VkSamplerCreateInfo();
+    VkImageLayout                        FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     bool                                 UseSampler = true;
     bool                                 UseMipMaps = false;
     bool                                 IsCubeMapAttachment = false;
     bool                                 IsTextureToExport = false;
+};
+
+struct RenderPassLoader
+{
+    VkGuid                               RenderPassId;
+    uint32                               SubPassCount = UINT32_MAX;
+    uint32                               RenderPassWidth = UINT32_MAX;
+    uint32                               RenderPassHeight = UINT32_MAX;
+    bool                                 UseDefaultSwapChainResolution = true;
+    bool                                 UseCubeMapMultiView = false;
+    bool                                 IsRenderedToSwapchain = false;
+    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    Vector<String>                       RenderPipelineList;
+    Vector<VkGuid>                       InputTextureList;
+    Vector<RenderPassAttachmentTexture>  RenderAttachmentList;
+    Vector<VkSubpassDependency>          SubpassDependencyModelList;
+    Vector<VkClearValue>                 ClearValueList;
 };
 
 struct RenderPassAttachementTextures
@@ -78,22 +96,6 @@ struct RenderPassAttachementTextures
     size_t RenderPassTextureCount;
     Texture* RenderPassTexture;
     Texture* DepthTexture;
-};
-
-struct RenderPassLoader
-{
-    VkGuid RenderPassId;
-    uint32                       SubPassCount = UINT32_MAX;
-    uint32                       RenderPassWidth = UINT32_MAX;
-    uint32                       RenderPassHeight = UINT32_MAX;
-    bool UseDefaultSwapChainResolution = true;
-    bool UseCubeMapMultiView = false;
-    bool IsRenderedToSwapchain = false;
-    Vector<String> RenderPipelineList;
-    Vector<VkGuid> InputTextureList;
-    Vector<RenderAttachmentLoader> RenderAttachmentList;
-    Vector<VkSubpassDependency> SubpassDependencyModelList;
-    Vector<VkClearValue> ClearValueList;
 };
 
 struct VulkanPipeline

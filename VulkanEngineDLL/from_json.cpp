@@ -144,12 +144,10 @@ namespace nlohmann
         j.at("maxDepth").get_to(viewPort.maxDepth);
     }
 
-    void from_json(const json& j, RenderAttachmentLoader& model) {
-        j.at("RenderedTextureId").get_to(model.RenderedTextureId);
+    void from_json(const json& j, RenderPassAttachmentTexture& model) {
         j.at("RenderTextureType").get_to(model.RenderTextureType);
         j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
         j.at("Format").get_to(model.Format);
-        j.at("SampleCount").get_to(model.SampleCount);
         j.at("LoadOp").get_to(model.LoadOp);
         j.at("StoreOp").get_to(model.StoreOp);
         j.at("FinalLayout").get_to(model.FinalLayout);

@@ -155,11 +155,12 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 //	return textureLoader.TextureId;
 //}
 
-Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& renderAttachmentLoader, bool useMultiView, ivec2 renderAttachmentResolution)
+Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId)
 {
-	bool isDepthFormat = (renderAttachmentLoader.Format >= VK_FORMAT_D16_UNORM && renderAttachmentLoader.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
-		(renderAttachmentLoader.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
-	bool hasStencil = (renderAttachmentLoader.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderAttachmentLoader.Format == VK_FORMAT_D24_UNORM_S8_UINT);
+	const RenderPassAttachmentTexture renderPassAttachmentTexture = renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId][attachmentId];
+
+	bool isDepthFormat = (renderPassAttachmentTexture.Format >= VK_FORMAT_D16_UNORM && renderPassAttachmentTexture.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderPassAttachmentTexture.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (renderPassAttachmentTexture.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderPassAttachmentTexture.Format == VK_FORMAT_D24_UNORM_S8_UINT);
 
 	// Base usage flags required for all render pass textures
 	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |
@@ -168,16 +169,16 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	Texture texture = {
-		.textureGuid = renderAttachmentLoader.RenderedTextureId,
-		.width = renderAttachmentResolution.x,
-		.height = renderAttachmentResolution.y,
+		.textureGuid = vulkanRenderPass.RenderPassId,
+		.width = vulkanRenderPass.RenderPassResolution.x,
+		.height = vulkanRenderPass.RenderPassResolution.y,
 		.depth = 1,
-		.mipMapLevels = renderAttachmentLoader.UseMipMaps ? renderAttachmentLoader.MipMapCount : 1,
-		.textureByteFormat = renderAttachmentLoader.Format,
-		.sampleCount = renderAttachmentLoader.SampleCount,
+		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
+		.textureByteFormat = renderPassAttachmentTexture.Format,
+		.sampleCount = vulkanRenderPass.SampleCount,
 	};
 
-	switch (renderAttachmentLoader.RenderTextureType)
+	switch (renderPassAttachmentTexture.RenderTextureType)
 	{
 		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
 		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
@@ -207,12 +208,12 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 
 	VkImageCreateInfo imageInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.flags = renderAttachmentLoader.IsCubeMapAttachment ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
+		.flags = renderPassAttachmentTexture.IsCubeMapAttachment ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
 		.extent = { static_cast<uint32_t>(texture.width), static_cast<uint32_t>(texture.height), 1 },
 		.mipLevels = texture.mipMapLevels,
-		.arrayLayers = renderAttachmentLoader.IsCubeMapAttachment ? 6u : 1u,
+		.arrayLayers = renderPassAttachmentTexture.IsCubeMapAttachment ? 6u : 1u,
 		.samples = texture.sampleCount,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
@@ -242,10 +243,10 @@ Texture TextureSystem::CreateRenderPassTexture(const RenderAttachmentLoader& ren
 		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	CreateTextureView(texture, useMultiView, aspectMask);
-	if (renderAttachmentLoader.UseSampler)
+	CreateTextureView(texture, vulkanRenderPass.UseCubeMapMultiView, aspectMask);
+	if (renderPassAttachmentTexture.UseSampler)
 	{
-		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderAttachmentLoader.SamplerCreateInfo, nullptr, &texture.textureSampler));
+		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
 	}
 	else
 	{

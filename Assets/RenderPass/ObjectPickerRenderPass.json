@@ -3,6 +3,7 @@
   "RenderPassId": "98f9a986-605f-430f-bef3-b63962bd89f2",
   "RenderPipelineList": [ "Pipelines/SpriteObjectPickerPipeline.json", "Pipelines/LevelShader2DPipeline.json" ],
   "InputTextureList": [],
+  "SampleCount": 1,
   "RenderedTextureInfoModelList": [
     {
       "TextureId": "f943e8e4-e031-4761-9265-4bed7e0ba1a4",
@@ -13,7 +14,6 @@
         "Format": 44,
         "MipLevels": 1,
         "ArrayLayers": 1,
-        "Samples": 1,
         "Tiling": 0,
         "Usage": 23,
         "SharingMode": 0,

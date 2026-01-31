@@ -18,9 +18,9 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
-    UnorderedMap<RenderPassGuid, VulkanRenderPass>                RenderPassMap;
-    UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>          RenderPipelineMap;
-    UnorderedMap<RenderPassGuid, String>                          RenderPassLoaderJsonMap;
+    UnorderedMap<RenderPassGuid, VulkanRenderPass>                     RenderPassMap;
+    UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
+    UnorderedMap<RenderPassGuid, String>                               RenderPassLoaderJsonMap;
 
     DLL_EXPORT void RecreateSwapchain(void* windowHandle, RenderPassGuid& renderPassGuid, LevelGuid& levelGuid, const float& deltaTime);
     DLL_EXPORT void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
@@ -34,6 +34,7 @@ private:
     DLL_EXPORT void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
 
 public:
+    UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);

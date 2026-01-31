@@ -1,6 +1,6 @@
 {
   "Name": "AnimeGirlMaterial",
-  "TextureSetResolution": [ 2320, 2752 ],
+  "TextureSetResolution": [ 3248, 1376 ],
   "MaterialGuid": "da2fead2-9c75-456d-91c7-bdf5b8404572",
   "Albedo": [ 0.8, 0.8, 0.8 ],
   "SheenColor": [ 0.9, 0.9, 0.95 ],
@@ -76,7 +76,7 @@
       "UnnormalizedCoordinates": false
     }
   },
-  "MetallicMap": {
+  "RoughnessMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_RoughnessTexture.png" ],
     "TextureId": "1f9d850d-d8af-4635-b57d-e57f74a8a8c6",
     "TextureByteFormat": 37,

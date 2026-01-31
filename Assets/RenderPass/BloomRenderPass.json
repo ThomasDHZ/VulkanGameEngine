@@ -14,6 +14,7 @@
     "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
     "a1c68b00-3fc5-4454-a639-852db3f82ce2"
   ],
+  "SampleCount": 1,
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "2a87d23c-a051-4f43-8f2f-a36b6b5162e6",
@@ -21,7 +22,6 @@
       "RenderTextureType": 1,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 97,
-      "SampleCount": 1,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,
