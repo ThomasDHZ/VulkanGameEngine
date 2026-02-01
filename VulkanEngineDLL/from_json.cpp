@@ -145,6 +145,7 @@ namespace nlohmann
     }
 
     void from_json(const json& j, RenderPassAttachmentTexture& model) {
+        j.at("RenderedTextureId").get_to(model.RenderedTextureId);
         j.at("RenderTextureType").get_to(model.RenderTextureType);
         j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
         j.at("Format").get_to(model.Format);

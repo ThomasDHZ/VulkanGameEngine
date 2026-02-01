@@ -169,7 +169,8 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	Texture texture = {
-		.textureGuid = vulkanRenderPass.RenderPassId,
+		.textureGuid = renderPassAttachmentTexture.RenderedTextureId,
+		.renderPassGuid = vulkanRenderPass.RenderPassId,
 		.width = vulkanRenderPass.RenderPassResolution.x,
 		.height = vulkanRenderPass.RenderPassResolution.y,
 		.depth = 1,

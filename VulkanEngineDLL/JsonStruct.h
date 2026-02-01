@@ -60,6 +60,7 @@ struct VulkanRenderPass
 
 struct RenderPassAttachmentTexture
 {
+    VkGuid                               RenderedTextureId = VkGuid();
     uint32                               MipMapCount = UINT32_MAX;
     RenderTextureTypeEnum                RenderTextureType = RenderType_UNKNOWN;
     Vector<RenderAttachmentTypeEnum>     RenderAttachmentTypes = Vector<RenderAttachmentTypeEnum>();

@@ -536,6 +536,7 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight),
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
     };
+    renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     renderSystem.BuildRenderPass(vulkanRenderPass, renderPassLoader);
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String> { configSystem.TextureAssetRenderer });
 

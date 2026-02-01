@@ -92,7 +92,7 @@ void main()
 
     vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(AlbedoMap,                    UV, 0.0f)                   : vec4(material.Albedo, 1.0f);
     float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(MetallicMap,                  UV, 0.0f).r                 : material.Metallic;
-    float roughness                 = (material.RoughnessMap                  != 0xFFFFFFFFu) ? textureLod(RoughnessMap,                  UV, 0.0f).g                 : material.Roughness;
+    float roughness                 = (material.RoughnessMap                 != 0xFFFFFFFFu) ? textureLod(RoughnessMap,                 UV, 0.0f).r                 : material.Roughness;
     vec3  normalMapRaw              = (material.NormalMap                    != 0xFFFFFFFFu) ? textureLod(NormalMap,                    UV, 0.0f).rgb               : vec3(0.5f, 0.5f, 1.0f);
     float thickness                 = (material.ThicknessMap                 != 0xFFFFFFFFu) ? textureLod(ThicknessMap,                 UV, 0.0f).r                 : material.Thickness;
     vec3  subSurfaceScatteringColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(SubSurfaceScatteringMap,      UV, 0.0f).rgb               : material.SubSurfaceScatteringColor;
