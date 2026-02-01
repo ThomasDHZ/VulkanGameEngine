@@ -79,8 +79,7 @@ struct RenderPassLoader
 {
     VkGuid                               RenderPassId;
     uint32                               SubPassCount = UINT32_MAX;
-    uint32                               RenderPassWidth = UINT32_MAX;
-    uint32                               RenderPassHeight = UINT32_MAX;
+    ivec2                                RenderPassResolution = ivec2();
     bool                                 UseDefaultSwapChainResolution = true;
     bool                                 UseCubeMapMultiView = false;
     bool                                 IsRenderedToSwapchain = false;

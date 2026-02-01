@@ -6,8 +6,7 @@
     "Pipelines/GBufferLevelShader2DPipeline.json",
     "Pipelines/GBufferLightingPipeline.json"
   ],
-  "RenderPassWidth": 0,
-  "RenderPassHeight": 0,
+  "RenderPassResolution": [ 0, 0 ],
   "SubPassCount": 2,
   "UseDefaultSwapChainResolution": true,
   "UseCubeMapMultiView": false,

@@ -168,6 +168,7 @@ void MeshSystem::Update(const float& deltaTime)
 
 void MeshSystem::UpdateMesh(Mesh& mesh, const float& deltaTime)
 {
+    auto a = mesh.MaterialId.ToString();
     VulkanBuffer& meshPropertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
     ShaderStructDLL& shaderStruct = shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId];
     uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;

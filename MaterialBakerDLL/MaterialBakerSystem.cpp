@@ -524,8 +524,7 @@ void MaterialBakerSystem::UpdateDescriptorSets()
 void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(configSystem.TextureAssetRenderer.c_str()).get<RenderPassLoader>();
-    renderPassLoader.RenderPassWidth = renderPassResolution.x;
-    renderPassLoader.RenderPassHeight = renderPassResolution.y;
+    renderPassLoader.RenderPassResolution = renderPassResolution;
 
     vulkanRenderPass = VulkanRenderPass
     {
@@ -533,7 +532,7 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
         .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
         .InputTextureIdList = renderPassLoader.InputTextureList,
         .ClearValueList = renderPassLoader.ClearValueList,
-        .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : ivec2(renderPassLoader.RenderPassWidth, renderPassLoader.RenderPassHeight),
+        .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : renderPassLoader.RenderPassResolution,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
     };
     renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;

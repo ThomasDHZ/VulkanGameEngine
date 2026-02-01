@@ -363,17 +363,13 @@ namespace nlohmann
         j.at("UseDefaultSwapChainResolution").get_to(model.UseDefaultSwapChainResolution);
         j.at("UseCubeMapMultiView").get_to(model.UseCubeMapMultiView);
 
-        if (model.UseDefaultSwapChainResolution &&
-            j.contains("RenderPassWidth") &&
-            j.contains("RenderPassHeight"))
+        if (model.UseDefaultSwapChainResolution)
         {
-            model.RenderPassWidth = static_cast<int>(vulkanSystem.SwapChainResolution.width);
-            model.RenderPassHeight = static_cast<int>(vulkanSystem.SwapChainResolution.height);
+            model.RenderPassResolution = ivec2(static_cast<int>(vulkanSystem.SwapChainResolution.width, static_cast<int>(vulkanSystem.SwapChainResolution.height)));
         }
         else
         {
-            model.RenderPassWidth = static_cast<int>(j.at("RenderPassWidth"));
-            model.RenderPassHeight = static_cast<int>(j.at("RenderPassHeight"));
+            model.RenderPassResolution = ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         }
 
         if (j.contains("InputTextureList"))

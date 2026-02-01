@@ -4,8 +4,7 @@
   "RenderPipelineList": [
     "Pipelines/AssetCreatorPipeline.json"
   ],
-  "RenderPassWidth": 0,
-  "RenderPassHeight": 0,
+  "RenderPassResolution": [ 0, 0 ],
   "SubPassCount": 1,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": false,
