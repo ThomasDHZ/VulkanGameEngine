@@ -88,5 +88,6 @@ enum DescriptorBindingPropertiesEnum
     kSkyBoxDescriptor,
     kIrradianceMapDescriptor,
     kPrefilterMapDescriptor,
-    kSubpassInputDescriptor
+    kSubpassInputDescriptor,
+    kBRDFMapDescriptor
 };

@@ -68,6 +68,7 @@ private:
     void GenerateMipmaps(Texture& texture);
 
 public:
+    Texture                                                        BRDFMap;
     Texture                                                        CubeMap;
     Texture                                                        IrradianceCubeMap;
     Texture                                                        PrefilterCubeMap;

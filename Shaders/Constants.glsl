@@ -15,4 +15,5 @@ const uint SkyBoxDescriptor = 9;
 const uint IrradianceCubeMapDescriptor = 10;
 const uint PrefilterDescriptor = 11;
 const uint SubpassInputDescriptor = 12;
+const uint BRDFDescriptor = 13;
 #endif

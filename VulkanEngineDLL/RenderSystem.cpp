@@ -806,6 +806,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = Vector<VkDescriptorImageInfo>{ descriptorImage };
                 break;
             }
+            case kBRDFMapDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
+                break;
+            }
             default:
             {
                 throw std::runtime_error("Binding case hasn't been handled yet");
@@ -1123,6 +1129,18 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetPrefilterMapTextureBuffer()
             .sampler = textureSystem.PrefilterCubeMap.textureSampler,
             .imageView = textureSystem.PrefilterCubeMap.textureViewList[0],
             .imageLayout = textureSystem.PrefilterCubeMap.textureImageLayout,
+        });
+    return texturePropertiesBuffer;
+}
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetBRDFMapTextureBuffer()
+{
+    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
+    texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
+        {
+            .sampler = textureSystem.BRDFMap.textureSampler,
+            .imageView = textureSystem.BRDFMap.textureViewList[0],
+            .imageLayout = textureSystem.BRDFMap.textureImageLayout,
         });
     return texturePropertiesBuffer;
 }

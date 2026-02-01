@@ -4,8 +4,8 @@
   "RenderPipelineList": [
     "Pipelines/PrefilterPipeline.json"
   ],
-  "RenderPassWidth": 128,
-  "RenderPassHeight": 128,
+  "RenderPassWidth": 256,
+  "RenderPassHeight": 256,
   "SubPassCount": 1,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,

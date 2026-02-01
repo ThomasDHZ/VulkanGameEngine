@@ -62,6 +62,7 @@ public:
     Vector<VkDescriptorImageInfo>     GetSkyBoxTextureBuffer();
     Vector<VkDescriptorImageInfo>     GetIrradianceMapTextureBuffer();
     Vector<VkDescriptorImageInfo>     GetPrefilterMapTextureBuffer();
+    Vector<VkDescriptorImageInfo>     GetBRDFMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

@@ -65,41 +65,32 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 }
 
 void main()
-{		
+{
     vec3 N = normalize(WorldPos);
     vec3 R = N;
     vec3 V = R;
 
-    const uint SAMPLE_COUNT = 512u;
+    const uint SAMPLE_COUNT = 1024u;
     vec3 prefilteredColor = vec3(0.0f);
-    float totalWeight = 0.0f;
-    
-    for(uint x = 0u; x < SAMPLE_COUNT; ++x)
+    for(uint i = 0u; i < SAMPLE_COUNT; ++i)
     {
-        vec2 Xi = Hammersley(x, SAMPLE_COUNT);
+        vec2 Xi = Hammersley(i, SAMPLE_COUNT);
         vec3 H = ImportanceSampleGGX(Xi, N, prefilterSamplerProperties.Roughness);
-        vec3 L  = normalize(2.0f * dot(V, H) * H - V);
+        vec3 L = normalize(2.0 * dot(V, H) * H - V);
 
         float NdotL = max(dot(N, L), 0.0f);
-        if(NdotL > 0.0)
+        if(NdotL > 0.0f)
         {
-            float D   = DistributionGGX(N, H, prefilterSamplerProperties.Roughness);
-            float NdotH = max(dot(N, H), 0.0f);
-            float HdotV = max(dot(H, V), 0.0f);
-            float pdf = D * NdotH / (4.0 * HdotV) + 0.0001f; 
-
-            float resolution = prefilterSamplerProperties.CubeMapResolution;
-            float saTexel  = 4.0f * PI / (6.0f * prefilterSamplerProperties.CubeMapResolution * prefilterSamplerProperties.CubeMapResolution);
-            float saSample = 1.0f / (float(SAMPLE_COUNT) * pdf + 0.0001f);
-
-            float mipLevel = prefilterSamplerProperties.Roughness == 0.0f ? 0.0f : 0.5f * log2(saSample / saTexel);
-            mipLevel = max(mipLevel, 0.0f);
-            
-            prefilteredColor += textureLod(CubeMap, L, mipLevel).rgb * NdotL;
-            totalWeight      += NdotL;
+            prefilteredColor += textureLod(CubeMap, L, 0.0).rgb * NdotL;
         }
     }
+    prefilteredColor /= float(SAMPLE_COUNT);
 
-    prefilteredColor = prefilteredColor / totalWeight;
-    outColor = vec4(prefilteredColor, 1.0);
+    // Perfect mirror for near-zero roughness
+    if (prefilterSamplerProperties.Roughness < 0.01f)
+    {
+        prefilteredColor = textureLod(CubeMap, N, 0.0).rgb;
+    } 
+
+    outColor = vec4(prefilteredColor, 1.0f);
 }

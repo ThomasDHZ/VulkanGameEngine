@@ -1,0 +1,11 @@
+{
+  "Name": "WateryCubeMapMaterial",
+  "MaterialId": "13a27ade-0165-48d3-b3ac-fc404c37ee1f",
+  "ShaderMaterialBufferIndex": 0,
+  "MaterialBufferId": 0,
+  "AlbedoData": "SkyBoxes/OceanSkyBoxTexture.json",
+  "NormalData": null,
+  "PackedMROData": null,
+  "PackedSheenSSSData": null,
+  "EmissionData": null
+}

@@ -224,6 +224,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json");
     renderSystem.GenerateTexture(brdfRenderPassId);
+    textureSystem.BRDFMap = textureSystem.FindRenderedTextureList(brdfRenderPassId).back();
 
     irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");

@@ -10,7 +10,7 @@
     "Materials/LavaCubeMapMaterial.json"
   ],
   "LoadSkyBox": [
-    "SkyBoxes/LavaSkyBox.json"
+    "SkyBoxes/WaterySkyBox.json"
   ],
   "LoadSpriteVRAM": [
     "Sprites/AnimeGirl.json"

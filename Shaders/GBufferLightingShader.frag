@@ -32,9 +32,10 @@ layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescript
 layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
 layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
 layout(constant_id = 13)  const uint DescriptorBindingType13  = TextureDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = SkyBoxDescriptor;
-layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
-layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = BRDFDescriptor;
+layout(constant_id = 15)  const uint DescriptorBindingType15  = SkyBoxDescriptor;
+layout(constant_id = 16)  const uint DescriptorBindingType16  = IrradianceCubeMapDescriptor;
+layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
@@ -50,9 +51,10 @@ layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer2 ma
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 layout(binding = 13) uniform sampler2D TextureMap[];
-layout(binding = 14) uniform samplerCube CubeMap;
-layout(binding = 15) uniform samplerCube IrradianceMap;
-layout(binding = 16) uniform samplerCube PrefilterMap;
+layout(binding = 14) uniform sampler2D BRDFMap;
+layout(binding = 15) uniform samplerCube CubeMap;
+layout(binding = 16) uniform samplerCube IrradianceMap;
+layout(binding = 17) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -386,7 +388,7 @@ void main()
     lod = clamp(lod, 0.0, maxLod);
     vec3  prefilteredColor = textureLod(PrefilterMap, R, lod).rgb;
 
-    vec2  brdf = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0f), roughness)).rg;
+    vec2  brdf = texture(BRDFMap, vec2(max(dot(N, V), 0.0f), roughness)).rg;
     vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
