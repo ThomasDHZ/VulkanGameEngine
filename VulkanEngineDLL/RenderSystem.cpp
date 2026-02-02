@@ -108,11 +108,16 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
+        .SubPassCount = renderPassLoader.SubPassCount,
         .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
+        .RenderPass = VK_NULL_HANDLE,
         .InputTextureIdList = renderPassLoader.InputTextureList,
+        .FrameBufferList = Vector<VkFramebuffer>(),
         .ClearValueList = renderPassLoader.ClearValueList,
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : renderPassLoader.RenderPassResolution,
+        .MaxPushConstantSize = 0,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView
     };
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);

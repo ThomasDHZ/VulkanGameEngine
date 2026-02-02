@@ -161,7 +161,6 @@
     <ClInclude Include="VulkanSystem.h" />
     <ClInclude Include="DLL.h" />
     <ClInclude Include="from_json.h" />
-    <ClInclude Include="JsonLoader.h" />
     <ClInclude Include="JsonStruct.h" />
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="MemorySystem.h" />

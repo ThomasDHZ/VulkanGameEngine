@@ -50,12 +50,12 @@ struct VulkanRenderPass
     Vector<VkGuid>                       InputTextureIdList;
     Vector<VkFramebuffer>                FrameBufferList;
     Vector<VkClearValue>                 ClearValueList;
-    Vector<VkSubpassDependency>          SubpassDependencyModelList;
     ivec2                                RenderPassResolution = ivec2();
     uint                                 MaxPushConstantSize = 0;
     bool                                 UseDefaultSwapChainResolution = true;
     bool                                 IsRenderedToSwapchain = false;
     bool                                 UseCubeMapMultiView = false;
+    bool                                 IsCubeMapRenderPass = false;
 };
 
 struct RenderPassAttachmentTexture
@@ -69,10 +69,7 @@ struct RenderPassAttachmentTexture
     VkAttachmentStoreOp                  StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
     VkSamplerCreateInfo                  SamplerCreateInfo = VkSamplerCreateInfo();
     VkImageLayout                        FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    bool                                 UseSampler = true;
     bool                                 UseMipMaps = false;
-    bool                                 IsCubeMapAttachment = false;
-    bool                                 IsTextureToExport = false;
 };
 
 struct RenderPassLoader
@@ -83,6 +80,7 @@ struct RenderPassLoader
     bool                                 UseDefaultSwapChainResolution = true;
     bool                                 UseCubeMapMultiView = false;
     bool                                 IsRenderedToSwapchain = false;
+    bool                                 IsCubeMapRenderPass = false;
     VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
     Vector<String>                       RenderPipelineList;
     Vector<VkGuid>                       InputTextureList;

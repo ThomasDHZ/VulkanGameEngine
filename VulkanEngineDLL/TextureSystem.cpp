@@ -181,12 +181,12 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	switch (renderPassAttachmentTexture.RenderTextureType)
 	{
-		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
-		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
-		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
-		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
+	case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
+	case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
+	case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
 	}
 
 	if (isDepthFormat)
@@ -209,12 +209,12 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	VkImageCreateInfo imageInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.flags = renderPassAttachmentTexture.IsCubeMapAttachment ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
+		.flags = vulkanRenderPass.IsCubeMapRenderPass ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
 		.imageType = VK_IMAGE_TYPE_2D,
 		.format = texture.textureByteFormat,
 		.extent = { static_cast<uint32_t>(texture.width), static_cast<uint32_t>(texture.height), 1 },
 		.mipLevels = texture.mipMapLevels,
-		.arrayLayers = renderPassAttachmentTexture.IsCubeMapAttachment ? 6u : 1u,
+		.arrayLayers = vulkanRenderPass.IsCubeMapRenderPass ? 6u : 1u,
 		.samples = texture.sampleCount,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
@@ -245,26 +245,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	}
 
 	CreateTextureView(texture, vulkanRenderPass.UseCubeMapMultiView, aspectMask);
-	if (renderPassAttachmentTexture.UseSampler)
-	{
-		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
-	}
-	else
-	{
-		VkSamplerCreateInfo samplerInfo =
-		{
-			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-			.magFilter = VK_FILTER_LINEAR,
-			.minFilter = VK_FILTER_LINEAR,
-			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-			.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-			.minLod = 0.0f,
-			.maxLod = static_cast<float>(texture.mipMapLevels)
-		};
-		VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerInfo, nullptr, &texture.textureSampler));
-	}
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
 	return texture;
 }
 

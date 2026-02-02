@@ -152,10 +152,8 @@ namespace nlohmann
         j.at("LoadOp").get_to(model.LoadOp);
         j.at("StoreOp").get_to(model.StoreOp);
         j.at("FinalLayout").get_to(model.FinalLayout);
-        j.at("UseSampler").get_to(model.UseSampler);
         j.at("UseMipMaps").get_to(model.UseMipMaps);
-        j.at("IsCubeMapAttachment").get_to(model.IsCubeMapAttachment);
-        j.at("IsTextureToExport").get_to(model.IsTextureToExport);
+        j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
 
         if (model.UseMipMaps &&
             j.contains("MipMapCount"))
@@ -165,11 +163,6 @@ namespace nlohmann
         else
         {
             model.MipMapCount = 1;
-        }
-
-        if (model.UseSampler && j.contains("SamplerCreateInfo"))
-        {
-            j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
         }
     }
 

@@ -529,12 +529,19 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
+        .SubPassCount = renderPassLoader.SubPassCount,
         .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
+        .RenderPass = VK_NULL_HANDLE,
         .InputTextureIdList = renderPassLoader.InputTextureList,
+        .FrameBufferList = Vector<VkFramebuffer>(),
         .ClearValueList = renderPassLoader.ClearValueList,
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : renderPassLoader.RenderPassResolution,
-        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain
+        .MaxPushConstantSize = 0,
+        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
+        .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
+
     renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     renderSystem.BuildRenderPass(vulkanRenderPass, renderPassLoader);
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String> { configSystem.TextureAssetRenderer });

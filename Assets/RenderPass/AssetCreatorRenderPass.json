@@ -9,6 +9,7 @@
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
+  "IsCubeMapRenderPass": false,
   "InputTextureList": [],
   "SampleCount": 1,
   "RenderAttachmentList": [
@@ -24,8 +25,6 @@
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
-      "IsCubeMapAttachment": false,
-      "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 37,
         "MagFilter": 1,

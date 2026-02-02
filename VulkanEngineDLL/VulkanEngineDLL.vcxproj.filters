@@ -45,9 +45,6 @@
     <ClInclude Include="VkGuid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JsonLoader.h">
-      <Filter>Header Files\Json</Filter>
-    </ClInclude>
     <ClInclude Include="JsonStruct.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
