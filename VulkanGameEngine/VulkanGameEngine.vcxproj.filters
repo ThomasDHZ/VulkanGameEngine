@@ -179,11 +179,5 @@
     <ClInclude Include="..\External\imgui\backends\imgui_impl_win32.h">
       <Filter>Header Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\ktx\lib\include\ktx.h">
-      <Filter>External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\ktx\lib\include\ktxvulkan.h">
-      <Filter>External</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

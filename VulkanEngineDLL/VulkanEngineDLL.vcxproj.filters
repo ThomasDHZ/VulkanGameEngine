@@ -123,12 +123,6 @@
     <ClInclude Include="..\External\LodePNG\lodepng.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\ktx\lib\include\ktx.h">
-      <Filter>Header Files\External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\ktx\lib\include\ktxvulkan.h">
-      <Filter>Header Files\External</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
