@@ -544,6 +544,7 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
 
     renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     renderSystem.BuildRenderPass(vulkanRenderPass, renderPassLoader);
+    renderSystem.BuildFrameBuffer(vulkanRenderPass);
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String> { configSystem.TextureAssetRenderer });
 
     nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassLoader.RenderPipelineList.front().c_str());

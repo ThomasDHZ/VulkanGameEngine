@@ -113,7 +113,11 @@ nlohmann::json FileSystem::LoadJsonFile(const String& filePath)
 
 Vector<byte> FileSystem::LoadPNG(const String& filePath, uint& width, uint& height, uint& bitsPerChannel, int& channelCount)
 {
-    // ... load fileBuffer ...
+    ktxTexture* kTexture = nullptr;
+    ktxResult resulta = ktxTexture_CreateFromNamedFile(
+        "assets/textures/metal_plate.ktx2",
+        KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+        &kTexture);
 
     LodePNGState state;
     lodepng_state_init(&state);

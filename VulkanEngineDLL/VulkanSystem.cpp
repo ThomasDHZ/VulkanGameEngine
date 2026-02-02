@@ -1024,7 +1024,7 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
         .commandBufferCount = 1,
         .pCommandBuffers = &commandBufferSubmit,
         .signalSemaphoreCount = 1,
-        .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex]
+        .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.CommandIndex]
     };
 
     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
@@ -1033,6 +1033,7 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
         submitResult == VK_SUBOPTIMAL_KHR)
     {
         vulkanSystem.RebuildRendererFlag = true;
+        return;
     }
     else if (submitResult != VK_SUCCESS)
     {
@@ -1043,7 +1044,7 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
     {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.ImageIndex],
+        .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.CommandIndex],
         .swapchainCount = 1,
         .pSwapchains = &vulkanSystem.Swapchain,
         .pImageIndices = &vulkanSystem.ImageIndex
@@ -1054,6 +1055,7 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
         result == VK_SUBOPTIMAL_KHR)
     {
         vulkanSystem.RebuildRendererFlag = true;
+        return;
     }
     else if (result != VK_SUCCESS)
     {

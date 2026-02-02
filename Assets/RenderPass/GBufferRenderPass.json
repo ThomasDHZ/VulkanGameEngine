@@ -27,6 +27,7 @@
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
+      "UseDefaultSwapChainResolution": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,

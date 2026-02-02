@@ -7,7 +7,8 @@
 #include "ImGuiRenderer.h"
 #include <DebugSystem.h>
 #include "ImGuiRenderer.h"
-
+#include <ktx.h>
+#include <ktxvulkan.h>
 #ifndef __ANDROID__
 int main()
 {

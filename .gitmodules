@@ -43,3 +43,6 @@
 [submodule "external/LodePNG"]
 	path = external/LodePNG
 	url = https://github.com/lvandeve/lodepng.git
+[submodule "external/ktx"]
+	path = external/ktx
+	url = https://github.com/KhronosGroup/KTX-Software.git
