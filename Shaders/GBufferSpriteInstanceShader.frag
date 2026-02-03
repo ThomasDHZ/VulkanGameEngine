@@ -80,58 +80,40 @@ mat3 TBN = mat3(
     vec3(0.0, 0.0, 1.0)    // Normal    (+Z)
 );
 
-vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx, out float edgeFade)
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
-    edgeFade = 1.0;
-    if (sceneData.UseHeightMap == 0 || abs(viewDirTS.z) < 0.05) return uv;
+    if (sceneData.UseHeightMap == 0) return uv;
 
-    const float minLayers = 32.0; 
-    const float maxLayers = 128.0;
+    const float minLayers = 16.0f;
+    const float maxLayers = 96.0f;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
-    float layerDepth = 0.0;
-    float deltaDepth = 1.0 / numLayers;
+    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0f;
+    // Remove or loosen this clamp — it was killing offset on grazed angles / low height values
+    // shiftDirection = clamp(shiftDirection, vec2(-0.06f), vec2(0.06f));
 
-    vec2 P = viewDirTS.xy * sceneData.HeightScale / viewDirTS.z;
-    vec2 deltaUV = P / numLayers;
+    vec2 deltaUV = shiftDirection / numLayers;
 
     vec2 currentUV = uv;
-    float currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).g;
+    float currentLayerDepth = 0.0f;
+    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
 
-    float stepIndex = 0.0;
-    while (stepIndex < numLayers)
+    for (int x = 0; x < 96; ++x) 
     {
         currentUV -= deltaUV;
-        currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).g;
-        layerDepth += deltaDepth;
-        if (layerDepth >= currentHeight) break;
-        stepIndex += 1.0;
+        currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
+        currentLayerDepth += 1.0f / numLayers;
+        if (currentLayerDepth >= currentHeight) break;
     }
 
     vec2 prevUV = currentUV + deltaUV;
-    float afterDepth  = layerDepth - currentHeight;
-    float beforeDepth = currentHeight - layerDepth + deltaDepth;
-    beforeDepth = textureLod(TextureMap[heightIdx], prevUV, 0.0).g - (layerDepth - deltaDepth);
+    float afterHeight = currentHeight - currentLayerDepth;
+    float beforeHeight = 1.0f - textureLod(TextureMap[heightIdx], prevUV, 0.0f).a - (currentLayerDepth - 1.0f/numLayers);
 
-    float weight = afterDepth / (afterDepth + beforeDepth + 1e-6);
+    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5f);
     vec2 finalUV = mix(currentUV, prevUV, weight);
 
-    vec2 offset = finalUV - uv;
-    float offsetMag = length(offset);
-    if (offsetMag > 0.05) 
-    {
-        edgeFade = saturate(1.0 - (offsetMag - 0.05) * 20.0); 
-        finalUV = uv + offset * edgeFade;
-    }
-
-    vec2 edgeDist = min(finalUV, 1.0 - finalUV);
-    float minDist = min(edgeDist.x, edgeDist.y);
-    if (minDist < 0.0)
-    {
-        edgeFade *= saturate(minDist * -20.0 + 1.0);
-    }
-
-    return finalUV;
+    return clamp(finalUV, 0.0f, 1.0f);
 }
  
 vec2 OctahedronEncode(vec3 normal) 
@@ -168,10 +150,9 @@ void main() {
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
     if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-    float edgeFade = 1.0;
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId, edgeFade);
+    vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId);
 
     vec4 albedoData           = textureLod(TextureMap[material.AlbedoDataId],         finalUV, 0.0f).rgba;    
     vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
@@ -179,9 +160,7 @@ void main() {
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
     vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
     vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;    
-    
-    albedoData.a *= edgeFade;
-    if (albedoData.a < 0.1f) discard;
+    if (albedoData.a < 0.1f) discard; 
 
     vec2 f = normalData.xy * 2.0f - 1.0f;
     float normalStrength = normalData.b;

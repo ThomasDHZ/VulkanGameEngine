@@ -9,10 +9,6 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-const int BrdfMapBinding              = 1;
-const int DirectionalShadowMapBinding = 2;
-const int SDFShadowMapBinding         = 3;
-
 layout(location = 0) in vec2 TexCoords;
 
 layout(location = 0) out vec4 outColor;
@@ -58,6 +54,7 @@ layout(binding = 17) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
+    int  Isolate;
     vec2  InvertResolution; 
     vec3  PerspectiveViewDirection;
     vec3  OrthographicCameraPosition;
@@ -304,8 +301,10 @@ void main()
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = fresnelSchlickRoughness(NdotV, F0, roughness);
-        vec3 specular = (NDF * G * F) / max(4.0f * NdotV * NdotL, 0.0001f);
+        vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+        vec3 kS = F;
+        vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
+        vec3 specular = (NDF * G * F) / max(4.0 * NdotV * NdotL, 0.0001);
 
         vec3 coatH = normalize(V + L);
         float coatNdotL = max(dot(N, L), 0.0f);
@@ -320,7 +319,7 @@ void main()
         vec3  clearcoatContrib = vec3(coatSpec) * clearcoatStrength;
 
         float disneyDiff = DisneyDiffuse(NdotV, NdotL, LdotH, roughness);
-        vec3  diffuse = albedo * disneyDiff;
+        vec3 diffuse = kD * albedo * disneyDiff;
 
         float subsurfaceStrength = 0.7f;
         float subsurfaceWrap = 0.5f;
@@ -335,7 +334,7 @@ void main()
         float sheenFactor = pow(1.0 - NdotV, 5.0);
         vec3  sheenContrib = sheenColor * sheenIntensity * sheenFactor;
 
-        Lo += (baseDiffuse + specular + sheenContrib) * radiance * combinedShadow * NdotL;
+        Lo += (diffuse + specular + sheenContrib) * radiance * combinedShadow * NdotL;
         Lo += clearcoatContrib * radiance * combinedShadow * coatNdotL;
     }
     for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
@@ -381,40 +380,54 @@ void main()
     vec3  kD = (vec3(1.0f) - kS) * (1.0f - metallic);
 
     vec3  irradiance = texture(IrradianceMap, N).rgb;
-    vec3  diffuseIBL = (albedo / PI) * irradiance;
+    vec3 diffuseIBL = kD * (albedo / PI) * irradiance;
 
     float maxLod = textureQueryLevels(PrefilterMap) - 1.0;
-    float lod = roughness * maxLod;
+    float lod = roughness * maxLod * 1.2;
     lod = clamp(lod, 0.0, maxLod);
-    vec3  prefilteredColor = textureLod(PrefilterMap, R, lod).rgb;
+    vec3 prefilteredColor = textureLod(PrefilterMap, R, lod).rgb;
 
     vec2  brdf = texture(BRDFMap, vec2(max(dot(N, V), 0.0f), roughness)).rg;
     vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
-    vec3  iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
+    vec3 iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
 
     float subsurfaceStrength = 0.7f;
-    vec3  iblSSSContrib = subsurfaceStrength * irradiance * (albedo * subSurfaceScatteringColor);
+    vec3 iblSSSContrib   = subsurfaceStrength * irradiance * (albedo * subSurfaceScatteringColor);
 
     float coatNdotV = max(dot(N, V), 0.0f);
     vec3  coatR = reflect(-V, N);
     float coatLod = clearcoatRoughness * (textureQueryLevels(PrefilterMap) - 1.0);
     coatLod = clamp(coatLod, 0.0, textureQueryLevels(PrefilterMap) - 1.0);
 
-    vec3  coatPrefilter = textureLod(PrefilterMap, coatR, coatLod).rgb;
+    vec3 coatPrefilter = textureLod(PrefilterMap, coatR, coatLod).rgb;
 
-    vec2  coatBRDF = texture(TextureMap[BrdfMapBinding], vec2(coatNdotV, clearcoatRoughness)).rg;
+    vec2  coatBRDF = texture(BRDFMap, vec2(coatNdotV, clearcoatRoughness)).rg;
     float coatF = 0.04 + (1.0 - 0.04) * pow(1.0 - coatNdotV, 5.0);
 
-    vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
+    vec3 clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
 
-    vec3  ambient = emission.rgb + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
+    vec3 ambient = emission.rgb + (diffuseIBL + iblSSSContrib + specularIBL + iblSheenContrib + clearcoatIBL) * ambientOcclusion;
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
-    outColor = vec4(color, 1.0);
 
-    vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
+    switch(gBufferSceneDataBuffer.Isolate)
+    {
+        case 0: outColor = vec4(color, 1.0); break;
+        case 1: outColor = vec4(diffuseIBL, 1.0); break;
+        case 2: outColor = vec4(iblSSSContrib, 1.0); break;
+        case 3: outColor = vec4(specularIBL, 1.0); break;
+        case 4: outColor = vec4(iblSheenContrib, 1.0); break;
+        case 5: outColor = vec4(clearcoatIBL, 1.0); break;
+        case 6: outColor = vec4(vec3(ambientOcclusion), 1.0); break;
+        case 7: outColor = vec4(vec3(metallic), 1.0); break;
+        case 8: outColor = vec4(vec3(roughness), 1.0); break;
+            case 9: outColor = vec4(vec3(Lo), 1.0); break;
+        default: outColor = vec4(color, 1.0); break;
+    };
+
+    //vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
     outBloom = vec4(emission.rgb, 1.0f);
 } 

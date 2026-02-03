@@ -77,7 +77,7 @@
     }
   },
   "RoughnessMap": {
-    "TextureFilePath": [ "ImportTextures/AnimeGirl_RoughnessTexture.png" ],
+    "TextureFilePath": [ "ImportTextures/AnimeGirl_RoughnessTexture2.png" ],
     "TextureId": "1f9d850d-d8af-4635-b57d-e57f74a8a8c6",
     "TextureByteFormat": 37,
     "UsingSRGBFormat": false,
