@@ -25,7 +25,7 @@
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 0,
-        "MinFilter": 0,
+        "MinFilter": 0, 
         "MipmapMode": 1,
         "AddressModeU": 2,
         "AddressModeV": 2,

@@ -17,4 +17,6 @@ const uint PrefilterDescriptor = 11;
 const uint SubpassInputDescriptor = 12;
 const uint BRDFDescriptor = 13;
 const uint EnvironmentMapDescriptor = 14;
+
+#define saturate(x) clamp(x, 0.0, 1.0)
 #endif

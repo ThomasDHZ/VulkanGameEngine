@@ -269,7 +269,7 @@ void main()
     vec2 f = (normalData.xy * 2.0) - 1.0;
     vec3 normal = OctahedronDecode(f);
 
-    vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
+    vec3 V = normalize(gBufferSceneDataBuffer.OrthographicCameraPosition - position);
 
     vec2 parallaxOffset = parallaxInfo.xy;
     float shiftedHeight = parallaxInfo.z;
@@ -335,7 +335,7 @@ void main()
         float sheenFactor = pow(1.0 - NdotV, 5.0);
         vec3  sheenContrib = sheenColor * sheenIntensity * sheenFactor;
 
-        Lo += (baseDiffuse + specular + sheenContrib) * radiance * NdotL;
+        Lo += (baseDiffuse + specular + sheenContrib) * radiance * combinedShadow * NdotL;
         Lo += clearcoatContrib * radiance * combinedShadow * coatNdotL;
     }
     for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
@@ -413,7 +413,7 @@ void main()
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
-    outColor = vec4(vec3(roughness), 1.0);
+    outColor = vec4(color, 1.0);
 
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
     outBloom = vec4(emission.rgb, 1.0f);

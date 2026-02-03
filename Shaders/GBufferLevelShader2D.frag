@@ -81,6 +81,60 @@ mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
     return mat3(T, B, N);
 }
 
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx, out float edgeFade)
+{
+    edgeFade = 1.0;
+    if (sceneData.UseHeightMap == 0 || abs(viewDirTS.z) < 0.05) return uv;
+
+    const float minLayers = 32.0; 
+    const float maxLayers = 128.0;
+    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
+
+    float layerDepth = 0.0;
+    float deltaDepth = 1.0 / numLayers;
+
+    vec2 P = viewDirTS.xy * sceneData.HeightScale / viewDirTS.z;
+    vec2 deltaUV = P / numLayers;
+
+    vec2 currentUV = uv;
+    float currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).g;
+
+    float stepIndex = 0.0;
+    while (stepIndex < numLayers)
+    {
+        currentUV -= deltaUV;
+        currentHeight = textureLod(TextureMap[heightIdx], currentUV, 0.0).g;
+        layerDepth += deltaDepth;
+        if (layerDepth >= currentHeight) break;
+        stepIndex += 1.0;
+    }
+
+    vec2 prevUV = currentUV + deltaUV;
+    float afterDepth  = layerDepth - currentHeight;
+    float beforeDepth = currentHeight - layerDepth + deltaDepth;
+    beforeDepth = textureLod(TextureMap[heightIdx], prevUV, 0.0).g - (layerDepth - deltaDepth);
+
+    float weight = afterDepth / (afterDepth + beforeDepth + 1e-6);
+    vec2 finalUV = mix(currentUV, prevUV, weight);
+
+    vec2 offset = finalUV - uv;
+    float offsetMag = length(offset);
+    if (offsetMag > 0.05) 
+    {
+        edgeFade = saturate(1.0 - (offsetMag - 0.05) * 20.0); 
+        finalUV = uv + offset * edgeFade;
+    }
+
+    vec2 edgeDist = min(finalUV, 1.0 - finalUV);
+    float minDist = min(edgeDist.x, edgeDist.y);
+    if (minDist < 0.0)
+    {
+        edgeFade *= saturate(minDist * -20.0 + 1.0);
+    }
+
+    return finalUV;
+}
+
 vec2 OctahedronEncode(vec3 normal) 
 {
     vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
@@ -115,12 +169,11 @@ void main()
     uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
     MaterialProperitiesBuffer2 material = materialBuffer[matId].materialProperties;
 
-//    vec2 dx = dFdx(TexCoords);
-//    vec2 dy = dFdy(TexCoords);
+    float edgeFade = 1.0;
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV = TexCoords;// ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId,dx, dy);
+    vec2 finalUV = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId, edgeFade);
 
     vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],         finalUV, -0.5f).rgba;    
     vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
@@ -128,7 +181,9 @@ void main()
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
     vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
     vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;    
-    if (albedoData.a < 0.1f) discard; 
+   
+   albedoData.a *= edgeFade;
+    if (albedoData.a < 0.1f) discard;
 
     vec2 f = normalData.xy * 2.0 - 1.0;
     float normalStrength = normalData.b;

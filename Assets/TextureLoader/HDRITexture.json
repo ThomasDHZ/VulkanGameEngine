@@ -1,21 +1,19 @@
 {
-  "TextureFilePath": [ "Textures/3dpea.com_the_sky_is_on_fire_8k.ktx2" ],
+  "TextureFilePath": [ "Textures/3dpea.com_158_hdrmaps_com_free_4K.ktx2" ],
   "TextureId": "7d46a17c-5db2-4a24-bef1-90d2c0f58fca",
   "TextureByteFormat": 109,
-  "UsingSRGBFormat": true,
+  "UsingSRGBFormat": false,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 3,
   "UseMipMaps": false,
   "IsSkyBox": true,
-  "Is16BitTextureData": false,
-  "UsingPacked16BitData": [ false, false, false, false ],
   "SamplerCreateInfo": {
     "SType": 31,
     "MagFilter": 1,
     "MinFilter": 1,
     "MipmapMode": 1,
-    "AddressModeU": 2,
+    "AddressModeU": 0,
     "AddressModeV": 2,
     "AddressModeW": 2,
     "MipLodBias": 0.0,
@@ -25,7 +23,7 @@
     "CompareOp": 7,
     "MinLod": 0.0,
     "MaxLod": 1000.0,
-    "BorderColor": 1,
+    "BorderColor": 2,
     "UnnormalizedCoordinates": false
   }
 }

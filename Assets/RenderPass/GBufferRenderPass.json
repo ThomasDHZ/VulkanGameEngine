@@ -21,7 +21,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0, 1 ],
-      "Format": 97,
+      "Format": 109,
       "LoadOp": 1,
       "StoreOp": 1,
       "FinalLayout": 5,
@@ -68,8 +68,8 @@
         "AddressModeV": 2,
         "AddressModeW": 2,
         "MipLodBias": 0.0,
-        "AnisotropyEnable": true,
-        "MaxAnisotropy": 16.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
@@ -123,7 +123,7 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
+        "MagFilter": 1, 
         "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
@@ -185,7 +185,7 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
+        "MagFilter": 1, 
         "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
@@ -278,8 +278,8 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 0,
-        "MinFilter": 0,
+        "MagFilter": 1,
+        "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
         "AddressModeV": 2,
@@ -290,8 +290,8 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1.0,
-        "BorderColor": 2,
+        "MaxLod": 1000.0,
+        "BorderColor": 0,
         "UnnormalizedCoordinates": false
       }
     },
@@ -309,8 +309,8 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 0,
-        "MinFilter": 0,
+        "MagFilter": 1,
+        "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
         "AddressModeV": 2,
@@ -321,8 +321,8 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1.0,
-        "BorderColor": 2,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
     },
@@ -340,7 +340,7 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 0,
+        "MagFilter": 0, 
         "MinFilter": 0,
         "MipmapMode": 1,
         "AddressModeU": 2,
@@ -352,8 +352,8 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1.0,
-        "BorderColor": 2,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
         "UnnormalizedCoordinates": false
       }
     }
