@@ -1,0 +1,6 @@
+[submodule "External/lodepng"]
+	path = External/lodepng
+	url = https://github.com/lvandeve/lodepng.git
+[submodule "External/ktx"]
+	path = External/ktx
+	url = https://github.com/KhronosGroup/KTX-Software.git

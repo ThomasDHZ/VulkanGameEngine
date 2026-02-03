@@ -27,12 +27,12 @@ layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDesc
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
 layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = SubpassInputDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = MeshPropertiesDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = MaterialDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = DirectionalLightDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = PointLightDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = TextureDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9  = MeshPropertiesDescriptor;
+layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
+layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
+layout(constant_id = 13)  const uint DescriptorBindingType13  = TextureDescriptor;
+layout(constant_id = 14)  const uint DescriptorBindingType14  = BRDFDescriptor;
 layout(constant_id = 15)  const uint DescriptorBindingType15  = SkyBoxDescriptor;
 layout(constant_id = 16)  const uint DescriptorBindingType16  = IrradianceCubeMapDescriptor;
 layout(constant_id = 17)  const uint DescriptorBindingType17  = PrefilterDescriptor;
@@ -46,18 +46,19 @@ layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
 layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
 layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
-layout(input_attachment_index = 9, binding = 9) uniform subpassInput skyBoxInput;
-layout(binding = 10)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 11)  buffer MaterialProperities { MaterialProperitiesBuffer materialProperties; } materialBuffer[];
-layout(binding = 12)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 13)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 14) uniform sampler2D TextureMap[];
+layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
+layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 13) uniform sampler2D TextureMap[];
+layout(binding = 14) uniform sampler2D BRDFMap;
 layout(binding = 15) uniform samplerCube CubeMap;
 layout(binding = 16) uniform samplerCube IrradianceMap;
 layout(binding = 17) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
+    int  Isolate;
     vec2  InvertResolution; 
     vec3  PerspectiveViewDirection;
     vec3  OrthographicCameraPosition;
@@ -224,9 +225,16 @@ void main()
 {
 
     const float depth = subpassLoad(depthInput).r;
-    if (depth >= 0.99995f)
-    {
-        outColor = vec4(subpassLoad(skyBoxInput).rgb, 1.0);
+    if (depth >= 0.9999f) {
+        vec3 ndc = vec3(gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
+        vec4 viewPos = gBufferSceneDataBuffer.InvProjection * vec4(ndc, 1.0);
+        viewPos /= viewPos.w;
+        vec3 viewDir = normalize(viewPos.xyz);
+        vec3 worldDir = normalize((gBufferSceneDataBuffer.InvView * vec4(viewDir, 0.0)).xyz);
+        vec3 sky = textureLod(CubeMap, worldDir, 0.0).rgb;
+
+        outColor = vec4(sky, 1.0);
+        outBloom = vec4(0.0);
         return;
     }
 
@@ -257,32 +265,32 @@ void main()
     vec3 sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
     float sheenIntensity2 = SheenSSS_SheenColorB_SheenIntensity.y;
     vec3 subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
+    vec3 subSurfaceScatteringColor = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
     float thickness = SheenSSS_SSSB_Thickness.y;
 
     vec2 f = (normalData.xy * 2.0) - 1.0;
     vec3 normal = OctahedronDecode(f);
-    float normalStrength = normalData.z;  // not used in lighting yet?
 
-    vec3 V = normalize(gBufferSceneDataBuffer.PerspectiveViewDirection);  // per-pixel V
+    vec2 ndc = (gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution) * 2.0 - 1.0;
+    vec4 clip = vec4(ndc, depth * 2.0 - 1.0, 1.0);  
+    vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clip;
+    viewPos /= viewPos.w;
+    vec3 V = normalize(-viewPos.xyz);
 
-    vec2 parallaxOffset = parallaxInfo.xy;
+        vec2 parallaxOffset = parallaxInfo.xy;
     float shiftedHeight = parallaxInfo.z;
     vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
     vec2 finalUV = screenUV + parallaxOffset;
 
-
     float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;
 
-    
     vec3 N = normalize(normal);
-
     mat3 TBN = ReconstructTBN(N);
     vec3 R = reflect(-V, N);
 
-    vec3 F0 = mix(vec3(0.04), albedo, metallic);  
-
     vec3 Lo = vec3(0.0f);
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);  
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
     {
         const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
@@ -323,13 +331,13 @@ void main()
         float subsurfaceStrength = 0.7f;
         float subsurfaceWrap = 0.5f;
         float NdotL_wrap = max(NdotL + subsurfaceWrap, 0.0) / (1.0 + subsurfaceWrap);
-        vec3  sssColor = albedo * vec3(1.0, 0.7, 0.6);
+        vec3  sssColor = albedo * subSurfaceScatteringColor;
         vec3  sssContrib = sssColor * subsurfaceStrength * NdotL_wrap;
 
         vec3  baseDiffuse = mix(diffuse, sssContrib, subsurfaceStrength) * (1.0 - metallic);
 
         float sheenIntensity = 0.4f;
-        vec3  sheenColor = mix(vec3(1.0), albedo, 0.5);
+        vec3  sheenColor = mix(sheen, albedo, 0.5);
         float sheenFactor = pow(1.0 - NdotV, 5.0);
         vec3  sheenContrib = sheenColor * sheenIntensity * sheenFactor;
 
@@ -371,7 +379,7 @@ void main()
        // Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
 
-    vec3  sheenColor = mix(vec3(1.0), albedo, 0.5);
+    vec3  sheenColor = mix(sheen, albedo, 0.5);
     float sheenIntensity = 0.4f;
 
     vec3  F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
@@ -386,14 +394,14 @@ void main()
     lod = clamp(lod, 0.0, maxLod);
     vec3  prefilteredColor = textureLod(PrefilterMap, R, lod).rgb;
 
-    vec2  brdf = texture(TextureMap[BrdfMapBinding], vec2(max(dot(N, V), 0.0f), roughness)).rg;
+    vec2  brdf = texture(BRDFMap, vec2(max(dot(N, V), 0.0f), roughness)).rg;
     vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
     vec3  iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
 
     float subsurfaceStrength = 0.7f;
-    vec3  iblSSSContrib = subsurfaceStrength * irradiance * (albedo * vec3(1.0, 0.7, 0.6));
+    vec3  iblSSSContrib = subsurfaceStrength * irradiance * (albedo * subSurfaceScatteringColor);
 
     float coatNdotV = max(dot(N, V), 0.0f);
     vec3  coatR = reflect(-V, N);
@@ -407,12 +415,12 @@ void main()
 
     vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
 
-    vec3  ambient = emission + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
+    vec3  ambient = emission.rgb + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
-    outColor = vec4(brdf.r, brdf.g, 0.0f, 1.0f);
+    outColor = vec4(color, 1.0);
 
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
-    outBloom = vec4(bloomColor, 1.0f);
-}
+    outBloom = vec4(emission.rgb, 1.0f);
+} 

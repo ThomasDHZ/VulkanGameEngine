@@ -81,6 +81,42 @@ mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
     return mat3(T, B, N);
 }
 
+vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
+{
+    if (sceneData.UseHeightMap == 0) return uv;
+
+    const float minLayers = 16.0f;
+    const float maxLayers = 96.0f;
+    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
+
+    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0f;
+    // Remove or loosen this clamp — it was killing offset on grazed angles / low height values
+    // shiftDirection = clamp(shiftDirection, vec2(-0.06f), vec2(0.06f));
+
+    vec2 deltaUV = shiftDirection / numLayers;
+
+    vec2 currentUV = uv;
+    float currentLayerDepth = 0.0f;
+    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
+
+    for (int x = 0; x < 96; ++x) 
+    {
+        currentUV -= deltaUV;
+        currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
+        currentLayerDepth += 1.0f / numLayers;
+        if (currentLayerDepth >= currentHeight) break;
+    }
+
+    vec2 prevUV = currentUV + deltaUV;
+    float afterHeight = currentHeight - currentLayerDepth;
+    float beforeHeight = 1.0f - textureLod(TextureMap[heightIdx], prevUV, 0.0f).a - (currentLayerDepth - 1.0f/numLayers);
+
+    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5f);
+    vec2 finalUV = mix(currentUV, prevUV, weight);
+
+    return clamp(finalUV, 0.0f, 1.0f);
+}
+
 vec2 OctahedronEncode(vec3 normal) 
 {
     vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
@@ -115,12 +151,10 @@ void main()
     uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
     MaterialProperitiesBuffer2 material = materialBuffer[matId].materialProperties;
 
-//    vec2 dx = dFdx(TexCoords);
-//    vec2 dy = dFdy(TexCoords);
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV = TexCoords;// ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId,dx, dy);
+    vec2 finalUV =  ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
 
     vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],         finalUV, -0.5f).rgba;    
     vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
