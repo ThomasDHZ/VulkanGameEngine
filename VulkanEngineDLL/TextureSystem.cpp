@@ -24,9 +24,9 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	{
 		return FindTexture(textureLoader.TextureId);
 	}
-
 	int width = 0;
 	int height = 0;
+	Texture texture;
 	uint bitsPerChannel = 0;
 	int textureChannels = 0;
 	Vector<byte> textureData;
@@ -34,36 +34,70 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	{
 		Vector<byte> layerData;
 		String ext = fileSystem.GetFileExtention(textureLoader.TextureFilePath[x].c_str());
-		if (ext == "png" && textureLoader.TextureFilePath.size() == 1)
+		if (ext == "ktx2")
+		{
+			ktxVulkanTexture textureData = fileSystem.LoadKTX2File(textureLoader.TextureFilePath[x]);
+			
+			texture = Texture
+			{
+				.textureGuid = textureLoader.TextureId,
+				.textureIndex = TextureList.size(),
+				.width = static_cast<int>(textureData.width),
+				.height = static_cast<int>(textureData.height),
+				.depth = static_cast<int>(textureData.depth),
+				.mipMapLevels = 1,
+				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+				.textureByteFormat = textureData.imageFormat,
+				.textureImageLayout = textureData.imageLayout,
+				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+				.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+			};
+		}
+		else if (ext == "png" && textureLoader.TextureFilePath.size() == 1)
 		{
 			uint uWidth = 0;
 			uint uHeight = 0;
 			layerData = fileSystem.LoadPNG(textureLoader.TextureFilePath[x], uWidth, uHeight, bitsPerChannel, textureChannels);
 			width = static_cast<int>(uWidth);
 			height = static_cast<int>(uHeight);
+			texture = Texture
+			{
+				.textureGuid = textureLoader.TextureId,
+				.textureIndex = TextureList.size(),
+				.width = width,
+				.height = height,
+				.depth = 1,
+				.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+				.textureByteFormat = textureLoader.TextureByteFormat,
+				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+				.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+			};
 		}
 		else
 		{
 			bitsPerChannel = 8;
 			layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
+			texture = Texture
+			{
+				.textureGuid = textureLoader.TextureId,
+				.textureIndex = TextureList.size(),
+				.width = width,
+				.height = height,
+				.depth = 1,
+				.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+				.textureByteFormat = textureLoader.TextureByteFormat,
+				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+				.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+			};
 		}
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 	}
 
-	Texture texture = Texture
-	{
-		.textureGuid = textureLoader.TextureId,
-		.textureIndex = TextureList.size(),
-		.width = width,
-		.height = height,
-		.depth = 1,
-		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
-		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-		.textureByteFormat = textureLoader.TextureByteFormat,
-		.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-		.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
-	};
+	
 
 	VkImageCreateInfo imageCreateInfo =
 	{
@@ -104,6 +138,99 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 
 	return texture;
 }
+
+Texture TextureSystem::LoadKTXTexture(const String& texturePath)
+{
+	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str()).get<TextureLoader>();
+	if (TextureExists(textureLoader.TextureId))
+	{
+		return FindTexture(textureLoader.TextureId);
+	}
+
+	ktxTexture* kTexture = nullptr;
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(textureLoader.TextureFilePath.front().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
+	if (result != KTX_SUCCESS)
+	{
+		std::cerr << "Failed to load KTX: " << ktxErrorString(result) << std::endl;
+	}
+
+	ktxVulkanDeviceInfo vdi{};
+	result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
+	if (result != KTX_SUCCESS)
+	{
+		ktxTexture_Destroy(kTexture);
+	}
+
+	ktxVulkanTexture vkTex;
+	result = ktxTexture_VkUploadEx(kTexture, &vdi, &vkTex, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	ktxVulkanTexture textureData = fileSystem.LoadKTX2File(textureLoader.TextureFilePath[0]);
+	VkImageAspectFlags aspect = VkImageAspectFlags();
+	if ((textureData.imageFormat >= VK_FORMAT_D16_UNORM &&
+		textureData.imageFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
+		textureData.imageFormat == VK_FORMAT_X8_D24_UNORM_PACK32)
+	{
+		aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (textureData.imageFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+			textureData.imageFormat == VK_FORMAT_D24_UNORM_S8_UINT)
+		{
+			aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	}
+	else
+	{
+		aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	Vector<VkImageView> imageViewList;
+	uint32 mipLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(static_cast<int>(textureData.width), static_cast<int>(textureData.height))))) + 1 : 1;
+	for (uint32_t mip = 0; mip < mipLevels; ++mip)
+	{
+		VkImageView imageView = VK_NULL_HANDLE;
+
+		VkImageViewCreateInfo viewInfo = {};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = textureData.image;
+		viewInfo.viewType = kTexture->isCubemap ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = textureData.imageFormat;
+		viewInfo.subresourceRange.aspectMask = aspect;
+		viewInfo.subresourceRange.baseMipLevel = mip;
+		viewInfo.subresourceRange.levelCount = textureData.levelCount;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = textureData.layerCount;
+
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView));
+		imageViewList.emplace_back(imageView);
+	}
+
+	VkSampler imageSampler = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &imageSampler));
+
+	Texture texture = Texture
+	{
+		.textureGuid = textureLoader.TextureId,
+		.textureIndex = TextureList.size(),
+		.width = static_cast<int>(textureData.width),
+		.height = static_cast<int>(textureData.height),
+		.depth = static_cast<int>(textureData.depth),
+		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(static_cast<int>(textureData.width), static_cast<int>(textureData.height))))) + 1 : 1,
+		.textureImage = textureData.image,
+		.textureViewList = imageViewList,
+		.textureSampler = imageSampler,
+		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+		.textureByteFormat = textureData.imageFormat,
+		.textureImageLayout = textureData.imageLayout,
+		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+		//	.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+	};
+	if ( kTexture->isCubemap) CubeMap = texture;
+	else TextureList.emplace_back(texture);
+
+	ktxVulkanDeviceInfo_Destruct(&vdi);
+	ktxTexture_Destroy(kTexture);
+	return texture;
+}
+
 
 //VkGuid TextureSystem::CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels)
 //{
@@ -187,6 +314,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
 	case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
 	case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
+	case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture; break;
 	}
 
 	if (isDepthFormat)

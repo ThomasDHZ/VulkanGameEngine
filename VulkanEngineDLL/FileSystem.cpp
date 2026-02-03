@@ -203,6 +203,29 @@ Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& 
     return result;
 }
 
+ktxVulkanTexture FileSystem::LoadKTX2File(const String& filePath)
+{
+    ktxTexture* kTexture = nullptr;
+    KTX_error_code result = ktxTexture_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
+    if (result != KTX_SUCCESS) 
+    {
+        std::cerr << "Failed to load KTX: " << ktxErrorString(result) << std::endl;
+    }
+    ktxVulkanDeviceInfo vdi{};
+    result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
+    if (result != KTX_SUCCESS) 
+    {
+        ktxTexture_Destroy(kTexture);
+    }
+
+    ktxVulkanTexture vkTex;
+    result = ktxTexture_VkUploadEx(kTexture, &vdi, &vkTex, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    ktxVulkanDeviceInfo_Destruct(&vdi);
+    ktxTexture_Destroy(kTexture);
+    
+    return vkTex;
+}
+
 void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
 {
     stbi_flip_vertically_on_write(true);  

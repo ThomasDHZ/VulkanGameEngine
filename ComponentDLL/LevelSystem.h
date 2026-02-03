@@ -76,6 +76,7 @@ private:
         int UseHeightMap = 1;
         float HeightScale = 0.051f;
         vec3 ViewDirection = vec3(0.037f, -0.062f, 1.0f);
+        RenderPassGuid environmentToCubeMapRenderPassId;
         RenderPassGuid brdfRenderPassId;
         RenderPassGuid irradianceMapRenderPassId;
         RenderPassGuid prefilterMapRenderPassId;
@@ -91,6 +92,7 @@ private:
         RenderPassGuid spriteWireFrameRenderPass2DId;
 
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+        DLL_EXPORT void                 RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
         DLL_EXPORT void                 RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);

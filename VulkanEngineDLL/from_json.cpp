@@ -355,6 +355,7 @@ namespace nlohmann
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("UseDefaultSwapChainResolution").get_to(model.UseDefaultSwapChainResolution);
         j.at("UseCubeMapMultiView").get_to(model.UseCubeMapMultiView);
+        j.at("IsCubeMapRenderPass").get_to(model.IsCubeMapRenderPass);
 
         if (model.UseDefaultSwapChainResolution)
         {

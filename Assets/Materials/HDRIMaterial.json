@@ -1,0 +1,11 @@
+{
+  "Name": "LavaCubeMapMaterial",
+  "MaterialId": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
+  "ShaderMaterialBufferIndex": 0,
+  "MaterialBufferId": 0,
+  "AlbedoData": "SkyBoxes/LavaSkyBox.json",
+  "NormalData": null,
+  "PackedMROData": null,
+  "PackedSheenSSSData": null,
+  "EmissionData": null
+}

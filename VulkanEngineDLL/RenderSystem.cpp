@@ -118,7 +118,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
         .MaxPushConstantSize = 0,
         .UseDefaultSwapChainResolution = renderPassLoader.UseDefaultSwapChainResolution,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
-        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
+        .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
@@ -178,7 +179,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         .MaxPushConstantSize = 0,
         .UseDefaultSwapChainResolution = renderPassLoader.UseDefaultSwapChainResolution,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
-        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
+        .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
@@ -348,7 +350,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
         case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
         case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_GeneralTexture:        initialLayout = VK_IMAGE_LAYOUT_GENERAL;                          finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+        case RenderType_CubeMapTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
         default: throw std::runtime_error("Unknown RenderTextureType");
         }
 
@@ -802,6 +804,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
                 break;
+            } 
+            case kEnvironmentMapDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
+                break;
             }
             default:
             {
@@ -1135,6 +1143,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetBRDFMapTextureBuffer()
         });
     return texturePropertiesBuffer;
 }
+
 
 VulkanRenderPass RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
 {

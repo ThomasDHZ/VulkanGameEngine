@@ -30,12 +30,6 @@ int main()
         vulkanWindow = new GameEngineWindow();
         vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
         gameSystem.StartUp(vulkanWindow);
-        ktxTexture* kTexture = nullptr;
-        ktxResult result = ktxTexture_CreateFromNamedFile(
-            "assets/textures/metal_plate.ktx2",
-            KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
-            &kTexture
-        );
         imGuiRenderer = ImGui_StartUp();
        // Texture& texture = textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId);
       //  texture.ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.textureSampler, texture.textureView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

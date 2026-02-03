@@ -9,7 +9,7 @@
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
-  "IsCubeMapRenderPass": false,
+  "IsCubeMapRenderPass": true,
   "InputTextureList": [],
   "SampleCount": 1,
   "RenderAttachmentList": [
@@ -18,7 +18,7 @@
       "MipMapCount": 7,
       "RenderTextureType": 6,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 97,
+      "Format": 109,
       "LoadOp": 1,
       "StoreOp": 2,
       "FinalLayout": 5,
