@@ -4,7 +4,7 @@
   "RenderPipelineList": [
     "Pipelines/EnvironmentToCubeMapPipeline.json"
   ],
-  "RenderPassResolution": [ 2048, 2048 ],
+  "RenderPassResolution": [ 256, 256 ],
   "SubPassCount": 1,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": true,

@@ -231,6 +231,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     textureSystem.BRDFMap = textureSystem.FindRenderedTextureList(brdfRenderPassId).back();
 
     environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
+    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
     textureSystem.CubeMap = textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back();
 
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
@@ -249,7 +250,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
   void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
   {
-      RenderEnvironmentToCubeMapRenderPass(commandBuffer, environmentToCubeMapRenderPassId);
+     // RenderEnvironmentToCubeMapRenderPass(commandBuffer, environmentToCubeMapRenderPassId);
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
