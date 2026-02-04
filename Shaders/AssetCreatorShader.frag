@@ -107,7 +107,7 @@ void main()
     vec2 encodedNormal = OctahedronEncode(tangentNormal);
 
     outAlbedo = albedo;
-    outNormalData = vec4(encodedNormal * 0.5 + 0.5, height, 1.0f);
+    outNormalData = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
     outPackedMRO = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0);
     outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, 1.00f), Pack8bitPair(subSurfaceScatteringColor.r, subSurfaceScatteringColor.g), Pack8bitPair(subSurfaceScatteringColor.b, thickness));
     outUnused = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), 0.0f, 0.0f, 1.0f);

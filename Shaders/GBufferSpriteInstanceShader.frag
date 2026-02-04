@@ -154,12 +154,13 @@ void main() {
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId);
 
-    vec4 albedoData           = textureLod(TextureMap[material.AlbedoDataId],         finalUV, 0.0f).rgba;    
-    vec4 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgba;    
+    vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            finalUV, -0.5f).rgba;    
+    vec3 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgb;    
     vec4 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;   
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
     vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
-    vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;    
+    vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;
+    float height              = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).a;
     if (albedoData.a < 0.1f) discard; 
 
     vec2 f = normalData.xy * 2.0f - 1.0f;
@@ -174,7 +175,7 @@ void main() {
 
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedoData;
-    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalStrength, 1.0f);
+    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, height);
     outPackedMRO = packedMROData;
     outPackedSheenSSS = packedSheenSSSData;
     outTempMap = tempMapData;

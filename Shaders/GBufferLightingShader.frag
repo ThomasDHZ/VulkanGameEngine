@@ -252,9 +252,10 @@ void main()
 
     const vec3  position            = subpassLoad(positionInput).rgb;
     const vec3  albedo              = subpassLoad(albedoInput).rgb;
-    const vec4  normalData          = subpassLoad(normalInput);
+    const vec3  normalData          = subpassLoad(normalInput).rgb;
     const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
     const vec3  emission            = subpassLoad(emissionInput).rgb;
+    const float height              = subpassLoad(normalInput).a;
 
     float metallic = unpackMRO_Metallic_Rough.x;
     float roughness = unpackMRO_Metallic_Rough.y;
