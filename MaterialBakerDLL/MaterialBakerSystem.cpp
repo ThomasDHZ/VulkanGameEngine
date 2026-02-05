@@ -11,6 +11,7 @@
 #include <stb_image_write.h>
 #include <lodepng.h>
 #include <from_json.h>
+#include <nvtt/nvtt.h>
 
 MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
 

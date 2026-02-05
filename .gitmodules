@@ -4,3 +4,33 @@
 [submodule "External/ktx"]
 	path = External/ktx
 	url = https://github.com/KhronosGroup/KTX-Software.git
+[submodule "external/AMDCompressonator"]
+	path = external/AMDCompressonator
+	url = https://github.com/GPUOpen-Tools/compressonator.git
+[submodule "External/SPIRV-Reflect"]
+	path = External/SPIRV-Reflect
+	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+[submodule "External/VulkanMemoryAllocator"]
+	path = External/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "External/entt"]
+	path = External/entt
+	url = https://github.com/skypjack/entt.git
+[submodule "External/glfw"]
+	path = External/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "External/glm"]
+	path = External/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "External/imgui"]
+	path = External/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "External/nlohmann"]
+	path = External/nlohmann
+	url = https://github.com/nlohmann/json.git
+[submodule "External/stb"]
+	path = External/stb
+	url = https://github.com/nothings/stb.git
+[submodule "External/libpng"]
+	path = External/libpng
+	url = https://github.com/glennrp/libpng.git

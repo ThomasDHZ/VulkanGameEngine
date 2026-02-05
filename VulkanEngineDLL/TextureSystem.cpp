@@ -24,6 +24,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	{
 		return FindTexture(textureLoader.TextureId);
 	}
+
 	int width = 0;
 	int height = 0;
 	Texture texture;
@@ -34,26 +35,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	{
 		Vector<byte> layerData;
 		String ext = fileSystem.GetFileExtention(textureLoader.TextureFilePath[x].c_str());
-		if (ext == "ktx2")
-		{
-			ktxVulkanTexture textureData = fileSystem.LoadKTX2File(textureLoader.TextureFilePath[x]);
-			
-			texture = Texture
-			{
-				.textureGuid = textureLoader.TextureId,
-				.textureIndex = TextureList.size(),
-				.width = static_cast<int>(textureData.width),
-				.height = static_cast<int>(textureData.height),
-				.depth = static_cast<int>(textureData.depth),
-				.mipMapLevels = 1,
-				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-				.textureByteFormat = textureData.imageFormat,
-				.textureImageLayout = textureData.imageLayout,
-				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-				.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
-			};
-		}
-		else if (ext == "png" && textureLoader.TextureFilePath.size() == 1)
+		if (ext == "png" && textureLoader.TextureFilePath.size() == 1)
 		{
 			uint uWidth = 0;
 			uint uHeight = 0;
@@ -141,10 +123,20 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 
 Texture TextureSystem::LoadKTXTexture(const String& texturePath)
 {
-	TextureLoader textureLoader = fileSystem.LoadJsonFile(texturePath.c_str()).get<TextureLoader>();
+	return LoadKTXTexture(fileSystem.LoadJsonFile(texturePath.c_str()).get<TextureLoader>());
+}
+
+Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
+{
 	if (TextureExists(textureLoader.TextureId))
 	{
 		return FindTexture(textureLoader.TextureId);
+	}
+
+	String ext = fileSystem.GetFileExtention(textureLoader.TextureFilePath.front().c_str());
+	if (ext != "ktx2")
+	{
+		return CreateTexture(textureLoader);
 	}
 
 	ktxTexture* kTexture = nullptr;
@@ -223,14 +215,13 @@ Texture TextureSystem::LoadKTXTexture(const String& texturePath)
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
 		//	.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
 	};
-	if ( kTexture->isCubemap) CubeMap = texture;
+	if (kTexture->isCubemap) CubeMap = texture;
 	else TextureList.emplace_back(texture);
 
 	ktxVulkanDeviceInfo_Destruct(&vdi);
 	ktxTexture_Destroy(kTexture);
 	return texture;
 }
-
 
 //VkGuid TextureSystem::CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels)
 //{

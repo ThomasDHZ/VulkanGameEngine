@@ -27,12 +27,12 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.materialGuid = materialId;
     material.ShaderMaterialBufferIndex = MaterialList.size();
     material.MaterialBufferId = bufferId;
-    material.AlbedoDataId =         !json["AlbedoData"].is_null()         ? textureSystem.CreateTexture(json["AlbedoData"].get<TextureLoader>()).textureGuid         : VkGuid();
-    material.NormalDataId =         !json["NormalData"].is_null()         ? textureSystem.CreateTexture(json["NormalData"].get<TextureLoader>()).textureGuid         : VkGuid();
-    material.PackedMRODataId =      !json["PackedMROData"].is_null()      ? textureSystem.CreateTexture(json["PackedMROData"].get<TextureLoader>()).textureGuid      : VkGuid();
-    material.PackedSheenSSSDataId = !json["PackedSheenSSSData"].is_null() ? textureSystem.CreateTexture(json["PackedSheenSSSData"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.UnusedDataId =         !json["UnusedData"].is_null()         ? textureSystem.CreateTexture(json["UnusedData"].get<TextureLoader>()).textureGuid         : VkGuid();
-    material.EmissionDataId =       !json["EmissionData"].is_null()       ? textureSystem.CreateTexture(json["EmissionData"].get<TextureLoader>()).textureGuid       : VkGuid();
+    material.AlbedoDataId =         !json["AlbedoData"].is_null()         ? textureSystem.LoadKTXTexture(json["AlbedoData"].get<TextureLoader>()).textureGuid         : VkGuid();
+    material.NormalDataId =         !json["NormalData"].is_null()         ? textureSystem.LoadKTXTexture(json["NormalData"].get<TextureLoader>()).textureGuid         : VkGuid();
+    material.PackedMRODataId =      !json["PackedMROData"].is_null()      ? textureSystem.LoadKTXTexture(json["PackedMROData"].get<TextureLoader>()).textureGuid      : VkGuid();
+    material.PackedSheenSSSDataId = !json["PackedSheenSSSData"].is_null() ? textureSystem.LoadKTXTexture(json["PackedSheenSSSData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.UnusedDataId =         !json["UnusedData"].is_null()         ? textureSystem.LoadKTXTexture(json["UnusedData"].get<TextureLoader>()).textureGuid         : VkGuid();
+    material.EmissionDataId =       !json["EmissionData"].is_null()       ? textureSystem.LoadKTXTexture(json["EmissionData"].get<TextureLoader>()).textureGuid       : VkGuid();
     MaterialList.emplace_back(material);
     return materialId;
 }

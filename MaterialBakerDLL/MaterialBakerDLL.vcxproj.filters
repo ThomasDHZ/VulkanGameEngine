@@ -24,6 +24,9 @@
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextureBakerSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaterialBakerSystem.h">
@@ -33,6 +36,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include\nvtt\nvtt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureBakerSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

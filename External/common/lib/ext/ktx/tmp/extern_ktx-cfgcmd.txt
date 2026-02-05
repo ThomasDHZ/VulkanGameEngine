@@ -1,0 +1,1 @@
+cmd='C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_INSTALL_PREFIX:PATH=C:/Users/DHZ/Documents/GitHub/VulkanGameEngine/External/AMDCompressonator/../common/lib/ext/ktx;-G;Visual Studio 18 2026;-GVisual Studio 18 2026;-DCMAKE_GENERATOR_INSTANCE:INTERNAL=C:/Program Files/Microsoft Visual Studio/18/Community;-S;<SOURCE_DIR><SOURCE_SUBDIR>;-B;<BINARY_DIR>'
