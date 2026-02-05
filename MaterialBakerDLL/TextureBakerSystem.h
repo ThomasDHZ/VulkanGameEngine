@@ -5,6 +5,26 @@
 #include <nvtt/nvtt_lowlevel.h>
 #include <nvtt/nvtt_wrapper.h>
 
+enum class TextureCompressionType {
+    None,          // Raw/uncompressed (large files)
+    BC7,           // High-quality RGBA, desktop primary
+    BC1,           // RGB (DXT1/S3TC), no alpha or punch-through
+    BC3,           // RGBA (DXT5), with alpha
+    BC5,           // RG (normals, height maps)
+    ASTC_4x4,      // Mobile/high-end, variable block size
+    ETC2_RGBA,     // Broad mobile support
+    // Add more: PVRTC, etc. if needed
+};
+
+struct RawMipReadback
+{
+    void* data = nullptr;
+    size_t size = 0;
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VmaAllocation allocation = VK_NULL_HANDLE;
+    bool needsUnmap = false;
+};
+
 struct ImportTexture
 {
     TextureGuid              textureGuid = TextureGuid();
@@ -31,9 +51,6 @@ struct ImportTexture
     VkImageLayout            textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits    sampleCount = VK_SAMPLE_COUNT_1_BIT;
     ColorChannelUsed         colorChannels = ColorChannelUsed::ChannelRGBA;
-
-    nvtt::Format             ExportFormat;
-    nvtt::Quality            ExportQuality;
 };
 
 class TextureBakerSystem
@@ -49,13 +66,9 @@ private:
     TextureBakerSystem(TextureBakerSystem&&) = delete;
     TextureBakerSystem& operator=(TextureBakerSystem&&) = delete;
 
-    VmaAllocator allocator = VK_NULL_HANDLE;;
-    VmaAllocation stagingAlloc = VK_NULL_HANDLE;
+    RawMipReadback ConvertToRawTextureData(ImportTexture& importTexture, uint32 mipLevel);
+    void           DestroyVMATextureBuffer(RawMipReadback& data);
 
-    VkBuffer stagingBuffer = VK_NULL_HANDLE;
-
-    void* ConvertToRawTextureData(ImportTexture& inputTexture);
-    void  DestroyRawTextureBuffer();
 public:
     DLL_EXPORT void BakeTexture(const String& textureName, ImportTexture& texture);
 };
