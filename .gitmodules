@@ -34,3 +34,6 @@
 [submodule "External/libpng"]
 	path = External/libpng
 	url = https://github.com/glennrp/libpng.git
+[submodule "External/BasisUniversal"]
+	path = External/BasisUniversal
+	url = https://github.com/BinomialLLC/basis_universal
