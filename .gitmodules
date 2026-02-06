@@ -1,3 +1,36 @@
 [submodule "External/basis_universal"]
     path = External/basis_universal
     url = https://github.com/BinomialLLC/basis_universal.git
+[submodule "External/json"]
+	path = External/json
+	url = https://github.com/nlohmann/json.git
+[submodule "External/stb"]
+	path = External/stb
+	url = https://github.com/nothings/stb.git
+[submodule "External/nlohmann"]
+	path = External/nlohmann
+	url = https://github.com/nlohmann/json.git
+[submodule "External/glfw"]
+	path = External/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "External/imgui"]
+	path = External/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "External/SPIRV-Reflect"]
+	path = External/SPIRV-Reflect
+	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+[submodule "External/VulkanMemoryAllocator"]
+	path = External/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "External/entt"]
+	path = External/entt
+	url = https://github.com/skypjack/entt.git
+[submodule "external/libpng"]
+	path = external/libpng
+	url = https://github.com/pnggroup/libpng.git
+[submodule "external/LodePNG"]
+	path = external/LodePNG
+	url = https://github.com/lvandeve/lodepng.git
+[submodule "external/ktx"]
+	path = external/ktx
+	url = https://github.com/KhronosGroup/KTX-Software.git
