@@ -1,9 +1,6 @@
 #pragma once
-#include <nvtt/nvtt.h>
 #include <DLL.h>
 #include <TextureSystem.h>
-#include <nvtt/nvtt_lowlevel.h>
-#include <nvtt/nvtt_wrapper.h>
 
 enum class TextureCompressionType {
     None,          // Raw/uncompressed (large files)
@@ -66,11 +63,11 @@ private:
     TextureBakerSystem(TextureBakerSystem&&) = delete;
     TextureBakerSystem& operator=(TextureBakerSystem&&) = delete;
 
-    RawMipReadback ConvertToRawTextureData(ImportTexture& importTexture, uint32 mipLevel);
+    RawMipReadback ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel);
     void           DestroyVMATextureBuffer(RawMipReadback& data);
 
 public:
-    DLL_EXPORT void BakeTexture(const String& textureName, ImportTexture& texture);
+    DLL_EXPORT void BakeTexture(const String& textureName, Texture& texture);
 };
 
 extern DLL_EXPORT TextureBakerSystem& textureBakerSystem;

@@ -286,7 +286,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                      .DescriptorSet = descriptorBinding->set,
                      .Binding = descriptorBinding->binding,
                      .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
-                     .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->default_literals),
+                     .DescriptorBindingType = static_cast<DescriptorBindingPropertiesEnum>(*DescriptorBindingAttributeTypeResult[0]->name),
                      .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
                  });
          }

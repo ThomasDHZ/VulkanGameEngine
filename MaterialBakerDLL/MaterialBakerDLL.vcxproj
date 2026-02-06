@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)External\BasisUniversal\encoder;$(SolutionDir)External\ktx\lib\include;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\entt\src\;$(SolutionDir)External\VulkanMemoryAllocator\include;$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)\External\glfw;$(SolutionDir)\External\glfw\include\GLFW;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\glm;$(SolutionDir)External\;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)External\BasisUniversal\build\Release;$(SolutionDir)\External\ktx\lib\Release;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\lib\x64-v142;$(SolutionDir)\External\glfw\src\Release;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)External\bc7enc_rdo1;$(SolutionDir)External\BasisUniversal\encoder;$(SolutionDir)External\ktx\lib\include;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\entt\src\;$(SolutionDir)External\VulkanMemoryAllocator\include;$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)\External\glfw;$(SolutionDir)\External\glfw\include\GLFW;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\glm;$(SolutionDir)External\;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)External\BasisUniversal\x64\Release;$(SolutionDir)\External\ktx\lib\Release;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\lib\x64-v142;$(SolutionDir)\External\glfw\src\Release;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,7 +106,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;0%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;ComponentDLL.lib;dxcompiler.lib;ktx.lib;ktx_read.lib;basisu_encoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;ComponentDLL.lib;dxcompiler.lib;ktx.lib;ktx_read.lib;encoder_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

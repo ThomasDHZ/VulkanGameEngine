@@ -6,6 +6,7 @@
 #include <VulkanSystem.h>
 #include <TextureSystem.h>
 #include <MaterialSystem.h>
+#include "TextureBakerSystem.h"
 
 struct ImportMaterial
 {
