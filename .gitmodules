@@ -40,3 +40,9 @@
 [submodule "External/AMDCompressonator"]
 	path = External/AMDCompressonator
 	url = https://github.com/GPUOpen-Tools/compressonator.git
+[submodule "external/ispc"]
+	path = external/ispc
+	url = https://github.com/ispc/ispc.git
+[submodule "External/bc7enc"]
+	path = External/bc7enc
+	url = https://github.com/richgel999/bc7enc_rdo.git
