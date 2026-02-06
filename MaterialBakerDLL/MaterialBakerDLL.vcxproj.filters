@@ -27,6 +27,12 @@
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\External\bc7enc_rdo1\bc7enc.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\bc7enc_rdo1\rgbcx.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaterialBakerSystem.h">
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\bc7enc_rdo1\bc7enc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\bc7enc_rdo1\rgbcx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
