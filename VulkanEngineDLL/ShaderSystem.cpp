@@ -121,7 +121,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              String vertexAttributeLocationString(vertexAttributeLocationpecializationConstantResult[x]->name);
              if (vertexAttributeLocationString.find("VertexAttributeLocation" + std::to_string(inputs[x]->location)) != String::npos)
              {
-                 binding = *vertexAttributeLocationpecializationConstantResult[x]->default_literals;
+                 binding = *vertexAttributeLocationpecializationConstantResult[x]->name;
              }
          }
 
@@ -130,7 +130,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              String vertexInputRateLocationString(vertexInputRateLocationConstantResult[x]->name);
              if (vertexInputRateLocationString.find("VertexInputRateLocation" + std::to_string(inputs[x]->location)) != String::npos)
              {
-                 inputRate = *vertexInputRateLocationConstantResult[x]->default_literals;
+                 inputRate = *vertexInputRateLocationConstantResult[x]->name;
              }
          }
 
