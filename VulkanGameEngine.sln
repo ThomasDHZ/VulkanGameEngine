@@ -1,0 +1,389 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11111.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor", "VulkanGameEngineLevelEditor\VulkanGameEngineLevelEditor.csproj", "{44233629-8998-416F-B8FB-E454D1A0CDCA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E282A3D5-3DCC-485B-AA01-B66AB307DBE2}"
+	ProjectSection(SolutionItems) = preProject
+		EngineConfig.json = EngineConfig.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{0EDEA954-1D78-4E87-B6E9-6AD004194688}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Pipelines\AssetCreatorPipeline.json = Assets\Pipelines\AssetCreatorPipeline.json
+		Assets\Pipelines\BloomPipeline.json = Assets\Pipelines\BloomPipeline.json
+		Assets\Pipelines\BRDFPipeline.json = Assets\Pipelines\BRDFPipeline.json
+		Assets\Pipelines\EnvironmentToCubeMapPipeline.json = Assets\Pipelines\EnvironmentToCubeMapPipeline.json
+		Assets\Pipelines\FrameBufferPipeline.json = Assets\Pipelines\FrameBufferPipeline.json
+		Assets\Pipelines\GaussianBlurPipeline.json = Assets\Pipelines\GaussianBlurPipeline.json
+		Assets\Pipelines\GBufferLevelShader2DPipeline.json = Assets\Pipelines\GBufferLevelShader2DPipeline.json
+		Assets\Pipelines\GBufferLightingPipeline.json = Assets\Pipelines\GBufferLightingPipeline.json
+		Assets\Pipelines\GBufferSpriteInstancePipeline.json = Assets\Pipelines\GBufferSpriteInstancePipeline.json
+		Assets\Pipelines\HdrPipeline.json = Assets\Pipelines\HdrPipeline.json
+		Assets\Pipelines\IrradiancePipeline.json = Assets\Pipelines\IrradiancePipeline.json
+		Assets\Pipelines\LevelDirectionalShadowPipeline.json = Assets\Pipelines\LevelDirectionalShadowPipeline.json
+		Assets\Pipelines\LevelObjectPickerPipeline.json = Assets\Pipelines\LevelObjectPickerPipeline.json
+		Assets\Pipelines\LevelShader2DPipeline.json = Assets\Pipelines\LevelShader2DPipeline.json
+		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
+		Assets\Pipelines\PrefilterPipeline.json = Assets\Pipelines\PrefilterPipeline.json
+		Assets\Pipelines\SDFLevelShadowPipeline.json = Assets\Pipelines\SDFLevelShadowPipeline.json
+		Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json = Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json
+		Assets\Pipelines\ShadowDebugPipeline.json = Assets\Pipelines\ShadowDebugPipeline.json
+		Assets\Pipelines\SkyBoxPipeline.json = Assets\Pipelines\SkyBoxPipeline.json
+		Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json = Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json
+		Assets\Pipelines\SpriteInstancePipeline.json = Assets\Pipelines\SpriteInstancePipeline.json
+		Assets\Pipelines\SpriteInstanceWireFramePipeline.json = Assets\Pipelines\SpriteInstanceWireFramePipeline.json
+		Assets\Pipelines\SpriteObjectPickerPipeline.json = Assets\Pipelines\SpriteObjectPickerPipeline.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\RenderPass\AssetCreatorRenderPass.json = Assets\RenderPass\AssetCreatorRenderPass.json
+		Assets\RenderPass\BasicRenderPass.json = Assets\RenderPass\BasicRenderPass.json
+		Assets\RenderPass\BloomRenderPass.json = Assets\RenderPass\BloomRenderPass.json
+		Assets\RenderPass\BRDFRenderPass.json = Assets\RenderPass\BRDFRenderPass.json
+		Assets\RenderPass\DefaultRenderPass.json = Assets\RenderPass\DefaultRenderPass.json
+		Assets\RenderPass\DirectionalShadowRenderPass.json = Assets\RenderPass\DirectionalShadowRenderPass.json
+		Assets\RenderPass\EnvironmentToCubeMapRenderPass.json = Assets\RenderPass\EnvironmentToCubeMapRenderPass.json
+		Assets\RenderPass\FrameBufferRenderPass.json = Assets\RenderPass\FrameBufferRenderPass.json
+		Assets\RenderPass\GBufferRenderPass.json = Assets\RenderPass\GBufferRenderPass.json
+		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
+		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
+		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
+		Assets\RenderPass\LevelDirectionalShadowRenderPass.json = Assets\RenderPass\LevelDirectionalShadowRenderPass.json
+		Assets\RenderPass\LevelShader2DMultiSampledRenderPass.json = Assets\RenderPass\LevelShader2DMultiSampledRenderPass.json
+		Assets\RenderPass\LevelShader2DRenderPass.json = Assets\RenderPass\LevelShader2DRenderPass.json
+		Assets\RenderPass\LevelShader2DWireFrameRenderPass.json = Assets\RenderPass\LevelShader2DWireFrameRenderPass.json
+		Assets\RenderPass\ObjectPickerRenderPass.json = Assets\RenderPass\ObjectPickerRenderPass.json
+		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
+		Assets\RenderPass\SDFShadowRenderPass.json = Assets\RenderPass\SDFShadowRenderPass.json
+		Assets\RenderPass\ShadowDebugRenderPass.json = Assets\RenderPass\ShadowDebugRenderPass.json
+		Assets\RenderPass\SkyBoxRenderPass.json = Assets\RenderPass\SkyBoxRenderPass.json
+		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Levels\TestLevel.json = Assets\Levels\TestLevel.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{4CCF9A80-6215-4938-8BF7-38F42B25CDFB}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Materials\AnimeGirlMaterial.json = Assets\Materials\AnimeGirlMaterial.json
+		Assets\Materials\LavaCubeMapMaterial.json = Assets\Materials\LavaCubeMapMaterial.json
+		Assets\Materials\MegaManMaterial.json = Assets\Materials\MegaManMaterial.json
+		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
+		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sprites", "Sprites", "{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Sprites\AnimeGirl.json = Assets\Sprites\AnimeGirl.json
+		Assets\Sprites\MegaManShot.json = Assets\Sprites\MegaManShot.json
+		Assets\Sprites\MegaManShotSprite.json = Assets\Sprites\MegaManShotSprite.json
+		Assets\Sprites\TestSprite.json = Assets\Sprites\TestSprite.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{9352A260-EB46-4E2B-AD94-08F0665C8B63}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\TextureLoader\HDRITexture.json = Assets\TextureLoader\HDRITexture.json
+		Assets\TextureLoader\LavaCubeMapTexture.json = Assets\TextureLoader\LavaCubeMapTexture.json
+		Assets\TextureLoader\OceanSkyBoxTexture.json = Assets\TextureLoader\OceanSkyBoxTexture.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Texture", "Texture", "{877021B2-F222-4B9F-BEBF-7C9A223DD6B0}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Textures\AnimeGirlImportMaterialjson.json0.png = Assets\Textures\AnimeGirlImportMaterialjson.json0.png
+		Assets\Textures\AnimeGirlImportMaterialjson.json1.png = Assets\Textures\AnimeGirlImportMaterialjson.json1.png
+		Assets\Textures\AnimeGirlImportMaterialjson.json2.png = Assets\Textures\AnimeGirlImportMaterialjson.json2.png
+		Assets\Textures\AnimeGirlImportMaterialjson.json3.png = Assets\Textures\AnimeGirlImportMaterialjson.json3.png
+		Assets\Textures\AnimeGirlImportMaterialjson.json4.png = Assets\Textures\AnimeGirlImportMaterialjson.json4.png
+		Assets\Textures\back.jpg = Assets\Textures\back.jpg
+		Assets\Textures\bottom.jpg = Assets\Textures\bottom.jpg
+		Assets\Textures\front.jpg = Assets\Textures\front.jpg
+		Assets\Textures\hot_bk.png = Assets\Textures\hot_bk.png
+		Assets\Textures\hot_dn.png = Assets\Textures\hot_dn.png
+		Assets\Textures\hot_ft.png = Assets\Textures\hot_ft.png
+		Assets\Textures\hot_lf.png = Assets\Textures\hot_lf.png
+		Assets\Textures\hot_rt.png = Assets\Textures\hot_rt.png
+		Assets\Textures\hot_up.png = Assets\Textures\hot_up.png
+		Assets\Textures\left.jpg = Assets\Textures\left.jpg
+		Assets\Textures\MegaManImportMaterialjson.json0.png = Assets\Textures\MegaManImportMaterialjson.json0.png
+		Assets\Textures\MegaManImportMaterialjson.json1.png = Assets\Textures\MegaManImportMaterialjson.json1.png
+		Assets\Textures\MegaManImportMaterialjson.json2.png = Assets\Textures\MegaManImportMaterialjson.json2.png
+		Assets\Textures\MegaManImportMaterialjson.json3.png = Assets\Textures\MegaManImportMaterialjson.json3.png
+		Assets\Textures\MegaManImportMaterialjson.json4.png = Assets\Textures\MegaManImportMaterialjson.json4.png
+		Assets\Textures\MegaManShotImportMaterialjson.json0.png = Assets\Textures\MegaManShotImportMaterialjson.json0.png
+		Assets\Textures\MegaManShotImportMaterialjson.json1.png = Assets\Textures\MegaManShotImportMaterialjson.json1.png
+		Assets\Textures\MegaManShotImportMaterialjson.json2.png = Assets\Textures\MegaManShotImportMaterialjson.json2.png
+		Assets\Textures\MegaManShotImportMaterialjson.json3.png = Assets\Textures\MegaManShotImportMaterialjson.json3.png
+		Assets\Textures\MegaManShotImportMaterialjson.json4.png = Assets\Textures\MegaManShotImportMaterialjson.json4.png
+		Assets\Textures\right.jpg = Assets\Textures\right.jpg
+		Assets\Textures\SparkManTileSetImportMaterialjson.json0.png = Assets\Textures\SparkManTileSetImportMaterialjson.json0.png
+		Assets\Textures\SparkManTileSetImportMaterialjson.json1.png = Assets\Textures\SparkManTileSetImportMaterialjson.json1.png
+		Assets\Textures\SparkManTileSetImportMaterialjson.json2.png = Assets\Textures\SparkManTileSetImportMaterialjson.json2.png
+		Assets\Textures\SparkManTileSetImportMaterialjson.json3.png = Assets\Textures\SparkManTileSetImportMaterialjson.json3.png
+		Assets\Textures\SparkManTileSetImportMaterialjson.json4.png = Assets\Textures\SparkManTileSetImportMaterialjson.json4.png
+		Assets\Textures\top.jpg = Assets\Textures\top.jpg
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
+		{6B063291-FC4A-47D6-94FA-3047179B26A4} = {6B063291-FC4A-47D6-94FA-3047179B26A4}
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TileSets", "TileSets", "{12565B15-EF6B-4DAF-8552-844EE28936D7}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\TileSets\SparkManTileSet.json = Assets\TileSets\SparkManTileSet.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelMapLevelLayout", "LevelMapLevelLayout", "{740E1C1F-320C-4A8F-A58D-B46058521506}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\LevelMapLevelLayout\TestMapLevelLayout.json = Assets\LevelMapLevelLayout\TestMapLevelLayout.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects", "{21F6500D-6E92-4717-815C-AB3C6E100B64}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\GameObjects\MegaManShotObject.json = Assets\GameObjects\MegaManShotObject.json
+		Assets\GameObjects\TestGameObject.json = Assets\GameObjects\TestGameObject.json
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEngineDLL\VulkanEngineDLL.vcxproj", "{D22B29FB-1F02-471C-81AC-A352862F6951}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComponentDLL", "ComponentDLL\ComponentDLL.vcxproj", "{7A95B5E9-9F85-4981-A621-FEF118C3A650}"
+	ProjectSection(ProjectDependencies) = postProject
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics2DDLL", "Physics2DDLL\Physics2DDLL.vcxproj", "{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FragmentShader", "FragmentShader", "{B0C61FFF-2328-4636-BDAB-E18C896CB385}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\AssetCreatorShader.frag = Shaders\AssetCreatorShader.frag
+		Shaders\BloomShader.frag = Shaders\BloomShader.frag
+		Shaders\BRDFShader.frag = Shaders\BRDFShader.frag
+		Shaders\EnvironmentToCubeMap.frag = Shaders\EnvironmentToCubeMap.frag
+		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
+		Shaders\GaussianBlurShader.frag = Shaders\GaussianBlurShader.frag
+		Shaders\GBufferLevelShader2D.frag = Shaders\GBufferLevelShader2D.frag
+		Shaders\GBufferLightingShader.frag = Shaders\GBufferLightingShader.frag
+		Shaders\GBufferSpriteInstanceShader.frag = Shaders\GBufferSpriteInstanceShader.frag
+		Shaders\HdrShader.frag = Shaders\HdrShader.frag
+		Shaders\IrradianceShader.frag = Shaders\IrradianceShader.frag
+		Shaders\LevelDirectionalShadowShader.frag = Shaders\LevelDirectionalShadowShader.frag
+		Shaders\LevelObjectPickerShader2D.frag = Shaders\LevelObjectPickerShader2D.frag
+		Shaders\LevelShader2D.frag = Shaders\LevelShader2D.frag
+		Shaders\LevelWireFrameShader2D.frag = Shaders\LevelWireFrameShader2D.frag
+		Shaders\LineRendererShader.frag = Shaders\LineRendererShader.frag
+		Shaders\PrefilterShader.frag = Shaders\PrefilterShader.frag
+		Shaders\SDFLevelShadowShader.frag = Shaders\SDFLevelShadowShader.frag
+		Shaders\SDFSpriteInstanceShadowShader.frag = Shaders\SDFSpriteInstanceShadowShader.frag
+		Shaders\ShaderDebugShader.frag = Shaders\ShaderDebugShader.frag
+		Shaders\SkyBoxShader.frag = Shaders\SkyBoxShader.frag
+		Shaders\SpriteInstanceDirectionalShadowShader.frag = Shaders\SpriteInstanceDirectionalShadowShader.frag
+		Shaders\SpriteInstanceShader.frag = Shaders\SpriteInstanceShader.frag
+		Shaders\SpriteInstanceWireFrameShader.frag = Shaders\SpriteInstanceWireFrameShader.frag
+		Shaders\SpriteObjectPickerShader.frag = Shaders\SpriteObjectPickerShader.frag
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VertexShader", "VertexShader", "{0A2ACB7B-3493-49A1-A165-2B305C266337}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\AssetCreatorShader.vert = Shaders\AssetCreatorShader.vert
+		Shaders\BloomShader.vert = Shaders\BloomShader.vert
+		Shaders\BRDFShader.vert = Shaders\BRDFShader.vert
+		Shaders\EnvironmentToCubeMap.vert = Shaders\EnvironmentToCubeMap.vert
+		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
+		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
+		Shaders\GBufferLevelShader2D.vert = Shaders\GBufferLevelShader2D.vert
+		Shaders\GBufferLightingShader.vert = Shaders\GBufferLightingShader.vert
+		Shaders\GBufferSpriteInstanceShader.vert = Shaders\GBufferSpriteInstanceShader.vert
+		Shaders\HdrShader.vert = Shaders\HdrShader.vert
+		Shaders\IrradianceShader.vert = Shaders\IrradianceShader.vert
+		Shaders\LevelDirectionalShadowShader.vert = Shaders\LevelDirectionalShadowShader.vert
+		Shaders\LevelObjectPickerShader2D.vert = Shaders\LevelObjectPickerShader2D.vert
+		Shaders\LevelShader2D.vert = Shaders\LevelShader2D.vert
+		Shaders\LevelWireFrameShader2D.vert = Shaders\LevelWireFrameShader2D.vert
+		Shaders\LineRendererShader.vert = Shaders\LineRendererShader.vert
+		Shaders\PrefilterShader.vert = Shaders\PrefilterShader.vert
+		Shaders\SDFLevelShadowShader.vert = Shaders\SDFLevelShadowShader.vert
+		Shaders\SDFSpriteInstanceShadowShader.vert = Shaders\SDFSpriteInstanceShadowShader.vert
+		Shaders\ShaderDebugShader.vert = Shaders\ShaderDebugShader.vert
+		Shaders\SkyBoxShader.vert = Shaders\SkyBoxShader.vert
+		Shaders\SpriteInstanceDirectionalShadowShader.vert = Shaders\SpriteInstanceDirectionalShadowShader.vert
+		Shaders\SpriteInstanceShader.vert = Shaders\SpriteInstanceShader.vert
+		Shaders\SpriteInstanceWireFrameShader.vert = Shaders\SpriteInstanceWireFrameShader.vert
+		Shaders\SpriteObjectPickerShader.vert = Shaders\SpriteObjectPickerShader.vert
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lights", "Lights", "{B8D8D055-4050-4D06-A97F-90C0F814802B}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Lights\DirectionalLight.json = Assets\Lights\DirectionalLight.json
+		Assets\Lights\PointLight.json = Assets\Lights\PointLight.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SkyBoxes", "SkyBoxes", "{B82F64D6-6B26-4A25-9E5D-DDED581513ED}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\SkyBoxs\LavaSkyBox.json = Assets\SkyBoxs\LavaSkyBox.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImportMaterial", "ImportMaterial", "{0E442112-3B0F-4DB3-B0D9-47D168D921CB}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\ImportMaterials\AnimeGirlImportMaterial.json = Assets\ImportMaterials\AnimeGirlImportMaterial.json
+		Assets\ImportMaterials\MegaManImportMaterial.json = Assets\ImportMaterials\MegaManImportMaterial.json
+		Assets\ImportMaterials\MegaManShotImportMaterial.json = Assets\ImportMaterials\MegaManShotImportMaterial.json
+		Assets\ImportMaterials\SparkManTileSetImportMaterial.json = Assets\ImportMaterials\SparkManTileSetImportMaterial.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TextureSamplers", "TextureSamplers", "{C7D801E5-42DD-46C1-ACF0-41A8C565DA2E}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\TextureSamplers\BloomBlurResultSampler.json = Assets\TextureSamplers\BloomBlurResultSampler.json
+		Assets\TextureSamplers\BloomSampler.json = Assets\TextureSamplers\BloomSampler.json
+		Assets\TextureSamplers\BRDFSampler.json = Assets\TextureSamplers\BRDFSampler.json
+		Assets\TextureSamplers\CubeMapSampler.json = Assets\TextureSamplers\CubeMapSampler.json
+		Assets\TextureSamplers\DataTextureSampler.json = Assets\TextureSamplers\DataTextureSampler.json
+		Assets\TextureSamplers\FinalBloomSampler.json = Assets\TextureSamplers\FinalBloomSampler.json
+		Assets\TextureSamplers\GBufferAlbedo.json = Assets\TextureSamplers\GBufferAlbedo.json
+		Assets\TextureSamplers\GBufferEmission.json = Assets\TextureSamplers\GBufferEmission.json
+		Assets\TextureSamplers\GBufferMRO.json = Assets\TextureSamplers\GBufferMRO.json
+		Assets\TextureSamplers\GBufferNormal.json = Assets\TextureSamplers\GBufferNormal.json
+		Assets\TextureSamplers\GBufferPosition.json = Assets\TextureSamplers\GBufferPosition.json
+		Assets\TextureSamplers\MaterialAlbedoSampler2D.json = Assets\TextureSamplers\MaterialAlbedoSampler2D.json
+		Assets\TextureSamplers\MaterialEmissionSampler2D.json = Assets\TextureSamplers\MaterialEmissionSampler2D.json
+		Assets\TextureSamplers\MaterialNormalSampler2D.json = Assets\TextureSamplers\MaterialNormalSampler2D.json
+		Assets\TextureSamplers\MaterialPackedMROSampler2D.json = Assets\TextureSamplers\MaterialPackedMROSampler2D.json
+		Assets\TextureSamplers\MaterialPackedSheenSSSSampler2D.json = Assets\TextureSamplers\MaterialPackedSheenSSSSampler2D.json
+		Assets\TextureSamplers\OffscreenRenderPassSampler.json = Assets\TextureSamplers\OffscreenRenderPassSampler.json
+		Assets\TextureSamplers\TileSampler.json = Assets\TextureSamplers\TileSampler.json
+		Assets\TextureSamplers\UnusedDataSampler2D.json = Assets\TextureSamplers\UnusedDataSampler2D.json
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaterialBakerDLL", "MaterialBakerDLL\MaterialBakerDLL.vcxproj", "{6B063291-FC4A-47D6-94FA-3047179B26A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Debug|x64.Build.0 = Debug|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Debug|x86.Build.0 = Debug|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Release|x64.ActiveCfg = Release|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Release|x64.Build.0 = Release|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Release|x86.ActiveCfg = Release|Any CPU
+		{44233629-8998-416F-B8FB-E454D1A0CDCA}.Release|x86.Build.0 = Release|Any CPU
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|Any CPU.Build.0 = Debug|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x64.ActiveCfg = Debug|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x64.Build.0 = Debug|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x86.ActiveCfg = Debug|Win32
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x86.Build.0 = Debug|Win32
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|Any CPU.ActiveCfg = Release|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|Any CPU.Build.0 = Release|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x64.ActiveCfg = Release|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x64.Build.0 = Release|x64
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x86.ActiveCfg = Release|Win32
+		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x86.Build.0 = Release|Win32
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Debug|Any CPU.Build.0 = Debug|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Debug|x64.ActiveCfg = Debug|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Debug|x64.Build.0 = Debug|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Debug|x86.ActiveCfg = Debug|Win32
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Debug|x86.Build.0 = Debug|Win32
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|Any CPU.ActiveCfg = Release|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|Any CPU.Build.0 = Release|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x64.ActiveCfg = Release|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x64.Build.0 = Release|x64
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.ActiveCfg = Release|Win32
+		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.Build.0 = Release|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|Any CPU.Build.0 = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x64.ActiveCfg = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x64.Build.0 = Debug|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x86.ActiveCfg = Debug|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x86.Build.0 = Debug|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|Any CPU.ActiveCfg = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|Any CPU.Build.0 = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x64.ActiveCfg = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x64.Build.0 = Release|x64
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x86.ActiveCfg = Release|Win32
+		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x86.Build.0 = Release|Win32
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.Build.0 = Debug|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x64.ActiveCfg = Debug|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x64.Build.0 = Debug|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x86.ActiveCfg = Debug|Win32
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x86.Build.0 = Debug|Win32
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|Any CPU.ActiveCfg = Release|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|Any CPU.Build.0 = Release|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x64.ActiveCfg = Release|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x64.Build.0 = Release|x64
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x86.ActiveCfg = Release|Win32
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x86.Build.0 = Release|Win32
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Debug|Any CPU.Build.0 = Debug|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Debug|x64.ActiveCfg = Debug|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Debug|x64.Build.0 = Debug|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Debug|x86.ActiveCfg = Debug|Win32
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Debug|x86.Build.0 = Debug|Win32
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Release|Any CPU.ActiveCfg = Release|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Release|Any CPU.Build.0 = Release|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Release|x64.ActiveCfg = Release|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Release|x64.Build.0 = Release|x64
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Release|x86.ActiveCfg = Release|Win32
+		{6B063291-FC4A-47D6-94FA-3047179B26A4}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D6D5958C-19B6-4B6E-BA4B-28E99E6BE703} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{0EDEA954-1D78-4E87-B6E9-6AD004194688} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{23E8B804-7274-445A-AF83-A71B1E9AAFC5} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{4CCF9A80-6215-4938-8BF7-38F42B25CDFB} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{9352A260-EB46-4E2B-AD94-08F0665C8B63} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
+		{877021B2-F222-4B9F-BEBF-7C9A223DD6B0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
+		{12565B15-EF6B-4DAF-8552-844EE28936D7} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{740E1C1F-320C-4A8F-A58D-B46058521506} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{21F6500D-6E92-4717-815C-AB3C6E100B64} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{B0C61FFF-2328-4636-BDAB-E18C896CB385} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
+		{0A2ACB7B-3493-49A1-A165-2B305C266337} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
+		{B8D8D055-4050-4D06-A97F-90C0F814802B} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{B82F64D6-6B26-4A25-9E5D-DDED581513ED} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{0E442112-3B0F-4DB3-B0D9-47D168D921CB} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{C7D801E5-42DD-46C1-ACF0-41A8C565DA2E} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F492211-3E89-431E-83CC-E65D5E8EBE55}
+	EndGlobalSection
+EndGlobal

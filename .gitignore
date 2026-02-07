@@ -182,7 +182,6 @@ Makefile
 # === IDE/Editor ===
 .vscode/
 .idea/
-*.sln
 *.vcxproj.user
 *.suo
 *.sdf
@@ -319,8 +318,6 @@ ModelManifest.xml
 *.ipch
 *.db
 *.jpg
-*.ktx
-*.ktx2
 *.dds
 *.ipch
 *.tif
