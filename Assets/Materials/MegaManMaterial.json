@@ -4,7 +4,7 @@
   "ShaderMaterialBufferIndex": 0,
   "MaterialBufferId": 0,
   "AlbedoData": {
-    "TextureFilePath": [ "Textures/MegaManImportMaterial0_8Bit.png" ],
+    "TextureFilePath": [ "Textures/MegaManImportMaterial_Albedo.ktx2" ],
     "TextureId": "401ced2d-39a6-4541-98f9-1c975167e167",
     "TextureByteFormat": 43,
     "UsingSRGBFormat": true,
@@ -33,7 +33,7 @@
     }
   },
   "NormalData": {
-    "TextureFilePath": [ "Textures/MegaManImportMaterial1_16Bit.png" ],
+    "TextureFilePath": [ "Textures/MegaManImportMaterial_NormalHeight.ktx2" ],
     "TextureId": "cc39d149-63fa-454e-803c-50f9fd1cbd45",
     "TextureByteFormat": 91,
     "UsingSRGBFormat": false,
@@ -62,7 +62,7 @@
     }
   },
   "PackedMROData": {
-    "TextureFilePath": [ "Textures/MegaManImportMaterial2_16bit.png" ],
+    "TextureFilePath": [ "Textures/MegaManImportMaterial_MRO.ktx2" ],
     "TextureId": "d0e8f652-1ae0-43b4-8562-9b6f68b026c3",
     "TextureByteFormat": 91,
     "UsingSRGBFormat": false,
@@ -91,7 +91,7 @@
     }
   },
   "PackedSheenSSSData": {
-    "TextureFilePath": [ "Textures/MegaManImportMaterial3_16Bit.png" ],
+    "TextureFilePath": [ "Textures/MegaManImportMaterial_SheenSSS.ktx2" ],
     "TextureId": "3e5f6a1b-795d-404d-94d9-b091424014ea",
     "TextureByteFormat": 91,
     "UsingSRGBFormat": false,
@@ -120,7 +120,7 @@
     }
   },
   "UnusedData": {
-    "TextureFilePath": [ "Textures/MegaManImportMaterial4_16Bit.png" ],
+    "TextureFilePath": [ "Textures/MegaManImportMaterial_Unused.ktx2" ],
     "TextureId": "5960a489-1f27-4481-b1cb-5f8625052cc7",
     "TextureByteFormat": 91,
     "UsingSRGBFormat": false,
@@ -149,7 +149,7 @@
     }
   },
   "EmissionData": {
-    "TextureFilePath": [ "Textures/MegaManImportMaterial5_16Bit.png" ],
+    "TextureFilePath": [ "Textures/MegaManImportMaterial_Emission.ktx2" ],
     "TextureId": "8ca55dd5-1085-4af0-9d82-f6ab1366b980",
     "TextureByteFormat": 97,
     "UsingSRGBFormat": true,

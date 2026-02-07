@@ -4,7 +4,7 @@
   "ShaderMaterialBufferIndex": 0,
   "MaterialBufferId": 0,
   "AlbedoData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial0_8bit.ktx2" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial_Albedo.ktx2" ],
     "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
     "TextureByteFormat": 146,
     "UsingSRGBFormat": true,
@@ -33,9 +33,9 @@
     }
   },
   "NormalData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial1_16Bit.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial_NormalHeight.ktx2" ],
     "TextureId": "36d7e265-8ee9-4bbe-b974-6907532459a7",
-    "TextureByteFormat": 91,
+    "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
     "SampleCount": 1,
     "ImageType": 1,
@@ -47,7 +47,7 @@
       "MagFilter": 1,
       "MinFilter": 1,
       "MipmapMode": 1,
-      "AddressModeU": 2, 
+      "AddressModeU": 2,
       "AddressModeV": 2,
       "AddressModeW": 2,
       "MipLodBias": -1.0,
@@ -62,7 +62,7 @@
     }
   },
   "PackedMROData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial2_16bit.ktx2" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial_MRO.ktx2" ],
     "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
     "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
@@ -91,7 +91,7 @@
     }
   },
   "PackedSheenSSSData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial3_16Bit.ktx2" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial_SheenSSS.ktx2" ],
     "TextureId": "ffcd6590-6f56-406e-b187-cf7f30e9317e",
     "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
@@ -120,7 +120,7 @@
     }
   },
   "UnusedData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial4_16Bit.ktx2" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial_Unused.ktx2" ],
     "TextureId": "f1ab897a-92e5-4109-803b-5c9196bcc173",
     "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
@@ -149,9 +149,9 @@
     }
   },
   "EmissionData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial5_16Bit.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial_Emission.ktx2" ],
     "TextureId": "2c7c21db-4ac2-47d4-8dd7-0183758bf003",
-    "TextureByteFormat": 97,
+    "TextureByteFormat": 146,
     "UsingSRGBFormat": true,
     "SampleCount": 1,
     "ImageType": 1,

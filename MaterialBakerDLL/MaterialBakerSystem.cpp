@@ -72,7 +72,7 @@ void MaterialBakerSystem::Run()
         VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
            Draw(commandBuffer);
        // vulkanSystem.EndFrame(commandBuffer);
-           textureBakerSystem.BakeTexture("asfas", material.AlbedoMap);
+           textureBakerSystem.BakeTexture(finalFilePath.string(), vulkanRenderPass.RenderPassId);
            fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
 
            CleanInputResources();
