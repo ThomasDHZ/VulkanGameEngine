@@ -43,3 +43,6 @@
 [submodule "external/LodePNG"]
 	path = external/LodePNG
 	url = https://github.com/lvandeve/lodepng.git
+[submodule "External/BasisUniversal"]
+	path = External/BasisUniversal
+	url = https://github.com/BinomialLLC/basis_universal.git
