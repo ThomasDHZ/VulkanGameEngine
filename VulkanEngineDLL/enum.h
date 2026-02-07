@@ -62,7 +62,7 @@ enum RenderTextureTypeEnum
     RenderType_GBufferTexture,
     RenderType_IrradianceTexture,
     RenderType_PrefilterTexture,
-    RenderType_CubeMapTexture
+    RenderType_GeneralTexture
 };
 
 enum RenderAttachmentTypeEnum
@@ -89,6 +89,5 @@ enum DescriptorBindingPropertiesEnum
     kIrradianceMapDescriptor,
     kPrefilterMapDescriptor,
     kSubpassInputDescriptor,
-    kBRDFMapDescriptor,
-    kEnvironmentMapDescriptor
+    kBRDFMapDescriptor
 };

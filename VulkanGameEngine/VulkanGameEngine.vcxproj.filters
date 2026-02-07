@@ -60,6 +60,9 @@
     <ClCompile Include="ImGuiRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\External\ImPlot\implot_items.cpp">
+      <Filter>Header Files\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="..\External\imgui\imgui.cpp">
       <Filter>Header Files\ImGui</Filter>
     </ClCompile>
@@ -79,6 +82,12 @@
       <Filter>Header Files\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\External\imgui\imgui_widgets.cpp">
+      <Filter>Header Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImPlot\implot.cpp">
+      <Filter>Header Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\ImPlot\implot_demo.cpp">
       <Filter>Header Files\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="Mouse.cpp">

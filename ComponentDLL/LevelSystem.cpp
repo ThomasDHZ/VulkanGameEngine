@@ -173,7 +173,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    nlohmann::json shaderJson   = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
+    nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
     nlohmann::json shaderLightJson = fileSystem.LoadJsonFile("RenderPass/GBufferLightingRenderPass.json");
    // spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
@@ -184,11 +184,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     {
         textureSystem.CreateTexture(json["LoadTextures"][x]);
     }
-    for (size_t x = 0; x < json["LoadKTXTextures"].size(); x++)
-    {
-        textureSystem.LoadKTXTexture(json["LoadKTXTextures"][x]);
-    }
-    
+
     for (size_t x = 0; x < json["LoadMaterials"].size(); x++)
     {
         materialSystem.LoadMaterial(json["LoadMaterials"][x]);
@@ -230,18 +226,14 @@ void LevelSystem::LoadLevel(const char* levelPath)
     renderSystem.GenerateTexture(brdfRenderPassId);
     textureSystem.BRDFMap = textureSystem.FindRenderedTextureList(brdfRenderPassId).back();
 
-    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
-    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-    textureSystem.CubeMap = textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back();
-
-    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
-    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
-    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
+    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
+    prefilterMapRenderPassId  = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
+    gBufferRenderPassId       = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
    /* verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json");
-    bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
-    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json");
+    bloomRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json");*/
+    hdrRenderPassId           = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
+    frameBufferId             = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json");
     
  //   shadowDebugRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/ShadowDebugRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
  //       levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
@@ -250,8 +242,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
   void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
   {
-     // RenderEnvironmentToCubeMapRenderPass(commandBuffer, environmentToCubeMapRenderPassId);
-      RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
       RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
       RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
@@ -262,57 +252,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       RenderFrameBuffer(commandBuffer, frameBufferId);
       //RenderShadowDebug(commandBuffer, shadowDebugRenderPassId);
       //commandBufferList.emplace_back(LevelSystem_RenderBloomPass(gaussianBlurRenderPassId));
-  }
-
-  void LevelSystem::RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
-  {
-      const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-      VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-      const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-      ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("irradianceShaderConstants");
-
-      VkViewport viewport
-      {
-          .x = 0.0f,
-          .y = 0.0f,
-          .width = static_cast<float>(renderPass.RenderPassResolution.x),
-          .height = static_cast<float>(renderPass.RenderPassResolution.y),
-          .minDepth = 0.0f,
-          .maxDepth = 1.0f
-      };
-
-      VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-      {
-          .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-          .renderPass = renderPass.RenderPass,
-          .framebuffer = renderPass.FrameBufferList.front(),
-          .renderArea = VkRect2D
-          {
-             .offset = VkOffset2D {.x = 0, .y = 0 },
-             .extent = VkExtent2D {.width = static_cast<uint>(renderPass.RenderPassResolution.x), .height = static_cast<uint>(renderPass.RenderPassResolution.y) }
-          },
-          .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-          .pClearValues = renderPass.ClearValueList.data()
-      };
-
-      VkDeviceSize offsets[] = { 0 };
-      VkDeviceSize instanceOffset[] = { 0 };
-      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-      vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-      vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
-      for (auto& skybox : skyBoxList)
-      {
-          const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
-
-          vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
-          vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-          vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
-      }
-      vkCmdEndRenderPass(commandBuffer);
   }
 
   void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
@@ -346,7 +285,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
       shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "CameraPosition", OrthographicCamera->Position); 
 
       ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
-      shaderSystem.UpdatePushConstantValue<int>(gBufferSceneDataBuffer, "Isolate", isolateLayer);
       shaderSystem.UpdatePushConstantValue<vec2>(gBufferSceneDataBuffer, "InvertResolution", vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y)));
       shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "OrthographicCameraPosition", OrthographicCamera->Position);
       shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "PerspectiveViewDirection", ViewDirection);

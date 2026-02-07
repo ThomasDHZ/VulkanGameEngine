@@ -76,10 +76,8 @@ public:
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     Vector<Texture>                                                TextureList;
 
-    DLL_EXPORT Texture                  CreateTexture(const String& texturePath);
-    DLL_EXPORT Texture                  CreateTexture(TextureLoader textureLoader);
-    DLL_EXPORT Texture                  LoadKTXTexture(const String& texturePath);
-    DLL_EXPORT Texture                  LoadKTXTexture(TextureLoader textureLoader);
+    DLL_EXPORT Texture                   CreateTexture(const String& texturePath);
+    DLL_EXPORT Texture                   CreateTexture(TextureLoader textureLoader);
     //DLL_EXPORT VkGuid                 CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels);
     DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);

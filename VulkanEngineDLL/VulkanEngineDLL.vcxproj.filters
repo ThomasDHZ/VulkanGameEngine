@@ -57,6 +57,9 @@
     <ClInclude Include="CHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="InputEnum.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
@@ -120,9 +123,6 @@
     <ClInclude Include="..\External\LodePNG\lodepng.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files\External</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
@@ -133,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="CHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
+      <Filter>Source Files\spirv</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
@@ -192,9 +195,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\External\LodePNG\lodepng.cpp">
-      <Filter>Header Files\External</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Header Files\External</Filter>
     </ClCompile>
   </ItemGroup>

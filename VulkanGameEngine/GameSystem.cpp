@@ -54,7 +54,7 @@ void GameSystem::StartUp(void* windowHandle)
     renderSystem.StartUp(windowHandle, instance, surface);
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-   // materialBakerSystem.Run();
+    materialBakerSystem.Run();
 #endif
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
@@ -103,7 +103,7 @@ void GameSystem::DebugUpdate(float deltaTime)
         ImGui::SliderInt("UseHeightMap ", &levelSystem.UseHeightMap, 0, 1);
         ImGui::SliderFloat("HeightScale ", &levelSystem.HeightScale, 0.0f, 1.0f);
         ImGui::SliderFloat3("ViewDirection ", &levelSystem.ViewDirection.x, -1.0f, 1.0f);
-        ImGui::SliderInt("IsolateLayer ", &levelSystem.isolateLayer, 0, 10);
+    
 
     ImGui::Separator();
 
@@ -166,9 +166,9 @@ void GameSystem::Draw(float deltaTime)
 {
     vulkanSystem.StartFrame();
     VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-  //  materialBakerSystem.Draw(commandBuffer);
+    materialBakerSystem.Draw(commandBuffer);
     levelSystem.Draw(commandBuffer, deltaTime);
-    ImGui_Draw(commandBuffer, imGuiRenderer);
+   // ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }
 

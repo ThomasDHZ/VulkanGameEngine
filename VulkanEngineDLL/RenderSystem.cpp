@@ -100,93 +100,6 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
 }
 
-void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
-{
-    const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-    VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-    Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
-    const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-
-    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-    VkCommandBufferAllocateInfo allocInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = vulkanSystem.CommandPool,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = 1
-    };
-    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer));
-
-    VkCommandBufferBeginInfo beginInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-
-    VkViewport viewport
-    {
-        .x = 0.0f,
-        .y = 0.0f,
-        .width = static_cast<float>(renderPass.RenderPassResolution.x),
-        .height = static_cast<float>(renderPass.RenderPassResolution.y),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
-    };
-
-    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = renderPass.RenderPass,
-        .framebuffer = renderPass.FrameBufferList[0],
-        .renderArea = VkRect2D
-        {
-           .offset = VkOffset2D {.x = 0, .y = 0 },
-           .extent = VkExtent2D {.width = static_cast<uint>(renderPass.RenderPassResolution.x), .height = static_cast<uint>(renderPass.RenderPassResolution.y) }
-        },
-        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-        .pClearValues = renderPass.ClearValueList.data()
-    };
-
-    VkSubmitInfo submitInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &commandBuffer,
-    };
-
-    VkFenceCreateInfo fenceCreateInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .flags = 0
-    };
-
-    VkFence fence = VK_NULL_HANDLE;
-    VkDeviceSize offsets[] = { 0 };
-    VkDeviceSize instanceOffset[] = { 0 };
-    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &beginInfo));
-    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
-    for (auto& skybox : skyBoxList)
-    {
-        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
-
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
-    }
-    vkCmdEndRenderPass(commandBuffer);
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
-    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
-    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
-    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
-    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
-}
-
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
@@ -205,8 +118,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& 
         .MaxPushConstantSize = 0,
         .UseDefaultSwapChainResolution = renderPassLoader.UseDefaultSwapChainResolution,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
-        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
-        .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView
     };
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
@@ -266,8 +178,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         .MaxPushConstantSize = 0,
         .UseDefaultSwapChainResolution = renderPassLoader.UseDefaultSwapChainResolution,
         .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
-        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
-        .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
+        .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView
     };
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
@@ -437,7 +348,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
         case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
         case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_CubeMapTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+        case RenderType_GeneralTexture:        initialLayout = VK_IMAGE_LAYOUT_GENERAL;                          finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
         default: throw std::runtime_error("Unknown RenderTextureType");
         }
 
@@ -891,12 +802,6 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
                 break;
-            } 
-            case kEnvironmentMapDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
-                break;
             }
             default:
             {
@@ -1230,7 +1135,6 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetBRDFMapTextureBuffer()
         });
     return texturePropertiesBuffer;
 }
-
 
 VulkanRenderPass RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
 {
