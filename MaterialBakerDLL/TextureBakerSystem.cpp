@@ -45,10 +45,6 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         return;
     }
 
-    // Final output folder — both PNG preview and KTX2 go here
-    fs::path assetsDir = R"(C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\Textures)";
-    fs::create_directories(assetsDir);
-
     const char* nvtt_exe = R"(C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\nvtt_export.exe)";
 
     for (size_t x = 0; x < attachmentTextureList.size(); ++x)
@@ -67,8 +63,7 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             srcFormat == VK_FORMAT_B8G8R8A8_SRGB ||
             srcFormat == VK_FORMAT_A8B8G8R8_SRGB_PACK32;
 
-        bool isHDRFloat = (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
-            srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT);
+        bool isHDRFloat = (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT || srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT);
         if (isHDRFloat)
         {
             printf("Warning: HDR float format on attachment %zu — clamped to 0-1 for BC7\n", x);
@@ -112,7 +107,7 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
 
         // Naming
         String suffix;
-        if (x == 0) suffix = "_Albedo";
+        if (x == 0)      suffix = "_Albedo";
         else if (x == 1) suffix = "_NormalHeight";
         else if (x == 2) suffix = "_MRO";
         else if (x == 3) suffix = "_SheenSSS";
@@ -123,17 +118,28 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         String baseName = suffix.substr(1);  // Albedo, NormalHeight, etc.
 
         // Step 2: Export PNG preview (mip 0) directly to Assets\Textures
-        fs::path previewPngPath = assetsDir / (baseName + "_preview.png");
-        ExportToPng(previewPngPath.string(), importTexture, 0, true);  // mip 0 for preview
+        String search = "Import";
+        String textureName = baseFilePath;
+        size_t find = baseFilePath.find(search);
+        if (find != std::string::npos) 
+        {
+            textureName.replace(find, search.size(), ""); // Replace with desired string
+        }
+        fs::path previewPngPath = textureName + suffix + ".png";
+        ExportToPng(previewPngPath.string(), importTexture, 0, false);  // mip 0 for preview
 
         // Step 3: Compress to KTX2 using NVTT (input = preview PNG, output = same folder)
-        fs::path ktxPath = assetsDir / (baseName + ".ktx2");
-        std::string args = fmt::format(
-            "\"{}\" -o \"{}\" --format bc7 --quality normal --mips --mip-filter box --zcmp 1",
-            previewPngPath.string(),
-            ktxPath.string()
-        );
+        fs::path ktxPath = textureName + suffix + ".ktx2";
+        std::string args = fmt::format( "\"{}\" -o \"{}\" --format bc7 --quality normal --mips --mip-filter box --zcmp 1",  previewPngPath.string(), ktxPath.string());
 
+        if (useSRGB)
+        {
+            args += " --export-transfer-function srgb";
+        }
+        else
+        {
+            args += " --export-transfer-function linear";
+        }
         if (isNormalMap) {
             args += " --normal-alpha unchanged";
         }
