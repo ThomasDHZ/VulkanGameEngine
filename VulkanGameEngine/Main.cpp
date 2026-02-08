@@ -7,7 +7,7 @@
 #include "ImGuiRenderer.h"
 #include <DebugSystem.h>
 #include "ImGuiRenderer.h"
-#include <ktx/lib/include/ktx.h>
+#include <ktx/include/ktx.h>
 
 #ifndef __ANDROID__
 int main()
