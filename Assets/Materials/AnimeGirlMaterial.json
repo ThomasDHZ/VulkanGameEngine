@@ -4,9 +4,9 @@
   "ShaderMaterialBufferIndex": 0,
   "MaterialBufferId": 0,
   "AlbedoData": {
-    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial0_8bit.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlImportMaterial0_8bit.ktx2" ],
     "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
-    "TextureByteFormat": 43,
+    "TextureByteFormat": 146,
     "UsingSRGBFormat": true,
     "SampleCount": 1,
     "ImageType": 1,
@@ -14,7 +14,7 @@
     "UseMipMaps": false,
     "IsSkyBox": false,
     "SamplerCreateInfo": {
-      "SType": 31,
+      "SType": 31,Z
       "MagFilter": 1,
       "MinFilter": 1,
       "MipmapMode": 1,

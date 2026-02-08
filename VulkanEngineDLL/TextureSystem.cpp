@@ -133,93 +133,142 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		return FindTexture(textureLoader.TextureId);
 	}
 
-	String ext = fileSystem.GetFileExtention(textureLoader.TextureFilePath.front().c_str());
-	if (ext != "ktx2")
+	String path = textureLoader.TextureFilePath.front(); // assuming single file for now
+	if (fileSystem.GetFileExtention(path.c_str()) != "ktx2")
 	{
-		return CreateTexture(textureLoader);
+		return CreateTexture(textureLoader); // fallback for non-ktx2
 	}
 
+	// ?? Official KTX loading ????????????????????????????????????????????????
 	ktxTexture* kTexture = nullptr;
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(textureLoader.TextureFilePath.front().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(
+		path.c_str(),
+		KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+		&kTexture
+	);
 	if (result != KTX_SUCCESS)
 	{
-		std::cerr << "Failed to load KTX: " << ktxErrorString(result) << std::endl;
+		std::cerr << "ktxTexture_CreateFromNamedFile failed: " << ktxErrorString(result) << std::endl;
+		return {}; // or fallback texture
 	}
 
+	// Prepare Vulkan device info
 	ktxVulkanDeviceInfo vdi{};
-	result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
+	result = ktxVulkanDeviceInfo_Construct(
+		&vdi,
+		vulkanSystem.PhysicalDevice,
+		vulkanSystem.Device,
+		vulkanSystem.GraphicsQueue,
+		vulkanSystem.CommandPool,
+		nullptr
+	);
 	if (result != KTX_SUCCESS)
 	{
+		std::cerr << "ktxVulkanDeviceInfo_Construct failed: " << ktxErrorString(result) << std::endl;
 		ktxTexture_Destroy(kTexture);
+		return {};
 	}
 
-	ktxVulkanTexture vkTex;
-	result = ktxTexture_VkUploadEx(kTexture, &vdi, &vkTex, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-	ktxVulkanTexture textureData = fileSystem.LoadKTX2File(textureLoader.TextureFilePath[0]);
-	VkImageAspectFlags aspect = VkImageAspectFlags();
-	if ((textureData.imageFormat >= VK_FORMAT_D16_UNORM &&
-		textureData.imageFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
-		textureData.imageFormat == VK_FORMAT_X8_D24_UNORM_PACK32)
+	// Upload to Vulkan
+	ktxVulkanTexture vkTex{};
+	result = ktxTexture_VkUploadEx(
+		kTexture,
+		&vdi,
+		&vkTex,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	);
+	if (result != KTX_SUCCESS)
 	{
-		aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if (textureData.imageFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
-			textureData.imageFormat == VK_FORMAT_D24_UNORM_S8_UINT)
-		{
-			aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
-		}
+		std::cerr << "ktxTexture_VkUploadEx failed: " << ktxErrorString(result) << std::endl;
+		ktxVulkanDeviceInfo_Destruct(&vdi);
+		ktxTexture_Destroy(kTexture);
+		return {};
 	}
-	else
+
+	// We no longer need the ktxTexture object after upload
+	ktxTexture_Destroy(kTexture);
+
+	// ?? Create per-mip image views (correct way) ???????????????????????????
+	VkImageAspectFlags aspect = (vkTex.imageFormat >= VK_FORMAT_D16_UNORM &&
+		vkTex.imageFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT)
+		? VK_IMAGE_ASPECT_DEPTH_BIT
+		: VK_IMAGE_ASPECT_COLOR_BIT;
+
+	// Add stencil if present
+	if (vkTex.imageFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+		vkTex.imageFormat == VK_FORMAT_D24_UNORM_S8_UINT)
 	{
-		aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+		aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
 
 	Vector<VkImageView> imageViewList;
-	uint32 mipLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(static_cast<int>(textureData.width), static_cast<int>(textureData.height))))) + 1 : 1;
-	for (uint32_t mip = 0; mip < mipLevels; ++mip)
+	for (uint32_t mip = 0; mip < vkTex.levelCount; ++mip)
 	{
-		VkImageView imageView = VK_NULL_HANDLE;
-
-		VkImageViewCreateInfo viewInfo = {};
+		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = textureData.image;
-		viewInfo.viewType = kTexture->isCubemap ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = textureData.imageFormat;
+		viewInfo.image = vkTex.image;
+		viewInfo.viewType = (vkTex.layerCount == 6 && vkTex.depth == 1)
+			? VK_IMAGE_VIEW_TYPE_CUBE
+			: VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = vkTex.imageFormat;
 		viewInfo.subresourceRange.aspectMask = aspect;
 		viewInfo.subresourceRange.baseMipLevel = mip;
-		viewInfo.subresourceRange.levelCount = textureData.levelCount;
+		viewInfo.subresourceRange.levelCount = 1;           // ? important: 1 level per view
 		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = textureData.layerCount;
+		viewInfo.subresourceRange.layerCount = vkTex.layerCount;
 
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView));
-		imageViewList.emplace_back(imageView);
+		VkImageView imageView = VK_NULL_HANDLE;
+		if (vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+		{
+			std::cerr << "Failed to create image view for mip " << mip << std::endl;
+			// cleanup previous views...
+			break;
+		}
+		imageViewList.push_back(imageView);
 	}
 
+	// ?? Sampler ?????????????????????????????????????????????????????????????
 	VkSampler imageSampler = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &imageSampler));
-
-	Texture texture = Texture
+	if (vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &imageSampler) != VK_SUCCESS)
 	{
-		.textureGuid = textureLoader.TextureId,
-		.textureIndex = TextureList.size(),
-		.width = static_cast<int>(textureData.width),
-		.height = static_cast<int>(textureData.height),
-		.depth = static_cast<int>(textureData.depth),
-		.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(static_cast<int>(textureData.width), static_cast<int>(textureData.height))))) + 1 : 1,
-		.textureImage = textureData.image,
-		.textureViewList = imageViewList,
-		.textureSampler = imageSampler,
-		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-		.textureByteFormat = textureData.imageFormat,
-		.textureImageLayout = textureData.imageLayout,
-		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-		//	.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
-	};
-	if (kTexture->isCubemap) CubeMap = texture;
-	else TextureList.emplace_back(texture);
+		std::cerr << "Failed to create sampler" << std::endl;
+		// cleanup...
+	}
+
+	// ?? Final texture object ????????????????????????????????????????????????
+	Texture texture{};
+	texture.textureGuid = textureLoader.TextureId;
+	texture.textureIndex = static_cast<uint32_t>(TextureList.size());
+	texture.width = vkTex.width;
+	texture.height = vkTex.height;
+	texture.depth = vkTex.depth;
+	texture.mipMapLevels = vkTex.levelCount;
+	texture.textureImage = vkTex.image;
+	texture.textureViewList = std::move(imageViewList);
+	texture.textureSampler = imageSampler;
+	texture.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture;
+	texture.textureByteFormat = vkTex.imageFormat;
+	texture.textureImageLayout = vkTex.imageLayout;
+	texture.sampleCount = VK_SAMPLE_COUNT_1_BIT;
+
+	if (vkTex.layerCount == 6 && vkTex.depth == 1)
+	{
+		CubeMap = texture;
+	}
+	else
+	{
+		TextureList.emplace_back(texture);
+	}
 
 	ktxVulkanDeviceInfo_Destruct(&vdi);
-	ktxTexture_Destroy(kTexture);
+
+	printf("Loaded KTX2: %s (%dx%d, %u mips, format: %d, supercompressed: %s)\n",
+		path.c_str(), vkTex.width, vkTex.height, vkTex.levelCount,
+		vkTex.imageFormat,
+		(textureLoader.UseMipMaps ? "yes" : "no")); // you can query supercompression if needed
+
 	return texture;
 }
 

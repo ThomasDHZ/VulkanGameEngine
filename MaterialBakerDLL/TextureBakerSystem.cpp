@@ -3,14 +3,26 @@
 #include <VulkanSystem.h>
 #include <BufferSystem.h>
 #include <algorithm>
-#include "basisu_transcoder.h"  // For basist:: namespace (transcoder) - ADD THIS INCLUDE
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
 #include <thread>
-#include <basisu_comp.h>
-#include <algorithm>
+#include "bc7enc.h"  // <-- your latest bc7enc.h from richgel999/bc7enc_rdo
 
 TextureBakerSystem& textureBakerSystem = TextureBakerSystem::Get();
+
+namespace {
+    struct BC7InitGuard {
+        BC7InitGuard() {
+            bc7enc_compress_block_init();  // Call once at startup
+            printf("bc7enc tables initialized\n");
+        }
+    } g_bc7InitGuard;  // Static object — runs on program start
+}
+
+// Forward declaration
+std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
+    uint32_t width, uint32_t height,
+    VkFormat srcFormat);
 
 void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPassId)
 {
@@ -24,60 +36,46 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
     for (size_t x = 0; x < attachmentTextureList.size(); ++x)
     {
         Texture importTexture = attachmentTextureList[x];
-
-        // Auto-detect per-attachment settings
-        bool isNormalMap = false;
-        bool useSRGB = false;
-        bool isHDRFloat = false;
         VkFormat srcFormat = importTexture.textureByteFormat;
 
-        // Normal map detection
-        if (x == 1 || // normalData attachment
+        // Auto-detect settings
+        bool isNormalMap = (x == 1) ||
             srcFormat == VK_FORMAT_R16G16_UNORM ||
             srcFormat == VK_FORMAT_R16G16_SNORM ||
             srcFormat == VK_FORMAT_R16G16B16A16_SNORM ||
-            srcFormat == VK_FORMAT_R8G8_SNORM)
-        {
-            isNormalMap = true;
-        }
+            srcFormat == VK_FORMAT_R8G8_SNORM;
 
-        // SRGB for albedo
-        if (x == 0 ||
+        bool useSRGB = (x == 0) ||
             srcFormat == VK_FORMAT_R8G8B8A8_SRGB ||
             srcFormat == VK_FORMAT_B8G8R8A8_SRGB ||
-            srcFormat == VK_FORMAT_A8B8G8R8_SRGB_PACK32)
-        {
-            useSRGB = true;
-        }
+            srcFormat == VK_FORMAT_A8B8G8R8_SRGB_PACK32;
 
-        // HDR float detection (emission)
-        if (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
-            srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT)
+        bool isHDRFloat = (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
+            srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT);
+        if (isHDRFloat)
         {
-            isHDRFloat = true;
-            printf("Warning: HDR float format on attachment %zu — converting to UNORM 0-1 for BC7 (potential precision loss)\n", x);
+            printf("Warning: HDR float format on attachment %zu — clamped to 0-1 for BC7\n", x);
         }
 
         VkFormat targetFormat = (useSRGB && !isNormalMap) ? VK_FORMAT_BC7_SRGB_BLOCK : VK_FORMAT_BC7_UNORM_BLOCK;
 
-        ktxTextureCreateInfo createInfo{
-            .vkFormat = static_cast<ktx_uint32_t>(targetFormat),
-            .baseWidth = static_cast<ktx_uint32_t>(importTexture.width),
-            .baseHeight = static_cast<ktx_uint32_t>(importTexture.height),
-            .baseDepth = static_cast<ktx_uint32_t>(importTexture.depth ? importTexture.depth : 1),
-            .numDimensions = 2,
-            .numLevels = static_cast<ktx_uint32_t>(importTexture.mipMapLevels),
-            .numLayers = 1,
-            .numFaces = 1,
-            .isArray = KTX_FALSE,
-            .generateMipmaps = KTX_FALSE
-        };
+        ktxTextureCreateInfo createInfo = {};
+        createInfo.vkFormat = static_cast<ktx_uint32_t>(targetFormat);
+        createInfo.baseWidth = static_cast<ktx_uint32_t>(importTexture.width);
+        createInfo.baseHeight = static_cast<ktx_uint32_t>(importTexture.height);
+        createInfo.baseDepth = static_cast<ktx_uint32_t>(importTexture.depth ? importTexture.depth : 1);
+        createInfo.numDimensions = 2;
+        createInfo.numLevels = static_cast<ktx_uint32_t>(importTexture.mipMapLevels);
+        createInfo.numLayers = 1;
+        createInfo.numFaces = 1;
+        createInfo.isArray = KTX_FALSE;
+        createInfo.generateMipmaps = KTX_FALSE;
 
         ktxTexture2* ktx = nullptr;
         KTX_error_code err = ktxTexture2_Create(&createInfo, KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx);
         if (err != KTX_SUCCESS)
         {
-            fprintf(stderr, "ktxTexture2_Create failed for attachment %zu: %s\n", x, ktxErrorString(err));
+            fprintf(stderr, "ktxTexture2_Create failed: %s\n", ktxErrorString(err));
             continue;
         }
 
@@ -85,12 +83,12 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         std::vector<std::vector<uint8_t>> allMipRGBA8(importTexture.mipMapLevels);
         bool readSuccess = true;
 
-        for (uint32_t mip = 0; mip < importTexture.mipMapLevels; ++mip)
+        for (uint32_t mip = 0; mip < importTexture.mipMapLevels && readSuccess; ++mip)
         {
             RawMipReadback raw = ConvertToRawTextureData(importTexture, mip);
             if (!raw.data || raw.size == 0)
             {
-                fprintf(stderr, "Failed to read mip %u data for attachment %zu\n", mip, x);
+                fprintf(stderr, "Failed to read mip %u\n", mip);
                 DestroyVMATextureBuffer(raw);
                 readSuccess = false;
                 break;
@@ -99,74 +97,13 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             uint32_t mipWidth = std::max(1u, static_cast<uint32_t>(importTexture.width) >> mip);
             uint32_t mipHeight = std::max(1u, static_cast<uint32_t>(importTexture.height) >> mip);
 
-            size_t bytesPerPixel = 4;
-            if (srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
-                srcFormat == VK_FORMAT_R32G32B32A32_UINT ||
-                srcFormat == VK_FORMAT_R32G32B32A32_SINT)
+            std::vector<uint8_t> rgba8Data = ConvertMipToRGBA8(raw.data, raw.size, mipWidth, mipHeight, srcFormat);
+            if (rgba8Data.empty())
             {
-                bytesPerPixel = 16;
-            }
-            else if (srcFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
-                srcFormat <= VK_FORMAT_R16G16B16A16_SFLOAT)
-            {
-                bytesPerPixel = 8;
-            }
-
-            size_t expectedBytes = static_cast<size_t>(mipWidth) * mipHeight * bytesPerPixel;
-            if (raw.size != expectedBytes)
-            {
-                fprintf(stderr, "Mip %u size mismatch for attachment %zu (expected %zu bytes, got %zu)\n",
-                    mip, x, expectedBytes, raw.size);
+                fprintf(stderr, "ConvertMipToRGBA8 failed for mip %u\n", mip);
                 DestroyVMATextureBuffer(raw);
                 readSuccess = false;
                 break;
-            }
-
-            std::vector<uint8_t> rgba8Data(mipWidth * mipHeight * 4);
-
-            if (bytesPerPixel == 4)
-            {
-                memcpy(rgba8Data.data(), raw.data, raw.size);
-            }
-            else if (bytesPerPixel == 8)
-            {
-                const uint16_t* src16 = static_cast<const uint16_t*>(raw.data);
-                for (size_t p = 0; p < mipWidth * mipHeight; ++p)
-                {
-                    for (int c = 0; c < 4; ++c)
-                    {
-                        float norm = 0.0f;
-                        if (srcFormat == VK_FORMAT_R16G16B16A16_UNORM ||
-                            srcFormat == VK_FORMAT_R16G16B16A16_UINT)
-                        {
-                            norm = static_cast<float>(src16[p * 4 + c]) / 65535.0f;
-                        }
-                        else if (srcFormat == VK_FORMAT_R16G16B16A16_SNORM)
-                        {
-                            norm = std::max(static_cast<float>(static_cast<int16_t>(src16[p * 4 + c])) / 32767.0f, -1.0f);
-                            norm = norm * 0.5f + 0.5f;
-                        }
-                        else if (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT)
-                        {
-                            norm = astc_helpers::half_to_float(src16[p * 4 + c]);
-                            norm = std::clamp(norm, 0.0f, 1.0f);
-                        }
-                        rgba8Data[p * 4 + c] = static_cast<uint8_t>(norm * 255.0f + 0.5f);
-                    }
-                }
-            }
-            else if (bytesPerPixel == 16)
-            {
-                const float* src32 = static_cast<const float*>(raw.data);
-                for (size_t p = 0; p < mipWidth * mipHeight; ++p)
-                {
-                    for (int c = 0; c < 4; ++c)
-                    {
-                        float val = src32[p * 4 + c];
-                        val = std::clamp(val, 0.0f, 1.0f); // simple clamp
-                        rgba8Data[p * 4 + c] = static_cast<uint8_t>(val * 255.0f + 0.5f);
-                    }
-                }
             }
 
             allMipRGBA8[mip] = std::move(rgba8Data);
@@ -179,104 +116,82 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             continue;
         }
 
-        // Step 2: Basis Universal UASTC compression (all mips at once)
-        basisu::basis_compressor_params params;
-        params.m_uastc = true;
-        params.m_perceptual = useSRGB;           // perceptual for sRGB/albedo, linear for normals/data/emission
-        params.m_quality_level = 255;
-        params.m_multithreading = true;
-        params.m_mip_gen = false;                // we supply all mips
+        // Step 2: Compress each mip to BC7 and upload via official API
+        bool compressSuccess = true;
 
-        params.m_source_mipmap_images.resize(importTexture.mipMapLevels);
         for (uint32_t mip = 0; mip < importTexture.mipMapLevels; ++mip)
         {
-            uint32_t w = std::max(1u, static_cast<uint32>(importTexture.width >> mip));
-            uint32_t h = std::max(1u, static_cast<uint32>(importTexture.height >> mip));
-            basisu::image img(w, h);
-            memcpy(img.get_ptr(), allMipRGBA8[mip].data(), allMipRGBA8[mip].size());
-            params.m_source_mipmap_images[mip].push_back(std::move(img));
-        }
+            uint32_t mipWidth = std::max(1u, static_cast<uint32_t>(importTexture.width) >> mip);
+            uint32_t mipHeight = std::max(1u, static_cast<uint32_t>(importTexture.height) >> mip);
 
-        basisu::basis_compressor compressor;
-        if (!compressor.init(params) || !compressor.process())
-        {
-            fprintf(stderr, "Basis compression failed for attachment %zu\n", x);
-            ktxTexture_Destroy(ktxTexture(ktx));
-            continue;
-        }
+            std::vector<uint8_t> bc7Data = CompressToBC7Ultra(
+                allMipRGBA8[mip].data(),
+                mipWidth,
+                mipHeight,
+                useSRGB,
+                isNormalMap
+            );
 
-        const basisu::uint8_vec& basisData = compressor.get_output_basis_file();
-
-        // Step 3: Transcode .basis -> raw BC7 blocks
-        basist::basisu_transcoder transcoder;
-        if (!transcoder.start_transcoding(basisData.data(), static_cast<uint32_t>(basisData.size())))
-        {
-            fprintf(stderr, "Basis transcoder start failed for attachment %zu\n", x);
-            ktxTexture_Destroy(ktxTexture(ktx));
-            continue;
-        }
-
-        bool transcodeSuccess = true;
-        ktx_size_t offset = 0;
-        for (uint32_t mip = 0; mip < importTexture.mipMapLevels; ++mip)
-        {
-            uint32_t w = std::max(1u, static_cast<uint32>(importTexture.width >> mip));
-            uint32_t h = std::max(1u, static_cast<uint32>(importTexture.height >> mip));
-            uint32_t blocksX = (w + 3) / 4;
-            uint32_t blocksY = (h + 3) / 4;
-            size_t numBlocks = static_cast<size_t>(blocksX) * blocksY;
-
-            std::vector<uint8_t> bc7Data(numBlocks * 16);
-
-            bool ok = transcoder.transcode_image_level(
-                basisData.data(),
-                static_cast<uint32_t>(basisData.size()),
-                0, mip,
-                bc7Data.data(),
-                static_cast<uint32_t>(numBlocks),
-                basist::transcoder_texture_format::cTFBC7_RGBA,
-                0);
-
-            if (!ok)
+            if (bc7Data.empty())
             {
-                fprintf(stderr, "BC7 transcode failed for attachment %zu mip %u\n", x, mip);
-                transcodeSuccess = false;
+                fprintf(stderr, "CompressToBC7Ultra failed for mip %u\n", mip);
+                compressSuccess = false;
                 break;
             }
 
-            ktx_size_t levelSize = ktxTexture_GetImageSize(ktxTexture(ktx), mip);
-            if (bc7Data.size() != static_cast<size_t>(levelSize))
+            // Upload using official setter (updates level index automatically)
+            err = ktxTexture_SetImageFromMemory(
+                ktxTexture(ktx),
+                mip,            // level
+                0,              // layer
+                0,              // faceSlice
+                bc7Data.data(),
+                bc7Data.size()
+            );
+
+            // Verify expected size matches BC7 block size (16 bytes per 4×4 block)
+            ktx_size_t expectedLevelSize = ktxTexture_GetImageSize(ktxTexture(ktx), mip);
+            if (bc7Data.size() != static_cast<size_t>(expectedLevelSize))
             {
-                fprintf(stderr, "Warning: BC7 size mismatch for attachment %zu mip %u (%zu vs expected %zu)\n",
-                    x, mip, bc7Data.size(), levelSize);
+                fprintf(stderr, "BC7 size mismatch mip %u: got %zu, expected %zu\n",
+                    mip, bc7Data.size(), expectedLevelSize);
+                compressSuccess = false;
+                break;
             }
 
-            memcpy(ktx->pData + offset, bc7Data.data(), bc7Data.size());
-            offset += levelSize;
+            if (err != KTX_SUCCESS)
+            {
+                fprintf(stderr, "ktxTexture_SetImageFromMemory mip %u failed: %s\n",
+                    mip, ktxErrorString(err));
+                compressSuccess = false;
+                break;
+            }
+
+            printf("Uploaded BC7 mip %u (%ux%u) — %zu bytes\n", mip, mipWidth, mipHeight, bc7Data.size());
         }
 
-        if (!transcodeSuccess)
+        if (!compressSuccess)
         {
             ktxTexture_Destroy(ktxTexture(ktx));
             continue;
         }
 
-        // Step 4: Apply ZSTD supercompression
-        ktx->supercompressionScheme = KTX_SS_NONE;
-        ktx_uint32_t zstdLevel = 12; // 9-12 good balance, up to 22 for max
-     //   KTX_error_code compressErr = ktxTexture2_CompressZstd(ktx, zstdLevel);
-
-   /*     if (compressErr != KTX_SUCCESS)
+        // Step 3: Apply ZSTD supercompression (now safe because data is fully set)
+        ktx_uint32_t zstdLevel = 22;  // 3–12 usually good balance; 22 = max but very slow
+        KTX_error_code compressErr = ktxTexture2_DeflateZstd(ktx, zstdLevel);
+        if (compressErr != KTX_SUCCESS)
         {
-            fprintf(stderr, "ZSTD supercompression failed (%s), writing without supercompression\n", ktxErrorString(compressErr));
+            fprintf(stderr, "ZSTD supercompression failed: %s - writing uncompressed\n",
+                ktxErrorString(compressErr));
             ktx->supercompressionScheme = KTX_SS_NONE;
         }
         else
         {
-            printf("ZSTD supercompression applied (level %u)\n", zstdLevel);
-        }*/
+            printf("Applied ZSTD supercompression (level %u) — compressed size: %zu bytes\n",
+                zstdLevel, ktx->dataSize);
+        }
 
-        // Step 5: Write to file
+        // Step 4: Write to file
         String suffix;
         if (x == 0) suffix = "_Albedo";
         else if (x == 1) suffix = "_NormalHeight";
@@ -284,23 +199,194 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         else if (x == 3) suffix = "_SheenSSS";
         else if (x == 4) suffix = "_Unused";
         else if (x == 5) suffix = "_Emission";
-        else suffix = "_Attachment" + std::to_string(x);
+        else             suffix = "_Attachment" + std::to_string(x);
 
         String fullPath = baseFilePath + suffix + ".ktx2";
         err = ktxTexture_WriteToNamedFile(ktxTexture(ktx), fullPath.c_str());
         if (err == KTX_SUCCESS)
         {
-            printf("Successfully baked BC7 KTX2%s: %s\n",
-                (ktx->supercompressionScheme == KTX_SS_ZSTD ? " (ZSTD supercompressed)" : ""),
-                fullPath.c_str());
+            printf("Successfully baked BC7 KTX2: %s (supercompressed: %s, size: %zu bytes)\n",
+                fullPath.c_str(),
+                (ktx->supercompressionScheme == KTX_SS_ZSTD ? "yes" : "no"),
+                ktx->dataSize);
         }
         else
         {
-            fprintf(stderr, "Failed to write KTX2 %s: %s\n", fullPath.c_str(), ktxErrorString(err));
+            fprintf(stderr, "Failed to write %s: %s\n", fullPath.c_str(), ktxErrorString(err));
         }
 
         ktxTexture_Destroy(ktxTexture(ktx));
     }
+}
+
+// Full implementation of ConvertMipToRGBA8 (fixes missing function error)
+std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
+    uint32_t width, uint32_t height,
+    VkFormat srcFormat)
+{
+    std::vector<uint8_t> rgba8(width * height * 4);
+
+    size_t bytesPerPixel = 4;
+    if (srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
+        srcFormat == VK_FORMAT_R32G32B32A32_UINT ||
+        srcFormat == VK_FORMAT_R32G32B32A32_SINT)
+    {
+        bytesPerPixel = 16;
+    }
+    else if (srcFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
+        srcFormat <= VK_FORMAT_R16G16B16A16_SFLOAT)
+    {
+        bytesPerPixel = 8;
+    }
+
+    size_t expectedSize = static_cast<size_t>(width) * height * bytesPerPixel;
+    if (rawSize != expectedSize)
+    {
+        fprintf(stderr, "ConvertMipToRGBA8: size mismatch (expected %zu, got %zu)\n", expectedSize, rawSize);
+        return {};
+    }
+
+    if (bytesPerPixel == 4)
+    {
+        memcpy(rgba8.data(), rawData, rawSize);
+    }
+    else if (bytesPerPixel == 8)
+    {
+        const uint16_t* src16 = static_cast<const uint16_t*>(rawData);
+        for (size_t p = 0; p < static_cast<size_t>(width) * height; ++p)
+        {
+            for (int c = 0; c < 4; ++c)
+            {
+                uint16_t val = src16[p * 4 + c];
+                float norm = 0.0f;
+
+                if (srcFormat == VK_FORMAT_R16G16B16A16_UNORM ||
+                    srcFormat == VK_FORMAT_R16G16B16A16_UINT)
+                {
+                    norm = static_cast<float>(val) / 65535.0f;
+                }
+                else if (srcFormat == VK_FORMAT_R16G16B16A16_SNORM)
+                {
+                    int16_t s = static_cast<int16_t>(val);
+                    norm = std::max(static_cast<float>(s) / 32767.0f, -1.0f);
+                    norm = norm * 0.5f + 0.5f;
+                }
+                else if (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT)
+                {
+                    // Simple half-float to float conversion (you can replace with a proper function)
+                    uint32_t sign = (val >> 15) & 0x01;
+                    uint32_t exp = (val >> 10) & 0x1F;
+                    uint32_t mant = val & 0x3FF;
+                    float fval;
+                    if (exp == 0)
+                        fval = (mant / 1024.0f) * std::pow(2.0f, -14);
+                    else if (exp == 31)
+                        fval = mant ? NAN : (sign ? -INFINITY : INFINITY);
+                    else
+                        fval = ((1.0f + mant / 1024.0f) * std::pow(2.0f, exp - 15));
+                    if (sign) fval = -fval;
+                    norm = std::clamp(fval, 0.0f, 1.0f);
+                }
+
+                rgba8[p * 4 + c] = static_cast<uint8_t>(norm * 255.0f + 0.5f);
+            }
+        }
+    }
+    else if (bytesPerPixel == 16)
+    {
+        const float* src32 = static_cast<const float*>(rawData);
+        for (size_t p = 0; p < static_cast<size_t>(width) * height; ++p)
+        {
+            for (int c = 0; c < 4; ++c)
+            {
+                float val = src32[p * 4 + c];
+                val = std::clamp(val, 0.0f, 1.0f);
+                rgba8[p * 4 + c] = static_cast<uint8_t>(val * 255.0f + 0.5f);
+            }
+        }
+    }
+
+    return rgba8;
+}
+
+// Updated CompressToBC7Ultra using latest bc7enc API
+std::vector<uint8_t> TextureBakerSystem::CompressToBC7Ultra(
+    const uint8_t* rgbaData,
+    uint32_t width,
+    uint32_t height,
+    bool perceptual,
+    bool isNormalMap)
+{
+    if (width == 0 || height == 0 || rgbaData == nullptr) return {};
+
+    uint32_t blocksX = (width + 3) / 4;
+    uint32_t blocksY = (height + 3) / 4;
+    size_t numBlocks = static_cast<size_t>(blocksX) * blocksY;
+
+    std::vector<uint8_t> bc7Blocks(numBlocks * 16);
+
+    // Create params struct (required by your bc7enc.h)
+    bc7enc_compress_block_params params = {};
+     
+    // Fill in the fields your version actually supports/uses
+    params.m_perceptual = perceptual && !isNormalMap;  // perceptual for color/albedo, linear for normals
+    params.m_uber_level = 6;               // highest (very slow, closest to NTTE)
+    params.m_max_partitions = 64;              // already max
+    params.m_mode_mask = 0xFF;            // all modes 0-7
+    params.m_try_least_squares = true;
+    params.m_perceptual = perceptual && !isNormalMap;
+    // If your bc7enc version has these (check header):
+    
+    // Optional fields (safe to leave default/zero)
+    params.m_low_frequency_partition_weight = 1.0f;
+    params.m_mode6_error_weight = 1.0f;
+    params.m_mode5_error_weight = 1.0f;
+    params.m_mode1_error_weight = 1.0f;
+
+    // Optional one-time init (only if your header declares this function)
+    // bc7enc_compress_block_init();
+
+    for (uint32_t by = 0; by < blocksY; ++by)
+    {
+        for (uint32_t bx = 0; bx < blocksX; ++bx)
+        {
+            uint8_t blockRGBA[64];
+
+            for (int y = 0; y < 4; ++y)
+            {
+                for (int x = 0; x < 4; ++x)
+                {
+                    int px = bx * 4 + x;
+                    int py = by * 4 + y;
+                    int idx = (y * 4 + x) * 4;
+
+                    if (px < static_cast<int>(width) && py < static_cast<int>(height))
+                    {
+                        size_t srcIdx = (py * width + px) * 4;
+                        blockRGBA[idx + 0] = rgbaData[srcIdx + 0];
+                        blockRGBA[idx + 1] = rgbaData[srcIdx + 1];
+                        blockRGBA[idx + 2] = rgbaData[srcIdx + 2];
+                        blockRGBA[idx + 3] = rgbaData[srcIdx + 3];
+                    }
+                    else
+                    {
+                        blockRGBA[idx + 0] = 0;
+                        blockRGBA[idx + 1] = 0;
+                        blockRGBA[idx + 2] = 0;
+                        blockRGBA[idx + 3] = 255;  // opaque
+                    }
+                }
+            }
+
+            uint8_t* pDstBlock = &bc7Blocks[(by * blocksX + bx) * 16];
+
+            // Now pass &params (fixes the type mismatch)
+            printf("Compressing block %u,%u -> %p\n", bx, by, pDstBlock);
+            bc7enc_compress_block(pDstBlock, blockRGBA, &params);
+        }
+    }
+
+    return bc7Blocks;
 }
 
 RawMipReadback TextureBakerSystem::ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel)
@@ -414,49 +500,4 @@ void TextureBakerSystem::DestroyVMATextureBuffer(RawMipReadback& data)
         vmaUnmapMemory(bufferSystem.vmaAllocator, data.allocation);
     }
     vmaDestroyBuffer(bufferSystem.vmaAllocator, data.buffer, data.allocation);
-}
-
-std::vector<uint8_t> TextureBakerSystem::CompressWithBasisUASTC(const void* rgbaData, size_t sizeBytes, uint32_t width, uint32_t height, bool isNormalMap)
-{
-    // 1. Create source image
-    basisu::image source_image(width, height, 4);  // RGBA
-    memcpy(source_image.get_ptr(), rgbaData, sizeBytes); //Failing here
-
-    // 2. Setup params (only safe/confirmed fields for your version)
-    basisu::basis_compressor_params params;
-
-    // Add image
-    params.m_source_images.push_back(source_image);
-
-    // Enable UASTC mode (this is the key flag that works in v2.0 era)
-    params.m_uastc = true;
-
-    // Quality (this field exists in most versions)
-    params.m_quality_level = 255;  // Max quality (0-255)
-
-    // Colorspace: perceptual for color textures, linear for normals/data
-    params.m_perceptual = !isNormalMap;
-
-    // Optional safe flags
-    params.m_mip_gen = true;          // Auto-generate mips if wanted
-    params.m_multithreading = true;
-
-    // 3. Compressor
-    basisu::basis_compressor compressor;
-    if (!compressor.init(params))
-    {
-        fprintf(stderr, "BasisU init failed\n");
-        return {};
-    }
-
-    // 4. Compress
-    if (!compressor.process())
-    {
-        fprintf(stderr, "BasisU process failed\n");
-        return {};
-    }
-
-    // 5. Get .basis output
-    const basisu::uint8_vec& basis_output = compressor.get_output_basis_file();
-    return std::vector<uint8_t>(basis_output.begin(), basis_output.end());
 }

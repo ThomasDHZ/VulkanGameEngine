@@ -68,7 +68,12 @@ private:
 
     RawMipReadback ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel);
     void           DestroyVMATextureBuffer(RawMipReadback& data);
-    std::vector<uint8_t> CompressWithBasisUASTC(const void* rgbaData, size_t sizeBytes, uint32_t width, uint32_t height, bool isNormalMap = false);
+    std::vector<uint8_t> CompressToBC7Ultra(
+        const uint8_t* rgbaData,       // input: width × height × 4 bytes, RGBA8, row-major
+        uint32_t width,
+        uint32_t height,
+        bool perceptual,
+        bool isNormalMap);
 public:
     DLL_EXPORT void BakeTexture(const String& baseFilePath, VkGuid renderPassId);
 };
