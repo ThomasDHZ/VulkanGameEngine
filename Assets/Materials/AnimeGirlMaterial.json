@@ -4,9 +4,9 @@
   "ShaderMaterialBufferIndex": 0,
   "MaterialBufferId": 0,
   "AlbedoData": {
-    "TextureFilePath": [ "Textures/AnimeGirlMaterial_Albedo.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlMaterial_Albedo.ktx2" ],
     "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
-    "TextureByteFormat": 43,
+    "TextureByteFormat": 146,
     "UsingSRGBFormat": true,
     "SampleCount": 1,
     "ImageType": 1,
@@ -33,9 +33,9 @@
     }
   },
   "NormalData": {
-    "TextureFilePath": [ "Textures/AnimeGirlMaterial_NormalHeight.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlMaterial_NormalHeight.ktx2" ],
     "TextureId": "36d7e265-8ee9-4bbe-b974-6907532459a7",
-    "TextureByteFormat": 91,
+    "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
     "SampleCount": 1,
     "ImageType": 1,
@@ -62,9 +62,9 @@
     }
   },
   "PackedMROData": {
-    "TextureFilePath": [ "Textures/AnimeGirlMaterial_MRO.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlMaterial_MRO.ktx2" ],
     "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
-    "TextureByteFormat": 91,
+    "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
     "SampleCount": 1,
     "ImageType": 1,
@@ -91,9 +91,9 @@
     }
   },
   "PackedSheenSSSData": {
-    "TextureFilePath": [ "Textures/AnimeGirlMaterial_SheenSSS.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlMaterial_SheenSSS.ktx2" ],
     "TextureId": "ffcd6590-6f56-406e-b187-cf7f30e9317e",
-    "TextureByteFormat": 91,
+    "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
     "SampleCount": 1,
     "ImageType": 1,
@@ -120,9 +120,9 @@
     }
   },
   "UnusedData": {
-    "TextureFilePath": [ "Textures/AnimeGirlMaterial_Unused.png" ],
+    "TextureFilePath": [ "Textures/AnimeGirlMaterial_Unused.ktx2" ],
     "TextureId": "f1ab897a-92e5-4109-803b-5c9196bcc173",
-    "TextureByteFormat": 91,
+    "TextureByteFormat": 145,
     "UsingSRGBFormat": false,
     "SampleCount": 1,
     "ImageType": 1,

@@ -58,10 +58,12 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             srcFormat == VK_FORMAT_R16G16B16A16_SNORM ||
             srcFormat == VK_FORMAT_R8G8_SNORM;
 
-        bool useSRGB = (x == 0) ||
+        bool useSRGB = (x == 0 || x == 5) ||
             srcFormat == VK_FORMAT_R8G8B8A8_SRGB ||
             srcFormat == VK_FORMAT_B8G8R8A8_SRGB ||
-            srcFormat == VK_FORMAT_A8B8G8R8_SRGB_PACK32;
+            srcFormat == VK_FORMAT_A8B8G8R8_SRGB_PACK32 ||
+            srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT ||
+            srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT;
 
         bool isHDRFloat = (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT || srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT);
         if (isHDRFloat)
@@ -130,18 +132,29 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
 
         // Step 3: Compress to KTX2 using NVTT (input = preview PNG, output = same folder)
         fs::path ktxPath = textureName + suffix + ".ktx2";
-        std::string args = fmt::format( "\"{}\" -o \"{}\" --format bc7 --quality normal --mips --mip-filter box --zcmp 1",  previewPngPath.string(), ktxPath.string());
+        bool generateMips = (attachmentTextureList[x].mipMapLevels > 1);
+        std::string args = fmt::format(
+            "\"{}\" -o \"{}\" --format bc7 --quality highest --zcmp 22",
+            previewPngPath.string(),
+            ktxPath.string()
+        );
 
-        if (useSRGB)
-        {
+        if (useSRGB) {
             args += " --export-transfer-function srgb";
         }
-        else
-        {
+        else {
             args += " --export-transfer-function linear";
         }
+
         if (isNormalMap) {
             args += " --normal-alpha unchanged";
+        }
+
+        if (generateMips) 
+        {
+            args += " --mips --mip-filter kaiser --mip-gamma-correct --mip-pre-alpha";
+            // Optional: only if you have cutout/alpha-test textures
+            // args += " --mip-scale-alpha";
         }
 
         // Optional: Maximize CPU threads (good since no CUDA)

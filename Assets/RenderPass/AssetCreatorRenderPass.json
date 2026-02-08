@@ -182,7 +182,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 92,
+      "Format": 91,
       "LoadOp": 1,
       "StoreOp": 2,
       "FinalLayout": 5,

@@ -46,6 +46,3 @@
 [submodule "External/SPIRV-Reflect"]
 	path = External/SPIRV-Reflect
 	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
-[submodule "External/ktx"]
-	path = External/ktx
-	url = https://github.com/KhronosGroup/KTX-Software.git

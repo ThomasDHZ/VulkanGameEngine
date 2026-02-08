@@ -416,7 +416,8 @@ void main()
 
     vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
 
-    vec3  ambient = emission.rgb + (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
+    
+    vec3  ambient = (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * ambientOcclusion + clearcoatIBL * ambientOcclusion;
     ambient = max(ambient, vec3(0.02) * albedo);
 
     vec3  color = ambient + Lo;
