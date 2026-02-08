@@ -1,3 +1,6 @@
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define FMT_HEADER_ONLY
+
 #include "TextureBakerSystem.h"
 #include <TextureSystem.h>
 #include <VulkanSystem.h>
@@ -6,20 +9,29 @@
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
 #include <thread>
+#include <fstream>
+#include <filesystem>
+#include <fmt/format.h>
+#include "stb_image_write.h"
+#include <lodepng.h>
 #include "bc7enc.h"  // <-- your latest bc7enc.h from richgel999/bc7enc_rdo
+#include <shellapi.h>   // ShellExecuteA
+#include <windows.h>    // Sleep, etc.
+
+namespace fs = std::filesystem;
 
 TextureBakerSystem& textureBakerSystem = TextureBakerSystem::Get();
 
 namespace {
     struct BC7InitGuard {
         BC7InitGuard() {
-            bc7enc_compress_block_init();  // Call once at startup
+            bc7enc_compress_block_init();
             printf("bc7enc tables initialized\n");
         }
-    } g_bc7InitGuard;  // Static object — runs on program start
+    } g_bc7InitGuard;
 }
 
-// Forward declaration
+// Forward declarations
 std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
     uint32_t width, uint32_t height,
     VkFormat srcFormat);
@@ -29,16 +41,21 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
     Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
     if (attachmentTextureList.empty())
     {
-        fprintf(stderr, "No rendered textures found for render pass %s\n", renderPassId.ToString());
+        fprintf(stderr, "No rendered textures found for render pass %s\n", renderPassId.ToString().c_str());
         return;
     }
+
+    // Final output folder — both PNG preview and KTX2 go here
+    fs::path assetsDir = R"(C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\Textures)";
+    fs::create_directories(assetsDir);
+
+    const char* nvtt_exe = R"(C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\nvtt_export.exe)";
 
     for (size_t x = 0; x < attachmentTextureList.size(); ++x)
     {
         Texture importTexture = attachmentTextureList[x];
         VkFormat srcFormat = importTexture.textureByteFormat;
 
-        // Auto-detect settings
         bool isNormalMap = (x == 1) ||
             srcFormat == VK_FORMAT_R16G16_UNORM ||
             srcFormat == VK_FORMAT_R16G16_SNORM ||
@@ -57,29 +74,7 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             printf("Warning: HDR float format on attachment %zu — clamped to 0-1 for BC7\n", x);
         }
 
-        VkFormat targetFormat = (useSRGB && !isNormalMap) ? VK_FORMAT_BC7_SRGB_BLOCK : VK_FORMAT_BC7_UNORM_BLOCK;
-
-        ktxTextureCreateInfo createInfo = {};
-        createInfo.vkFormat = static_cast<ktx_uint32_t>(targetFormat);
-        createInfo.baseWidth = static_cast<ktx_uint32_t>(importTexture.width);
-        createInfo.baseHeight = static_cast<ktx_uint32_t>(importTexture.height);
-        createInfo.baseDepth = static_cast<ktx_uint32_t>(importTexture.depth ? importTexture.depth : 1);
-        createInfo.numDimensions = 2;
-        createInfo.numLevels = static_cast<ktx_uint32_t>(importTexture.mipMapLevels);
-        createInfo.numLayers = 1;
-        createInfo.numFaces = 1;
-        createInfo.isArray = KTX_FALSE;
-        createInfo.generateMipmaps = KTX_FALSE;
-
-        ktxTexture2* ktx = nullptr;
-        KTX_error_code err = ktxTexture2_Create(&createInfo, KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx);
-        if (err != KTX_SUCCESS)
-        {
-            fprintf(stderr, "ktxTexture2_Create failed: %s\n", ktxErrorString(err));
-            continue;
-        }
-
-        // Step 1: Read and convert all mips to RGBA8
+        // Step 1: Read and convert all mips to RGBA8 (unchanged)
         std::vector<std::vector<uint8_t>> allMipRGBA8(importTexture.mipMapLevels);
         bool readSuccess = true;
 
@@ -112,86 +107,10 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
 
         if (!readSuccess)
         {
-            ktxTexture_Destroy(ktxTexture(ktx));
             continue;
         }
 
-        // Step 2: Compress each mip to BC7 and upload via official API
-        bool compressSuccess = true;
-
-        for (uint32_t mip = 0; mip < importTexture.mipMapLevels; ++mip)
-        {
-            uint32_t mipWidth = std::max(1u, static_cast<uint32_t>(importTexture.width) >> mip);
-            uint32_t mipHeight = std::max(1u, static_cast<uint32_t>(importTexture.height) >> mip);
-
-            std::vector<uint8_t> bc7Data = CompressToBC7Ultra(
-                allMipRGBA8[mip].data(),
-                mipWidth,
-                mipHeight,
-                useSRGB,
-                isNormalMap
-            );
-
-            if (bc7Data.empty())
-            {
-                fprintf(stderr, "CompressToBC7Ultra failed for mip %u\n", mip);
-                compressSuccess = false;
-                break;
-            }
-
-            // Upload using official setter (updates level index automatically)
-            err = ktxTexture_SetImageFromMemory(
-                ktxTexture(ktx),
-                mip,            // level
-                0,              // layer
-                0,              // faceSlice
-                bc7Data.data(),
-                bc7Data.size()
-            );
-
-            // Verify expected size matches BC7 block size (16 bytes per 4×4 block)
-            ktx_size_t expectedLevelSize = ktxTexture_GetImageSize(ktxTexture(ktx), mip);
-            if (bc7Data.size() != static_cast<size_t>(expectedLevelSize))
-            {
-                fprintf(stderr, "BC7 size mismatch mip %u: got %zu, expected %zu\n",
-                    mip, bc7Data.size(), expectedLevelSize);
-                compressSuccess = false;
-                break;
-            }
-
-            if (err != KTX_SUCCESS)
-            {
-                fprintf(stderr, "ktxTexture_SetImageFromMemory mip %u failed: %s\n",
-                    mip, ktxErrorString(err));
-                compressSuccess = false;
-                break;
-            }
-
-            printf("Uploaded BC7 mip %u (%ux%u) — %zu bytes\n", mip, mipWidth, mipHeight, bc7Data.size());
-        }
-
-        if (!compressSuccess)
-        {
-            ktxTexture_Destroy(ktxTexture(ktx));
-            continue;
-        }
-
-        // Step 3: Apply ZSTD supercompression (now safe because data is fully set)
-        ktx_uint32_t zstdLevel = 22;  // 3–12 usually good balance; 22 = max but very slow
-        KTX_error_code compressErr = ktxTexture2_DeflateZstd(ktx, zstdLevel);
-        if (compressErr != KTX_SUCCESS)
-        {
-            fprintf(stderr, "ZSTD supercompression failed: %s - writing uncompressed\n",
-                ktxErrorString(compressErr));
-            ktx->supercompressionScheme = KTX_SS_NONE;
-        }
-        else
-        {
-            printf("Applied ZSTD supercompression (level %u) — compressed size: %zu bytes\n",
-                zstdLevel, ktx->dataSize);
-        }
-
-        // Step 4: Write to file
+        // Naming
         String suffix;
         if (x == 0) suffix = "_Albedo";
         else if (x == 1) suffix = "_NormalHeight";
@@ -201,25 +120,267 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         else if (x == 5) suffix = "_Emission";
         else             suffix = "_Attachment" + std::to_string(x);
 
-        String fullPath = baseFilePath + suffix + ".ktx2";
-        err = ktxTexture_WriteToNamedFile(ktxTexture(ktx), fullPath.c_str());
-        if (err == KTX_SUCCESS)
-        {
-            printf("Successfully baked BC7 KTX2: %s (supercompressed: %s, size: %zu bytes)\n",
-                fullPath.c_str(),
-                (ktx->supercompressionScheme == KTX_SS_ZSTD ? "yes" : "no"),
-                ktx->dataSize);
-        }
-        else
-        {
-            fprintf(stderr, "Failed to write %s: %s\n", fullPath.c_str(), ktxErrorString(err));
+        String baseName = suffix.substr(1);  // Albedo, NormalHeight, etc.
+
+        // Step 2: Export PNG preview (mip 0) directly to Assets\Textures
+        fs::path previewPngPath = assetsDir / (baseName + "_preview.png");
+        ExportToPng(previewPngPath.string(), importTexture, 0, true);  // mip 0 for preview
+
+        // Step 3: Compress to KTX2 using NVTT (input = preview PNG, output = same folder)
+        fs::path ktxPath = assetsDir / (baseName + ".ktx2");
+        std::string args = fmt::format(
+            "\"{}\" -o \"{}\" --format bc7 --quality normal --mips --mip-filter box --zcmp 1",
+            previewPngPath.string(),
+            ktxPath.string()
+        );
+
+        if (isNormalMap) {
+            args += " --normal-alpha unchanged";
         }
 
-        ktxTexture_Destroy(ktxTexture(ktx));
+        // Optional: Maximize CPU threads (good since no CUDA)
+        _putenv("OMP_NUM_THREADS=24");  // Adjust to your CPU core count
+
+        printf("Launching NVTT with args:\n%s\n", args.c_str());
+
+        HINSTANCE hInst = ShellExecuteA(
+            NULL,
+            "open",
+            nvtt_exe,
+            args.c_str(),
+            NULL,
+            SW_HIDE  // Change to SW_SHOW temporarily if you want to see NVTT console
+        );
+
+        if ((intptr_t)hInst <= 32) {
+            fprintf(stderr, "ShellExecuteA failed with code %ld\n", (intptr_t)hInst);
+        }
+        else {
+            printf("NVTT launched successfully\n");
+
+            // Poll for valid file
+            bool fileCreated = false;
+            for (int i = 0; i < 60; ++i) {
+                if (fs::exists(ktxPath) && fs::file_size(ktxPath) > 1024) {  // >1KB
+                    fileCreated = true;
+                    printf("NVTT succeeded (file detected, size %llu bytes) ? %s\n",
+                        fs::file_size(ktxPath), ktxPath.string().c_str());
+                    break;
+                }
+                Sleep(1000);
+            }
+
+            if (!fileCreated) {
+                fprintf(stderr, "Timeout: KTX2 file not created or empty\n");
+            }
+        }
+
+        printf("NVTT launched (ShellExecuteA success)\n");
+
+        // Poll for output file (wait up to 60 seconds)
+        bool fileCreated = false;
+        for (int i = 0; i < 60; ++i)
+        {
+            if (fs::exists(ktxPath))
+            {
+                fileCreated = true;
+                printf("NVTT succeeded (file detected) ? %s\n", ktxPath.string().c_str());
+                break;
+            }
+            Sleep(1000);
+        }
+
+        if (!fileCreated)
+        {
+            fprintf(stderr, "Timeout: KTX2 file not created after 60 seconds\n");
+        }
+
+        // Optional: quick KTX2 verification
+        if (fileCreated)
+        {
+            ktxTexture2* verify = nullptr;
+            KTX_error_code err = ktxTexture2_CreateFromNamedFile(ktxPath.string().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &verify);
+            if (err == KTX_SUCCESS && verify)
+            {
+                printf("KTX2 verified: supercompression = %s, levels = %u, format = %u\n",
+                    (verify->supercompressionScheme == KTX_SS_ZSTD ? "ZSTD" : "None"),
+                    verify->numLevels,
+                    verify->vkFormat);
+                ktxTexture2_Destroy(verify);
+            }
+            else
+            {
+                fprintf(stderr, "KTX2 verification failed: %s\n", ktxErrorString(err));
+            }
+        }
     }
 }
 
-// Full implementation of ConvertMipToRGBA8 (fixes missing function error)
+// ?? ExportToPng (your improved version — full) ???????????????????????????????????????
+
+void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, uint32_t mipLevel, bool flipY)
+{
+    if (mipLevel >= texture.mipMapLevels) {
+        std::cerr << "Invalid mip level " << mipLevel << " (max " << texture.mipMapLevels << ")\n";
+        return;
+    }
+
+    VmaAllocator allocator = bufferSystem.vmaAllocator;
+
+    uint32_t width = std::max(1u, static_cast<uint32_t>(texture.width) >> mipLevel);
+    uint32_t height = std::max(1u, static_cast<uint32_t>(texture.height) >> mipLevel);
+
+    size_t bytesPerPixel = 4;
+    bool is16Bit = false;
+    bool is32BitFloat = false;
+
+    if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
+        texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
+        texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) {
+        bytesPerPixel = 16;
+        is32BitFloat = true;
+        std::cerr << "32-bit float formats not supported for PNG export yet\n";
+        return;
+    }
+    else if (texture.textureByteFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
+        texture.textureByteFormat <= VK_FORMAT_R16G16B16A16_SFLOAT) {
+        bytesPerPixel = 8;
+        is16Bit = true;
+    }
+
+    VkImageMemoryBarrier barrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = 0,
+        .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+        .oldLayout = texture.textureImageLayout,
+        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = texture.textureImage,
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = mipLevel,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        }
+    };
+
+    if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_GENERAL)
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    else
+        barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+
+    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+    VkBufferCreateInfo bufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = static_cast<VkDeviceSize>(width) * height * bytesPerPixel,
+        .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    };
+
+    VmaAllocationCreateInfo allocInfo = {
+        .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+        .usage = VMA_MEMORY_USAGE_AUTO
+    };
+
+    VkBuffer stagingBuffer = VK_NULL_HANDLE;
+    VmaAllocation stagingAlloc = VK_NULL_HANDLE;
+    VmaAllocationInfo allocInfoOut{};
+    VULKAN_THROW_IF_FAIL(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocInfoOut));
+
+    VkBufferImageCopy region = {
+        .bufferOffset = 0,
+        .bufferRowLength = 0,
+        .bufferImageHeight = 0,
+        .imageSubresource = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .mipLevel = mipLevel,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        },
+        .imageOffset = {0, 0, 0},
+        .imageExtent = {width, height, 1}
+    };
+
+    vkCmdCopyImageToBuffer(cmd, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        stagingBuffer, 1, &region);
+
+    vulkanSystem.EndSingleUseCommand(cmd);
+
+    void* mapped = allocInfoOut.pMappedData;
+    bool needsUnmap = false;
+    if (!mapped) {
+        VULKAN_THROW_IF_FAIL(vmaMapMemory(allocator, stagingAlloc, &mapped));
+        needsUnmap = true;
+    }
+
+    std::vector<unsigned char> pngData;
+
+    if (!is16Bit) {
+        // 8-bit RGBA
+        std::vector<uint8_t> pixels(width * height * 4);
+
+        const uint8_t* src = static_cast<const uint8_t*>(mapped);
+        uint8_t* dst = pixels.data();
+
+        for (uint32_t y = 0; y < height; ++y) {
+            uint32_t srcY = flipY ? (height - 1 - y) : y;
+            const uint8_t* srcRow = src + srcY * width * 4;
+            uint8_t* dstRow = dst + y * width * 4;
+            memcpy(dstRow, srcRow, width * 4);
+        }
+
+        unsigned error = lodepng::encode(pngData, pixels.data(), width, height, LCT_RGBA, 8);
+        if (error) std::cerr << "lodepng encode error (8-bit): " << lodepng_error_text(error) << "\n";
+    }
+    else {
+        // 16-bit RGBA (PNG big-endian)
+        std::vector<uint16_t> pixels(width * height * 4);
+
+        const uint16_t* src = static_cast<const uint16_t*>(mapped);
+        uint16_t* dst = pixels.data();
+
+        for (uint32_t y = 0; y < height; ++y) {
+            uint32_t srcY = flipY ? (height - 1 - y) : y;
+            const uint16_t* srcRow = src + srcY * width * 4;
+            uint16_t* dstRow = dst + y * width * 4;
+
+            for (uint32_t x = 0; x < width * 4; ++x) {
+                uint16_t val = srcRow[x];
+                dstRow[x] = ((val >> 8) & 0xFF) | ((val & 0xFF) << 8);
+            }
+        }
+
+        unsigned error = lodepng::encode(pngData,
+            reinterpret_cast<unsigned char*>(pixels.data()),
+            width, height, LCT_RGBA, 16);
+        if (error) std::cerr << "lodepng encode error (16-bit): " << lodepng_error_text(error) << "\n";
+    }
+
+    if (!pngData.empty()) {
+        unsigned saveError = lodepng::save_file(pngData, fileName);
+        if (saveError) {
+            std::cerr << "Failed to save PNG: " << lodepng_error_text(saveError) << "\n";
+        }
+        else {
+            std::cout << "Exported PNG: " << fileName << "\n";
+        }
+    }
+
+    if (needsUnmap) vmaUnmapMemory(allocator, stagingAlloc);
+    vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
+}
+
+// ?? Your existing helper functions (unchanged) ??????????????????????????????????
+
 std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
     uint32_t width, uint32_t height,
     VkFormat srcFormat)
@@ -273,7 +434,6 @@ std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
                 }
                 else if (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT)
                 {
-                    // Simple half-float to float conversion (you can replace with a proper function)
                     uint32_t sign = (val >> 15) & 0x01;
                     uint32_t exp = (val >> 10) & 0x1F;
                     uint32_t mant = val & 0x3FF;

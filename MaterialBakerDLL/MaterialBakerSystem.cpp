@@ -73,7 +73,7 @@ void MaterialBakerSystem::Run()
            Draw(commandBuffer);
        // vulkanSystem.EndFrame(commandBuffer);
            textureBakerSystem.BakeTexture(finalFilePath.string(), vulkanRenderPass.RenderPassId);
-           fileSystem.ExportTexture(vulkanRenderPass.RenderPassId, finalFilePath.string());
+          
 
            CleanInputResources();
            textureBindingList.clear();

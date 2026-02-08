@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)External\ktx\include;$(SolutionDir)External\bc7enc_rdo;$(SolutionDir)External\BasisUniversal\transcoder;$(SolutionDir)External\BasisUniversal\encoder;$(SolutionDir)External\BasisUniversal;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\entt\src\;$(SolutionDir)External\VulkanMemoryAllocator\include;$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)\External\glfw;$(SolutionDir)\External\glfw\include\GLFW;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\glm;$(SolutionDir)External\;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)External\ktx\build\Release;$(SolutionDir)External\BasisUniversal\Debug;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\lib\x64-v142;$(SolutionDir)\External\glfw\src\Release;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)External\LodePNG;$(SolutionDir)fmt\include;$(SolutionDir)External\NVIDIA Texture Tools\include;$(SolutionDir)External\ktx\include;$(SolutionDir)External\bc7enc_rdo;$(SolutionDir)External\BasisUniversal\transcoder;$(SolutionDir)External\BasisUniversal\encoder;$(SolutionDir)External\BasisUniversal;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include;$(SolutionDir)External\entt\src\;$(SolutionDir)External\VulkanMemoryAllocator\include;$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)\External\glfw;$(SolutionDir)\External\glfw\include\GLFW;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\nlohmann\include;$(SolutionDir)External\ImPlot;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\glm;$(SolutionDir)External\;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)fmt\build\Release;$(SolutionDir)External\NVIDIA Texture Tools\lib\x64-v142;$(SolutionDir)External\ktx\build\Release;$(SolutionDir)External\BasisUniversal\Debug;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\lib\x64-v142;$(SolutionDir)\External\glfw\src\Release;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,15 +106,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;ComponentDLL.lib;dxcompiler.lib;ktx.lib;ktx_read.lib;basisu_encoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;ComponentDLL.lib;dxcompiler.lib;ktx.lib;ktx_read.lib;basisu_encoder.lib;nvtt30205.lib;fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,7 +136,12 @@
   <ItemGroup>
     <ClCompile Include="..\External\bc7enc_rdo1\rgbcx.cpp" />
     <ClCompile Include="..\External\bc7enc_rdo\bc7enc.cpp" />
+    <ClCompile Include="..\External\LodePNG\lodepng.cpp" />
+    <ClCompile Include="..\External\LodePNG\lodepng_fuzzer.cpp" />
+    <ClCompile Include="..\External\LodePNG\lodepng_unittest.cpp" />
+    <ClCompile Include="..\External\LodePNG\lodepng_util.cpp" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
+    <ClCompile Include="..\External\stb\stb_vorbis.c" />
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="MaterialBakerSystem.cpp" />
     <ClCompile Include="TextureBakerSystem.cpp" />
@@ -146,7 +152,29 @@
     <ClInclude Include="..\External\bc7enc_rdo\bc7enc.h" />
     <ClInclude Include="..\External\ktx\include\ktx.h" />
     <ClInclude Include="..\External\ktx\include\ktxvulkan.h" />
+    <ClInclude Include="..\External\LodePNG\lodepng.h" />
+    <ClInclude Include="..\External\LodePNG\lodepng_util.h" />
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
+    <ClInclude Include="..\External\stb\stb_connected_components.h" />
+    <ClInclude Include="..\External\stb\stb_c_lexer.h" />
+    <ClInclude Include="..\External\stb\stb_divide.h" />
+    <ClInclude Include="..\External\stb\stb_ds.h" />
+    <ClInclude Include="..\External\stb\stb_dxt.h" />
+    <ClInclude Include="..\External\stb\stb_easy_font.h" />
+    <ClInclude Include="..\External\stb\stb_herringbone_wang_tile.h" />
+    <ClInclude Include="..\External\stb\stb_hexwave.h" />
+    <ClInclude Include="..\External\stb\stb_image.h" />
+    <ClInclude Include="..\External\stb\stb_image_resize2.h" />
+    <ClInclude Include="..\External\stb\stb_image_write.h" />
+    <ClInclude Include="..\External\stb\stb_include.h" />
+    <ClInclude Include="..\External\stb\stb_leakcheck.h" />
+    <ClInclude Include="..\External\stb\stb_perlin.h" />
+    <ClInclude Include="..\External\stb\stb_rect_pack.h" />
+    <ClInclude Include="..\External\stb\stb_sprintf.h" />
+    <ClInclude Include="..\External\stb\stb_textedit.h" />
+    <ClInclude Include="..\External\stb\stb_tilemap_editor.h" />
+    <ClInclude Include="..\External\stb\stb_truetype.h" />
+    <ClInclude Include="..\External\stb\stb_voxel_render.h" />
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h" />
     <ClInclude Include="MaterialBakerSystem.h" />
     <ClInclude Include="TextureBakerSystem.h" />

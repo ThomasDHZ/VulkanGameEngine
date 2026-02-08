@@ -68,6 +68,7 @@ private:
 
     RawMipReadback ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel);
     void           DestroyVMATextureBuffer(RawMipReadback& data);
+    void           ExportToPng(const String& baseFilePath, Texture& texture, uint32_t mipLevel = 0, bool flipY = true);
     std::vector<uint8_t> CompressToBC7Ultra(
         const uint8_t* rgbaData,       // input: width × height × 4 bytes, RGBA8, row-major
         uint32_t width,
