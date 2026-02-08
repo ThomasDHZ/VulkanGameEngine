@@ -22,9 +22,6 @@
 [submodule "External/VulkanCS"]
 	path = External/VulkanCS
 	url = https://github.com/ThomasDHZ/VulkanCS.git
-[submodule "External/SPIRV-Reflect"]
-	path = External/SPIRV-Reflect
-	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
 [submodule "External/VulkanMemoryAllocator"]
 	path = External/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
@@ -46,3 +43,6 @@
 [submodule "External/BasisUniversal"]
 	path = External/BasisUniversal
 	url = https://github.com/BinomialLLC/basis_universal.git
+[submodule "External/SPIRV-Reflect"]
+	path = External/SPIRV-Reflect
+	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
