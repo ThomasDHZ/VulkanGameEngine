@@ -123,6 +123,12 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\ktx\include\ktx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ktx\include\ktxvulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">

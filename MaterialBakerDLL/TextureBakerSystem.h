@@ -2,6 +2,8 @@
 #include <DLL.h>
 #include <TextureSystem.h>
 #include <MaterialSystem.h>
+#include <ktx/include/ktx.h>
+#include <ktx/include/ktxvulkan.h>
 
 enum class TextureCompressionType {
     None,          // Raw/uncompressed (large files)
@@ -66,13 +68,7 @@ private:
 
     RawMipReadback ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel);
     void           DestroyVMATextureBuffer(RawMipReadback& data);
-    std::vector<uint8_t> CompressToBC7(
-        const void* rgbaData,
-        size_t sizeBytes,
-        uint32_t width,
-        uint32_t height,
-        bool isNormalMap = false,
-        bool highQuality = false);
+    std::vector<uint8_t> CompressWithBasisUASTC(const void* rgbaData, size_t sizeBytes, uint32_t width, uint32_t height, bool isNormalMap = false);
 public:
     DLL_EXPORT void BakeTexture(const String& baseFilePath, VkGuid renderPassId);
 };

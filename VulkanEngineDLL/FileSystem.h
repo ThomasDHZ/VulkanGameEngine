@@ -1,8 +1,8 @@
 #pragma once
 #include "Platform.h"
 #include "MemorySystem.h"
-#include <ktx/lib/include/ktx.h>
-#include <ktx/lib/include/ktxvulkan.h>
+#include <ktx/include/ktx.h>
+#include <ktx/include/ktxvulkan.h>
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
