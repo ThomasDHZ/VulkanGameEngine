@@ -2,7 +2,7 @@
   "Name": "BRDFRenderPass",
   "RenderPassId": "1c8acdab-f34f-41a1-977b-597ee9bd17ed",
   "RenderPipelineList": [ "Pipelines/BRDFPipeline.json" ],
-  "RenderPassResolution": [ 512, 512 ],
+  "RenderPassResolution": [ 256, 256 ],
   "SubPassCount": 1,
   "UseDefaultSwapChainResolution": false,
   "UseCubeMapMultiView": false,

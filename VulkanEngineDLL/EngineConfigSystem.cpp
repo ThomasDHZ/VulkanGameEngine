@@ -18,7 +18,8 @@
         TextureAssetRenderer(EngineBasePath + "../Assets/RenderPass/AssetCreatorRenderPass.json"),
         CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
         CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
-        CompiledShaderOutputDirectory("../Assets/Shaders/")
+        CompiledShaderOutputDirectory("../Assets/Shaders/"),
+        NvidiaTextureTool("C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe")
     {
 
     }
@@ -31,7 +32,8 @@
     TextureAssetRenderer(j.at("TextureAssetRenderer").get<String>()),
     CompilerLocation(j.at("CompilerLocation").get<String>()),
     CompilerBuildParams(j.at("CompilerBuildParams").get<String>()),
-    CompiledShaderOutputDirectory(j.at("CompiledShaderOutputDirectory").get<String>())
+    CompiledShaderOutputDirectory(j.at("CompiledShaderOutputDirectory").get<String>()),
+    NvidiaTextureTool(j.at("NvidiaTextureTool").get<String>())
     {
 
     }

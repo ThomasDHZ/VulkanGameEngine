@@ -67,18 +67,7 @@ private:
     Texture dummyTextureColor;      
     Texture dummyTextureNormal;   
 
-    void InitDummyAndSamplers();
-
-    VkSampler GetAlbedoMapSamplerSettings();
-    VkSampler GetNormalMapSamplerSettings();
-    VkSampler GetPackedORMMapSamplerSettings();
-    VkSampler GetParallaxMapSamplerSettings();
-    VkSampler GetAlphaMapSamplerSettings();
-    VkSampler GetThicknessMapSamplerSettings() { return GetPackedORMMapSamplerSettings(); }
-    VkSampler GetSubSurfaceScatteringMapSamplerSettings() { return GetPackedORMMapSamplerSettings(); }
-    VkSampler GetSheenMapSamplerSettings() { return GetPackedORMMapSamplerSettings(); }
-    VkSampler GetClearCoatMapSamplerSettings() { return GetPackedORMMapSamplerSettings(); }
-    VkSampler GetEmissionMapSamplerSettings() { return GetAlbedoMapSamplerSettings(); }
+    void      InitDummyAndSamplers();
 
 public:
     ShaderStructDLL shaderStruct;

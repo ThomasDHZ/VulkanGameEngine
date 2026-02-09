@@ -17,6 +17,7 @@
 #include "bc7enc.h"  // <-- your latest bc7enc.h from richgel999/bc7enc_rdo
 #include <shellapi.h>   // ShellExecuteA
 #include <windows.h>    // Sleep, etc.
+#include <EngineConfigSystem.h>
 
 namespace fs = std::filesystem;
 
@@ -36,7 +37,7 @@ std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
     uint32_t width, uint32_t height,
     VkFormat srcFormat);
 
-void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPassId)
+void TextureBakerSystem::BakeTexture(const String& materialLoader, const String& baseFilePath, VkGuid renderPassId)
 {
     Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
     if (attachmentTextureList.empty())
@@ -45,10 +46,23 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         return;
     }
 
-    const char* nvtt_exe = R"(C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\nvtt_export.exe)";
+    nlohmann::json exportJson;
+    nlohmann::json importJson = fileSystem.LoadJsonFile(materialLoader.c_str());
 
+    exportJson["MaterialId"] = importJson["MaterialId"];
+
+    configSystem.NvidiaTextureTool;
     for (size_t x = 0; x < attachmentTextureList.size(); ++x)
     {
+        String textureAttachment;
+        if (x == 0)      textureAttachment = "AlbedoData";
+        else if (x == 1) textureAttachment = "NormalData";
+        else if (x == 2) textureAttachment = "PackedMROData";
+        else if (x == 3) textureAttachment = "PackedSheenSSSData";
+        else if (x == 4) textureAttachment = "UnusedData";
+        else if (x == 5) textureAttachment = "TextureFilePath";
+        else             textureAttachment = "_Attachment" + std::to_string(x);
+
         Texture importTexture = attachmentTextureList[x];
         VkFormat srcFormat = importTexture.textureByteFormat;
 
@@ -71,8 +85,7 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             printf("Warning: HDR float format on attachment %zu — clamped to 0-1 for BC7\n", x);
         }
 
-        // Step 1: Read and convert all mips to RGBA8 (unchanged)
-        std::vector<std::vector<uint8_t>> allMipRGBA8(importTexture.mipMapLevels);
+        Vector<Vector<uint8_t>> allMipRGBA8(importTexture.mipMapLevels);
         bool readSuccess = true;
 
         for (uint32_t mip = 0; mip < importTexture.mipMapLevels && readSuccess; ++mip)
@@ -89,7 +102,7 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             uint32_t mipWidth = std::max(1u, static_cast<uint32_t>(importTexture.width) >> mip);
             uint32_t mipHeight = std::max(1u, static_cast<uint32_t>(importTexture.height) >> mip);
 
-            std::vector<uint8_t> rgba8Data = ConvertMipToRGBA8(raw.data, raw.size, mipWidth, mipHeight, srcFormat);
+            Vector<uint8_t> rgba8Data = ConvertMipToRGBA8(raw.data, raw.size, mipWidth, mipHeight, srcFormat);
             if (rgba8Data.empty())
             {
                 fprintf(stderr, "ConvertMipToRGBA8 failed for mip %u\n", mip);
@@ -107,7 +120,6 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
             continue;
         }
 
-        // Naming
         String suffix;
         if (x == 0)      suffix = "_Albedo";
         else if (x == 1) suffix = "_NormalHeight";
@@ -116,126 +128,68 @@ void TextureBakerSystem::BakeTexture(const String& baseFilePath, VkGuid renderPa
         else if (x == 4) suffix = "_Unused";
         else if (x == 5) suffix = "_Emission";
         else             suffix = "_Attachment" + std::to_string(x);
+        String baseName = suffix.substr(1);
 
-        String baseName = suffix.substr(1);  // Albedo, NormalHeight, etc.
-
-        // Step 2: Export PNG preview (mip 0) directly to Assets\Textures
         String search = "Import";
         String textureName = baseFilePath;
         size_t find = baseFilePath.find(search);
         if (find != std::string::npos) 
         {
-            textureName.replace(find, search.size(), ""); // Replace with desired string
+            textureName.replace(find, search.size(), "");
         }
         fs::path previewPngPath = textureName + suffix + ".png";
-        ExportToPng(previewPngPath.string(), importTexture, 0, false);  // mip 0 for preview
+        ExportToPng(previewPngPath.string(), importTexture, 0, false); 
 
-        // Step 3: Compress to KTX2 using NVTT (input = preview PNG, output = same folder)
         fs::path ktxPath = textureName + suffix + ".ktx2";
         bool generateMips = (attachmentTextureList[x].mipMapLevels > 1);
-        std::string args = fmt::format(
-            "\"{}\" -o \"{}\" --format bc7 --quality highest --zcmp 22",
-            previewPngPath.string(),
-            ktxPath.string()
-        );
-
-        if (useSRGB) {
-            args += " --export-transfer-function srgb";
-        }
-        else {
-            args += " --export-transfer-function linear";
-        }
-
+        String args = fmt::format("\"{}\" -o \"{}\" " "--format bc7 " "--quality production " "--zcmp 22 " "--export-transfer-function {}", previewPngPath.string(), ktxPath.string(), useSRGB ? "srgb" : "linear");
         if (isNormalMap) {
             args += " --normal-alpha unchanged";
         }
-
-        if (generateMips) 
-        {
-            args += " --mips --mip-filter kaiser --mip-gamma-correct --mip-pre-alpha";
-            // Optional: only if you have cutout/alpha-test textures
-            // args += " --mip-scale-alpha";
+        if (generateMips) {
+            args += " --mip-filter kaiser --mip-gamma-correct --mip-pre-alpha";
         }
-
-        // Optional: Maximize CPU threads (good since no CUDA)
-        _putenv("OMP_NUM_THREADS=24");  // Adjust to your CPU core count
+        else 
+        {
+            args += " --no-mips --max-mip-count 1";
+        }
 
         printf("Launching NVTT with args:\n%s\n", args.c_str());
-
-        HINSTANCE hInst = ShellExecuteA(
-            NULL,
-            "open",
-            nvtt_exe,
-            args.c_str(),
-            NULL,
-            SW_HIDE  // Change to SW_SHOW temporarily if you want to see NVTT console
-        );
-
-        if ((intptr_t)hInst <= 32) {
+        HINSTANCE hInst = ShellExecuteA(NULL, "open", R"(configSystem.NvidiaTextureTool)", args.c_str(), NULL, SW_SHOW);
+        if ((intptr_t)hInst <= 32) 
+        {
             fprintf(stderr, "ShellExecuteA failed with code %ld\n", (intptr_t)hInst);
         }
-        else {
-            printf("NVTT launched successfully\n");
 
-            // Poll for valid file
-            bool fileCreated = false;
-            for (int i = 0; i < 60; ++i) {
-                if (fs::exists(ktxPath) && fs::file_size(ktxPath) > 1024) {  // >1KB
-                    fileCreated = true;
-                    printf("NVTT succeeded (file detected, size %llu bytes) ? %s\n",
-                        fs::file_size(ktxPath), ktxPath.string().c_str());
-                    break;
-                }
-                Sleep(1000);
-            }
+        exportJson[textureAttachment]["TextureFilePath"] = ktxPath;
+        exportJson[textureAttachment]["TextureId"] = importJson[textureAttachment]["TextureId"];
+        exportJson[textureAttachment]["TextureByteFormat"] = importTexture.textureByteFormat;
+        exportJson[textureAttachment]["SampleCount"] = importTexture.mipMapLevels;
+        exportJson[textureAttachment]["ImageType"] = 1;
+        exportJson[textureAttachment]["TextureType"] = 1;
+        exportJson[textureAttachment]["MipMapCount"] = importJson[textureAttachment]["MipMapCount"];
+        exportJson[textureAttachment]["IsSkyBox"] = importJson[textureAttachment]["IsSkyBox"];
+        exportJson[textureAttachment] = TextureSamplers::GetAlbedoMaterialSamplerSettings(exportJson[textureAttachment]);
+    }
 
-            if (!fileCreated) {
-                fprintf(stderr, "Timeout: KTX2 file not created or empty\n");
-            }
-        }
-
-        printf("NVTT launched (ShellExecuteA success)\n");
-
-        // Poll for output file (wait up to 60 seconds)
-        bool fileCreated = false;
-        for (int i = 0; i < 60; ++i)
+    String outputFilePath = "asdas.json";
+    std::ofstream file(baseFilePath);
+    try {
+        std::ofstream file(outputFilePath.c_str());
+        if (!file.is_open()) 
         {
-            if (fs::exists(ktxPath))
-            {
-                fileCreated = true;
-                printf("NVTT succeeded (file detected) ? %s\n", ktxPath.string().c_str());
-                break;
-            }
-            Sleep(1000);
+            fprintf(stderr, "Failed to open file for writing: %s\n", outputFilePath.c_str());
         }
 
-        if (!fileCreated)
-        {
-            fprintf(stderr, "Timeout: KTX2 file not created after 60 seconds\n");
-        }
+        file << std::setw(4) << exportJson << std::endl;
+        file.close();
 
-        // Optional: quick KTX2 verification
-        if (fileCreated)
-        {
-            ktxTexture2* verify = nullptr;
-            KTX_error_code err = ktxTexture2_CreateFromNamedFile(ktxPath.string().c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &verify);
-            if (err == KTX_SUCCESS && verify)
-            {
-                printf("KTX2 verified: supercompression = %s, levels = %u, format = %u\n",
-                    (verify->supercompressionScheme == KTX_SS_ZSTD ? "ZSTD" : "None"),
-                    verify->numLevels,
-                    verify->vkFormat);
-                ktxTexture2_Destroy(verify);
-            }
-            else
-            {
-                fprintf(stderr, "KTX2 verification failed: %s\n", ktxErrorString(err));
-            }
-        }
+        printf("Material sampler settings saved to: %s\n", outputFilePath.c_str());
+    }
+    catch (const std::exception& e) {
+        fprintf(stderr, "JSON write error: %s\n", e.what());
     }
 }
-
-// ?? ExportToPng (your improved version — full) ???????????????????????????????????????
 
 void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, uint32_t mipLevel, bool flipY)
 {
@@ -397,8 +351,6 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
     if (needsUnmap) vmaUnmapMemory(allocator, stagingAlloc);
     vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
 }
-
-// ?? Your existing helper functions (unchanged) ??????????????????????????????????
 
 std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
     uint32_t width, uint32_t height,

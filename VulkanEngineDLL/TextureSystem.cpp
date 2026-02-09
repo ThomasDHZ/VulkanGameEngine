@@ -49,7 +49,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 				.width = width,
 				.height = height,
 				.depth = 1,
-				.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+				.mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
 				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
 				.textureByteFormat = textureLoader.TextureByteFormat,
 				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -68,7 +68,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 				.width = width,
 				.height = height,
 				.depth = 1,
-				.mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+				.mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
 				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
 				.textureByteFormat = textureLoader.TextureByteFormat,
 				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -78,8 +78,6 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 		}
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 	}
-
-	
 
 	VkImageCreateInfo imageCreateInfo =
 	{
@@ -133,35 +131,22 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		return FindTexture(textureLoader.TextureId);
 	}
 
-	String path = textureLoader.TextureFilePath.front(); // assuming single file for now
+	String path = textureLoader.TextureFilePath.front();
 	if (fileSystem.GetFileExtention(path.c_str()) != "ktx2")
 	{
-		return CreateTexture(textureLoader); // fallback for non-ktx2
+		return CreateTexture(textureLoader);
 	}
 
-	// ?? Official KTX loading ????????????????????????????????????????????????
 	ktxTexture* kTexture = nullptr;
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(
-		path.c_str(),
-		KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
-		&kTexture
-	);
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
 	if (result != KTX_SUCCESS)
 	{
 		std::cerr << "ktxTexture_CreateFromNamedFile failed: " << ktxErrorString(result) << std::endl;
-		return {}; // or fallback texture
+		return {}; 
 	}
 
-	// Prepare Vulkan device info
 	ktxVulkanDeviceInfo vdi{};
-	result = ktxVulkanDeviceInfo_Construct(
-		&vdi,
-		vulkanSystem.PhysicalDevice,
-		vulkanSystem.Device,
-		vulkanSystem.GraphicsQueue,
-		vulkanSystem.CommandPool,
-		nullptr
-	);
+	result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
 	if (result != KTX_SUCCESS)
 	{
 		std::cerr << "ktxVulkanDeviceInfo_Construct failed: " << ktxErrorString(result) << std::endl;
@@ -169,16 +154,8 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		return {};
 	}
 
-	// Upload to Vulkan
 	ktxVulkanTexture vkTex{};
-	result = ktxTexture_VkUploadEx(
-		kTexture,
-		&vdi,
-		&vkTex,
-		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	);
+	result = ktxTexture_VkUploadEx(kTexture, &vdi, &vkTex, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	if (result != KTX_SUCCESS)
 	{
 		std::cerr << "ktxTexture_VkUploadEx failed: " << ktxErrorString(result) << std::endl;
@@ -186,17 +163,9 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		ktxTexture_Destroy(kTexture);
 		return {};
 	}
-
-	// We no longer need the ktxTexture object after upload
 	ktxTexture_Destroy(kTexture);
 
-	// ?? Create per-mip image views (correct way) ???????????????????????????
-	VkImageAspectFlags aspect = (vkTex.imageFormat >= VK_FORMAT_D16_UNORM &&
-		vkTex.imageFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT)
-		? VK_IMAGE_ASPECT_DEPTH_BIT
-		: VK_IMAGE_ASPECT_COLOR_BIT;
-
-	// Add stencil if present
+	VkImageAspectFlags aspect = (vkTex.imageFormat >= VK_FORMAT_D16_UNORM && vkTex.imageFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	if (vkTex.imageFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
 		vkTex.imageFormat == VK_FORMAT_D24_UNORM_S8_UINT)
 	{
@@ -206,53 +175,62 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	Vector<VkImageView> imageViewList;
 	for (uint32_t mip = 0; mip < vkTex.levelCount; ++mip)
 	{
-		VkImageViewCreateInfo viewInfo{};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = vkTex.image;
-		viewInfo.viewType = (vkTex.layerCount == 6 && vkTex.depth == 1)
-			? VK_IMAGE_VIEW_TYPE_CUBE
-			: VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = vkTex.imageFormat;
-		viewInfo.subresourceRange.aspectMask = aspect;
-		viewInfo.subresourceRange.baseMipLevel = mip;
-		viewInfo.subresourceRange.levelCount = 1;           // ? important: 1 level per view
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = vkTex.layerCount;
+		VkImageViewCreateInfo viewInfo
+		{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = vkTex.image,
+			.viewType = (vkTex.layerCount == 6 && vkTex.depth == 1) ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
+			.format = vkTex.imageFormat,
+			.subresourceRange
+			{
+				.aspectMask = aspect,
+				.baseMipLevel = mip,
+				.levelCount = 1,
+				.baseArrayLayer = 0,
+				.layerCount = vkTex.layerCount
+			}
+		};
 
 		VkImageView imageView = VK_NULL_HANDLE;
 		if (vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
 		{
 			std::cerr << "Failed to create image view for mip " << mip << std::endl;
-			// cleanup previous views...
+			for (int x = 0; x < imageViewList.size(); x++)
+			{
+				vulkanSystem.DestroyImageView(vulkanSystem.Device, &imageViewList[x]);
+			}
 			break;
 		}
 		imageViewList.push_back(imageView);
 	}
 
-	// ?? Sampler ?????????????????????????????????????????????????????????????
 	VkSampler imageSampler = VK_NULL_HANDLE;
 	if (vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &imageSampler) != VK_SUCCESS)
 	{
 		std::cerr << "Failed to create sampler" << std::endl;
-		// cleanup...
+		for (int x = 0; x < imageViewList.size(); x++)
+		{
+			vulkanSystem.DestroyImageView(vulkanSystem.Device, &imageViewList[x]);
+		}
 	}
 
-	// ?? Final texture object ????????????????????????????????????????????????
-	Texture texture{};
-	texture.textureGuid = textureLoader.TextureId;
-	texture.textureIndex = static_cast<uint32_t>(TextureList.size());
-	texture.width = vkTex.width;
-	texture.height = vkTex.height;
-	texture.depth = vkTex.depth;
-	texture.mipMapLevels = vkTex.levelCount;
-	texture.textureImage = vkTex.image;
-	texture.textureViewList = std::move(imageViewList);
-	texture.textureSampler = imageSampler;
-	texture.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture;
-	texture.textureByteFormat = vkTex.imageFormat;
-	texture.textureImageLayout = vkTex.imageLayout;
-	texture.sampleCount = VK_SAMPLE_COUNT_1_BIT;
-
+	Texture texture
+	{
+		.textureGuid = textureLoader.TextureId,
+		.textureIndex = static_cast<uint32_t>(TextureList.size()),
+		.width = static_cast<int>(vkTex.width),
+		.height = static_cast<int>(vkTex.height),
+		.depth = static_cast<int>(vkTex.depth),
+		.mipMapLevels = vkTex.levelCount,
+		.textureImage = vkTex.image,
+		.textureViewList = std::move(imageViewList),
+		.textureSampler = imageSampler,
+		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+		.textureByteFormat = vkTex.imageFormat,
+		.textureImageLayout = vkTex.imageLayout,
+		.sampleCount = VK_SAMPLE_COUNT_1_BIT
+	};
+		
 	if (vkTex.layerCount == 6 && vkTex.depth == 1)
 	{
 		CubeMap = texture;
@@ -263,12 +241,6 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	}
 
 	ktxVulkanDeviceInfo_Destruct(&vdi);
-
-	printf("Loaded KTX2: %s (%dx%d, %u mips, format: %d, supercompressed: %s)\n",
-		path.c_str(), vkTex.width, vkTex.height, vkTex.levelCount,
-		vkTex.imageFormat,
-		(textureLoader.UseMipMaps ? "yes" : "no")); // you can query supercompression if needed
-
 	return texture;
 }
 

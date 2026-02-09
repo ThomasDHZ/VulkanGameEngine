@@ -145,6 +145,7 @@
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="MaterialBakerSystem.cpp" />
     <ClCompile Include="TextureBakerSystem.cpp" />
+    <ClCompile Include="TextureSamplers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include\nvtt\nvtt.h" />
@@ -178,6 +179,7 @@
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h" />
     <ClInclude Include="MaterialBakerSystem.h" />
     <ClInclude Include="TextureBakerSystem.h" />
+    <ClInclude Include="TextureSamplers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

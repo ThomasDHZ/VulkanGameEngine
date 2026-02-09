@@ -22,11 +22,10 @@
     "TextureFilePath": [ "ImportTextures/MegaManShot.png" ],
     "TextureId": "cf0daea4-871d-4137-a9f9-8c6fda795325",
     "TextureByteFormat": 37,
-    "UsingSRGBFormat": false,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
-    "UseMipMaps": false,
+    "MipMapCount": 1,
     "IsSkyBox": false,
     "SamplerCreateInfo": {
       "SType": 31,

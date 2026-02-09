@@ -19,7 +19,7 @@ public:
     const String CompilerLocation;
     const String CompilerBuildParams;
     const String CompiledShaderOutputDirectory;
-
+    const String NvidiaTextureTool;
 #else
      ivec2 WindowResolution;
      String EngineBasePath;

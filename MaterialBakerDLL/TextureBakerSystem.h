@@ -4,6 +4,7 @@
 #include <MaterialSystem.h>
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
+#include "TextureSamplers.h"
 
 enum class TextureCompressionType {
     None,          // Raw/uncompressed (large files)
@@ -76,7 +77,7 @@ private:
         bool perceptual,
         bool isNormalMap);
 public:
-    DLL_EXPORT void BakeTexture(const String& baseFilePath, VkGuid renderPassId);
+    DLL_EXPORT void BakeTexture(const String& materialLoader, const String& baseFilePath, VkGuid renderPassId);
 };
 
 extern DLL_EXPORT TextureBakerSystem& textureBakerSystem;

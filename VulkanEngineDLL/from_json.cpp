@@ -409,9 +409,8 @@ namespace nlohmann
         j.at("TextureId").get_to(model.TextureId);
         j.at("ImageType").get_to(model.ImageType);
         j.at("TextureByteFormat").get_to(model.TextureByteFormat);
-        j.at("UsingSRGBFormat").get_to(model.UsingSRGBFormat);
         j.at("TextureType").get_to(model.TextureType);
-        j.at("UseMipMaps").get_to(model.UseMipMaps);
+        j.at("MipMapCount").get_to(model.MipMapCount);
         j.at("IsSkyBox").get_to(model.IsSkyBox);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
     }

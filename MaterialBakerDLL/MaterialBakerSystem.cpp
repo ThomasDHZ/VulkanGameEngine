@@ -72,7 +72,7 @@ void MaterialBakerSystem::Run()
         VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
            Draw(commandBuffer);
        // vulkanSystem.EndFrame(commandBuffer);
-           textureBakerSystem.BakeTexture(finalFilePath.string(), vulkanRenderPass.RenderPassId);
+           textureBakerSystem.BakeTexture(materialPath, finalFilePath.string(), vulkanRenderPass.RenderPassId);
           
 
            CleanInputResources();
@@ -80,6 +80,7 @@ void MaterialBakerSystem::Run()
 
            std::cout << "Baked: " << src.filename() << std::endl;
     }
+
   /*      else
         {
             continue; 
@@ -184,27 +185,6 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader, size_t bin
         textureData.insert(textureData.end(), layerData.begin(), layerData.end());
     }
 
-    VkFormat detectedFormat = VK_FORMAT_UNDEFINED;
-    switch (textureChannels)
-    {
-    case 1: detectedFormat = VK_FORMAT_R8_UNORM; break;
-    case 2: detectedFormat = VK_FORMAT_R8G8_UNORM; break;
-    case 3: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8_SRGB : VK_FORMAT_R8G8B8_UNORM; break;
-    case 4: detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; break;
-    default:
-    {
-        std::cout << "[TextureSystem WARNING] Unsupported channel count: " << textureChannels << " for " << textureLoader.TextureFilePath[0] << std::endl;
-        detectedFormat = textureLoader.UsingSRGBFormat ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-        break;
-    }
-    }
-
-    VkFormat finalFormat = detectedFormat;
-    if (textureLoader.TextureByteFormat != VK_FORMAT_UNDEFINED)
-    {
-        finalFormat = textureLoader.TextureByteFormat;
-    }
-
     Texture texture = Texture
     {
         .textureGuid = textureLoader.TextureId,
@@ -212,9 +192,9 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader, size_t bin
         .width = width,
         .height = height,
         .depth = 1,
-        .mipMapLevels = textureLoader.UseMipMaps ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+        .mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
         .textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-        .textureByteFormat = finalFormat,
+        .textureByteFormat = textureLoader.TextureByteFormat,
         .textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         .sampleCount = VK_SAMPLE_COUNT_1_BIT,
         .colorChannels = static_cast<ColorChannelUsed>(textureChannels)
@@ -755,151 +735,6 @@ VkDescriptorImageInfo MaterialBakerSystem::GetTextureDescriptorbinding(Texture t
     };
 }
 
-VkSampler MaterialBakerSystem::GetAlbedoMapSamplerSettings()
-{
-    VkSamplerCreateInfo samplerCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = -0.5f,
-        .anisotropyEnable = VK_TRUE,
-        .maxAnisotropy = 16.0f,
-        .compareEnable = VK_FALSE,
-        .compareOp = VK_COMPARE_OP_ALWAYS,
-        .minLod = 0.0f,
-        .maxLod = VK_LOD_CLAMP_NONE,
-        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
-        .unnormalizedCoordinates = VK_FALSE
-    };
-
-    VkSampler sampler = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
-    return sampler;
-}
-
-VkSampler MaterialBakerSystem::GetNormalMapSamplerSettings()
-{
-    VkSamplerCreateInfo samplerCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = -0.75f,
-        .anisotropyEnable = VK_TRUE,
-        .maxAnisotropy = 16.0f,
-        .compareEnable = VK_FALSE,
-        .compareOp = VK_COMPARE_OP_ALWAYS,
-        .minLod = 0.0f,
-        .maxLod = VK_LOD_CLAMP_NONE,
-        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-        .unnormalizedCoordinates = VK_FALSE
-    };
-
-    VkSampler sampler = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
-    return sampler;
-}
-
-VkSampler MaterialBakerSystem::GetPackedORMMapSamplerSettings()
-{
-    VkSamplerCreateInfo samplerCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = 0.0f,
-        .anisotropyEnable = VK_TRUE,
-        .maxAnisotropy = 8.0f,
-        .compareEnable = VK_FALSE,
-        .compareOp = VK_COMPARE_OP_ALWAYS,
-        .minLod = 0.0f,
-        .maxLod = VK_LOD_CLAMP_NONE,
-        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-        .unnormalizedCoordinates = VK_FALSE
-    };
-
-    VkSampler sampler = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
-    return sampler;
-}
-
-VkSampler MaterialBakerSystem::GetParallaxMapSamplerSettings()
-{
-    VkSamplerCreateInfo samplerCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = -0.5f,
-        .anisotropyEnable = VK_TRUE,
-        .maxAnisotropy = 12.0f,
-        .compareEnable = VK_FALSE,
-        .compareOp = VK_COMPARE_OP_ALWAYS,
-        .minLod = 0.0f,
-        .maxLod = VK_LOD_CLAMP_NONE,
-        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-        .unnormalizedCoordinates = VK_FALSE
-    };
-
-    VkSampler sampler = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
-    return sampler;
-}
-
-VkSampler MaterialBakerSystem::GetAlphaMapSamplerSettings()
-{
-    VkSamplerCreateInfo samplerCreateInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = 0.0f,
-        .anisotropyEnable = VK_TRUE,
-        .maxAnisotropy = 8.0f,
-        .compareEnable = VK_FALSE,
-        .compareOp = VK_COMPARE_OP_ALWAYS,
-        .minLod = 0.0f,
-        .maxLod = VK_LOD_CLAMP_NONE,
-        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-        .unnormalizedCoordinates = VK_FALSE
-    };
-
-    VkSampler sampler = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &samplerCreateInfo, nullptr, &sampler));
-    return sampler;
-}
-
 void MaterialBakerSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
 {
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1015,11 +850,11 @@ void MaterialBakerSystem::InitDummyAndSamplers()
 {
     if (dummyTextureScalar.textureImage != VK_NULL_HANDLE) return;
 
-    cachedAlbedoSampler = GetAlbedoMapSamplerSettings();
-    cachedNormalSampler = GetNormalMapSamplerSettings();
-    cachedPackedORMSampler = GetPackedORMMapSamplerSettings();
-    cachedParallaxSampler = GetParallaxMapSamplerSettings();
-    cachedAlphaSampler = GetAlphaMapSamplerSettings();
+    cachedAlbedoSampler = TextureSamplers::GetImportAlbedoMapSamplerSettings();
+    cachedNormalSampler = TextureSamplers::GetImportNormalMapSamplerSettings();
+    cachedPackedORMSampler = TextureSamplers::GetImportPackedORMMapSamplerSettings();
+    cachedParallaxSampler = TextureSamplers::GetImportParallaxMapSamplerSettings();
+    cachedAlphaSampler = TextureSamplers::GetImportAlphaMapSamplerSettings();
 
     auto createDummy = [this](Texture& tex, VkFormat format, const Vector<byte>& data) {
         tex = Texture{};

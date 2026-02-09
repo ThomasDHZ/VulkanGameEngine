@@ -48,6 +48,9 @@
     <ClCompile Include="..\External\LodePNG\lodepng_util.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextureSamplers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaterialBakerSystem.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\LodePNG\lodepng_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureSamplers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
