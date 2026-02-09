@@ -24,19 +24,13 @@
     <ClCompile Include="TextureBakerSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\bc7enc_rdo1\rgbcx.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\bc7enc_rdo\bc7enc.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="TextureSamplers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\External\LodePNG\lodepng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,16 +38,10 @@
     <ClInclude Include="MaterialBakerSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\Program Files\NVIDIA Corporation\NVIDIA Texture Tools\include\nvtt\nvtt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextureBakerSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\bc7enc_rdo1\rgbcx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\bc7enc_rdo\bc7enc.h">
@@ -66,9 +54,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\LodePNG\lodepng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\LodePNG\lodepng_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextureSamplers.h">
