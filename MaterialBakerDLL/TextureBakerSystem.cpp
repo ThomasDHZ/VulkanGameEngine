@@ -1,21 +1,19 @@
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #define FMT_HEADER_ONLY
 
 #include "TextureBakerSystem.h"
+#include <EngineConfigSystem.h>
 #include <TextureSystem.h>
 #include <VulkanSystem.h>
 #include <BufferSystem.h>
-#include <algorithm>
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
+#include <algorithm>
 #include <thread>
 #include <fstream>
 #include <filesystem>
 #include <fmt/format.h>
-#include <lodepng.h>
 #include <shellapi.h>
 #include <windows.h> 
-#include <EngineConfigSystem.h>
 
 TextureBakerSystem& textureBakerSystem = TextureBakerSystem::Get();
 void TextureBakerSystem::BakeTexture(const String& materialLoader, const String& baseFilePath, VkGuid renderPassId)
@@ -231,13 +229,13 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
     uint32 width = std::max(1u, static_cast<uint32>(texture.width) >> mipLevel);
     uint32 height = std::max(1u, static_cast<uint32>(texture.height) >> mipLevel);
 
-    size_t bytesPerPixel = 4;
     bool is16Bit = false;
     bool is32BitFloat = false;
-
+    size_t bytesPerPixel = 4;
     if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
         texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
-        texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) {
+        texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) 
+    {
         bytesPerPixel = 16;
         is32BitFloat = true;
         std::cerr << "32-bit float formats not supported for PNG export yet\n";

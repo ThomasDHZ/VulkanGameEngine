@@ -1,17 +1,9 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#include <stb/stb_image_write.h>
-
 #include "MaterialBakerSystem.h"
-#include <ShaderSystem.h>
-#include <FileSystem.h>
 #include <EngineConfigSystem.h>
 #include <TextureSystem.h>
+#include <ShaderSystem.h>
+#include <FileSystem.h>
 #include <from_json.h>
-#include <stb_image_write.h>
-#include <lodepng.h>
-#include <from_json.h>
-#include <nvtt/nvtt.h>
 #include <regex>
 
 MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
@@ -54,88 +46,7 @@ void MaterialBakerSystem::Run()
             continue;
         }
     }
-    int a = 0;
 }
-
-//bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
-//{
-//    std::filesystem::path srcPath = materialPath;
-//    if (!std::filesystem::exists(srcPath)) 
-//    {
-//        printf("Source material file does not exist: %s\n", materialPath.c_str());
-//        return true; 
-//    }
-//
-//    std::filesystem::path dstPath = std::regex_replace(materialPath, std::regex("Import"), "");
-//    if (!std::filesystem::exists(dstPath)) 
-//    {
-//        printf("Destination file missing, update needed: %s\n", dstPath.string().c_str());
-//        return true;
-//    }
-//
-//    auto dstTime = std::filesystem::last_write_time(dstPath);
-//    nlohmann::json json;
-//    try 
-//    {
-//        json = fileSystem.LoadJsonFile(materialPath.c_str());
-//    }
-//    catch (const std::exception& e) 
-//    {
-//        fprintf(stderr, "Failed to load material JSON %s: %s\n", materialPath.c_str(), e.what());
-//        return true;
-//    }
-//
-//    auto is_newer = [&](const std::string& texPathStr) -> bool
-//        {
-//            if (texPathStr.empty()) return false;
-//            std::filesystem::path texPath = texPathStr;
-//
-//            if (texPath.is_relative())
-//            {
-//                texPath = srcPath.parent_path() / texPath;
-//            }
-//            if (!std::filesystem::exists(texPath))
-//            {
-//                printf("Texture missing (will force update): %s\n", texPath.string().c_str());
-//                return true;
-//            }
-//            return std::filesystem::last_write_time(texPath) > dstTime;
-//        };
-//
-//    if (is_newer(materialPath)) 
-//    {
-//        printf("Material JSON newer than baked file ? update needed\n");
-//        return true;
-//    }
-//
-//    static const std::vector<std::string> textureKeys = 
-//    {
-//        "AlbedoMap", "NormalMap", "MetallicMap", "RoughnessMap",
-//        "ThicknessMap", "SubSurfaceScatteringMap", "SheenMap",
-//        "ClearCoatMap", "AmbientOcclusionMap", "AlphaMap",
-//        "EmissionMap", "HeightMap"
-//    };
-//
-//    for (const auto& key : textureKeys) 
-//    {
-//        if (json.contains(key)) 
-//        {
-//            auto& texEntry = json[key];
-//            if (texEntry.contains("TextureFilePath") && texEntry["TextureFilePath"].is_array() && !texEntry["TextureFilePath"].empty())
-//            {
-//                String texPath = texEntry["TextureFilePath"][0].get<String>();
-//                if (is_newer(texPath)) 
-//                {
-//                    printf("Texture %s newer than baked file ? update needed\n", key.c_str());
-//                    return true;
-//                }
-//            }
-//        }
-//    }
-//
-//    printf("No update needed for %s\n", materialPath.c_str());
-//    return false;
-//}
 
 bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
 {

@@ -4,18 +4,8 @@
 #include <MaterialSystem.h>
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
+#include <lodepng.h>
 #include "TextureSamplers.h"
-
-enum class TextureCompressionType {
-    None,          // Raw/uncompressed (large files)
-    BC7,           // High-quality RGBA, desktop primary
-    BC1,           // RGB (DXT1/S3TC), no alpha or punch-through
-    BC3,           // RGBA (DXT5), with alpha
-    BC5,           // RG (normals, height maps)
-    ASTC_4x4,      // Mobile/high-end, variable block size
-    ETC2_RGBA,     // Broad mobile support
-    // Add more: PVRTC, etc. if needed
-};
 
 enum RenderPassAttachmentEnum
 {
