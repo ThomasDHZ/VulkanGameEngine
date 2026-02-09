@@ -67,6 +67,7 @@ private:
     Texture dummyTextureColor;      
     Texture dummyTextureNormal;   
 
+    bool      UpdateNeeded(const String& materialPath);
     void      InitDummyAndSamplers();
 
 public:

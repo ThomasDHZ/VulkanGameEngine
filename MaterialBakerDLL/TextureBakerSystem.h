@@ -17,6 +17,16 @@ enum class TextureCompressionType {
     // Add more: PVRTC, etc. if needed
 };
 
+enum RenderPassAttachmentEnum
+{
+    AlbedoAttachment,
+    NormalDataAttachment,
+    PackedMROAttachment,
+    PackedSheenSSSAttachment,
+    UnusedAttachment,
+    EmissionAttachment
+};
+
 struct RawMipReadback
 {
     void* data = nullptr;
@@ -67,15 +77,12 @@ private:
     TextureBakerSystem(TextureBakerSystem&&) = delete;
     TextureBakerSystem& operator=(TextureBakerSystem&&) = delete;
 
-    RawMipReadback ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel);
-    void           DestroyVMATextureBuffer(RawMipReadback& data);
-    void           ExportToPng(const String& baseFilePath, Texture& texture, uint32_t mipLevel = 0, bool flipY = true);
-    std::vector<uint8_t> CompressToBC7Ultra(
-        const uint8_t* rgbaData,       // input: width × height × 4 bytes, RGBA8, row-major
-        uint32_t width,
-        uint32_t height,
-        bool perceptual,
-        bool isNormalMap);
+    Vector<byte>    ConvertMipToRGBA8(const void* rawData, size_t rawSize, uint32 width, uint32 height, VkFormat srcFormat);
+    String          GetAttachmentSuffix(uint x);
+    RawMipReadback  ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel);
+    void            DestroyVMATextureBuffer(RawMipReadback& data);
+    void            ExportToPng(const String& fileName, Texture& texture, uint32 mipLevel = 0, bool flipY = true);
+
 public:
     DLL_EXPORT void BakeTexture(const String& materialLoader, const String& baseFilePath, VkGuid renderPassId);
 };

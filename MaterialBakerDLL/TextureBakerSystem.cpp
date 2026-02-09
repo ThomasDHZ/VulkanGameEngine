@@ -12,59 +12,51 @@
 #include <fstream>
 #include <filesystem>
 #include <fmt/format.h>
-#include "stb_image_write.h"
 #include <lodepng.h>
-#include "bc7enc.h"  // <-- your latest bc7enc.h from richgel999/bc7enc_rdo
-#include <shellapi.h>   // ShellExecuteA
-#include <windows.h>    // Sleep, etc.
+#include <shellapi.h>
+#include <windows.h> 
 #include <EngineConfigSystem.h>
 
-namespace fs = std::filesystem;
-
 TextureBakerSystem& textureBakerSystem = TextureBakerSystem::Get();
-
-namespace {
-    struct BC7InitGuard {
-        BC7InitGuard() {
-            bc7enc_compress_block_init();
-            printf("bc7enc tables initialized\n");
-        }
-    } g_bc7InitGuard;
-}
-
-// Forward declarations
-std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
-    uint32_t width, uint32_t height,
-    VkFormat srcFormat);
-
 void TextureBakerSystem::BakeTexture(const String& materialLoader, const String& baseFilePath, VkGuid renderPassId)
 {
     Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
-    if (attachmentTextureList.empty())
+    if (attachmentTextureList.empty()) 
     {
         fprintf(stderr, "No rendered textures found for render pass %s\n", renderPassId.ToString().c_str());
         return;
     }
 
-    nlohmann::json exportJson;
     nlohmann::json importJson = fileSystem.LoadJsonFile(materialLoader.c_str());
+    nlohmann::json exportJson;
 
-    exportJson["MaterialId"] = importJson["MaterialId"];
+    exportJson["MaterialId"] = importJson.value("MaterialGuid", "00000000-0000-0000-0000-000000000000");
+    exportJson["Name"] = importJson.value("Name", "UnnamedMaterial");
+    exportJson["ShaderMaterialBufferIndex"] = importJson.value("ShaderMaterialBufferIndex", 0);
+    exportJson["MaterialBufferId"] = importJson.value("MaterialBufferId", 0);
 
-    configSystem.NvidiaTextureTool;
-    for (size_t x = 0; x < attachmentTextureList.size(); ++x)
+    String textureName = baseFilePath;
+    size_t pos = textureName.find("Import");
+    if (pos != String::npos) {
+        textureName.erase(pos, 6);
+    }
+
+    std::vector<std::filesystem::path> tempFilesToClean;
+    for (size_t x = 0; x < attachmentTextureList.size(); ++x) 
     {
-        String textureAttachment;
-        if (x == 0)      textureAttachment = "AlbedoData";
-        else if (x == 1) textureAttachment = "NormalData";
-        else if (x == 2) textureAttachment = "PackedMROData";
-        else if (x == 3) textureAttachment = "PackedSheenSSSData";
-        else if (x == 4) textureAttachment = "UnusedData";
-        else if (x == 5) textureAttachment = "TextureFilePath";
-        else             textureAttachment = "_Attachment" + std::to_string(x);
-
-        Texture importTexture = attachmentTextureList[x];
+        Texture& importTexture = attachmentTextureList[x];
         VkFormat srcFormat = importTexture.textureByteFormat;
+
+        String textureAttachment;
+        switch (x)
+        {
+            case AlbedoAttachment: textureAttachment = "AlbedoData"; break;
+            case NormalDataAttachment: textureAttachment = "NormalData"; break;
+            case PackedMROAttachment:  textureAttachment = "PackedMROData"; break;
+            case PackedSheenSSSAttachment: textureAttachment = "PackedSheenSSSData"; break;
+            case UnusedAttachment: textureAttachment = "UnusedData"; break;
+            case EmissionAttachment: textureAttachment = "EmissionData"; break;
+        }
 
         bool isNormalMap = (x == 1) ||
             srcFormat == VK_FORMAT_R16G16_UNORM ||
@@ -72,7 +64,7 @@ void TextureBakerSystem::BakeTexture(const String& materialLoader, const String&
             srcFormat == VK_FORMAT_R16G16B16A16_SNORM ||
             srcFormat == VK_FORMAT_R8G8_SNORM;
 
-        bool useSRGB = (x == 0 || x == 5) ||
+        bool isSRGB = (x == 0 || x == 5) ||
             srcFormat == VK_FORMAT_R8G8B8A8_SRGB ||
             srcFormat == VK_FORMAT_B8G8R8A8_SRGB ||
             srcFormat == VK_FORMAT_A8B8G8R8_SRGB_PACK32 ||
@@ -80,32 +72,28 @@ void TextureBakerSystem::BakeTexture(const String& materialLoader, const String&
             srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT;
 
         bool isHDRFloat = (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT || srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT);
-        if (isHDRFloat)
-        {
+        if (isHDRFloat) {
             printf("Warning: HDR float format on attachment %zu — clamped to 0-1 for BC7\n", x);
         }
 
-        Vector<Vector<uint8_t>> allMipRGBA8(importTexture.mipMapLevels);
         bool readSuccess = true;
-
-        for (uint32_t mip = 0; mip < importTexture.mipMapLevels && readSuccess; ++mip)
+        Vector<Vector<byte>> allMipRGBA8(importTexture.mipMapLevels);
+        for (uint32 mip = 0; mip < importTexture.mipMapLevels && readSuccess; ++mip)
         {
             RawMipReadback raw = ConvertToRawTextureData(importTexture, mip);
-            if (!raw.data || raw.size == 0)
-            {
-                fprintf(stderr, "Failed to read mip %u\n", mip);
+            if (!raw.data || raw.size == 0) {
+                fprintf(stderr, "Failed to read mip %u for %s\n", mip, textureAttachment.c_str());
                 DestroyVMATextureBuffer(raw);
                 readSuccess = false;
                 break;
             }
 
-            uint32_t mipWidth = std::max(1u, static_cast<uint32_t>(importTexture.width) >> mip);
-            uint32_t mipHeight = std::max(1u, static_cast<uint32_t>(importTexture.height) >> mip);
-
-            Vector<uint8_t> rgba8Data = ConvertMipToRGBA8(raw.data, raw.size, mipWidth, mipHeight, srcFormat);
+            uint32 mipWidth = std::max(1u, static_cast<uint>(importTexture.width >> mip));
+            uint32 mipHeight = std::max(1u, static_cast<uint>(importTexture.height >> mip));
+            Vector<byte> rgba8Data = ConvertMipToRGBA8(raw.data, raw.size, mipWidth, mipHeight, srcFormat);
             if (rgba8Data.empty())
             {
-                fprintf(stderr, "ConvertMipToRGBA8 failed for mip %u\n", mip);
+                fprintf(stderr, "ConvertMipToRGBA8 failed for mip %u on %s\n", mip, textureAttachment.c_str());
                 DestroyVMATextureBuffer(raw);
                 readSuccess = false;
                 break;
@@ -114,84 +102,124 @@ void TextureBakerSystem::BakeTexture(const String& materialLoader, const String&
             allMipRGBA8[mip] = std::move(rgba8Data);
             DestroyVMATextureBuffer(raw);
         }
+        if (!readSuccess) continue;
 
-        if (!readSuccess)
+        String suffix = GetAttachmentSuffix(x);
+        std::filesystem::path previewPngPath = textureName + suffix + ".png";
+        std::filesystem::path ktxPath = textureName + suffix + ".ktx2";
+        ExportToPng(previewPngPath.string(), importTexture, 0, false);
+        tempFilesToClean.push_back(previewPngPath);
+
+        uint32 actualMips;
+        uint32 requestedMips;
+        importJson.at("ExportMipMapCount").get_to(requestedMips);
+
+        uint32 maxDim = std::max(importTexture.width, importTexture.height);
+        uint32 maxMips = static_cast<uint32>(std::floor(std::log2(maxDim))) + 1;
+
+        if (requestedMips == UINT32_MAX) actualMips = maxMips;
+        else actualMips = std::clamp(requestedMips, 1u, maxMips);
+
+        bool generateMips = (actualMips > 1);
+        std::string args = fmt::format("\"{}\" -o \"{}\" " "--format bc7 " "--quality production " "--zcmp 22 " "--export-transfer-function {}", previewPngPath.string(), ktxPath.string(), isSRGB ? "srgb" : "linear");
+
+        if (isNormalMap)
         {
+            args += " --normal-alpha unchanged";
+        }
+
+        if (generateMips) 
+        {
+            args += " --mips "
+                "--mip-filter kaiser "
+                "--mip-gamma-correct "
+                "--mip-pre-alpha "
+                "--max-mip-levels " + std::to_string(actualMips);
+        }
+        else
+        {
+            args += " --no-mips";
+        }
+        printf("Launching NVTT for %s with args:\n%s\n", textureAttachment.c_str(), args.c_str());
+
+        HINSTANCE hInst = ShellExecuteA(NULL, "open", configSystem.NvidiaTextureTool.c_str(), args.c_str(), NULL, SW_HIDE);
+        if ((intptr_t)hInst <= 32)
+        {
+            fprintf(stderr, "ShellExecuteA failed with code %ld for %s\n", (intptr_t)hInst, textureAttachment.c_str());
             continue;
         }
 
-        String suffix;
-        if (x == 0)      suffix = "_Albedo";
-        else if (x == 1) suffix = "_NormalHeight";
-        else if (x == 2) suffix = "_MRO";
-        else if (x == 3) suffix = "_SheenSSS";
-        else if (x == 4) suffix = "_Unused";
-        else if (x == 5) suffix = "_Emission";
-        else             suffix = "_Attachment" + std::to_string(x);
-        String baseName = suffix.substr(1);
+        bool fileCreated = false;
+        for (int x = 0; x < 60; ++x) {
+            if (std::filesystem::exists(ktxPath) && std::filesystem::file_size(ktxPath) > 1024)
+            {
+                fileCreated = true;
+                printf("NVTT succeeded for %s (size %llu bytes)\n", textureAttachment.c_str(), std::filesystem::file_size(ktxPath));
+                break;
+            }
+            Sleep(1000);
+        }
 
-        String search = "Import";
-        String textureName = baseFilePath;
-        size_t find = baseFilePath.find(search);
-        if (find != std::string::npos) 
+        if (!fileCreated) {
+            fprintf(stderr, "Timeout: KTX2 not created for %s\n", textureAttachment.c_str());
+            continue;
+        }
+
+
+        nlohmann::json& exportEntry = exportJson[textureAttachment];
+        exportEntry["TextureFilePath"] = nlohmann::json::array({ ktxPath.string() });
+        exportEntry["TextureByteFormat"] = isSRGB ? static_cast<int>(VK_FORMAT_BC7_SRGB_BLOCK) : static_cast<int>(VK_FORMAT_BC7_UNORM_BLOCK);
+        exportEntry["MipMapCount"] = actualMips;
+        exportEntry["SampleCount"] = 1;
+        exportEntry["ImageType"] = 1;
+        exportEntry["TextureType"] = 1;
+        exportEntry["IsSkyBox"] = importJson["IsSkyBox"];
+
+        switch(x)
         {
-            textureName.replace(find, search.size(), "");
+            case AlbedoAttachment: exportEntry["TextureId"] = importJson["AlbedoAttachmentId"]; TextureSamplers::GetAlbedoMaterialSamplerSettings(exportEntry); break;
+            case NormalDataAttachment: exportEntry["TextureId"] = importJson["NormalDataAttachmentId"]; TextureSamplers::GetNormalMaterialSamplerSettings(exportEntry); break;
+            case PackedMROAttachment: exportEntry["TextureId"] = importJson["PackedMROAttachmentId"]; TextureSamplers::GetMROMaterialSamplerSettings(exportEntry); break;
+            case PackedSheenSSSAttachment: exportEntry["TextureId"] = importJson["PackedSheenSSSAttachmentId"]; TextureSamplers::GetSheenSSSSamplerSettings(exportEntry); break;
+            case UnusedAttachment: exportEntry["TextureId"] = importJson["UnusedAttachmentId"]; TextureSamplers::GetUnusedSamplerSettings(exportEntry); break;
+            case EmissionAttachment: exportEntry["TextureId"] = importJson["EmissionAttachmentId"]; TextureSamplers::GetEmissionSamplerSettings(exportEntry); break;
         }
-        fs::path previewPngPath = textureName + suffix + ".png";
-        ExportToPng(previewPngPath.string(), importTexture, 0, false); 
-
-        fs::path ktxPath = textureName + suffix + ".ktx2";
-        bool generateMips = (attachmentTextureList[x].mipMapLevels > 1);
-        String args = fmt::format("\"{}\" -o \"{}\" " "--format bc7 " "--quality production " "--zcmp 22 " "--export-transfer-function {}", previewPngPath.string(), ktxPath.string(), useSRGB ? "srgb" : "linear");
-        if (isNormalMap) {
-            args += " --normal-alpha unchanged";
-        }
-        if (generateMips) {
-            args += " --mip-filter kaiser --mip-gamma-correct --mip-pre-alpha";
-        }
-        else 
-        {
-            args += " --no-mips --max-mip-count 1";
-        }
-
-        printf("Launching NVTT with args:\n%s\n", args.c_str());
-        HINSTANCE hInst = ShellExecuteA(NULL, "open", R"(configSystem.NvidiaTextureTool)", args.c_str(), NULL, SW_SHOW);
-        if ((intptr_t)hInst <= 32) 
-        {
-            fprintf(stderr, "ShellExecuteA failed with code %ld\n", (intptr_t)hInst);
-        }
-
-        exportJson[textureAttachment]["TextureFilePath"] = ktxPath;
-        exportJson[textureAttachment]["TextureId"] = importJson[textureAttachment]["TextureId"];
-        exportJson[textureAttachment]["TextureByteFormat"] = importTexture.textureByteFormat;
-        exportJson[textureAttachment]["SampleCount"] = importTexture.mipMapLevels;
-        exportJson[textureAttachment]["ImageType"] = 1;
-        exportJson[textureAttachment]["TextureType"] = 1;
-        exportJson[textureAttachment]["MipMapCount"] = importJson[textureAttachment]["MipMapCount"];
-        exportJson[textureAttachment]["IsSkyBox"] = importJson[textureAttachment]["IsSkyBox"];
-        exportJson[textureAttachment] = TextureSamplers::GetAlbedoMaterialSamplerSettings(exportJson[textureAttachment]);
     }
 
-    String outputFilePath = "asdas.json";
-    std::ofstream file(baseFilePath);
-    try {
-        std::ofstream file(outputFilePath.c_str());
-        if (!file.is_open()) 
-        {
-            fprintf(stderr, "Failed to open file for writing: %s\n", outputFilePath.c_str());
-        }
+    pos = textureName.find("Texture");
+    if (pos != String::npos) {
+        textureName.replace(pos, 7, "Material");
+    }
 
+    String materialName = textureName + ".json";
+    try
+    {
+        std::ofstream file(materialName.c_str());
+        if (!file.is_open())
+        {
+            fprintf(stderr, "Failed to open material JSON file: %s\n", materialName.c_str());
+            return;
+        }
         file << std::setw(4) << exportJson << std::endl;
         file.close();
-
-        printf("Material sampler settings saved to: %s\n", outputFilePath.c_str());
+        printf("Material JSON saved to: %s\n", materialName.c_str());
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e) 
+    {
         fprintf(stderr, "JSON write error: %s\n", e.what());
+    }
+
+    for (const auto& png : tempFilesToClean) 
+    {
+        if (std::filesystem::exists(png)) 
+        {
+            std::filesystem::remove(png);
+            printf("Cleaned temp preview: %s\n", png.string().c_str());
+        }
     }
 }
 
-void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, uint32_t mipLevel, bool flipY)
+void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, uint32 mipLevel, bool flipY)
 {
     if (mipLevel >= texture.mipMapLevels) {
         std::cerr << "Invalid mip level " << mipLevel << " (max " << texture.mipMapLevels << ")\n";
@@ -200,8 +228,8 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
 
     VmaAllocator allocator = bufferSystem.vmaAllocator;
 
-    uint32_t width = std::max(1u, static_cast<uint32_t>(texture.width) >> mipLevel);
-    uint32_t height = std::max(1u, static_cast<uint32_t>(texture.height) >> mipLevel);
+    uint32 width = std::max(1u, static_cast<uint32>(texture.width) >> mipLevel);
+    uint32 height = std::max(1u, static_cast<uint32>(texture.height) >> mipLevel);
 
     size_t bytesPerPixel = 4;
     bool is16Bit = false;
@@ -239,18 +267,13 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
         }
     };
 
-    if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_GENERAL)
-        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-    else
-        barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+    if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_GENERAL) barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    else barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 
     VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
-    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        0, 0, nullptr, 0, nullptr, 1, &barrier);
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     VkBufferCreateInfo bufferInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -264,9 +287,9 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
         .usage = VMA_MEMORY_USAGE_AUTO
     };
 
+    VmaAllocationInfo allocInfoOut{};
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-    VmaAllocationInfo allocInfoOut{};
     VULKAN_THROW_IF_FAIL(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocInfoOut));
 
     VkBufferImageCopy region = {
@@ -295,46 +318,47 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
         needsUnmap = true;
     }
 
-    std::vector<unsigned char> pngData;
-
-    if (!is16Bit) {
+    Vector<byte> pngData;
+    if (!is16Bit) 
+    {
         // 8-bit RGBA
-        std::vector<uint8_t> pixels(width * height * 4);
+       Vector<byte> pixels(width * height * 4);
 
-        const uint8_t* src = static_cast<const uint8_t*>(mapped);
-        uint8_t* dst = pixels.data();
+        const byte* src = static_cast<const byte*>(mapped);
+        byte* dst = pixels.data();
 
-        for (uint32_t y = 0; y < height; ++y) {
-            uint32_t srcY = flipY ? (height - 1 - y) : y;
-            const uint8_t* srcRow = src + srcY * width * 4;
-            uint8_t* dstRow = dst + y * width * 4;
+        for (uint32 y = 0; y < height; ++y) 
+        {
+            uint32 srcY = flipY ? (height - 1 - y) : y;
+            const byte* srcRow = src + srcY * width * 4;
+            byte* dstRow = dst + y * width * 4;
             memcpy(dstRow, srcRow, width * 4);
         }
 
         unsigned error = lodepng::encode(pngData, pixels.data(), width, height, LCT_RGBA, 8);
         if (error) std::cerr << "lodepng encode error (8-bit): " << lodepng_error_text(error) << "\n";
     }
-    else {
+    else 
+    {
         // 16-bit RGBA (PNG big-endian)
-        std::vector<uint16_t> pixels(width * height * 4);
+        Vector<uint16> pixels(width * height * 4);
 
-        const uint16_t* src = static_cast<const uint16_t*>(mapped);
-        uint16_t* dst = pixels.data();
+        const uint16* src = static_cast<const uint16*>(mapped);
+        uint16* dst = pixels.data();
 
-        for (uint32_t y = 0; y < height; ++y) {
-            uint32_t srcY = flipY ? (height - 1 - y) : y;
-            const uint16_t* srcRow = src + srcY * width * 4;
-            uint16_t* dstRow = dst + y * width * 4;
+        for (uint32 y = 0; y < height; ++y) {
+            uint32 srcY = flipY ? (height - 1 - y) : y;
+            const uint16* srcRow = src + srcY * width * 4;
+            uint16* dstRow = dst + y * width * 4;
 
-            for (uint32_t x = 0; x < width * 4; ++x) {
-                uint16_t val = srcRow[x];
+            for (uint32 x = 0; x < width * 4; ++x) 
+            {
+                uint16 val = srcRow[x];
                 dstRow[x] = ((val >> 8) & 0xFF) | ((val & 0xFF) << 8);
             }
         }
 
-        unsigned error = lodepng::encode(pngData,
-            reinterpret_cast<unsigned char*>(pixels.data()),
-            width, height, LCT_RGBA, 16);
+        unsigned error = lodepng::encode(pngData, reinterpret_cast<unsigned char*>(pixels.data()), width, height, LCT_RGBA, 16);
         if (error) std::cerr << "lodepng encode error (16-bit): " << lodepng_error_text(error) << "\n";
     }
 
@@ -352,11 +376,9 @@ void TextureBakerSystem::ExportToPng(const String& fileName, Texture& texture, u
     vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
 }
 
-std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
-    uint32_t width, uint32_t height,
-    VkFormat srcFormat)
+Vector<byte> TextureBakerSystem::ConvertMipToRGBA8(const void* rawData, size_t rawSize, uint32 width, uint32 height, VkFormat srcFormat)
 {
-    std::vector<uint8_t> rgba8(width * height * 4);
+    Vector<byte> rgba8(width * height * 4);
 
     size_t bytesPerPixel = 4;
     if (srcFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
@@ -399,27 +421,25 @@ std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
                 }
                 else if (srcFormat == VK_FORMAT_R16G16B16A16_SNORM)
                 {
-                    int16_t s = static_cast<int16_t>(val);
+                    int16 s = static_cast<int16_t>(val);
                     norm = std::max(static_cast<float>(s) / 32767.0f, -1.0f);
                     norm = norm * 0.5f + 0.5f;
                 }
                 else if (srcFormat == VK_FORMAT_R16G16B16A16_SFLOAT)
                 {
-                    uint32_t sign = (val >> 15) & 0x01;
-                    uint32_t exp = (val >> 10) & 0x1F;
-                    uint32_t mant = val & 0x3FF;
+                    uint32 sign = (val >> 15) & 0x01;
+                    uint32 exp = (val >> 10) & 0x1F;
+                    uint32 mant = val & 0x3FF;
                     float fval;
-                    if (exp == 0)
-                        fval = (mant / 1024.0f) * std::pow(2.0f, -14);
-                    else if (exp == 31)
-                        fval = mant ? NAN : (sign ? -INFINITY : INFINITY);
-                    else
-                        fval = ((1.0f + mant / 1024.0f) * std::pow(2.0f, exp - 15));
+                    if (exp == 0) fval = (mant / 1024.0f) * std::pow(2.0f, -14);
+                    else if (exp == 31) fval = mant ? NAN : (sign ? -INFINITY : INFINITY);
+                    else fval = ((1.0f + mant / 1024.0f) * std::pow(2.0f, exp - 15));
+
                     if (sign) fval = -fval;
                     norm = std::clamp(fval, 0.0f, 1.0f);
                 }
 
-                rgba8[p * 4 + c] = static_cast<uint8_t>(norm * 255.0f + 0.5f);
+                rgba8[p * 4 + c] = static_cast<byte>(norm * 255.0f + 0.5f);
             }
         }
     }
@@ -432,92 +452,12 @@ std::vector<uint8_t> ConvertMipToRGBA8(const void* rawData, size_t rawSize,
             {
                 float val = src32[p * 4 + c];
                 val = std::clamp(val, 0.0f, 1.0f);
-                rgba8[p * 4 + c] = static_cast<uint8_t>(val * 255.0f + 0.5f);
+                rgba8[p * 4 + c] = static_cast<byte>(val * 255.0f + 0.5f);
             }
         }
     }
 
     return rgba8;
-}
-
-// Updated CompressToBC7Ultra using latest bc7enc API
-std::vector<uint8_t> TextureBakerSystem::CompressToBC7Ultra(
-    const uint8_t* rgbaData,
-    uint32_t width,
-    uint32_t height,
-    bool perceptual,
-    bool isNormalMap)
-{
-    if (width == 0 || height == 0 || rgbaData == nullptr) return {};
-
-    uint32_t blocksX = (width + 3) / 4;
-    uint32_t blocksY = (height + 3) / 4;
-    size_t numBlocks = static_cast<size_t>(blocksX) * blocksY;
-
-    std::vector<uint8_t> bc7Blocks(numBlocks * 16);
-
-    // Create params struct (required by your bc7enc.h)
-    bc7enc_compress_block_params params = {};
-     
-    // Fill in the fields your version actually supports/uses
-    params.m_perceptual = perceptual && !isNormalMap;  // perceptual for color/albedo, linear for normals
-    params.m_uber_level = 6;               // highest (very slow, closest to NTTE)
-    params.m_max_partitions = 64;              // already max
-    params.m_mode_mask = 0xFF;            // all modes 0-7
-    params.m_try_least_squares = true;
-    params.m_perceptual = perceptual && !isNormalMap;
-    // If your bc7enc version has these (check header):
-    
-    // Optional fields (safe to leave default/zero)
-    params.m_low_frequency_partition_weight = 1.0f;
-    params.m_mode6_error_weight = 1.0f;
-    params.m_mode5_error_weight = 1.0f;
-    params.m_mode1_error_weight = 1.0f;
-
-    // Optional one-time init (only if your header declares this function)
-    // bc7enc_compress_block_init();
-
-    for (uint32_t by = 0; by < blocksY; ++by)
-    {
-        for (uint32_t bx = 0; bx < blocksX; ++bx)
-        {
-            uint8_t blockRGBA[64];
-
-            for (int y = 0; y < 4; ++y)
-            {
-                for (int x = 0; x < 4; ++x)
-                {
-                    int px = bx * 4 + x;
-                    int py = by * 4 + y;
-                    int idx = (y * 4 + x) * 4;
-
-                    if (px < static_cast<int>(width) && py < static_cast<int>(height))
-                    {
-                        size_t srcIdx = (py * width + px) * 4;
-                        blockRGBA[idx + 0] = rgbaData[srcIdx + 0];
-                        blockRGBA[idx + 1] = rgbaData[srcIdx + 1];
-                        blockRGBA[idx + 2] = rgbaData[srcIdx + 2];
-                        blockRGBA[idx + 3] = rgbaData[srcIdx + 3];
-                    }
-                    else
-                    {
-                        blockRGBA[idx + 0] = 0;
-                        blockRGBA[idx + 1] = 0;
-                        blockRGBA[idx + 2] = 0;
-                        blockRGBA[idx + 3] = 255;  // opaque
-                    }
-                }
-            }
-
-            uint8_t* pDstBlock = &bc7Blocks[(by * blocksX + bx) * 16];
-
-            // Now pass &params (fixes the type mismatch)
-            printf("Compressing block %u,%u -> %p\n", bx, by, pDstBlock);
-            bc7enc_compress_block(pDstBlock, blockRGBA, &params);
-        }
-    }
-
-    return bc7Blocks;
 }
 
 RawMipReadback TextureBakerSystem::ConvertToRawTextureData(Texture& importTexture, uint32 mipLevel)
@@ -572,8 +512,8 @@ RawMipReadback TextureBakerSystem::ConvertToRawTextureData(Texture& importTextur
         .imageOffset = { 0, 0, 0 },
         .imageExtent =
             {
-                static_cast<uint32_t>(mipWidth),
-                static_cast<uint32_t>(mipHeight),
+                static_cast<uint32>(mipWidth),
+                static_cast<uint32>(mipHeight),
                 1
             }
     };
@@ -631,4 +571,17 @@ void TextureBakerSystem::DestroyVMATextureBuffer(RawMipReadback& data)
         vmaUnmapMemory(bufferSystem.vmaAllocator, data.allocation);
     }
     vmaDestroyBuffer(bufferSystem.vmaAllocator, data.buffer, data.allocation);
+}
+
+String TextureBakerSystem::GetAttachmentSuffix(uint x)
+{
+    String suffix;
+    if (x == 0)      suffix = "_Albedo";
+    else if (x == 1) suffix = "_NormalHeight";
+    else if (x == 2) suffix = "_MRO";
+    else if (x == 3) suffix = "_SheenSSS";
+    else if (x == 4) suffix = "_Unused";
+    else if (x == 5) suffix = "_Emission";
+    else             suffix = "_Attachment" + std::to_string(x);
+    return suffix;
 }

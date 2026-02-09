@@ -147,82 +147,83 @@ VkSampler TextureSamplers::GetImportAlphaMapSamplerSettings()
 
 nlohmann::json TextureSamplers::GetAlbedoMaterialSamplerSettings(nlohmann::json& j)
 {
-    j["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-    j["MagFilter"] = static_cast<int>(VK_FILTER_LINEAR);
-    j["MinFilter"] = static_cast<int>(VK_FILTER_LINEAR);
-    j["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_LINEAR);
-    j["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["MipLodBias"] = -0.25f;   // Slight sharpness boost for detail
-    j["AnisotropyEnable"] = true;
-    j["MaxAnisotropy"] = 16.0f;   // Max desktop quality for oblique angles
-    j["CompareEnable"] = false;
-    j["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
-    j["MinLod"] = 0.0f;
-    j["MaxLod"] = 1000.0f;
-    j["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
-    j["UnnormalizedCoordinates"] = false;
+    j["SamplerCreateInfo"]["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
+    j["SamplerCreateInfo"]["MagFilter"] = static_cast<int>(VK_FILTER_LINEAR);
+    j["SamplerCreateInfo"]["MinFilter"] = static_cast<int>(VK_FILTER_LINEAR);
+    j["SamplerCreateInfo"]["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_LINEAR);
+    j["SamplerCreateInfo"]["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["MipLodBias"] = -0.25f;  
+    j["SamplerCreateInfo"]["AnisotropyEnable"] = true;
+    j["SamplerCreateInfo"]["MaxAnisotropy"] = 16.0f; 
+    j["SamplerCreateInfo"]["CompareEnable"] = false;
+    j["SamplerCreateInfo"]["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
+    j["SamplerCreateInfo"]["MinLod"] = 0.0f;
+    j["SamplerCreateInfo"]["MaxLod"] = 1000.0f;
+    j["SamplerCreateInfo"]["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
+    j["SamplerCreateInfo"]["UnnormalizedCoordinates"] = false;
     return j;
 }
 
 nlohmann::json TextureSamplers::GetNormalMaterialSamplerSettings(nlohmann::json& j) 
 {
-    j["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-    j["MagFilter"] = static_cast<int>(VK_FILTER_LINEAR);
-    j["MinFilter"] = static_cast<int>(VK_FILTER_LINEAR);
-    j["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_LINEAR);
-    j["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["MipLodBias"] = -0.75f;
-    j["AnisotropyEnable"] = true;
-    j["MaxAnisotropy"] = 8.0f;
-    j["CompareEnable"] = false;
-    j["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
-    j["MinLod"] = 0.0f;
-    j["MaxLod"] = 1000.0f;
-    j["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE);
-    j["UnnormalizedCoordinates"] = false;
+    j["SamplerCreateInfo"]["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
+    j["SamplerCreateInfo"]["MagFilter"] = static_cast<int>(VK_FILTER_LINEAR);
+    j["SamplerCreateInfo"]["MinFilter"] = static_cast<int>(VK_FILTER_LINEAR);
+    j["SamplerCreateInfo"]["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_LINEAR);
+    j["SamplerCreateInfo"]["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["MipLodBias"] = -0.75f;
+    j["SamplerCreateInfo"]["AnisotropyEnable"] = true;
+    j["SamplerCreateInfo"]["MaxAnisotropy"] = 8.0f;
+    j["SamplerCreateInfo"]["CompareEnable"] = false;
+    j["SamplerCreateInfo"]["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
+    j["SamplerCreateInfo"]["MinLod"] = 0.0f;
+    j["SamplerCreateInfo"]["MaxLod"] = 1000.0f;
+    j["SamplerCreateInfo"]["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE);
+    j["SamplerCreateInfo"]["UnnormalizedCoordinates"] = false;
     return j;
 }
 
 nlohmann::json TextureSamplers::GetMROMaterialSamplerSettings(nlohmann::json& j) {
-    j["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-    j["MagFilter"] = static_cast<int>(VK_FILTER_NEAREST);
-    j["MinFilter"] = static_cast<int>(VK_FILTER_NEAREST);
-    j["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_NEAREST);
-    j["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["MipLodBias"] = 0.0f;
-    j["AnisotropyEnable"] = false;
-    j["CompareEnable"] = false;
-    j["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
-    j["MinLod"] = 0.0f;
-    j["MaxLod"] = 1000.0f;
-    j["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
-    j["UnnormalizedCoordinates"] = false;
+    j["SamplerCreateInfo"]["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
+    j["SamplerCreateInfo"]["MagFilter"] = static_cast<int>(VK_FILTER_NEAREST);
+    j["SamplerCreateInfo"]["MinFilter"] = static_cast<int>(VK_FILTER_NEAREST);
+    j["SamplerCreateInfo"]["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_NEAREST);
+    j["SamplerCreateInfo"]["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["MipLodBias"] = 0.0f;
+    j["SamplerCreateInfo"]["AnisotropyEnable"] = false;
+    j["SamplerCreateInfo"]["MaxAnisotropy"] = 0.0f;
+    j["SamplerCreateInfo"]["CompareEnable"] = false;
+    j["SamplerCreateInfo"]["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
+    j["SamplerCreateInfo"]["MinLod"] = 0.0f;
+    j["SamplerCreateInfo"]["MaxLod"] = 1000.0f;
+    j["SamplerCreateInfo"]["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
+    j["SamplerCreateInfo"]["UnnormalizedCoordinates"] = false;
     return j;
 }
 
 nlohmann::json TextureSamplers::GetEmissionSamplerSettings(nlohmann::json& j) 
 {
-    j["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-    j["MagFilter"] = static_cast<int>(VK_FILTER_LINEAR);
-    j["MinFilter"] = static_cast<int>(VK_FILTER_LINEAR);
-    j["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_LINEAR);
-    j["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    j["MipLodBias"] = 0.0f; 
-    j["AnisotropyEnable"] = true;
-    j["MaxAnisotropy"] = 8.0f;    
-    j["CompareEnable"] = false;
-    j["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
-    j["MinLod"] = 0.0f;
-    j["MaxLod"] = 1000.0f;
-    j["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
-    j["UnnormalizedCoordinates"] = false;
+    j["SamplerCreateInfo"]["SType"] = static_cast<int>(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
+    j["SamplerCreateInfo"]["MagFilter"] = static_cast<int>(VK_FILTER_LINEAR);
+    j["SamplerCreateInfo"]["MinFilter"] = static_cast<int>(VK_FILTER_LINEAR);
+    j["SamplerCreateInfo"]["MipmapMode"] = static_cast<int>(VK_SAMPLER_MIPMAP_MODE_LINEAR);
+    j["SamplerCreateInfo"]["AddressModeU"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeV"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["AddressModeW"] = static_cast<int>(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    j["SamplerCreateInfo"]["MipLodBias"] = 0.0f;
+    j["SamplerCreateInfo"]["AnisotropyEnable"] = true;
+    j["SamplerCreateInfo"]["MaxAnisotropy"] = 8.0f;
+    j["SamplerCreateInfo"]["CompareEnable"] = false;
+    j["SamplerCreateInfo"]["CompareOp"] = static_cast<int>(VK_COMPARE_OP_ALWAYS);
+    j["SamplerCreateInfo"]["MinLod"] = 0.0f;
+    j["SamplerCreateInfo"]["MaxLod"] = 1000.0f;
+    j["SamplerCreateInfo"]["BorderColor"] = static_cast<int>(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
+    j["SamplerCreateInfo"]["UnnormalizedCoordinates"] = false;
     return j;
 }

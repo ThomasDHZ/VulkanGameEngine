@@ -1,7 +1,7 @@
 {
   "Name": "MegaManShot",
   "TextureSetResolution": [ 8, 8 ],
-  "MaterialGuid": "461d8a8b-c0bb-44fa-9ad1-c60ed9633bf2",
+  "MaterialGuid": "a74a9f9d-af4b-4e97-9242-46af0846aaa7",
   "Albedo": [ 0.8, 0.8, 0.8 ],
   "SheenColor": [ 0.9, 0.9, 0.95 ],
   "SubSurfaceScatteringColor": [ 1.0, 0.5, 0.4 ],
@@ -18,6 +18,14 @@
   "HeightScale": 0.051,
   "Height": 0.051,
   "Alpha": 1.0,
+  "ExportMipMapCount": 1,
+  "AlbedoAttachmentId": "92a40353-cf0c-420e-93b6-9452f9d33ca4",
+  "NormalDataAttachmentId": "6a5d9707-d0fe-476e-b8de-96fa927341f0",
+  "PackedMROAttachmentId": "289416d3-fdf2-494d-b293-828a348cf1bf",
+  "PackedSheenSSSAttachmentId": "94f601d2-8741-4332-bda3-0180155a123a",
+  "UnusedAttachmentId": "b3fdd322-d04e-4d97-8e3d-95cb4721fae9",
+  "EmissionAttachmentId": "80974c89-f87e-43dc-96d1-85572c9115fb",
+  "IsSkyBox": false,
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/MegaManShot.png" ],
     "TextureId": "cf0daea4-871d-4137-a9f9-8c6fda795325",

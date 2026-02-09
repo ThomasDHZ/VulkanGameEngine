@@ -1,7 +1,7 @@
 {
   "Name": "SparkManTiles",
   "TextureSetResolution": [ 672, 16 ],
-  "MaterialGuid": "8d9de45d-533a-4471-82f6-933b1dfcd04d",
+  "MaterialGuid": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
   "Albedo": [ 0.8, 0.8, 0.8 ],
   "SheenColor": [ 0.9, 0.9, 0.95 ],
   "SubSurfaceScatteringColor": [ 1.0, 0.5, 0.4 ],
@@ -18,6 +18,14 @@
   "HeightScale": 0.051,
   "Height": 0.051,
   "Alpha": 1.0,
+  "ExportMipMapCount": 1,
+  "AlbedoAttachmentId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
+  "NormalDataAttachmentId": "f2c1d36b-45ba-414a-a201-061d1707fff2",
+  "PackedMROAttachmentId": "c6425693-c2a1-476f-8e34-aa306dde4d14",
+  "PackedSheenSSSAttachmentId": "f5ea8b81-0387-44c8-a733-722de2310ce8",
+  "UnusedAttachmentId": "81488c15-03df-44ec-9ab7-be6dd0e41f65",
+  "EmissionAttachmentId": "6ab4746e-d5b8-4e4b-aeef-a9eece72d299",
+  "IsSkyBox": false,
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_DiffuseTexture.png" ],
     "TextureId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",

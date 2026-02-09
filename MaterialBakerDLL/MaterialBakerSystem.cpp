@@ -12,80 +12,185 @@
 #include <lodepng.h>
 #include <from_json.h>
 #include <nvtt/nvtt.h>
+#include <regex>
 
 MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
 
 void MaterialBakerSystem::Run()
 {
     InitDummyAndSamplers();
-
     const String inDir = configSystem.MaterialSourceDirectory.c_str();
     std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
     std::filesystem::create_directories(outDir);
 
-    shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String>{configSystem.TextureAssetRenderer});
-
     Vector<String> ext = { "json" };
     Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
-
+    shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String>{configSystem.TextureAssetRenderer});
     for (auto& materialPath : materialFiles)
     {
+        std::filesystem::path src = materialPath;   
         nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
-        ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
-
-        std::filesystem::path src = materialPath;
         std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
         std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
+        ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
+        if (UpdateNeeded(materialPath))
+        {
+            LoadMaterial(materialPath);
+            CleanRenderPass();
+            BuildRenderPass(resolution);
+            UpdateDescriptorSets();
+            // vulkanSystem.StartFrame();
+            VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+            Draw(commandBuffer);
+            // vulkanSystem.EndFrame(commandBuffer);
+            textureBakerSystem.BakeTexture(materialPath, finalFilePath.string(), vulkanRenderPass.RenderPassId);
+            CleanInputResources();
+            textureBindingList.clear();
 
-        auto srcTime = std::filesystem::last_write_time(src);
-        auto dstTime = std::filesystem::last_write_time(std::filesystem::path(configSystem.AssetDirectory + materialPath));
-        auto is_newer = [&](const std::filesystem::path& texPath) -> bool
-            {
-                if (texPath.empty() || !std::filesystem::exists(texPath))
-                {
-                    return false;
-                }
-                auto time = std::filesystem::last_write_time(texPath);
-                return std::filesystem::last_write_time(texPath) < dstTime;
-            };
+            std::cout << "Baked: " << src.filename() << std::endl;
+        }
+        else
+        {
+            continue;
+        }
+    }
+    int a = 0;
+}
 
-        //if (is_newer(src) ||
-        //    is_newer(albedoMapSrc) ||
-        //    is_newer(metallicMapSrc) ||
-        //    is_newer(roughnessMapSrc) ||
-        //    is_newer(thicknessMapSrc) ||
-        //    is_newer(subSurfaceScatteringColorMapSrc) ||
-        //    is_newer(sheenMapSrc) ||
-        //    is_newer(clearCoatMapSrc) ||
-        //    is_newer(ambientOcclusionMapSrc) ||
-        //    is_newer(normalMapSrc) ||
-        //    is_newer(alphaMapSrc) ||
-        //    is_newer(emissionMapSrc) ||
-        //    is_newer(heightMapSrc))
-        //{
-        LoadMaterial(materialPath);
+//bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
+//{
+//    std::filesystem::path srcPath = materialPath;
+//    if (!std::filesystem::exists(srcPath)) 
+//    {
+//        printf("Source material file does not exist: %s\n", materialPath.c_str());
+//        return true; 
+//    }
+//
+//    std::filesystem::path dstPath = std::regex_replace(materialPath, std::regex("Import"), "");
+//    if (!std::filesystem::exists(dstPath)) 
+//    {
+//        printf("Destination file missing, update needed: %s\n", dstPath.string().c_str());
+//        return true;
+//    }
+//
+//    auto dstTime = std::filesystem::last_write_time(dstPath);
+//    nlohmann::json json;
+//    try 
+//    {
+//        json = fileSystem.LoadJsonFile(materialPath.c_str());
+//    }
+//    catch (const std::exception& e) 
+//    {
+//        fprintf(stderr, "Failed to load material JSON %s: %s\n", materialPath.c_str(), e.what());
+//        return true;
+//    }
+//
+//    auto is_newer = [&](const std::string& texPathStr) -> bool
+//        {
+//            if (texPathStr.empty()) return false;
+//            std::filesystem::path texPath = texPathStr;
+//
+//            if (texPath.is_relative())
+//            {
+//                texPath = srcPath.parent_path() / texPath;
+//            }
+//            if (!std::filesystem::exists(texPath))
+//            {
+//                printf("Texture missing (will force update): %s\n", texPath.string().c_str());
+//                return true;
+//            }
+//            return std::filesystem::last_write_time(texPath) > dstTime;
+//        };
+//
+//    if (is_newer(materialPath)) 
+//    {
+//        printf("Material JSON newer than baked file ? update needed\n");
+//        return true;
+//    }
+//
+//    static const std::vector<std::string> textureKeys = 
+//    {
+//        "AlbedoMap", "NormalMap", "MetallicMap", "RoughnessMap",
+//        "ThicknessMap", "SubSurfaceScatteringMap", "SheenMap",
+//        "ClearCoatMap", "AmbientOcclusionMap", "AlphaMap",
+//        "EmissionMap", "HeightMap"
+//    };
+//
+//    for (const auto& key : textureKeys) 
+//    {
+//        if (json.contains(key)) 
+//        {
+//            auto& texEntry = json[key];
+//            if (texEntry.contains("TextureFilePath") && texEntry["TextureFilePath"].is_array() && !texEntry["TextureFilePath"].empty())
+//            {
+//                String texPath = texEntry["TextureFilePath"][0].get<String>();
+//                if (is_newer(texPath)) 
+//                {
+//                    printf("Texture %s newer than baked file ? update needed\n", key.c_str());
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+//
+//    printf("No update needed for %s\n", materialPath.c_str());
+//    return false;
+//}
 
-        CleanRenderPass();
-        BuildRenderPass(resolution);
-        UpdateDescriptorSets();
-       // vulkanSystem.StartFrame();
-        VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-           Draw(commandBuffer);
-       // vulkanSystem.EndFrame(commandBuffer);
-           textureBakerSystem.BakeTexture(materialPath, finalFilePath.string(), vulkanRenderPass.RenderPassId);
-          
+bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
+{
 
-           CleanInputResources();
-           textureBindingList.clear();
-
-           std::cout << "Baked: " << src.filename() << std::endl;
+    std::filesystem::path src = materialPath;
+    std::filesystem::path dst = std::regex_replace(materialPath, std::regex("Import"), "");
+    if (!std::filesystem::exists(dst))
+    {
+        return true;
     }
 
-  /*      else
+    nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
+    auto dstTime = std::filesystem::last_write_time(dst);
+    auto is_newer = [&](const std::filesystem::path& texPath) -> bool
         {
-            continue; 
-        }*/
-    
+            if (texPath.empty() || !std::filesystem::exists(texPath))
+            {
+                return false;
+            }
+            auto time = std::filesystem::last_write_time(texPath);
+            return std::filesystem::last_write_time(texPath) > dstTime;
+        };
+
+    if (is_newer(src))
+    {
+        return true;
+    }
+
+    Vector<String> textureList
+    {
+        !json["AlbedoMap"].is_null() ? json["AlbedoMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["MetallicMap"].is_null() ? json["MetallicMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["RoughnessMap"].is_null() ? json["RoughnessMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["ThicknessMap"].is_null() ? json["ThicknessMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["SubSurfaceScatteringColorMap"].is_null() ? json["SubSurfaceScatteringColorMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["SheenMap"].is_null() ? json["SheenMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["ClearCoatMap"].is_null() ? json["ClearCoatMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["AmbientOcclusionMap"].is_null() ? json["AmbientOcclusionMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["NormalMap"].is_null() ? json["NormalMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["AlphaMap"].is_null() ? json["AlphaMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["EmissionMap"].is_null() ? json["EmissionMap"]["TextureFilePath"][0].get<String>() : String(),
+        !json["HeightMap"].is_null() ? json["HeightMap"]["TextureFilePath"][0].get<String>() : String()
+    };
+
+    for (auto& textureMap : textureList)
+    {
+        String textureMapLocation = json.contains(textureMap) ? json[textureMap]["TextureFilePath"][0].get<String>() : String();
+        if (is_newer(textureMap))
+        {
+            return true;
+        }
+    }
+
+    printf("No update needed for %s\n", materialPath.c_str());
+    return false;
 }
 
 void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer2)
