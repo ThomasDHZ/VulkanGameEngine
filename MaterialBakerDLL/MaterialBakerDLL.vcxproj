@@ -137,9 +137,6 @@
     <ClCompile Include="..\External\bc7enc_rdo1\rgbcx.cpp" />
     <ClCompile Include="..\External\bc7enc_rdo\bc7enc.cpp" />
     <ClCompile Include="..\External\LodePNG\lodepng.cpp" />
-    <ClCompile Include="..\External\LodePNG\lodepng_fuzzer.cpp" />
-    <ClCompile Include="..\External\LodePNG\lodepng_unittest.cpp" />
-    <ClCompile Include="..\External\LodePNG\lodepng_util.cpp" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="MaterialBakerSystem.cpp" />
