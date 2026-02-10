@@ -137,101 +137,224 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		return CreateTexture(textureLoader);
 	}
 
-	ktxTexture* kTexture = nullptr;
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
+	ktxTexture* ktex = nullptr;
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
 	if (result != KTX_SUCCESS)
 	{
 		std::cerr << "ktxTexture_CreateFromNamedFile failed: " << ktxErrorString(result) << std::endl;
-		return {}; 
-	}
-
-	ktxVulkanDeviceInfo vdi{};
-	result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
-	if (result != KTX_SUCCESS)
-	{
-		std::cerr << "ktxVulkanDeviceInfo_Construct failed: " << ktxErrorString(result) << std::endl;
-		ktxTexture_Destroy(kTexture);
 		return {};
 	}
 
-	ktxVulkanTexture vkTex{};
-	result = ktxTexture_VkUploadEx(kTexture, &vdi, &vkTex, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	if (result != KTX_SUCCESS)
+	if (ktex->classId != ktxTexture2_c)
 	{
-		std::cerr << "ktxTexture_VkUploadEx failed: " << ktxErrorString(result) << std::endl;
-		ktxVulkanDeviceInfo_Destruct(&vdi);
-		ktxTexture_Destroy(kTexture);
-		return {};
-	}
-	ktxTexture_Destroy(kTexture);
-
-	VkImageAspectFlags aspect = (vkTex.imageFormat >= VK_FORMAT_D16_UNORM && vkTex.imageFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	if (vkTex.imageFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
-		vkTex.imageFormat == VK_FORMAT_D24_UNORM_S8_UINT)
-	{
-		aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		ktxTexture_Destroy(ktex);
+		return CreateTexture(textureLoader); // Fallback for KTX1
 	}
 
-	Vector<VkImageView> imageViewList;
-	for (uint32_t mip = 0; mip < vkTex.levelCount; ++mip)
+	ktxTexture2* tex2 = (ktxTexture2*)ktex;
+
+	// Basis Universal transcoding (if needed)
+	bool needsTranscode = ktxTexture2_NeedsTranscoding(tex2);
+	ktx_transcode_fmt_e targetFmt = KTX_TTF_RGBA32; // Safe uncompressed fallback
+	if (needsTranscode)
 	{
-		VkImageViewCreateInfo viewInfo
+		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
+		Vector<Candidate> candidates;
+		if (textureLoader.UsingSRGBFormat)
 		{
+			candidates.push_back(Candidate{ VK_FORMAT_BC7_SRGB_BLOCK, KTX_TTF_BC7_RGBA });
+			candidates.push_back(Candidate{ VK_FORMAT_ASTC_4x4_SRGB_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back(Candidate{ VK_FORMAT_BC7_UNORM_BLOCK, KTX_TTF_BC7_RGBA });
+			candidates.push_back(Candidate{ VK_FORMAT_ASTC_4x4_UNORM_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+		}
+		else
+		{
+			candidates.push_back({ VK_FORMAT_BC7_UNORM_BLOCK, KTX_TTF_BC7_RGBA });
+			candidates.push_back({ VK_FORMAT_ASTC_4x4_UNORM_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+		}
+
+		for (const auto& candidate : candidates)
+		{
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(vulkanSystem.PhysicalDevice, candidate.vkFmt, &props);
+			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
+			{
+				targetFmt = candidate.ktxFmt;
+				break;
+			}
+		}
+
+		result = ktxTexture2_TranscodeBasis(tex2, targetFmt, 0);
+		if (result != KTX_SUCCESS)
+		{
+			std::cerr << "ktxTexture2_TranscodeBasis failed: " << ktxErrorString(result) << std::endl;
+			ktxTexture_Destroy(ktex);
+			return {};
+		}
+	}
+
+	VkFormat format = ktxTexture2_GetVkFormat(tex2);
+	uint32_t mipLevels = tex2->numLevels;
+	uint32_t arrayLayers = tex2->numLayers;
+
+	bool isCubemap = tex2->isCubemap && arrayLayers >= 6;
+	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
+
+	VkImageAspectFlags aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	if (hasStencil)
+	{
+		aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
+	VkImageLayout finalLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkImageCreateInfo imageCreateInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.flags = isCubemap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
+		.imageType = VK_IMAGE_TYPE_2D,
+		.format = format,
+		.extent = { tex2->baseWidth, tex2->baseHeight, 1u },
+		.mipLevels = mipLevels,
+		.arrayLayers = arrayLayers,
+		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.tiling = VK_IMAGE_TILING_OPTIMAL,
+		.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	};
+	if (isDepthFormat) imageCreateInfo.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+	VmaAllocationCreateInfo allocInfo{ .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE };
+	VmaAllocation allocation = VK_NULL_HANDLE;
+	VkImage image = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &image, &allocation, nullptr));
+
+	ktx_size_t dataSize = ktxTexture_GetDataSize(ktex);
+	VkBufferCreateInfo stagingBufInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+		.size = dataSize,
+		.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+	};
+
+	VmaAllocationCreateInfo stagingAllocInfo
+	{
+		.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+		.usage = VMA_MEMORY_USAGE_AUTO
+	};
+
+	VmaAllocationInfo stagingMappedInfo;
+	VkBuffer stagingBuffer = VK_NULL_HANDLE;
+	VmaAllocation stagingAllocation = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingBufInfo, &stagingAllocInfo, &stagingBuffer, &stagingAllocation, &stagingMappedInfo));
+	memcpy(stagingMappedInfo.pMappedData, ktex->pData, dataSize);
+	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAllocation, 0, dataSize);
+
+	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkImageMemoryBarrier toTransferBarrier{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		.srcAccessMask = 0,
+		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+		.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = image,
+		.subresourceRange = { aspectMask, 0, mipLevels, 0, arrayLayers }
+	};
+	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toTransferBarrier);
+
+	Vector<VkBufferImageCopy> copyRegions;
+	copyRegions.reserve(mipLevels * arrayLayers);
+	for (uint32_t mip = 0; mip < mipLevels; ++mip)
+	{
+		for (uint32_t layer = 0; layer < arrayLayers; ++layer)
+		{
+			ktx_size_t offset = 0;
+			ktxTexture_GetImageOffset(ktex, mip, layer, 0, &offset);
+
+			VkBufferImageCopy region
+			{
+				.bufferOffset = offset,
+				.bufferRowLength = 0,
+				.bufferImageHeight = 0,
+				.imageSubresource = { aspectMask, mip, layer, 1 },
+				.imageExtent =
+				{
+					std::max(1u, tex2->baseWidth >> mip),
+					std::max(1u, tex2->baseHeight >> mip),
+					1u
+				}
+			};
+			copyRegions.push_back(region);
+		}
+	}
+	vkCmdCopyBufferToImage(cmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
+
+	VkImageMemoryBarrier toFinalBarrier{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+		.dstAccessMask = static_cast<VkAccessFlags>(VK_ACCESS_SHADER_READ_BIT | (isDepthFormat ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT : 0u)),
+		.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		.newLayout = finalLayout,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = image,
+		.subresourceRange = { aspectMask, 0, mipLevels, 0, arrayLayers }
+	};
+	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthFormat ? VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFinalBarrier);
+	vulkanSystem.EndSingleUseCommand(cmd);
+	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAllocation);
+
+	VkSampler sampler = VK_NULL_HANDLE;
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &sampler));
+
+	Vector<VkImageView> viewList;
+	viewList.reserve(mipLevels);
+	VkImageViewType viewType = textureLoader.IsSkyBox ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+	uint32_t viewLayerCount = textureLoader.IsSkyBox ? 6u : arrayLayers;
+	if (arrayLayers > 1 && !textureLoader.IsSkyBox)
+	{
+		viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		viewLayerCount = arrayLayers;
+	}
+
+	for (uint32_t mip = 0; mip < mipLevels; ++mip)
+	{
+		VkImageViewCreateInfo viewInfo{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image = vkTex.image,
-			.viewType = (vkTex.layerCount == 6 && vkTex.depth == 1) ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D,
-			.format = vkTex.imageFormat,
-			.subresourceRange
-			{
-				.aspectMask = aspect,
-				.baseMipLevel = mip,
-				.levelCount = 1,
-				.baseArrayLayer = 0,
-				.layerCount = vkTex.layerCount
-			}
+			.image = image,
+			.viewType = viewType,
+			.format = format,
+			.subresourceRange = { aspectMask, mip, 1, 0, viewLayerCount }
 		};
-
-		VkImageView imageView = VK_NULL_HANDLE;
-		if (vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
-		{
-			std::cerr << "Failed to create image view for mip " << mip << std::endl;
-			for (int x = 0; x < imageViewList.size(); x++)
-			{
-				vulkanSystem.DestroyImageView(vulkanSystem.Device, &imageViewList[x]);
-			}
-			break;
-		}
-		imageViewList.push_back(imageView);
-	}
-
-	VkSampler imageSampler = VK_NULL_HANDLE;
-	if (vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &imageSampler) != VK_SUCCESS)
-	{
-		std::cerr << "Failed to create sampler" << std::endl;
-		for (int x = 0; x < imageViewList.size(); x++)
-		{
-			vulkanSystem.DestroyImageView(vulkanSystem.Device, &imageViewList[x]);
-		}
+		VkImageView view = VK_NULL_HANDLE;
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &view));
+		viewList.push_back(view);
 	}
 
 	Texture texture
 	{
 		.textureGuid = textureLoader.TextureId,
-		.textureIndex = static_cast<uint32_t>(TextureList.size()),
-		.width = static_cast<int>(vkTex.width),
-		.height = static_cast<int>(vkTex.height),
-		.depth = static_cast<int>(vkTex.depth),
-		.mipMapLevels = vkTex.levelCount,
-		.textureImage = vkTex.image,
-		.textureViewList = std::move(imageViewList),
-		.textureSampler = imageSampler,
-		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-		.textureByteFormat = vkTex.imageFormat,
-		.textureImageLayout = vkTex.imageLayout,
-		.sampleCount = VK_SAMPLE_COUNT_1_BIT
+		.textureIndex = static_cast<size_t>(TextureList.size()),
+		.width = static_cast<int>(tex2->baseWidth),
+		.height = static_cast<int>(tex2->baseHeight),
+		.depth = static_cast<int>(tex2->baseDepth),
+		.mipMapLevels = mipLevels,
+		.textureImage = image,
+		.textureViewList = std::move(viewList),
+		.textureSampler = sampler,
+		.TextureAllocation = allocation,
+		.textureType = textureLoader.TextureType,
+		.textureByteFormat = format,
+		.textureImageLayout = finalLayout,
+		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+		.colorChannels = ColorChannelUsed::ChannelRGBA
 	};
-		
-	if (vkTex.layerCount == 6 && vkTex.depth == 1)
+
+	if (textureLoader.IsSkyBox)
 	{
 		CubeMap = texture;
 	}
@@ -240,7 +363,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		TextureList.emplace_back(texture);
 	}
 
-	ktxVulkanDeviceInfo_Destruct(&vdi);
+	ktxTexture_Destroy(ktex);
 	return texture;
 }
 
@@ -674,27 +797,53 @@ const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& render
 
 void TextureSystem::DestroyTexture(Texture& texture)
 {
-	if (texture.textureSampler) vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
-	if (texture.textureViewList.front()) vkDestroyImageView(vulkanSystem.Device, texture.textureViewList.front(), nullptr);
-	if (texture.textureImage && texture.TextureAllocation)
+	if (texture.textureSampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
+		texture.textureSampler = VK_NULL_HANDLE;
+	}
+
+	for (VkImageView view : texture.textureViewList)
+	{
+		if (view != VK_NULL_HANDLE)
+		{
+			vkDestroyImageView(vulkanSystem.Device, view, nullptr);
+		}
+	}
+	texture.textureViewList.clear();
+
+	if (texture.RenderedCubeMapView != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(vulkanSystem.Device, texture.RenderedCubeMapView, nullptr);
+		texture.RenderedCubeMapView = VK_NULL_HANDLE;
+	}
+
+	if (texture.AttachmentArrayView != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(vulkanSystem.Device, texture.AttachmentArrayView, nullptr);
+		texture.AttachmentArrayView = VK_NULL_HANDLE;
+	}
+
+	if (texture.textureImage != VK_NULL_HANDLE && texture.TextureAllocation != VK_NULL_HANDLE)
 	{
 		vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
+		texture.textureImage = VK_NULL_HANDLE;
+		texture.TextureAllocation = VK_NULL_HANDLE;
 	}
+	texture.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
 void TextureSystem::DestroyAllTextures()
 {
-	for (auto& texture : TextureList)
+	for (auto& texture : TextureList) DestroyTexture(texture);
 	{
-		DestroyTexture(texture);
+		TextureList.clear();
 	}
-	TextureList.clear();
 
-	for (auto& pair : DepthTextureMap)
+	for (auto& pair : DepthTextureMap) DestroyTexture(pair.second);
 	{
-		DestroyTexture(pair.second);
+		DepthTextureMap.clear();
 	}
-	DepthTextureMap.clear();
 
 	for (auto& list : RenderedTextureListMap)
 	{
@@ -704,6 +853,16 @@ void TextureSystem::DestroyAllTextures()
 		}
 	}
 	RenderedTextureListMap.clear();
+
+	DestroyTexture(BRDFMap);
+	DestroyTexture(CubeMap);
+	DestroyTexture(IrradianceCubeMap);
+	DestroyTexture(PrefilterCubeMap);
+
+	BRDFMap = Texture{};
+	CubeMap = Texture{};
+	IrradianceCubeMap = Texture{};
+	PrefilterCubeMap = Texture{};
 }
 
 void TextureSystem::GenerateMipmaps(Texture& texture)

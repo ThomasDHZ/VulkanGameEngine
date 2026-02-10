@@ -25,8 +25,8 @@ void TextureBakerSystem::BakeTexture(const String& materialLoader, const String&
         return;
     }
 
-    nlohmann::json importJson = fileSystem.LoadJsonFile(materialLoader.c_str());
     nlohmann::json exportJson;
+    nlohmann::json importJson = fileSystem.LoadJsonFile(materialLoader.c_str());
 
     exportJson["MaterialId"] = importJson.value("MaterialGuid", "00000000-0000-0000-0000-000000000000");
     exportJson["Name"] = importJson.value("Name", "UnnamedMaterial");

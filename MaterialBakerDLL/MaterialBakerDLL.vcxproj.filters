@@ -13,12 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\External">
+      <UniqueIdentifier>{b7182021-d238-4493-8668-ca6c8695b499}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\External">
+      <UniqueIdentifier>{82be9726-a847-4c31-9dff-1b27cab17ac8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MaterialBakerSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextureBakerSystem.cpp">
@@ -27,11 +30,14 @@
     <ClCompile Include="TextureSamplers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\External\LodePNG\lodepng.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\LodePNG\lodepng.cpp">
+      <Filter>Source Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
+      <Filter>Source Files\External</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,26 +47,23 @@
     <ClInclude Include="TextureBakerSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\bc7enc_rdo\bc7enc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\ktx\include\ktx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\ktx\include\ktxvulkan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\LodePNG\lodepng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextureSamplers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ktx\include\ktx.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\ktx\include\ktxvulkan.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\LodePNG\lodepng.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\External</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
