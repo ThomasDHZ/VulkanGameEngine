@@ -45,6 +45,7 @@ struct Texture
     VkImageLayout         textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
     ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
+    bool                  IsRenderPassAttachment = false;
 };
 
 struct VulkanRenderPass;

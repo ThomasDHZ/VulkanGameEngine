@@ -3,7 +3,7 @@
   "LightId": "d6433982-e92d-4f75-8145-0b6eff0a2129",
   "LightType": 0,
   "LightColor": [ 1.00, 0.95, 0.90 ],
-  "LightDirection": [ -0.7, -0.7, 1.0 ],
+  "LightDirection": [ -0.7, 1.0, 0.284 ],
   "LightIntensity": 2.5,
   "ShadowStrength": 0.70,
   "ShadowBias": 0.015,

@@ -176,5 +176,8 @@
     <ClInclude Include="..\External\ktx\include\ktxvulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
+      <Filter>External</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

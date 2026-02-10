@@ -54,7 +54,8 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 				.textureByteFormat = textureLoader.TextureByteFormat,
 				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-				.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+				.colorChannels = static_cast<ColorChannelUsed>(textureChannels),
+				.IsRenderPassAttachment = false
 			};
 		}
 		else
@@ -138,44 +139,51 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	}
 
 	ktxTexture* ktex = nullptr;
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(
+		path.c_str(),
+		KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+		&ktex
+	);
+
 	if (result != KTX_SUCCESS)
 	{
-		std::cerr << "ktxTexture_CreateFromNamedFile failed: " << ktxErrorString(result) << std::endl;
+		std::cerr << "Failed to load KTX2: " << path << " - " << ktxErrorString(result) << std::endl;
 		return {};
 	}
 
 	if (ktex->classId != ktxTexture2_c)
 	{
+		std::cout << "[KTX] KTX1 file detected, falling back to CreateTexture: " << path << std::endl;
 		ktxTexture_Destroy(ktex);
-		return CreateTexture(textureLoader); // Fallback for KTX1
+		return CreateTexture(textureLoader);
 	}
 
-	ktxTexture2* tex2 = (ktxTexture2*)ktex;
-
-	// Basis Universal transcoding (if needed)
+	ktxTexture2* tex2 = reinterpret_cast<ktxTexture2*>(ktex);
 	bool needsTranscode = ktxTexture2_NeedsTranscoding(tex2);
-	ktx_transcode_fmt_e targetFmt = KTX_TTF_RGBA32; // Safe uncompressed fallback
+	VkFormat format = ktxTexture2_GetVkFormat(tex2);
+	ktx_size_t dataSize = ktxTexture_GetDataSize(ktex);
 	if (needsTranscode)
 	{
 		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
 		Vector<Candidate> candidates;
+
 		if (textureLoader.UsingSRGBFormat)
 		{
-			candidates.push_back(Candidate{ VK_FORMAT_BC7_SRGB_BLOCK, KTX_TTF_BC7_RGBA });
-			candidates.push_back(Candidate{ VK_FORMAT_ASTC_4x4_SRGB_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
-			candidates.push_back(Candidate{ VK_FORMAT_BC7_UNORM_BLOCK, KTX_TTF_BC7_RGBA });
-			candidates.push_back(Candidate{ VK_FORMAT_ASTC_4x4_UNORM_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back({ VK_FORMAT_BC7_SRGB_BLOCK,    KTX_TTF_BC7_RGBA });
+			candidates.push_back({ VK_FORMAT_ASTC_4x4_SRGB_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back({ VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK, KTX_TTF_ETC2_RGBA });
 		}
 		else
 		{
-			candidates.push_back({ VK_FORMAT_BC7_UNORM_BLOCK, KTX_TTF_BC7_RGBA });
+			candidates.push_back({ VK_FORMAT_BC7_UNORM_BLOCK,    KTX_TTF_BC7_RGBA });
 			candidates.push_back({ VK_FORMAT_ASTC_4x4_UNORM_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back({ VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, KTX_TTF_ETC2_RGBA });
 		}
 
+		ktx_transcode_fmt_e targetFmt = KTX_TTF_RGBA32;
 		for (const auto& candidate : candidates)
 		{
-			VkFormatProperties props;
+			VkFormatProperties props{};
 			vkGetPhysicalDeviceFormatProperties(vulkanSystem.PhysicalDevice, candidate.vkFmt, &props);
 			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
 			{
@@ -187,28 +195,24 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		result = ktxTexture2_TranscodeBasis(tex2, targetFmt, 0);
 		if (result != KTX_SUCCESS)
 		{
-			std::cerr << "ktxTexture2_TranscodeBasis failed: " << ktxErrorString(result) << std::endl;
+			std::cerr << "Transcode failed: " << ktxErrorString(result) << std::endl;
 			ktxTexture_Destroy(ktex);
 			return {};
 		}
+
+		format = ktxTexture2_GetVkFormat(tex2);
 	}
 
-	VkFormat format = ktxTexture2_GetVkFormat(tex2);
 	uint32_t mipLevels = tex2->numLevels;
 	uint32_t arrayLayers = tex2->numLayers;
-
-	bool isCubemap = tex2->isCubemap && arrayLayers >= 6;
+	bool isCubemap = tex2->isCubemap && arrayLayers == 6;
 	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
-
 	VkImageAspectFlags aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	if (hasStencil)
-	{
-		aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	}
-	VkImageLayout finalLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	if (hasStencil) aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-	VkImageCreateInfo imageCreateInfo
+	VkImageLayout finalLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	VkImageCreateInfo imageCI
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.flags = isCubemap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
@@ -223,148 +227,159 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
 	};
-	if (isDepthFormat) imageCreateInfo.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	if (isDepthFormat) imageCI.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	if (mipLevels > 1) imageCI.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-	VmaAllocationCreateInfo allocInfo{ .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE };
-	VmaAllocation allocation = VK_NULL_HANDLE;
 	VkImage image = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &image, &allocation, nullptr));
-
-	ktx_size_t dataSize = ktxTexture_GetDataSize(ktex);
-	VkBufferCreateInfo stagingBufInfo
+	VmaAllocation allocation = VK_NULL_HANDLE;
+	VmaAllocationCreateInfo vmaAllocCI{ .usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE };
+	if (vmaCreateImage(bufferSystem.vmaAllocator, &imageCI, &vmaAllocCI, &image, &allocation, nullptr) != VK_SUCCESS)
 	{
+		std::cerr << "vmaCreateImage failed for " << path << std::endl;
+		ktxTexture_Destroy(ktex);
+		return {};
+	}
+
+	VkBufferCreateInfo stagingCI{
 		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.size = dataSize,
 		.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 	};
-
-	VmaAllocationCreateInfo stagingAllocInfo
-	{
+	VmaAllocationCreateInfo stagingAllocCI{
 		.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
 		.usage = VMA_MEMORY_USAGE_AUTO
 	};
-
-	VmaAllocationInfo stagingMappedInfo;
+	VmaAllocationInfo mappedInfo{};
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
-	VmaAllocation stagingAllocation = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingBufInfo, &stagingAllocInfo, &stagingBuffer, &stagingAllocation, &stagingMappedInfo));
-	memcpy(stagingMappedInfo.pMappedData, ktex->pData, dataSize);
-	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAllocation, 0, dataSize);
+	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
+
+	if (vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingCI, &stagingAllocCI,
+		&stagingBuffer, &stagingAlloc, &mappedInfo) != VK_SUCCESS)
+	{
+		std::cerr << "Staging buffer creation failed for " << path << std::endl;
+		vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
+		ktxTexture_Destroy(ktex);
+		return {};
+	}
+	memcpy(mappedInfo.pMappedData, ktex->pData, dataSize);
+	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, dataSize);
 
 	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
-	VkImageMemoryBarrier toTransferBarrier{
+	VkImageMemoryBarrier barrierToDst{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		.srcAccessMask = 0,
 		.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
 		.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.image = image,
 		.subresourceRange = { aspectMask, 0, mipLevels, 0, arrayLayers }
 	};
-	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toTransferBarrier);
+	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToDst);
 
-	Vector<VkBufferImageCopy> copyRegions;
+	std::vector<VkBufferImageCopy> copyRegions;
 	copyRegions.reserve(mipLevels * arrayLayers);
-	for (uint32_t mip = 0; mip < mipLevels; ++mip)
+	for (uint32 mip = 0; mip < mipLevels; ++mip)
 	{
-		for (uint32_t layer = 0; layer < arrayLayers; ++layer)
-		{
-			ktx_size_t offset = 0;
-			ktxTexture_GetImageOffset(ktex, mip, layer, 0, &offset);
+		ktx_size_t levelOffset = 0;
+		ktxTexture_GetImageOffset(ktex, mip, 0, 0, &levelOffset);
 
-			VkBufferImageCopy region
-			{
-				.bufferOffset = offset,
-				.bufferRowLength = 0,
-				.bufferImageHeight = 0,
-				.imageSubresource = { aspectMask, mip, layer, 1 },
-				.imageExtent =
-				{
-					std::max(1u, tex2->baseWidth >> mip),
-					std::max(1u, tex2->baseHeight >> mip),
-					1u
-				}
-			};
+		uint32 mipW = std::max(1u, tex2->baseWidth >> mip);
+		uint32 mipH = std::max(1u, tex2->baseHeight >> mip);
+		ktx_size_t levelSize = ktxTexture_GetImageSize(ktex, mip);
+		ktx_size_t layerSize = levelSize / arrayLayers;
+
+		for (uint32 layer = 0; layer < arrayLayers; ++layer)
+		{
+			VkBufferImageCopy region{};
+			region.bufferOffset = levelOffset + layer * layerSize;
+			region.imageSubresource = { aspectMask, mip, layer, 1 };
+			region.imageExtent = { mipW, mipH, 1 };
 			copyRegions.push_back(region);
 		}
 	}
-	vkCmdCopyBufferToImage(cmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
 
-	VkImageMemoryBarrier toFinalBarrier{
+	vkCmdCopyBufferToImage(cmd, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32>(copyRegions.size()), copyRegions.data());
+	VkImageMemoryBarrier barrierToFinal{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-		.dstAccessMask = static_cast<VkAccessFlags>(VK_ACCESS_SHADER_READ_BIT | (isDepthFormat ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT : 0u)),
+		.dstAccessMask = static_cast<VkAccessFlags>(isDepthFormat ? VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT : VK_ACCESS_SHADER_READ_BIT),
 		.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		.newLayout = finalLayout,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.image = image,
 		.subresourceRange = { aspectMask, 0, mipLevels, 0, arrayLayers }
 	};
-	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthFormat ? VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFinalBarrier);
+	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthFormat ? VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToFinal);
 	vulkanSystem.EndSingleUseCommand(cmd);
-	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAllocation);
+	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
+	ktxTexture_Destroy(ktex);
 
 	VkSampler sampler = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &sampler));
-
-	Vector<VkImageView> viewList;
-	viewList.reserve(mipLevels);
-	VkImageViewType viewType = textureLoader.IsSkyBox ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
-	uint32_t viewLayerCount = textureLoader.IsSkyBox ? 6u : arrayLayers;
-	if (arrayLayers > 1 && !textureLoader.IsSkyBox)
+	if (vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &sampler) != VK_SUCCESS)
 	{
-		viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-		viewLayerCount = arrayLayers;
+		std::cerr << "Failed to create sampler for " << path << std::endl;
+		vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
+		return {};
 	}
 
-	for (uint32_t mip = 0; mip < mipLevels; ++mip)
+	Vector<VkImageView> views;
+	views.reserve(mipLevels);
+	VkImageViewType viewType = isCubemap && textureLoader.IsSkyBox ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+	uint32 viewLayerCount = isCubemap && textureLoader.IsSkyBox ? 6u : arrayLayers;
+
+	for (uint32 mip = 0; mip < mipLevels; ++mip)
 	{
-		VkImageViewCreateInfo viewInfo{
+		VkImageViewCreateInfo viewCI{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = image,
 			.viewType = viewType,
 			.format = format,
 			.subresourceRange = { aspectMask, mip, 1, 0, viewLayerCount }
 		};
+
 		VkImageView view = VK_NULL_HANDLE;
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &view));
-		viewList.push_back(view);
+		if (vkCreateImageView(vulkanSystem.Device, &viewCI, nullptr, &view) != VK_SUCCESS)
+		{
+			std::cerr << "Failed to create mip " << mip << " view for " << path << std::endl;
+			for (auto v : views) vkDestroyImageView(vulkanSystem.Device, v, nullptr);
+			vkDestroySampler(vulkanSystem.Device, sampler, nullptr);
+			vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
+			return {};
+		}
+		views.push_back(view);
 	}
 
-	Texture texture
-	{
+	Texture tex{
 		.textureGuid = textureLoader.TextureId,
-		.textureIndex = static_cast<size_t>(TextureList.size()),
+		.textureIndex = TextureList.size(),
 		.width = static_cast<int>(tex2->baseWidth),
 		.height = static_cast<int>(tex2->baseHeight),
 		.depth = static_cast<int>(tex2->baseDepth),
 		.mipMapLevels = mipLevels,
 		.textureImage = image,
-		.textureViewList = std::move(viewList),
+		.textureViewList = std::move(views),
 		.textureSampler = sampler,
 		.TextureAllocation = allocation,
-		.textureType = textureLoader.TextureType,
+		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
 		.textureByteFormat = format,
 		.textureImageLayout = finalLayout,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-		.colorChannels = ColorChannelUsed::ChannelRGBA
+		.colorChannels = ColorChannelUsed::ChannelRGBA,
+		.IsRenderPassAttachment = false
 	};
 
-	if (textureLoader.IsSkyBox)
+	if (textureLoader.IsSkyBox && isCubemap)
 	{
-		CubeMap = texture;
+		CubeMap = tex;
 	}
 	else
 	{
-		TextureList.emplace_back(texture);
+		TextureList.emplace_back(tex);
 	}
 
-	ktxTexture_Destroy(ktex);
-	return texture;
+	std::cout << "[KTX Load Success] " << path << " loaded as TextureGuid " << textureLoader.TextureId.ToString() << std::endl;
+
+	return tex;
 }
 
 //VkGuid TextureSystem::CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels)
@@ -424,7 +439,6 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	bool isDepthFormat = (renderPassAttachmentTexture.Format >= VK_FORMAT_D16_UNORM && renderPassAttachmentTexture.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderPassAttachmentTexture.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	bool hasStencil = (renderPassAttachmentTexture.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderPassAttachmentTexture.Format == VK_FORMAT_D24_UNORM_S8_UINT);
 
-	// Base usage flags required for all render pass textures
 	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |
 		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
@@ -439,17 +453,18 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
 		.sampleCount = vulkanRenderPass.SampleCount,
+		.IsRenderPassAttachment = true
 	};
 
 	switch (renderPassAttachmentTexture.RenderTextureType)
 	{
-	case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
-	case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
-	case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
-	case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
-	case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
-	case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
-	case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture; break;
+		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
+		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
+		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
+		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
+		case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture; break;
 	}
 
 	if (isDepthFormat)
@@ -470,7 +485,8 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
 
-	VkImageCreateInfo imageInfo = {
+	VkImageCreateInfo imageInfo = 
+	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.flags = vulkanRenderPass.IsCubeMapRenderPass ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
 		.imageType = VK_IMAGE_TYPE_2D,
@@ -485,7 +501,8 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
-	VmaAllocationCreateInfo allocInfo = {
+	VmaAllocationCreateInfo allocInfo = 
+	{
 		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
 	};
 
@@ -830,29 +847,41 @@ void TextureSystem::DestroyTexture(Texture& texture)
 		texture.textureImage = VK_NULL_HANDLE;
 		texture.TextureAllocation = VK_NULL_HANDLE;
 	}
+
+	texture.textureGuid = TextureGuid();
+	texture.renderPassGuid = RenderPassGuid();
+	texture.textureIndex = SIZE_MAX;
+	texture.width = 1;
+	texture.height = 1;
+	texture.depth = 1;
+	texture.mipMapLevels = 0;
+	texture.textureMemory = VK_NULL_HANDLE;
+	texture.ImGuiDescriptorSet = VK_NULL_HANDLE;
+	texture.textureUsage = TextureUsageEnum::kUse_Undefined;
+	texture.textureType = TextureTypeEnum::TextureType_UNKNOWN;
+	texture.textureByteFormat = VK_FORMAT_UNDEFINED;
 	texture.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	texture.sampleCount = VK_SAMPLE_COUNT_1_BIT;
+	texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 }
 
 void TextureSystem::DestroyAllTextures()
 {
-	for (auto& texture : TextureList) DestroyTexture(texture);
+	for (auto& texture : TextureList)
 	{
-		TextureList.clear();
-	}
 
-	for (auto& pair : DepthTextureMap) DestroyTexture(pair.second);
-	{
-		DepthTextureMap.clear();
-	}
-
-	for (auto& list : RenderedTextureListMap)
-	{
-		for (auto& texture : list.second)
-		{
 			DestroyTexture(texture);
+	}
+	TextureList.clear();
+
+	for (auto& texture : DepthTextureMap)
+	{
+		if (!texture.second.IsRenderPassAttachment)
+		{
+			DestroyTexture(texture.second);
 		}
 	}
-	RenderedTextureListMap.clear();
+	DepthTextureMap.clear();
 
 	DestroyTexture(BRDFMap);
 	DestroyTexture(CubeMap);

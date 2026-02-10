@@ -27,8 +27,8 @@ private:
 		bool UsingRenderDoc = false;
 		DLL_EXPORT bool IsRenderDocInjected();
 #endif
-
 		DLL_EXPORT void SetRootDirectory(const String& engineRoot);
+		DLL_EXPORT VkResult                 DumpVMAStats() const;
 };
 extern DLL_EXPORT DebugSystem& debugSystem;
 inline DebugSystem& DebugSystem::Get()

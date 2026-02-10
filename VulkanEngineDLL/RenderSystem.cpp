@@ -921,20 +921,28 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
 void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 {
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &renderPass.RenderPass);
-    //vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.CommandBuffer, 1);
+//    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.com, 1);
     vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &renderPass.FrameBufferList[0], vulkanSystem.SwapChainImageCount);
 
     renderPass.RenderPassId = VkGuid();
-    renderPass.SampleCount = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
+    renderPass.SubPassCount = UINT32_MAX;
+    renderPass.SampleCount = VK_SAMPLE_COUNT_1_BIT;
     renderPass.RenderPass = VK_NULL_HANDLE;
+    renderPass.InputTextureIdList.clear();
+    renderPass.FrameBufferList.clear();
+    renderPass.ClearValueList.clear();
+    renderPass.RenderPassResolution = ivec2();
+    renderPass.MaxPushConstantSize = 0;
+    renderPass.UseDefaultSwapChainResolution = false;
     renderPass.IsRenderedToSwapchain = false;
+    renderPass.UseCubeMapMultiView = false;
+    renderPass.IsCubeMapRenderPass = false;
 }
 
 void RenderSystem::Destroy()
 {
-    DestroyRenderPasses();
     DestroyRenderPipelines();
-    vulkanSystem.DestroyRenderer();
+    DestroyRenderPasses();
 }
 
 void RenderSystem::DestroyRenderPasses()
@@ -943,7 +951,7 @@ void RenderSystem::DestroyRenderPasses()
     {
         DestroyRenderPass(renderPass.second);
     }
-    renderSystem.RenderPassMap.clear();
+    //renderSystem.RenderPassMap.clear();
 }
 
 void RenderSystem::DestroyRenderPipelines()

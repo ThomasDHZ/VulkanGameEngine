@@ -175,11 +175,11 @@ void GameSystem::Draw(float deltaTime)
 void GameSystem::Destroy()
 {
     ImGui_Destroy(imGuiRenderer);
+    renderSystem.Destroy();
+    textureSystem.DestroyAllTextures();
     meshSystem.DestroyAllGameObjects();
     materialSystem.DestroyAllMaterials();
-    textureSystem.DestroyAllTextures();
-    bufferSystem.DestroyAllBuffers();
     levelSystem.DestroyLevel();
-    renderSystem.Destroy();
+    bufferSystem.DestroyAllBuffers();
     memorySystem.ReportLeaks();
 }

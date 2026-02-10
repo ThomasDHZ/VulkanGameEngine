@@ -180,6 +180,7 @@
     <ClInclude Include="..\External\imgui\imstb_truetype.h" />
     <ClInclude Include="..\External\ktx\include\ktx.h" />
     <ClInclude Include="..\External\ktx\include\ktxvulkan.h" />
+    <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="Keyboard.h" />

@@ -12,6 +12,7 @@
 #ifndef __ANDROID__
 int main()
 {
+    int a = 0;
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
@@ -38,6 +39,7 @@ int main()
             const float frameTime = deltaTime.GetFrameTime();
             vulkanWindow->PollEventHandler(vulkanWindow);
 
+
             gameSystem.Update(frameTime);
             gameSystem.DebugUpdate(frameTime);
             gameSystem.Draw(frameTime);
@@ -45,6 +47,9 @@ int main()
         }
         vkDeviceWaitIdle(vulkanSystem.Device);
         gameSystem.Destroy();
+        //ImGui_ImplVulkan_Shutdown();
+        debugSystem.DumpVMAStats();
+        vulkanSystem.DestroyRenderer();
         vulkanWindow->DestroyWindow(vulkanWindow);
     }
     catch (const VulkanError& e)
