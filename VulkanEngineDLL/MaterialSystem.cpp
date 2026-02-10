@@ -112,7 +112,7 @@ void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
 {
     Material& material = FindMaterial(materialGuid);
     VulkanBuffer& materialBuffer = bufferSystem.VulkanBufferMap[material.MaterialBufferId];
-    //Material_DestroyBuffer(renderSystem.renderer, materialBuffer);
+    bufferSystem.DestroyBuffer(materialBuffer);
     bufferSystem.VulkanBufferMap.erase(material.MaterialBufferId);
 }
 

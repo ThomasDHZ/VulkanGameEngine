@@ -55,7 +55,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
 				.colorChannels = static_cast<ColorChannelUsed>(textureChannels),
-				.IsRenderPassAttachment = false
+			//	.IsRenderPassAttachment = false
 			};
 		}
 		else
@@ -166,7 +166,6 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	{
 		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
 		Vector<Candidate> candidates;
-
 		if (textureLoader.UsingSRGBFormat)
 		{
 			candidates.push_back({ VK_FORMAT_BC7_SRGB_BLOCK,    KTX_TTF_BC7_RGBA });
@@ -250,10 +249,10 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
 		.usage = VMA_MEMORY_USAGE_AUTO
 	};
+
 	VmaAllocationInfo mappedInfo{};
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-
 	if (vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingCI, &stagingAllocCI,
 		&stagingBuffer, &stagingAlloc, &mappedInfo) != VK_SUCCESS)
 	{
@@ -349,14 +348,14 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		views.push_back(view);
 	}
 
-	Texture tex{
+	Texture texture{
 		.textureGuid = textureLoader.TextureId,
 		.textureIndex = TextureList.size(),
 		.width = static_cast<int>(tex2->baseWidth),
 		.height = static_cast<int>(tex2->baseHeight),
 		.depth = static_cast<int>(tex2->baseDepth),
 		.mipMapLevels = mipLevels,
-		.textureImage = image,
+		//.textureImage = image,
 		.textureViewList = std::move(views),
 		.textureSampler = sampler,
 		.TextureAllocation = allocation,
@@ -365,21 +364,20 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.textureImageLayout = finalLayout,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
 		.colorChannels = ColorChannelUsed::ChannelRGBA,
-		.IsRenderPassAttachment = false
+	//	.IsRenderPassAttachment = false
 	};
 
 	if (textureLoader.IsSkyBox && isCubemap)
 	{
-		CubeMap = tex;
+		CubeMap = texture;
 	}
 	else
 	{
-		TextureList.emplace_back(tex);
+		TextureList.emplace_back(texture);
 	}
 
 	std::cout << "[KTX Load Success] " << path << " loaded as TextureGuid " << textureLoader.TextureId.ToString() << std::endl;
-
-	return tex;
+	return texture;
 }
 
 //VkGuid TextureSystem::CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels)
@@ -453,7 +451,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
 		.sampleCount = vulkanRenderPass.SampleCount,
-		.IsRenderPassAttachment = true
+		//.IsRenderPassAttachment = true
 	};
 
 	switch (renderPassAttachmentTexture.RenderTextureType)
@@ -508,7 +506,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	VmaAllocation allocation = VK_NULL_HANDLE;
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
-	texture.TextureAllocation = allocation;
+	assert(allocation != VK_NULL_HANDLE);
 
 	VkImageAspectFlags aspectMask;
 	if (isDepthFormat)
@@ -602,6 +600,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 		allocInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 	}
 
+	
 	VmaAllocationInfo allocOut = {};
 	VmaAllocation allocation = VK_NULL_HANDLE;
 	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, &allocOut));
@@ -841,28 +840,21 @@ void TextureSystem::DestroyTexture(Texture& texture)
 		texture.AttachmentArrayView = VK_NULL_HANDLE;
 	}
 
-	if (texture.textureImage != VK_NULL_HANDLE && texture.TextureAllocation != VK_NULL_HANDLE)
+	if (texture.textureImage != VK_NULL_HANDLE)
 	{
-		vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
+		if (texture.TextureAllocation != VK_NULL_HANDLE)
+		{
+			std::cout << "[VMA] Destroying image + allocation for " << texture.textureGuid.ToString() << "\n";
+			vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
+			texture.TextureAllocation = VK_NULL_HANDLE;
+		}
+		else
+		{
+			vkDestroyImage(vulkanSystem.Device, texture.textureImage, nullptr);
+		}
 		texture.textureImage = VK_NULL_HANDLE;
-		texture.TextureAllocation = VK_NULL_HANDLE;
 	}
-
-	texture.textureGuid = TextureGuid();
-	texture.renderPassGuid = RenderPassGuid();
-	texture.textureIndex = SIZE_MAX;
-	texture.width = 1;
-	texture.height = 1;
-	texture.depth = 1;
-	texture.mipMapLevels = 0;
-	texture.textureMemory = VK_NULL_HANDLE;
-	texture.ImGuiDescriptorSet = VK_NULL_HANDLE;
-	texture.textureUsage = TextureUsageEnum::kUse_Undefined;
-	texture.textureType = TextureTypeEnum::TextureType_UNKNOWN;
-	texture.textureByteFormat = VK_FORMAT_UNDEFINED;
-	texture.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	texture.sampleCount = VK_SAMPLE_COUNT_1_BIT;
-	texture.colorChannels = ColorChannelUsed::ChannelRGBA;
+	texture = Texture();
 }
 
 void TextureSystem::DestroyAllTextures()
@@ -876,10 +868,9 @@ void TextureSystem::DestroyAllTextures()
 
 	for (auto& texture : DepthTextureMap)
 	{
-		if (!texture.second.IsRenderPassAttachment)
-		{
+		
 			DestroyTexture(texture.second);
-		}
+	
 	}
 	DepthTextureMap.clear();
 

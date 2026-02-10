@@ -228,182 +228,182 @@ ktxVulkanTexture FileSystem::LoadKTX2File(const String& filePath)
 
 void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
 {
-    stbi_flip_vertically_on_write(true);  
-    Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
-    for (int x = 0; x < attachmentTextureList.size(); x++)
-    {
-        Texture texture = attachmentTextureList[x];
-        VmaAllocator allocator = bufferSystem.vmaAllocator;
-        VkImageMemoryBarrier barrier =
-        {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-            .oldLayout = texture.textureImageLayout,
-            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = texture.textureImage,
-            .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            }
-        };
+    //stbi_flip_vertically_on_write(true);  
+    //Vector<Texture> attachmentTextureList = textureSystem.FindRenderedTextureList(renderPassId);
+    //for (int x = 0; x < attachmentTextureList.size(); x++)
+    //{
+    //    Texture texture = attachmentTextureList[x];
+    //    VmaAllocator allocator = bufferSystem.vmaAllocator;
+    //    VkImageMemoryBarrier barrier =
+    //    {
+    //        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    //        .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+    //        .oldLayout = texture.textureImageLayout,
+    //        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+    //        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    //        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    //        .image = texture.textureImage,
+    //        .subresourceRange =
+    //        {
+    //            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+    //            .baseMipLevel = 0,
+    //            .levelCount = 1,
+    //            .baseArrayLayer = 0,
+    //            .layerCount = 1,
+    //        }
+    //    };
 
-        size_t bytesPerPixel = 4;
-        bool is16BitFormat = false;
-        if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
-            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
-            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) {
-            bytesPerPixel = 16;
-            std::cerr << "Warning: 32-bit float format not yet supported for PNG export\n";
-            continue;
-        }
-        else if (texture.textureByteFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
-            texture.textureByteFormat <= VK_FORMAT_R16G16B16A16_SFLOAT)  // covers 91-97 inclusive
-        {
-            bytesPerPixel = 8;
-            is16BitFormat = true;
-        }
+    //    size_t bytesPerPixel = 4;
+    //    bool is16BitFormat = false;
+    //    if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
+    //        texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
+    //        texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) {
+    //        bytesPerPixel = 16;
+    //        std::cerr << "Warning: 32-bit float format not yet supported for PNG export\n";
+    //        continue;
+    //    }
+    //    else if (texture.textureByteFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
+    //        texture.textureByteFormat <= VK_FORMAT_R16G16B16A16_SFLOAT)  // covers 91-97 inclusive
+    //    {
+    //        bytesPerPixel = 8;
+    //        is16BitFormat = true;
+    //    }
 
-        if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_GENERAL) barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-        else barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+    //    if (texture.textureImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    //    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    //    else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_GENERAL) barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    //    else barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 
-        VkBufferCreateInfo bufferInfo =
-        {
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = static_cast<VkDeviceSize>(texture.width) * texture.height * bytesPerPixel,
-            .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            .sharingMode = VK_SHARING_MODE_EXCLUSIVE
-        };
+    //    VkBufferCreateInfo bufferInfo =
+    //    {
+    //        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+    //        .size = static_cast<VkDeviceSize>(texture.width) * texture.height * bytesPerPixel,
+    //        .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+    //        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    //    };
 
-        VmaAllocationCreateInfo allocInfo =
-        {
-            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
-            .usage = VMA_MEMORY_USAGE_AUTO
-        };
+    //    VmaAllocationCreateInfo allocInfo =
+    //    {
+    //        .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+    //        .usage = VMA_MEMORY_USAGE_AUTO
+    //    };
 
-        VkBufferImageCopy region =
-        {
-            .bufferOffset = 0,
-            .bufferRowLength = 0,
-            .bufferImageHeight = 0,
-            .imageSubresource
-                {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .mipLevel = 0,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-                },
-            .imageOffset = { 0, 0, 0 },
-            .imageExtent = 
-                {
-                    static_cast<uint32_t>(texture.width),
-                    static_cast<uint32_t>(texture.height),
-                    1
-                }
-        };
+    //    VkBufferImageCopy region =
+    //    {
+    //        .bufferOffset = 0,
+    //        .bufferRowLength = 0,
+    //        .bufferImageHeight = 0,
+    //        .imageSubresource
+    //            {
+    //                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+    //                .mipLevel = 0,
+    //                .baseArrayLayer = 0,
+    //                .layerCount = 1,
+    //            },
+    //        .imageOffset = { 0, 0, 0 },
+    //        .imageExtent = 
+    //            {
+    //                static_cast<uint32_t>(texture.width),
+    //                static_cast<uint32_t>(texture.height),
+    //                1
+    //            }
+    //    };
 
-        VmaAllocationInfo allocOut{};
-        VkBuffer stagingBuffer = VK_NULL_HANDLE;
-        VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-        VkCommandBuffer command = vulkanSystem.BeginSingleUseCommand();
-        vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr,  1, &barrier);
-        VULKAN_THROW_IF_FAIL(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut));
+    //    VmaAllocationInfo allocOut{};
+    //    VkBuffer stagingBuffer = VK_NULL_HANDLE;
+    //    VmaAllocation stagingAlloc = VK_NULL_HANDLE;
+    //    VkCommandBuffer command = vulkanSystem.BeginSingleUseCommand();
+    //    vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr,  1, &barrier);
+    //    VULKAN_THROW_IF_FAIL(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut));
 
-        bool needsUnmap = false;
-        void* mappedData = allocOut.pMappedData;
-        if (!mappedData)
-        {
-            VULKAN_THROW_IF_FAIL(vmaMapMemory(allocator, stagingAlloc, &mappedData));
-            needsUnmap = true;
-        }
-        vkCmdCopyImageToBuffer(command, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
-        vulkanSystem.EndSingleUseCommand(command);
+    //    bool needsUnmap = false;
+    //    void* mappedData = allocOut.pMappedData;
+    //    if (!mappedData)
+    //    {
+    //        VULKAN_THROW_IF_FAIL(vmaMapMemory(allocator, stagingAlloc, &mappedData));
+    //        needsUnmap = true;
+    //    }
+    //    vkCmdCopyImageToBuffer(command, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+    //    vulkanSystem.EndSingleUseCommand(command);
 
-        Vector<byte> png;
-        String fileName = filePath + std::to_string(x) + (is16BitFormat ? "_16bit.png" : "_8bit.png");
-        if (!is16BitFormat)
-        {
-            // 8-bit path (albedo, emission)
-            Vector<uint8> pixels(texture.width * texture.height * 4);
-            const uint8* src = static_cast<const uint8*>(mappedData);
+    //    Vector<byte> png;
+    //    String fileName = filePath + std::to_string(x) + (is16BitFormat ? "_16bit.png" : "_8bit.png");
+    //    if (!is16BitFormat)
+    //    {
+    //        // 8-bit path (albedo, emission)
+    //        Vector<uint8> pixels(texture.width * texture.height * 4);
+    //        const uint8* src = static_cast<const uint8*>(mappedData);
 
-            for (uint32 y = 0; y < texture.height; ++y)
-            {
-                uint8* dstRow = pixels.data() + y * texture.width * 4;  // ? no flip
-                memcpy(dstRow, src, texture.width * 4);
-                src += texture.width * 4;
-            }
+    //        for (uint32 y = 0; y < texture.height; ++y)
+    //        {
+    //            uint8* dstRow = pixels.data() + y * texture.width * 4;  // ? no flip
+    //            memcpy(dstRow, src, texture.width * 4);
+    //            src += texture.width * 4;
+    //        }
 
-            std::vector<unsigned char> pngData;
-            unsigned error = lodepng::encode(pngData,
-                pixels.data(),
-                texture.width,
-                texture.height,
-                LCT_RGBA,
-                8);
+    //        std::vector<unsigned char> pngData;
+    //        unsigned error = lodepng::encode(pngData,
+    //            pixels.data(),
+    //            texture.width,
+    //            texture.height,
+    //            LCT_RGBA,
+    //            8);
 
-            if (error)
-            {
-                std::cerr << "lodepng encode error (8-bit): " << lodepng_error_text(error) << "\n";
-            }
-            else
-            {
-                lodepng::save_file(pngData, fileName);
-            }
-        }
-        else
-        {
-            // 16-bit lossless path
-            Vector<uint16> pixels16(texture.width * texture.height * 4);
-            const uint16* src = static_cast<const uint16*>(mappedData);
+    //        if (error)
+    //        {
+    //            std::cerr << "lodepng encode error (8-bit): " << lodepng_error_text(error) << "\n";
+    //        }
+    //        else
+    //        {
+    //            lodepng::save_file(pngData, fileName);
+    //        }
+    //    }
+    //    else
+    //    {
+    //        // 16-bit lossless path
+    //        Vector<uint16> pixels16(texture.width * texture.height * 4);
+    //        const uint16* src = static_cast<const uint16*>(mappedData);
 
-            for (uint32 y = 0; y < texture.height; ++y)
-            {
-                uint16* dstRow = pixels16.data() + y * texture.width * 4;  // ? no flip
-                for (uint32 px = 0; px < texture.width; ++px)
-                {
-                    for (uint32 ch = 0; ch < 4; ++ch)
-                    {
-                        uint16 value = src[px * 4 + ch];
-                        // Always swap to big-endian for PNG 16-bit
-                        uint16 swapped = ((value >> 8) & 0xFF) | ((value & 0xFF) << 8);
-                        dstRow[px * 4 + ch] = swapped;
-                    }
-                }
-                src += texture.width * 4;
-            }
+    //        for (uint32 y = 0; y < texture.height; ++y)
+    //        {
+    //            uint16* dstRow = pixels16.data() + y * texture.width * 4;  // ? no flip
+    //            for (uint32 px = 0; px < texture.width; ++px)
+    //            {
+    //                for (uint32 ch = 0; ch < 4; ++ch)
+    //                {
+    //                    uint16 value = src[px * 4 + ch];
+    //                    // Always swap to big-endian for PNG 16-bit
+    //                    uint16 swapped = ((value >> 8) & 0xFF) | ((value & 0xFF) << 8);
+    //                    dstRow[px * 4 + ch] = swapped;
+    //                }
+    //            }
+    //            src += texture.width * 4;
+    //        }
 
-            std::vector<unsigned char> pngData;
-            unsigned error = lodepng::encode(pngData,
-                reinterpret_cast<unsigned char*>(pixels16.data()),
-                texture.width,
-                texture.height,
-                LCT_RGBA,
-                16);
+    //        std::vector<unsigned char> pngData;
+    //        unsigned error = lodepng::encode(pngData,
+    //            reinterpret_cast<unsigned char*>(pixels16.data()),
+    //            texture.width,
+    //            texture.height,
+    //            LCT_RGBA,
+    //            16);
 
-            if (error)
-            {
-                std::cerr << "lodepng encode error (16-bit): " << lodepng_error_text(error) << "\n";
-            }
-            else
-            {
-                lodepng::save_file(pngData, fileName);
-            }
-        }
+    //        if (error)
+    //        {
+    //            std::cerr << "lodepng encode error (16-bit): " << lodepng_error_text(error) << "\n";
+    //        }
+    //        else
+    //        {
+    //            lodepng::save_file(pngData, fileName);
+    //        }
+    //    }
 
-        if (needsUnmap)
-        {
-            vmaUnmapMemory(allocator, stagingAlloc);
-        }
-        vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
-    }
+    //    if (needsUnmap)
+    //    {
+    //        vmaUnmapMemory(allocator, stagingAlloc);
+    //    }
+    //    vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
+    //}
 }
 
 String FileSystem::File_GetFileExtention(const char* fileName)

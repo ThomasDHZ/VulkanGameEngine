@@ -1,4 +1,7 @@
-﻿#define BUFFER_SYSTEM_IMPLEMENTATION
+﻿#define VMA_DEBUG_LOG_LEVEL 4
+#define VMA_LEAK_LOG_LEVEL 4
+#define VMA_LEAK_LOG_FORMAT(...) printf(__VA_ARGS__)
+#define BUFFER_SYSTEM_IMPLEMENTATION
 #include "BufferSystem.h"
 #include "MemorySystem.h"
 #include <vk_mem_alloc.h>
@@ -256,12 +259,16 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
         VULKAN_THROW_IF_FAIL(VK_ERROR_INITIALIZATION_FAILED);
     }
 
+    if (vulkanBuffer.Allocation != VK_NULL_HANDLE)
+    {
+        vmaDestroyBuffer(bufferSystem.vmaAllocator, vulkanBuffer.Buffer, vulkanBuffer.Allocation);
+        vulkanBuffer.Allocation = VK_NULL_HANDLE;
+    }
     if (vulkanBuffer.Buffer != VK_NULL_HANDLE)
     {
         vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.Buffer, nullptr);
         vulkanBuffer.Buffer = VK_NULL_HANDLE;
     }
-
     if (vulkanBuffer.StagingBuffer != VK_NULL_HANDLE)
     {
         vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.StagingBuffer, nullptr);
@@ -279,7 +286,6 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
         vulkanSystem.FreeDeviceMemory(vulkanSystem.Device, &vulkanBuffer.StagingBufferMemory);
         vulkanBuffer.StagingBufferMemory = VK_NULL_HANDLE;
     }
-
     if (vulkanBuffer.BufferData)
     {
         vulkanBuffer.BufferData = nullptr;

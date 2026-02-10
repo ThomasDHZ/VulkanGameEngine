@@ -134,6 +134,7 @@ void VulkanSystem::DestroyRenderer()
     DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
     DestroyFences(vulkanSystem.Device, &vulkanSystem.AcquireImageSemaphores[0], &vulkanSystem.PresentImageSemaphores[0], &vulkanSystem.InFlightFences[0], vulkanSystem.SwapChainImageCount);
     DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
+    //vmaDestroyAllocator(bufferSystem.vmaAllocator); 
     DestroyDevice(vulkanSystem.Device);
     DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
     DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);

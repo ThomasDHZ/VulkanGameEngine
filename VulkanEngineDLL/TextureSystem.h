@@ -31,7 +31,6 @@ struct Texture
     uint32                mipMapLevels = 0;
 
     VkImage               textureImage = VK_NULL_HANDLE;
-    VkDeviceMemory        textureMemory = VK_NULL_HANDLE;
     Vector<VkImageView>   textureViewList;
     VkImageView           RenderedCubeMapView = VK_NULL_HANDLE;
     VkImageView           AttachmentArrayView = VK_NULL_HANDLE;
@@ -45,7 +44,6 @@ struct Texture
     VkImageLayout         textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
     ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
-    bool                  IsRenderPassAttachment = false;
 };
 
 struct VulkanRenderPass;

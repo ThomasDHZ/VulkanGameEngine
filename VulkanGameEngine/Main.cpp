@@ -12,7 +12,6 @@
 #ifndef __ANDROID__
 int main()
 {
-    int a = 0;
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
 
@@ -32,23 +31,28 @@ int main()
         vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
         gameSystem.StartUp(vulkanWindow);
         imGuiRenderer = ImGui_StartUp();
-       // Texture& texture = textureSystem.FindDepthTexture(levelSystem.sdfShaderRenderPassId);
-      //  texture.ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.textureSampler, texture.textureView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         while (!vulkanWindow->WindowShouldClose(vulkanWindow))
         {
             const float frameTime = deltaTime.GetFrameTime();
             vulkanWindow->PollEventHandler(vulkanWindow);
-
-
             gameSystem.Update(frameTime);
             gameSystem.DebugUpdate(frameTime);
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();
         }
         vkDeviceWaitIdle(vulkanSystem.Device);
-        gameSystem.Destroy();
-        //ImGui_ImplVulkan_Shutdown();
+        ImGui_Destroy(imGuiRenderer);
+
+        renderSystem.Destroy();
+        textureSystem.DestroyAllTextures();
+        meshSystem.DestroyAllGameObjects();
+        materialSystem.DestroyAllMaterials();
+        levelSystem.DestroyLevel();
+        bufferSystem.DestroyAllBuffers();
+
+        memorySystem.ReportLeaks();
         debugSystem.DumpVMAStats();
+
         vulkanSystem.DestroyRenderer();
         vulkanWindow->DestroyWindow(vulkanWindow);
     }
