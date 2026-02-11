@@ -321,11 +321,13 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     shaderSystem.UpdatePushConstantBuffer(gBufferSceneDataBuffer);
 
 
- /*   for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
+    for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
     {
-        VkImageLayout newLayout = texture.textureType != TextureType_DepthTexture ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        textureSystem.TransitionImageLayout(texture, newLayout);
-    }*/
+        VkImageLayout target = (texture.textureType != TextureType_DepthTexture)
+            ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        textureSystem.TransitionImageLayout(commandBuffer, texture, target);
+    }
 
     VkDeviceSize offsets[] = { 0 };
     VkDeviceSize instanceOffset[] = { 0 };
@@ -370,13 +372,13 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
 
-    for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
-    {
-        VkImageLayout target = (texture.textureType != TextureType_DepthTexture)
-            ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-        textureSystem.TransitionImageLayout(commandBuffer, texture, target);
-    }
+    //for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
+    //{
+    //    VkImageLayout target = (texture.textureType != TextureType_DepthTexture)
+    //        ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    //        : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    //    textureSystem.TransitionImageLayout(commandBuffer, texture, target);
+    //}
 }
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)

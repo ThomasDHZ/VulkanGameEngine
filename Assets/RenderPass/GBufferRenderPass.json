@@ -363,9 +363,9 @@
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
       "SrcStageMask": 1,
-      "DstStageMask": 1280,
+      "DstStageMask": 9984,
       "SrcAccessMask": 0,
-      "DstAccessMask": 1152,
+      "DstAccessMask": 1208,
       "DependencyFlags": 1
     },
     {
