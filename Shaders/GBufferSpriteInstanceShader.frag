@@ -84,36 +84,44 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
     if (sceneData.UseHeightMap == 0) return uv;
 
-    const float minLayers = 16.0f;
-    const float maxLayers = 96.0f;
+    const float minLayers = 16.0;
+    const float maxLayers = 64.0;  // Lower than tiled version — sprites don't need as many for performance
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
-    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0f;
-    // Remove or loosen this clamp — it was killing offset on grazed angles / low height values
-    // shiftDirection = clamp(shiftDirection, vec2(-0.06f), vec2(0.06f));
+    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
+    vec2 deltaUV        = shiftDirection / numLayers;
 
-    vec2 deltaUV = shiftDirection / numLayers;
+    vec2  currentUV      = uv;
+    float currentDepth   = 0.0;
+    // Consistent .a channel for height
+    float height         = 1.0 - textureLod(TextureMap[heightIdx], currentUV, 0.0).a;
 
-    vec2 currentUV = uv;
-    float currentLayerDepth = 0.0f;
-    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
-
-    for (int x = 0; x < 96; ++x) 
+    int maxSteps = 96;
+    for (int i = 0; i < maxSteps; ++i)
     {
-        currentUV -= deltaUV;
-        currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
-        currentLayerDepth += 1.0f / numLayers;
-        if (currentLayerDepth >= currentHeight) break;
+        currentUV    -= deltaUV;
+        height        = 1.0 - textureLod(TextureMap[heightIdx], currentUV, 0.0).a;
+        currentDepth += 1.0 / numLayers;
+
+        if (currentDepth >= height) break;
     }
 
-    vec2 prevUV = currentUV + deltaUV;
-    float afterHeight = currentHeight - currentLayerDepth;
-    float beforeHeight = 1.0f - textureLod(TextureMap[heightIdx], prevUV, 0.0f).a - (currentLayerDepth - 1.0f/numLayers);
+    // Refinement step
+    vec2  prevUV       = currentUV + deltaUV;
+    float afterDepth   = height - currentDepth;
+    float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV, 0.0).a) 
+                         - (currentDepth - 1.0/numLayers);
 
-    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5f);
-    vec2 finalUV = mix(currentUV, prevUV, weight);
+    float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
+    vec2  finalUV      = mix(currentUV, prevUV, weight);
 
-    return clamp(finalUV, 0.0f, 1.0f);
+    // Optional: Soft clamp/fade near texture edges to prevent minor bleeding
+    // (uncomment if you see artifacts at sprite borders)
+     vec2 edgeDist = min(finalUV, 1.0 - finalUV);
+     float edgeFade = smoothstep(0.0, 0.05, min(edgeDist.x, edgeDist.y));
+     finalUV = uv + (finalUV - uv) * edgeFade;
+
+    return finalUV;
 }
  
 vec2 OctahedronEncode(vec3 normal) 

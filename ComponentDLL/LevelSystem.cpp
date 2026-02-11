@@ -3,13 +3,23 @@
 #include "GameObjectSystem.h"
 LevelSystem& levelSystem = LevelSystem::Get();
 
-LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
+LevelLayer LevelSystem::LoadLevelInfo(
+    VkGuid& levelId,
+    const LevelTileSet& tileSet,
+    uint* tileIdMap,
+    size_t tileIdMapCount,
+    ivec2& levelBounds,
+    int levelLayerIndex)
 {
-    Vector<Tile>     tileMap;
-    Vector<uint32>   indexList;
+    Vector<Tile> tileMap;
+    Vector<uint32> indexList;
     Vector<Vertex2DLayout> vertexList;
-    Vector<Tile>     tileSetList = Vector<Tile>(tileSet.LevelTileListPtr, tileSet.LevelTileListPtr + tileSet.LevelTileCount);
-    Vector<uint>     tileIdMapList = Vector<uint>(tileIdMap, tileIdMap + tileIdMapCount);
+
+    // Convert raw pointers to Vectors for easier/safer access
+    Vector<Tile> tileSetList = Vector<Tile>(tileSet.LevelTileListPtr,
+        tileSet.LevelTileListPtr + tileSet.LevelTileCount);
+    Vector<uint> tileIdMapList = Vector<uint>(tileIdMap, tileIdMap + tileIdMapCount);
+
     for (uint x = 0; x < levelBounds.x; x++)
     {
         for (uint y = 0; y < levelBounds.y; y++)
@@ -17,34 +27,56 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
             const uint& tileId = tileIdMapList[(y * levelBounds.x) + x];
             const Tile& tile = tileSetList[tileId];
 
+            // UV coordinates from the tileset atlas
             const float LeftSideUV = tile.TileUVOffset.x;
             const float RightSideUV = tile.TileUVOffset.x + tileSet.TileUVSize.x;
             const float TopSideUV = tile.TileUVOffset.y;
             const float BottomSideUV = tile.TileUVOffset.y + tileSet.TileUVSize.y;
 
+            // Current number of vertices (base index for this quad)
             const uint VertexCount = vertexList.size();
-            const vec2 TilePixelSize = tileSet.TilePixelSize * tileSet.TileScale;
-            const Vertex2DLayout BottomLeftVertex = { { x * TilePixelSize.x,                         y * TilePixelSize.y},                     {LeftSideUV, BottomSideUV} };
-            const Vertex2DLayout BottomRightVertex = { {(x * TilePixelSize.x) + TilePixelSize.x,      y * TilePixelSize.y},                     {RightSideUV, BottomSideUV} };
-            const Vertex2DLayout TopRightVertex = { {(x * TilePixelSize.x) + TilePixelSize.x,     (y * TilePixelSize.y) + TilePixelSize.y},  {RightSideUV, TopSideUV} };
-            const Vertex2DLayout TopLeftVertex = { { x * TilePixelSize.x,                        (y * TilePixelSize.y) + TilePixelSize.y},  {LeftSideUV, TopSideUV} };
 
+            // World-space size of one tile (in pixels, scaled)
+            const vec2 TilePixelSize = tileSet.TilePixelSize * tileSet.TileScale;
+
+            // Define the four corners of the quad in world space
+            const Vertex2DLayout BottomLeftVertex = {
+                { x * TilePixelSize.x, y * TilePixelSize.y },
+                { LeftSideUV, BottomSideUV }
+            };
+            const Vertex2DLayout BottomRightVertex = {
+                { (x * TilePixelSize.x) + TilePixelSize.x, y * TilePixelSize.y },
+                { RightSideUV, BottomSideUV }
+            };
+            const Vertex2DLayout TopRightVertex = {
+                { (x * TilePixelSize.x) + TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
+                { RightSideUV, TopSideUV }
+            };
+            const Vertex2DLayout TopLeftVertex = {
+                { x * TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
+                { LeftSideUV, TopSideUV }
+            };
+
+            // Append vertices for this tile quad
             vertexList.emplace_back(BottomLeftVertex);
             vertexList.emplace_back(BottomRightVertex);
             vertexList.emplace_back(TopRightVertex);
             vertexList.emplace_back(TopLeftVertex);
 
-            indexList.emplace_back(VertexCount);
-            indexList.emplace_back(VertexCount + 1);
-            indexList.emplace_back(VertexCount + 2);
-            indexList.emplace_back(VertexCount + 2);
-            indexList.emplace_back(VertexCount + 3);
-            indexList.emplace_back(VertexCount);
+            // Append indices for two triangles (clockwise winding)
+            indexList.emplace_back(VertexCount + 0);  // BL
+            indexList.emplace_back(VertexCount + 1);  // BR
+            indexList.emplace_back(VertexCount + 2);  // TR
+            indexList.emplace_back(VertexCount + 2);  // TR
+            indexList.emplace_back(VertexCount + 3);  // TL
+            indexList.emplace_back(VertexCount + 0);  // BL
 
+            // Store the tile metadata
             tileMap.emplace_back(tile);
         }
     }
 
+    // Package everything into the LevelLayer struct
     LevelLayer levelLayout = LevelLayer
     {
         .LevelId = levelId,
@@ -52,16 +84,20 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
         .TileSetId = tileSet.TileSetId,
         .LevelLayerIndex = levelLayerIndex,
         .LevelBounds = levelBounds,
+
+        // Allocate and copy persistent buffers (using your memorySystem)
         .TileIdMap = memorySystem.AddPtrBuffer<uint>(tileIdMapList.size(), __FILE__, __LINE__, __func__),
         .TileMap = memorySystem.AddPtrBuffer<Tile>(tileMap.size(), __FILE__, __LINE__, __func__),
         .VertexList = memorySystem.AddPtrBuffer<Vertex2DLayout>(vertexList.size(), __FILE__, __LINE__, __func__),
         .IndexList = memorySystem.AddPtrBuffer<uint32>(indexList.size(), __FILE__, __LINE__, __func__),
+
         .TileIdMapCount = tileIdMapList.size(),
         .TileMapCount = tileMap.size(),
         .VertexListCount = vertexList.size(),
         .IndexListCount = indexList.size()
     };
 
+    // Deep copy the data into the persistent buffers
     std::memcpy(levelLayout.TileMap, tileMap.data(), tileMap.size() * sizeof(Tile));
     std::memcpy(levelLayout.TileIdMap, tileIdMapList.data(), tileIdMapList.size() * sizeof(uint));
     std::memcpy(levelLayout.VertexList, vertexList.data(), vertexList.size() * sizeof(Vertex2DLayout));
@@ -321,22 +357,15 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     shaderSystem.UpdatePushConstantBuffer(gBufferSceneDataBuffer);
 
 
-    for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
-    {
-        VkImageLayout target = (texture.textureType != TextureType_DepthTexture)
-            ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-            : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        textureSystem.TransitionImageLayout(commandBuffer, texture, target);
-    }
-
     VkDeviceSize offsets[] = { 0 };
     VkDeviceSize instanceOffset[] = { 0 };
-    spriteSystem.Update(deltaTime);
-    meshSystem.Update(deltaTime);
-    lightSystem.Update(deltaTime);
+
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
+    spriteSystem.Update(deltaTime);
+    meshSystem.Update(deltaTime);
+    lightSystem.Update(deltaTime);
     for (auto& levelLayer : levelLayerList)
     {
         const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
@@ -371,18 +400,24 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.PipelineLayout, 0, lightingPipeline.DescriptorSetList.size(), lightingPipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
-
-    //for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
-    //{
-    //    VkImageLayout target = (texture.textureType != TextureType_DepthTexture)
-    //        ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-    //        : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-    //    textureSystem.TransitionImageLayout(commandBuffer, texture, target);
-    //}
 }
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
 {
+    int a = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    int b = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    int c = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    int d = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
+
+    int e = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        int f = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        int g = 0;
+        int h = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+        | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);

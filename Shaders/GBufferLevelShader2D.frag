@@ -31,7 +31,7 @@ layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDesc
 layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
 layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9  = MeshPropertiesDescriptor;
+layout(constant_id = 9)   const uint DescriptorBindingType9   = MeshPropertiesDescriptor;
 layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescriptor;
 layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
 layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
@@ -85,36 +85,45 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
     if (sceneData.UseHeightMap == 0) return uv;
 
-    const float minLayers = 16.0f;
-    const float maxLayers = 96.0f;
+    // Tile-local coordinates
+    vec2 tileUV     = fract(uv);               // [0,1] inside current tile
+    vec2 tileOrigin = uv - tileUV;             // Base UV of this tile
+
+    const float minLayers = 8.0;
+    const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
-    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0f;
-    // Remove or loosen this clamp — it was killing offset on grazed angles / low height values
-    // shiftDirection = clamp(shiftDirection, vec2(-0.06f), vec2(0.06f));
+    vec2 P       = viewDirTS.xy * sceneData.HeightScale * -1.0;
+    vec2 deltaUV = P / numLayers;
 
-    vec2 deltaUV = shiftDirection / numLayers;
+    vec2 currentUV     = tileUV;
+    float currentDepth = 0.0;
+    float height       = 1.0 - textureLod(TextureMap[heightIdx], currentUV + tileOrigin, 0.0).a;
 
-    vec2 currentUV = uv;
-    float currentLayerDepth = 0.0f;
-    float currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
-
-    for (int x = 0; x < 96; ++x) 
+    int maxSteps = 64;
+    for (int i = 0; i < maxSteps; ++i)
     {
-        currentUV -= deltaUV;
-        currentHeight = 1.0f - textureLod(TextureMap[heightIdx],       currentUV, 0.0f).g;
-        currentLayerDepth += 1.0f / numLayers;
-        if (currentLayerDepth >= currentHeight) break;
+        currentUV     -= deltaUV;
+        height         = 1.0 - textureLod(TextureMap[heightIdx], currentUV + tileOrigin, 0.0).a;
+        currentDepth  += 1.0 / numLayers;
+
+        if (currentDepth >= height) break;
     }
 
-    vec2 prevUV = currentUV + deltaUV;
-    float afterHeight = currentHeight - currentLayerDepth;
-    float beforeHeight = 1.0f - textureLod(TextureMap[heightIdx], prevUV, 0.0f).a - (currentLayerDepth - 1.0f/numLayers);
+    // Linear interpolate between last two steps
+    vec2 prevUV        = currentUV + deltaUV;
+    float afterDepth   = height - currentDepth;
+    float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV + tileOrigin, 0.0).a) 
+                         - (currentDepth - 1.0/numLayers);
 
-    float weight = afterHeight / (afterHeight + beforeHeight + 1e-5f);
-    vec2 finalUV = mix(currentUV, prevUV, weight);
+    float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
+    vec2 finalLocalUV  = mix(currentUV, prevUV, weight);
 
-    return clamp(finalUV, 0.0f, 1.0f);
+    // Clamp to stay strictly inside tile (prevents bleeding)
+    finalLocalUV = clamp(finalLocalUV, vec2(0.0), vec2(1.0));
+
+    // Reconstruct full UV
+    return tileOrigin + finalLocalUV;
 }
 
 vec2 OctahedronEncode(vec3 normal) 

@@ -22,5 +22,12 @@ public:
     static nlohmann::json GetSheenSSSSamplerSettings(nlohmann::json& json) { return GetMROMaterialSamplerSettings(json); }
     static nlohmann::json GetUnusedSamplerSettings(nlohmann::json& json) { return GetMROMaterialSamplerSettings(json); }
     static nlohmann::json GetEmissionSamplerSettings(nlohmann::json& json);
+
+    static nlohmann::json GetTiledAlbedoMaterialSamplerSettings(nlohmann::json& json);
+    static nlohmann::json GetTiledNormalMaterialSamplerSettings(nlohmann::json& json);
+    static nlohmann::json GetTiledMROMaterialSamplerSettings(nlohmann::json& json);
+    static nlohmann::json GetTiledSheenSSSSamplerSettings(nlohmann::json& json) { return GetTiledMROMaterialSamplerSettings(json); }
+    static nlohmann::json GetTiledUnusedSamplerSettings(nlohmann::json& json) { return GetTiledMROMaterialSamplerSettings(json); }
+    static nlohmann::json GetTiledEmissionSamplerSettings(nlohmann::json& json);
 };
 

@@ -175,12 +175,12 @@ void TextureBakerSystem::BakeTexture(const String& materialLoader, const String&
 
         switch(x)
         {
-            case AlbedoAttachment: exportEntry["TextureId"] = importJson["AlbedoAttachmentId"]; TextureSamplers::GetAlbedoMaterialSamplerSettings(exportEntry); break;
-            case NormalDataAttachment: exportEntry["TextureId"] = importJson["NormalDataAttachmentId"]; TextureSamplers::GetNormalMaterialSamplerSettings(exportEntry); break;
-            case PackedMROAttachment: exportEntry["TextureId"] = importJson["PackedMROAttachmentId"]; TextureSamplers::GetMROMaterialSamplerSettings(exportEntry); break;
-            case PackedSheenSSSAttachment: exportEntry["TextureId"] = importJson["PackedSheenSSSAttachmentId"]; TextureSamplers::GetSheenSSSSamplerSettings(exportEntry); break;
-            case UnusedAttachment: exportEntry["TextureId"] = importJson["UnusedAttachmentId"]; TextureSamplers::GetUnusedSamplerSettings(exportEntry); break;
-            case EmissionAttachment: exportEntry["TextureId"] = importJson["EmissionAttachmentId"]; TextureSamplers::GetEmissionSamplerSettings(exportEntry); break;
+            case AlbedoAttachment: exportEntry["TextureId"] = importJson["AlbedoAttachmentId"]; importJson["IsTiled"] ? TextureSamplers::GetTiledAlbedoMaterialSamplerSettings(exportEntry) : TextureSamplers::GetAlbedoMaterialSamplerSettings(exportEntry); break;
+            case NormalDataAttachment: exportEntry["TextureId"] = importJson["NormalDataAttachmentId"]; importJson["IsTiled"] ? TextureSamplers::GetTiledNormalMaterialSamplerSettings(exportEntry) : TextureSamplers::GetNormalMaterialSamplerSettings(exportEntry); break;
+            case PackedMROAttachment: exportEntry["TextureId"] = importJson["PackedMROAttachmentId"]; importJson["IsTiled"] ? TextureSamplers::GetTiledMROMaterialSamplerSettings(exportEntry) : TextureSamplers::GetMROMaterialSamplerSettings(exportEntry); break;
+            case PackedSheenSSSAttachment: exportEntry["TextureId"] = importJson["PackedSheenSSSAttachmentId"]; importJson["IsTiled"] ? TextureSamplers::GetTiledSheenSSSSamplerSettings(exportEntry) : TextureSamplers::GetSheenSSSSamplerSettings(exportEntry); break;
+            case UnusedAttachment: exportEntry["TextureId"] = importJson["UnusedAttachmentId"]; importJson["IsTiled"] ? TextureSamplers::GetTiledUnusedSamplerSettings(exportEntry) : TextureSamplers::GetUnusedSamplerSettings(exportEntry); break;
+            case EmissionAttachment: exportEntry["TextureId"] = importJson["EmissionAttachmentId"]; importJson["IsTiled"] ? TextureSamplers::GetTiledEmissionSamplerSettings(exportEntry) : TextureSamplers::GetEmissionSamplerSettings(exportEntry); break;
         }
     }
 

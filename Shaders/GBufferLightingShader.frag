@@ -141,36 +141,31 @@ vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
     return textureLod(CubeMap, skyDir, lod).rgb;
 }
 
-float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, int lightIndex)
+float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, int lightIndex, float currentHeight)
 {
-    vec4 parallaxInfo = subpassLoad(parallaxUVInfoInput);
-    float currentHeight = parallaxInfo.z;
-
     if (currentHeight < 0.001f) return 1.0f;
 
     mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
     vec3 lightDirWS = normalize(directionalLightBuffer[lightIndex].directionalLightProperties.LightDirection);
     vec3 lightDirTS = normalize(worldToTangent * lightDirWS);
 
-    if (dot(lightDirTS, vec3(0,0,1)) < 0.05f) return 0.4f;
+    if (dot(lightDirTS, vec3(0,0,1)) < 0.1f) return 0.5f;  // softer backface
 
-    const int maxSteps = 32;
-    const float stepSize = 0.05f;
+    const int maxSteps = 48;
+    const float stepSize = 0.04f;
     float shadow = 1.0f;
     vec2 marchUV = finalUV;
     vec2 deltaUV = lightDirTS.xy * stepSize;
-    float bias = directionalLightBuffer[lightIndex].directionalLightProperties.ShadowBias * 0.4f;
-
+    float bias = directionalLightBuffer[lightIndex].directionalLightProperties.ShadowBias * 0.5f;
     float rayHeight = currentHeight;
 
     for (int x = 0; x < maxSteps; ++x)
     {
         marchUV += deltaUV;
         rayHeight += stepSize;
-
-        if (rayHeight > currentHeight + bias * 0.3f)
+        if (rayHeight > currentHeight + bias)
         {
-            shadow *= 0.3f + 0.1f * float(x) / float(maxSteps);
+            shadow = mix(0.3f, 1.0f, float(x) / float(maxSteps));  // soft falloff
             break;
         }
     }
@@ -182,36 +177,29 @@ float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight)
     if (currentHeight < 0.001f) return 1.0f;
 
     float NdotLTS = dot(lightDirTS, vec3(0,0,1));
-    if (NdotLTS < 0.08f) return 0.5f; // softer threshold for point lights
+    if (NdotLTS < 0.1f) return 0.6f;
 
-    const int maxSteps = 24;
-    const float stepSize = 0.035f;
-    const float startOffset = -0.03f;
-    const float shadowBias = 0.015f;
-
+    const int maxSteps = 32;
+    const float stepSize = 0.04f;
     float shadow = 1.0f;
     vec2 marchUV = finalUV;
     vec2 deltaUV = lightDirTS.xy * stepSize;
-
-    float rayHeight = currentHeight + startOffset;
+    float bias = 0.02f;
+    float rayHeight = currentHeight;
 
     for (int x = 0; x < maxSteps; ++x)
     {
         marchUV += deltaUV;
-        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0))))
-            break;
+        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0)))) break;
 
         rayHeight += stepSize;
-
-        if (rayHeight > currentHeight + shadowBias)
+        if (rayHeight > currentHeight + bias)
         {
-            float falloff = float(x) / float(maxSteps);
-            shadow *= 0.45f + 0.55f * (1.0f - falloff);
+            shadow = mix(0.4f, 1.0f, float(x) / float(maxSteps));
             break;
         }
     }
-
-    return clamp(shadow, 0.0f, 1.0f);
+    return shadow;
 }
 
 float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
@@ -269,32 +257,31 @@ void main()
     vec3 subSurfaceScatteringColor = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
     float thickness = SheenSSS_SSSB_Thickness.y;
 
-    vec2 f = (normalData.xy * 2.0) - 1.0;
-    vec3 normal = OctahedronDecode(f);
+    float clearcoatStrength   = 0.0;
+    float clearcoatRoughness  = 0.05;
 
-    vec2 ndc = (gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution) * 2.0 - 1.0;
-    vec4 clip = vec4(ndc, depth * 2.0 - 1.0, 1.0);  
+    vec3 N = OctahedronDecode(normalData.xy * 2.0f - 1.0f);
+    N = normalize(N);
+
+    vec2 parallaxOffset = parallaxInfo.xy;
+    vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
+    vec2 finalUV = screenUV + parallaxInfo.xy;  // parallax offset from G-buffer
+    float shiftedHeight = parallaxInfo.z;
+
+    // View reconstruction
+    vec2 ndc = screenUV * 2.0 - 1.0;
+    vec4 clip = vec4(ndc, depth * 2.0 - 1.0, 1.0);
     vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clip;
     viewPos /= viewPos.w;
     vec3 V = normalize(-viewPos.xyz);
 
-        vec2 parallaxOffset = parallaxInfo.xy;
-    float shiftedHeight = parallaxInfo.z;
-    vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
-    vec2 finalUV = screenUV + parallaxOffset;
-
-    float clearcoatStrength   = 0.0;
-    float clearcoatRoughness  = 0.05;
-
-    vec3 N = normalize(normal);
-    mat3 TBN = ReconstructTBN(N);
     vec3 R = reflect(-V, N);
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
-    vec3 Lo = vec3(0.0f);
-    vec3 F0 = mix(vec3(0.04), albedo, metallic);  
+    vec3 Lo = vec3(0.0);
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
     {
-        const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
+        DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
         vec3 L = normalize(light.LightDirection);
         vec3 H = normalize(V + L);
 
@@ -304,10 +291,10 @@ void main()
 
         if (NdotL <= 0.0f) continue;
 
-        float selfShadow = DirectionalSelfShadow(finalUV, N, int(x));
+        float selfShadow = DirectionalSelfShadow(finalUV, N, int(x), shiftedHeight);
         float microShadow = NdotL;
         float combinedShadow = selfShadow * (0.4f + 0.6f * microShadow);
-        vec3 radiance = light.LightColor * light.LightIntensity;
+        vec3 radiance = light.LightColor * light.LightIntensity * selfShadow;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
@@ -342,8 +329,7 @@ void main()
         float sheenFactor = pow(1.0 - NdotV, 5.0);
         vec3  sheenContrib = sheenColor * sheenIntensity * sheenFactor;
 
-        Lo += (baseDiffuse + specular + sheenContrib) * radiance * NdotL;
-        Lo += clearcoatContrib * radiance * combinedShadow * coatNdotL;
+        Lo += (diffuse + specular + clearcoatContrib + sheenContrib + sssContrib) * radiance * NdotL;
     }
     for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
     {

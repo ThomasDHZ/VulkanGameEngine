@@ -1,96 +1,96 @@
 {
-  "AlbedoData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": true,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 1,
-      "MaxAnisotropy": 16.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 1,
-      "MinLod": 0.0,
-      "MipLodBias": -0.25,
-      "MipmapMode": 1,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "AlbedoData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": true,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 1,
+            "MaxAnisotropy": 16.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 1,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 1,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 146,
+        "TextureFilePath": [
+            "../Assets/Textures\\MegaManMaterial_Albedo.ktx2"
+        ],
+        "TextureId": "401ced2d-39a6-4541-98f9-1c975167e167",
+        "TextureType": 1
     },
-    "TextureByteFormat": 146,
-    "TextureFilePath": [
-      "../Assets/Textures\\MegaManMaterial_Albedo.ktx2"
-    ],
-    "TextureId": "401ced2d-39a6-4541-98f9-1c975167e167",
-    "TextureType": 1
-  },
-  "MaterialBufferId": 0,
-  "MaterialId": "0ecd3d14-9b7e-4743-bc5d-d3666f6167c6",
-  "Name": "MegaManMaterial",
-  "NormalData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": true,
-      "BorderColor": 4,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 1,
-      "MaxAnisotropy": 8.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 1,
-      "MinLod": 0.0,
-      "MipLodBias": -0.75,
-      "MipmapMode": 1,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "MaterialBufferId": 0,
+    "MaterialId": "0ecd3d14-9b7e-4743-bc5d-d3666f6167c6",
+    "Name": "MegaManMaterial",
+    "NormalData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": true,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 1,
+            "MaxAnisotropy": 8.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 1,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 1,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\MegaManMaterial_NormalHeight.ktx2"
+        ],
+        "TextureId": "cc39d149-63fa-454e-803c-50f9fd1cbd45",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\MegaManMaterial_NormalHeight.ktx2"
-    ],
-    "TextureId": "cc39d149-63fa-454e-803c-50f9fd1cbd45",
-    "TextureType": 1
-  },
-  "PackedMROData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": false,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 0,
-      "MaxAnisotropy": 0.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 0,
-      "MinLod": 0.0,
-      "MipLodBias": 0.0,
-      "MipmapMode": 0,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "PackedMROData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\MegaManMaterial_MRO.ktx2"
+        ],
+        "TextureId": "d0e8f652-1ae0-43b4-8562-9b6f68b026c3",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\MegaManMaterial_MRO.ktx2"
-    ],
-    "TextureId": "d0e8f652-1ae0-43b4-8562-9b6f68b026c3",
-    "TextureType": 1
-  },
-  "ShaderMaterialBufferIndex": 0
+    "ShaderMaterialBufferIndex": 0
 }

@@ -123,7 +123,7 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1, 
+        "MagFilter": 1,
         "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
@@ -185,7 +185,7 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1, 
+        "MagFilter": 1,
         "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
@@ -340,7 +340,7 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 0, 
+        "MagFilter": 0,
         "MinFilter": 0,
         "MipmapMode": 1,
         "AddressModeU": 2,
@@ -363,26 +363,26 @@
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
       "SrcStageMask": 1,
-      "DstStageMask": 9984,
+      "DstStageMask": 1536,
       "SrcAccessMask": 0,
-      "DstAccessMask": 1208,
+      "DstAccessMask": 1792, 
       "DependencyFlags": 1
     },
     {
       "SrcSubpass": 0,
       "DstSubpass": 1,
       "SrcStageMask": 1536,
-      "DstStageMask": 1152,
+      "DstStageMask": 128,
       "SrcAccessMask": 1280,
-      "DstAccessMask": 2064,
+      "DstAccessMask": 48,
       "DependencyFlags": 1
     },
     {
       "SrcSubpass": 1,
       "DstSubpass": 4294967295,
-      "SrcStageMask": 1920,
+      "SrcStageMask": 1664,
       "DstStageMask": 8192,
-      "SrcAccessMask": 1488,
+      "SrcAccessMask": 1328,
       "DstAccessMask": 0,
       "DependencyFlags": 1
     }

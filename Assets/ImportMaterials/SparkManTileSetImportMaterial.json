@@ -19,6 +19,7 @@
   "Height": 0.051,
   "Alpha": 1.0,
   "ExportMipMapCount": 1,
+  "IsTiled": true, 
   "AlbedoAttachmentId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
   "NormalDataAttachmentId": "f2c1d36b-45ba-414a-a201-061d1707fff2",
   "PackedMROAttachmentId": "c6425693-c2a1-476f-8e34-aa306dde4d14",

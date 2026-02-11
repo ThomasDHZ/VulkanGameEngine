@@ -1,156 +1,156 @@
 {
-  "AlbedoData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": true,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 1,
-      "MaxAnisotropy": 16.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 1,
-      "MinLod": 0.0,
-      "MipLodBias": -0.25,
-      "MipmapMode": 1,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "AlbedoData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": true,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 1,
+            "MaxAnisotropy": 16.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 1,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 1,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 146,
+        "TextureFilePath": [
+            "../Assets/Textures\\AnimeGirlMaterial_Albedo.ktx2"
+        ],
+        "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
+        "TextureType": 1
     },
-    "TextureByteFormat": 146,
-    "TextureFilePath": [
-      "../Assets/Textures\\AnimeGirlMaterial_Albedo.ktx2"
-    ],
-    "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
-    "TextureType": 1
-  },
-  "MaterialBufferId": 0,
-  "MaterialId": "192a11d5-d0dc-4ead-a257-0feb60d50ff0",
-  "Name": "AnimeGirlMaterial",
-  "NormalData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": true,
-      "BorderColor": 4,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 1,
-      "MaxAnisotropy": 8.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 1,
-      "MinLod": 0.0,
-      "MipLodBias": -0.75,
-      "MipmapMode": 1,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "MaterialBufferId": 0,
+    "MaterialId": "192a11d5-d0dc-4ead-a257-0feb60d50ff0",
+    "Name": "AnimeGirlMaterial",
+    "NormalData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": true,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 1,
+            "MaxAnisotropy": 8.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 1,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 1,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\AnimeGirlMaterial_NormalHeight.ktx2"
+        ],
+        "TextureId": "36d7e265-8ee9-4bbe-b974-6907532459a7",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\AnimeGirlMaterial_NormalHeight.ktx2"
-    ],
-    "TextureId": "36d7e265-8ee9-4bbe-b974-6907532459a7",
-    "TextureType": 1
-  },
-  "PackedMROData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": false,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 0,
-      "MaxAnisotropy": 0.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 0,
-      "MinLod": 0.0,
-      "MipLodBias": 0.0,
-      "MipmapMode": 0,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "PackedMROData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\AnimeGirlMaterial_MRO.ktx2"
+        ],
+        "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\AnimeGirlMaterial_MRO.ktx2"
-    ],
-    "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
-    "TextureType": 1
-  },
-  "PackedSheenSSSData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": false,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 0,
-      "MaxAnisotropy": 0.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 0,
-      "MinLod": 0.0,
-      "MipLodBias": 0.0,
-      "MipmapMode": 0,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "PackedSheenSSSData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\AnimeGirlMaterial_SheenSSS.ktx2"
+        ],
+        "TextureId": "ffcd6590-6f56-406e-b187-cf7f30e9317e",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\AnimeGirlMaterial_SheenSSS.ktx2"
-    ],
-    "TextureId": "ffcd6590-6f56-406e-b187-cf7f30e9317e",
-    "TextureType": 1
-  },
-  "ShaderMaterialBufferIndex": 0,
-  "UnusedData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": false,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 0,
-      "MaxAnisotropy": 0.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 0,
-      "MinLod": 0.0,
-      "MipLodBias": 0.0,
-      "MipmapMode": 0,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
-    },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\AnimeGirlMaterial_Unused.ktx2"
-    ],
-    "TextureId": "f1ab897a-92e5-4109-803b-5c9196bcc173",
-    "TextureType": 1
-  }
+    "ShaderMaterialBufferIndex": 0,
+    "UnusedData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 2,
+            "AddressModeV": 2,
+            "AddressModeW": 2,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 1000.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\AnimeGirlMaterial_Unused.ktx2"
+        ],
+        "TextureId": "f1ab897a-92e5-4109-803b-5c9196bcc173",
+        "TextureType": 1
+    }
 }

@@ -1,96 +1,96 @@
 {
-  "AlbedoData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": true,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 1,
-      "MaxAnisotropy": 16.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 1,
-      "MinLod": 0.0,
-      "MipLodBias": -0.25,
-      "MipmapMode": 1,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "AlbedoData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 0,
+            "AddressModeV": 0,
+            "AddressModeW": 0,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 0.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 146,
+        "TextureFilePath": [
+            "../Assets/Textures\\SparkManTileSetMaterial_Albedo.ktx2"
+        ],
+        "TextureId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
+        "TextureType": 1
     },
-    "TextureByteFormat": 146,
-    "TextureFilePath": [
-      "../Assets/Textures\\SparkManTileSetMaterial_Albedo.ktx2"
-    ],
-    "TextureId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
-    "TextureType": 1
-  },
-  "MaterialBufferId": 0,
-  "MaterialId": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
-  "Name": "SparkManTiles",
-  "NormalData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": true,
-      "BorderColor": 4,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 1,
-      "MaxAnisotropy": 8.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 1,
-      "MinLod": 0.0,
-      "MipLodBias": -0.75,
-      "MipmapMode": 1,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "MaterialBufferId": 0,
+    "MaterialId": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
+    "Name": "SparkManTiles",
+    "NormalData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 0,
+            "AddressModeV": 0,
+            "AddressModeW": 0,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 0.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\SparkManTileSetMaterial_NormalHeight.ktx2"
+        ],
+        "TextureId": "f2c1d36b-45ba-414a-a201-061d1707fff2",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\SparkManTileSetMaterial_NormalHeight.ktx2"
-    ],
-    "TextureId": "f2c1d36b-45ba-414a-a201-061d1707fff2",
-    "TextureType": 1
-  },
-  "PackedMROData": {
-    "ImageType": 1,
-    "IsSkyBox": false,
-    "MipMapCount": 1,
-    "SampleCount": 1,
-    "SamplerCreateInfo": {
-      "AddressModeU": 0,
-      "AddressModeV": 0,
-      "AddressModeW": 0,
-      "AnisotropyEnable": false,
-      "BorderColor": 2,
-      "CompareEnable": false,
-      "CompareOp": 7,
-      "MagFilter": 0,
-      "MaxAnisotropy": 0.0,
-      "MaxLod": 1000.0,
-      "MinFilter": 0,
-      "MinLod": 0.0,
-      "MipLodBias": 0.0,
-      "MipmapMode": 0,
-      "SType": 31,
-      "UnnormalizedCoordinates": false
+    "PackedMROData": {
+        "ImageType": 1,
+        "IsSkyBox": false,
+        "MipMapCount": 1,
+        "SampleCount": 1,
+        "SamplerCreateInfo": {
+            "AddressModeU": 0,
+            "AddressModeV": 0,
+            "AddressModeW": 0,
+            "AnisotropyEnable": false,
+            "BorderColor": 2,
+            "CompareEnable": false,
+            "CompareOp": 7,
+            "MagFilter": 0,
+            "MaxAnisotropy": 1.0,
+            "MaxLod": 0.0,
+            "MinFilter": 0,
+            "MinLod": 0.0,
+            "MipLodBias": 0.0,
+            "MipmapMode": 0,
+            "SType": 31,
+            "UnnormalizedCoordinates": false
+        },
+        "TextureByteFormat": 145,
+        "TextureFilePath": [
+            "../Assets/Textures\\SparkManTileSetMaterial_MRO.ktx2"
+        ],
+        "TextureId": "c6425693-c2a1-476f-8e34-aa306dde4d14",
+        "TextureType": 1
     },
-    "TextureByteFormat": 145,
-    "TextureFilePath": [
-      "../Assets/Textures\\SparkManTileSetMaterial_MRO.ktx2"
-    ],
-    "TextureId": "c6425693-c2a1-476f-8e34-aa306dde4d14",
-    "TextureType": 1
-  },
-  "ShaderMaterialBufferIndex": 0
+    "ShaderMaterialBufferIndex": 0
 }
