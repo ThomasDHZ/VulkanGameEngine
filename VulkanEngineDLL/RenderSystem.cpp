@@ -87,7 +87,8 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     VkRect2D scissor
     {
         .offset = {0, 0},
-        .extent = {
+        .extent = 
+        {
             static_cast<uint32_t>(renderPass.RenderPassResolution.x),
             static_cast<uint32_t>(renderPass.RenderPassResolution.y)
         }
@@ -115,7 +116,6 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
         return;
     }
 
-    textureSystem.TransitionImageLayout(commandBuffer, renderPassTexture[0], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -123,14 +123,14 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, static_cast<uint32_t>(pipeline.DescriptorSetList.size()), pipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
-    textureSystem.TransitionImageLayout(commandBuffer, renderPassTexture[0], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         std::cerr << "[GenerateTexture] Failed to end command buffer" << std::endl;
         cleanup();
         return;
     }
 
-    VkFenceCreateInfo fenceCreateInfo{
+    VkFenceCreateInfo fenceCreateInfo
+    {
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
         .flags = 0
     };
@@ -167,8 +167,6 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
     commandBuffer = VK_NULL_HANDLE;
     fence = VK_NULL_HANDLE;
-
-    std::cout << "[GenerateTexture] Successfully generated texture for pass " << renderPassId.ToString() << std::endl;
 }
 
 void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
@@ -233,7 +231,6 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         }
     };
 
-
     VkRenderPassBeginInfo renderPassBeginInfo
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -257,27 +254,6 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         return;
     }
 
-    VkImageMemoryBarrier barrier =
-    {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = targetCubemap,
-        .subresourceRange = {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 6
-        }
-    };
-    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-
     VkDeviceSize offsets[] = { 0 };
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
@@ -295,34 +271,6 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
-
-    barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = targetCubemap;
-    barrier.subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = 1,
-        .baseArrayLayer = 0,
-        .layerCount = 6
-    };
-
-    vkCmdPipelineBarrier(
-        commandBuffer,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &barrier
-    );
-    
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         std::cerr << "[GenerateCubeMapTexture] Failed to end command buffer" << std::endl;
@@ -361,11 +309,8 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 
     vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
-
     commandBuffer = VK_NULL_HANDLE;
     fence = VK_NULL_HANDLE;
-
-    std::cout << "[GenerateCubeMapTexture] Successfully generated cubemap for pass " << renderPassId.ToString() << std::endl;
 }
 
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
@@ -612,14 +557,14 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         const RenderPassAttachmentTexture& renderAttachment = renderPassAttachmentTextureInfoList[x];
         switch (renderAttachment.RenderTextureType)
         {
-        case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR; break;
-        case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-        case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-        case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; break;
-        case RenderType_CubeMapTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
-        default: throw std::runtime_error("Unknown RenderTextureType");
+            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR;               break;
+            case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+            case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+            case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+            case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+            case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+            case RenderType_CubeMapTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+            default: throw std::runtime_error("Unknown RenderTextureType");
         }
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription

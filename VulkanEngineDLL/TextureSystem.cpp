@@ -379,8 +379,6 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	{
 		TextureList.emplace_back(texture);
 	}
-
-	std::cout << "[KTX Load Success] " << path << " loaded as TextureGuid " << textureLoader.TextureId.ToString() << std::endl;
 	return texture;
 }
 
@@ -454,30 +452,29 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.depth = 1,
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
-		.sampleCount = vulkanRenderPass.SampleCount
+		.sampleCount = vulkanRenderPass.SampleCount,
+		
 	};
 
 	switch (renderPassAttachmentTexture.RenderTextureType)
 	{
-		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture; break;
-		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; break;
-		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture; break;
-		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture; break;
-		case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture; break;
+		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture;  texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR;               break;
+		case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture;		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 	}
 
 	if (isDepthFormat)
 	{
 		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 		texture.colorChannels = ColorChannelUsed::ChannelR;
 	}
 	else
 	{
 		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
 	}
 
