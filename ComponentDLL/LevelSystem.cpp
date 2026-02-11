@@ -173,55 +173,26 @@ void LevelSystem::LoadLevel(const char* levelPath)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    nlohmann::json shaderJson   = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
+    nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
     nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
     nlohmann::json shaderLightJson = fileSystem.LoadJsonFile("RenderPass/GBufferLightingRenderPass.json");
-   // spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
+    // spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
     levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
-    for (size_t x = 0; x < json["LoadTextures"].size(); x++)
-    {
-        textureSystem.CreateTexture(json["LoadTextures"][x]);
-    }
-    for (size_t x = 0; x < json["LoadKTXTextures"].size(); x++)
-    {
-        textureSystem.LoadKTXTexture(json["LoadKTXTextures"][x]);
-    }
-    
-    for (size_t x = 0; x < json["LoadMaterials"].size(); x++)
-    {
-        materialSystem.LoadMaterial(json["LoadMaterials"][x]);
-    }
-
-    for (size_t x = 0; x < json["LoadSpriteVRAM"].size(); x++)
-    {
-        spriteSystem.LoadSpriteVRAM(json["LoadSpriteVRAM"][x]);
-    }
-
-    for (size_t x = 0; x < json["LoadTileSetVRAM"].size(); x++)
-    {
-        tileSetId = LoadTileSetVRAM(json["LoadTileSetVRAM"][x].get<String>().c_str());
-    }
-
-    for (size_t x = 0; x < json["LoadSceneLights"].size(); x++)
-    {
-        lightSystem.LoadSceneLights(json["LoadSceneLights"][x]);
-    }
-
-    for (size_t x = 0; x < json["LoadSkyBox"][x].size(); x++)
-    {
-        LoadSkyBox(json["LoadSkyBox"][x].get<String>().c_str());
-    }
-
-
+    for (auto& texture : json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
+    for (auto& light : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
+    for (auto& skyBox : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
         gameObjectSystem.CreateGameObject(objectJson, positionOverride);
     }
-
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 
@@ -230,21 +201,18 @@ void LevelSystem::LoadLevel(const char* levelPath)
     renderSystem.GenerateTexture(brdfRenderPassId);
     textureSystem.BRDFMap = textureSystem.FindRenderedTextureList(brdfRenderPassId).back();
 
-    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
-    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-    textureSystem.CubeMap = textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back();
+     environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
+     renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
+     textureSystem.CubeMap = textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back();
 
-    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
-    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
-    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
-   /* verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json");
-    horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json");
-    bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
-    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json");
-    
- //   shadowDebugRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/ShadowDebugRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
- //       levelWireFrameRenderPass2DId = LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/LevelShader2DWireFrameRenderPass.json", ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height));
+     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
+     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
+     gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
+    /* verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/VertGaussianBlurRenderPass.json");
+     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HorizontalGaussianBlurRenderPass.json");
+     bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BloomRenderPass.json");*/
+     hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
+     frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json");
 }
 
 

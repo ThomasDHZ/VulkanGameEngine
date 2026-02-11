@@ -115,9 +115,10 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
 
     VmaAllocatorCreateInfo allocatorCreateInfo =
     {
-        .flags = 0,  // Add VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT if needed
+        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
         .physicalDevice = PhysicalDevice,
         .device = Device,
+        .preferredLargeHeapBlockSize = 64ull << 20,
         .pVulkanFunctions = &vulkanFunctions,
         .instance = Instance,
         .vulkanApiVersion = ApiVersion,
@@ -134,7 +135,7 @@ void VulkanSystem::DestroyRenderer()
     DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
     DestroyFences(vulkanSystem.Device, &vulkanSystem.AcquireImageSemaphores[0], &vulkanSystem.PresentImageSemaphores[0], &vulkanSystem.InFlightFences[0], vulkanSystem.SwapChainImageCount);
     DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
-    //vmaDestroyAllocator(bufferSystem.vmaAllocator); 
+    vmaDestroyAllocator(bufferSystem.vmaAllocator); 
     DestroyDevice(vulkanSystem.Device);
     DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
     DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);
