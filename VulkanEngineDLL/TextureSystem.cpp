@@ -1094,7 +1094,6 @@ void TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Textur
 			srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
-
 		else if (texture.textureImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
 			srcAccess = VK_ACCESS_SHADER_READ_BIT;

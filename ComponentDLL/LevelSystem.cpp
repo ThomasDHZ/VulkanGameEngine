@@ -218,7 +218,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
 void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
-    //RenderEnvironmentToCubeMapRenderPass(commandBuffer, environmentToCubeMapRenderPassId);
     RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
     RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
     RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
@@ -322,6 +321,12 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     shaderSystem.UpdatePushConstantBuffer(gBufferSceneDataBuffer);
 
 
+ /*   for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
+    {
+        VkImageLayout newLayout = texture.textureType != TextureType_DepthTexture ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        textureSystem.TransitionImageLayout(texture, newLayout);
+    }*/
+
     VkDeviceSize offsets[] = { 0 };
     VkDeviceSize instanceOffset[] = { 0 };
     spriteSystem.Update(deltaTime);
@@ -364,6 +369,14 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.PipelineLayout, 0, lightingPipeline.DescriptorSetList.size(), lightingPipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
+
+    for (auto& texture : textureSystem.FindRenderedTextureList(renderPassId))
+    {
+        VkImageLayout target = (texture.textureType != TextureType_DepthTexture)
+            ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        textureSystem.TransitionImageLayout(commandBuffer, texture, target);
+    }
 }
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
