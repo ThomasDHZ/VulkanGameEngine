@@ -154,6 +154,7 @@
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="InputEnum.h" />
     <ClInclude Include="LightSystem.h" />
+    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="RenderSystem.h" />

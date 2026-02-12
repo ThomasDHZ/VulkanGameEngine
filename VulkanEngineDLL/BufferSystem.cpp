@@ -56,7 +56,7 @@ uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDe
 
     if (srcData == nullptr)
     {
-        VulkanBufferMap[bufferId] = 
+        VulkanBufferMap[bufferId] =
         {
             .BufferId = bufferId,
             .Buffer = dstBuffer,
@@ -106,7 +106,7 @@ uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDe
     CopyBuffer(&stagingBuffer, &dstBuffer, size - offset, shaderUsageFlags, offset);
     vmaDestroyBuffer(vmaAllocator, stagingBuffer, stagingAllocation);
 
-    VulkanBufferMap[bufferId] = 
+    VulkanBufferMap[bufferId] =
     {
         .BufferId = bufferId,
         .Buffer = dstBuffer,
@@ -123,18 +123,18 @@ uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDe
 uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags)
 {
     uint32 bufferId = ++NextBufferId;
-    VkBufferCreateInfo bufferInfo =
-    {
+
+    VkBufferCreateInfo bufferInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = size,
         .usage = usageFlags,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE
     };
 
-    VmaAllocationCreateInfo allocInfo =
-    {
+    VmaAllocationCreateInfo allocInfo = {
         .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
         .usage = VMA_MEMORY_USAGE_AUTO,
+        .preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT  // NEW: Prefer coherent (no flush needed)
     };
 
     VkBuffer buffer = VK_NULL_HANDLE;
@@ -143,8 +143,7 @@ uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceS
     VULKAN_THROW_IF_FAIL(vmaCreateBuffer(vmaAllocator, &bufferInfo, &allocInfo, &buffer, &allocation, &allocOut));
 
     void* mappedData = allocOut.pMappedData;
-    bool needFallback = (mappedData == nullptr);
-    if (needFallback)
+    if (!mappedData)
     {
         VULKAN_THROW_IF_FAIL(vmaMapMemory(vmaAllocator, allocation, &mappedData));
     }
@@ -155,20 +154,14 @@ uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceS
         vmaFlushAllocation(vmaAllocator, allocation, 0, size);
     }
 
-    if (needFallback && needFallback)
-    {
-        vmaUnmapMemory(vmaAllocator, allocation);
-    }
-
-    VulkanBufferMap[bufferId] = 
-    {
+    VulkanBufferMap[bufferId] = {
         .BufferId = bufferId,
         .Buffer = buffer,
         .BufferSize = size,
         .Allocation = allocation,
         .BufferData = mappedData,
         .UsingStagingBuffer = false,
-        .IsPersistentlyMapped = !needFallback
+        .IsPersistentlyMapped = true
     };
 
     return bufferId;
@@ -177,19 +170,9 @@ uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceS
 void VulkanBufferSystem::VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset)
 {
     VulkanBuffer& buffer = VulkanBufferMap[bufferId];
-    if (buffer.IsPersistentlyMapped)
-    {
-        memcpy((uint8_t*)buffer.BufferData + offset, data, size);
-        vmaFlushAllocation(vmaAllocator, buffer.Allocation, offset, size);
-    }
-    else
-    {
-        void* mapped = nullptr;
-        vmaMapMemory(vmaAllocator, buffer.Allocation, &mapped);
-        memcpy((uint8_t*)mapped + offset, data, size);
-        vmaFlushAllocation(vmaAllocator, buffer.Allocation, offset, size);
-        vmaUnmapMemory(vmaAllocator, buffer.Allocation);
-    }
+    assert(buffer.IsPersistentlyMapped && buffer.BufferData);
+    memcpy((uint8_t*)buffer.BufferData + offset, data, size);
+    vmaFlushAllocation(vmaAllocator, buffer.Allocation, offset, size);
 }
 
 void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkDeviceSize offset)
@@ -206,7 +189,7 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
     VkPipelineStageFlags dstStageMask = 0;
     VkAccessFlags dstAccessMask = 0;
 
-    if (usageFlags & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) 
+    if (usageFlags & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
     {
         dstStageMask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
         dstAccessMask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
@@ -219,17 +202,17 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
         dstStageMask |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
         dstAccessMask |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
     }
-    if (usageFlags & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) 
+    if (usageFlags & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
     {
         dstStageMask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
         dstAccessMask |= VK_ACCESS_UNIFORM_READ_BIT;
     }
-    if (usageFlags & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) 
+    if (usageFlags & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
     {
         dstStageMask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         dstAccessMask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
     }
-    if (dstStageMask == 0) 
+    if (dstStageMask == 0)
     {
         std::cout << "Unoptimised buffer transfer" << std::endl;
         dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;

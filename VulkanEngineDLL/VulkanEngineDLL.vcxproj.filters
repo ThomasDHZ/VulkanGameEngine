@@ -129,6 +129,9 @@
     <ClInclude Include="..\External\ktx\include\ktxvulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
