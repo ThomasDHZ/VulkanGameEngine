@@ -33,10 +33,14 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vec
         .ParentGameObjectId = UINT32_MAX,
         .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
         .MeshTypeId = meshType,
-        .VertexLayout = vertexData.VertexType,
+        .MeshData = MeshAssetData
+        {
+            .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+            .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+            .IndexCount = static_cast<uint>(indexList.size()),
+            .Layout = vertexData.VertexType
+        },
         .MeshPropertiesId = meshId,
-        .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
         .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .VertexIndex = meshId,
@@ -70,10 +74,15 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vec
         .ParentGameObjectId = UINT32_MAX,
         .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
         .MeshTypeId = meshType,        
+        .MeshData = MeshAssetData
+        {
+            .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+            .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+            .IndexCount = static_cast<uint>(indexList.size()),
+            .Layout = vertexData.VertexType
+        },
         .VertexLayout = vertexData.VertexType,
         .MeshPropertiesId = meshId,
-        .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
         .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .VertexIndex = meshId,
@@ -99,13 +108,13 @@ uint MeshSystem::CreateSkyBox(VkGuid& materialId)
 {
     Vector<SkyboxVertexLayout> skyBoxVertices = {
         {{-1.0f, -1.0f, -1.0f}},
-        {{ 1.0f, -1.0f, -1.0f}},  
+        {{ 1.0f, -1.0f, -1.0f}},
         {{ 1.0f,  1.0f, -1.0f}},
         {{-1.0f,  1.0f, -1.0f}},
-        {{-1.0f, -1.0f,  1.0f}},  
-        {{ 1.0f, -1.0f,  1.0f}}, 
+        {{-1.0f, -1.0f,  1.0f}},
+        {{ 1.0f, -1.0f,  1.0f}},
         {{ 1.0f,  1.0f,  1.0f}},
-        {{-1.0f,  1.0f,  1.0f}} 
+        {{-1.0f,  1.0f,  1.0f}}
     };
 
     Vector<uint32_t> indexList = {
@@ -133,10 +142,15 @@ uint MeshSystem::CreateSkyBox(VkGuid& materialId)
         .ParentGameObjectId = UINT32_MAX,
         .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
         .MeshTypeId = MeshTypeEnum::kMesh_SkyBoxMesh,
+        .MeshData = MeshAssetData
+        {
+            .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+            .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+            .IndexCount = static_cast<uint>(indexList.size()),
+            .Layout = vertexData.VertexType
+        },
         .VertexLayout = VertexLayoutEnum::kVertexLayout_SkyBoxVertex,
         .MeshPropertiesId = meshId,
-        .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
         .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .VertexIndex = meshId,
@@ -208,18 +222,18 @@ void MeshSystem::UpdateMesh(Mesh& mesh, const float& deltaTime)
 void MeshSystem::Destroy(uint meshId)
 {
     Mesh& mesh = meshSystem.MeshList[meshId];
-    VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
-    VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+    //VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+    //VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
     VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
     VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-    bufferSystem.DestroyBuffer(vertexBuffer);
-    bufferSystem.DestroyBuffer(indexBuffer);
+    //bufferSystem.DestroyBuffer(vertexBuffer);
+    //bufferSystem.DestroyBuffer(indexBuffer);
     bufferSystem.DestroyBuffer(transformBuffer);
     bufferSystem.DestroyBuffer(propertiesBuffer);
 
-    bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
-    bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+    //bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+    //bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
     bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
     bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
 }
@@ -228,18 +242,18 @@ void MeshSystem::DestroyAllGameObjects()
 {
     for (auto& mesh : MeshList)
     {
-        VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
-        VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+     /*   VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+        VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];*/
         VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
         VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-        bufferSystem.DestroyBuffer(vertexBuffer);
-        bufferSystem.DestroyBuffer(indexBuffer);
+     /*   bufferSystem.DestroyBuffer(vertexBuffer);
+        bufferSystem.DestroyBuffer(indexBuffer);*/
         bufferSystem.DestroyBuffer(transformBuffer);
         bufferSystem.DestroyBuffer(propertiesBuffer);
 
-        bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
-        bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+      /*  bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);*/
         bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
         bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
     }

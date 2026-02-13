@@ -262,9 +262,10 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
     for (const auto& skybox : skyBoxList)
     {
+        const MeshAssetData& meshAsset = skybox.MeshData;
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);

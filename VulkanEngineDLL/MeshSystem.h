@@ -61,16 +61,23 @@ struct SkyboxVertexLayout
 	vec3 Position = glm::vec3(0.0f);
 };
 
+struct MeshAssetData
+{
+	uint32 VertexBufferId = UINT32_MAX;
+	uint32 IndexBufferId = UINT32_MAX;
+	uint32 IndexCount = 0;
+	VertexLayoutEnum Layout = VertexLayoutEnum::kVertexLayout_Undefined;
+};
+
 struct Mesh
 {
 	uint32 MeshId = UINT32_MAX;
 	uint32 ParentGameObjectId = UINT32_MAX;
 	uint32 MeshShaderBufferIndex = UINT32_MAX;
 	MeshTypeEnum MeshTypeId = kMesh_Undefined;
+	MeshAssetData MeshData;
 	VertexLayoutEnum VertexLayout = kVertexLayout_NullVertex;
 	uint32 MeshPropertiesId = UINT32_MAX;
-	uint32 MeshVertexBufferId = UINT32_MAX;
-	uint32 MeshIndexBufferId = UINT32_MAX;
 	uint32 MeshTransformBufferId = UINT32_MAX;
 	uint32 PropertiesBufferId = UINT32_MAX;
 	uint32 VertexIndex = UINT32_MAX;

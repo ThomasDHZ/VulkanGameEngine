@@ -174,6 +174,26 @@ void LevelSystem::LoadSkyBox(const char* skyBoxMaterialPath)
 {
     nlohmann::json json = fileSystem.LoadJsonFile(skyBoxMaterialPath);
     VkGuid skyBoxMaterialGuid = VkGuid(json["MaterialId"]);
+
+    Vector<SkyboxVertexLayout> skyBoxVertices = {
+    {{-1.0f, -1.0f, -1.0f}},
+    {{ 1.0f, -1.0f, -1.0f}},
+    {{ 1.0f,  1.0f, -1.0f}},
+    {{-1.0f,  1.0f, -1.0f}},
+    {{-1.0f, -1.0f,  1.0f}},
+    {{ 1.0f, -1.0f,  1.0f}},
+    {{ 1.0f,  1.0f,  1.0f}},
+    {{-1.0f,  1.0f,  1.0f}}
+    };
+
+    Vector<uint32_t> indexList = {
+        0, 2, 1,   0, 3, 2,
+        4, 5, 6,   4, 6, 7,
+        4, 3, 0,   4, 7, 3,
+        1, 6, 5,   1, 2, 6,
+        0, 5, 4,   0, 1, 5,
+        3, 6, 2,   3, 7, 6
+    };
     meshSystem.CreateSkyBox(skyBoxMaterialGuid);
 }
 
@@ -304,13 +324,13 @@ void LevelSystem::RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandB
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
     for (auto& skybox : skyBoxList)
     {
-        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = skybox.MeshData;
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
 }
@@ -368,9 +388,9 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     lightSystem.Update(deltaTime);
     for (auto& levelLayer : levelLayerList)
     {
-        const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = levelLayer.MeshData;
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
         shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
@@ -378,14 +398,15 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
     for (auto& spriteLayer : spriteSystem.SpriteLayerList)
     {
         const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = spriteMesh.MeshData;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
         const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
         const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
@@ -457,9 +478,10 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
    
     for (auto& skybox : skyBoxList)
     {
+        const MeshAssetData& meshAsset = skybox.MeshData;
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<float>(pushConstant, "sampleDelta", 0.1f);
         shaderSystem.UpdatePushConstantBuffer(pushConstant);
@@ -480,9 +502,10 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
     ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
 
     const Mesh& skyboxMesh = skyBoxList[0];
+    const MeshAssetData& meshAsset = skyboxMesh.MeshData;
     const Vector<uint32>& indiceList = meshSystem.IndexList[skyboxMesh.IndexIndex];
-    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshVertexBufferId).Buffer;
-    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshIndexBufferId).Buffer;
+    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
     VkDeviceSize offsets[] = { 0 };
     uint32 baseSize = renderPass.RenderPassResolution.x;
