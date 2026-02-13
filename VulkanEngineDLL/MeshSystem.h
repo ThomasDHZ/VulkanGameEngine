@@ -116,9 +116,7 @@ private:
 		VulkanBuffer				 TransformBuffer;
 
 		DLL_EXPORT void MeshSystemStartUp();
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList);
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid& materialId);
-		DLL_EXPORT uint CreateSkyBox(VkGuid& materialId);
+		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
 		DLL_EXPORT void Update(const float& deltaTime);
 		DLL_EXPORT void Destroy(uint meshId);
 		DLL_EXPORT void DestroyAllGameObjects();

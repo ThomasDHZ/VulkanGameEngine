@@ -194,7 +194,15 @@ void LevelSystem::LoadSkyBox(const char* skyBoxMaterialPath)
         0, 5, 4,   0, 1, 5,
         3, 6, 2,   3, 7, 6
     };
-    meshSystem.CreateSkyBox(skyBoxMaterialGuid);
+
+    VertexLayout vertexData =
+    {
+        .VertexType = VertexLayoutEnum::kVertexLayout_Vertex2D,
+        .VertexDataSize = skyBoxVertices.size() * sizeof(SkyboxVertexLayout),
+        .VertexData = skyBoxVertices.data()
+    };
+
+    meshSystem.CreateMesh(MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, skyBoxMaterialGuid);
 }
 
 void LevelSystem::DestroyLevel()
@@ -425,20 +433,6 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
 {
-    int a = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-    int b = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    int c = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    int d = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
-
-    int e = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        int f = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        int g = 0;
-        int h = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-        | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
-        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);

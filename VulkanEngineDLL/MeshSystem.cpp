@@ -21,48 +21,7 @@ void MeshSystem::MeshSystemStartUp()
     bufferSystem.VMACreateDynamicBuffer(nullptr, shaderStructData.ShaderBufferSize * 256, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
-uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList)
-{
-    uint meshId = GetNextMeshIndex();
-    mat4 meshMatrix = mat4(1.0f);
-    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
-
-    Mesh mesh = Mesh
-    {
-        .MeshId = meshId,
-        .ParentGameObjectId = UINT32_MAX,
-        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
-        .MeshTypeId = meshType,
-        .MeshData = MeshAssetData
-        {
-            .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-            .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
-            .IndexCount = static_cast<uint>(indexList.size()),
-            .Layout = vertexData.VertexType
-        },
-        .MeshPropertiesId = meshId,
-        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
-        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
-        .VertexIndex = meshId,
-        .IndexIndex = meshId,
-        .MeshPosition = vec3(0.0f),
-        .MeshRotation = vec3(0.0f),
-        .MeshScale = vec3(1.0f),
-        .MaterialId = VkGuid(),
-        .MeshExtension = nullptr
-    };
-
-    MeshList.emplace_back(mesh);
-    MeshPropertiesList.emplace_back(meshProperties);
-    VertexList.emplace_back(vertexData);
-    IndexList.emplace_back(indexList);
-
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
-    return meshId;
-}
-
-uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid& materialId)
+uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
 {
     uint meshId = meshSystem.GetNextMeshIndex();
     mat4 meshMatrix = mat4(1.0f);
@@ -82,74 +41,6 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vec
             .Layout = vertexData.VertexType
         },
         .VertexLayout = vertexData.VertexType,
-        .MeshPropertiesId = meshId,
-        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
-        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
-        .VertexIndex = meshId,
-        .IndexIndex = meshId,
-        .MeshPosition = vec3(0.0f),
-        .MeshRotation = vec3(0.0f),
-        .MeshScale = vec3(1.0f),
-        .MaterialId = materialId,
-        .MeshExtension = nullptr
-    };
-
-    MeshList.emplace_back(mesh);
-    MeshPropertiesList.emplace_back(meshProperties);
-    VertexList.emplace_back(vertexData);
-    IndexList.emplace_back(indexList);
-
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
-    return meshId;
-}
-
-uint MeshSystem::CreateSkyBox(VkGuid& materialId)
-{
-    Vector<SkyboxVertexLayout> skyBoxVertices = {
-        {{-1.0f, -1.0f, -1.0f}},
-        {{ 1.0f, -1.0f, -1.0f}},
-        {{ 1.0f,  1.0f, -1.0f}},
-        {{-1.0f,  1.0f, -1.0f}},
-        {{-1.0f, -1.0f,  1.0f}},
-        {{ 1.0f, -1.0f,  1.0f}},
-        {{ 1.0f,  1.0f,  1.0f}},
-        {{-1.0f,  1.0f,  1.0f}}
-    };
-
-    Vector<uint32_t> indexList = {
-        0, 2, 1,   0, 3, 2,
-        4, 5, 6,   4, 6, 7,
-        4, 3, 0,   4, 7, 3,
-        1, 6, 5,   1, 2, 6,
-        0, 5, 4,   0, 1, 5,
-        3, 6, 2,   3, 7, 6
-    };
-
-    uint meshId = meshSystem.GetNextMeshIndex();
-    mat4 meshMatrix = mat4(1.0f);
-    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
-    VertexLayout vertexData = VertexLayout
-    {
-        .VertexType = VertexLayoutEnum::kVertexLayout_SkyBoxVertex,
-        .VertexDataSize = sizeof(SkyboxVertexLayout) * skyBoxVertices.size(),
-        .VertexData = skyBoxVertices.data()
-    };
-
-    Mesh mesh = Mesh
-    {
-        .MeshId = meshId,
-        .ParentGameObjectId = UINT32_MAX,
-        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
-        .MeshTypeId = MeshTypeEnum::kMesh_SkyBoxMesh,
-        .MeshData = MeshAssetData
-        {
-            .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-            .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
-            .IndexCount = static_cast<uint>(indexList.size()),
-            .Layout = vertexData.VertexType
-        },
-        .VertexLayout = VertexLayoutEnum::kVertexLayout_SkyBoxVertex,
         .MeshPropertiesId = meshId,
         .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
