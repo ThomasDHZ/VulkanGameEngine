@@ -55,8 +55,6 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vec
 
     MeshList.emplace_back(mesh);
     MeshPropertiesList.emplace_back(meshProperties);
-    VertexList.emplace_back(vertexData);
-    IndexList.emplace_back(indexList);
 
     shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
     shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;

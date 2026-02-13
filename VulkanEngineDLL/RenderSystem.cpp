@@ -265,11 +265,10 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         const MeshAssetData& meshAsset = skybox.MeshData;
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
-        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
 

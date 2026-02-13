@@ -102,27 +102,25 @@ private:
 	MeshSystem(MeshSystem&&) = delete;
 	MeshSystem& operator=(MeshSystem&&) = delete;
 
-		Vector<uint32>				 FreeMeshIndicesList;
-		Vector<MeshPropertiesStruct> MeshPropertiesList;
+	Vector<uint32>				 FreeMeshIndicesList;
+	Vector<MeshPropertiesStruct> MeshPropertiesList;
 
-		uint32 GetNextMeshIndex();
-		void   UpdateMesh(Mesh& mesh, const float& deltaTime);
+	uint32 GetNextMeshIndex();
+	void   UpdateMesh(Mesh& mesh, const float& deltaTime);
 
-	public:
-		Vector<Mesh>                 MeshList;
-		Vector<VertexLayout>		 VertexList;
-		Vector<Vector<uint>>         IndexList;
-		VulkanBuffer 				 MeshPropertiesBuffer;
-		VulkanBuffer				 TransformBuffer;
+public:
+	Vector<Mesh>                 MeshList;
+	VulkanBuffer 				 MeshPropertiesBuffer;
+	VulkanBuffer				 TransformBuffer;
 
-		DLL_EXPORT void MeshSystemStartUp();
-		DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
-		DLL_EXPORT void Update(const float& deltaTime);
-		DLL_EXPORT void Destroy(uint meshId);
-		DLL_EXPORT void DestroyAllGameObjects();
-		DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
-		DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-		DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexLayoutEnum vertexType);
+	DLL_EXPORT void MeshSystemStartUp();
+	DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	DLL_EXPORT void Update(const float& deltaTime);
+	DLL_EXPORT void Destroy(uint meshId);
+	DLL_EXPORT void DestroyAllGameObjects();
+	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
+	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
+	DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexLayoutEnum vertexType);
 };
 extern DLL_EXPORT MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()
