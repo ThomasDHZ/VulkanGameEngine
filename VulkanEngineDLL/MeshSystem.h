@@ -81,7 +81,6 @@ struct Mesh
 	MeshTypeEnum MeshTypeId = kMesh_Undefined;
 	VertexLayoutEnum VertexLayout = kVertexLayout_NullVertex;
 	uint32 MeshPropertiesId = UINT32_MAX;
-	uint32 MeshTransformBufferId = UINT32_MAX;
 	uint32 PropertiesBufferId = UINT32_MAX;
 	vec3 MeshPosition = vec3(0.0f);
 	vec3 MeshRotation = vec3(0.0f);
@@ -115,7 +114,6 @@ class MeshSystem
 	public:
 		Vector<Mesh>					MeshList;
 		VulkanBuffer 					MeshPropertiesBuffer;
-		VulkanBuffer					TransformBuffer;
 
 		DLL_EXPORT void					MeshSystemStartUp();
 		DLL_EXPORT uint					CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());

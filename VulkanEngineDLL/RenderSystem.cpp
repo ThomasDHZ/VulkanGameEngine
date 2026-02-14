@@ -963,24 +963,6 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = lightSystem.GetPointLightPropertiesBuffer();
                 break;
             }
-            case kVertexDescsriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetVertexPropertiesBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetVertexPropertiesBuffer();
-                break;
-            }
-            case kIndexDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIndexPropertiesBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetIndexPropertiesBuffer();
-                break;
-            }
-            case kTransformDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetGameObjectTransformBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetGameObjectTransformBuffer();
-                break;
-            }
             case kSkyBoxDescriptor:
             {
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetSkyBoxTextureBuffer().size();
@@ -1115,111 +1097,6 @@ void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
     vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
 }
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetVertexPropertiesBuffer()
-{
-    //Vector<MeshStruct> meshList;
-        //meshList.reserve(meshSystem.SpriteMeshList.size());
-        //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-        //    std::back_inserter(meshList),
-        //    [](const auto& pair) { return pair.second; });
-
-
-    Vector<VkDescriptorBufferInfo> vertexPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& vertexProperties = bufferSystem.VulkanBuffer[mesh.MeshVertexBufferId];
-    //        vertexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = vertexProperties.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-
-    return vertexPropertiesBuffer;
-};
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetIndexPropertiesBuffer()
-{
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-    std::vector<VkDescriptorBufferInfo>	indexPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& indexProperties = bufferSystem.VulkanBuffer[mesh.MeshIndexBufferId];
-    //        indexPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = indexProperties.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-    return indexPropertiesBuffer;
-};
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetGameObjectTransformBuffer()
-{
-    //Vector<MeshStruct> meshList;
-    //meshList.reserve(meshSystem.SpriteMeshList.size());
-    //std::transform(meshSystem.SpriteMeshList.begin(), meshSystem.SpriteMeshList.end(),
-    //    std::back_inserter(meshList),
-    //    [](const auto& pair) { return pair.second; });
-
-    std::vector<VkDescriptorBufferInfo>	transformPropertiesBuffer;
-    //if (meshList.empty())
-    //{
-    //    transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //        {
-    //            .buffer = VK_NULL_HANDLE,
-    //            .offset = 0,
-    //            .range = VK_WHOLE_SIZE
-    //        });
-    //}
-    //else
-    //{
-    //    for (auto& mesh : meshList)
-    //    {
-    //        const VulkanBufferStruct& transformBuffer = bufferSystem.VulkanBuffer[mesh.MeshTransformBufferId];
-    //        transformPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-    //            {
-    //                .buffer = transformBuffer.Buffer,
-    //                .offset = 0,
-    //                .range = VK_WHOLE_SIZE
-    //            });
-    //    }
-    //}
-
-    return transformPropertiesBuffer;
-};
 
 Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId)
 {
