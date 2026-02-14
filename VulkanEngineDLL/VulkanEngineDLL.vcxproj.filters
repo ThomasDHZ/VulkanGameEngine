@@ -132,6 +132,9 @@
     <ClInclude Include="MemoryPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\xxHash\xxhash.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
@@ -204,6 +207,9 @@
       <Filter>Header Files\External</Filter>
     </ClCompile>
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
+      <Filter>Header Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\xxHash\xxhash.c">
       <Filter>Header Files\External</Filter>
     </ClCompile>
   </ItemGroup>

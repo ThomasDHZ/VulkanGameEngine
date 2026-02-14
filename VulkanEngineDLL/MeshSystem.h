@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "ShaderSystem.h"
+#include <xxhash.h>
 
 struct MeshPropertiesStruct
 {
@@ -26,12 +27,6 @@ enum VertexLayoutEnum
 	kVertexLayout_Undefined
 };
 
-struct VertexLayout
-{
-	VertexLayoutEnum VertexType = kVertexLayout_NullVertex;
-	uint64 VertexDataSize = UINT64_MAX;
-	void* VertexData = nullptr;
-};
 
 struct NullVertexLayout
 {
@@ -63,10 +58,18 @@ struct SkyboxVertexLayout
 
 struct MeshAssetData
 {
-	uint32 VertexBufferId = UINT32_MAX;
-	uint32 IndexBufferId = UINT32_MAX;
-	uint32 IndexCount = 0;
+	Vector<uint32>   MeshIdUsageList = Vector<uint32>();
+	uint32			 VertexBufferId = UINT32_MAX;
+	uint32			 IndexBufferId = UINT32_MAX;
+	uint32			 IndexCount = UINT32_MAX;
 	VertexLayoutEnum Layout = VertexLayoutEnum::kVertexLayout_Undefined;
+};
+
+struct VertexLayout
+{
+	VertexLayoutEnum VertexType = kVertexLayout_NullVertex;
+	uint64 VertexDataSize = UINT64_MAX;
+	void* VertexData = nullptr;
 };
 
 struct Mesh
@@ -74,14 +77,12 @@ struct Mesh
 	uint32 MeshId = UINT32_MAX;
 	uint32 ParentGameObjectId = UINT32_MAX;
 	uint32 MeshShaderBufferIndex = UINT32_MAX;
+	uint64 SharedAssetId = UINT64_MAX;
 	MeshTypeEnum MeshTypeId = kMesh_Undefined;
-	MeshAssetData MeshData;
 	VertexLayoutEnum VertexLayout = kVertexLayout_NullVertex;
 	uint32 MeshPropertiesId = UINT32_MAX;
 	uint32 MeshTransformBufferId = UINT32_MAX;
 	uint32 PropertiesBufferId = UINT32_MAX;
-	uint32 VertexIndex = UINT32_MAX;
-	uint32 IndexIndex = UINT32_MAX;
 	vec3 MeshPosition = vec3(0.0f);
 	vec3 MeshRotation = vec3(0.0f);
 	vec3 MeshScale = vec3(1.0f);
@@ -91,36 +92,40 @@ struct Mesh
 
 class MeshSystem
 {
-public:
-	static MeshSystem& Get();
+	public:
+		static MeshSystem& Get();
 
-private:
-	MeshSystem() = default;
-	~MeshSystem() = default;
-	MeshSystem(const MeshSystem&) = delete;
-	MeshSystem& operator=(const MeshSystem&) = delete;
-	MeshSystem(MeshSystem&&) = delete;
-	MeshSystem& operator=(MeshSystem&&) = delete;
+	private:
+		MeshSystem() = default;
+		~MeshSystem() = default;
+		MeshSystem(const MeshSystem&) = delete;
+		MeshSystem& operator=(const MeshSystem&) = delete;
+		MeshSystem(MeshSystem&&) = delete;
+		MeshSystem& operator=(MeshSystem&&) = delete;
 
-	Vector<uint32>				 FreeMeshIndicesList;
-	Vector<MeshPropertiesStruct> MeshPropertiesList;
+		UnorderedMap<uint64, uint32>    MeshAssetLookup;
+		Vector<MeshAssetData>			MeshAssetDataList;
+		Vector<MeshPropertiesStruct>	MeshPropertiesList;
+		Vector<uint32>					FreeMeshIndicesList;
 
-	uint32 GetNextMeshIndex();
-	void   UpdateMesh(Mesh& mesh, const float& deltaTime);
+		uint32							GetNextMeshIndex();
+		uint64							HashAssetKey(std::string_view key);
+		void							UpdateMesh(Mesh& mesh, const float& deltaTime);
 
-public:
-	Vector<Mesh>                 MeshList;
-	VulkanBuffer 				 MeshPropertiesBuffer;
-	VulkanBuffer				 TransformBuffer;
+	public:
+		Vector<Mesh>					MeshList;
+		VulkanBuffer 					MeshPropertiesBuffer;
+		VulkanBuffer					TransformBuffer;
 
-	DLL_EXPORT void MeshSystemStartUp();
-	DLL_EXPORT uint CreateMesh(MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
-	DLL_EXPORT void Update(const float& deltaTime);
-	DLL_EXPORT void Destroy(uint meshId);
-	DLL_EXPORT void DestroyAllGameObjects();
-	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
-	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-	DLL_EXPORT const Vector<Mesh>& FindMeshByVertexType(VertexLayoutEnum vertexType);
+		DLL_EXPORT void					MeshSystemStartUp();
+		DLL_EXPORT uint					CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+		DLL_EXPORT void					Update(const float& deltaTime);
+		DLL_EXPORT void					Destroy(uint meshId);
+		DLL_EXPORT void					DestroyAllGameObjects();
+		DLL_EXPORT const Mesh&			FindMesh(const uint& meshId);
+		DLL_EXPORT  MeshAssetData FindMeshAssetData(const uint64& meshAssetId);
+		DLL_EXPORT const Vector<Mesh>	FindMeshByMeshType(MeshTypeEnum meshType);
+		DLL_EXPORT const Vector<Mesh>&  FindMeshByVertexType(VertexLayoutEnum vertexType);
 };
 extern DLL_EXPORT MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()

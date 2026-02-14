@@ -21,31 +21,43 @@ void MeshSystem::MeshSystemStartUp()
     bufferSystem.VMACreateDynamicBuffer(nullptr, shaderStructData.ShaderBufferSize * 256, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
-uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
+uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
 {
     uint meshId = meshSystem.GetNextMeshIndex();
-    mat4 meshMatrix = mat4(1.0f);
-    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+    uint64 meshHash = HashAssetKey(key);
 
-    Mesh mesh = Mesh
+    uint assetId = UINT32_MAX;
+    auto it = MeshAssetLookup.find(meshHash);
+    if (it != MeshAssetLookup.end())
     {
-        .MeshId = meshId,
-        .ParentGameObjectId = UINT32_MAX,
-        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
-        .MeshTypeId = meshType,        
-        .MeshData = MeshAssetData
+        assetId = it->second;
+    }
+
+    if (assetId == UINT32_MAX)
+    {
+        MeshAssetDataList.emplace_back(MeshAssetData
         {
             .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
             .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
             .IndexCount = static_cast<uint>(indexList.size()),
             .Layout = vertexData.VertexType
-        },
+        });
+        MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
+    }
+
+    mat4 meshMatrix = mat4(1.0f);
+    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+    Mesh mesh = Mesh
+    {
+        .MeshId = meshId,
+        .ParentGameObjectId = UINT32_MAX,
+        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
+        .SharedAssetId = meshHash,
+        .MeshTypeId = meshType,     
         .VertexLayout = vertexData.VertexType,
         .MeshPropertiesId = meshId,
         .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
         .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
-        .VertexIndex = meshId,
-        .IndexIndex = meshId,
         .MeshPosition = vec3(0.0f),
         .MeshRotation = vec3(0.0f),
         .MeshScale = vec3(1.0f),
@@ -153,6 +165,12 @@ const Mesh& MeshSystem::FindMesh(const uint& meshId)
     return MeshList[meshId];
 }
 
+MeshAssetData MeshSystem::FindMeshAssetData(const uint64& meshAssetId)
+{
+    uint32 listId = MeshAssetLookup.find(meshAssetId)->second;
+    return MeshAssetDataList[listId];
+}
+
 const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
 {
     Vector<Mesh> meshList;
@@ -173,4 +191,9 @@ const Vector<Mesh>& MeshSystem::FindMeshByVertexType(VertexLayoutEnum vertexType
             return mesh.VertexLayout == static_cast<uint32>(vertexType);
         });
     return meshList;
+}
+
+uint64 MeshSystem::HashAssetKey(std::string_view key)
+{
+    return XXH64(key.data(), key.size(), 0);
 }
