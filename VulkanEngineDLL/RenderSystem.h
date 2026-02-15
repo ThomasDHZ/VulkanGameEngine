@@ -57,7 +57,6 @@ public:
     DLL_EXPORT void                          DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                          DestroyBuffer(VkBuffer& buffer);
 
-    Vector<VkDescriptorBufferInfo>    GetMeshPropertiesBuffer(const  LevelGuid& levelGuid);
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>     GetSkyBoxTextureBuffer();
     Vector<VkDescriptorImageInfo>     GetIrradianceMapTextureBuffer();

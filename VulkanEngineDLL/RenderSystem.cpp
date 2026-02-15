@@ -262,7 +262,7 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
     for (const auto& skyboxMesh : skyBoxList)
     {
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedMeshAssetId);
         const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
         const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
@@ -935,8 +935,8 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
         {
             case kMeshPropertiesDescriptor:
             {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId).size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId);
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo.emplace_back(meshSystem.GetMeshPropertiesBuffer());
                 break;
             }
             case kTextureDescriptor:
@@ -1097,34 +1097,6 @@ void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
     vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
 }
-
-Vector<VkDescriptorBufferInfo> RenderSystem::GetMeshPropertiesBuffer(const LevelGuid& levelLayerId)
-{
-    Vector<VkDescriptorBufferInfo> meshPropertiesBuffer;
-    if (meshSystem.MeshList.empty())
-    {
-        meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-            {
-                .buffer = VK_NULL_HANDLE,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            });
-    }
-    else
-    {
-        for (auto& mesh : meshSystem.MeshList)
-        {
-            const VulkanBuffer& meshProperties = bufferSystem.FindVulkanBuffer(mesh.PropertiesBufferId);
-            meshPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-                {
-                    .buffer = meshProperties.Buffer,
-                    .offset = 0,
-                    .range = VK_WHOLE_SIZE
-                });
-        }
-    }
-    return meshPropertiesBuffer;
-};
 
 Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid)
 {

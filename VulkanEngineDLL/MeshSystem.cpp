@@ -4,26 +4,25 @@
 
 MeshSystem& meshSystem = MeshSystem::Get();
 
-uint32 MeshSystem::GetNextMeshIndex()
+uint32 MeshSystem::GetNextMeshId()
 {
-    if (!FreeMeshIndicesList.empty())
+    if (!FreeMeshIds.empty())
     {
-        uint index = FreeMeshIndicesList.back();
-        FreeMeshIndicesList.pop_back();
-        return index;
+        uint32 id = FreeMeshIds.back();
+        FreeMeshIds.pop_back();
+        return id;
     }
     return MeshList.size();
 }
 
-void MeshSystem::MeshSystemStartUp()
+void MeshSystem::StartUp()
 {
-    ShaderStructDLL shaderStructData = shaderSystem.CopyShaderStructProtoType("SceneDataBuffer");
-    bufferSystem.VMACreateDynamicBuffer(nullptr, shaderStructData.ShaderBufferSize * 256, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    ObjectDataPool.CreateMemoryPool(4096, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
 uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
 {
-    uint meshId = meshSystem.GetNextMeshIndex();
+    uint meshId = meshSystem.GetNextMeshId();
     uint64 meshHash = HashAssetKey(key);
 
     uint assetId = UINT32_MAX;
@@ -45,96 +44,97 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
         MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
     }
 
-    mat4 meshMatrix = mat4(1.0f);
-    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+    uint32 objectIndex = ObjectDataPool.AllocateObject();
+    MeshPropertiesStruct& props = ObjectDataPool.Get(objectIndex);
+    props.MeshTransform = mat4(1.0f);
+    props.ShaderMaterialBufferIndex = materialId != VkGuid() ? materialSystem.FindMaterial(materialId).ShaderMaterialBufferIndex : 0;
+
     Mesh mesh = Mesh
     {
         .MeshId = meshId,
-        .ParentGameObjectId = UINT32_MAX,
-        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
-        .SharedAssetId = meshHash,
-        .MeshTypeId = meshType,     
-        .VertexLayout = vertexData.VertexType,
-        .MeshPropertiesId = meshId,
-        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
-        .MeshPosition = vec3(0.0f),
-        .MeshRotation = vec3(0.0f),
-        .MeshScale = vec3(1.0f),
+        .SharedMeshAssetId = meshHash,
+        .ObjectDataIndex = objectIndex,
+        .Type = meshType,
+        .Layout = vertexData.VertexType,
+        .Position = vec3(0.0f),
+        .Rotation = vec3(0.0f),
+        .Scale = vec3(1.0f),
         .MaterialId = materialId,
-        .MeshExtension = nullptr
     };
-
     MeshList.emplace_back(mesh);
-    MeshPropertiesList.emplace_back(meshProperties);
-
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
-    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
     return meshId;
 }
 
 void MeshSystem::Update(const float& deltaTime)
 {
+    bool anyDirty = false;
     for (auto& mesh : MeshList)
     {
-        UpdateMesh(mesh, deltaTime);
+        if (mesh.MeshId == UINT32_MAX) continue;
+
+        MeshPropertiesStruct& meshProperties = ObjectDataPool.Get(mesh.ObjectDataIndex);
+
+        mat4 model = mat4(1.0f);
+        model = glm::translate(model, mesh.Position);
+        model = glm::rotate(model, glm::radians(mesh.Rotation.x), vec3(1, 0, 0));
+        model = glm::rotate(model, glm::radians(mesh.Rotation.y), vec3(0, 1, 0));
+        model = glm::rotate(model, glm::radians(mesh.Rotation.z), vec3(0, 0, 1));
+        model = glm::scale(model, mesh.Scale);
+        bool changed = (meshProperties.MeshTransform != model);
+
+        uint32 matIndex = mesh.MaterialId != VkGuid() ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
+        if (meshProperties.ShaderMaterialBufferIndex != matIndex)
+        {
+            meshProperties.ShaderMaterialBufferIndex = matIndex;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            meshProperties.MeshTransform = model;
+            anyDirty = true;
+        }
     }
-}
 
-void MeshSystem::UpdateMesh(Mesh& mesh, const float& deltaTime)
-{
-    auto a = mesh.MaterialId.ToString();
-    VulkanBuffer& meshPropertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
-    ShaderStructDLL& shaderStruct = shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId];
-    uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
-
-    const vec3 LastMeshPosition = mesh.MeshPosition;
-    const vec3 LastMeshRotation = mesh.MeshRotation;
-    const vec3 LastMeshScale = mesh.MeshScale;
-
-    mat4 GameObjectMatrix = mat4(1.0);
-    //SharedPtr<Transform2DComponent> transform = GameObjectTransform.lock();
-    //if (transform)
-    //{
-    //		GameObjectMatrix = *transform->GameObjectMatrixTransform.get();
-    //}
-
-    mat4 MeshMatrix = mat4(1.0f);
-    if (LastMeshPosition != mesh.MeshPosition)
+    if (anyDirty)
     {
-        MeshMatrix = glm::translate(MeshMatrix, mesh.MeshPosition);
+        ObjectDataPool.MarkDirty();
     }
-    if (LastMeshRotation != mesh.MeshRotation)
-    {
-        MeshMatrix = glm::rotate(MeshMatrix, glm::radians(mesh.MeshRotation.x), vec3(1.0f, 0.0f, 0.0f));
-        MeshMatrix = glm::rotate(MeshMatrix, glm::radians(mesh.MeshRotation.y), vec3(0.0f, 1.0f, 0.0f));
-        MeshMatrix = glm::rotate(MeshMatrix, glm::radians(mesh.MeshRotation.z), vec3(0.0f, 0.0f, 1.0f));
-    }
-    if (LastMeshScale != mesh.MeshScale)
-    {
-        MeshMatrix = glm::scale(MeshMatrix, mesh.MeshScale);
-    }
-
-    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MaterialIndex").Value.data(), &shaderMaterialBufferIndex, sizeof(uint));
-    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MeshTransform").Value.data(), &GameObjectMatrix, sizeof(mat4));
-    shaderSystem.UpdateShaderBuffer(shaderStruct, meshPropertiesBuffer.BufferId);
+    ObjectDataPool.UploadIfDirty();
 }
 
 void MeshSystem::Destroy(uint meshId)
 {
-    Mesh& mesh = meshSystem.MeshList[meshId];
-    VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
-    bufferSystem.DestroyBuffer(propertiesBuffer);
-    bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+    Mesh& mesh = MeshList[meshId];
+
+    ObjectDataPool.FreeDataSlot(mesh.ObjectDataIndex);
+
+    // Assets are shared — only destroy if no references left (optional refcounting later)
+    // For now: never destroy shared assets (leak ok for simple engine, or add refcount)
+
+    mesh.MeshId = UINT32_MAX;
+    FreeMeshIds.push_back(meshId);
 }
 
 void MeshSystem::DestroyAllGameObjects()
 {
     for (auto& mesh : MeshList)
     {
-        VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
-        bufferSystem.DestroyBuffer(propertiesBuffer);
-        bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+        if (mesh.MeshId != UINT32_MAX)
+        {
+            ObjectDataPool.FreeDataSlot(mesh.ObjectDataIndex);
+        }
     }
+
+    for (auto& asset : MeshAssetDataList)
+    {
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(asset.VertexBufferId));
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(asset.IndexBufferId));
+    }
+    MeshAssetDataList.clear();
+
+    MeshList.clear();
+    FreeMeshIds.clear();
 }
 
 const Mesh& MeshSystem::FindMesh(const uint& meshId)
@@ -142,32 +142,36 @@ const Mesh& MeshSystem::FindMesh(const uint& meshId)
     return MeshList[meshId];
 }
 
-MeshAssetData MeshSystem::FindMeshAssetData(const uint64& meshAssetId)
+
+const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
+{
+    Vector<Mesh> result;
+    for (const auto& mesh : MeshList)
+    {
+        if (mesh.Type == meshType && mesh.MeshId != UINT32_MAX)
+        {
+            result.emplace_back(mesh);
+        }
+    }
+    return result;
+}
+
+MeshAssetData& MeshSystem::FindMeshAssetData(const uint64& meshAssetId)
 {
     uint32 listId = MeshAssetLookup.find(meshAssetId)->second;
     return MeshAssetDataList[listId];
 }
 
-const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
+VkDescriptorBufferInfo MeshSystem::GetMeshPropertiesBuffer()
 {
-    Vector<Mesh> meshList;
-    std::copy_if(MeshList.begin(), MeshList.end(), std::back_inserter(meshList),
-        [meshType](const Mesh& mesh)
+        const VulkanBuffer& objBuffer = bufferSystem.FindVulkanBuffer(ObjectDataPool.BufferId);
+        VkDescriptorBufferInfo objectInfo
         {
-            return mesh.MeshTypeId == static_cast<uint32>(meshType);
-        });
-    return meshList;
-}
-
-const Vector<Mesh>& MeshSystem::FindMeshByVertexType(VertexLayoutEnum vertexType)
-{
-    Vector<Mesh> meshList;
-    std::copy_if(MeshList.begin(), MeshList.end(), std::back_inserter(meshList),
-        [vertexType](const Mesh& mesh)
-        {
-            return mesh.VertexLayout == static_cast<uint32>(vertexType);
-        });
-    return meshList;
+            .buffer = objBuffer.Buffer,
+            .offset = 0,
+            .range = VK_WHOLE_SIZE
+        };
+        return objectInfo;
 }
 
 uint64 MeshSystem::HashAssetKey(std::string_view key)
