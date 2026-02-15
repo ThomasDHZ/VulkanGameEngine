@@ -1,4 +1,4 @@
-struct MaterialProperitiesBuffer
+struct ImportMaterialBuffer
 {
     vec3  Albedo;
     vec3  SheenColor;
@@ -34,7 +34,7 @@ struct MaterialProperitiesBuffer
     uint HeightMap;
 };
 
-struct MaterialProperitiesBuffer2
+struct MaterialProperitiesBuffer
 {
     uint AlbedoDataId;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
     uint NormalDataId;             //Normal/NormalStrength/Height                                                               - R16G16B16A16_UNORM
@@ -42,4 +42,11 @@ struct MaterialProperitiesBuffer2
     uint PackedSheenSSSDataId;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
     uint UnusedDataId;             //vec4(                                                                                    ) - R16G16B16A16_UNORM
     uint EmissionDataId;           //Emission                                                                                   - R8G8B8A8_SRGB
+};
+
+struct CubeMapPropertiesBuffer
+{
+    uint CubeMapId;
+    uint IrradianceId;
+    uint PrefilterId;
 };

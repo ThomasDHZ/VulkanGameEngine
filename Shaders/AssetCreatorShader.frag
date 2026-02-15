@@ -47,9 +47,6 @@ layout(constant_id = 30) const uint DescriptorBindingType10 = TextureDescriptor;
 layout(constant_id = 31) const uint DescriptorBindingType11 = TextureDescriptor;
 layout(constant_id = 32) const uint DescriptorBindingType12 = TextureDescriptor;
 
-
-
-
 layout(location = 0) in vec2 UV;    
 
 layout(location = 0) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
@@ -59,7 +56,7 @@ layout(location = 3) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenCo
 layout(location = 4) out vec4 outUnused;             //unused for now                                                                             - R16G16B16A16_UNORM
 layout(location = 5) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_SFLOAT
 
-layout(binding = 0)  buffer  MaterialProperities { MaterialProperitiesBuffer importMaterialProperties; } importMaterialBuffer;
+layout(binding = 0)  buffer  ImportMaterialBuffer { MaterialProperitiesBuffer importMaterialProperties; } importMaterialBuffer;
 layout(binding = 1)  uniform sampler2D AlbedoMap;
 layout(binding = 2)  uniform sampler2D MetallicMap;
 layout(binding = 3)  uniform sampler2D RoughnessMap;
@@ -88,7 +85,7 @@ float Pack8bitPair(float high, float low) {
 
 void main()
 {
-    MaterialProperitiesBuffer material = importMaterialBuffer.importMaterialProperties;
+    ImportMaterialBuffer material = importMaterialBuffer.importMaterialProperties;
 
     vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(AlbedoMap,                    UV, 0.0f)                   : vec4(material.Albedo, 1.0f);
     float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(MetallicMap,                  UV, 0.0f).r                 : material.Metallic;

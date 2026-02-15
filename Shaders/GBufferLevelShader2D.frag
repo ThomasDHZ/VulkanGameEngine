@@ -1,62 +1,15 @@
 #version 460
+#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_KHR_Vulkan_GLSL : enable 
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
-layout(location = 0) in vec3 WorldPos; 
-layout(location = 1) in vec2 TexCoords;    
-
-layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
-layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
-layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
-layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
-
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
-
-layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
-layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
-layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
-layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
-layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = MeshPropertiesDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = MaterialDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = DirectionalLightDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = PointLightDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = TextureDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = SkyBoxDescriptor;
-layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
-layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
-
-layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
-layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
-layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
-layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
-layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
-layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
-layout(binding = 13) uniform sampler2D TextureMap[];
-layout(binding = 14) uniform samplerCube CubeMap;
-layout(binding = 15) uniform samplerCube IrradianceMap;
-layout(binding = 16) uniform samplerCube PrefilterMap;
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -69,6 +22,30 @@ layout(push_constant) uniform SceneDataBuffer
     float HeightScale;
     int   Buffer1;
 } sceneData;
+
+layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
+layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
+layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
+{ 
+    MeshProperitiesBuffer meshProperties[]; 
+    MaterialProperitiesBuffer materialProperties[];
+    CubeMapPropertiesBuffer cubeMapProperties[];
+    DirectionalLightBuffer directionalLightProperties[];
+    PointLightBuffer pointLightProperties[];
+} 
+bindlessScenePropertiesBuffer;
+
+layout(location = 0) in vec3 WorldPos; 
+layout(location = 1) in vec2 TexCoords;    
+
+layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
+layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
+layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
+layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
+layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
+layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 mat3 CalculateTBN(vec3 worldPos, vec2 uv) {
     vec3 dp1 = dFdx(worldPos);
@@ -156,8 +133,8 @@ vec2 Unpack8bitPair(float packed) {
 
 void main()
 {
-    int meshIdx = sceneData.MeshBufferIndex;
-    uint matId = meshBuffer[meshIdx].meshProperties.MaterialIndex;
+    int meshIndex = sceneData.MeshBufferIndex;
+    uint matId = bindlessBuffer.meshProperties[meshIndex].MaterialIndex;
     MaterialProperitiesBuffer2 material = materialBuffer[matId].materialProperties;
 
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);

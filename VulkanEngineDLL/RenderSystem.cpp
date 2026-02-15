@@ -8,6 +8,8 @@
 #include "RenderSystem.h"
 #include "from_json.h"
 #include <unordered_set>
+#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -694,7 +696,7 @@ VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader
     {
         descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize{
             .type = binding.DescripterType,
-            .descriptorCount = static_cast<uint32>(binding.DescriptorCount)
+            .descriptorCount = 1000
             });
     }
 
@@ -703,7 +705,7 @@ VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .pNext = nullptr,
-        .flags = 0,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
         .maxSets = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.empty() ? 1000 : static_cast<uint32>(descriptorPoolSizeList.size()) * 1000,
         .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
         .pPoolSizes = descriptorPoolSizeList.data()
@@ -720,9 +722,15 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
         });
     size_t countDistinct = uniqueValues.size();
 
+    bool usingBindless = false;
     Vector<Vector<VkDescriptorSetLayoutBinding>> descriptorSetLayoutBindingList = Vector<Vector<VkDescriptorSetLayoutBinding>>(countDistinct);
     for (auto& descriptorBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
     {
+        if (descriptorBinding.DescriptorBindingType == kBindlessDescriptor)
+        {
+            usingBindless = true;
+        }
+
         descriptorSetLayoutBindingList[descriptorBinding.DescriptorSet].emplace_back(VkDescriptorSetLayoutBinding
             {
                 .binding = descriptorBinding.Binding,
@@ -733,13 +741,28 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
             });
     }
 
+    Vector<VkDescriptorBindingFlags> bindlessFlags = Vector<VkDescriptorBindingFlags>
+    {
+        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
+        VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
+        VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT
+    };
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .bindingCount = static_cast<uint32>(bindlessFlags.size()),
+        .pBindingFlags = bindlessFlags.data()
+    };
+        
     Vector<VkDescriptorSetLayoutCreateInfo> descriptorSetLayoutCreateInfoList = Vector<VkDescriptorSetLayoutCreateInfo>(countDistinct);
     for (int x = 0; x < descriptorSetLayoutCreateInfoList.size(); x++)
     {
         descriptorSetLayoutCreateInfoList[x] = VkDescriptorSetLayoutCreateInfo
         {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-            .pNext = nullptr,
+            .pNext = usingBindless ? &flagsInfo : nullptr,
             .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV,
             .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList[x].size()),
             .pBindings = descriptorSetLayoutBindingList[x].data()
@@ -756,13 +779,21 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
 
 Vector<VkDescriptorSet> RenderSystem::AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {
+    uint32 maxDescriptors = 1000;
+    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo = VkDescriptorSetVariableDescriptorCountAllocateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+        .descriptorSetCount = 1,
+        .pDescriptorCounts = &maxDescriptors
+    };
+
     Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(descriptorSetLayoutCount, VK_NULL_HANDLE);
     for (int x = 0; x < descriptorSetLayoutCount; x++)
     {
         VkDescriptorSetAllocateInfo allocInfo =
         {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .pNext = nullptr,
+            .pNext = &varInfo,
             .descriptorPool = descriptorPool,
             .descriptorSetCount = 1,
             .pSetLayouts = &descriptorSetLayoutList[x]
@@ -1004,6 +1035,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
             {
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
+                break;
+            }
+            case kBindlessDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId).size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = renderSystem.GetMeshPropertiesBuffer(renderPipelineLoader.LevelId);
                 break;
             }
             default:

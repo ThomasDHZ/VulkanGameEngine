@@ -1,5 +1,5 @@
-
 #version 460
+#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_KHR_Vulkan_GLSL : enable 
@@ -10,23 +10,31 @@
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
+
+layout(push_constant) uniform SceneDataBuffer
+{
+    int   MeshBufferIndex;
+    mat4  Projection;
+    mat4  View;
+    vec3  ViewDirection;
+    vec3  CameraPosition;
+    int   UseHeightMap;
+    float HeightScale;
+    int   Buffer1;
+} sceneData;
+
+layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
+layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
+layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
+{ 
+    MeshProperitiesBuffer meshProperties[]; 
+    MaterialProperitiesBuffer materialProperties[];
+    CubeMapPropertiesBuffer cubeMapProperties[];
+    DirectionalLightBuffer directionalLightProperties[];
+    PointLightBuffer pointLightProperties[];
+} 
+bindlessScenePropertiesBuffer;
  
-layout (location = 0)  in vec2  VS_SpritePosition;
-layout (location = 1)  in vec4  VS_UVOffset; // vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
-layout (location = 2)  in vec2  VS_SpriteSize;
-layout (location = 3)  in ivec2 VS_FlipSprite;
-layout (location = 4)  in vec4  VS_Color;
-layout (location = 5)  in mat4  VS_InstanceTransform;
-layout (location = 9)  in uint  VS_MaterialID;
-
-layout (location = 0) out vec3  PS_Position;
-layout (location = 1) out vec2  PS_UV;
-layout (location = 2) out vec2  PS_SpriteSize;
-layout (location = 3) out ivec2 PS_FlipSprite;
-layout (location = 4) out vec4  PS_Color;
-layout (location = 5) out uint  PS_MaterialID;
-layout (location = 6) out vec4  PS_UVOffset;
-
 layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1)  const uint VertexInputRateLocation0 = 1;
 layout(constant_id = 2)  const uint VertexAttributeLocation1 = 0;
@@ -42,17 +50,21 @@ layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 
-layout(push_constant) uniform SceneDataBuffer
-{
-    int   MeshBufferIndex;
-    mat4  Projection;
-    mat4  View;
-    vec3  ViewDirection;
-    vec3  CameraPosition;
-    int   UseHeightMap;
-    float HeightScale;
-    int   Buffer1;
-} sceneData;
+layout (location = 0)  in vec2  VS_SpritePosition;
+layout (location = 1)  in vec4  VS_UVOffset; // vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
+layout (location = 2)  in vec2  VS_SpriteSize;
+layout (location = 3)  in ivec2 VS_FlipSprite;
+layout (location = 4)  in vec4  VS_Color;
+layout (location = 5)  in mat4  VS_InstanceTransform;
+layout (location = 9)  in uint  VS_MaterialID;
+
+layout (location = 0) out vec3  PS_Position;
+layout (location = 1) out vec2  PS_UV;
+layout (location = 2) out vec2  PS_SpriteSize;
+layout (location = 3) out ivec2 PS_FlipSprite;
+layout (location = 4) out vec4  PS_Color;
+layout (location = 5) out uint  PS_MaterialID;
+layout (location = 6) out vec4  PS_UVOffset;
 
 struct Vertex2D
 {

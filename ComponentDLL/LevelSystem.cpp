@@ -250,13 +250,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
     for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
-    for (auto& skyBox : json["LoadSkyBox"])
-    {
-        LoadSkyBox(skyBox.get<String>().c_str());
-        LoadSkyBox(skyBox.get<String>().c_str());
-        LoadSkyBox(skyBox.get<String>().c_str());
-    }
-        for (size_t x = 0; x < json["GameObjectList"].size(); x++)
+    for (auto& skyBox      : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
+    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);

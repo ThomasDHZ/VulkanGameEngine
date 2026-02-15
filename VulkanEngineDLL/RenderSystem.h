@@ -18,6 +18,10 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
+    VkDescriptorSetLayout GlobalBindlessLayout = VK_NULL_HANDLE;
+    VkDescriptorPool      GlobalBindlessPool   = VK_NULL_HANDLE;
+    VkDescriptorSet       GlobalBindlessSet    = VK_NULL_HANDLE;
+
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                     RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                               RenderPassLoaderJsonMap;

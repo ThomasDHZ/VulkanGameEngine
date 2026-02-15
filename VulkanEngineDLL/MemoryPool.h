@@ -36,6 +36,24 @@ private:
 		std::memcpy(newBuf.BufferData, newCPUData.data(), sizeof(T) * CPUData.size());
 		bufferSystem.VMAUpdateDynamicBuffer(newBufferId, newCPUData.data(), sizeof(T) * CPUData.size(), 0);
 
+		VkDescriptorBufferInfo descriptorBufferInfo
+		{
+			.buffer = bufferSystem.FindVulkanBuffer(ObjectDataPool.BufferId).Buffer,
+			.offset = 0,
+			.range = VK_WHOLE_SIZE
+		};
+
+		VkWriteDescriptorSet writeDescriptorSet = VkWriteDescriptorSet
+		{
+			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.dstSet = globalBindlessSet,
+			.dstBinding = 9,  // mesh properties slot
+			.descriptorCount = 1,
+			.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+			.pBufferInfo = &descriptorBufferInfo
+		};
+		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+
 		bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(BufferId));
 		BufferId = newBufferId;
 		CPUData = std::move(newCPUData);
