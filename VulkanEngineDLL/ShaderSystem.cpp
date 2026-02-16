@@ -542,7 +542,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      }
 #endif
 
-     const String baseCmd = glslc + " --target-env=vulkan1.3" + " --target-spv=spv1.6" + " -g -O0";
+     const String baseCmd = glslc + " --target-env=vulkan1.4" + " --target-spv=spv1.6" + " -g -O0";
      for (const auto& srcPath : shaderFiles)
      {
          std::filesystem::path src = srcPath;

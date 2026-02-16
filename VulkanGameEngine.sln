@@ -11,6 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\BindlessHelpers.glsl = Shaders\BindlessHelpers.glsl
+		Shaders\Constants.glsl = Shaders\Constants.glsl
+		Shaders\Lights.glsl = Shaders\Lights.glsl
+		Shaders\MaterialPropertiesBuffer.glsl = Shaders\MaterialPropertiesBuffer.glsl
+		Shaders\MeshPropertiesBuffer.glsl = Shaders\MeshPropertiesBuffer.glsl
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E282A3D5-3DCC-485B-AA01-B66AB307DBE2}"
 	ProjectSection(SolutionItems) = preProject

@@ -689,6 +689,88 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
     }
 }
 
+void RenderSystem::CreateGlobalBindlessDescriptorSets()
+{
+    Vector<VkDescriptorPoolSize> poolSizes = 
+    {
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1000 }, 
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 65536 }, // 2D textures
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 }   // cubemaps
+    };
+    VkDescriptorPoolCreateInfo poolInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+        .maxSets = 1,
+        .poolSizeCount = static_cast<uint32>(poolSizes.size()),
+        .pPoolSizes = poolSizes.data()
+    };
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &GlobalBindlessPool));
+
+    Vector<VkDescriptorSetLayoutBinding> bindings = Vector<VkDescriptorSetLayoutBinding>
+    {
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .descriptorCount = 1,  // array sized via variable count
+            .stageFlags = VK_SHADER_STAGE_ALL
+        },
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = 1,  // 2D textures array
+            .stageFlags = VK_SHADER_STAGE_ALL
+        },
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 2,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = 1,  // cubemaps array
+            .stageFlags = VK_SHADER_STAGE_ALL
+        }
+    };
+    Vector<VkDescriptorBindingFlags> flags = 
+    {
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  // last 2D
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT }   // last cubemap
+    };
+    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .bindingCount = static_cast<uint32>(flags.size()),
+        .pBindingFlags = flags.data()
+    };
+    VkDescriptorSetLayoutCreateInfo layoutInfo = VkDescriptorSetLayoutCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .pNext = &flagsInfo,
+        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+        .bindingCount = static_cast<uint32>(bindings.size()),
+        .pBindings = bindings.data()
+    };
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &GlobalBindlessDescriptorSetLayout));
+
+    Vector<uint32> variableCounts = { 1, 65536, 1024 };
+    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+        .descriptorSetCount = static_cast<uint32>(variableCounts.size()),
+        .pDescriptorCounts = variableCounts.data()
+    };
+    VkDescriptorSetAllocateInfo allocInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .pNext = &varInfo,
+        .descriptorPool = GlobalBindlessPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &GlobalBindlessDescriptorSetLayout
+    };
+    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &GlobalBindlessDescriptorSet));
+}
+
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
@@ -696,7 +778,7 @@ VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader
     {
         descriptorPoolSizeList.emplace_back(VkDescriptorPoolSize{
             .type = binding.DescripterType,
-            .descriptorCount = 1000
+            .descriptorCount = static_cast<uint32>(binding.DescriptorCount)
             });
     }
 
@@ -705,7 +787,7 @@ VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .pNext = nullptr,
-        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+        .flags = 0,
         .maxSets = renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.empty() ? 1000 : static_cast<uint32>(descriptorPoolSizeList.size()) * 1000,
         .poolSizeCount = static_cast<uint32>(descriptorPoolSizeList.size()),
         .pPoolSizes = descriptorPoolSizeList.data()
@@ -722,15 +804,9 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
         });
     size_t countDistinct = uniqueValues.size();
 
-    bool usingBindless = false;
     Vector<Vector<VkDescriptorSetLayoutBinding>> descriptorSetLayoutBindingList = Vector<Vector<VkDescriptorSetLayoutBinding>>(countDistinct);
     for (auto& descriptorBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
     {
-        if (descriptorBinding.DescriptorBindingType == kBindlessDescriptor)
-        {
-            usingBindless = true;
-        }
-
         descriptorSetLayoutBindingList[descriptorBinding.DescriptorSet].emplace_back(VkDescriptorSetLayoutBinding
             {
                 .binding = descriptorBinding.Binding,
@@ -741,28 +817,13 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
             });
     }
 
-    Vector<VkDescriptorBindingFlags> bindlessFlags = Vector<VkDescriptorBindingFlags>
-    {
-        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
-        VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
-        VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT
-    };
-
-    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-        .bindingCount = static_cast<uint32>(bindlessFlags.size()),
-        .pBindingFlags = bindlessFlags.data()
-    };
-        
     Vector<VkDescriptorSetLayoutCreateInfo> descriptorSetLayoutCreateInfoList = Vector<VkDescriptorSetLayoutCreateInfo>(countDistinct);
     for (int x = 0; x < descriptorSetLayoutCreateInfoList.size(); x++)
     {
         descriptorSetLayoutCreateInfoList[x] = VkDescriptorSetLayoutCreateInfo
         {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-            .pNext = usingBindless ? &flagsInfo : nullptr,
+            .pNext = nullptr,
             .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PER_STAGE_BIT_NV,
             .bindingCount = static_cast<uint32>(descriptorSetLayoutBindingList[x].size()),
             .pBindings = descriptorSetLayoutBindingList[x].data()
@@ -779,21 +840,13 @@ Vector<VkDescriptorSetLayout> RenderSystem::CreatePipelineDescriptorSetLayout(Re
 
 Vector<VkDescriptorSet> RenderSystem::AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {
-    uint32 maxDescriptors = 1000;
-    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo = VkDescriptorSetVariableDescriptorCountAllocateInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
-        .descriptorSetCount = 1,
-        .pDescriptorCounts = &maxDescriptors
-    };
-
     Vector<VkDescriptorSet> descriptorSetList = Vector<VkDescriptorSet>(descriptorSetLayoutCount, VK_NULL_HANDLE);
     for (int x = 0; x < descriptorSetLayoutCount; x++)
     {
         VkDescriptorSetAllocateInfo allocInfo =
         {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .pNext = &varInfo,
+            .pNext = nullptr,
             .descriptorPool = descriptorPool,
             .descriptorSetCount = 1,
             .pSetLayouts = &descriptorSetLayoutList[x]
@@ -830,6 +883,7 @@ void RenderSystem::UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipe
         vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
     }
 }
+
 
 VkPipelineLayout RenderSystem::CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount)
 {

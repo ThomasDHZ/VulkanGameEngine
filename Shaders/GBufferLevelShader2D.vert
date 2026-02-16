@@ -1,27 +1,9 @@
 #version 460
 #extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
-#extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_KHR_Vulkan_GLSL : enable 
-#extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
+#extension GL_EXT_nonuniform_qualifier : require
 
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
-
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    Material material[];
-    CubeMapMaterial cubeMapMaterial[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-scenePropertiesBuffer;
+#include "BindlessHelpers.glsl"
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -43,11 +25,13 @@ layout (location = 1) out vec2  PS_UV;
 
 void main()
 {
-    uint meshIndex = sceneData.MeshBufferIndex;
-    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
-    Material material = scenePropertiesBuffer.material[materialIndex];
-    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
-    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
+    MeshPropertiesBuffer meshProps = GetMesh(sceneData.MeshBufferIndex);
+
+    uint materialId = meshProps.MaterialIndex;
+    Material material = GetMaterial(materialId);
+    CubeMapMaterial cubeMapMaterial = GetCubeMapMaterial(sceneData.CubeMapIndex);
+
+    mat4 meshTransform = meshProps.MeshTransform;
 
     PS_Position = vec3(meshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
 	PS_UV = VS_UV.xy;

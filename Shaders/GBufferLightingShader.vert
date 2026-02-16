@@ -1,13 +1,11 @@
 #version 460
+#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
-//#extension GL_EXT_debug_printf : enable
+#extension GL_EXT_nonuniform_qualifier : require
+
+#include "BindlessHelpers.glsl"
 
 layout(location = 0) out vec2 fragTexCoord;
-
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
 
 void main() 
 {

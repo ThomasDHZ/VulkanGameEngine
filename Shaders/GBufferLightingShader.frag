@@ -1,27 +1,9 @@
 #version 460
-#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
+#extension GL_NV_shader_buffer_load : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_KHR_Vulkan_GLSL : enable 
-#extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
 
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
-
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    Material material[];
-    CubeMapMaterial cubeMapMaterial[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-scenePropertiesBuffer;
+#include "BindlessHelpers.glsl"
  
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput albedoInput;
@@ -33,167 +15,37 @@ layout(input_attachment_index = 6, set = 1, binding = 6) uniform subpassInput pa
 layout(input_attachment_index = 7, set = 1, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, set = 1, binding = 8) uniform subpassInput depthInput;
 
-layout(push_constant) uniform SceneDataBuffer
+layout(push_constant) uniform GBufferSceneDataBuffer
 {
-    uint  MeshBufferIndex;
-    uint  CubeMapIndex;
-    mat4  Projection;
-    mat4  View;
-    vec3  ViewDirection;
-    vec3  CameraPosition;
-    int   UseHeightMap;
-    float HeightScale;
-} sceneData;
+    int   Isolate;
+    uint  CubeMapMaterialIndex;
+    vec2  InvertResolution; 
+    vec3  PerspectiveViewDirection;
+    vec3  OrthographicCameraPosition;
+    uint  DirectionalLightCount;
+    uint  PointLightCount;
+    mat4  InvProjection;
+    mat4  InvView;
+} gBufferSceneDataBuffer;
 
-vec2 Unpack8bitPair(float packed) {
-    uint combined = uint(packed * 65535.0 + 0.5);
-    float high = float((combined >> 8) & 0xFFu) / 255.0;
-    float low  = float(combined & 0xFFu) / 255.0;
-    return vec2(high, low);
-}
-
-vec3 OctahedronDecode(vec2 f)
-{
-    vec3 n;
-    n.xy = f.xy;
-    n.z = 1.0 - abs(f.x) - abs(f.y);
-    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
-    return normalize(n);
-}
-
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-    float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0f)) + 1.0f;
-    denom = PI * denom * denom;
-    return nom / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = roughness + 1.0f;
-    float k = (r * r) / 8.0f;
-    float nom = NdotV;
-    float denom = NdotV * (1.0f - k) + k;
-    return nom / denom;
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0f);
-    float NdotL = max(dot(N, L), 0.0f);
-    float ggx1 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx2 = GeometrySchlickGGX(NdotL, roughness);
-    return ggx1 * ggx2;
-}
-
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0f, 1.0f), 5.0f);
-}
-
-float SchlickWeight(float cosTheta) {
-    return pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-
-mat3 ReconstructTBN(vec3 normalWS)
-{
-    vec3 N = normalWS;
-    vec3 T = normalize(vec3(1.0f, 0.0f, 0.0f));
-    vec3 B = normalize(cross(N, T));
-    T = normalize(cross(B, N));
-    return mat3(T, B, N);
-}
-
-vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
-{
-    vec3 skyDir = reflect(viewDirWS, vec3(0,1,0));
-    skyDir.y = max(skyDir.y, 0.1);
-    
-    float lod = mix(2.0, 6.0, abs(skyDir.y)); 
-    return textureLod(CubeMap, skyDir, lod).rgb;
-}
-
-float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, int lightIndex, float currentHeight)
-{
-    if (currentHeight < 0.001f) return 1.0f;
-
-    mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
-    vec3 lightDirWS = normalize(directionalLightBuffer[lightIndex].directionalLightProperties.LightDirection);
-    vec3 lightDirTS = normalize(worldToTangent * lightDirWS);
-
-    if (dot(lightDirTS, vec3(0,0,1)) < 0.1f) return 0.5f;  // softer backface
-
-    const int maxSteps = 48;
-    const float stepSize = 0.04f;
-    float shadow = 1.0f;
-    vec2 marchUV = finalUV;
-    vec2 deltaUV = lightDirTS.xy * stepSize;
-    float bias = directionalLightBuffer[lightIndex].directionalLightProperties.ShadowBias * 0.5f;
-    float rayHeight = currentHeight;
-
-    for (int x = 0; x < maxSteps; ++x)
-    {
-        marchUV += deltaUV;
-        rayHeight += stepSize;
-        if (rayHeight > currentHeight + bias)
-        {
-            shadow = mix(0.3f, 1.0f, float(x) / float(maxSteps));  // soft falloff
-            break;
-        }
-    }
-    return shadow;
-}
-
-float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight)
-{
-    if (currentHeight < 0.001f) return 1.0f;
-
-    float NdotLTS = dot(lightDirTS, vec3(0,0,1));
-    if (NdotLTS < 0.1f) return 0.6f;
-
-    const int maxSteps = 32;
-    const float stepSize = 0.04f;
-    float shadow = 1.0f;
-    vec2 marchUV = finalUV;
-    vec2 deltaUV = lightDirTS.xy * stepSize;
-    float bias = 0.02f;
-    float rayHeight = currentHeight;
-
-    for (int x = 0; x < maxSteps; ++x)
-    {
-        marchUV += deltaUV;
-        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0)))) break;
-
-        rayHeight += stepSize;
-        if (rayHeight > currentHeight + bias)
-        {
-            shadow = mix(0.4f, 1.0f, float(x) / float(maxSteps));
-            break;
-        }
-    }
-    return shadow;
-}
-
-float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
-    float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
-    float lightScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotL, 5.0));
-    float viewScatter  = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotV, 5.0));
-    return (lightScatter * viewScatter) / PI;
-}
+vec2 Unpack8bitPair(float packed);
+vec3 OctahedronDecode(vec2 f);
+float DistributionGGX(vec3 N, vec3 H, float roughness);
+float GeometrySchlickGGX(float NdotV, float roughness);
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
+float SchlickWeight(float cosTheta);
+mat3 ReconstructTBN(vec3 normalWS);
+vec3 SampleSkyboxViewDependent(vec3 viewDirWS);
+float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, int lightIndex, float currentHeight);
+float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight);
+float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness);
+Material UnpackMaterial();
 
 void main()
 {
-    uint meshIndex = sceneData.MeshBufferIndex;
-    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
-    Material material = scenePropertiesBuffer.material[materialIndex];
-    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
-    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
 
+    CubeMapMaterial cubeMapMaterial = GetCubeMapMaterial(sceneData.CubeMapMaterialIndex);
     const float depth = subpassLoad(depthInput).r;
     if (depth >= 0.9999f) {
         vec3 ndc = vec3(gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
@@ -208,42 +60,7 @@ void main()
         return;
     }
 
-    const vec4 packedMRO = subpassLoad(packedMROInput);
-    const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
-
-    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
-    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
-    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = Unpack8bitPair(packedMRO.b);
-
-    const vec2 SheenSSS_SheenColorR_SheenColorG                = Unpack8bitPair(packedSheenSSS.r);
-    const vec2 SheenSSS_SheenColorB_SheenIntensity             = Unpack8bitPair(packedSheenSSS.g);
-    const vec2 SheenSSS_SSSR_SSSG                              = Unpack8bitPair(packedSheenSSS.b);
-    const vec2 SheenSSS_SSSB_Thickness                         = Unpack8bitPair(packedSheenSSS.a);
-
-    const vec3  position            = subpassLoad(positionInput).rgb;
-    const vec3  albedo              = subpassLoad(albedoInput).rgb;
-    const vec3  normalData          = subpassLoad(normalInput).rgb;
-    const vec3  parallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
-    const vec3  emission            = subpassLoad(emissionInput).rgb;
-    const float height              = subpassLoad(normalInput).a;
-
-    float metallic = unpackMRO_Metallic_Rough.x;
-    float roughness = unpackMRO_Metallic_Rough.y;
-    float ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
-    float clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
-    float clearcoatStrength2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.x;
-    float clearcoatRoughness2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.y;
-    vec3 sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
-    float sheenIntensity2 = SheenSSS_SheenColorB_SheenIntensity.y;
-    vec3 subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
-    vec3 subSurfaceScatteringColor = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
-    float thickness = SheenSSS_SSSB_Thickness.y;
-
-    float clearcoatStrength   = 0.0;
-    float clearcoatRoughness  = 0.05;
-
-    vec3 N = OctahedronDecode(normalData.xy * 2.0f - 1.0f);
-    N = normalize(N);
+    Material material;
 
     vec2 parallaxOffset = parallaxInfo.xy;
     vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
@@ -394,3 +211,182 @@ void main()
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));
     outBloom = vec4(emission.rgb, 1.0f);
 } 
+
+vec2 Unpack8bitPair(float packed) {
+    uint combined = uint(packed * 65535.0 + 0.5);
+    float high = float((combined >> 8) & 0xFFu) / 255.0;
+    float low  = float(combined & 0xFFu) / 255.0;
+    return vec2(high, low);
+}
+
+vec3 OctahedronDecode(vec2 f)
+{
+    vec3 n;
+    n.xy = f.xy;
+    n.z = 1.0 - abs(f.x) - abs(f.y);
+    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
+    return normalize(n);
+}
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0f)) + 1.0f;
+    denom = PI * denom * denom;
+    return nom / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = roughness + 1.0f;
+    float k = (r * r) / 8.0f;
+    float nom = NdotV;
+    float denom = NdotV * (1.0f - k) + k;
+    return nom / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0f);
+    float NdotL = max(dot(N, L), 0.0f);
+    float ggx1 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx2 = GeometrySchlickGGX(NdotL, roughness);
+    return ggx1 * ggx2;
+}
+
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0f, 1.0f), 5.0f);
+}
+
+float SchlickWeight(float cosTheta) {
+    return pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+mat3 ReconstructTBN(vec3 normalWS)
+{
+    vec3 N = normalWS;
+    vec3 T = normalize(vec3(1.0f, 0.0f, 0.0f));
+    vec3 B = normalize(cross(N, T));
+    T = normalize(cross(B, N));
+    return mat3(T, B, N);
+}
+
+vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
+{
+    vec3 skyDir = reflect(viewDirWS, vec3(0,1,0));
+    skyDir.y = max(skyDir.y, 0.1);
+    
+    float lod = mix(2.0, 6.0, abs(skyDir.y)); 
+    return textureLod(CubeMap, skyDir, lod).rgb;
+}
+
+float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, int lightIndex, float currentHeight)
+{
+    if (currentHeight < 0.001f) return 1.0f;
+
+    mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
+    vec3 lightDirWS = normalize(directionalLightBuffer[lightIndex].directionalLightProperties.LightDirection);
+    vec3 lightDirTS = normalize(worldToTangent * lightDirWS);
+
+    if (dot(lightDirTS, vec3(0,0,1)) < 0.1f) return 0.5f;  // softer backface
+
+    const int maxSteps = 48;
+    const float stepSize = 0.04f;
+    float shadow = 1.0f;
+    vec2 marchUV = finalUV;
+    vec2 deltaUV = lightDirTS.xy * stepSize;
+    float bias = directionalLightBuffer[lightIndex].directionalLightProperties.ShadowBias * 0.5f;
+    float rayHeight = currentHeight;
+
+    for (int x = 0; x < maxSteps; ++x)
+    {
+        marchUV += deltaUV;
+        rayHeight += stepSize;
+        if (rayHeight > currentHeight + bias)
+        {
+            shadow = mix(0.3f, 1.0f, float(x) / float(maxSteps));  // soft falloff
+            break;
+        }
+    }
+    return shadow;
+}
+
+float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, float currentHeight)
+{
+    if (currentHeight < 0.001f) return 1.0f;
+
+    float NdotLTS = dot(lightDirTS, vec3(0,0,1));
+    if (NdotLTS < 0.1f) return 0.6f;
+
+    const int maxSteps = 32;
+    const float stepSize = 0.04f;
+    float shadow = 1.0f;
+    vec2 marchUV = finalUV;
+    vec2 deltaUV = lightDirTS.xy * stepSize;
+    float bias = 0.02f;
+    float rayHeight = currentHeight;
+
+    for (int x = 0; x < maxSteps; ++x)
+    {
+        marchUV += deltaUV;
+        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0)))) break;
+
+        rayHeight += stepSize;
+        if (rayHeight > currentHeight + bias)
+        {
+            shadow = mix(0.4f, 1.0f, float(x) / float(maxSteps));
+            break;
+        }
+    }
+    return shadow;
+}
+
+float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
+    float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
+    float lightScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotL, 5.0));
+    float viewScatter  = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotV, 5.0));
+    return (lightScatter * viewScatter) / PI;
+}
+
+Material UnpackMaterial()
+{
+    Material material;
+    const vec4 packedMRO = subpassLoad(packedMROInput);
+    const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
+
+    const vec2 unpackMRO_Metallic_Rough                        = Unpack8bitPair(packedMRO.r);
+    const vec2 unpackMRO_AO_ClearCoatTint                      = Unpack8bitPair(packedMRO.g);
+    const vec2 unpackMRO_ClearCoatStrength_ClearCoatRoughness  = Unpack8bitPair(packedMRO.b);
+
+    const vec2 SheenSSS_SheenColorR_SheenColorG                = Unpack8bitPair(packedSheenSSS.r);
+    const vec2 SheenSSS_SheenColorB_SheenIntensity             = Unpack8bitPair(packedSheenSSS.g);
+    const vec2 SheenSSS_SSSR_SSSG                              = Unpack8bitPair(packedSheenSSS.b);
+    const vec2 SheenSSS_SSSB_Thickness                         = Unpack8bitPair(packedSheenSSS.a);
+
+    material.Position            = subpassLoad(positionInput).rgb;
+    material.Albedo              = subpassLoad(albedoInput).rgb;
+    material.Normal              = subpassLoad(normalInput).rgb;
+    material.ParallaxInfo        = subpassLoad(parallaxUVInfoInput).rgb;
+    material.Emission            = subpassLoad(emissionInput).rgb;
+    material.Height              = subpassLoad(normalInput).a;
+
+    material.metallic = unpackMRO_Metallic_Rough.x;
+    material.roughness = unpackMRO_Metallic_Rough.y;
+    material.ambientOcclusion = unpackMRO_AO_ClearCoatTint.x;
+    material.clearCoatTint2 = unpackMRO_AO_ClearCoatTint.y;
+    material.clearcoatStrength2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.x;
+    material.clearcoatRoughness2 = unpackMRO_ClearCoatStrength_ClearCoatRoughness.y;
+    material.sheen = vec3(SheenSSS_SheenColorR_SheenColorG.x, SheenSSS_SheenColorR_SheenColorG.y, SheenSSS_SheenColorB_SheenIntensity.x);
+    material.sheenIntensity2 = SheenSSS_SheenColorB_SheenIntensity.y;
+    material.subSurfaceScattering = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
+    material.subSurfaceScatteringColor = vec3(SheenSSS_SSSR_SSSG.x, SheenSSS_SSSR_SSSG.y, SheenSSS_SSSB_Thickness.x);
+    material.thickness = SheenSSS_SSSB_Thickness.y;
+
+    vec3 N = OctahedronDecode(normalData.xy * 2.0f - 1.0f);
+    material.Normal = normalize(N);
+}

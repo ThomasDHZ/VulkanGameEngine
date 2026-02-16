@@ -1,6 +1,3 @@
-#ifndef CONSTANTS_GLSL
-#define CONSTANTS_GLSL
-#extension GL_ARB_separate_shader_objects : enable
 const float PI = 3.14159265359;
 const uint MeshPropertiesDescriptor = 0;
 const uint TextureDescriptor = 1;
@@ -20,4 +17,3 @@ const uint EnvironmentMapDescriptor = 14;
 const uint BindlessDescriptor = 15;
 
 #define saturate(x) clamp(x, 0.0, 1.0)
-#endif

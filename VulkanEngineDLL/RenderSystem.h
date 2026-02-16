@@ -18,9 +18,9 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
-    VkDescriptorSetLayout GlobalBindlessLayout = VK_NULL_HANDLE;
-    VkDescriptorPool      GlobalBindlessPool   = VK_NULL_HANDLE;
-    VkDescriptorSet       GlobalBindlessSet    = VK_NULL_HANDLE;
+    VkDescriptorPool      GlobalBindlessPool                = VK_NULL_HANDLE;
+    VkDescriptorSet       GlobalBindlessDescriptorSet       = VK_NULL_HANDLE;
+    VkDescriptorSetLayout GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
 
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                     RenderPassMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
@@ -39,6 +39,7 @@ private:
     DLL_EXPORT Vector<VkAttachmentDescription> BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT Vector<Texture> BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT void BuildFrameBuffer(VulkanRenderPass& renderPass);
+    DLL_EXPORT void CreateGlobalBindlessDescriptorSets();
 public:
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
