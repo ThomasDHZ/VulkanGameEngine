@@ -34,7 +34,7 @@ struct ImportMaterialBuffer
     uint HeightMap;
 };
 
-struct MaterialProperitiesBuffer
+struct Material
 {
     uint AlbedoDataId;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
     uint NormalDataId;             //Normal/NormalStrength/Height                                                               - R16G16B16A16_UNORM
@@ -44,7 +44,7 @@ struct MaterialProperitiesBuffer
     uint EmissionDataId;           //Emission                                                                                   - R8G8B8A8_SRGB
 };
 
-struct CubeMapPropertiesBuffer
+struct CubeMapMaterial
 {
     uint CubeMapId;
     uint IrradianceId;

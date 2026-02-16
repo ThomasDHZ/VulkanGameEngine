@@ -11,29 +11,29 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
+layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
+layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
+layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
+{ 
+    MeshProperitiesBuffer meshProperties[]; 
+    Material material[];
+    CubeMapMaterial cubeMapMaterial[];
+    DirectionalLightBuffer directionalLightProperties[];
+    PointLightBuffer pointLightProperties[];
+} 
+scenePropertiesBuffer;
+
 layout(push_constant) uniform SceneDataBuffer
 {
-    int   MeshBufferIndex;
+    uint  MeshBufferIndex;
+    uint  CubeMapIndex;
     mat4  Projection;
     mat4  View;
     vec3  ViewDirection;
     vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
-    int   Buffer1;
 } sceneData;
-
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    MaterialProperitiesBuffer materialProperties[];
-    CubeMapPropertiesBuffer cubeMapProperties[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-bindlessScenePropertiesBuffer;
 
 layout(location = 0) in vec3 WorldPos; 
 layout(location = 1) in vec2 TexCoords;    
@@ -62,9 +62,8 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
     if (sceneData.UseHeightMap == 0) return uv;
 
-    // Tile-local coordinates
-    vec2 tileUV     = fract(uv);               // [0,1] inside current tile
-    vec2 tileOrigin = uv - tileUV;             // Base UV of this tile
+    vec2 tileUV     = fract(uv);
+    vec2 tileOrigin = uv - tileUV;          
 
     const float minLayers = 8.0;
     const float maxLayers = 64.0;
@@ -87,7 +86,6 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
         if (currentDepth >= height) break;
     }
 
-    // Linear interpolate between last two steps
     vec2 prevUV        = currentUV + deltaUV;
     float afterDepth   = height - currentDepth;
     float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV + tileOrigin, 0.0).a) 
@@ -95,11 +93,8 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
     vec2 finalLocalUV  = mix(currentUV, prevUV, weight);
-
-    // Clamp to stay strictly inside tile (prevents bleeding)
     finalLocalUV = clamp(finalLocalUV, vec2(0.0), vec2(1.0));
 
-    // Reconstruct full UV
     return tileOrigin + finalLocalUV;
 }
 
@@ -124,7 +119,8 @@ float Pack8bitPair(float high, float low) {
     uint combined = (u_high << 8) | u_low;  // high in MSBs, low in LSBs
     return float(combined) / 65535.0;
 }
-vec2 Unpack8bitPair(float packed) {
+vec2 Unpack8bitPair(float packed) 
+{
     uint combined = uint(packed * 65535.0 + 0.5);
     float high = float((combined >> 8) & 0xFFu) / 255.0;
     float low  = float(combined & 0xFFu) / 255.0;
@@ -133,16 +129,18 @@ vec2 Unpack8bitPair(float packed) {
 
 void main()
 {
-    int meshIndex = sceneData.MeshBufferIndex;
-    uint matId = bindlessBuffer.meshProperties[meshIndex].MaterialIndex;
-    MaterialProperitiesBuffer2 material = materialBuffer[matId].materialProperties;
+    uint meshIndex = sceneData.MeshBufferIndex;
+    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
+    Material material = scenePropertiesBuffer.material[materialIndex];
+    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
+    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
 
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneData.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV =  ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
 
-    vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            finalUV, -0.5f).rgba;    
+    vec4 albedoData           = textureLod(TextureMap[material.AlbedoDataId],         finalUV, -0.5f).rgba;    
     vec3 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgb;    
     vec4 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;   
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    

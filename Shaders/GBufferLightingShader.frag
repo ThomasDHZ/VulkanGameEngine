@@ -2,51 +2,26 @@
 #extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
+#extension GL_KHR_Vulkan_GLSL : enable 
+#extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
-
-layout(location = 0) in vec2 TexCoords;
-
-layout(location = 0) out vec4 outColor;
-layout(location = 1) out vec4 outBloom;
-
-layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
-layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
-layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
-layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
-layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-
-layout(push_constant) uniform SceneDataBuffer
-{
-    int   MeshBufferIndex;
-    mat4  Projection;
-    mat4  View;
-    vec3  ViewDirection;
-    vec3  CameraPosition;
-    int   UseHeightMap;
-    float HeightScale;
-    int   Buffer1;
-} sceneData;
+#include "MaterialPropertiesBuffer.glsl" 
 
 layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
 layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
 layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
 { 
     MeshProperitiesBuffer meshProperties[]; 
-    MaterialProperitiesBuffer materialProperties[];
-    CubeMapPropertiesBuffer cubeMapProperties[];
+    Material material[];
+    CubeMapMaterial cubeMapMaterial[];
     DirectionalLightBuffer directionalLightProperties[];
     PointLightBuffer pointLightProperties[];
 } 
-bindlessScenePropertiesBuffer;
+scenePropertiesBuffer;
  
 layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput albedoInput;
@@ -58,6 +33,17 @@ layout(input_attachment_index = 6, set = 1, binding = 6) uniform subpassInput pa
 layout(input_attachment_index = 7, set = 1, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, set = 1, binding = 8) uniform subpassInput depthInput;
 
+layout(push_constant) uniform SceneDataBuffer
+{
+    uint  MeshBufferIndex;
+    uint  CubeMapIndex;
+    mat4  Projection;
+    mat4  View;
+    vec3  ViewDirection;
+    vec3  CameraPosition;
+    int   UseHeightMap;
+    float HeightScale;
+} sceneData;
 
 vec2 Unpack8bitPair(float packed) {
     uint combined = uint(packed * 65535.0 + 0.5);
@@ -202,6 +188,11 @@ float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
 
 void main()
 {
+    uint meshIndex = sceneData.MeshBufferIndex;
+    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
+    Material material = scenePropertiesBuffer.material[materialIndex];
+    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
+    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
 
     const float depth = subpassLoad(depthInput).r;
     if (depth >= 0.9999f) {

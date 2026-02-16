@@ -11,29 +11,29 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
+layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
+layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
+layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
+{ 
+    MeshProperitiesBuffer meshProperties[]; 
+    Material material[];
+    CubeMapMaterial cubeMapMaterial[];
+    DirectionalLightBuffer directionalLightProperties[];
+    PointLightBuffer pointLightProperties[];
+} 
+scenePropertiesBuffer;
+
 layout(push_constant) uniform SceneDataBuffer
 {
-    int   MeshBufferIndex;
+    uint  MeshBufferIndex;
+    uint  CubeMapIndex;
     mat4  Projection;
     mat4  View;
     vec3  ViewDirection;
     vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
-    int   Buffer1;
 } sceneData;
-
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    MaterialProperitiesBuffer materialProperties[];
-    CubeMapPropertiesBuffer cubeMapProperties[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-bindlessScenePropertiesBuffer;
 
 layout (location = 0) in vec3  WorldPos;
 layout (location = 1) in vec2  PS_UV;
@@ -130,7 +130,11 @@ vec2 Unpack8bitPair(float packed) {
     return vec2(high, low);
 }
 void main() {
-    MaterialProperitiesBuffer2 material = materialBuffer[PS_MaterialID].materialProperties;
+    uint meshIndex = sceneData.MeshBufferIndex;
+    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
+    Material material = scenePropertiesBuffer.material[materialIndex];
+    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
+    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
 
     vec2 UV = PS_UV;
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);

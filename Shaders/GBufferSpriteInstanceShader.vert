@@ -11,30 +11,30 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(push_constant) uniform SceneDataBuffer
+layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
+layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
+layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
+{ 
+    MeshProperitiesBuffer meshProperties[]; 
+    Material material[];
+    CubeMapMaterial cubeMapMaterial[];
+    DirectionalLightBuffer directionalLightProperties[];
+    PointLightBuffer pointLightProperties[];
+} 
+scenePropertiesBuffer;
+ 
+ layout(push_constant) uniform SceneDataBuffer
 {
-    int   MeshBufferIndex;
+    uint  MeshBufferIndex;
+    uint  CubeMapIndex;
     mat4  Projection;
     mat4  View;
     vec3  ViewDirection;
     vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
-    int   Buffer1;
 } sceneData;
 
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    MaterialProperitiesBuffer materialProperties[];
-    CubeMapPropertiesBuffer cubeMapProperties[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-bindlessScenePropertiesBuffer;
- 
 layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1)  const uint VertexInputRateLocation0 = 1;
 layout(constant_id = 2)  const uint VertexAttributeLocation1 = 0;
@@ -74,6 +74,12 @@ struct Vertex2D
 
 void main() 
 {
+    uint meshIndex = sceneData.MeshBufferIndex;
+    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
+    Material material = scenePropertiesBuffer.material[materialIndex];
+    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
+    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
+
     Vertex2D vertex = Vertex2D(vec2(0.0f), vec2(0.0f));
     switch(gl_VertexIndex) 
 	{
