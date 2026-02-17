@@ -1,32 +1,15 @@
 #version 460
-#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
+#extension GL_NV_shader_buffer_load : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_KHR_Vulkan_GLSL : enable 
-#extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
 
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
-
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    Material material[];
-    CubeMapMaterial cubeMapMaterial[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-scenePropertiesBuffer;
+#include "BindlessHelpers.glsl"
 
 layout(location = 0) in vec3 WorldPos;
 layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform PrefilterSamplerProperties {
+    uint CubeMapIndex;
     uint CubeMapResolution;
     float Roughness;
 } prefilterSamplerProperties;
@@ -81,6 +64,8 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 
 void main()
 {
+    CubeMapMaterial CubeMapMaterial = GetCubeMapMaterial(prefilterSamplerProperties.CubeMapIndex);
+
     vec3 N = normalize(WorldPos);
     vec3 R = N;
     vec3 V = R;
@@ -96,7 +81,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0f);
         if(NdotL > 0.0f)
         {
-            prefilteredColor += textureLod(CubeMap, L, 0.0).rgb * NdotL;
+            prefilteredColor += textureLod(CubeMaps[CubeMapMaterial.CubeMapId], L, 0.0).rgb * NdotL;
         }
     }
     prefilteredColor /= float(SAMPLE_COUNT);
@@ -104,7 +89,7 @@ void main()
     // Perfect mirror for near-zero roughness
     if (prefilterSamplerProperties.Roughness < 0.01f)
     {
-        prefilteredColor = textureLod(CubeMap, N, 0.0).rgb;
+        prefilteredColor = textureLod(CubeMaps[CubeMapMaterial.CubeMapId], N, 0.0).rgb;
     } 
 
     outColor = vec4(prefilteredColor, 1.0f);

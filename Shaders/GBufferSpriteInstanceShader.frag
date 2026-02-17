@@ -1,7 +1,7 @@
 #version 460
-#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
-#extension GL_EXT_nonuniform_qualifier : require
+#extension GL_NV_shader_buffer_load : enable
+#extension GL_EXT_nonuniform_qualifier : enable
 
 #include "BindlessHelpers.glsl"
 
@@ -111,12 +111,13 @@ vec2 Unpack8bitPair(float packed) {
     float low  = float(combined & 0xFFu) / 255.0;
     return vec2(high, low);
 }
-void main() {
-    uint meshIndex = sceneData.MeshBufferIndex;
-    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
-    Material material = scenePropertiesBuffer.material[materialIndex];
-    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
-    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
+void main() 
+{
+    MeshPropertiesBuffer meshProps = GetMesh(sceneData.MeshBufferIndex);
+
+    uint materialId = meshProps.MaterialIndex;
+    PackedMaterial material = GetMaterial(materialId);
+    CubeMapMaterial cubeMapMaterial = GetCubeMapMaterial(sceneData.CubeMapIndex);
 
     vec2 UV = PS_UV;
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);

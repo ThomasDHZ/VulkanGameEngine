@@ -1,8 +1,9 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
+#extension GL_NV_shader_buffer_load : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
+
+#include "BindlessHelpers.glsl"
 
 layout(location = 0) out vec2 UV;
 layout(push_constant) uniform BloomSettings

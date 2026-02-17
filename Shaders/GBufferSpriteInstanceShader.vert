@@ -56,12 +56,6 @@ struct Vertex2D
 
 void main() 
 {
-    uint meshIndex = sceneData.MeshBufferIndex;
-    uint materialIndex = scenePropertiesBuffer.meshProperties[meshIndex].MaterialIndex;
-    Material material = scenePropertiesBuffer.material[materialIndex];
-    CubeMapMaterial cubeMapMaterial =  scenePropertiesBuffer.cubeMapMaterial[sceneData.CubeMapIndex];
-    mat4 meshTransform = scenePropertiesBuffer.meshProperties[sceneData.MeshBufferIndex].MeshTransform;
-
     Vertex2D vertex = Vertex2D(vec2(0.0f), vec2(0.0f));
     switch(gl_VertexIndex) 
 	{

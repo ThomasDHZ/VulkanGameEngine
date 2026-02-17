@@ -85,9 +85,9 @@ MeshPropertiesBuffer GetMesh(uint index) {
     return mesh;
 }
 
-Material GetMaterial(uint index) 
+PackedMaterial GetMaterial(uint index) 
 {
-    Material mat;
+    PackedMaterial mat;
 
     if (index >= scenePropertiesBuffer.MaterialCount) {
         mat.AlbedoDataId       = 0u;
@@ -121,8 +121,8 @@ CubeMapMaterial GetCubeMapMaterial(uint index)
     if (index >= scenePropertiesBuffer.CubeMapMaterialCount) 
     {
         mat.CubeMapId    = 0u;
-        mat.IrradianceId = 0u;
-        mat.PrefilterId  = 0u;
+        mat.IrradianceMapId = 0u;
+        mat.PrefilterMapId  = 0u;
         return mat;
     }
 
@@ -132,8 +132,8 @@ CubeMapMaterial GetCubeMapMaterial(uint index)
     uint base = startUint + index * strideUint;
 
     mat.CubeMapId    = UnpackUint(base, 0);
-    mat.IrradianceId = UnpackUint(base, 1);
-    mat.PrefilterId  = UnpackUint(base, 2);
+    mat.IrradianceMapId = UnpackUint(base, 1);
+    mat.PrefilterMapId  = UnpackUint(base, 2);
 
     return mat;
 }

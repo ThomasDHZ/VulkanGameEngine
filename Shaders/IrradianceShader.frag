@@ -1,30 +1,13 @@
 #version 460
-#extension GL_KHR_vulkan_glsl : enable
 #extension GL_ARB_separate_shader_objects : enable
+#extension GL_NV_shader_buffer_load : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_KHR_Vulkan_GLSL : enable 
-#extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
 
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
-
-layout(set = 0, binding = 0) uniform sampler2D   TextureMap[];
-layout(set = 0, binding = 1) uniform samplerCube CubeMaps[];
-layout(set = 0, binding = 2) buffer              ScenePropertiesBuffer 
-{ 
-    MeshProperitiesBuffer meshProperties[]; 
-    Material material[];
-    CubeMapMaterial cubeMapMaterial[];
-    DirectionalLightBuffer directionalLightProperties[];
-    PointLightBuffer pointLightProperties[];
-} 
-scenePropertiesBuffer;
+#include "BindlessHelpers.glsl"
 
 layout(push_constant) uniform IrradianceShaderConstants 
 {
+    uint CubeMapIndex;
     float sampleDelta;
 } irradianceShaderConstants;
 
@@ -34,6 +17,8 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
+    CubeMapMaterial CubeMapMaterial = GetCubeMapMaterial(irradianceShaderConstants.CubeMapIndex);
+
     vec3 N = normalize(WorldPos);
     vec3 up    = abs(N.y) < 0.999f ? vec3(0.0f, 1.0f, 0.0f) : vec3(0.0f, 0.0f, 1.0f);
     vec3 right = normalize(cross(up, N));
@@ -49,7 +34,7 @@ void main()
         {
             vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
             vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
-            irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+            irradiance += texture(CubeMaps[CubeMapMaterial.CubeMapId], sampleVec).rgb * cos(theta) * sin(theta);
             nrSamples++;
         }
     }

@@ -1,4 +1,4 @@
-struct ImportMaterialBuffer
+struct ImportMaterial
 {
     vec3  Albedo;
     vec3  SheenColor;
@@ -49,26 +49,26 @@ struct Material
     vec3 Position;
     vec3 Albedo;
     vec3 Normal;
-    vec3 Parallaxinfo;
+    vec3 ParallaxInfo;
     vec3 Emission;
-    vec3 sheen;
-    vec3 subSurfaceScattering;
-    vec3 subSurfaceScatteringColor;
+    vec3 Sheen;
+    vec3 SubSurfaceScattering;
 
     float Height;
-    float metallic;
-    float roughness;
-    float ambientOcclusion;
-    float clearCoatTint;
-    float clearcoatStrength;
-    float clearcoatRoughness;
-    float sheenIntensity;
-    float thickness;                                                                            
+    float Metallic;
+    float Roughness;
+    float AmbientOcclusion;
+    float ClearCoatTint;
+    float ClearcoatStrength;
+    float ClearcoatRoughness;
+    float SheenIntensity;
+    float Thickness;      
+    float ShiftedHeight;
 };
 
 struct CubeMapMaterial
 {
     uint CubeMapId;
-    uint IrradianceId;
-    uint PrefilterId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
 };

@@ -28,7 +28,7 @@ void main()
     MeshPropertiesBuffer meshProps = GetMesh(sceneData.MeshBufferIndex);
 
     uint materialId = meshProps.MaterialIndex;
-    Material material = GetMaterial(materialId);
+    PackedMaterial material = GetMaterial(materialId);
     CubeMapMaterial cubeMapMaterial = GetCubeMapMaterial(sceneData.CubeMapIndex);
 
     mat4 meshTransform = meshProps.MeshTransform;

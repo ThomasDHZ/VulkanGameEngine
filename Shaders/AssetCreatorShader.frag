@@ -56,7 +56,7 @@ layout(location = 3) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenCo
 layout(location = 4) out vec4 outUnused;             //unused for now                                                                             - R16G16B16A16_UNORM
 layout(location = 5) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_SFLOAT
 
-layout(binding = 0)  buffer  ImportMaterialBuffer { MaterialProperitiesBuffer importMaterialProperties; } importMaterialBuffer;
+layout(binding = 0)  buffer  ImportMaterialBuffer { ImportMaterial importMaterialProperties; } importMaterialBuffer;
 layout(binding = 1)  uniform sampler2D AlbedoMap;
 layout(binding = 2)  uniform sampler2D MetallicMap;
 layout(binding = 3)  uniform sampler2D RoughnessMap;
@@ -85,7 +85,7 @@ float Pack8bitPair(float high, float low) {
 
 void main()
 {
-    ImportMaterialBuffer material = importMaterialBuffer.importMaterialProperties;
+    ImportMaterial material = importMaterialBuffer.importMaterialProperties;
 
     vec4  albedo                    = (material.AlbedoMap                    != 0xFFFFFFFFu) ? textureLod(AlbedoMap,                    UV, 0.0f)                   : vec4(material.Albedo, 1.0f);
     float metallic                  = (material.MetallicMap                  != 0xFFFFFFFFu) ? textureLod(MetallicMap,                  UV, 0.0f).r                 : material.Metallic;
