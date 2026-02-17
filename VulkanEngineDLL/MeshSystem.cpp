@@ -4,137 +4,245 @@
 
 MeshSystem& meshSystem = MeshSystem::Get();
 
-uint32 MeshSystem::GetNextMeshId()
+uint32 MeshSystem::GetNextMeshIndex()
 {
-    if (!FreeMeshIds.empty())
+    if (!FreeMeshIndicesList.empty())
     {
-        uint32 id = FreeMeshIds.back();
-        FreeMeshIds.pop_back();
-        return id;
+        uint index = FreeMeshIndicesList.back();
+        FreeMeshIndicesList.pop_back();
+        return index;
     }
     return MeshList.size();
 }
 
-void MeshSystem::StartUp()
+void MeshSystem::MeshSystemStartUp()
 {
-    ObjectDataPool.CreateMemoryPool(4096, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    ShaderStructDLL shaderStructData = shaderSystem.CopyShaderStructProtoType("SceneDataBuffer");
+    bufferSystem.VMACreateDynamicBuffer(nullptr, shaderStructData.ShaderBufferSize * 256, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
-uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
+uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList)
 {
-    uint meshId = meshSystem.GetNextMeshId();
-    uint64 meshHash = HashAssetKey(key);
-
-    uint assetId = UINT32_MAX;
-    auto it = MeshAssetLookup.find(meshHash);
-    if (it != MeshAssetLookup.end())
-    {
-        assetId = it->second;
-    }
-
-    if (assetId == UINT32_MAX)
-    {
-        MeshAssetDataList.emplace_back(MeshAssetData
-        {
-            .VertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-            .IndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
-            .IndexCount = static_cast<uint>(indexList.size()),
-            .Layout = vertexData.VertexType
-        });
-        MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
-    }
-
-    uint32 objectIndex = ObjectDataPool.AllocateObject();
-    MeshPropertiesStruct& props = ObjectDataPool.Get(objectIndex);
-    props.MeshTransform = mat4(1.0f);
-    props.ShaderMaterialBufferIndex = materialId != VkGuid() ? materialSystem.FindMaterial(materialId).ShaderMaterialBufferIndex : 0;
+    uint meshId = GetNextMeshIndex();
+    mat4 meshMatrix = mat4(1.0f);
+    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
 
     Mesh mesh = Mesh
     {
         .MeshId = meshId,
-        .SharedMeshAssetId = meshHash,
-        .ObjectDataIndex = objectIndex,
-        .Type = meshType,
-        .Layout = vertexData.VertexType,
-        .Position = vec3(0.0f),
-        .Rotation = vec3(0.0f),
-        .Scale = vec3(1.0f),
-        .MaterialId = materialId,
+        .ParentGameObjectId = UINT32_MAX,
+        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
+        .MeshTypeId = meshType,
+        .VertexLayout = vertexData.VertexType,
+        .MeshPropertiesId = meshId,
+        .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .VertexIndex = meshId,
+        .IndexIndex = meshId,
+        .MeshPosition = vec3(0.0f),
+        .MeshRotation = vec3(0.0f),
+        .MeshScale = vec3(1.0f),
+        .MaterialId = VkGuid(),
+        .MeshExtension = nullptr
     };
+
     MeshList.emplace_back(mesh);
+    MeshPropertiesList.emplace_back(meshProperties);
+    VertexList.emplace_back(vertexData);
+    IndexList.emplace_back(indexList);
+
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
+    return meshId;
+}
+
+uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid& materialId)
+{
+    uint meshId = meshSystem.GetNextMeshIndex();
+    mat4 meshMatrix = mat4(1.0f);
+    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+
+    Mesh mesh = Mesh
+    {
+        .MeshId = meshId,
+        .ParentGameObjectId = UINT32_MAX,
+        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
+        .MeshTypeId = meshType,        
+        .VertexLayout = vertexData.VertexType,
+        .MeshPropertiesId = meshId,
+        .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .VertexIndex = meshId,
+        .IndexIndex = meshId,
+        .MeshPosition = vec3(0.0f),
+        .MeshRotation = vec3(0.0f),
+        .MeshScale = vec3(1.0f),
+        .MaterialId = materialId,
+        .MeshExtension = nullptr
+    };
+
+    MeshList.emplace_back(mesh);
+    MeshPropertiesList.emplace_back(meshProperties);
+    VertexList.emplace_back(vertexData);
+    IndexList.emplace_back(indexList);
+
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
+    return meshId;
+}
+
+uint MeshSystem::CreateSkyBox(VkGuid& materialId)
+{
+    Vector<SkyboxVertexLayout> skyBoxVertices = {
+        {{-1.0f, -1.0f, -1.0f}},
+        {{ 1.0f, -1.0f, -1.0f}},  
+        {{ 1.0f,  1.0f, -1.0f}},
+        {{-1.0f,  1.0f, -1.0f}},
+        {{-1.0f, -1.0f,  1.0f}},  
+        {{ 1.0f, -1.0f,  1.0f}}, 
+        {{ 1.0f,  1.0f,  1.0f}},
+        {{-1.0f,  1.0f,  1.0f}} 
+    };
+
+    Vector<uint32_t> indexList = {
+        0, 2, 1,   0, 3, 2,
+        4, 5, 6,   4, 6, 7,
+        4, 3, 0,   4, 7, 3,
+        1, 6, 5,   1, 2, 6,
+        0, 5, 4,   0, 1, 5,
+        3, 6, 2,   3, 7, 6
+    };
+
+    uint meshId = meshSystem.GetNextMeshIndex();
+    mat4 meshMatrix = mat4(1.0f);
+    MeshPropertiesStruct meshProperties = MeshPropertiesStruct();
+    VertexLayout vertexData = VertexLayout
+    {
+        .VertexType = VertexLayoutEnum::kVertexLayout_SkyBoxVertex,
+        .VertexDataSize = sizeof(SkyboxVertexLayout) * skyBoxVertices.size(),
+        .VertexData = skyBoxVertices.data()
+    };
+
+    Mesh mesh = Mesh
+    {
+        .MeshId = meshId,
+        .ParentGameObjectId = UINT32_MAX,
+        .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
+        .MeshTypeId = MeshTypeEnum::kMesh_SkyBoxMesh,
+        .VertexLayout = VertexLayoutEnum::kVertexLayout_SkyBoxVertex,
+        .MeshPropertiesId = meshId,
+        .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+        .MeshIndexBufferId = bufferSystem.VMACreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
+        .MeshTransformBufferId = bufferSystem.VMACreateVulkanBuffer<mat4>(meshMatrix, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .PropertiesBufferId = bufferSystem.VMACreateVulkanBuffer<MeshPropertiesStruct>(meshProperties, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, false),
+        .VertexIndex = meshId,
+        .IndexIndex = meshId,
+        .MeshPosition = vec3(0.0f),
+        .MeshRotation = vec3(0.0f),
+        .MeshScale = vec3(1.0f),
+        .MaterialId = materialId,
+        .MeshExtension = nullptr
+    };
+
+    MeshList.emplace_back(mesh);
+    MeshPropertiesList.emplace_back(meshProperties);
+    VertexList.emplace_back(vertexData);
+    IndexList.emplace_back(indexList);
+
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId] = shaderSystem.CopyShaderStructProtoType("MeshProperitiesBuffer");
+    shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId].ShaderStructBufferId = mesh.PropertiesBufferId;
     return meshId;
 }
 
 void MeshSystem::Update(const float& deltaTime)
 {
-    bool anyDirty = false;
     for (auto& mesh : MeshList)
     {
-        if (mesh.MeshId == UINT32_MAX) continue;
-
-        MeshPropertiesStruct& meshProperties = ObjectDataPool.Get(mesh.ObjectDataIndex);
-
-        mat4 model = mat4(1.0f);
-        model = glm::translate(model, mesh.Position);
-        model = glm::rotate(model, glm::radians(mesh.Rotation.x), vec3(1, 0, 0));
-        model = glm::rotate(model, glm::radians(mesh.Rotation.y), vec3(0, 1, 0));
-        model = glm::rotate(model, glm::radians(mesh.Rotation.z), vec3(0, 0, 1));
-        model = glm::scale(model, mesh.Scale);
-        bool changed = (meshProperties.MeshTransform != model);
-
-        uint32 matIndex = mesh.MaterialId != VkGuid() ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
-        if (meshProperties.ShaderMaterialBufferIndex != matIndex)
-        {
-            meshProperties.ShaderMaterialBufferIndex = matIndex;
-            changed = true;
-        }
-
-        if (changed)
-        {
-            meshProperties.MeshTransform = model;
-            anyDirty = true;
-        }
+        UpdateMesh(mesh, deltaTime);
     }
+}
 
-    if (anyDirty)
+void MeshSystem::UpdateMesh(Mesh& mesh, const float& deltaTime)
+{
+    auto a = mesh.MaterialId.ToString();
+    VulkanBuffer& meshPropertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
+    ShaderStructDLL& shaderStruct = shaderSystem.PipelineShaderStructMap[mesh.PropertiesBufferId];
+    uint32 shaderMaterialBufferIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterial(mesh.MaterialId).ShaderMaterialBufferIndex : 0;
+
+    const vec3 LastMeshPosition = mesh.MeshPosition;
+    const vec3 LastMeshRotation = mesh.MeshRotation;
+    const vec3 LastMeshScale = mesh.MeshScale;
+
+    mat4 GameObjectMatrix = mat4(1.0);
+    //SharedPtr<Transform2DComponent> transform = GameObjectTransform.lock();
+    //if (transform)
+    //{
+    //		GameObjectMatrix = *transform->GameObjectMatrixTransform.get();
+    //}
+
+    mat4 MeshMatrix = mat4(1.0f);
+    if (LastMeshPosition != mesh.MeshPosition)
     {
-        ObjectDataPool.MarkDirty();
+        MeshMatrix = glm::translate(MeshMatrix, mesh.MeshPosition);
     }
-    ObjectDataPool.UploadIfDirty();
+    if (LastMeshRotation != mesh.MeshRotation)
+    {
+        MeshMatrix = glm::rotate(MeshMatrix, glm::radians(mesh.MeshRotation.x), vec3(1.0f, 0.0f, 0.0f));
+        MeshMatrix = glm::rotate(MeshMatrix, glm::radians(mesh.MeshRotation.y), vec3(0.0f, 1.0f, 0.0f));
+        MeshMatrix = glm::rotate(MeshMatrix, glm::radians(mesh.MeshRotation.z), vec3(0.0f, 0.0f, 1.0f));
+    }
+    if (LastMeshScale != mesh.MeshScale)
+    {
+        MeshMatrix = glm::scale(MeshMatrix, mesh.MeshScale);
+    }
+
+    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MaterialIndex").Value.data(), &shaderMaterialBufferIndex, sizeof(uint));
+    memcpy(shaderSystem.FindShaderPipelineStructVariable(shaderStruct, "MeshTransform").Value.data(), &GameObjectMatrix, sizeof(mat4));
+    shaderSystem.UpdateShaderBuffer(shaderStruct, meshPropertiesBuffer.BufferId);
 }
 
 void MeshSystem::Destroy(uint meshId)
 {
-    Mesh& mesh = MeshList[meshId];
+    Mesh& mesh = meshSystem.MeshList[meshId];
+    VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+    VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+    VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
+    VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-    ObjectDataPool.FreeDataSlot(mesh.ObjectDataIndex);
+    bufferSystem.DestroyBuffer(vertexBuffer);
+    bufferSystem.DestroyBuffer(indexBuffer);
+    bufferSystem.DestroyBuffer(transformBuffer);
+    bufferSystem.DestroyBuffer(propertiesBuffer);
 
-    // Assets are shared — only destroy if no references left (optional refcounting later)
-    // For now: never destroy shared assets (leak ok for simple engine, or add refcount)
-
-    mesh.MeshId = UINT32_MAX;
-    FreeMeshIds.push_back(meshId);
+    bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+    bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+    bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
+    bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
 }
 
 void MeshSystem::DestroyAllGameObjects()
 {
     for (auto& mesh : MeshList)
     {
-        if (mesh.MeshId != UINT32_MAX)
-        {
-            ObjectDataPool.FreeDataSlot(mesh.ObjectDataIndex);
-        }
-    }
+        VulkanBuffer& vertexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshVertexBufferId];
+        VulkanBuffer& indexBuffer = bufferSystem.VulkanBufferMap[mesh.MeshIndexBufferId];
+        VulkanBuffer& transformBuffer = bufferSystem.VulkanBufferMap[mesh.MeshTransformBufferId];
+        VulkanBuffer& propertiesBuffer = bufferSystem.VulkanBufferMap[mesh.PropertiesBufferId];
 
-    for (auto& asset : MeshAssetDataList)
-    {
-        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(asset.VertexBufferId));
-        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(asset.IndexBufferId));
-    }
-    MeshAssetDataList.clear();
+        bufferSystem.DestroyBuffer(vertexBuffer);
+        bufferSystem.DestroyBuffer(indexBuffer);
+        bufferSystem.DestroyBuffer(transformBuffer);
+        bufferSystem.DestroyBuffer(propertiesBuffer);
 
-    MeshList.clear();
-    FreeMeshIds.clear();
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshVertexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshIndexBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.MeshTransformBufferId);
+        bufferSystem.VulkanBufferMap.erase(mesh.PropertiesBufferId);
+    }
 }
 
 const Mesh& MeshSystem::FindMesh(const uint& meshId)
@@ -142,39 +250,24 @@ const Mesh& MeshSystem::FindMesh(const uint& meshId)
     return MeshList[meshId];
 }
 
-
 const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
 {
-    Vector<Mesh> result;
-    for (const auto& mesh : MeshList)
-    {
-        if (mesh.Type == meshType && mesh.MeshId != UINT32_MAX)
+    Vector<Mesh> meshList;
+    std::copy_if(MeshList.begin(), MeshList.end(), std::back_inserter(meshList),
+        [meshType](const Mesh& mesh)
         {
-            result.emplace_back(mesh);
-        }
-    }
-    return result;
+            return mesh.MeshTypeId == static_cast<uint32>(meshType);
+        });
+    return meshList;
 }
 
-MeshAssetData& MeshSystem::FindMeshAssetData(const uint64& meshAssetId)
+const Vector<Mesh>& MeshSystem::FindMeshByVertexType(VertexLayoutEnum vertexType)
 {
-    uint32 listId = MeshAssetLookup.find(meshAssetId)->second;
-    return MeshAssetDataList[listId];
-}
-
-VkDescriptorBufferInfo MeshSystem::GetMeshPropertiesBuffer()
-{
-        const VulkanBuffer& objBuffer = bufferSystem.FindVulkanBuffer(ObjectDataPool.BufferId);
-        VkDescriptorBufferInfo objectInfo
+    Vector<Mesh> meshList;
+    std::copy_if(MeshList.begin(), MeshList.end(), std::back_inserter(meshList),
+        [vertexType](const Mesh& mesh)
         {
-            .buffer = objBuffer.Buffer,
-            .offset = 0,
-            .range = VK_WHOLE_SIZE
-        };
-        return objectInfo;
-}
-
-uint64 MeshSystem::HashAssetKey(std::string_view key)
-{
-    return XXH64(key.data(), key.size(), 0);
+            return mesh.VertexLayout == static_cast<uint32>(vertexType);
+        });
+    return meshList;
 }

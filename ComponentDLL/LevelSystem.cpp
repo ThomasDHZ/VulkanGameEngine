@@ -166,7 +166,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexDataSize = vertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = vertexList.data()
         };
-        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_LevelMesh, vertexData, indexList, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh(MeshTypeEnum::kMesh_LevelMesh, vertexData, indexList, LevelLayerList[x].MaterialId);
     }
 }
 
@@ -174,35 +174,7 @@ void LevelSystem::LoadSkyBox(const char* skyBoxMaterialPath)
 {
     nlohmann::json json = fileSystem.LoadJsonFile(skyBoxMaterialPath);
     VkGuid skyBoxMaterialGuid = VkGuid(json["MaterialId"]);
-
-    Vector<SkyboxVertexLayout> skyBoxVertices = {
-    {{-1.0f, -1.0f, -1.0f}},
-    {{ 1.0f, -1.0f, -1.0f}},
-    {{ 1.0f,  1.0f, -1.0f}},
-    {{-1.0f,  1.0f, -1.0f}},
-    {{-1.0f, -1.0f,  1.0f}},
-    {{ 1.0f, -1.0f,  1.0f}},
-    {{ 1.0f,  1.0f,  1.0f}},
-    {{-1.0f,  1.0f,  1.0f}}
-    };
-
-    Vector<uint32_t> indexList = {
-        0, 2, 1,   0, 3, 2,
-        4, 5, 6,   4, 6, 7,
-        4, 3, 0,   4, 7, 3,
-        1, 6, 5,   1, 2, 6,
-        0, 5, 4,   0, 1, 5,
-        3, 6, 2,   3, 7, 6
-    };
-
-    VertexLayout vertexData =
-    {
-        .VertexType = VertexLayoutEnum::kVertexLayout_SkyBoxVertex,
-        .VertexDataSize = skyBoxVertices.size() * sizeof(SkyboxVertexLayout),
-        .VertexData = skyBoxVertices.data()
-    };
-
-    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, skyBoxMaterialGuid);
+    meshSystem.CreateSkyBox(skyBoxMaterialGuid);
 }
 
 void LevelSystem::DestroyLevel()
@@ -227,8 +199,6 @@ void LevelSystem::Update(const float& deltaTime)
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
-    meshSystem.StartUp();
-
     OrthographicCamera = std::make_shared<Camera>(Camera_CreatePixelPerfectOrthographic(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec2(0.0f, 0.0f)));
     PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
@@ -332,15 +302,15 @@ void LevelSystem::RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandB
     vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
-    for (auto& skyboxMesh : skyBoxList)
+    for (auto& skybox : skyBoxList)
     {
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedMeshAssetId);
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
 }
@@ -389,6 +359,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
 
     VkDeviceSize offsets[] = { 0 };
     VkDeviceSize instanceOffset[] = { 0 };
+
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
@@ -397,9 +368,9 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     lightSystem.Update(deltaTime);
     for (auto& levelLayer : levelLayerList)
     {
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedMeshAssetId);
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
         shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
@@ -407,21 +378,21 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
     for (auto& spriteLayer : spriteSystem.SpriteLayerList)
     {
         const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedMeshAssetId);
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
         const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
         const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
+        const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, instanceOffset);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, spriteInstanceList.size(), 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
     }
     vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdPushConstants(commandBuffer, lightingPipeline.PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, gBufferSceneDataBuffer.PushConstantSize, gBufferSceneDataBuffer.PushConstantBuffer.data());
@@ -433,6 +404,20 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
 {
+    int a = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    int b = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    int c = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    int d = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
+
+    int e = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        int f = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        int g = 0;
+        int h = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+        | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
@@ -470,11 +455,11 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
    
-    for (auto& skyboxMesh : skyBoxList)
+    for (auto& skybox : skyBoxList)
     {
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedMeshAssetId);
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<float>(pushConstant, "sampleDelta", 0.1f);
         shaderSystem.UpdatePushConstantBuffer(pushConstant);
@@ -482,7 +467,7 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
         vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
 }
@@ -495,9 +480,9 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
     ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
 
     const Mesh& skyboxMesh = skyBoxList[0];
-    const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedMeshAssetId);
-    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+    const Vector<uint32>& indiceList = meshSystem.IndexList[skyboxMesh.IndexIndex];
+    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshVertexBufferId).Buffer;
+    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshIndexBufferId).Buffer;
 
     VkDeviceSize offsets[] = { 0 };
     uint32 baseSize = renderPass.RenderPassResolution.x;
@@ -546,7 +531,7 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, static_cast<uint32>(indiceList.size()), 1, 0, 0, 0);
         vkCmdEndRenderPass(commandBuffer);
     }
 }
