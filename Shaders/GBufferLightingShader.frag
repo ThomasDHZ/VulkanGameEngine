@@ -38,17 +38,17 @@ Material UnpackMaterial();
 vec3     DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material);
 vec3     PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material);
 vec3     ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material, CubeMapMaterial cubeMapMaterial);
-vec2 Unpack8bitPair(float packed);
-vec3 OctahedronDecode(vec2 f);
-float DistributionGGX(vec3 N, vec3 H, float roughness);
-float GeometrySchlickGGX(float NdotV, float roughness);
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
-float SchlickWeight(float cosTheta);
-mat3 ReconstructTBN(vec3 normalWS);
-float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, uint lightIndex, float currentHeight);
-float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, uint lightIndex, float currentHeight);
-float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness);
+vec2     Unpack8bitPair(float packed);
+vec3     OctahedronDecode(vec2 f);
+float    DistributionGGX(vec3 N, vec3 H, float roughness);
+float    GeometrySchlickGGX(float NdotV, float roughness);
+float    GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+vec3     fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
+float    SchlickWeight(float cosTheta);
+mat3     ReconstructTBN(vec3 normalWS);
+float    DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, uint lightIndex, float currentHeight);
+float    PointSelfShadow(vec2 finalUV, vec3 lightDirTS, uint lightIndex, float currentHeight);
+float    DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness);
 
 void main()
 {

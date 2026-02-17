@@ -25,11 +25,8 @@
   ],
   "LoadRenderPasses": [
     "RenderPass/BRDFRenderPass.json",
-    "RenderPass/DirectionalShadowRenderPass.json",
-    "RenderPass/SDFShadowRenderPass.json",
     "RenderPass/IrradianceRenderPass.json",
     "RenderPass/PrefilterRenderPass.json",
-    "RenderPass/SkyBoxRenderPass.json",
     "RenderPass/GBufferRenderPass.json",
     "RenderPass/GBufferLightingRenderPass.json",
     "RenderPass/VertGaussianBlurRenderPass.json",

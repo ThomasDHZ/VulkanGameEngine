@@ -515,6 +515,11 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                  {
                      shaderStructList.emplace_back(LoadShaderPipelineStruct(shaderInfo));
                  }
+                 else if (shaderInfo.struct_type_description->op == SpvOp::SpvOpTypeStruct &&
+                     !SearchShaderPipelineStructExists(shaderStructList, shaderInfo.type_name))
+                 {
+                    // shaderStructInfo
+                 }
              }
          }
      }
