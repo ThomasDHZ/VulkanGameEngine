@@ -16,7 +16,8 @@ enum ShaderMemberType
     shaderMat2,
     shaderMat3,
     shaderMat4,
-    shaderbool
+    shaderbool,
+    shaderVoidPtr
 };
 
 

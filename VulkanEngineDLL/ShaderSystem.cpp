@@ -365,7 +365,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          uint memberSize = 0;
          size_t byteAlignment = 0;
          size_t arraySize = variable.traits.array.dims[0];
-         ShaderMemberType memberType;
+         ShaderMemberType memberType = ShaderMemberType::shaderUnknown;
          switch (variable.op)
          {
              case SpvOpTypeInt:
@@ -456,6 +456,15 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                  }
                  break;
              }
+             case SpvOpTypeRuntimeArray:
+             {
+                 uint32 rowCount = variable.traits.numeric.matrix.row_count;
+                 uint32 colCount = variable.traits.numeric.matrix.column_count;
+                 memberSize = 0;
+                 memberType = shaderVoidPtr;
+                 byteAlignment = 4;
+                 break;
+             }
          }
 
          shaderVariables.emplace_back(ShaderVariableDLL
@@ -507,19 +516,24 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          for (auto& descriptorBinding : descriptorBindingList)
          {
              SpvReflectTypeDescription bindingType = *descriptorBinding.type_description;
-             Span<SpvReflectTypeDescription> structList(bindingType.members, bindingType.member_count);
-             for (auto& shaderInfo : structList)
+             if (bindingType.op == SpvOp::SpvOpTypeArray)
              {
-                 if (shaderInfo.op == SpvOp::SpvOpTypeStruct &&
-                     !SearchShaderPipelineStructExists(shaderStructList, shaderInfo.type_name))
+                 Span<SpvReflectTypeDescription> structList(bindingType.members, bindingType.member_count);
+                 for (auto& shaderInfo : structList)
                  {
-                     shaderStructList.emplace_back(LoadShaderPipelineStruct(shaderInfo));
+                     if (shaderInfo.op == SpvOp::SpvOpTypeStruct &&
+                         !SearchShaderPipelineStructExists(shaderStructList, shaderInfo.type_name))
+                     {
+                         shaderStructList.emplace_back(LoadShaderPipelineStruct(shaderInfo));
+                     }
                  }
-                 else if (shaderInfo.struct_type_description->op == SpvOp::SpvOpTypeStruct &&
-                     !SearchShaderPipelineStructExists(shaderStructList, shaderInfo.type_name))
-                 {
-                    // shaderStructInfo
-                 }
+                
+             }
+             else if (bindingType.op == SpvOp::SpvOpTypeStruct &&
+                    !SearchShaderPipelineStructExists(shaderStructList, descriptorBinding.name))
+             {
+                 SpvReflectTypeDescription bindingStruct = *descriptorBinding.type_description;
+                 shaderStructList.emplace_back(LoadShaderPipelineStruct(bindingStruct));
              }
          }
      }
