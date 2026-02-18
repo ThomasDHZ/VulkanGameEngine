@@ -237,11 +237,11 @@ void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
 Sprite SpriteSystem::FindSprite(uint gameObjectId)
 {
     auto it = std::find_if(spriteSystem.SpriteList.begin(), spriteSystem.SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
-    if (it != spriteSystem.SpriteList.end()) 
+    if (it != spriteSystem.SpriteList.end())
     {
-        return *it; 
+        return *it;
     }
-    else 
+    else
     {
         return Sprite{};
     }

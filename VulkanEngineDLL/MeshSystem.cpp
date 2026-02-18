@@ -69,7 +69,7 @@ uint MeshSystem::CreateMesh(MeshTypeEnum meshType, VertexLayout& vertexData, Vec
         .MeshId = meshId,
         .ParentGameObjectId = UINT32_MAX,
         .MeshShaderBufferIndex = static_cast<uint>(MeshList.size()),
-        .MeshTypeId = meshType,        
+        .MeshTypeId = meshType,
         .VertexLayout = vertexData.VertexType,
         .MeshPropertiesId = meshId,
         .MeshVertexBufferId = bufferSystem.VMACreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
@@ -99,13 +99,13 @@ uint MeshSystem::CreateSkyBox(VkGuid& materialId)
 {
     Vector<SkyboxVertexLayout> skyBoxVertices = {
         {{-1.0f, -1.0f, -1.0f}},
-        {{ 1.0f, -1.0f, -1.0f}},  
+        {{ 1.0f, -1.0f, -1.0f}},
         {{ 1.0f,  1.0f, -1.0f}},
         {{-1.0f,  1.0f, -1.0f}},
-        {{-1.0f, -1.0f,  1.0f}},  
-        {{ 1.0f, -1.0f,  1.0f}}, 
+        {{-1.0f, -1.0f,  1.0f}},
+        {{ 1.0f, -1.0f,  1.0f}},
         {{ 1.0f,  1.0f,  1.0f}},
-        {{-1.0f,  1.0f,  1.0f}} 
+        {{-1.0f,  1.0f,  1.0f}}
     };
 
     Vector<uint32_t> indexList = {
