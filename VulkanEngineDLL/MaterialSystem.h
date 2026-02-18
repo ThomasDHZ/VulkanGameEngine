@@ -5,9 +5,7 @@
 struct Material
 {
     int MaterialBufferId;
-    size_t ShaderMaterialBufferIndex = SIZE_MAX;
     VkGuid materialGuid = VkGuid();
-    VkGuid RenderPassGuid = VkGuid();
     VkGuid AlbedoDataId = VkGuid();
     VkGuid NormalDataId = VkGuid();
     VkGuid PackedMRODataId = VkGuid();
@@ -41,6 +39,7 @@ public:
     DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
     DLL_EXPORT Material FindMaterial(const MaterialGuid& materialGuid);
+    DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
     DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer();
     DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
     DLL_EXPORT void DestroyAllMaterials();

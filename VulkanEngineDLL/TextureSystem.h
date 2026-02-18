@@ -22,7 +22,6 @@ struct TextureLoader
 struct Texture
 {
     TextureGuid           textureGuid = TextureGuid();
-    RenderPassGuid        renderPassGuid = RenderPassGuid();
     size_t                textureIndex = SIZE_MAX;
 
     int                   width = 1;

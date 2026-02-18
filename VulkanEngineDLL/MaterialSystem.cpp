@@ -18,6 +18,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     {
         return materialId;
     }
+    GuidToPoolIndex[materialId] = MaterialList.size();
 
     ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("MaterialProperitiesBuffer2");
     uint32 bufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
@@ -25,7 +26,6 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 
     Material material;
     material.materialGuid = materialId;
-    material.ShaderMaterialBufferIndex = MaterialList.size();
     material.MaterialBufferId = bufferId;
     material.AlbedoDataId =         !json["AlbedoData"].is_null()         ? textureSystem.LoadKTXTexture(json["AlbedoData"].get<TextureLoader>()).textureGuid         : VkGuid();
     material.NormalDataId =         !json["NormalData"].is_null()         ? textureSystem.LoadKTXTexture(json["NormalData"].get<TextureLoader>()).textureGuid         : VkGuid();
@@ -34,7 +34,6 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.UnusedDataId =         !json["UnusedData"].is_null()         ? textureSystem.LoadKTXTexture(json["UnusedData"].get<TextureLoader>()).textureGuid         : VkGuid();
     material.EmissionDataId =       !json["EmissionData"].is_null()       ? textureSystem.LoadKTXTexture(json["EmissionData"].get<TextureLoader>()).textureGuid       : VkGuid();
     MaterialList.emplace_back(material);
-    GuidToPoolIndex[materialId] = material.ShaderMaterialBufferIndex;
     return materialId;
 }
 
@@ -65,6 +64,11 @@ Material MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
 {
     if (!MaterialExists(materialGuid)) return Material();
     return MaterialList[GuidToPoolIndex[materialGuid]];
+}
+
+uint MaterialSystem::FindMaterialPoolIndex(const MaterialGuid& materialGuid)
+{
+    return GuidToPoolIndex[materialGuid];
 }
 
 const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const
