@@ -24,7 +24,7 @@ SpriteVram VramSystem::LoadSpriteVRAM(const char* spritePath, const Material& ma
     return SpriteVram
     {
         .VramSpriteID = VkGuid(json["VramSpriteId"].get<String>().c_str()),
-        .SpriteMaterialID = material.materialGuid,
+        .SpriteMaterialID = material.MaterialGuid,
         .SpriteLayer = json["SpriteLayer"],
         .SpriteColor = vec4{ json["SpriteColor"][0], json["SpriteColor"][1], json["SpriteColor"][2], json["SpriteColor"][3] },
         .SpritePixelSize = ivec2{ json["SpritePixelSize"][0], json["SpritePixelSize"][1] },
@@ -70,7 +70,7 @@ LevelTileSet VramSystem::LoadTileSetVRAM(const char* tileSetPath, const Material
 
     LevelTileSet tileSet = LevelTileSet();
     tileSet.TileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
-    tileSet.MaterialId = material.materialGuid;
+    tileSet.MaterialId = material.MaterialGuid;
     tileSet.TilePixelSize = ivec2{ json["TilePixelSize"][0], json["TilePixelSize"][1] };
     tileSet.TileSetBounds = ivec2{ tileVramTexture.width / tileSet.TilePixelSize.x,  tileVramTexture.height / tileSet.TilePixelSize.y };
     tileSet.TileUVSize = vec2(1.0f / (float)tileSet.TileSetBounds.x, 1.0f / (float)tileSet.TileSetBounds.y);
