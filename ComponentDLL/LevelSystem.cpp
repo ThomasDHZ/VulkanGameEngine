@@ -365,6 +365,9 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
+    materialSystem.Update(deltaTime, spritePipeline);
+    materialSystem.Update(deltaTime, levelPipeline);
+    materialSystem.Update(deltaTime, lightingPipeline);
     lightSystem.Update(deltaTime);
     for (auto& levelLayer : levelLayerList)
     {

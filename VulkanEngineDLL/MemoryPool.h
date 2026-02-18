@@ -9,17 +9,16 @@ public:
     uint32 BufferId = UINT32_MAX;
     Vector<T> ObjectDataPool;
     Vector<uint32_t> FreeIndices;
-    uint32 ActiveCount = 0;
+    uint32 ActiveCount = UINT32_MAX;
     Vector<byte> IsActive;         // 0 = inactive, 1 = active
     bool IsDirty = true;
 
 private:
-    void ResizeMemoryPool(uint32_t newCapacity)
+    void ResizeMemoryPool(uint32 newCapacity)
     {
-        Vector<T> newObjectDataPool(newCapacity);
-        Vector<byte> newIsActive(newCapacity, 0);
-
         uint32 newIndex = 0;
+        Vector<T> newObjectDataPool(newCapacity);
+        Vector<byte> newIsActive(newCapacity, 0x00);
         for (uint32 oldIndex = 0; oldIndex < ObjectDataPool.size(); ++oldIndex)
         {
             if (IsActive[oldIndex])
@@ -29,15 +28,15 @@ private:
                 newIndex++;
             }
         }
-
         FreeIndices.clear();
+
         for (uint32 x = newIndex; x < newCapacity; ++x)
         {
             FreeIndices.push_back(x);
         }
 
         VkDeviceSize newSize = sizeof(T) * newCapacity;
-        uint32_t newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newSize, bufferSystem.FindVulkanBuffer(BufferId).BufferUsage);
+        uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newSize, bufferSystem.FindVulkanBuffer(BufferId).BufferUsage);
         bufferSystem.VMAUpdateDynamicBuffer(newBufferId, newObjectDataPool.data(), sizeof(T) * newIndex);
 
         if (BufferId != UINT32_MAX)
@@ -57,14 +56,14 @@ public:
 
     ~MemoryPool()
     {
-        if (BufferId != UINT32_MAX)
+     /*   if (BufferId != UINT32_MAX)
         {
             bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(BufferId));
             BufferId = UINT32_MAX;
-        }
+        }*/
     }
 
-    void CreateMemoryPool(uint32_t initialCapacity, VkBufferUsageFlags usage)
+    void CreateMemoryPool(uint32 initialCapacity, VkBufferUsageFlags usage)
     {
         ObjectDataPool.resize(initialCapacity);
         IsActive.resize(initialCapacity, 0);
@@ -102,12 +101,24 @@ public:
 
         uint32 index = ActiveCount++;
         ObjectDataPool[index] = T{};
-        IsActive[index] = 1;
+        IsActive[index] = 0x01;
         IsDirty = true;
         return index;
     }
 
-    void FreeDataSlot(uint32_t index)
+    void UpdateMemoryPool(Vector<T>& memoryPoolData)
+    {
+        VkDeviceSize bufferSize = memoryPoolData.size() * sizeof(T);
+ /*       if (BufferId == UINT32_MAX ||
+            ActiveCount < memoryPoolSize.size())
+        {
+            ResizeMemoryPool(ObjectDataPool.capacity() ? ObjectDataPool.capacity() * 2 : 1024);
+        }*/
+        bufferSystem.VMAUpdateDynamicBuffer(BufferId, memoryPoolData.data(), bufferSize);
+        IsDirty = false;
+    }
+
+    void FreeDataSlot(uint32 index)
     {
         if (index >= IsActive.size() || !IsActive[index]) return;
 
@@ -126,7 +137,7 @@ public:
         return ObjectDataPool[index];
     }
 
-    const T& Get(uint32_t index) const
+    const T& Get(uint32 index) const
     {
         if (index >= IsActive.size() || !IsActive[index])
         {
@@ -136,7 +147,7 @@ public:
         return ObjectDataPool[index];
     }
 
-    bool IsSlotActive(uint32_t index) const
+    bool IsSlotActive(uint32 index) const
     {
         return index < IsActive.size() && IsActive[index];
     }

@@ -25,6 +25,20 @@ void RenderSystem::Update(void* windowHandle, LevelGuid& levelGuid, const float&
     }
 }
 
+void RenderSystem::UpdateDescriptorSet(VulkanPipeline& pipeline, Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSlot)
+{
+    VkWriteDescriptorSet writeDescriptorSet = VkWriteDescriptorSet
+    {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = pipeline.DescriptorSetList.front(),
+        .dstBinding = descriptorBindingSlot,
+        .descriptorCount = static_cast<uint32>(descriptorInfo.size()),
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        .pBufferInfo = descriptorInfo.data()
+    };
+    vkUpdateDescriptorSets(vulkanSystem.Device, 1, &writeDescriptorSet, 0, nullptr);
+}
+
 void RenderSystem::GenerateTexture(VkGuid& renderPassId)
 {
     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);

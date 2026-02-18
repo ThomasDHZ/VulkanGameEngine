@@ -264,29 +264,30 @@ mat4 UnpackMat4(uint base, uint offset) {
 
 MaterialProperitiesBuffer2 GetMaterial(uint index) 
 {
-    MaterialProperitiesBuffer2 mat;
+MaterialProperitiesBuffer2 mat;
 
-    if (index >= materialBuffer.MaterialCount) {
-        mat.AlbedoDataId       = 0u;
-        mat.NormalDataId       = 0u;
-        mat.PackedMRODataId    = 0u;
-        mat.PackedSheenSSSDataId = 0u;
-        mat.UnusedDataId       = 0u;
-        mat.EmissionDataId     = 0u;
+    // Safe default for out-of-range (bindless friendly)
+    mat.AlbedoDataId         = ~0u;
+    mat.NormalDataId         = ~0u;
+    mat.PackedMRODataId      = ~0u;
+    mat.PackedSheenSSSDataId = ~0u;
+    mat.UnusedDataId         = ~0u;
+    mat.EmissionDataId       = ~0u;
+
+    if (index >= materialBuffer.MaterialCount)
         return mat;
-    }
 
-    uint startUint = materialBuffer.MaterialOffset / 4;
-    uint strideUint = materialBuffer.MaterialSize;
+    // CRITICAL FIXES:
+    uint startUint  = materialBuffer.MaterialOffset / 4u;   // bytes → uint index
+    uint strideUint = materialBuffer.MaterialSize   / 4u;   // ← was missing /4u before
+    uint base       = startUint + index * strideUint;
 
-    uint base = startUint + index * strideUint;
-
-    mat.AlbedoDataId       = UnpackUint(base, 0);
-    mat.NormalDataId       = UnpackUint(base, 1);
-    mat.PackedMRODataId    = UnpackUint(base, 2);
+    mat.AlbedoDataId         = UnpackUint(base, 0);
+    mat.NormalDataId         = UnpackUint(base, 1);
+    mat.PackedMRODataId      = UnpackUint(base, 2);
     mat.PackedSheenSSSDataId = UnpackUint(base, 3);
-    mat.UnusedDataId       = UnpackUint(base, 4);
-    mat.EmissionDataId     = UnpackUint(base, 5);
+    mat.UnusedDataId         = UnpackUint(base, 4);
+    mat.EmissionDataId       = UnpackUint(base, 5);
 
     return mat;
 }

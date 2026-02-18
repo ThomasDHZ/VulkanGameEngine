@@ -2,6 +2,8 @@
 #include "Platform.h"
 #include "BufferSystem.h"
 #include "MemoryPool.h"
+#include "JsonStruct.h"
+
 struct Material
 {
     VkGuid MaterialGuid = VkGuid();
@@ -44,7 +46,6 @@ private:
     MaterialSystem(MaterialSystem&&) = delete;
     MaterialSystem& operator=(MaterialSystem&&) = delete;
 
-    uint32                                           GiantMaterialBufferId = UINT32_MAX;
     Vector<Material>                                 MaterialList;
     MemoryPool<GPUMaterial>                          MaterialPool;
     UnorderedMap<VkGuid, uint32>                     GuidToPoolIndex;
@@ -52,7 +53,7 @@ private:
 public:
     DLL_EXPORT void                                  StartUp();
     DLL_EXPORT VkGuid                                LoadMaterial(const String& materialPath);
-    DLL_EXPORT void                                  Update(const float& deltaTime);
+    DLL_EXPORT void                                  Update(const float& deltaTime, VulkanPipeline& pipeline);
     DLL_EXPORT const bool                            MaterialExists(const MaterialGuid& materialGuid) const;
     DLL_EXPORT Material&                             FindMaterial(const MaterialGuid& materialGuid);
     DLL_EXPORT uint                                  FindMaterialPoolIndex(const MaterialGuid& materialGuid);

@@ -171,7 +171,7 @@ void VulkanBufferSystem::VMAUpdateDynamicBuffer(uint32 bufferId, const void* dat
 {
     VulkanBuffer& buffer = VulkanBufferMap[bufferId];
     assert(buffer.IsPersistentlyMapped && buffer.BufferData);
-    memcpy((uint8_t*)buffer.BufferData + offset, data, size);
+    memcpy((byte*)buffer.BufferData + offset, data, size);
     vmaFlushAllocation(vmaAllocator, buffer.Allocation, offset, size);
 }
 

@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)External\ktx\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\entt\src\;$(SolutionDir)External\VulkanMemoryAllocator\include;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\nlohmann_json\include;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\;C:\VulkanSDK\1.4.321.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)External\ktx\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\entt\src\;$(SolutionDir)External\VulkanMemoryAllocator\include;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\nlohmann_json\include;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\;C:\VulkanSDK\1.4.321.1\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)External\ktx\Release;$(SolutionDir)x64\Debug;$(SolutionDir)\External\glfw\src\Release;C:\VulkanSDK\1.4.321.1\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
