@@ -34,29 +34,6 @@ struct MaterialProperitiesBuffer
     uint HeightMap;
 };
 
-struct UnpackedMaterial
-{
-    vec3 Position;
-    vec3 Albedo;
-    vec3 Normal;
-    vec3 ParallaxInfo;
-    vec3 Emission;
-    vec3 Sheen;
-    vec3 SubSurfaceScattering;
-
-    float Height;
-    float Metallic;
-    float Roughness;
-    float AmbientOcclusion;
-    float ClearCoatTint;
-    float ClearcoatStrength;
-    float ClearcoatRoughness;
-    float SheenIntensity;
-    float Thickness;      
-    float ShiftedHeight;
-};
-
-
 struct MaterialProperitiesBuffer2
 {
     uint AlbedoDataId;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB

@@ -12,6 +12,8 @@ layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
 
 
+
+
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
@@ -36,7 +38,13 @@ layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMa
 layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
 
 layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 10) buffer MaterialProperities
+{
+    uint MaterialOffset;
+    uint MaterialCount;
+    uint MaterialSize;
+    uint ByteData[];
+} materialBuffer;
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 layout(binding = 13) uniform sampler2D TextureMap[];

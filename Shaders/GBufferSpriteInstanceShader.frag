@@ -54,7 +54,13 @@ layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVI
 layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
 layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 10)  buffer MaterialProperities { MaterialProperitiesBuffer2 materialProperties; } materialBuffer[];
+layout(binding = 10) buffer MaterialProperities
+{
+    uint MaterialOffset;
+    uint MaterialCount;
+    uint MaterialSize;
+    uint ByteData[];
+} materialBuffer;
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
 layout(binding = 13) uniform sampler2D TextureMap[];
@@ -151,8 +157,77 @@ vec2 Unpack8bitPair(float packed) {
     float low  = float(combined & 0xFFu) / 255.0;
     return vec2(high, low);
 }
+
+uint UnpackUint(uint base, uint offset) 
+{
+    return materialBuffer.ByteData[base + offset + 0];
+}
+
+float UnpackFloat(uint base, uint offset) 
+{
+    return uintBitsToFloat(materialBuffer.ByteData[base + offset + 0]);
+}
+
+vec3 UnpackVec3(uint base, uint offset) 
+{
+    return vec3(
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 0]),
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 1]),
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 2])
+    );
+}
+
+vec4 UnpackVec4(uint base, uint offset) 
+{
+    return vec4(
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 0]),
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 1]),
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 2]),
+        uintBitsToFloat(materialBuffer.ByteData[base + offset + 3])
+    );
+}
+
+mat4 UnpackMat4(uint base, uint offset) {
+    return mat4(
+        UnpackVec4(base, offset + 0),
+        UnpackVec4(base, offset + 4),
+        UnpackVec4(base, offset + 8),
+        UnpackVec4(base, offset + 12)
+    );
+}
+
+MaterialProperitiesBuffer2 GetMaterial(uint index) 
+{
+    MaterialProperitiesBuffer2 mat;
+
+    if (index >= materialBuffer.MaterialCount) {
+        mat.AlbedoDataId       = 0u;
+        mat.NormalDataId       = 0u;
+        mat.PackedMRODataId    = 0u;
+        mat.PackedSheenSSSDataId = 0u;
+        mat.UnusedDataId       = 0u;
+        mat.EmissionDataId     = 0u;
+        return mat;
+    }
+
+    uint startUint = materialBuffer.MaterialOffset / 4;
+    uint strideUint = materialBuffer.MaterialSize;
+
+    uint base = startUint + index * strideUint;
+
+    mat.AlbedoDataId       = UnpackUint(base, 0);
+    mat.NormalDataId       = UnpackUint(base, 1);
+    mat.PackedMRODataId    = UnpackUint(base, 2);
+    mat.PackedSheenSSSDataId = UnpackUint(base, 3);
+    mat.UnusedDataId       = UnpackUint(base, 4);
+    mat.EmissionDataId     = UnpackUint(base, 5);
+
+    return mat;
+}
+
+
 void main() {
-    MaterialProperitiesBuffer2 material = materialBuffer[PS_MaterialID].materialProperties;
+    MaterialProperitiesBuffer2 material = GetMaterial(PS_MaterialID);
 
     vec2 UV = PS_UV;
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);

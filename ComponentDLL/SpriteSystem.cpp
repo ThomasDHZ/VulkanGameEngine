@@ -160,7 +160,7 @@ void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite
         const ivec2& currentFrame = animationList->FrameList[spriteList[x].CurrentFrame];
         spriteInstanceList[x].SpritePosition = transform2DList[x].GameObjectPosition;
         spriteInstanceList[x].SpriteSize = vramList[x].SpriteSize;
-        spriteInstanceList[x].MaterialID = materialSystem.FindMaterialPoolIndex(materialList[x].materialGuid);
+        spriteInstanceList[x].MaterialID = materialSystem.FindMaterialPoolIndex(materialList[x].MaterialGuid);
         spriteInstanceList[x].InstanceTransform = spriteMatrix;
         spriteInstanceList[x].FlipSprite = spriteList[x].FlipSprite;
         spriteInstanceList[x].UVOffset = glm::vec4(vramList[x].SpriteUVSize.x * currentFrame.x, vramList[x].SpriteUVSize.y * currentFrame.y, vramList[x].SpriteUVSize.x, vramList[x].SpriteUVSize.y);
