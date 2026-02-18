@@ -109,7 +109,7 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
         SpriteInstance spriteInstance;
         spriteInstance.SpritePosition = transform2D.GameObjectPosition;
         spriteInstance.SpriteSize = vram.SpriteSize;
-        spriteInstance.MaterialID = material.ShaderMaterialBufferIndex;
+        spriteInstance.MaterialID = materialSystem.FindMaterialPoolIndex(material.MaterialGuid);
         spriteInstance.InstanceTransform = spriteMatrix;
         spriteInstance.FlipSprite = sprite.FlipSprite;
         spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * currentFrame.x, vram.SpriteUVSize.y * currentFrame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
@@ -161,7 +161,7 @@ void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite
         const ivec2& currentFrame = animationList->FrameList[spriteList[x].CurrentFrame];
         spriteInstanceList[x].SpritePosition = transform2DList[x].GameObjectPosition;
         spriteInstanceList[x].SpriteSize = vramList[x].SpriteSize;
-        spriteInstanceList[x].MaterialID = materialList[x].ShaderMaterialBufferIndex;
+        //spriteInstanceList[x].MaterialID = materialList[x].ShaderMaterialBufferIndex;
         spriteInstanceList[x].InstanceTransform = spriteMatrix;
         spriteInstanceList[x].FlipSprite = spriteList[x].FlipSprite;
         spriteInstanceList[x].UVOffset = glm::vec4(vramList[x].SpriteUVSize.x * currentFrame.x, vramList[x].SpriteUVSize.y * currentFrame.y, vramList[x].SpriteUVSize.x, vramList[x].SpriteUVSize.y);
