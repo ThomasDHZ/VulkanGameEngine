@@ -452,7 +452,8 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.depth = 1,
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
-		.sampleCount = vulkanRenderPass.SampleCount
+		.sampleCount = vulkanRenderPass.SampleCount,
+		
 	};
 
 	switch (renderPassAttachmentTexture.RenderTextureType)

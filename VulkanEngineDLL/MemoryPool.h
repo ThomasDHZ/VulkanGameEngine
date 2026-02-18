@@ -1,176 +1,124 @@
 #pragma once
 #include "BufferSystem.h"
-#include <vector>
+
+struct MeshPropertiesStruct
+{
+	alignas(8)  size_t ShaderMaterialBufferIndex = 0;
+	alignas(16) mat4   MeshTransform = mat4(1.0f);
+};
 
 template<typename T>
 class MemoryPool
 {
 public:
-    uint32 BufferId = UINT32_MAX;
-    Vector<T> ObjectDataPool;
-    Vector<uint32_t> FreeIndices;
-    uint32 ActiveCount = 0;
-    Vector<byte> IsActive;         // 0 = inactive, 1 = active
-    bool IsDirty = true;
+
+	uint32		   BufferId = UINT32_MAX;
+	Vector<T>	   CPUData;
+	Vector<uint32> FreeIndices;
+	uint32		   ActiveCount = 0;
+	bool		   IsDirty = true;
 
 private:
-    void ResizeMemoryPool(uint32_t newCapacity)
-    {
-        Vector<T> newObjectDataPool(newCapacity);
-        Vector<byte> newIsActive(newCapacity, 0);
+	void		   ResizeMemoryPool(uint newCapacity)
+	{
+		Vector<T> newCPUData(newCapacity);
+		if (!CPUData.empty())
+		{
+			std::memcpy(newCPUData.data(), CPUData.data(), sizeof(T) * CPUData.size());
+		}
 
-        uint32 newIndex = 0;
-        for (uint32 oldIndex = 0; oldIndex < ObjectDataPool.size(); ++oldIndex)
-        {
-            if (IsActive[oldIndex])
-            {
-                newObjectDataPool[newIndex] = std::move(ObjectDataPool[oldIndex]);
-                newIsActive[newIndex] = 1;
-                newIndex++;
-            }
-        }
+		VkDeviceSize newSize = sizeof(T) * newCapacity;
+		uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newSize, bufferSystem.FindVulkanBuffer(BufferId).BufferUsage);
 
-        FreeIndices.clear();
-        for (uint32 x = newIndex; x < newCapacity; ++x)
-        {
-            FreeIndices.push_back(x);
-        }
+		VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newBufferId);
+		assert(newBuf.IsPersistentlyMapped && newBuf.BufferData);
 
-        VkDeviceSize newSize = sizeof(T) * newCapacity;
-        uint32_t newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newSize, bufferSystem.FindVulkanBuffer(BufferId).BufferUsage);
-        bufferSystem.VMAUpdateDynamicBuffer(newBufferId, newObjectDataPool.data(), sizeof(T) * newIndex);
+		std::memcpy(newBuf.BufferData, newCPUData.data(), sizeof(T) * CPUData.size());
+		bufferSystem.VMAUpdateDynamicBuffer(newBufferId, newCPUData.data(), sizeof(T) * CPUData.size(), 0);
 
-        if (BufferId != UINT32_MAX)
-        {
-            bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(BufferId));
-        }
-
-        BufferId = newBufferId;
-        ObjectDataPool = std::move(newObjectDataPool);
-        IsActive = std::move(newIsActive);
-        ActiveCount = newIndex;
-        IsDirty = true;
-    }
+		bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(BufferId));
+		BufferId = newBufferId;
+		CPUData = std::move(newCPUData);
+		IsDirty = true;
+	}
 
 public:
-    MemoryPool() = default;
 
-    ~MemoryPool()
-    {
-        if (BufferId != UINT32_MAX)
-        {
-            bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(BufferId));
-            BufferId = UINT32_MAX;
-        }
-    }
+	MemoryPool()
+	{
 
-    void CreateMemoryPool(uint32_t initialCapacity, VkBufferUsageFlags usage)
-    {
-        ObjectDataPool.resize(initialCapacity);
-        IsActive.resize(initialCapacity, 0);
-        ActiveCount = 0;
+	}
 
-        VkDeviceSize size = sizeof(T) * initialCapacity;
-        BufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, size, usage);
+	~MemoryPool()
+	{
+		/*	if (BufferId)
+			{
+				bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(BufferId));
+				BufferId = 0;
+			}*/
+	}
 
-        std::fill(ObjectDataPool.begin(), ObjectDataPool.end(), T{});
-    }
+	void CreateMemoryPool(uint32 initialCapacity, VkBufferUsageFlags usage)
+	{
+		CPUData.resize(initialCapacity);
+		ActiveCount = 0;
 
-    uint32 AllocateObject()
-    {
-        if (!FreeIndices.empty())
-        {
-            uint32 index = FreeIndices.back();
-            FreeIndices.pop_back();
+		VkDeviceSize size = sizeof(T) * initialCapacity;
+		BufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, size, usage);
+		std::fill(CPUData.begin(), CPUData.end(), T{});
+	}
 
-            ObjectDataPool[index] = T{};
-            IsActive[index] = 1;
+	uint32 AllocateObject()
+	{
+		if (!FreeIndices.empty())
+		{
+			uint32 index = FreeIndices.back();
+			FreeIndices.pop_back();
 
-            if (index + 1 > ActiveCount)
-            {
-                ActiveCount = index + 1;
-            }
+			CPUData[index] = T();
+			if (index + 1 > ActiveCount)
+			{
+				ActiveCount = index + 1;
+			}
+			IsDirty = true;
+			return index;
+		}
 
-            IsDirty = true;
-            return index;
-        }
+		if (ActiveCount == CPUData.size())
+		{
+			ResizeMemoryPool(CPUData.capacity() ? CPUData.capacity() * 2 : 1024);
+		}
 
-        if (ActiveCount == ObjectDataPool.size())
-        {
-            ResizeMemoryPool(ObjectDataPool.capacity() ? ObjectDataPool.capacity() * 2 : 1024);
-        }
+		uint32 index = ActiveCount++;
+		CPUData[index] = T();
+		IsDirty = true;
+		return index;
+	}
 
-        uint32 index = ActiveCount++;
-        ObjectDataPool[index] = T{};
-        IsActive[index] = 1;
-        IsDirty = true;
-        return index;
-    }
+	void FreeDataSlot(uint32 index)
+	{
+		FreeIndices.push_back(index);
+		IsDirty = true;
+	}
 
-    void FreeDataSlot(uint32_t index)
-    {
-        if (index >= IsActive.size() || !IsActive[index]) return;
+	T& Get(uint32 index)
+	{
+		return CPUData[index];
+	}
 
-        FreeIndices.push_back(index);
-        IsActive[index] = 0;
-        IsDirty = true;
-    }
+	void MarkDirty() { IsDirty = true; }
 
-    T& Get(uint32 index)
-    {
-        if (index >= IsActive.size() || !IsActive[index])
-        {
-            static T invalid{};
-            return invalid;
-        }
-        return ObjectDataPool[index];
-    }
+	void UploadIfDirty()
+	{
+		if (IsDirty && BufferId)
+		{
+			VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(BufferId);
+			assert(buffer.IsPersistentlyMapped && buffer.BufferData);
 
-    const T& Get(uint32_t index) const
-    {
-        if (index >= IsActive.size() || !IsActive[index])
-        {
-            static T invalid{};
-            return invalid;
-        }
-        return ObjectDataPool[index];
-    }
+			VkDeviceSize uploadSize = sizeof(T) * ActiveCount;
+			bufferSystem.VMAUpdateDynamicBuffer(BufferId, CPUData.data(), uploadSize, 0);
 
-    bool IsSlotActive(uint32_t index) const
-    {
-        return index < IsActive.size() && IsActive[index];
-    }
-
-    template <typename Func>
-    void ForEachActive(Func&& func)
-    {
-        for (uint32_t x = 0; x < ObjectDataPool.size(); ++x)
-        {
-            if (IsActive[x])
-                func(x, ObjectDataPool[x]);
-        }
-    }
-
-    template <typename Func>
-    void ForEachActive(Func&& func) const
-    {
-        for (uint32_t x = 0; x < ObjectDataPool.size(); ++x)
-        {
-            if (IsActive[x])
-                func(x, ObjectDataPool[x]);
-        }
-    }
-
-    Vector<T> GetActiveObjects() const
-    {
-        Vector<T> active;
-        active.reserve(ActiveCount);
-
-        ForEachActive([&](const T& obj)
-            {
-                active.push_back(obj);
-            });
-
-        return active;
-    }
+			IsDirty = false;
+		}
+	}
 };

@@ -7,7 +7,8 @@
   ],
   "LoadMaterials": [
     "Materials/AnimeGirlMaterial.json",
-    "Materials/SparkManTileSetMaterial.json"
+    "Materials/SparkManTileSetMaterial.json",
+    "Materials/LavaCubeMapMaterial.json"
   ],
   "LoadSkyBox": [
     "SkyBoxes/LavaSkyBox.json"

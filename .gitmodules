@@ -46,3 +46,15 @@
 [submodule "External/SPIRV-Reflect"]
 	path = External/SPIRV-Reflect
 	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+[submodule "External/xxHash"]
+	path = External/xxHash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "External/ktx"]
+	path = External/ktx
+	url = https://github.com/KhronosGroup/KTX-Software.git
+[submodule "External/LodePNG"]
+	path = External/LodePNG
+	url = https://github.com/lvandeve/lodepng.git
+[submodule "External/nlohmann_json"]
+	path = External/nlohmann_json
+	url = https://github.com/nlohmann/json.git
