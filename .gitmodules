@@ -13,9 +13,6 @@
 [submodule "External/glfw"]
 	path = External/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "External/imgui"]
-	path = External/imgui
-	url = https://github.com/ocornut/imgui.git
 [submodule "External/ImPlot"]
 	path = External/ImPlot
 	url = https://github.com/epezent/implot.git
@@ -58,3 +55,6 @@
 [submodule "External/nlohmann_json"]
 	path = External/nlohmann_json
 	url = https://github.com/nlohmann/json.git
+[submodule "External/imgui"]
+	path = External/imgui
+	url = https://github.com/ocornut/imgui.git
