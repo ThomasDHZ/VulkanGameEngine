@@ -34,13 +34,13 @@ private:
     MaterialSystem& operator=(MaterialSystem&&) = delete;
 
     Vector<Material> MaterialList;
-    void Material_DestroyBuffer(VulkanBuffer& materialBuffer);
+    UnorderedMap<VkGuid, uint32>                     GuidToPoolIndex;
 
 public:
     DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
     DLL_EXPORT void Update(const float& deltaTime);
-    DLL_EXPORT const bool MaterialMapExists(const MaterialGuid& materialGuid) const;
-    DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
+    DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
+    DLL_EXPORT Material FindMaterial(const MaterialGuid& materialGuid);
     DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialPropertiesBuffer();
     DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
     DLL_EXPORT void DestroyAllMaterials();

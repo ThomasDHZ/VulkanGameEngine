@@ -14,7 +14,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<std::string>());
 
-    if (MaterialMapExists(materialId))
+    if (MaterialExists(materialId))
     {
         return materialId;
     }
@@ -34,6 +34,7 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.UnusedDataId =         !json["UnusedData"].is_null()         ? textureSystem.LoadKTXTexture(json["UnusedData"].get<TextureLoader>()).textureGuid         : VkGuid();
     material.EmissionDataId =       !json["EmissionData"].is_null()       ? textureSystem.LoadKTXTexture(json["EmissionData"].get<TextureLoader>()).textureGuid       : VkGuid();
     MaterialList.emplace_back(material);
+    GuidToPoolIndex[materialId] = material.ShaderMaterialBufferIndex;
     return materialId;
 }
 
@@ -60,24 +61,15 @@ void MaterialSystem::Update(const float& deltaTime)
     }
 }
 
-const bool MaterialSystem::MaterialMapExists(const MaterialGuid& materialGuid) const
+Material MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
 {
-    auto it = std::find_if(MaterialList.begin(), MaterialList.end(),
-        [&materialGuid](const Material& material)
-        {
-            return material.materialGuid == materialGuid;
-        });
-    return it != MaterialList.end();
+    if (!MaterialExists(materialGuid)) return Material();
+    return MaterialList[GuidToPoolIndex[materialGuid]];
 }
 
-Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
+const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const
 {
-    auto it = std::find_if(MaterialList.begin(), MaterialList.end(),
-        [&materialGuid](const Material& material)
-        {
-            return material.materialGuid == materialGuid;
-        });
-    return *it;
+    return GuidToPoolIndex.contains(materialGuid);
 }
 
 const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialPropertiesBuffer()
@@ -110,7 +102,7 @@ const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialPropertiesBuffer
 
 void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
 {
-    Material& material = FindMaterial(materialGuid);
+    Material material = FindMaterial(materialGuid);
     VulkanBuffer& materialBuffer = bufferSystem.VulkanBufferMap[material.MaterialBufferId];
     bufferSystem.DestroyBuffer(materialBuffer);
     bufferSystem.VulkanBufferMap.erase(material.MaterialBufferId);
