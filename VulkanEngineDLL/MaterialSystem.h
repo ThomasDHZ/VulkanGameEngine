@@ -1,8 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "BufferSystem.h"
-#include "MemoryPool.h"
-#include "JsonStruct.h"
+#include "JsonStruct.h"   // assuming this has VkGuid, MaterialGuid, etc.
 
 struct Material
 {
@@ -13,12 +12,10 @@ struct Material
     VkGuid PackedSheenSSSDataId = VkGuid();
     VkGuid UnusedDataId = VkGuid();
     VkGuid EmissionDataId = VkGuid();
-
     Material() = default;
     Material(const Material&) = default;
     Material& operator=(const Material&) = default;
 };
-
 
 struct GPUMaterial
 {
@@ -28,13 +25,12 @@ struct GPUMaterial
     uint PackedSheenSSSDataId = UINT32_MAX;
     uint UnusedDataId = UINT32_MAX;
     uint EmissionDataId = UINT32_MAX;
-
     GPUMaterial() = default;
     GPUMaterial(const GPUMaterial&) = default;
     GPUMaterial& operator=(const GPUMaterial&) = default;
 };
 
-struct MaterialBufferHeader
+struct alignas(4) MaterialBufferHeader
 {
     uint MaterialOffset;
     uint MaterialCount;
@@ -46,6 +42,17 @@ class MaterialSystem
 public:
     static MaterialSystem& Get();
 
+    DLL_EXPORT void StartUp();
+    DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
+    DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline);
+    DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
+    DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
+    DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
+    DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialBufferInfo() const;
+    DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
+    DLL_EXPORT void DestroyAllMaterials();
+    DLL_EXPORT Vector<Material> GetMaterialList() { return MaterialList; }
+
 private:
     MaterialSystem() = default;
     ~MaterialSystem() = default;
@@ -54,22 +61,12 @@ private:
     MaterialSystem(MaterialSystem&&) = delete;
     MaterialSystem& operator=(MaterialSystem&&) = delete;
 
-    Vector<Material>                                 MaterialList;
-    MemoryPool<GPUMaterial>                          MaterialPool;
-    UnorderedMap<VkGuid, uint32>                     GuidToPoolIndex;
-
-public:
-    DLL_EXPORT void                                  StartUp();
-    DLL_EXPORT VkGuid                                LoadMaterial(const String& materialPath);
-    DLL_EXPORT void                                  Update(const float& deltaTime, VulkanPipeline& pipeline);
-    DLL_EXPORT const bool                            MaterialExists(const MaterialGuid& materialGuid) const;
-    DLL_EXPORT Material&                             FindMaterial(const MaterialGuid& materialGuid);
-    DLL_EXPORT uint                                  FindMaterialPoolIndex(const MaterialGuid& materialGuid);
-    DLL_EXPORT const Vector<VkDescriptorBufferInfo>  GetMaterialBufferInfo() const;
-    DLL_EXPORT void                                  Destroy(const MaterialGuid& materialGuid);
-    DLL_EXPORT void                                  DestroyAllMaterials();
-    DLL_EXPORT Vector<Material>                      GetMaterialList() { return MaterialList; }
+    Vector<Material> MaterialList;
+    Vector<GPUMaterial> MaterialPool;          // your makeshift vector pool
+    UnorderedMap<VkGuid, uint32> GuidToPoolIndex;
+    uint MaterialBufferId = UINT32_MAX;
 };
+
 extern DLL_EXPORT MaterialSystem& materialSystem;
 inline MaterialSystem& MaterialSystem::Get()
 {

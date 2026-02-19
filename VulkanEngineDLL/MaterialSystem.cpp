@@ -2,14 +2,16 @@
 #include "FileSystem.h"
 #include "RenderSystem.h"
 #include "BufferSystem.h"
-#include "ShaderSystem.h"
 #include "from_json.h"
 
 MaterialSystem& materialSystem = MaterialSystem::Get();
 
 void MaterialSystem::StartUp()
 {
-    MaterialPool.CreateMemoryPool(65536, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    constexpr size_t InitialCapacity = 65536;
+    MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
+        sizeof(MaterialBufferHeader) + InitialCapacity * sizeof(GPUMaterial),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
@@ -32,81 +34,72 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.PackedSheenSSSDataId = json.contains("PackedSheenSSSData") ? textureSystem.LoadKTXTexture(json["PackedSheenSSSData"].get<TextureLoader>()).textureGuid : VkGuid();
     material.UnusedDataId = json.contains("UnusedData") ? textureSystem.LoadKTXTexture(json["UnusedData"].get<TextureLoader>()).textureGuid : VkGuid();
     material.EmissionDataId = json.contains("EmissionData") ? textureSystem.LoadKTXTexture(json["EmissionData"].get<TextureLoader>()).textureGuid : VkGuid();
+
     MaterialList.emplace_back(material);
 
-    uint32_t poolIndex = MaterialPool.AllocateObject();
-    GPUMaterial gpuMaterial = MaterialPool.Get(poolIndex);
-    gpuMaterial.AlbedoDataId = material.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(material.AlbedoDataId).textureIndex : SIZE_MAX;
-    gpuMaterial.NormalDataId = material.NormalDataId != VkGuid() ? textureSystem.FindTexture(material.NormalDataId).textureIndex : SIZE_MAX;
-    gpuMaterial.PackedMRODataId = material.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(material.PackedMRODataId).textureIndex : SIZE_MAX;
-    gpuMaterial.PackedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(material.PackedSheenSSSDataId).textureIndex : SIZE_MAX;
-    gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureIndex : SIZE_MAX;
-    gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureIndex : SIZE_MAX;
+    GPUMaterial gpuMaterial;
+    gpuMaterial.AlbedoDataId = material.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(material.AlbedoDataId).textureIndex : UINT32_MAX;
+    gpuMaterial.NormalDataId = material.NormalDataId != VkGuid() ? textureSystem.FindTexture(material.NormalDataId).textureIndex : UINT32_MAX;
+    gpuMaterial.PackedMRODataId = material.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(material.PackedMRODataId).textureIndex : UINT32_MAX;
+    gpuMaterial.PackedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(material.PackedSheenSSSDataId).textureIndex : UINT32_MAX;
+    gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureIndex : UINT32_MAX;
+    gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureIndex : UINT32_MAX;
 
-    GuidToPoolIndex[materialGuid] = poolIndex;
-    MaterialPool.IsDirty = true;
+    uint32_t index = static_cast<uint32_t>(MaterialPool.size());
+    GuidToPoolIndex[materialGuid] = index;
+    MaterialPool.emplace_back(gpuMaterial);
 
     return materialGuid;
 }
 
-void MaterialSystem::Update(const float& deltaTime, VulkanPipeline& pipeline)
+void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
 {
-    if (!MaterialPool.IsDirty) return;
-
-    Vector<GPUMaterial> activeMaterials;
-    activeMaterials.reserve(MaterialPool.ActiveCount);
-
-    for (uint32_t x = 0; x < MaterialPool.ObjectDataPool.size(); ++x)
-    {
-        if (MaterialPool.IsSlotActive(x))
-        {
-            const Material& cpuMat = MaterialList[x];
-            GPUMaterial gpuMat = MaterialPool.Get(x);
-
-            gpuMat.AlbedoDataId = cpuMat.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.AlbedoDataId).textureIndex : ~0u;
-            gpuMat.NormalDataId = cpuMat.NormalDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.NormalDataId).textureIndex : ~0u;
-            gpuMat.PackedMRODataId = cpuMat.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(cpuMat.PackedMRODataId).textureIndex : ~0u;
-            gpuMat.PackedSheenSSSDataId = cpuMat.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.PackedSheenSSSDataId).textureIndex : ~0u;
-            gpuMat.UnusedDataId = cpuMat.UnusedDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.UnusedDataId).textureIndex : ~0u;
-            gpuMat.EmissionDataId = cpuMat.EmissionDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.EmissionDataId).textureIndex : ~0u;
-
-            activeMaterials.push_back(gpuMat);
-        }
-    }
+    uint32_t count = static_cast<uint32_t>(MaterialPool.size());
+    if (count == 0) return;
 
     MaterialBufferHeader header{};
-    header.MaterialCount = static_cast<uint32_t>(activeMaterials.size());
+    header.MaterialCount = count;
     header.MaterialOffset = sizeof(MaterialBufferHeader);
     header.MaterialSize = sizeof(GPUMaterial);
 
     Vector<uint8_t> uploadData;
-    uploadData.resize(sizeof(MaterialBufferHeader) + activeMaterials.size() * sizeof(GPUMaterial));
+    uploadData.resize(sizeof(MaterialBufferHeader) + count * sizeof(GPUMaterial));
     memcpy(uploadData.data(), &header, sizeof(MaterialBufferHeader));
-
-    if (!activeMaterials.empty())
+    if (count > 0)
     {
         memcpy(uploadData.data() + sizeof(MaterialBufferHeader),
-            activeMaterials.data(),
-            activeMaterials.size() * sizeof(GPUMaterial));
+            MaterialPool.data(),
+            count * sizeof(GPUMaterial));
     }
 
-    if (MaterialPool.BufferId == UINT32_MAX)
+    bool bufferRecreated = false;
+
+    if (MaterialBufferId == UINT32_MAX)
     {
-        MaterialPool.BufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
+        MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
             uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        bufferRecreated = true;
     }
-    else if (bufferSystem.FindVulkanBuffer(MaterialPool.BufferId).BufferSize < uploadData.size())
+    else if (bufferSystem.FindVulkanBuffer(MaterialBufferId).BufferSize < uploadData.size())
     {
-        // resize logic if needed
-        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(MaterialPool.BufferId));
-        MaterialPool.BufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(MaterialBufferId));
+        MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
+            uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        bufferRecreated = true;
     }
-    bufferSystem.VMAUpdateDynamicBuffer(MaterialPool.BufferId, uploadData.data(), uploadData.size());
+
+    bufferSystem.VMAUpdateDynamicBuffer(MaterialBufferId, uploadData.data(), uploadData.size());
 
     auto bufferInfo = GetMaterialBufferInfo();
-    renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 10);
 
-    MaterialPool.IsDirty = false;
+    // Always update (safe and cheap), but especially after recreation
+    for (auto& pipeline : pipelineList)
+    {
+        renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 10);
+    }
+
+    // Optional: log or assert if recreated, to confirm it happens rarely
+    // if (bufferRecreated) { /* log "Material buffer resized and rebound" */ }
 }
 
 const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const
@@ -117,25 +110,30 @@ const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) cons
 
 Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
 {
-    return MaterialList[MaterialExists(materialGuid)];
-}
-
-const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialBufferInfo() const
-{
-    return Vector<VkDescriptorBufferInfo>
+    auto it = GuidToPoolIndex.find(materialGuid);
+    if (it == GuidToPoolIndex.end())
     {
-        VkDescriptorBufferInfo
-        {
-            .buffer = bufferSystem.FindVulkanBuffer(MaterialPool.BufferId).Buffer,
-            .offset = 0,
-            .range = VK_WHOLE_SIZE
-        }
-    };
+        static Material invalid{};
+        return invalid;  // or throw
+    }
+    return MaterialList[it->second];
 }
 
 uint MaterialSystem::FindMaterialPoolIndex(const MaterialGuid& materialGuid)
 {
-    return GuidToPoolIndex[materialGuid];
+    auto it = GuidToPoolIndex.find(materialGuid);
+    return it != GuidToPoolIndex.end() ? it->second : UINT32_MAX;
+}
+
+const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialBufferInfo() const
+{
+    Vector<VkDescriptorBufferInfo> infos;
+    infos.emplace_back(VkDescriptorBufferInfo{
+        .buffer = bufferSystem.FindVulkanBuffer(MaterialBufferId).Buffer,
+        .offset = 0,
+        .range = VK_WHOLE_SIZE
+        });
+    return infos;
 }
 
 void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
@@ -143,15 +141,32 @@ void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
     auto it = GuidToPoolIndex.find(materialGuid);
     if (it == GuidToPoolIndex.end()) return;
 
-    uint32 poolIndex = it->second;
-    MaterialPool.FreeDataSlot(poolIndex);
+    uint32_t index = it->second;
     GuidToPoolIndex.erase(it);
+
+    if (index < MaterialList.size())
+    {
+        MaterialList.erase(MaterialList.begin() + index);
+        MaterialPool.erase(MaterialPool.begin() + index);
+    }
+
+    // Fix indices after deletion
+    for (auto& pair : GuidToPoolIndex)
+    {
+        if (pair.second > index)
+            pair.second--;
+    }
 }
 
 void MaterialSystem::DestroyAllMaterials()
 {
-    for (auto& materialPair : MaterialList)
+    MaterialList.clear();
+    MaterialPool.clear();
+    GuidToPoolIndex.clear();
+
+    if (MaterialBufferId != UINT32_MAX)
     {
-        Destroy(materialPair.MaterialGuid);
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(MaterialBufferId));
+        MaterialBufferId = UINT32_MAX;
     }
 }

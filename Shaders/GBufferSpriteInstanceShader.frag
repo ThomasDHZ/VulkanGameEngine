@@ -3,6 +3,7 @@
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
+#extension GL_EXT_shader_8bit_storage : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
@@ -54,12 +55,12 @@ layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVI
 layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
 layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 10) buffer MaterialProperities
+layout(binding = 10) buffer MaterialProperties
 {
-    uint MaterialOffset;
+    uint MaterialOffset;     // byte offset to start of materials (typically 12)
     uint MaterialCount;
-    uint MaterialSize;
-    uint ByteData[];
+    uint MaterialSize;       // bytes per material, e.g. 24
+    uint Data[];             // ? this line MUST be here; unsized array at the end
 } materialBuffer;
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
@@ -158,69 +159,83 @@ vec2 Unpack8bitPair(float packed) {
     return vec2(high, low);
 }
 
-uint UnpackUint(uint base, uint offset) 
+uint ReadUint(uint uintBase, uint offsetUints)
 {
-    return materialBuffer.ByteData[base + offset + 0];
+    return materialBuffer.Data[uintBase + offsetUints];
 }
 
-float UnpackFloat(uint base, uint offset) 
+float ReadFloat(uint uintBase, uint offsetUints)
 {
-    return uintBitsToFloat(materialBuffer.ByteData[base + offset + 0]);
+    return uintBitsToFloat(materialBuffer.Data[uintBase + offsetUints]);
 }
 
-vec3 UnpackVec3(uint base, uint offset) 
+vec2 ReadVec2(uint uintBase, uint offsetUints)
+{
+    return vec2(
+        ReadFloat(uintBase, offsetUints + 0u),
+        ReadFloat(uintBase, offsetUints + 1u)
+    );
+}
+
+vec3 ReadVec3(uint uintBase, uint offsetUints)
 {
     return vec3(
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 0]),
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 1]),
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 2])
+        ReadFloat(uintBase, offsetUints + 0u),
+        ReadFloat(uintBase, offsetUints + 1u),
+        ReadFloat(uintBase, offsetUints + 2u)
     );
 }
 
-vec4 UnpackVec4(uint base, uint offset) 
+vec4 ReadVec4(uint uintBase, uint offsetUints)
 {
     return vec4(
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 0]),
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 1]),
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 2]),
-        uintBitsToFloat(materialBuffer.ByteData[base + offset + 3])
+        ReadFloat(uintBase, offsetUints + 0u),
+        ReadFloat(uintBase, offsetUints + 1u),
+        ReadFloat(uintBase, offsetUints + 2u),
+        ReadFloat(uintBase, offsetUints + 3u)
     );
 }
 
-mat4 UnpackMat4(uint base, uint offset) {
+mat3 ReadMat3(uint uintBase, uint offsetUints)
+{
+    return mat3(
+        ReadVec3(uintBase, offsetUints + 0u),   // column 0
+        ReadVec3(uintBase, offsetUints + 3u),   // column 1
+        ReadVec3(uintBase, offsetUints + 6u)    // column 2
+    );
+}
+
+mat4 ReadMat4(uint uintBase, uint offsetUints)
+{
     return mat4(
-        UnpackVec4(base, offset + 0),
-        UnpackVec4(base, offset + 4),
-        UnpackVec4(base, offset + 8),
-        UnpackVec4(base, offset + 12)
+        ReadVec4(uintBase, offsetUints +  0u),  // column 0
+        ReadVec4(uintBase, offsetUints +  4u),  // column 1
+        ReadVec4(uintBase, offsetUints +  8u),  // column 2
+        ReadVec4(uintBase, offsetUints + 12u)   // column 3
     );
 }
 
 MaterialProperitiesBuffer2 GetMaterial(uint index)
 {
     MaterialProperitiesBuffer2 mat;
-
-    // Safe default ("no texture" = invalid index)
-    mat.AlbedoDataId         = ~0u;
-    mat.NormalDataId         = ~0u;
-    mat.PackedMRODataId      = ~0u;
-    mat.PackedSheenSSSDataId = ~0u;
-    mat.UnusedDataId         = ~0u;
-    mat.EmissionDataId       = ~0u;
+    mat.AlbedoDataId          = ~0u;   // 0xFFFFFFFF
+    mat.NormalDataId          = ~0u;
+    mat.PackedMRODataId       = ~0u;
+    mat.PackedSheenSSSDataId  = ~0u;
+    mat.UnusedDataId          = ~0u;
+    mat.EmissionDataId        = ~0u;
 
     if (index >= materialBuffer.MaterialCount)
+    {
         return mat;
+    }
 
-    uint startUint  = materialBuffer.MaterialOffset / 4u;   // 12 / 4 = 3
-    uint strideUint = materialBuffer.MaterialSize   / 4u;   // ? THIS WAS THE BUG (24 ? 6)
-    uint base       = startUint + index * strideUint;
-
-    mat.AlbedoDataId         = UnpackUint(base, 0);
-    mat.NormalDataId         = UnpackUint(base, 1);
-    mat.PackedMRODataId      = UnpackUint(base, 2);
-    mat.PackedSheenSSSDataId = UnpackUint(base, 3);
-    mat.UnusedDataId         = UnpackUint(base, 4);
-    mat.EmissionDataId       = UnpackUint(base, 5);
+    mat.AlbedoDataId          = materialBuffer.Data[(index * 5) + 0u];
+    mat.NormalDataId          = materialBuffer.Data[(index * 5) + 1u];
+    mat.PackedMRODataId       = materialBuffer.Data[(index * 5) + 2u];
+    mat.PackedSheenSSSDataId  = materialBuffer.Data[(index * 5) + 3u];
+    mat.UnusedDataId          = materialBuffer.Data[(index * 5) + 4u];
+    mat.EmissionDataId        = materialBuffer.Data[(index * 5) + 5u];
 
     return mat;
 }

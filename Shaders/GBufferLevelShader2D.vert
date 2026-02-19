@@ -4,6 +4,7 @@
 #extension GL_KHR_Vulkan_GLSL : enable 
 #extension GL_EXT_scalar_block_layout : enable
 #extension GL_EXT_debug_printf : enable
+#extension GL_EXT_shader_8bit_storage : require
 
 layout (location = 0)  in vec2  VS_Position;
 layout (location = 1)  in vec2  VS_UV;
@@ -38,12 +39,12 @@ layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMa
 layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
 
 layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
-layout(binding = 10) buffer MaterialProperities
+layout(binding = 10) buffer MaterialProperties
 {
-    uint MaterialOffset;
+    uint MaterialOffset;     // byte offset to start of materials (typically 12)
     uint MaterialCount;
-    uint MaterialSize;
-    uint ByteData[];
+    uint MaterialSize;       // bytes per material, e.g. 24
+    uint Data[];             // ← this line MUST be here; unsized array at the end
 } materialBuffer;
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];

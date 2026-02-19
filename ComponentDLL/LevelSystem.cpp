@@ -360,14 +360,14 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     VkDeviceSize offsets[] = { 0 };
     VkDeviceSize instanceOffset[] = { 0 };
 
+    auto pipelineList = renderSystem.FindRenderPipelineList(renderPassId);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
-    materialSystem.Update(deltaTime, spritePipeline);
-    materialSystem.Update(deltaTime, levelPipeline);
-    materialSystem.Update(deltaTime, lightingPipeline);
+    materialSystem.Update(deltaTime, pipelineList);
+
     lightSystem.Update(deltaTime);
     for (auto& levelLayer : levelLayerList)
     {
