@@ -3,21 +3,12 @@
 #include "GameObjectSystem.h"
 LevelSystem& levelSystem = LevelSystem::Get();
 
-LevelLayer LevelSystem::LoadLevelInfo(
-    VkGuid& levelId,
-    const LevelTileSet& tileSet,
-    uint* tileIdMap,
-    size_t tileIdMapCount,
-    ivec2& levelBounds,
-    int levelLayerIndex)
+LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
 {
     Vector<Tile> tileMap;
     Vector<uint32> indexList;
     Vector<Vertex2DLayout> vertexList;
-
-    // Convert raw pointers to Vectors for easier/safer access
-    Vector<Tile> tileSetList = Vector<Tile>(tileSet.LevelTileListPtr,
-        tileSet.LevelTileListPtr + tileSet.LevelTileCount);
+    Vector<Tile> tileSetList = Vector<Tile>(tileSet.LevelTileListPtr, tileSet.LevelTileListPtr + tileSet.LevelTileCount);
     Vector<uint> tileIdMapList = Vector<uint>(tileIdMap, tileIdMap + tileIdMapCount);
 
     for (uint x = 0; x < levelBounds.x; x++)
@@ -27,56 +18,50 @@ LevelLayer LevelSystem::LoadLevelInfo(
             const uint& tileId = tileIdMapList[(y * levelBounds.x) + x];
             const Tile& tile = tileSetList[tileId];
 
-            // UV coordinates from the tileset atlas
             const float LeftSideUV = tile.TileUVOffset.x;
             const float RightSideUV = tile.TileUVOffset.x + tileSet.TileUVSize.x;
             const float TopSideUV = tile.TileUVOffset.y;
             const float BottomSideUV = tile.TileUVOffset.y + tileSet.TileUVSize.y;
 
-            // Current number of vertices (base index for this quad)
             const uint VertexCount = vertexList.size();
-
-            // World-space size of one tile (in pixels, scaled)
             const vec2 TilePixelSize = tileSet.TilePixelSize * tileSet.TileScale;
-
-            // Define the four corners of the quad in world space
-            const Vertex2DLayout BottomLeftVertex = {
+            const Vertex2DLayout BottomLeftVertex = 
+            {
                 { x * TilePixelSize.x, y * TilePixelSize.y },
                 { LeftSideUV, BottomSideUV }
             };
-            const Vertex2DLayout BottomRightVertex = {
+            const Vertex2DLayout BottomRightVertex = 
+            {
                 { (x * TilePixelSize.x) + TilePixelSize.x, y * TilePixelSize.y },
                 { RightSideUV, BottomSideUV }
             };
-            const Vertex2DLayout TopRightVertex = {
+            const Vertex2DLayout TopRightVertex = 
+            {
                 { (x * TilePixelSize.x) + TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
                 { RightSideUV, TopSideUV }
             };
-            const Vertex2DLayout TopLeftVertex = {
+            const Vertex2DLayout TopLeftVertex = 
+            {
                 { x * TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
                 { LeftSideUV, TopSideUV }
             };
 
-            // Append vertices for this tile quad
             vertexList.emplace_back(BottomLeftVertex);
             vertexList.emplace_back(BottomRightVertex);
             vertexList.emplace_back(TopRightVertex);
             vertexList.emplace_back(TopLeftVertex);
 
-            // Append indices for two triangles (clockwise winding)
-            indexList.emplace_back(VertexCount + 0);  // BL
-            indexList.emplace_back(VertexCount + 1);  // BR
-            indexList.emplace_back(VertexCount + 2);  // TR
-            indexList.emplace_back(VertexCount + 2);  // TR
-            indexList.emplace_back(VertexCount + 3);  // TL
-            indexList.emplace_back(VertexCount + 0);  // BL
+            indexList.emplace_back(VertexCount + 0);  
+            indexList.emplace_back(VertexCount + 1);  
+            indexList.emplace_back(VertexCount + 2); 
+            indexList.emplace_back(VertexCount + 2);  
+            indexList.emplace_back(VertexCount + 3); 
+            indexList.emplace_back(VertexCount + 0); 
 
-            // Store the tile metadata
             tileMap.emplace_back(tile);
         }
     }
 
-    // Package everything into the LevelLayer struct
     LevelLayer levelLayout = LevelLayer
     {
         .LevelId = levelId,
@@ -84,20 +69,16 @@ LevelLayer LevelSystem::LoadLevelInfo(
         .TileSetId = tileSet.TileSetId,
         .LevelLayerIndex = levelLayerIndex,
         .LevelBounds = levelBounds,
-
-        // Allocate and copy persistent buffers (using your memorySystem)
         .TileIdMap = memorySystem.AddPtrBuffer<uint>(tileIdMapList.size(), __FILE__, __LINE__, __func__),
         .TileMap = memorySystem.AddPtrBuffer<Tile>(tileMap.size(), __FILE__, __LINE__, __func__),
         .VertexList = memorySystem.AddPtrBuffer<Vertex2DLayout>(vertexList.size(), __FILE__, __LINE__, __func__),
         .IndexList = memorySystem.AddPtrBuffer<uint32>(indexList.size(), __FILE__, __LINE__, __func__),
-
         .TileIdMapCount = tileIdMapList.size(),
         .TileMapCount = tileMap.size(),
         .VertexListCount = vertexList.size(),
         .IndexListCount = indexList.size()
     };
 
-    // Deep copy the data into the persistent buffers
     std::memcpy(levelLayout.TileMap, tileMap.data(), tileMap.size() * sizeof(Tile));
     std::memcpy(levelLayout.TileIdMap, tileIdMapList.data(), tileIdMapList.size() * sizeof(uint));
     std::memcpy(levelLayout.VertexList, vertexList.data(), vertexList.size() * sizeof(Vertex2DLayout));
@@ -126,7 +107,9 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
 
     if (LevelTileSetMap.find(tileSetId) != LevelTileSetMap.end())
+    {
         return tileSetId;
+    }
 
     const Material& material = materialSystem.FindMaterial(materialId);
     const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoDataId);
@@ -166,7 +149,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexDataSize = vertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = vertexList.data()
         };
-        meshSystem.CreateMesh(MeshTypeEnum::kMesh_LevelMesh, vertexData, indexList, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_LevelMesh, vertexData, indexList, LevelLayerList[x].MaterialId);
     }
 }
 
@@ -174,7 +157,37 @@ void LevelSystem::LoadSkyBox(const char* skyBoxMaterialPath)
 {
     nlohmann::json json = fileSystem.LoadJsonFile(skyBoxMaterialPath);
     VkGuid skyBoxMaterialGuid = VkGuid(json["MaterialId"]);
-    meshSystem.CreateSkyBox(skyBoxMaterialGuid);
+
+    Vector<SkyboxVertexLayout> skyBoxVertices = 
+    {
+        {{-1.0f, -1.0f, -1.0f}},
+        {{ 1.0f, -1.0f, -1.0f}},
+        {{ 1.0f,  1.0f, -1.0f}},
+        {{-1.0f,  1.0f, -1.0f}},
+        {{-1.0f, -1.0f,  1.0f}},
+        {{ 1.0f, -1.0f,  1.0f}},
+        {{ 1.0f,  1.0f,  1.0f}},
+        {{-1.0f,  1.0f,  1.0f}}
+    };
+
+    Vector<uint32> indexList = 
+    {
+        0, 2, 1,   0, 3, 2,
+        4, 5, 6,   4, 6, 7,
+        4, 3, 0,   4, 7, 3,
+        1, 6, 5,   1, 2, 6,
+        0, 5, 4,   0, 1, 5,
+        3, 6, 2,   3, 7, 6
+    };
+
+    VertexLayout vertexData =
+    {
+        .VertexType = VertexLayoutEnum::kVertexLayout_Vertex2D,
+        .VertexDataSize = skyBoxVertices.size() * sizeof(SkyboxVertexLayout),
+        .VertexData = skyBoxVertices.data()
+    };
+
+    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, skyBoxMaterialGuid);
 }
 
 void LevelSystem::DestroyLevel()
@@ -302,15 +315,15 @@ void LevelSystem::RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandB
     vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
-    for (auto& skybox : skyBoxList)
+    for (auto& skyboxMesh : skyBoxList)
     {
-        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
 }
@@ -365,15 +378,14 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
     spriteSystem.Update(deltaTime);
-    meshSystem.Update(deltaTime);
+    meshSystem.Update(deltaTime, pipelineList);
     materialSystem.Update(deltaTime, pipelineList);
-
     lightSystem.Update(deltaTime);
     for (auto& levelLayer : levelLayerList)
     {
-        const Vector<uint32>& indiceList = meshSystem.IndexList[levelLayer.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(levelLayer.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
         shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
@@ -381,21 +393,21 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
         vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
     for (auto& spriteLayer : spriteSystem.SpriteLayerList)
     {
         const Mesh& spriteMesh = meshSystem.FindMesh(spriteLayer.second.SpriteLayerMeshId);
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(spriteMesh.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const Vector<SpriteInstance>& spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer.second);
         const VkBuffer& spriteInstanceBuffer = bufferSystem.FindVulkanBuffer(spriteLayer.second.SpriteLayerBufferId).Buffer;
-        const Vector<uint32>& indiceList = meshSystem.IndexList[spriteMesh.IndexIndex];
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &spriteInstanceBuffer, instanceOffset);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), spriteInstanceList.size(), 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, spriteInstanceList.size(), 0, 0, 0);
     }
     vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdPushConstants(commandBuffer, lightingPipeline.PipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, gBufferSceneDataBuffer.PushConstantSize, gBufferSceneDataBuffer.PushConstantBuffer.data());
@@ -407,20 +419,6 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
 {
-    int a = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-    int b = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    int c = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    int d = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
-
-    int e = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        int f = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        int g = 0;
-        int h = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-        | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
-        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
@@ -458,11 +456,11 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, skyboxPipeline.DescriptorSetList.size(), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
    
-    for (auto& skybox : skyBoxList)
+    for (auto& skyboxMesh : skyBoxList)
     {
-        const Vector<uint32>& indiceList = meshSystem.IndexList[skybox.IndexIndex];
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshVertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skybox.MeshIndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<float>(pushConstant, "sampleDelta", 0.1f);
         shaderSystem.UpdatePushConstantBuffer(pushConstant);
@@ -470,7 +468,7 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
         vkCmdPushConstants(commandBuffer, skyboxPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, indiceList.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
 }
@@ -483,9 +481,9 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
     ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
 
     const Mesh& skyboxMesh = skyBoxList[0];
-    const Vector<uint32>& indiceList = meshSystem.IndexList[skyboxMesh.IndexIndex];
-    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshVertexBufferId).Buffer;
-    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(skyboxMesh.MeshIndexBufferId).Buffer;
+    const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
+    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
     VkDeviceSize offsets[] = { 0 };
     uint32 baseSize = renderPass.RenderPassResolution.x;
@@ -534,7 +532,7 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
         vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32>(indiceList.size()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
         vkCmdEndRenderPass(commandBuffer);
     }
 }

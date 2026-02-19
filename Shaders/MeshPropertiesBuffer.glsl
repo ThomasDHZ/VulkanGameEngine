@@ -1,5 +1,5 @@
 struct MeshProperitiesBuffer
 {
-	int	   MaterialIndex;
+	uint   MaterialIndex;
 	mat4   MeshTransform;
 };

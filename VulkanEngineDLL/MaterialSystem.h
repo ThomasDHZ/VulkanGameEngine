@@ -39,32 +39,35 @@ struct alignas(4) MaterialBufferHeader
 
 class MaterialSystem
 {
-public:
-    static MaterialSystem& Get();
-
-    DLL_EXPORT void StartUp();
-    DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
-    DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline);
-    DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
-    DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
-    DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
-    DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialBufferInfo() const;
-    DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
-    DLL_EXPORT void DestroyAllMaterials();
-    DLL_EXPORT Vector<Material> GetMaterialList() { return MaterialList; }
-
+    public:
+        static MaterialSystem& Get();
+    
 private:
-    MaterialSystem() = default;
-    ~MaterialSystem() = default;
-    MaterialSystem(const MaterialSystem&) = delete;
-    MaterialSystem& operator=(const MaterialSystem&) = delete;
-    MaterialSystem(MaterialSystem&&) = delete;
-    MaterialSystem& operator=(MaterialSystem&&) = delete;
+        MaterialSystem() = default;
+        ~MaterialSystem() = default;
+        MaterialSystem(const MaterialSystem&) = delete;
+        MaterialSystem& operator=(const MaterialSystem&) = delete;
+        MaterialSystem(MaterialSystem&&) = delete;
+        MaterialSystem& operator=(MaterialSystem&&) = delete;
 
-    Vector<Material> MaterialList;
-    Vector<GPUMaterial> MaterialPool;          // your makeshift vector pool
-    UnorderedMap<VkGuid, uint32> GuidToPoolIndex;
-    uint MaterialBufferId = UINT32_MAX;
+        Vector<Material> MaterialList;
+        Vector<GPUMaterial> MaterialPool;          // your makeshift vector pool
+        UnorderedMap<VkGuid, uint32> GuidToPoolIndex;
+        uint MaterialBufferId = UINT32_MAX;
+        bool NeedUpdate;
+
+    public:
+
+        DLL_EXPORT void StartUp();
+        DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
+        DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline);
+        DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
+        DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
+        DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
+        DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialBufferInfo() const;
+        DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
+        DLL_EXPORT void DestroyAllMaterials();
+        DLL_EXPORT Vector<Material> GetMaterialList() { return MaterialList; }
 };
 
 extern DLL_EXPORT MaterialSystem& materialSystem;

@@ -41,7 +41,7 @@ void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spri
     {
         .RenderPassId = renderPassId,
         .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = meshSystem.CreateMesh(kMesh_SpriteMesh, vertexData, spriteIndexList)
+        .SpriteLayerMeshId = meshSystem.CreateMesh("__SpriteMesh__Layer__" + std::to_string(SpriteLayerList.size()) + "__", kMesh_SpriteMesh, vertexData, spriteIndexList)
     };
 
     Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);

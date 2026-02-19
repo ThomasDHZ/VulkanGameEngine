@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)External\entt\src\;$(SolutionDir)External\ktx\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\VulkanMemoryAllocator\include;C:\Program Files\RenderDoc\;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\nlohmann_json\include;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)External\glfw\;$(SolutionDir)External\glfw\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)External\xxHash;$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)External\entt\src\;$(SolutionDir)External\ktx\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\VulkanMemoryAllocator\include;C:\Program Files\RenderDoc\;$(SolutionDir)External\SPIRV-Reflect;$(SolutionDir)External\nlohmann_json\include;$(SolutionDir)\External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)External\glfw\;$(SolutionDir)External\glfw\include;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)External\ktx\Release;$(SolutionDir)x64\Debug;$(SolutionDir)\External\glfw\src\Release;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,6 +147,9 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h" />
+    <ClInclude Include="..\External\xxHash\xxh3.h" />
+    <ClInclude Include="..\External\xxHash\xxhash.h" />
+    <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h" />
     <ClInclude Include="DebugSystem.h" />
     <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="enum.h" />
@@ -179,6 +182,8 @@
     <ClCompile Include="..\External\LodePNG\lodepng.cpp" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
+    <ClCompile Include="..\External\xxHash\xxhash.c" />
+    <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c" />
     <ClCompile Include="DebugSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />

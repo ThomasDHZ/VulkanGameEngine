@@ -54,13 +54,19 @@ layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
 layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
 layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
-layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 9)  buffer MeshProperities 
+{ 
+    uint MeshOffset;     
+    uint MeshCount;
+    uint MeshSize;    
+    uint Data[]; 
+} meshBuffer;
 layout(binding = 10) buffer MaterialProperties
 {
-    uint MaterialOffset;     // byte offset to start of materials (typically 12)
+    uint MaterialOffset; 
     uint MaterialCount;
-    uint MaterialSize;       // bytes per material, e.g. 24
-    uint Data[];             // ? this line MUST be here; unsized array at the end
+    uint MaterialSize;      
+    uint Data[];            
 } materialBuffer;
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
@@ -215,6 +221,31 @@ mat4 ReadMat4(uint uintBase, uint offsetUints)
     );
 }
 
+MeshProperitiesBuffer GetMesh(uint index) 
+{
+    MeshProperitiesBuffer mesh;
+
+    if (index >= meshBuffer.MeshCount) 
+    {
+        mesh.MaterialIndex = 0u;
+        mesh.MeshTransform = mat4(0.0);
+        return mesh;
+    }
+
+    uint startUint = meshBuffer.MeshOffset / 4;
+    uint strideUint = meshBuffer.MeshSize / 4; 
+    uint base = startUint + index * 17;
+
+    mesh.MaterialIndex = meshBuffer.Data[(index * 17) + 0u];
+    mesh.MeshTransform = mat4(
+        meshBuffer.Data[(index * 17) + 1u],  meshBuffer.Data[(index * 17) + 2u],  meshBuffer.Data[(index * 17) + 3u],  meshBuffer.Data[(index * 17) + 4u],
+        meshBuffer.Data[(index * 17) + 5u],  meshBuffer.Data[(index * 17) + 6u],  meshBuffer.Data[(index * 17) + 7u],  meshBuffer.Data[(index * 17) + 8u],
+        meshBuffer.Data[(index * 17) + 9u],  meshBuffer.Data[(index * 17) + 10u], meshBuffer.Data[(index * 17) + 11u], meshBuffer.Data[(index * 17) + 12u],
+        meshBuffer.Data[(index * 17) + 13u], meshBuffer.Data[(index * 17) + 14u], meshBuffer.Data[(index * 17) + 15u], meshBuffer.Data[(index * 17) + 16u]);
+
+    return mesh;
+}
+
 MaterialProperitiesBuffer2 GetMaterial(uint index)
 {
     MaterialProperitiesBuffer2 mat;
@@ -230,13 +261,12 @@ MaterialProperitiesBuffer2 GetMaterial(uint index)
         return mat;
     }
 
-    mat.AlbedoDataId          = materialBuffer.Data[(index * 5) + 0u];
-    mat.NormalDataId          = materialBuffer.Data[(index * 5) + 1u];
-    mat.PackedMRODataId       = materialBuffer.Data[(index * 5) + 2u];
-    mat.PackedSheenSSSDataId  = materialBuffer.Data[(index * 5) + 3u];
-    mat.UnusedDataId          = materialBuffer.Data[(index * 5) + 4u];
-    mat.EmissionDataId        = materialBuffer.Data[(index * 5) + 5u];
-
+    mat.AlbedoDataId          = materialBuffer.Data[(index * 6) + 0u];
+    mat.NormalDataId          = materialBuffer.Data[(index * 6) + 1u];
+    mat.PackedMRODataId       = materialBuffer.Data[(index * 6) + 2u];
+    mat.PackedSheenSSSDataId  = materialBuffer.Data[(index * 6) + 3u];
+    mat.UnusedDataId          = materialBuffer.Data[(index * 6) + 4u];
+    mat.EmissionDataId        = materialBuffer.Data[(index * 6) + 5u];
     return mat;
 }
 

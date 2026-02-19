@@ -38,13 +38,19 @@ layout(constant_id = 14)  const uint DescriptorBindingType14  = SkyBoxDescriptor
 layout(constant_id = 15)  const uint DescriptorBindingType15  = IrradianceCubeMapDescriptor;
 layout(constant_id = 16)  const uint DescriptorBindingType16  = PrefilterDescriptor;
 
-layout(binding = 9)  buffer MeshProperities { MeshProperitiesBuffer meshProperties; } meshBuffer[];
+layout(binding = 9)  buffer MeshProperities 
+{ 
+    uint MeshOffset;     
+    uint MeshCount;
+    uint MeshSize;    
+    uint Data[]; 
+} meshBuffer;
 layout(binding = 10) buffer MaterialProperties
 {
-    uint MaterialOffset;     // byte offset to start of materials (typically 12)
+    uint MaterialOffset; 
     uint MaterialCount;
-    uint MaterialSize;       // bytes per material, e.g. 24
-    uint Data[];             // ← this line MUST be here; unsized array at the end
+    uint MaterialSize;      
+    uint Data[];            
 } materialBuffer;
 layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
 layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
@@ -65,16 +71,120 @@ layout(push_constant) uniform SceneDataBuffer
     int   Buffer1;
 } sceneData;
 
+uint ReadUint(uint uintBase, uint offsetUints)
+{
+    return materialBuffer.Data[uintBase + offsetUints];
+}
+
+float ReadFloat(uint uintBase, uint offsetUints)
+{
+    return uintBitsToFloat(materialBuffer.Data[uintBase + offsetUints]);
+}
+
+vec2 ReadVec2(uint uintBase, uint offsetUints)
+{
+    return vec2(
+        ReadFloat(uintBase, offsetUints + 0u),
+        ReadFloat(uintBase, offsetUints + 1u)
+    );
+}
+
+vec3 ReadVec3(uint uintBase, uint offsetUints)
+{
+    return vec3(
+        ReadFloat(uintBase, offsetUints + 0u),
+        ReadFloat(uintBase, offsetUints + 1u),
+        ReadFloat(uintBase, offsetUints + 2u)
+    );
+}
+
+vec4 ReadVec4(uint uintBase, uint offsetUints)
+{
+    return vec4(
+        ReadFloat(uintBase, offsetUints + 0u),
+        ReadFloat(uintBase, offsetUints + 1u),
+        ReadFloat(uintBase, offsetUints + 2u),
+        ReadFloat(uintBase, offsetUints + 3u)
+    );
+}
+
+mat3 ReadMat3(uint uintBase, uint offsetUints)
+{
+    return mat3(
+        ReadVec3(uintBase, offsetUints + 0u),   // column 0
+        ReadVec3(uintBase, offsetUints + 3u),   // column 1
+        ReadVec3(uintBase, offsetUints + 6u)    // column 2
+    );
+}
+
+mat4 ReadMat4(uint uintBase, uint offsetUints)
+{
+    return mat4(
+        ReadVec4(uintBase, offsetUints +  0u),  // column 0
+        ReadVec4(uintBase, offsetUints +  4u),  // column 1
+        ReadVec4(uintBase, offsetUints +  8u),  // column 2
+        ReadVec4(uintBase, offsetUints + 12u)   // column 3
+    );
+}
+
+MeshProperitiesBuffer GetMesh(uint index) 
+{
+    MeshProperitiesBuffer mesh;
+
+    if (index >= meshBuffer.MeshCount) 
+    {
+        mesh.MaterialIndex = 0u;
+        mesh.MeshTransform = mat4(0.0);
+        return mesh;
+    }
+
+    uint startUint = meshBuffer.MeshOffset / 4;
+    uint strideUint = meshBuffer.MeshSize / 4; 
+    uint base = startUint + index * 17;
+
+    mesh.MaterialIndex = meshBuffer.Data[(index * 17) + 0u];
+    mesh.MeshTransform = mat4(
+        meshBuffer.Data[(index * 17) + 1u],  meshBuffer.Data[(index * 17) + 2u],  meshBuffer.Data[(index * 17) + 3u],  meshBuffer.Data[(index * 17) + 4u],
+        meshBuffer.Data[(index * 17) + 5u],  meshBuffer.Data[(index * 17) + 6u],  meshBuffer.Data[(index * 17) + 7u],  meshBuffer.Data[(index * 17) + 8u],
+        meshBuffer.Data[(index * 17) + 9u],  meshBuffer.Data[(index * 17) + 10u], meshBuffer.Data[(index * 17) + 11u], meshBuffer.Data[(index * 17) + 12u],
+        meshBuffer.Data[(index * 17) + 13u], meshBuffer.Data[(index * 17) + 14u], meshBuffer.Data[(index * 17) + 15u], meshBuffer.Data[(index * 17) + 16u]);
+
+    return mesh;
+}
+
+MaterialProperitiesBuffer2 GetMaterial(uint index)
+{
+    MaterialProperitiesBuffer2 mat;
+    mat.AlbedoDataId          = ~0u;
+    mat.NormalDataId          = ~0u;
+    mat.PackedMRODataId       = ~0u;
+    mat.PackedSheenSSSDataId  = ~0u;
+    mat.UnusedDataId          = ~0u;
+    mat.EmissionDataId        = ~0u;
+    if (index >= materialBuffer.MaterialCount)
+    {
+        return mat;
+    }
+
+    mat.AlbedoDataId          = materialBuffer.Data[(index * 6) + 0u];
+    mat.NormalDataId          = materialBuffer.Data[(index * 6) + 1u];
+    mat.PackedMRODataId       = materialBuffer.Data[(index * 6) + 2u];
+    mat.PackedSheenSSSDataId  = materialBuffer.Data[(index * 6) + 3u];
+    mat.UnusedDataId          = materialBuffer.Data[(index * 6) + 4u];
+    mat.EmissionDataId        = materialBuffer.Data[(index * 6) + 5u];
+    return mat;
+}
+
 void main()
 {
-    int meshIndex = sceneData.MeshBufferIndex;
-    mat4 meshTransform = meshBuffer[meshIndex].meshProperties.MeshTransform;
+    MeshProperitiesBuffer mesh = GetMesh(sceneData.MeshBufferIndex);
+    MaterialProperitiesBuffer2 material = GetMaterial(mesh.MaterialIndex);
 
-    PS_Position = vec3(meshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
+    PS_Position = vec3(mesh.MeshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
 	PS_UV = VS_UV.xy;
 
     gl_Position = sceneData.Projection * 
                   sceneData.View *  
-                  meshTransform *
+                  mesh.MeshTransform *
                   vec4(VS_Position.xy, 0.0f, 1.0f);
 }

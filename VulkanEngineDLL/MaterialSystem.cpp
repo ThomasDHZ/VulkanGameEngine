@@ -9,9 +9,7 @@ MaterialSystem& materialSystem = MaterialSystem::Get();
 void MaterialSystem::StartUp()
 {
     constexpr size_t InitialCapacity = 65536;
-    MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
-        sizeof(MaterialBufferHeader) + InitialCapacity * sizeof(GPUMaterial),
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, sizeof(MaterialBufferHeader) + InitialCapacity * sizeof(GPUMaterial), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
@@ -34,7 +32,6 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     material.PackedSheenSSSDataId = json.contains("PackedSheenSSSData") ? textureSystem.LoadKTXTexture(json["PackedSheenSSSData"].get<TextureLoader>()).textureGuid : VkGuid();
     material.UnusedDataId = json.contains("UnusedData") ? textureSystem.LoadKTXTexture(json["UnusedData"].get<TextureLoader>()).textureGuid : VkGuid();
     material.EmissionDataId = json.contains("EmissionData") ? textureSystem.LoadKTXTexture(json["EmissionData"].get<TextureLoader>()).textureGuid : VkGuid();
-
     MaterialList.emplace_back(material);
 
     GPUMaterial gpuMaterial;
@@ -45,16 +42,19 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureIndex : UINT32_MAX;
     gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureIndex : UINT32_MAX;
 
-    uint32_t index = static_cast<uint32_t>(MaterialPool.size());
+    uint32 index = static_cast<uint32_t>(MaterialPool.size());
     GuidToPoolIndex[materialGuid] = index;
     MaterialPool.emplace_back(gpuMaterial);
+    NeedUpdate = true;
 
     return materialGuid;
 }
 
 void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
 {
-    uint32_t count = static_cast<uint32_t>(MaterialPool.size());
+    if (!NeedUpdate) return;
+
+    uint32 count = static_cast<uint32>(MaterialPool.size());
     if (count == 0) return;
 
     MaterialBufferHeader header{};
@@ -62,18 +62,15 @@ void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipe
     header.MaterialOffset = sizeof(MaterialBufferHeader);
     header.MaterialSize = sizeof(GPUMaterial);
 
-    Vector<uint8_t> uploadData;
+    Vector<byte> uploadData;
     uploadData.resize(sizeof(MaterialBufferHeader) + count * sizeof(GPUMaterial));
     memcpy(uploadData.data(), &header, sizeof(MaterialBufferHeader));
     if (count > 0)
     {
-        memcpy(uploadData.data() + sizeof(MaterialBufferHeader),
-            MaterialPool.data(),
-            count * sizeof(GPUMaterial));
+        memcpy(uploadData.data() + sizeof(MaterialBufferHeader), MaterialPool.data(), count * sizeof(GPUMaterial));
     }
 
     bool bufferRecreated = false;
-
     if (MaterialBufferId == UINT32_MAX)
     {
         MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
@@ -83,16 +80,12 @@ void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipe
     else if (bufferSystem.FindVulkanBuffer(MaterialBufferId).BufferSize < uploadData.size())
     {
         bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(MaterialBufferId));
-        MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
-            uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        MaterialBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
         bufferRecreated = true;
     }
-
     bufferSystem.VMAUpdateDynamicBuffer(MaterialBufferId, uploadData.data(), uploadData.size());
 
     auto bufferInfo = GetMaterialBufferInfo();
-
-    // Always update (safe and cheap), but especially after recreation
     for (auto& pipeline : pipelineList)
     {
         renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 10);
@@ -100,6 +93,7 @@ void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipe
 
     // Optional: log or assert if recreated, to confirm it happens rarely
     // if (bufferRecreated) { /* log "Material buffer resized and rebound" */ }
+    NeedUpdate = false;
 }
 
 const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const
