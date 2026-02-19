@@ -19,6 +19,7 @@ struct Material
     Material& operator=(const Material&) = default;
 };
 
+
 struct GPUMaterial
 {
     uint AlbedoDataId = UINT32_MAX;
@@ -31,6 +32,13 @@ struct GPUMaterial
     GPUMaterial() = default;
     GPUMaterial(const GPUMaterial&) = default;
     GPUMaterial& operator=(const GPUMaterial&) = default;
+};
+
+struct MaterialBufferHeader
+{
+    uint MaterialOffset;
+    uint MaterialCount;
+    uint MaterialSize;
 };
 
 class MaterialSystem

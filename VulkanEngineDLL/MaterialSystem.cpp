@@ -55,26 +55,58 @@ void MaterialSystem::Update(const float& deltaTime, VulkanPipeline& pipeline)
 
     Vector<GPUMaterial> activeMaterials;
     activeMaterials.reserve(MaterialPool.ActiveCount);
-    for (uint32 x = 0; x < MaterialPool.ObjectDataPool.size(); ++x)
+
+    for (uint32_t x = 0; x < MaterialPool.ObjectDataPool.size(); ++x)
     {
         if (MaterialPool.IsSlotActive(x))
         {
-            Material material = MaterialList[x];
+            const Material& cpuMat = MaterialList[x];
+            GPUMaterial gpuMat = MaterialPool.Get(x);
 
-            GPUMaterial gpuMaterial = MaterialPool.Get(x);
-            gpuMaterial.AlbedoDataId = material.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(material.AlbedoDataId).textureIndex : SIZE_MAX;
-            gpuMaterial.NormalDataId = material.NormalDataId != VkGuid() ? textureSystem.FindTexture(material.NormalDataId).textureIndex : SIZE_MAX;
-            gpuMaterial.PackedMRODataId = material.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(material.PackedMRODataId).textureIndex : SIZE_MAX;
-            gpuMaterial.PackedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(material.PackedSheenSSSDataId).textureIndex : SIZE_MAX;
-            gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureIndex : SIZE_MAX;
-            gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureIndex : SIZE_MAX;
-            activeMaterials.push_back(gpuMaterial);
+            gpuMat.AlbedoDataId = cpuMat.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.AlbedoDataId).textureIndex : ~0u;
+            gpuMat.NormalDataId = cpuMat.NormalDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.NormalDataId).textureIndex : ~0u;
+            gpuMat.PackedMRODataId = cpuMat.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(cpuMat.PackedMRODataId).textureIndex : ~0u;
+            gpuMat.PackedSheenSSSDataId = cpuMat.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.PackedSheenSSSDataId).textureIndex : ~0u;
+            gpuMat.UnusedDataId = cpuMat.UnusedDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.UnusedDataId).textureIndex : ~0u;
+            gpuMat.EmissionDataId = cpuMat.EmissionDataId != VkGuid() ? textureSystem.FindTexture(cpuMat.EmissionDataId).textureIndex : ~0u;
+
+            activeMaterials.push_back(gpuMat);
         }
     }
 
+    MaterialBufferHeader header{};
+    header.MaterialCount = static_cast<uint32_t>(activeMaterials.size());
+    header.MaterialOffset = sizeof(MaterialBufferHeader);
+    header.MaterialSize = sizeof(GPUMaterial);
+
+    Vector<uint8_t> uploadData;
+    uploadData.resize(sizeof(MaterialBufferHeader) + activeMaterials.size() * sizeof(GPUMaterial));
+    memcpy(uploadData.data(), &header, sizeof(MaterialBufferHeader));
+
+    if (!activeMaterials.empty())
+    {
+        memcpy(uploadData.data() + sizeof(MaterialBufferHeader),
+            activeMaterials.data(),
+            activeMaterials.size() * sizeof(GPUMaterial));
+    }
+
+    if (MaterialPool.BufferId == UINT32_MAX)
+    {
+        MaterialPool.BufferId = bufferSystem.VMACreateDynamicBuffer(nullptr,
+            uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    }
+    else if (bufferSystem.FindVulkanBuffer(MaterialPool.BufferId).BufferSize < uploadData.size())
+    {
+        // resize logic if needed
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(MaterialPool.BufferId));
+        MaterialPool.BufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    }
+    bufferSystem.VMAUpdateDynamicBuffer(MaterialPool.BufferId, uploadData.data(), uploadData.size());
+
     auto bufferInfo = GetMaterialBufferInfo();
-    MaterialPool.UpdateMemoryPool(activeMaterials);
     renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 10);
+
+    MaterialPool.IsDirty = false;
 }
 
 const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const

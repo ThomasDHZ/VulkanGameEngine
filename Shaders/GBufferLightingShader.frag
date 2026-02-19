@@ -262,11 +262,11 @@ mat4 UnpackMat4(uint base, uint offset) {
     );
 }
 
-MaterialProperitiesBuffer2 GetMaterial(uint index) 
+MaterialProperitiesBuffer2 GetMaterial(uint index)
 {
-MaterialProperitiesBuffer2 mat;
+    MaterialProperitiesBuffer2 mat;
 
-    // Safe default for out-of-range (bindless friendly)
+    // Safe default ("no texture" = invalid index)
     mat.AlbedoDataId         = ~0u;
     mat.NormalDataId         = ~0u;
     mat.PackedMRODataId      = ~0u;
@@ -277,9 +277,8 @@ MaterialProperitiesBuffer2 mat;
     if (index >= materialBuffer.MaterialCount)
         return mat;
 
-    // CRITICAL FIXES:
-    uint startUint  = materialBuffer.MaterialOffset / 4u;   // bytes → uint index
-    uint strideUint = materialBuffer.MaterialSize   / 4u;   // ← was missing /4u before
+    uint startUint  = materialBuffer.MaterialOffset / 4u;   // 12 / 4 = 3
+    uint strideUint = materialBuffer.MaterialSize   / 4u;   // ← THIS WAS THE BUG (24 → 6)
     uint base       = startUint + index * strideUint;
 
     mat.AlbedoDataId         = UnpackUint(base, 0);

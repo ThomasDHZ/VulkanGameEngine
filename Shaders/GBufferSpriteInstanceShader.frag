@@ -196,31 +196,31 @@ mat4 UnpackMat4(uint base, uint offset) {
     );
 }
 
-MaterialProperitiesBuffer2 GetMaterial(uint index) 
+MaterialProperitiesBuffer2 GetMaterial(uint index)
 {
     MaterialProperitiesBuffer2 mat;
 
-    if (index >= materialBuffer.MaterialCount) {
-        mat.AlbedoDataId       = 0u;
-        mat.NormalDataId       = 0u;
-        mat.PackedMRODataId    = 0u;
-        mat.PackedSheenSSSDataId = 0u;
-        mat.UnusedDataId       = 0u;
-        mat.EmissionDataId     = 0u;
+    // Safe default ("no texture" = invalid index)
+    mat.AlbedoDataId         = ~0u;
+    mat.NormalDataId         = ~0u;
+    mat.PackedMRODataId      = ~0u;
+    mat.PackedSheenSSSDataId = ~0u;
+    mat.UnusedDataId         = ~0u;
+    mat.EmissionDataId       = ~0u;
+
+    if (index >= materialBuffer.MaterialCount)
         return mat;
-    }
 
-    uint startUint = materialBuffer.MaterialOffset / 4;
-    uint strideUint = materialBuffer.MaterialSize;
+    uint startUint  = materialBuffer.MaterialOffset / 4u;   // 12 / 4 = 3
+    uint strideUint = materialBuffer.MaterialSize   / 4u;   // ? THIS WAS THE BUG (24 ? 6)
+    uint base       = startUint + index * strideUint;
 
-    uint base = startUint + index * strideUint;
-
-    mat.AlbedoDataId       = UnpackUint(base, 0);
-    mat.NormalDataId       = UnpackUint(base, 1);
-    mat.PackedMRODataId    = UnpackUint(base, 2);
+    mat.AlbedoDataId         = UnpackUint(base, 0);
+    mat.NormalDataId         = UnpackUint(base, 1);
+    mat.PackedMRODataId      = UnpackUint(base, 2);
     mat.PackedSheenSSSDataId = UnpackUint(base, 3);
-    mat.UnusedDataId       = UnpackUint(base, 4);
-    mat.EmissionDataId     = UnpackUint(base, 5);
+    mat.UnusedDataId         = UnpackUint(base, 4);
+    mat.EmissionDataId       = UnpackUint(base, 5);
 
     return mat;
 }
