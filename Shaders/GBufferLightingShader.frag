@@ -174,10 +174,10 @@ float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
     return (lightScatter * viewScatter) / PI;
 }
 
-UnpackedMaterial UnpackMaterial();
-vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMaterial material);
-vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMaterial material);
-vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, UnpackedMaterial material);
+Material UnpackMaterial();
+vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material);
+vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material);
+vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material);
 
 uint ReadUint(uint uintBase, uint offsetUints)
 {
@@ -235,9 +235,9 @@ mat4 ReadMat4(uint uintBase, uint offsetUints)
     );
 }
 
-MaterialProperitiesBuffer2 GetMaterial(uint index)
+PackedMaterial GetMaterial(uint index)
 {
-    MaterialProperitiesBuffer2 mat;
+    PackedMaterial mat;
     mat.AlbedoDataId          = ~0u;
     mat.NormalDataId          = ~0u;
     mat.PackedMRODataId       = ~0u;
@@ -262,7 +262,6 @@ MaterialProperitiesBuffer2 GetMaterial(uint index)
 MeshProperitiesBuffer GetMesh(uint index) 
 {
     MeshProperitiesBuffer mesh;
-
     if (index >= meshBuffer.MeshCount) 
     {
         mesh.MaterialIndex = 0u;
@@ -270,16 +269,13 @@ MeshProperitiesBuffer GetMesh(uint index)
         return mesh;
     }
 
-    uint startUint = meshBuffer.MeshOffset / 4;
-    uint strideUint = meshBuffer.MeshSize / 4; 
-    uint base = startUint + index * 17;
-
-    mesh.MaterialIndex = meshBuffer.Data[(index * 17) + 0u];
+    const uint baseByteLocation = (index * (meshBuffer.MeshSize / 4));
+    mesh.MaterialIndex = meshBuffer.Data[baseByteLocation + 0u];
     mesh.MeshTransform = mat4(
-        meshBuffer.Data[(index * 17) + 1u],  meshBuffer.Data[(index * 17) + 2u],  meshBuffer.Data[(index * 17) + 3u],  meshBuffer.Data[(index * 17) + 4u],
-        meshBuffer.Data[(index * 17) + 5u],  meshBuffer.Data[(index * 17) + 6u],  meshBuffer.Data[(index * 17) + 7u],  meshBuffer.Data[(index * 17) + 8u],
-        meshBuffer.Data[(index * 17) + 9u],  meshBuffer.Data[(index * 17) + 10u], meshBuffer.Data[(index * 17) + 11u], meshBuffer.Data[(index * 17) + 12u],
-        meshBuffer.Data[(index * 17) + 13u], meshBuffer.Data[(index * 17) + 14u], meshBuffer.Data[(index * 17) + 15u], meshBuffer.Data[(index * 17) + 16u]);
+        meshBuffer.Data[baseByteLocation + 1u],  meshBuffer.Data[baseByteLocation + 2u],  meshBuffer.Data[baseByteLocation + 3u],  meshBuffer.Data[baseByteLocation + 4u],
+        meshBuffer.Data[baseByteLocation + 5u],  meshBuffer.Data[baseByteLocation + 6u],  meshBuffer.Data[baseByteLocation + 7u],  meshBuffer.Data[baseByteLocation + 8u],
+        meshBuffer.Data[baseByteLocation + 9u],  meshBuffer.Data[baseByteLocation + 10u], meshBuffer.Data[baseByteLocation + 11u], meshBuffer.Data[baseByteLocation + 12u],
+        meshBuffer.Data[baseByteLocation + 13u], meshBuffer.Data[baseByteLocation + 14u], meshBuffer.Data[baseByteLocation + 15u], meshBuffer.Data[baseByteLocation + 16u]);
 
     return mesh;
 }
@@ -415,7 +411,7 @@ void main()
         return;
     }
 
-    UnpackedMaterial material = UnpackMaterial();
+    Material material = UnpackMaterial();
     vec3 N = material.Normal;
     float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;
@@ -446,9 +442,9 @@ void main()
     outBloom = vec4(material.Emission.rgb, 1.0f);
 } 
 
-UnpackedMaterial UnpackMaterial()
+Material UnpackMaterial()
 {
-    UnpackedMaterial material;
+    Material material;
     const vec4 packedMRO = subpassLoad(packedMROInput);
     const vec4 packedSheenSSS = subpassLoad(packedSheenSSSInput);
 
@@ -486,7 +482,7 @@ UnpackedMaterial UnpackMaterial()
     return material;
 }
 
-vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMaterial material)
+vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material)
 {
     float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;
@@ -548,7 +544,7 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMateria
     return Lo;
 }
 
-vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMaterial material)
+vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material)
 {
     float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;
@@ -592,7 +588,7 @@ vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMaterial mate
     return Lo;
 }
       
-vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, UnpackedMaterial material)
+vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
 {
     float clearcoatStrength   = 0.0;
     float clearcoatRoughness  = 0.05;

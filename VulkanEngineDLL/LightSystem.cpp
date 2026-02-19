@@ -9,7 +9,7 @@ LightSystem& lightSystem = LightSystem::Get();
 void LightSystem::StartUp()
 {
     DirectionalLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, 4096 * sizeof(DirectionalLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    PointLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, 4096 * sizeof(DirectionalLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    PointLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, 4096 * sizeof(PointLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
 void LightSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
@@ -51,7 +51,7 @@ void LightSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelin
     {
         PointLightHeader plightHeader =
         {
-            .LightOffset = sizeof(DirectionalLightHeader),
+            .LightOffset = sizeof(PointLightHeader),
             .LightCount = static_cast<uint>(PointLightList.size()),
             .LightSize = sizeof(PointLight),
         };
@@ -75,7 +75,7 @@ void LightSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelin
         }
         bufferSystem.VMAUpdateDynamicBuffer(PointLightBufferId, uploadData.data(), uploadData.size());
 
-        auto bufferInfo = GetDirectionalLightPropertiesBuffer();
+        auto bufferInfo = GetPointLightPropertiesBuffer();
         for (auto& pipeline : pipelineList)
         {
             renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 12);

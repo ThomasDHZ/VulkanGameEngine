@@ -165,9 +165,9 @@ MeshProperitiesBuffer GetMesh(uint index)
     return mesh;
 }
 
-MaterialProperitiesBuffer2 GetMaterial(uint index)
+PackedMaterial GetMaterial(uint index)
 {
-    MaterialProperitiesBuffer2 mat;
+    PackedMaterial mat;
     mat.AlbedoDataId          = ~0u;
     mat.NormalDataId          = ~0u;
     mat.PackedMRODataId       = ~0u;
@@ -242,7 +242,7 @@ PointLightBuffer GetPointLight(uint index)
 void main()
 {
     MeshProperitiesBuffer mesh = GetMesh(sceneData.MeshBufferIndex);
-    MaterialProperitiesBuffer2 material = GetMaterial(mesh.MaterialIndex);
+    PackedMaterial material = GetMaterial(mesh.MaterialIndex);
 
     PS_Position = vec3(mesh.MeshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
 	PS_UV = VS_UV.xy;

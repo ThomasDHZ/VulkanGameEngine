@@ -38,9 +38,9 @@ struct PointLight
     vec3   LightColor = vec3(1.0f, 0.95f, 0.8f);
     float  LightRadius = 200.0f;
     float  LightIntensity = 2.0f;
-    float ShadowStrength = 1.0f;
-    float ShadowBias = 0.012f;
-    float ShadowSoftness = 0.008f;
+    float  ShadowStrength = 1.0f;
+    float  ShadowBias = 0.012f;
+    float  ShadowSoftness = 0.008f;
 };
 
 class LightSystem

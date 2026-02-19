@@ -237,7 +237,6 @@ mat4 ReadMat4(uint uintBase, uint offsetUints)
 MeshProperitiesBuffer GetMesh(uint index) 
 {
     MeshProperitiesBuffer mesh;
-
     if (index >= meshBuffer.MeshCount) 
     {
         mesh.MaterialIndex = 0u;
@@ -245,23 +244,20 @@ MeshProperitiesBuffer GetMesh(uint index)
         return mesh;
     }
 
-    uint startUint = meshBuffer.MeshOffset / 4;
-    uint strideUint = meshBuffer.MeshSize / 4; 
-    uint base = startUint + index * 17;
-
-    mesh.MaterialIndex = meshBuffer.Data[(index * 17) + 0u];
+    const uint baseByteLocation = (index * (meshBuffer.MeshSize / 4));
+    mesh.MaterialIndex = meshBuffer.Data[baseByteLocation + 0u];
     mesh.MeshTransform = mat4(
-        meshBuffer.Data[(index * 17) + 1u],  meshBuffer.Data[(index * 17) + 2u],  meshBuffer.Data[(index * 17) + 3u],  meshBuffer.Data[(index * 17) + 4u],
-        meshBuffer.Data[(index * 17) + 5u],  meshBuffer.Data[(index * 17) + 6u],  meshBuffer.Data[(index * 17) + 7u],  meshBuffer.Data[(index * 17) + 8u],
-        meshBuffer.Data[(index * 17) + 9u],  meshBuffer.Data[(index * 17) + 10u], meshBuffer.Data[(index * 17) + 11u], meshBuffer.Data[(index * 17) + 12u],
-        meshBuffer.Data[(index * 17) + 13u], meshBuffer.Data[(index * 17) + 14u], meshBuffer.Data[(index * 17) + 15u], meshBuffer.Data[(index * 17) + 16u]);
+        meshBuffer.Data[baseByteLocation + 1u],  meshBuffer.Data[baseByteLocation + 2u],  meshBuffer.Data[baseByteLocation + 3u],  meshBuffer.Data[baseByteLocation + 4u],
+        meshBuffer.Data[baseByteLocation + 5u],  meshBuffer.Data[baseByteLocation + 6u],  meshBuffer.Data[baseByteLocation + 7u],  meshBuffer.Data[baseByteLocation + 8u],
+        meshBuffer.Data[baseByteLocation + 9u],  meshBuffer.Data[baseByteLocation + 10u], meshBuffer.Data[baseByteLocation + 11u], meshBuffer.Data[baseByteLocation + 12u],
+        meshBuffer.Data[baseByteLocation + 13u], meshBuffer.Data[baseByteLocation + 14u], meshBuffer.Data[baseByteLocation + 15u], meshBuffer.Data[baseByteLocation + 16u]);
 
     return mesh;
 }
 
-MaterialProperitiesBuffer2 GetMaterial(uint index)
+PackedMaterial GetMaterial(uint index)
 {
-    MaterialProperitiesBuffer2 mat;
+    PackedMaterial mat;
     mat.AlbedoDataId          = ~0u;
     mat.NormalDataId          = ~0u;
     mat.PackedMRODataId       = ~0u;
@@ -334,8 +330,9 @@ PointLightBuffer GetPointLight(uint index)
 }
 
 
-void main() {
-    MaterialProperitiesBuffer2 material = GetMaterial(PS_MaterialID);
+void main() 
+{
+    PackedMaterial material = GetMaterial(PS_MaterialID);
 
     vec2 UV = PS_UV;
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
