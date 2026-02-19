@@ -61,8 +61,21 @@ layout(binding = 10) buffer MaterialProperties
     uint MaterialSize;      
     uint Data[];            
 } materialBuffer;
-layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 11)  buffer DirectionalLight 
+{ 
+    uint LightOffset; 
+    uint LightCount;
+    uint LightSize;      
+    uint Data[];    
+} directionalLightBuffer;
+layout(binding = 12)  buffer PointLight 
+{ 
+    uint LightOffset; 
+    uint LightCount;
+    uint LightSize;      
+    uint Data[];    
+} 
+pointLightBuffer;
 layout(binding = 13) uniform sampler2D TextureMap[];
 layout(binding = 14) uniform sampler2D BRDFMap;
 layout(binding = 15) uniform samplerCube CubeMap;
@@ -154,71 +167,6 @@ vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
     return textureLod(CubeMap, skyDir, lod).rgb;
 }
 
-float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, uint lightIndex, float currentHeight)
-{
-    if (currentHeight < 0.001f) return 1.0f;
-
-    //const DirectionalLightBuffer light = GetDirectionalLight(lightIndex);
-    const DirectionalLightBuffer light = directionalLightBuffer[lightIndex].directionalLightProperties;
-    mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
-    vec3 lightDirWS = normalize(light.LightDirection);
-    vec3 lightDirTS = normalize(worldToTangent * lightDirWS);
-
-    if (dot(lightDirTS, vec3(0,0,1)) < 0.1f) return 0.5f;  // softer backface
-
-    const int maxSteps = 48;
-    const float stepSize = 0.04f;
-    float shadow = 1.0f;
-    vec2 marchUV = finalUV;
-    vec2 deltaUV = lightDirTS.xy * stepSize;
-    float bias = light.ShadowBias * 0.5f;
-    float rayHeight = currentHeight;
-
-    for (int x = 0; x < maxSteps; ++x)
-    {
-        marchUV += deltaUV;
-        rayHeight += stepSize;
-        if (rayHeight > currentHeight + bias)
-        {
-            shadow = mix(0.3f, 1.0f, float(x) / float(maxSteps));  // soft falloff
-            break;
-        }
-    }
-    return shadow;
-}
-
-float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, uint lightIndex, float currentHeight)
-{
-    if (currentHeight < 0.001f) return 1.0f;
-
-   // const PointLightBuffer light = GetPointLight(lightIndex);
-    const PointLightBuffer light = pointLightBuffer[lightIndex].pointLightProperties;
-    float NdotLTS = dot(lightDirTS, vec3(0,0,1));
-    if (NdotLTS < 0.1f) return 0.6f;
-
-    const int maxSteps = 32;
-    const float stepSize = 0.04f;
-    float shadow = 1.0f;
-    vec2 marchUV = finalUV;
-    vec2 deltaUV = lightDirTS.xy * stepSize;
-    float bias = 0.02f;
-    float rayHeight = currentHeight;
-
-    for (int x = 0; x < maxSteps; ++x)
-    {
-        marchUV += deltaUV;
-        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0)))) break;
-
-        rayHeight += stepSize;
-        if (rayHeight > currentHeight + bias)
-        {
-            shadow = mix(0.4f, 1.0f, float(x) / float(maxSteps));
-            break;
-        }
-    }
-    return shadow;
-}
-
 float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
     float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
     float lightScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - NdotL, 5.0));
@@ -290,34 +238,24 @@ mat4 ReadMat4(uint uintBase, uint offsetUints)
 MaterialProperitiesBuffer2 GetMaterial(uint index)
 {
     MaterialProperitiesBuffer2 mat;
-    // Default to invalid / missing
-    mat.AlbedoDataId          = ~0u;   // 0xFFFFFFFF
+    mat.AlbedoDataId          = ~0u;
     mat.NormalDataId          = ~0u;
     mat.PackedMRODataId       = ~0u;
     mat.PackedSheenSSSDataId  = ~0u;
     mat.UnusedDataId          = ~0u;
     mat.EmissionDataId        = ~0u;
-
-    // Early out for invalid index
     if (index >= materialBuffer.MaterialCount)
     {
         return mat;
     }
 
-    // Calculate byte offset to the start of this material
-    uint byteOffset = materialBuffer.MaterialOffset + index * materialBuffer.MaterialSize;
-
-    // Convert to uint (4-byte) index — safe because everything is 4-byte aligned
-    uint uintOffset = byteOffset >> 2u;   // / 4
-
-    // Read the 6 consecutive uint IDs
-    mat.AlbedoDataId          = materialBuffer.Data[uintOffset + 0u];
-    mat.NormalDataId          = materialBuffer.Data[uintOffset + 1u];
-    mat.PackedMRODataId       = materialBuffer.Data[uintOffset + 2u];
-    mat.PackedSheenSSSDataId  = materialBuffer.Data[uintOffset + 3u];
-    mat.UnusedDataId          = materialBuffer.Data[uintOffset + 4u];
-    mat.EmissionDataId        = materialBuffer.Data[uintOffset + 5u];
-
+    const uint baseByteLocation = (index * (materialBuffer.MaterialSize / 4));
+    mat.AlbedoDataId          = materialBuffer.Data[baseByteLocation + 0u];
+    mat.NormalDataId          = materialBuffer.Data[baseByteLocation + 1u];
+    mat.PackedMRODataId       = materialBuffer.Data[baseByteLocation + 2u];
+    mat.PackedSheenSSSDataId  = materialBuffer.Data[baseByteLocation + 3u];
+    mat.UnusedDataId          = materialBuffer.Data[baseByteLocation + 4u];
+    mat.EmissionDataId        = materialBuffer.Data[baseByteLocation + 5u];
     return mat;
 }
 
@@ -344,6 +282,120 @@ MeshProperitiesBuffer GetMesh(uint index)
         meshBuffer.Data[(index * 17) + 13u], meshBuffer.Data[(index * 17) + 14u], meshBuffer.Data[(index * 17) + 15u], meshBuffer.Data[(index * 17) + 16u]);
 
     return mesh;
+}
+
+DirectionalLightBuffer GetDirectionalLight(uint index) 
+{
+    DirectionalLightBuffer light;
+    if (index >= directionalLightBuffer.LightCount) 
+    {
+        light.LightColor     = vec3(0.0);
+        light.LightDirection = vec3(0.0);
+        light.LightIntensity = 0.0;
+        light.ShadowStrength = 0.0;
+        light.ShadowBias     = 0.0;
+        light.ShadowSoftness = 0.0;
+        return light;
+    }
+
+    const uint baseByteLocation = (index * (directionalLightBuffer.LightSize / 4));
+    light.LightColor     = vec3(uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 2u]));
+    light.LightDirection = vec3(uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 5u]));
+    light.LightIntensity = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 6u]);
+    light.ShadowStrength = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 7u]);
+    light.ShadowBias     = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 8u]);
+    light.ShadowSoftness = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 9u]);
+    return light;
+}
+
+PointLightBuffer GetPointLight(uint index) 
+{
+    PointLightBuffer light;
+    if (index >= pointLightBuffer.LightCount) 
+    {
+        light.LightPosition  = vec3(0.0);
+        light.LightColor     = vec3(0.0);
+        light.LightRadius    = 0.0;
+        light.LightIntensity = 0.0;
+        light.ShadowStrength = 0.0;
+        light.ShadowBias     = 0.0;
+        light.ShadowSoftness = 0.0;
+        return light;
+    }
+
+    const uint baseByteLocation = (index * (pointLightBuffer.LightSize / 4));
+    light.LightPosition  = vec3(uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 2u]));
+    light.LightColor     = vec3(uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 5u]));
+    light.LightRadius    = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 6u]);
+    light.LightIntensity = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 7u]);
+    light.ShadowStrength = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 8u]);
+    light.ShadowBias     = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 9u]);
+    light.ShadowSoftness = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 10u]);
+    return light;
+}
+
+
+float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, uint lightIndex, float currentHeight)
+{
+    if (currentHeight < 0.001f) return 1.0f;
+
+    const DirectionalLightBuffer light = GetDirectionalLight(lightIndex);
+    mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
+    vec3 lightDirWS = normalize(light.LightDirection);
+    vec3 lightDirTS = normalize(worldToTangent * lightDirWS);
+
+    if (dot(lightDirTS, vec3(0,0,1)) < 0.1f) return 0.5f;  // softer backface
+
+    const int maxSteps = 48;
+    const float stepSize = 0.04f;
+    float shadow = 1.0f;
+    vec2 marchUV = finalUV;
+    vec2 deltaUV = lightDirTS.xy * stepSize;
+    float bias = light.ShadowBias * 0.5f;
+    float rayHeight = currentHeight;
+
+    for (int x = 0; x < maxSteps; ++x)
+    {
+        marchUV += deltaUV;
+        rayHeight += stepSize;
+        if (rayHeight > currentHeight + bias)
+        {
+            shadow = mix(0.3f, 1.0f, float(x) / float(maxSteps));  // soft falloff
+            break;
+        }
+    }
+    return shadow;
+}
+
+float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, uint lightIndex, float currentHeight)
+{
+    if (currentHeight < 0.001f) return 1.0f;
+
+    const PointLightBuffer light = GetPointLight(lightIndex);
+    float NdotLTS = dot(lightDirTS, vec3(0,0,1));
+    if (NdotLTS < 0.1f) return 0.6f;
+
+    const int maxSteps = 32;
+    const float stepSize = 0.04f;
+    float shadow = 1.0f;
+    vec2 marchUV = finalUV;
+    vec2 deltaUV = lightDirTS.xy * stepSize;
+    float bias = 0.02f;
+    float rayHeight = currentHeight;
+
+    for (int x = 0; x < maxSteps; ++x)
+    {
+        marchUV += deltaUV;
+        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0)))) break;
+
+        rayHeight += stepSize;
+        if (rayHeight > currentHeight + bias)
+        {
+            shadow = mix(0.4f, 1.0f, float(x) / float(maxSteps));
+            break;
+        }
+    }
+    return shadow;
 }
 
 void main()
@@ -442,8 +494,8 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMateria
     vec3 Lo = vec3(0.0f);
     for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
     {
-        //const DirectionalLightBuffer light = GetDirectionalLight(x);
-        const DirectionalLightBuffer light = directionalLightBuffer[x].directionalLightProperties;
+        const DirectionalLightBuffer light = GetDirectionalLight(x);
+
         vec3 L = normalize(light.LightDirection);
         vec3 H = normalize(V + L);
 
@@ -504,8 +556,8 @@ vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, UnpackedMaterial mate
     vec3 Lo = vec3(0.0f);
     for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
     {
-       // const PointLightBuffer light = GetPointLight(x);
-        const PointLightBuffer light = pointLightBuffer[x].pointLightProperties;
+        const PointLightBuffer light = GetPointLight(x);
+
         vec3 toLight = light.LightPosition - material.Position;
         float distance = length(toLight);
         if (distance > light.LightRadius) continue;

@@ -52,8 +52,21 @@ layout(binding = 10) buffer MaterialProperties
     uint MaterialSize;      
     uint Data[];            
 } materialBuffer;
-layout(binding = 11)  buffer DirectionalLight { DirectionalLightBuffer directionalLightProperties; } directionalLightBuffer[];
-layout(binding = 12)  buffer PointLight { PointLightBuffer pointLightProperties; } pointLightBuffer[];
+layout(binding = 11)  buffer DirectionalLight 
+{ 
+    uint LightOffset; 
+    uint LightCount;
+    uint LightSize;      
+    uint Data[];    
+} directionalLightBuffer;
+layout(binding = 12)  buffer PointLight 
+{ 
+    uint LightOffset; 
+    uint LightCount;
+    uint LightSize;      
+    uint Data[];    
+} 
+pointLightBuffer;
 layout(binding = 13) uniform sampler2D TextureMap[];
 layout(binding = 14) uniform samplerCube CubeMap;
 layout(binding = 15) uniform samplerCube IrradianceMap;
@@ -166,13 +179,64 @@ MaterialProperitiesBuffer2 GetMaterial(uint index)
         return mat;
     }
 
-    mat.AlbedoDataId          = materialBuffer.Data[(index * 6) + 0u];
-    mat.NormalDataId          = materialBuffer.Data[(index * 6) + 1u];
-    mat.PackedMRODataId       = materialBuffer.Data[(index * 6) + 2u];
-    mat.PackedSheenSSSDataId  = materialBuffer.Data[(index * 6) + 3u];
-    mat.UnusedDataId          = materialBuffer.Data[(index * 6) + 4u];
-    mat.EmissionDataId        = materialBuffer.Data[(index * 6) + 5u];
+    const uint baseByteLocation = (index * (materialBuffer.MaterialSize / 4));
+    mat.AlbedoDataId          = materialBuffer.Data[baseByteLocation + 0u];
+    mat.NormalDataId          = materialBuffer.Data[baseByteLocation + 1u];
+    mat.PackedMRODataId       = materialBuffer.Data[baseByteLocation + 2u];
+    mat.PackedSheenSSSDataId  = materialBuffer.Data[baseByteLocation + 3u];
+    mat.UnusedDataId          = materialBuffer.Data[baseByteLocation + 4u];
+    mat.EmissionDataId        = materialBuffer.Data[baseByteLocation + 5u];
     return mat;
+}
+
+DirectionalLightBuffer GetDirectionalLight(uint index) 
+{
+    DirectionalLightBuffer light;
+    if (index >= directionalLightBuffer.LightCount) 
+    {
+        light.LightColor     = vec3(0.0);
+        light.LightDirection = vec3(0.0);
+        light.LightIntensity = 0.0;
+        light.ShadowStrength = 0.0;
+        light.ShadowBias     = 0.0;
+        light.ShadowSoftness = 0.0;
+        return light;
+    }
+
+    const uint baseByteLocation = (index * (directionalLightBuffer.LightSize / 4));
+    light.LightColor     = vec3(uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 2u]));
+    light.LightDirection = vec3(uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 5u]));
+    light.LightIntensity = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 6u]);
+    light.ShadowStrength = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 7u]);
+    light.ShadowBias     = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 8u]);
+    light.ShadowSoftness = uintBitsToFloat(directionalLightBuffer.Data[baseByteLocation + 9u]);
+    return light;
+}
+
+PointLightBuffer GetPointLight(uint index) 
+{
+    PointLightBuffer light;
+    if (index >= pointLightBuffer.LightCount) 
+    {
+        light.LightPosition  = vec3(960, 540, 0.0);
+        light.LightColor     = vec3(0.0, 0.55, 0.9);
+        light.LightRadius    = 2000.0;
+        light.LightIntensity = 5.0;
+        light.ShadowStrength = 0.0;
+        light.ShadowBias     = 0.0;
+        light.ShadowSoftness = 0.0;
+        return light;
+    }
+
+    const uint baseByteLocation = (index * (pointLightBuffer.LightSize / 4));
+    light.LightPosition  = vec3(uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 2u]));
+    light.LightColor     = vec3(uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 5u]));
+    light.LightRadius    = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 6u]);
+    light.LightIntensity = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 7u]);
+    light.ShadowStrength = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 8u]);
+    light.ShadowBias     = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 9u]);
+    light.ShadowSoftness = uintBitsToFloat(pointLightBuffer.Data[baseByteLocation + 10u]);
+    return light;
 }
 
 void main()

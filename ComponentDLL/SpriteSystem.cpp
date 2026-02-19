@@ -77,26 +77,17 @@ void SpriteSystem::UpdateSprites(const float& deltaTime)
         const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
 
         mat4 spriteMatrix = mat4(1.0f);
-        if (sprite.LastSpritePosition != sprite.SpritePosition)
-        {
+
             spriteMatrix = glm::translate(spriteMatrix, vec3(transform2D.GameObjectPosition.x, transform2D.GameObjectPosition.y, 0.0f));
-            sprite.LastSpritePosition = sprite.SpritePosition;
-        }
-        if (sprite.LastSpriteRotation != sprite.SpriteRotation)
-        {
             spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2D.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
             spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2D.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
             spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
-            sprite.LastSpriteRotation = sprite.SpriteRotation;
-        }
-        if (sprite.LastSpriteScale != sprite.SpriteScale)
-        {
             spriteMatrix = glm::scale(spriteMatrix, vec3(transform2D.GameObjectScale.x, transform2D.GameObjectScale.y, 1.0f));
-            sprite.LastSpriteScale = sprite.SpriteScale;
-        }
+
 
         sprite.CurrentFrameTime += deltaTime;
-        if (sprite.CurrentFrameTime >= animation.FrameHoldTime) {
+        if (sprite.CurrentFrameTime >= animation.FrameHoldTime) 
+        {
             sprite.CurrentFrame += 1;
             sprite.CurrentFrameTime = 0.0f;
             if (sprite.CurrentFrame >= animation.FrameList.size())

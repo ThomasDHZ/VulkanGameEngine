@@ -2,31 +2,84 @@
 #include "FileSystem.h"
 #include "BufferSystem.h"
 #include "ShaderSystem.h"
+#include "RenderSystem.h"
 
 LightSystem& lightSystem = LightSystem::Get();
 
-void LightSystem::Update(const float& deltaTime)
+void LightSystem::StartUp()
 {
-    for (auto& directionalLight : DirectionalLightList)
+    DirectionalLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, 4096 * sizeof(DirectionalLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    PointLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, 4096 * sizeof(DirectionalLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+}
+
+void LightSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
+{
     {
-        ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(directionalLight.DirectionalLightBufferId);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightColor", directionalLight.LightColor);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct,  "LightDirection", glm::normalize(directionalLight.LightDirection));
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "LightIntensity", directionalLight.LightIntensity);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ShadowStrength", directionalLight.ShadowStrength);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ShadowBias", directionalLight.ShadowBias);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "ShadowSoftness", directionalLight.ShadowSoftness);
-        shaderSystem.UpdateShaderBuffer(shaderStruct, directionalLight.DirectionalLightBufferId);
+        DirectionalLightHeader dlightHeader =
+        {
+            .LightOffset = sizeof(DirectionalLightHeader),
+            .LightCount = static_cast<uint>(DirectionalLightList.size()),
+            .LightSize = sizeof(DirectionalLight),
+        };
+
+        Vector<byte> uploadData;
+        uploadData.resize(sizeof(DirectionalLightHeader) + DirectionalLightList.size() * sizeof(DirectionalLight));
+        memcpy(uploadData.data(), &dlightHeader, sizeof(DirectionalLightHeader));
+        memcpy(uploadData.data() + sizeof(DirectionalLightHeader), DirectionalLightList.data(), DirectionalLightList.size() * sizeof(DirectionalLight));
+
+        bool bufferRecreated = false;
+        if (DirectionalLightBufferId == UINT32_MAX)
+        {
+            DirectionalLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+            bufferRecreated = true;
+        }
+        else if (bufferSystem.FindVulkanBuffer(DirectionalLightBufferId).BufferSize < uploadData.size())
+        {
+            bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(DirectionalLightBufferId));
+            DirectionalLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+            bufferRecreated = true;
+        }
+        bufferSystem.VMAUpdateDynamicBuffer(DirectionalLightBufferId, uploadData.data(), uploadData.size());
+
+        auto bufferInfo = GetDirectionalLightPropertiesBuffer();
+        for (auto& pipeline : pipelineList)
+        {
+            renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 11);
+        }
     }
 
-    for (auto& pointLight : PointLightList)
     {
-        ShaderStructDLL& shaderStruct = shaderSystem.FindShaderStruct(pointLight.PointLightBufferId);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "LightPosition", pointLight.LightPosition);
-        shaderSystem.UpdateShaderStructValue<vec3>(shaderStruct, "LightColor", pointLight.LightColor);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "LightIntensity", pointLight.LightIntensity);
-        shaderSystem.UpdateShaderStructValue<float>(shaderStruct, "LightRadius", pointLight.LightRadius);
-        shaderSystem.UpdateShaderBuffer(shaderStruct, pointLight.PointLightBufferId);
+        PointLightHeader plightHeader =
+        {
+            .LightOffset = sizeof(DirectionalLightHeader),
+            .LightCount = static_cast<uint>(PointLightList.size()),
+            .LightSize = sizeof(PointLight),
+        };
+
+        Vector<byte> uploadData;
+        uploadData.resize(sizeof(PointLightHeader) + PointLightList.size() * sizeof(PointLight));
+        memcpy(uploadData.data(), &plightHeader, sizeof(PointLightHeader));
+        memcpy(uploadData.data() + sizeof(PointLightHeader), PointLightList.data(), PointLightList.size() * sizeof(PointLight));
+
+        bool bufferRecreated = false;
+        if (PointLightBufferId == UINT32_MAX)
+        {
+            PointLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+            bufferRecreated = true;
+        }
+        else if (bufferSystem.FindVulkanBuffer(PointLightBufferId).BufferSize < uploadData.size())
+        {
+            bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(PointLightBufferId));
+            PointLightBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, uploadData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+            bufferRecreated = true;
+        }
+        bufferSystem.VMAUpdateDynamicBuffer(PointLightBufferId, uploadData.data(), uploadData.size());
+
+        auto bufferInfo = GetDirectionalLightPropertiesBuffer();
+        for (auto& pipeline : pipelineList)
+        {
+            renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 12);
+        }
     }
 }
 
@@ -38,28 +91,21 @@ void LightSystem::LoadSceneLights(const String& directionalLightPath)
     {
         case kDirectionalLight:
         {
-            ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("DirectionalLightBuffer");
-            uint directionalLightBufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-            shaderSystem.PipelineShaderStructMap[directionalLightBufferId] = shaderStruct;
-
             DirectionalLightList.emplace_back(DirectionalLight
                 {
-                    .DirectionalLightBufferId = directionalLightBufferId,
                     .LightColor = vec3(json["LightColor"][0], json["LightColor"][1], json["LightColor"][2]),
                     .LightDirection = vec3(json["LightDirection"][0], json["LightDirection"][1], json["LightDirection"][2]),
-                    .LightIntensity = json["LightIntensity"]
+                    .LightIntensity = json["LightIntensity"],
+                    .ShadowStrength = json["ShadowStrength"],
+                    .ShadowBias = json["ShadowBias"],
+                    .ShadowSoftness = json["ShadowSoftness"],
                 });
             break;
         }
         case kPointLight:
         {
-            ShaderStructDLL shaderStruct = shaderSystem.CopyShaderStructProtoType("PointLightBuffer");
-            uint pointLightBufferId = bufferSystem.VMACreateDynamicBuffer(&shaderStruct, shaderStruct.ShaderBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-            shaderSystem.PipelineShaderStructMap[pointLightBufferId] = shaderStruct;
-
             PointLightList.emplace_back(PointLight
                 {
-                    .PointLightBufferId = pointLightBufferId,
                     .LightPosition = vec3(json["LightPosition"][0], json["LightPosition"][1], json["LightPosition"][2]),
                     .LightColor = vec3(json["LightColor"][0], json["LightColor"][1], json["LightColor"][2]),
                     .LightRadius = json["LightRadius"],
@@ -70,106 +116,28 @@ void LightSystem::LoadSceneLights(const String& directionalLightPath)
     }
 }
 
-void LightSystem::UpdateDirectionalLightOrthographicView(const DirectionalLight& directionalLight)
+const Vector<VkDescriptorBufferInfo> LightSystem::GetDirectionalLightPropertiesBuffer() const 
 {
-    float orthoSize = 1000.0f;  
-    vec3 lightDirection = normalize(directionalLight.LightDirection);
-    mat4 lightProjection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, -100.0f, 100.0f);
-    mat4 lightView = glm::lookAt(vec3(0.0f), lightDirection, vec3(0.0f, 1.0f, 0.0f));
-
-    auto it = std::find_if(DirectionalLightList.begin(), DirectionalLightList.end(),
-        [directionalLight](const DirectionalLight& obj) {
-            return obj == directionalLight;
-        });
-    int lightIndex = std::distance(DirectionalLightList.begin(), it);
-
-    shaderSystem.UpdatePushConstantValue<int>("directionalLightPushConstant",  "LightBufferIndex", lightIndex);
-    shaderSystem.UpdatePushConstantValue<mat4>("directionalLightPushConstant", "LightProjection", lightProjection);
-    shaderSystem.UpdatePushConstantValue<mat4>("directionalLightPushConstant", "LightView", lightView);
-    shaderSystem.UpdatePushConstantBuffer("directionalLightPushConstant");
-}
-
-void LightSystem::UpdatePointLightOrthographicView(const PointLight& pointLight)
-{
-    float size = pointLight.LightRadius * 2.0f;
-
-    mat4 lightProjection = glm::ortho(
-        pointLight.LightPosition.x - size * 0.5f,
-        pointLight.LightPosition.x + size * 0.5f, 
-        pointLight.LightPosition.y - size * 0.5f,
-        pointLight.LightPosition.y + size * 0.5f,
-        -100.0f, 100.0f
-    );
-
-
-    //float size = 2000.0f;
-    //mat4 lightProjection = glm::ortho(-size, size, -size, size, -100.0f, 100.0f);
-    mat4 lightView = mat4(1.0f);
-
-    auto it = std::find_if(PointLightList.begin(), PointLightList.end(),
-        [pointLight](const PointLight& obj) {
-            return obj == pointLight;
-        });
-    int lightIndex = std::distance(PointLightList.begin(), it);
-
-    shaderSystem.UpdatePushConstantValue<int>("spfPointLightPushConstant", "LightBufferIndex", lightIndex);
-    shaderSystem.UpdatePushConstantValue<mat4>("spfPointLightPushConstant", "LightProjection", lightProjection);
-    shaderSystem.UpdatePushConstantValue<mat4>("spfPointLightPushConstant", "LightView", lightView);
-    shaderSystem.UpdatePushConstantBuffer("spfPointLightPushConstant");
-}
-
-const Vector<VkDescriptorBufferInfo> LightSystem::GetDirectionalLightPropertiesBuffer()
-{
-    Vector<VkDescriptorBufferInfo> directionalLightPropertiesBuffer;
-    if (DirectionalLightList.empty())
+    return Vector<VkDescriptorBufferInfo>
     {
-        directionalLightPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-            {
-                .buffer = VK_NULL_HANDLE,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            });
-    }
-    else
-    {
-        for (auto& directionalLight : DirectionalLightList)
+        VkDescriptorBufferInfo
         {
-            VkDescriptorBufferInfo directionalLightBufferInfo =
-            {
-                .buffer = bufferSystem.FindVulkanBuffer(directionalLight.DirectionalLightBufferId).Buffer,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            };
-            directionalLightPropertiesBuffer.emplace_back(directionalLightBufferInfo);
+            .buffer = bufferSystem.FindVulkanBuffer(DirectionalLightBufferId).Buffer,
+            .offset = 0,
+            .range = VK_WHOLE_SIZE
         }
-    }
-    return directionalLightPropertiesBuffer;
+    };
 }
 
-const Vector<VkDescriptorBufferInfo> LightSystem::GetPointLightPropertiesBuffer()
+const Vector<VkDescriptorBufferInfo> LightSystem::GetPointLightPropertiesBuffer() const
 {
-    Vector<VkDescriptorBufferInfo> pointLightPropertiesBuffer;
-    if (PointLightList.empty())
+    return Vector<VkDescriptorBufferInfo>
     {
-        pointLightPropertiesBuffer.emplace_back(VkDescriptorBufferInfo
-            {
-                .buffer = VK_NULL_HANDLE,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            });
-    }
-    else
-    {
-        for (auto& pointLight : PointLightList)
+        VkDescriptorBufferInfo
         {
-            VkDescriptorBufferInfo pointLightBufferInfo =
-            {
-                .buffer = bufferSystem.FindVulkanBuffer(pointLight.PointLightBufferId).Buffer,
-                .offset = 0,
-                .range = VK_WHOLE_SIZE
-            };
-            pointLightPropertiesBuffer.emplace_back(pointLightBufferInfo);
+            .buffer = bufferSystem.FindVulkanBuffer(PointLightBufferId).Buffer,
+            .offset = 0,
+            .range = VK_WHOLE_SIZE
         }
-    }
-    return pointLightPropertiesBuffer;
+    };
 }

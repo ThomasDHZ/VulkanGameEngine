@@ -90,9 +90,6 @@ void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipe
     {
         renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, 10);
     }
-
-    // Optional: log or assert if recreated, to confirm it happens rarely
-    // if (bufferRecreated) { /* log "Material buffer resized and rebound" */ }
     NeedUpdate = false;
 }
 
@@ -108,7 +105,7 @@ Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
     if (it == GuidToPoolIndex.end())
     {
         static Material invalid{};
-        return invalid;  // or throw
+        return invalid;
     }
     return MaterialList[it->second];
 }
@@ -121,13 +118,15 @@ uint MaterialSystem::FindMaterialPoolIndex(const MaterialGuid& materialGuid)
 
 const Vector<VkDescriptorBufferInfo> MaterialSystem::GetMaterialBufferInfo() const
 {
-    Vector<VkDescriptorBufferInfo> infos;
-    infos.emplace_back(VkDescriptorBufferInfo{
-        .buffer = bufferSystem.FindVulkanBuffer(MaterialBufferId).Buffer,
-        .offset = 0,
-        .range = VK_WHOLE_SIZE
-        });
-    return infos;
+    return Vector<VkDescriptorBufferInfo>
+    {
+        VkDescriptorBufferInfo
+        {
+            .buffer = bufferSystem.FindVulkanBuffer(MaterialBufferId).Buffer,
+            .offset = 0,
+            .range = VK_WHOLE_SIZE
+        }
+    };
 }
 
 void MaterialSystem::Destroy(const MaterialGuid& materialGuid)

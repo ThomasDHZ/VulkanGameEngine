@@ -105,17 +105,19 @@ void MeshSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline
 
 	if (anyDirty)
 	{
-		MaterialBufferHeader header{};
-		header.MaterialCount = ObjectDataPool.size();
-		header.MaterialOffset = sizeof(MeshBufferHeader);
-		header.MaterialSize = sizeof(MeshPropertiesStruct);
+		MeshBufferHeader header
+		{
+			.MeshOffset = sizeof(MeshBufferHeader),
+			.MeshCount = static_cast<uint32>(ObjectDataPool.size()),
+			.MeshSize = sizeof(MeshPropertiesStruct)
+		};
 
 		Vector<byte> uploadData;
 		uploadData.resize(sizeof(MeshBufferHeader) + ObjectDataPool.size() * sizeof(MeshPropertiesStruct));
-		memcpy(uploadData.data(), &header, sizeof(MaterialBufferHeader));
+		memcpy(uploadData.data(), &header, sizeof(MeshBufferHeader));
 		if (ObjectDataPool.size() > 0)
 		{
-			memcpy(uploadData.data() + sizeof(MaterialBufferHeader), ObjectDataPool.data(), ObjectDataPool.size() * sizeof(MeshPropertiesStruct));
+			memcpy(uploadData.data() + sizeof(MeshBufferHeader), ObjectDataPool.data(), ObjectDataPool.size() * sizeof(MeshPropertiesStruct));
 		}
 
 		bool bufferRecreated = false;
@@ -202,14 +204,15 @@ MeshAssetData& MeshSystem::FindMeshAssetData(const uint64& meshAssetId)
 
 const Vector<VkDescriptorBufferInfo> MeshSystem::GetMeshBufferInfo() const
 {
-	Vector<VkDescriptorBufferInfo> infos;
-	infos.emplace_back(VkDescriptorBufferInfo
+	return Vector<VkDescriptorBufferInfo>
+	{
+		VkDescriptorBufferInfo
 		{
-		.buffer = bufferSystem.FindVulkanBuffer(MeshBufferIndex).Buffer,
-		.offset = 0,
-		.range = VK_WHOLE_SIZE
-		});
-	return infos;
+			.buffer = bufferSystem.FindVulkanBuffer(MeshBufferIndex).Buffer,
+			.offset = 0,
+			.range = VK_WHOLE_SIZE
+		}
+	};
 }
 
 uint64 MeshSystem::HashAssetKey(std::string_view key)

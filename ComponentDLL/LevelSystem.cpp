@@ -380,7 +380,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime, pipelineList);
     materialSystem.Update(deltaTime, pipelineList);
-    lightSystem.Update(deltaTime);
+    lightSystem.Update(deltaTime, pipelineList);
     for (auto& levelLayer : levelLayerList)
     {
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);

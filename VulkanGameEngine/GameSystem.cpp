@@ -54,6 +54,7 @@ void GameSystem::StartUp(void* windowHandle)
     renderSystem.StartUp(windowHandle, instance, surface);
     meshSystem.StartUp();
     materialSystem.StartUp();
+    lightSystem.StartUp();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
  //   materialBakerSystem.Run();
