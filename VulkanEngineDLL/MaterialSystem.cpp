@@ -36,7 +36,6 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     MaterialList.emplace_back(material);
 
     uint32 poolIndex = memoryPoolSystem.AllocateObject(kMaterialBuffer);
-
     GPUMaterial& gpuMaterial = memoryPoolSystem.UpdateMaterial(poolIndex);
     gpuMaterial.AlbedoDataId = material.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(material.AlbedoDataId).textureIndex : UINT32_MAX;
     gpuMaterial.NormalDataId = material.NormalDataId != VkGuid() ? textureSystem.FindTexture(material.NormalDataId).textureIndex : UINT32_MAX;
@@ -45,7 +44,6 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureIndex : UINT32_MAX;
     gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureIndex : UINT32_MAX;
     GuidToPoolIndex[materialGuid] = poolIndex;
-
     return materialGuid;
 }
 

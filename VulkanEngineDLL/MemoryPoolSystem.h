@@ -75,6 +75,7 @@ public:
 	Vector<byte>											 GPUBufferMemoryPool;
 	bool													 IsHeaderDirty = true;
 	bool													 IsBufferDirty = true;
+	bool													 IsDescriptorSetDirty = true;
 
 	DLL_EXPORT void											 StartUp();
 	DLL_EXPORT uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);

@@ -232,6 +232,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
     for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
     for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    auto a = memoryPoolSystem.MaterialBufferList();
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
     for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
@@ -381,6 +382,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     meshSystem.Update(deltaTime, pipelineList);
     materialSystem.Update(deltaTime, pipelineList);
     lightSystem.Update(deltaTime, pipelineList);
+    memoryPoolSystem.UpdateMemoryPool(9, pipelineList);
     for (auto& levelLayer : levelLayerList)
     {
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);

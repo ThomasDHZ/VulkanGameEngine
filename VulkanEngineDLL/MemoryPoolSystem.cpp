@@ -71,6 +71,23 @@ void MemoryPoolSystem::StartUp()
     UpdateMemoryPoolHeader(kMeshBuffer, MeshInitialCapacity);
     
     GPUBufferMemoryPool = Vector<byte>(sizeof(MemoryPoolBufferHeader) + GPUBufferMemoryPoolSize, 0xFF);
+    GPUMemoryPoolHeader = MemoryPoolBufferHeader
+    {
+        .MeshOffset = static_cast<uint32>(MemorySubPoolHeader[kMeshBuffer].Offset),
+        .MeshCount = MemorySubPoolHeader[kMeshBuffer].Count,
+        .MeshSize = MemorySubPoolHeader[kMeshBuffer].Size,
+        .MaterialOffset = static_cast<uint32>(MemorySubPoolHeader[kMaterialBuffer].Offset),
+        .MaterialCount = MemorySubPoolHeader[kMaterialBuffer].Count,
+        .MaterialSize = MemorySubPoolHeader[kMaterialBuffer].Size,
+        .DirectionalLightOffset = static_cast<uint32>(MemorySubPoolHeader[kDirectionalLightBuffer].Offset),
+        .DirectionalLightCount = MemorySubPoolHeader[kDirectionalLightBuffer].Count,
+        .DirectionalLightSize = MemorySubPoolHeader[kDirectionalLightBuffer].Size,
+        .PointLightOffset = static_cast<uint32>(MemorySubPoolHeader[kPointLightBuffer].Offset),
+        .PointLightCount = MemorySubPoolHeader[kPointLightBuffer].Count,
+        .PointLightSize = MemorySubPoolHeader[kPointLightBuffer].Size
+    };
+    auto a = GPUBufferMemoryPool.data();
+    memcpy(GPUBufferMemoryPool.data(), &GPUMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
     GPUBufferIndex = bufferSystem.VMACreateDynamicBuffer(GPUBufferMemoryPool.data(), GPUBufferMemoryPool.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
@@ -110,6 +127,7 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
     }
     GPUBufferIndex = newBufferId;
     IsBufferDirty = true;
+    IsDescriptorSetDirty = true;
 }
 
 uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
@@ -130,7 +148,7 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
         return index;
     }
 
-    if (subPoolHeader.ActiveCount == subPoolHeader.Size)
+    if (subPoolHeader.ActiveCount == subPoolHeader.Count)
     {
         ResizeMemoryPool(memoryPoolToUpdate, subPoolHeader.Size * 1.2f);
     }
@@ -143,51 +161,54 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
 
 void MemoryPoolSystem::UpdateMemoryPool(uint32 descriptorBindingIndex, Vector<VulkanPipeline>& pipelineList)
 {
-    bool isDescriptorSetDirty = false;
-    if (isDescriptorSetDirty)
+    if (IsHeaderDirty)
     {
-        if (IsHeaderDirty)
+
+
+        Vector<MeshPropertiesStruct> a = MeshBufferList();
+        Vector<GPUMaterial> b = MaterialBufferList();
+        Vector<DirectionalLight> c = DirectionalLightBufferList();
+        Vector<PointLight> d = PointLightBufferList();
+        auto* aa = a.data();
+        auto* bb = b.data();
+        auto* cc = c.data();
+        auto* dd = d.data();
+
+        GPUMemoryPoolHeader = MemoryPoolBufferHeader
         {
-            GPUMemoryPoolHeader = MemoryPoolBufferHeader
-            {
-                .MeshOffset = static_cast<uint32>(MemorySubPoolHeader[kMeshBuffer].Offset),
-                .MeshCount = MemorySubPoolHeader[kMeshBuffer].Count,
-                .MeshSize = MemorySubPoolHeader[kMeshBuffer].Size,
-                .MaterialOffset = static_cast<uint32>(MemorySubPoolHeader[kMaterialBuffer].Offset),
-                .MaterialCount = MemorySubPoolHeader[kMaterialBuffer].Count,
-                .MaterialSize = MemorySubPoolHeader[kMaterialBuffer].Size,
-                .DirectionalLightOffset = static_cast<uint32>(MemorySubPoolHeader[kDirectionalLightBuffer].Offset),
-                .DirectionalLightCount = MemorySubPoolHeader[kDirectionalLightBuffer].Count,
-                .DirectionalLightSize = MemorySubPoolHeader[kDirectionalLightBuffer].Size,
-                .PointLightOffset = static_cast<uint32>(MemorySubPoolHeader[kPointLightBuffer].Offset),
-                .PointLightCount = MemorySubPoolHeader[kPointLightBuffer].Count,
-                .PointLightSize = MemorySubPoolHeader[kPointLightBuffer].Size
-            };
-            memcpy(GPUBufferMemoryPool.data(), &GPUMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-            IsHeaderDirty = false;
-        }
+            .MeshOffset = static_cast<uint32>(MemorySubPoolHeader[kMeshBuffer].Offset),
+            .MeshCount = MemorySubPoolHeader[kMeshBuffer].Count,
+            .MeshSize = MemorySubPoolHeader[kMeshBuffer].Size,
+            .MaterialOffset = static_cast<uint32>(MemorySubPoolHeader[kMaterialBuffer].Offset),
+            .MaterialCount = MemorySubPoolHeader[kMaterialBuffer].Count,
+            .MaterialSize = MemorySubPoolHeader[kMaterialBuffer].Size,
+            .DirectionalLightOffset = static_cast<uint32>(MemorySubPoolHeader[kDirectionalLightBuffer].Offset),
+            .DirectionalLightCount = MemorySubPoolHeader[kDirectionalLightBuffer].Count,
+            .DirectionalLightSize = MemorySubPoolHeader[kDirectionalLightBuffer].Size,
+            .PointLightOffset = static_cast<uint32>(MemorySubPoolHeader[kPointLightBuffer].Offset),
+            .PointLightCount = MemorySubPoolHeader[kPointLightBuffer].Count,
+            .PointLightSize = MemorySubPoolHeader[kPointLightBuffer].Size
+        };
+        memcpy(GPUBufferMemoryPool.data(), &GPUMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
         bufferSystem.VMAUpdateDynamicBuffer(GPUBufferIndex, GPUBufferMemoryPool.data(), GPUBufferMemoryPool.size());
 
+        IsHeaderDirty = false;
+    }
+
+    if (IsDescriptorSetDirty)
+    {
         Vector<VkDescriptorBufferInfo> bufferInfo = GetMemoryPoolBufferInfo();
         for (auto& pipeline : pipelineList)
         {
             renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, descriptorBindingIndex);
         }
+        IsDescriptorSetDirty = false;
     }
 }
 
 void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUpdate, uint32 newPoolSize)
 {
-    //struct MemoryPoolSubBufferHeader
-    //{
-    //    uint32					ActiveCount = UINT32_MAX;
-    //    size_t					Offset = UINT32_MAX;
-    //    uint32					Count = UINT32_MAX;
-    //    uint32					Size = UINT32_MAX;
-    //    Vector<byte>			IsActive;         // 0 = inactive, 1 = active
-    //    Vector<uint32>			FreeIndices;
-    //    bool					IsDirty = true;
-    //};
+
     if (IsHeaderDirty)
     {
         for (int x = memoryPoolTypeToUpdate; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
@@ -209,7 +230,6 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
         }
         MemoryPoolSubBufferHeader lastHeader = MemorySubPoolHeader[(MemoryPoolTypes)((MemoryPoolTypes)MemoryPoolTypes::kEndofPool - 1)];
         GPUBufferMemoryPoolSize = lastHeader.Offset + (lastHeader.Size * lastHeader.Count);
-        IsHeaderDirty = false;
     }
 }
 
@@ -226,7 +246,7 @@ MeshPropertiesStruct& MemoryPoolSystem::UpdateMesh(uint32 index)
 
 GPUMaterial& MemoryPoolSystem::UpdateMaterial(uint32 index)
 {
-    MemoryPoolSubBufferHeader materialSubPool = MemorySubPoolHeader[kMaterialBuffer];
+    MemoryPoolSubBufferHeader& materialSubPool = MemorySubPoolHeader[kMaterialBuffer];
     if (index >= materialSubPool.Count) throw std::out_of_range("Material index out of range: " + std::to_string(index) + " >= " + std::to_string(materialSubPool.Count));
     if (index >= materialSubPool.IsActive.size() || !materialSubPool.IsActive[index]) throw std::runtime_error("Material slot inactive at index " + std::to_string(index));
 
@@ -237,7 +257,7 @@ GPUMaterial& MemoryPoolSystem::UpdateMaterial(uint32 index)
 
 DirectionalLight& MemoryPoolSystem::UpdateDirectionalLight(uint32 index)
 {
-    MemoryPoolSubBufferHeader directionalLightSubPool = MemorySubPoolHeader[kDirectionalLightBuffer];
+    MemoryPoolSubBufferHeader& directionalLightSubPool = MemorySubPoolHeader[kDirectionalLightBuffer];
     if (index >= directionalLightSubPool.Count) throw std::out_of_range("Directional Light index out of range: " + std::to_string(index) + " >= " + std::to_string(directionalLightSubPool.Count));
     if (index >= directionalLightSubPool.IsActive.size() || !directionalLightSubPool.IsActive[index]) throw std::runtime_error("Directional Light slot inactive at index " + std::to_string(index));
 
@@ -248,7 +268,7 @@ DirectionalLight& MemoryPoolSystem::UpdateDirectionalLight(uint32 index)
 
 PointLight& MemoryPoolSystem::UpdatePointLight(uint32 index)
 {
-    MemoryPoolSubBufferHeader pointLightSubPool = MemorySubPoolHeader[kPointLightBuffer];
+    MemoryPoolSubBufferHeader& pointLightSubPool = MemorySubPoolHeader[kPointLightBuffer];
     if (index >= pointLightSubPool.Count) throw std::out_of_range("Point Light index out of range: " + std::to_string(index) + " >= " + std::to_string(pointLightSubPool.Count));
     if (index >= pointLightSubPool.IsActive.size() || !pointLightSubPool.IsActive[index]) throw std::runtime_error("Point Light slot inactive at index " + std::to_string(index));
 
@@ -279,22 +299,47 @@ void MemoryPoolSystem::MarkPointLightBufferDirty()
 
 Vector<MeshPropertiesStruct> MemoryPoolSystem::MeshBufferList()
 {
-    return Vector<MeshPropertiesStruct>();
+    const auto& subBufferData = MemorySubPoolHeader[kMeshBuffer];
+    if (subBufferData.Count == 0) return {};
+
+    Vector<MeshPropertiesStruct> bufferData(subBufferData.ActiveCount);
+    const byte* src = static_cast<const byte*>(GPUBufferMemoryPool.data()) + subBufferData.Offset;
+    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(MeshPropertiesStruct));
+    return bufferData;
 }
 
 Vector<GPUMaterial> MemoryPoolSystem::MaterialBufferList()
 {
-    return Vector<GPUMaterial>();
+    const auto& subBufferData = MemorySubPoolHeader[kMaterialBuffer];
+    if (subBufferData.Count == 0) return {};
+
+    auto* a = GPUBufferMemoryPool.data() + subBufferData.Offset;
+    Vector<GPUMaterial> bufferData(subBufferData.ActiveCount);
+    const byte* src = static_cast<const byte*>(GPUBufferMemoryPool.data()) + subBufferData.Offset;
+    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(GPUMaterial));
+    return bufferData;
 }
 
 Vector<DirectionalLight> MemoryPoolSystem::DirectionalLightBufferList()
 {
-    return Vector<DirectionalLight>();
+    const auto& subBufferData = MemorySubPoolHeader[kDirectionalLightBuffer];
+    if (subBufferData.Count == 0) return {};
+
+    Vector<DirectionalLight> bufferData(subBufferData.ActiveCount);
+    const byte* src = static_cast<const byte*>(GPUBufferMemoryPool.data()) + subBufferData.Offset;
+    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(DirectionalLight));
+    return bufferData;
 }
 
 Vector<PointLight> MemoryPoolSystem::PointLightBufferList()
 {
-    return Vector<PointLight>();
+    const auto& subBufferData = MemorySubPoolHeader[kPointLightBuffer];
+    if (subBufferData.Count == 0) return {};
+
+    Vector<PointLight> bufferData(subBufferData.ActiveCount);
+    const byte* src = static_cast<const byte*>(GPUBufferMemoryPool.data()) + subBufferData.Offset;
+    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(PointLight));
+    return bufferData;
 }
 
 const MemoryPoolSubBufferHeader MemoryPoolSystem::MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType)

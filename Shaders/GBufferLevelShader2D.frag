@@ -92,14 +92,13 @@ MeshProperitiesBuffer GetMesh(uint index)
         return mesh;
     }
 
-    const uint baseByteLocation = (bindlessBuffer.MeshOffset/4)+ (index * (bindlessBuffer.MeshSize / 4));
+    const uint baseByteLocation = ((bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
     mesh.MaterialIndex = bindlessBuffer.Data[baseByteLocation + 0u];
     mesh.MeshTransform = mat4(
         bindlessBuffer.Data[baseByteLocation + 1u],  bindlessBuffer.Data[baseByteLocation + 2u],  bindlessBuffer.Data[baseByteLocation + 3u],  bindlessBuffer.Data[baseByteLocation + 4u],
         bindlessBuffer.Data[baseByteLocation + 5u],  bindlessBuffer.Data[baseByteLocation + 6u],  bindlessBuffer.Data[baseByteLocation + 7u],  bindlessBuffer.Data[baseByteLocation + 8u],
         bindlessBuffer.Data[baseByteLocation + 9u],  bindlessBuffer.Data[baseByteLocation + 10u], bindlessBuffer.Data[baseByteLocation + 11u], bindlessBuffer.Data[baseByteLocation + 12u],
         bindlessBuffer.Data[baseByteLocation + 13u], bindlessBuffer.Data[baseByteLocation + 14u], bindlessBuffer.Data[baseByteLocation + 15u], bindlessBuffer.Data[baseByteLocation + 16u]);
-
     return mesh;
 }
 
@@ -117,7 +116,7 @@ PackedMaterial GetMaterial(uint index)
         return mat;
     }
 
-    const uint baseByteLocation = (bindlessBuffer.MaterialOffset/4)+ (index * (bindlessBuffer.MaterialSize / 4));
+    const uint baseByteLocation = ((bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MaterialSize / 4));
     mat.AlbedoDataId          = bindlessBuffer.Data[baseByteLocation + 0u];
     mat.NormalDataId          = bindlessBuffer.Data[baseByteLocation + 1u];
     mat.PackedMRODataId       = bindlessBuffer.Data[baseByteLocation + 2u];
@@ -141,7 +140,7 @@ DirectionalLightBuffer GetDirectionalLight(uint index)
         return light;
     }
 
-    const uint baseByteLocation = (bindlessBuffer.DirectionalLightOffset/4)+ (index * (bindlessBuffer.DirectionalLightSize / 4));
+    const uint baseByteLocation = ((bindlessBuffer.DirectionalLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.DirectionalLightSize / 4));
     light.LightColor     = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 2u]));
     light.LightDirection = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 5u]));
     light.LightIntensity = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 6u]);
@@ -166,7 +165,7 @@ PointLightBuffer GetPointLight(uint index)
         return light;
     }
 
-    const uint baseByteLocation = (bindlessBuffer.PointLightOffset/4)+ (index * (bindlessBuffer.PointLightSize / 4));
+    const uint baseByteLocation = ((bindlessBuffer.PointLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.PointLightSize / 4));
     light.LightPosition  = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 2u]));
     light.LightColor     = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 5u]));
     light.LightRadius    = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 6u]);

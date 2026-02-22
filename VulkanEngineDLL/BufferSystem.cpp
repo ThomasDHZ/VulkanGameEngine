@@ -134,7 +134,7 @@ uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceS
     VmaAllocationCreateInfo allocInfo = {
         .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
         .usage = VMA_MEMORY_USAGE_AUTO,
-        .preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT  // NEW: Prefer coherent (no flush needed)
+        .preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT  
     };
 
     VkBuffer buffer = VK_NULL_HANDLE;

@@ -110,7 +110,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     ImGui::Separator();
 
-    for (int x = 0; x <= memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
+    for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
     {
         DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(x);
         if (ImGui::SliderFloat3("DLightColor ", &directionalLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkDirectionalLightBufferDirty();
@@ -123,7 +123,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     ImGui::Separator();
 
-    for (int x = 0; x <= memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
+    for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
     {
         PointLight& pointLight = memoryPoolSystem.UpdatePointLight(x);
         if (ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -static_cast<float>(vulkanSystem.SwapChainResolution.width), static_cast<float>(vulkanSystem.SwapChainResolution.width))) memoryPoolSystem.MarkPointLightBufferDirty();
