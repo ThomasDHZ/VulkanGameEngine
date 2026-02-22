@@ -5,5 +5,8 @@
   "LightPosition": [ 960, 540, 0.0 ],
   "LightColor": [ 0.0, 0.55, 0.9 ],
   "LightRadius": 2000.0,
-  "LightIntensity": 5.0
+  "LightIntensity": 5.0,
+  "ShadowStrength": 0.70,
+  "ShadowBias": 0.015,
+  "ShadowSoftness": 0.30
 }
