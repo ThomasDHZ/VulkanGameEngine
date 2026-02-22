@@ -58,10 +58,15 @@ private:
 	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
 	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
 
-	static constexpr size_t									 MeshInitialCapacity = 4096;
-	static constexpr size_t									 MaterialInitialCapacity = 65536;
+	//static constexpr size_t									 MeshInitialCapacity = 4096;
+	//static constexpr size_t									 MaterialInitialCapacity = 65536;
+	//static constexpr size_t									 DirectionalLightInitialCapacity = 4;
+	//static constexpr size_t									 PointLightInitialCapacity = 4096;
+
+	static constexpr size_t									 MeshInitialCapacity = 2;
+	static constexpr size_t									 MaterialInitialCapacity = 4;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
-	static constexpr size_t									 PointLightInitialCapacity = 4096;
+	static constexpr size_t									 PointLightInitialCapacity = 4;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
 
