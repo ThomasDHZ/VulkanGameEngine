@@ -2,6 +2,7 @@
 #include "Platform.h"
 #include "ShaderSystem.h"
 #include "MemoryPool.h"
+#include "MemoryPoolSystem.h"
 #include <xxhash.h>
 
 enum MeshTypeEnum
@@ -112,8 +113,6 @@ private:
 
 public:
 	Vector<Mesh> MeshList;
-	Vector<MeshPropertiesStruct> ObjectDataPool;
-	uint32 MeshBufferIndex = UINT32_MAX;
 
 	DLL_EXPORT void StartUp();
 	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
@@ -123,7 +122,6 @@ public:
 	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
 	DLL_EXPORT MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
 	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-	DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMeshBufferInfo() const;
 };
 extern DLL_EXPORT MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()

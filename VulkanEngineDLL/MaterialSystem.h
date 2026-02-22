@@ -1,7 +1,9 @@
 #pragma once
 #include "Platform.h"
 #include "BufferSystem.h"
-#include "JsonStruct.h"   // assuming this has VkGuid, MaterialGuid, etc.
+#include "JsonStruct.h"
+#include "MemoryPoolSystem.h"
+#include "MemoryPool.h"
 
 struct Material
 {
@@ -30,13 +32,6 @@ struct GPUMaterial
     GPUMaterial& operator=(const GPUMaterial&) = default;
 };
 
-struct alignas(4) MaterialBufferHeader
-{
-    uint MaterialOffset;
-    uint MaterialCount;
-    uint MaterialSize;
-};
-
 class MaterialSystem
 {
     public:
@@ -51,10 +46,7 @@ private:
         MaterialSystem& operator=(MaterialSystem&&) = delete;
 
         Vector<Material> MaterialList;
-        Vector<GPUMaterial> MaterialPool;          // your makeshift vector pool
         UnorderedMap<VkGuid, uint32> GuidToPoolIndex;
-        uint MaterialBufferId = UINT32_MAX;
-        bool NeedUpdate;
 
     public:
 
@@ -64,7 +56,6 @@ private:
         DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
         DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
         DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
-        DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetMaterialBufferInfo() const;
         DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
         DLL_EXPORT void DestroyAllMaterials();
         DLL_EXPORT Vector<Material> GetMaterialList() { return MaterialList; }

@@ -1,18 +1,12 @@
 #pragma once
 #include "Platform.h"
 #include "JsonStruct.h"
-
+#include "MemoryPool.h"
+#include "MemoryPoolSystem.h"
 enum LightTypeEnum
 {
     kDirectionalLight,
     kPointLight
-};
-
-struct DirectionalLightHeader
-{
-    uint LightOffset;
-    uint LightCount;
-    uint LightSize;
 };
 
 struct DirectionalLight
@@ -23,13 +17,6 @@ struct DirectionalLight
     float ShadowStrength = 1.0f;
     float ShadowBias = 0.012f;
     float ShadowSoftness = 0.008f;
-};
-
-struct PointLightHeader
-{
-    uint LightOffset;
-    uint LightCount;
-    uint LightSize;
 };
 
 struct PointLight
@@ -57,16 +44,10 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-    uint32 PointLightBufferId = UINT32_MAX;
-    uint32 DirectionalLightBufferId = UINT32_MAX;
-    Vector<DirectionalLight> DirectionalLightList;
-    Vector<PointLight>       PointLightList;
 
     DLL_EXPORT void StartUp();
     DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList);
     DLL_EXPORT void LoadSceneLights(const String& directionalLightPath);
-    DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetDirectionalLightPropertiesBuffer() const;
-    DLL_EXPORT const Vector<VkDescriptorBufferInfo> GetPointLightPropertiesBuffer() const;
 };
 extern DLL_EXPORT LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()
