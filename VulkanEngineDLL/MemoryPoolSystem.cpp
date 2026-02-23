@@ -92,11 +92,29 @@ void MemoryPoolSystem::StartUp()
 
 void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount)
 {
-    IsHeaderDirty = true;
     Vector<byte> oldGPUBufferMemoryPool = GPUBufferMemoryPool;
     UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> oldMemorySubPoolHeader = MemorySubPoolHeader;
 
-    UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
+    for (int x = memoryPoolToUpdate; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
+    {
+        const MemoryPoolTypes memoryPoolType = (MemoryPoolTypes)x;
+        const MemoryPoolTypes lastMemoryPoolType = (x == 0) ? MemoryPoolTypes::kEndofPool : (MemoryPoolTypes)(x - 1);
+        const MemoryPoolSubBufferHeader oldMemoryPoolSubHeader = MemorySubPoolHeader[memoryPoolType];
+        MemorySubPoolHeader[memoryPoolType] = MemoryPoolSubBufferHeader
+        {
+           .ActiveCount = MemorySubPoolHeader[memoryPoolType].ActiveCount,
+           .Offset = lastMemoryPoolType == MemoryPoolTypes::kEndofPool ? sizeof(MemoryPoolBufferHeader) : MemorySubPoolHeader[lastMemoryPoolType].Offset + (MemorySubPoolHeader[lastMemoryPoolType].Count * MemorySubPoolHeader[lastMemoryPoolType].Size),
+           .Count = memoryPoolType == memoryPoolToUpdate ? resizeCount : MemorySubPoolHeader[memoryPoolType].Count,
+           .Size = MemorySubPoolHeader[memoryPoolType].Size,
+           .IsActive = memoryPoolType == memoryPoolToUpdate ? Vector<byte>(resizeCount, 0x00) : MemorySubPoolHeader[memoryPoolType].IsActive,
+           .FreeIndices = MemorySubPoolHeader[memoryPoolType].FreeIndices,
+           .IsDirty = true
+        };
+        if (memoryPoolType == (MemoryPoolTypes)x) memcpy(MemorySubPoolHeader[memoryPoolType].IsActive.data(), oldMemoryPoolSubHeader.IsActive.data(), oldMemoryPoolSubHeader.ActiveCount);
+    }
+    MemoryPoolSubBufferHeader lastHeader = MemorySubPoolHeader[(MemoryPoolTypes)((MemoryPoolTypes)MemoryPoolTypes::kEndofPool - 1)];
+    GPUBufferMemoryPoolSize = lastHeader.Offset + (lastHeader.Size * lastHeader.Count);
+
     GPUMemoryPoolHeader = MemoryPoolBufferHeader
     {
         .MeshOffset = static_cast<uint32>(MemorySubPoolHeader[kMeshBuffer].Offset),
@@ -135,7 +153,6 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
     }
     GPUBufferIndex = newBufferId;
     IsBufferDirty = true;
-    IsDescriptorSetDirty = true;
 }
 
 uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
@@ -161,8 +178,7 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
         ResizeMemoryPool(memoryPoolToUpdate, subPoolHeader.Count * 2);
     }
 
-    uint32 index = subPoolHeader.ActiveCount;
-    subPoolHeader.ActiveCount++;
+    uint32 index = subPoolHeader.ActiveCount++;
     subPoolHeader.IsActive[index] = 0x01;
     subPoolHeader.IsDirty = true;
     return index;
@@ -170,29 +186,22 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
 
 void MemoryPoolSystem::UpdateMemoryPool(uint32 descriptorBindingIndex, Vector<VulkanPipeline>& pipelineList)
 {
-    if (IsBufferDirty)
-    {
+
         memcpy(GPUBufferMemoryPool.data(), &GPUMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
         bufferSystem.VMAUpdateDynamicBuffer(GPUBufferIndex, GPUBufferMemoryPool.data(), GPUBufferMemoryPool.size());
 
-        IsBufferDirty = false;
-    }
-
-    if (IsDescriptorSetDirty)
-    {
         Vector<VkDescriptorBufferInfo> bufferInfo = GetMemoryPoolBufferInfo();
         for (auto& pipeline : pipelineList)
         {
             renderSystem.UpdateDescriptorSet(pipeline, bufferInfo, descriptorBindingIndex);
         }
-        IsDescriptorSetDirty = false;
-    }
+        IsBufferDirty = false;
+    
 }
 
 void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUpdate, uint32 newPoolSize)
 {
-    if (IsHeaderDirty)
-    {
+
         for (int x = memoryPoolTypeToUpdate; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
         {
             const MemoryPoolTypes memoryPoolType = (MemoryPoolTypes)x;
@@ -212,7 +221,7 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
         }
         MemoryPoolSubBufferHeader lastHeader = MemorySubPoolHeader[(MemoryPoolTypes)((MemoryPoolTypes)MemoryPoolTypes::kEndofPool - 1)];
         GPUBufferMemoryPoolSize = lastHeader.Offset + (lastHeader.Size * lastHeader.Count);
-    }
+ 
 }
 
 MeshPropertiesStruct& MemoryPoolSystem::UpdateMesh(uint32 index)
