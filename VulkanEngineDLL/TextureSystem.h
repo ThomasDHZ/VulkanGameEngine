@@ -23,7 +23,7 @@ struct Texture
 {
     TextureGuid           textureGuid = TextureGuid();
     size_t                textureIndex = SIZE_MAX;
-
+    size_t                bindlessTextureIndex = SIZE_MAX;
     int                   width = 1;
     int                   height = 1;
     int                   depth = 1;

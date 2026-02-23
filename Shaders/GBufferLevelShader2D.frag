@@ -1,10 +1,7 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_KHR_Vulkan_GLSL : enable 
-#extension GL_EXT_scalar_block_layout : enable
-#extension GL_EXT_debug_printf : enable
-#extension GL_EXT_shader_8bit_storage : require
+#extension GL_ARB_gpu_shader_int64 : require
 
 layout(location = 0) in vec3 WorldPos; 
 layout(location = 1) in vec2 TexCoords;    
@@ -50,25 +47,31 @@ layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInp
 layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
 layout(binding = 9)  buffer BindlessBuffer 
 { 
-    uint MeshOffset;     
+    uint64_t MeshOffset;     
     uint MeshCount;
     uint MeshSize;   
-    uint MaterialOffset; 
+    uint64_t MaterialOffset; 
     uint MaterialCount;
     uint MaterialSize;  
-    uint DirectionalLightOffset; 
+    uint64_t DirectionalLightOffset; 
     uint DirectionalLightCount;
     uint DirectionalLightSize;   
-    uint PointLightOffset; 
+    uint64_t PointLightOffset; 
     uint PointLightCount;
     uint PointLightSize;     
+    uint64_t Texture2DOffset;
+	uint Texture2DCount;
+	uint Texture2DSize;
+	uint64_t Texture3DOffset;
+	uint Texture3DCount;
+	uint Texture3DSize;
+	uint64_t TextureCubeMapOffset;
+	uint TextureCubeMapCount;
+	uint TextureCubeMapSize;
     uint Data[]; 
 } bindlessBuffer;
 layout(binding = 10) uniform sampler2D TextureMap[];
-layout(binding = 11) uniform sampler2D BRDFMap;
-layout(binding = 12) uniform samplerCube CubeMap;
-layout(binding = 13) uniform samplerCube IrradianceMap;
-layout(binding = 14) uniform samplerCube PrefilterMap;
+layout(binding = 11) uniform samplerCube CubeMap[];
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -92,7 +95,7 @@ MeshProperitiesBuffer GetMesh(uint index)
         return mesh;
     }
 
-    const uint baseByteLocation = ((bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
     mesh.MaterialIndex = bindlessBuffer.Data[baseByteLocation + 0u];
     mesh.MeshTransform = mat4(
         bindlessBuffer.Data[baseByteLocation + 1u],  bindlessBuffer.Data[baseByteLocation + 2u],  bindlessBuffer.Data[baseByteLocation + 3u],  bindlessBuffer.Data[baseByteLocation + 4u],
@@ -116,7 +119,7 @@ PackedMaterial GetMaterial(uint index)
         return mat;
     }
 
-    const uint baseByteLocation = ((bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MaterialSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MaterialSize / 4));
     mat.AlbedoDataId          = bindlessBuffer.Data[baseByteLocation + 0u];
     mat.NormalDataId          = bindlessBuffer.Data[baseByteLocation + 1u];
     mat.PackedMRODataId       = bindlessBuffer.Data[baseByteLocation + 2u];
@@ -140,7 +143,7 @@ DirectionalLightBuffer GetDirectionalLight(uint index)
         return light;
     }
 
-    const uint baseByteLocation = ((bindlessBuffer.DirectionalLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.DirectionalLightSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.DirectionalLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.DirectionalLightSize / 4));
     light.LightColor     = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 2u]));
     light.LightDirection = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 5u]));
     light.LightIntensity = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 6u]);
@@ -165,7 +168,7 @@ PointLightBuffer GetPointLight(uint index)
         return light;
     }
 
-    const uint baseByteLocation = ((bindlessBuffer.PointLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.PointLightSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.PointLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.PointLightSize / 4));
     light.LightPosition  = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 0u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 1u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 2u]));
     light.LightColor     = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 3u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 4u]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 5u]));
     light.LightRadius    = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 6u]);
@@ -174,6 +177,95 @@ PointLightBuffer GetPointLight(uint index)
     light.ShadowBias     = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 9u]);
     light.ShadowSoftness = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation + 10u]);
     return light;
+}
+
+TextureMetadata Get2DTextureMetadata(uint index)
+{
+    TextureMetadata textureMetaData;
+    if (index >= bindlessBuffer.Texture2DCount) 
+    {
+        textureMetaData.Width       = 0;
+        textureMetaData.Height      = 0;
+        textureMetaData.MipLevels   = 1;
+        textureMetaData.LayerCount  = 1;
+        textureMetaData.Format      = 0;
+        textureMetaData.TextureType = 0;
+        textureMetaData.ArrayIndex  = 0;
+        return textureMetaData;
+    }
+
+    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.Texture2DOffset) / 4) + (index * (bindlessBuffer.Texture2DSize / 4));
+    textureMetaData.Width       = bindlessBuffer.Data[baseByteLocation + 0u];
+    textureMetaData.Height      = bindlessBuffer.Data[baseByteLocation + 1u];
+    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 2u];
+    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 3u];
+    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 4u];
+    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 5u];
+    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 6u];
+    return textureMetaData;
+}
+
+TextureMetadata Get3DTextureMetadata(uint index)
+{
+    TextureMetadata textureMetaData;
+    if (index >= bindlessBuffer.Texture3DCount) 
+    {
+        textureMetaData.Width       = 0;
+        textureMetaData.Height      = 0;
+        textureMetaData.MipLevels   = 1;
+        textureMetaData.LayerCount  = 1;
+        textureMetaData.Format      = 0;
+        textureMetaData.TextureType = 0;
+        textureMetaData.ArrayIndex  = 0;
+        return textureMetaData;
+    }
+
+    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.Texture3DOffset) / 4) + (index * (bindlessBuffer.Texture3DSize / 4));
+    textureMetaData.Width       = bindlessBuffer.Data[baseByteLocation + 0u];
+    textureMetaData.Height      = bindlessBuffer.Data[baseByteLocation + 1u];
+    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 2u];
+    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 3u];
+    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 4u];
+    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 5u];
+    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 6u];
+    return textureMetaData;
+}
+
+TextureMetadata GetCubeMapTextureMetadata(uint index)
+{
+    TextureMetadata textureMetaData;
+    if (index >= bindlessBuffer.TextureCubeMapCount) 
+    {
+        textureMetaData.Width       = 0;
+        textureMetaData.Height      = 0;
+        textureMetaData.MipLevels   = 1;
+        textureMetaData.LayerCount  = 1;
+        textureMetaData.Format      = 0;
+        textureMetaData.TextureType = 0;
+        textureMetaData.ArrayIndex  = 0;
+        return textureMetaData;
+    }
+
+    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.TextureCubeMapOffset) / 4) + (index * (bindlessBuffer.TextureCubeMapSize / 4));
+    textureMetaData.Width       = bindlessBuffer.Data[baseByteLocation + 0u];
+    textureMetaData.Height      = bindlessBuffer.Data[baseByteLocation + 1u];
+    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 2u];
+    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 3u];
+    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 4u];
+    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 5u];
+    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 6u];
+    return textureMetaData;
+}
+
+vec4 SampleTexture(uint textureIndex, vec2 uv)
+{
+    TextureMetadata meta = Get2DTextureMetadata(textureIndex);
+
+    if (meta.TextureType == 0) // 2D
+    {
+        return texture(TextureMap[meta.ArrayIndex], uv);
+    }
+    return vec4(1.0, 0.0, 1.0, 1.0); // error pink
 }
 
 mat3 CalculateTBN(vec3 worldPos, vec2 uv) {

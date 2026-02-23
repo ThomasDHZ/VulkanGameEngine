@@ -382,7 +382,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     meshSystem.Update(deltaTime, pipelineList);
     materialSystem.Update(deltaTime, pipelineList);
     lightSystem.Update(deltaTime, pipelineList);
-    memoryPoolSystem.UpdateMemoryPool(9, pipelineList);
+    memoryPoolSystem.UpdateMemoryPool(pipelineList);
     for (auto& levelLayer : levelLayerList)
     {
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);

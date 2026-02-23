@@ -947,10 +947,10 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
     {
         switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
         {
-        case kMemoryPoolDescriptor:
+        case kBindlessDataDescriptor:
         {
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetMemoryPoolBufferInfo();
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetBindlessDataBufferDescriptor();
             break;
         }
            /* case kMeshPropertiesDescriptor:

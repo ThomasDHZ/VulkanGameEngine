@@ -34,6 +34,18 @@ struct ImportMaterial
     uint HeightMap;
 };
 
+struct TextureMetadata
+{
+    uint Width;
+    uint Height;
+    uint Depth;
+    uint MipLevels;
+    uint LayerCount;
+    uint Format;
+    uint TextureType;
+    uint ArrayIndex;
+};
+
 struct PackedMaterial
 {
     uint AlbedoDataId;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB

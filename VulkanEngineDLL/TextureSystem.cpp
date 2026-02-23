@@ -10,6 +10,7 @@
 #include <stb/stb_image_write.h>
 #include "JsonStruct.h"
 #include <imgui/backends/imgui_impl_vulkan.h>
+#include "MemoryPoolSystem.h"
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
@@ -106,9 +107,30 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	CreateTextureView(texture, false, textureLoader.ImageType);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
-	if (textureLoader.IsSkyBox) CubeMap = texture;
-	else TextureList.emplace_back(texture);
-
+	if (textureLoader.IsSkyBox)
+	{
+		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		textureMetaDataHeader.Width = texture.width;
+		textureMetaDataHeader.Height = texture.height;
+		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
+		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
+		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
+		textureMetaDataHeader.Type = 1;
+		CubeMap = texture;
+	}
+	else
+	{
+		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		textureMetaDataHeader.Width = texture.width;
+		textureMetaDataHeader.Height = texture.height;
+		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
+		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
+		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
+		textureMetaDataHeader.Type = 0;
+		TextureList.emplace_back(texture);
+	}
 	//#ifndef NDEBUG
 	//	std::cout << "[TextureDebug] Created Texture:" << texturePath
 	//		<< " Texture ID: " << texture.textureId.ToString()
@@ -373,12 +395,29 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 
 	if (textureLoader.IsSkyBox && isCubemap)
 	{
+		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		textureMetaDataHeader.Width = texture.width;
+		textureMetaDataHeader.Height = texture.height;
+		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
+		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
+		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
+		textureMetaDataHeader.Type = 1;
 		CubeMap = texture;
 	}
 	else
 	{
-		TextureList.emplace_back(texture);
+		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		textureMetaDataHeader.Width = texture.width;
+		textureMetaDataHeader.Height = texture.height;
+		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
+		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
+		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
+		textureMetaDataHeader.Type = 0;
+		TextureList.emplace_back(texture);  
 	}
+
 	return texture;
 }
 
