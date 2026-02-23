@@ -110,27 +110,27 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     ImGui::Separator();
 
-    for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
-    {
-        DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(x);
-        if (ImGui::SliderFloat3("DLightColor ", &directionalLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat3("DLightDirection ", &directionalLight.LightDirection.x, -1.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat("DLightIntensity ", &directionalLight.LightIntensity, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat("ShadowBias ", &directionalLight.ShadowBias, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat("ShadowSoftness ", &directionalLight.ShadowSoftness, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat("ShadowStrength ", &directionalLight.ShadowStrength, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    }
+    //for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
+    //{
+    //    DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(x);
+    //    if (ImGui::SliderFloat3("DLightColor ", &directionalLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat3("DLightDirection ", &directionalLight.LightDirection.x, -1.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat("DLightIntensity ", &directionalLight.LightIntensity, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat("ShadowBias ", &directionalLight.ShadowBias, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat("ShadowSoftness ", &directionalLight.ShadowSoftness, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat("ShadowStrength ", &directionalLight.ShadowStrength, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //}
 
-    ImGui::Separator();
+    //ImGui::Separator();
 
-    for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
-    {
-        PointLight& pointLight = memoryPoolSystem.UpdatePointLight(x);
-        if (ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -static_cast<float>(vulkanSystem.SwapChainResolution.width), static_cast<float>(vulkanSystem.SwapChainResolution.width))) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-        if (ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    }
+    //for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
+    //{
+    //    PointLight& pointLight = memoryPoolSystem.UpdatePointLight(x);
+    //    if (ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -static_cast<float>(vulkanSystem.SwapChainResolution.width), static_cast<float>(vulkanSystem.SwapChainResolution.width))) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //}
 
     ImGui::Separator();
 

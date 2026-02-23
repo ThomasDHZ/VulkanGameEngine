@@ -91,7 +91,6 @@ void MeshSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline
 		if (changed)
 		{
 			meshProperties.MeshTransform = model;
-			memoryPoolSystem.MarkMemoryPoolBufferDirty();
 		}
 	}
 }

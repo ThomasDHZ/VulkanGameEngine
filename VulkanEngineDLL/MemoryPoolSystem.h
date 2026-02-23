@@ -101,7 +101,9 @@ public:
 	size_t													 GpuDataBufferMemoryPoolSize = UINT32_MAX;
 	MemoryPoolBufferHeader									 GpuDataMemoryPoolHeader;
 	Vector<byte>											 GpuDataBufferMemoryPool;
-	bool													 IsBufferDirty = true;
+	void*													 MappedBufferPtr = nullptr;
+	bool													 IsHeaderDirty = true;
+	bool													 IsDescriptorSetDirty = true;
 
 	DLL_EXPORT void											 StartUp();
 	DLL_EXPORT uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
@@ -120,7 +122,6 @@ public:
 	DLL_EXPORT Vector<DirectionalLight>						 DirectionalLightBufferList();
 	DLL_EXPORT Vector<PointLight>							 PointLightBufferList();
 
-	DLL_EXPORT void											 MarkMemoryPoolBufferDirty();
 	DLL_EXPORT const MemoryPoolSubBufferHeader				 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
 	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetBindlessDataBufferDescriptor() const;
 };

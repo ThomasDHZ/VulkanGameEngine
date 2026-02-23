@@ -194,6 +194,7 @@ TextureMetadata Get2DTextureMetadata(uint index)
     {
         textureMetaData.Width       = 0;
         textureMetaData.Height      = 0;
+        textureMetaData.Depth       = 0;
         textureMetaData.MipLevels   = 1;
         textureMetaData.LayerCount  = 1;
         textureMetaData.Format      = 0;
@@ -202,14 +203,15 @@ TextureMetadata Get2DTextureMetadata(uint index)
         return textureMetaData;
     }
 
-    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.Texture2DOffset) / 4) + (index * (bindlessBuffer.Texture2DSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.Texture2DOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.Texture2DSize / 4));
     textureMetaData.Width       = bindlessBuffer.Data[baseByteLocation + 0u];
     textureMetaData.Height      = bindlessBuffer.Data[baseByteLocation + 1u];
-    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 2u];
-    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 3u];
-    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 4u];
-    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 5u];
-    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 6u];
+    textureMetaData.Depth       = bindlessBuffer.Data[baseByteLocation + 2u];
+    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 3u];
+    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 4u];
+    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 5u];
+    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 6u];
+    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 7u];
     return textureMetaData;
 }
 
@@ -220,6 +222,7 @@ TextureMetadata Get3DTextureMetadata(uint index)
     {
         textureMetaData.Width       = 0;
         textureMetaData.Height      = 0;
+        textureMetaData.Depth       = 0;
         textureMetaData.MipLevels   = 1;
         textureMetaData.LayerCount  = 1;
         textureMetaData.Format      = 0;
@@ -228,14 +231,15 @@ TextureMetadata Get3DTextureMetadata(uint index)
         return textureMetaData;
     }
 
-    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.Texture3DOffset) / 4) + (index * (bindlessBuffer.Texture3DSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.Texture3DOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.Texture3DSize / 4));
     textureMetaData.Width       = bindlessBuffer.Data[baseByteLocation + 0u];
     textureMetaData.Height      = bindlessBuffer.Data[baseByteLocation + 1u];
-    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 2u];
-    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 3u];
-    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 4u];
-    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 5u];
-    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 6u];
+    textureMetaData.Depth       = bindlessBuffer.Data[baseByteLocation + 2u];
+    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 3u];
+    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 4u];
+    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 5u];
+    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 6u];
+    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 7u];
     return textureMetaData;
 }
 
@@ -246,6 +250,7 @@ TextureMetadata GetCubeMapTextureMetadata(uint index)
     {
         textureMetaData.Width       = 0;
         textureMetaData.Height      = 0;
+        textureMetaData.Depth       = 0;
         textureMetaData.MipLevels   = 1;
         textureMetaData.LayerCount  = 1;
         textureMetaData.Format      = 0;
@@ -254,14 +259,15 @@ TextureMetadata GetCubeMapTextureMetadata(uint index)
         return textureMetaData;
     }
 
-    const uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.TextureCubeMapOffset) / 4) + (index * (bindlessBuffer.TextureCubeMapSize / 4));
+    const uint baseByteLocation = (uint(bindlessBuffer.TextureCubeMapOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.TextureCubeMapSize / 4));
     textureMetaData.Width       = bindlessBuffer.Data[baseByteLocation + 0u];
     textureMetaData.Height      = bindlessBuffer.Data[baseByteLocation + 1u];
-    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 2u];
-    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 3u];
-    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 4u];
-    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 5u];
-    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 6u];
+    textureMetaData.Depth       = bindlessBuffer.Data[baseByteLocation + 2u];
+    textureMetaData.MipLevels   = bindlessBuffer.Data[baseByteLocation + 3u];
+    textureMetaData.LayerCount  = bindlessBuffer.Data[baseByteLocation + 4u];
+    textureMetaData.Format      = bindlessBuffer.Data[baseByteLocation + 5u];
+    textureMetaData.TextureType = bindlessBuffer.Data[baseByteLocation + 6u];
+    textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation + 7u];
     return textureMetaData;
 }
 
