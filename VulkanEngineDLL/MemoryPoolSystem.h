@@ -84,7 +84,7 @@ private:
 
 	static constexpr uint									 BindlessDataDescriptorBinding = 9;
 
-	static constexpr size_t									 MeshInitialCapacity = 4096;
+	static constexpr size_t									 MeshInitialCapacity = 2;
 	static constexpr size_t									 MaterialInitialCapacity = 65536;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
 	static constexpr size_t									 PointLightInitialCapacity = 4096;
@@ -93,8 +93,8 @@ private:
 	static constexpr size_t									 TextureCubeMapInitialCapacity = 128;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
-	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
+	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 
 public:
 	uint32													 GpuDataBufferIndex = UINT32_MAX;

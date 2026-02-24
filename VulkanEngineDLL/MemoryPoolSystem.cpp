@@ -109,74 +109,48 @@ void MemoryPoolSystem::StartUp()
     }
     UpdateMemoryPoolHeader(kMeshBuffer, MeshInitialCapacity);
     
-    GpuDataBufferMemoryPool = Vector<byte>(sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize, 0xFF);
-    GpuDataMemoryPoolHeader = MemoryPoolBufferHeader
-    {
-        .MeshOffset = MemorySubPoolHeader[kMeshBuffer].Offset,
-        .MeshCount = MemorySubPoolHeader[kMeshBuffer].Count,
-        .MeshSize = MemorySubPoolHeader[kMeshBuffer].Size,
-        .MaterialOffset = MemorySubPoolHeader[kMaterialBuffer].Offset,
-        .MaterialCount = MemorySubPoolHeader[kMaterialBuffer].Count,
-        .MaterialSize = MemorySubPoolHeader[kMaterialBuffer].Size,
-        .DirectionalLightOffset = MemorySubPoolHeader[kDirectionalLightBuffer].Offset,
-        .DirectionalLightCount = MemorySubPoolHeader[kDirectionalLightBuffer].Count,
-        .DirectionalLightSize = MemorySubPoolHeader[kDirectionalLightBuffer].Size,
-        .PointLightOffset = MemorySubPoolHeader[kPointLightBuffer].Offset,
-        .PointLightCount = MemorySubPoolHeader[kPointLightBuffer].Count,
-        .PointLightSize = MemorySubPoolHeader[kPointLightBuffer].Size,
-        .Texture2DOffset = MemorySubPoolHeader[kTexture2DMetadataBuffer].Offset,
-        .Texture2DCount = MemorySubPoolHeader[kTexture2DMetadataBuffer].Count,
-        .Texture2DSize = MemorySubPoolHeader[kTexture2DMetadataBuffer].Size,
-        .Texture3DOffset = MemorySubPoolHeader[kTexture3DMetadataBuffer].Offset,
-        .Texture3DCount = MemorySubPoolHeader[kTexture3DMetadataBuffer].Count,
-        .Texture3DSize = MemorySubPoolHeader[kTexture3DMetadataBuffer].Size,
-        .TextureCubeMapOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
-        .TextureCubeMapCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
-        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size
-    };
-    memcpy(GpuDataBufferMemoryPool.data(), &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-    GpuDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool.data(), GpuDataBufferMemoryPool.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    VulkanBuffer& buf = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
-    MappedBufferPtr = buf.BufferData;
+    Vector<byte> GpuDataBufferMemoryPool2 = Vector<byte>(sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize, 0xFF);
+    memcpy(GpuDataBufferMemoryPool2.data(), &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
+    GpuDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
+    MappedBufferPtr = buffer.BufferData;
 
-    vmaFlushAllocation(bufferSystem.vmaAllocator, buf.Allocation, 0, GpuDataBufferMemoryPool.size());
+    vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, GpuDataBufferMemoryPool2.size());
 }
 
 void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount)
 {
-    Vector<byte> oldData = std::move(GpuDataBufferMemoryPool);
-    auto oldHeaders = MemorySubPoolHeader;
+    void* oldMappedPtr = MappedBufferPtr;
+    uint32 oldBufferId = GpuDataBufferIndex;
+    auto oldSubHeaders = MemorySubPoolHeader;  
 
     UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
-
-    size_t newSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
-    GpuDataBufferMemoryPool = Vector<byte>(newSize, 0xFF);
-
-    memcpy(GpuDataBufferMemoryPool.data(), &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-
-    for (auto& [type, sub] : MemorySubPoolHeader)
-    {
-        auto& old = oldHeaders[type];
-        size_t bytes = old.ActiveCount * old.Size;
-        if (bytes > 0)
-        {
-            byte* dst = GpuDataBufferMemoryPool.data() + sizeof(MemoryPoolBufferHeader) + sub.Offset;
-            byte* src = oldData.data() + sizeof(MemoryPoolBufferHeader) + old.Offset;
-            memcpy(dst, src, bytes);
-        }
-    }
-
-    uint32 newId = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool.data(), newSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newId);
+    size_t newTotalSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
+    uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newBufferId);
     MappedBufferPtr = newBuf.BufferData;
 
-    vmaFlushAllocation(bufferSystem.vmaAllocator, newBuf.Allocation, 0, newSize);
-    if (GpuDataBufferIndex != UINT32_MAX)
+    std::memset(static_cast<byte*>(MappedBufferPtr), 0xFF, newTotalSize);
+    memcpy(MappedBufferPtr, &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
+    for (auto& [type, sub] : MemorySubPoolHeader)
     {
-        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(GpuDataBufferIndex));
+        const auto& oldSub = oldSubHeaders[type];
+        size_t bytesToCopy = oldSub.ActiveCount * oldSub.Size;
+
+        if (bytesToCopy > 0)
+        {
+            byte* dst = static_cast<byte*>(MappedBufferPtr) + sub.Offset;
+            byte* src = static_cast<byte*>(oldMappedPtr) + oldSub.Offset;
+            memcpy(dst, src, bytesToCopy);
+        }
+    }
+    vmaFlushAllocation(bufferSystem.vmaAllocator, newBuf.Allocation, 0, newTotalSize);
+    if (oldBufferId != UINT32_MAX)
+    {
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(oldBufferId));
     }
 
-    GpuDataBufferIndex = newId;
+    GpuDataBufferIndex = newBufferId;
     IsDescriptorSetDirty = true;
     IsHeaderDirty = true;
 }
@@ -214,8 +188,7 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
 {
     if (!MappedBufferPtr) return;
 
-    VulkanBuffer& buf = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
-
+    VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     for (auto& [type, sub] : MemorySubPoolHeader)
     {
         if (sub.IsDirty)
@@ -223,7 +196,9 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
             size_t start = sizeof(MemoryPoolBufferHeader) + sub.Offset;
             size_t len = sub.ActiveCount * sub.Size;
             if (len > 0)
-                vmaFlushAllocation(bufferSystem.vmaAllocator, buf.Allocation, start, len);
+            {
+                vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, start, len);
+            }
             sub.IsDirty = false;
         }
     }
@@ -231,7 +206,7 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
     if (IsHeaderDirty)
     {
         memcpy(MappedBufferPtr, &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-        vmaFlushAllocation(bufferSystem.vmaAllocator, buf.Allocation, 0, sizeof(MemoryPoolBufferHeader));
+        vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, sizeof(MemoryPoolBufferHeader));
         IsHeaderDirty = false;
     }
 
@@ -267,6 +242,31 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
     }
     MemoryPoolSubBufferHeader lastHeader = MemorySubPoolHeader[(MemoryPoolTypes)((MemoryPoolTypes)MemoryPoolTypes::kEndofPool - 1)];
     GpuDataBufferMemoryPoolSize = lastHeader.Offset + (lastHeader.Size * lastHeader.Count);
+
+    GpuDataMemoryPoolHeader = MemoryPoolBufferHeader
+    {
+        .MeshOffset = MemorySubPoolHeader[kMeshBuffer].Offset,
+        .MeshCount = MemorySubPoolHeader[kMeshBuffer].Count,
+        .MeshSize = MemorySubPoolHeader[kMeshBuffer].Size,
+        .MaterialOffset = MemorySubPoolHeader[kMaterialBuffer].Offset,
+        .MaterialCount = MemorySubPoolHeader[kMaterialBuffer].Count,
+        .MaterialSize = MemorySubPoolHeader[kMaterialBuffer].Size,
+        .DirectionalLightOffset = MemorySubPoolHeader[kDirectionalLightBuffer].Offset,
+        .DirectionalLightCount = MemorySubPoolHeader[kDirectionalLightBuffer].Count,
+        .DirectionalLightSize = MemorySubPoolHeader[kDirectionalLightBuffer].Size,
+        .PointLightOffset = MemorySubPoolHeader[kPointLightBuffer].Offset,
+        .PointLightCount = MemorySubPoolHeader[kPointLightBuffer].Count,
+        .PointLightSize = MemorySubPoolHeader[kPointLightBuffer].Size,
+        .Texture2DOffset = MemorySubPoolHeader[kTexture2DMetadataBuffer].Offset,
+        .Texture2DCount = MemorySubPoolHeader[kTexture2DMetadataBuffer].Count,
+        .Texture2DSize = MemorySubPoolHeader[kTexture2DMetadataBuffer].Size,
+        .Texture3DOffset = MemorySubPoolHeader[kTexture3DMetadataBuffer].Offset,
+        .Texture3DCount = MemorySubPoolHeader[kTexture3DMetadataBuffer].Count,
+        .Texture3DSize = MemorySubPoolHeader[kTexture3DMetadataBuffer].Size,
+        .TextureCubeMapOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
+        .TextureCubeMapCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
+        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size
+    };
 }
 
 MeshPropertiesStruct& MemoryPoolSystem::UpdateMesh(uint32 index)
@@ -351,46 +351,58 @@ TextureMetadataHeader& MemoryPoolSystem::UpdateTextureCubeMapMetadataHeader(uint
 
 Vector<MeshPropertiesStruct> MemoryPoolSystem::MeshBufferList()
 {
-    const auto& subBufferData = MemorySubPoolHeader[kMeshBuffer];
-    if (subBufferData.Count == 0) return {};
+    const auto& sub = MemorySubPoolHeader[kMeshBuffer];
+    if (sub.ActiveCount == 0 || !MappedBufferPtr)
+    {
+        return {};
+    }
 
-    Vector<MeshPropertiesStruct> bufferData(subBufferData.ActiveCount);
-    const byte* src = static_cast<const byte*>(GpuDataBufferMemoryPool.data()) + subBufferData.Offset;
-    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(MeshPropertiesStruct));
-    return bufferData;
+    Vector<MeshPropertiesStruct> result(sub.ActiveCount);
+    const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(MeshPropertiesStruct));
+    return result;
 }
 
 Vector<GPUMaterial> MemoryPoolSystem::MaterialBufferList()
 {
-    const auto& subBufferData = MemorySubPoolHeader[kMaterialBuffer];
-    if (subBufferData.Count == 0) return {};
+    const auto& sub = MemorySubPoolHeader[kMaterialBuffer];
+    if (sub.ActiveCount == 0 || !MappedBufferPtr)
+    {
+        return {};
+    }
 
-    Vector<GPUMaterial> bufferData(subBufferData.ActiveCount);
-    const byte* src = static_cast<const byte*>(GpuDataBufferMemoryPool.data()) + subBufferData.Offset;
-    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(GPUMaterial));
-    return bufferData;
+    Vector<GPUMaterial> result(sub.ActiveCount);
+    const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(GPUMaterial));
+    return result;
 }
 
 Vector<DirectionalLight> MemoryPoolSystem::DirectionalLightBufferList()
 {
-    const auto& subBufferData = MemorySubPoolHeader[kDirectionalLightBuffer];
-    if (subBufferData.Count == 0) return {};
+    const auto& sub = MemorySubPoolHeader[kDirectionalLightBuffer];
+    if (sub.ActiveCount == 0 || !MappedBufferPtr)
+    {
+        return {};
+    }
 
-    Vector<DirectionalLight> bufferData(subBufferData.ActiveCount);
-    const byte* src = static_cast<const byte*>(GpuDataBufferMemoryPool.data()) + subBufferData.Offset;
-    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(DirectionalLight));
-    return bufferData;
+    Vector<DirectionalLight> result(sub.ActiveCount);
+    const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(DirectionalLight));
+    return result;
 }
 
 Vector<PointLight> MemoryPoolSystem::PointLightBufferList()
 {
-    const auto& subBufferData = MemorySubPoolHeader[kPointLightBuffer];
-    if (subBufferData.Count == 0) return {};
+    const auto& sub = MemorySubPoolHeader[kPointLightBuffer];
+    if (sub.ActiveCount == 0 || !MappedBufferPtr)
+    {
+        return {};
+    }
 
-    Vector<PointLight> bufferData(subBufferData.ActiveCount);
-    const byte* src = static_cast<const byte*>(GpuDataBufferMemoryPool.data()) + subBufferData.Offset;
-    std::memcpy(bufferData.data(), src, subBufferData.ActiveCount * sizeof(PointLight));
-    return bufferData;
+    Vector<PointLight> result(sub.ActiveCount);
+    const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(PointLight));
+    return result;
 }
 
 const MemoryPoolSubBufferHeader MemoryPoolSystem::MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType)

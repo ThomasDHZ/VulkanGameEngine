@@ -67,30 +67,39 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 
 void MeshSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
 {
-	for (int x = 0; x < MeshList.size(); x++)
+	for (size_t x = 0; x < MeshList.size(); ++x)
 	{
-		if (MeshList[x].MeshId == UINT32_MAX) continue;
+		Mesh& mesh = MeshList[x];
+		if (mesh.MeshId == UINT32_MAX) continue;
+		if (!mesh.IsTransformDirty && !mesh.IsMaterialDirty) continue;
 
-		mat4 model = mat4(1.0f);
-		model = glm::translate(model, MeshList[x].Position);
-		model = glm::rotate(model, glm::radians(MeshList[x].Rotation.x), vec3(1, 0, 0));
-		model = glm::rotate(model, glm::radians(MeshList[x].Rotation.y), vec3(0, 1, 0));
-		model = glm::rotate(model, glm::radians(MeshList[x].Rotation.z), vec3(0, 0, 1));
-		model = glm::scale(model, MeshList[x].Scale);
-
-		MeshPropertiesStruct& meshProperties = memoryPoolSystem.UpdateMesh(MeshList[x].ObjectDataIndex);
-		
-		bool changed = (memoryPoolSystem.UpdateMesh(x).MeshTransform != model);
-		uint32 matIndex = MeshList[x].MaterialId != VkGuid() ? materialSystem.FindMaterialPoolIndex(MeshList[x].MaterialId) : 0;
-		if (meshProperties.MaterialIndex != matIndex)
+		bool changed = false;
+		MeshPropertiesStruct& props = memoryPoolSystem.UpdateMesh(mesh.ObjectDataIndex);
+		if (mesh.IsTransformDirty)
 		{
-			meshProperties.MaterialIndex = matIndex;
-			changed = true;
+			mat4 model = glm::translate(mat4(1.0f), mesh.Position);
+			model = glm::rotate(model, glm::radians(mesh.Rotation.x), vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(mesh.Rotation.y), vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(mesh.Rotation.z), vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, mesh.Scale);
+
+			if (props.MeshTransform != model)
+			{
+				props.MeshTransform = model;
+				changed = true;
+			}
+			mesh.IsTransformDirty = false;
 		}
 
-		if (changed)
+		if (mesh.IsMaterialDirty)
 		{
-			meshProperties.MeshTransform = model;
+			uint32 matIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterialPoolIndex(mesh.MaterialId) : 0u;
+			if (props.MaterialIndex != matIndex)
+			{
+				props.MaterialIndex = matIndex;
+				changed = true;
+			}
+			mesh.IsMaterialDirty = false;
 		}
 	}
 }

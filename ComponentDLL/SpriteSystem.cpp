@@ -122,20 +122,11 @@ void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite
     for (size_t x = 0; x < spriteCount; x++)
     {
         glm::mat4 spriteMatrix = glm::mat4(1.0f);
-        if (spriteList[x].LastSpritePosition != spriteList[x].SpritePosition) {
-            spriteMatrix = glm::translate(spriteMatrix, glm::vec3(transform2DList[x].GameObjectPosition.x, transform2DList[x].GameObjectPosition.y, 0.0f));
-            spriteList[x].LastSpritePosition = spriteList[x].SpritePosition;
-        }
-        if (spriteList[x].LastSpriteRotation != spriteList[x].SpriteRotation) {
-            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2DList[x].GameObjectRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2DList[x].GameObjectRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-            spriteList[x].LastSpriteRotation = spriteList[x].SpriteRotation;
-        }
-        if (spriteList[x].LastSpriteScale != spriteList[x].SpriteScale) {
-            spriteMatrix = glm::scale(spriteMatrix, glm::vec3(transform2DList[x].GameObjectScale.x, transform2DList[x].GameObjectScale.y, 1.0f));
-            spriteList[x].LastSpriteScale = spriteList[x].SpriteScale;
-        }
+        spriteMatrix = glm::translate(spriteMatrix, glm::vec3(transform2DList[x].GameObjectPosition.x, transform2DList[x].GameObjectPosition.y, 0.0f));
+        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2DList[x].GameObjectRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2DList[x].GameObjectRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        spriteMatrix = glm::scale(spriteMatrix, glm::vec3(transform2DList[x].GameObjectScale.x, transform2DList[x].GameObjectScale.y, 1.0f));
 
         spriteList[x].CurrentFrameTime += deltaTime;
         if (spriteList[x].CurrentFrameTime >= animationList[x].FrameHoldTime)

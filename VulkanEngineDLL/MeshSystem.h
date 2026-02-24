@@ -89,6 +89,8 @@ struct Mesh
 	vec3 Rotation = vec3(0.0f);
 	vec3 Scale = vec3(1.0f);
 	VkGuid MaterialId;
+	bool IsTransformDirty = true;
+	bool IsMaterialDirty = true;
 	void* Extension = nullptr;
 };
 
