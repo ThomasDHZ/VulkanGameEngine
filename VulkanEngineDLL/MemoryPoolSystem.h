@@ -24,6 +24,7 @@ struct SpriteInstance
 	vec4  Color;
 	mat4  InstanceTransform;
 	uint  MaterialId;
+	uint  Padding;
 };
 
 struct MemoryPoolSubBufferHeader
@@ -99,13 +100,13 @@ private:
 
 	static constexpr uint									 BindlessDataDescriptorBinding = 9;
 
-	static constexpr size_t									 MeshInitialCapacity = 2;
-	static constexpr size_t									 MaterialInitialCapacity = 65536;
+	static constexpr size_t									 MeshInitialCapacity = 4;
+	static constexpr size_t									 MaterialInitialCapacity = 4;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
-	static constexpr size_t									 PointLightInitialCapacity = 4096;
-	static constexpr size_t									 Texture2DInitialCapacity = 128;
-	static constexpr size_t									 Texture3DInitialCapacity = 128;
-	static constexpr size_t									 TextureCubeMapInitialCapacity = 128;
+	static constexpr size_t									 PointLightInitialCapacity = 4;
+	static constexpr size_t									 Texture2DInitialCapacity = 32;
+	static constexpr size_t									 Texture3DInitialCapacity = 4;
+	static constexpr size_t									 TextureCubeMapInitialCapacity = 4;
 	static constexpr size_t									 SpriteInstanceInitialCapacity = 16384;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;

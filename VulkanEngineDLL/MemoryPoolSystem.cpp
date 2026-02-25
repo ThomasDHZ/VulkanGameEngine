@@ -279,9 +279,9 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
         .TextureCubeMapOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
         .TextureCubeMapCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
         .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size,        
-        .SpriteInstanceOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
-        .SpriteInstanceCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
-        .SpriteInstanceSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size
+        .SpriteInstanceOffset = MemorySubPoolHeader[kSpriteInstanceBuffer].Offset,
+        .SpriteInstanceCount = MemorySubPoolHeader[kSpriteInstanceBuffer].Count,
+        .SpriteInstanceSize = MemorySubPoolHeader[kSpriteInstanceBuffer].Size
     };
 }
 

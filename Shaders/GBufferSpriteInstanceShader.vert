@@ -18,6 +18,7 @@ layout (location = 3)  in ivec2 VS_FlipSprite;
 layout (location = 4)  in vec4  VS_Color;
 layout (location = 5)  in mat4  VS_InstanceTransform;
 layout (location = 9)  in uint  VS_MaterialID;
+layout (location = 10) in uint  VS_Padding;
 
 layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
@@ -41,6 +42,8 @@ layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
 layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
+layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
+layout(constant_id = 15) const uint VertexInputRateLocation10 = 1;
 
 layout(push_constant) uniform SceneDataBuffer
 {
