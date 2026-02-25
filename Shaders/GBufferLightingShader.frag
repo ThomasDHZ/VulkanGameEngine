@@ -65,6 +65,8 @@ layout(binding = 9)  buffer BindlessBuffer
 	uint64_t TextureCubeMapOffset;
 	uint TextureCubeMapCount;
 	uint TextureCubeMapSize;
+    uint64_t UnusedDataInShader1; //Used in CPU Side, Sprite Instance Data.
+    uint64_t UnusedDataInShader2; //Used in CPU Side, Sprite Instance Data.
     uint Data[]; 
 } bindlessBuffer;
 layout(binding = 10) uniform sampler2D TextureMap[];

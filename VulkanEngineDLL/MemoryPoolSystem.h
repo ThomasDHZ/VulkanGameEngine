@@ -11,7 +11,20 @@ enum MemoryPoolTypes
 	kTexture2DMetadataBuffer,
 	kTexture3DMetadataBuffer,
 	kTextureCubeMapMetadataBuffer,
+	kSpriteInstanceBuffer,
 	kEndofPool
+};
+
+struct SpriteInstance
+{
+	vec2  SpritePosition;
+	vec4  UVOffset;
+	vec2  SpriteSize;
+	ivec2 FlipSprite;
+	vec4  Color;
+	mat4  InstanceTransform;
+	uint  MaterialId;
+	uint  LayerId;
 };
 
 struct MemoryPoolSubBufferHeader
@@ -63,6 +76,9 @@ struct MemoryPoolBufferHeader
 	uint64 TextureCubeMapOffset = UINT64_MAX;
 	uint32 TextureCubeMapCount = UINT32_MAX;
 	uint32 TextureCubeMapSize = UINT32_MAX;
+	uint64 SpriteInstanceOffset = UINT64_MAX;
+	uint32 SpriteInstanceCount = UINT32_MAX;
+	uint32 SpriteInstanceSize = UINT32_MAX;
 };
 
 struct MeshPropertiesStruct;
@@ -91,6 +107,7 @@ private:
 	static constexpr size_t									 Texture2DInitialCapacity = 128;
 	static constexpr size_t									 Texture3DInitialCapacity = 128;
 	static constexpr size_t									 TextureCubeMapInitialCapacity = 128;
+	static constexpr size_t									 SpriteInstanceInitialCapacity = 16384;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
@@ -116,11 +133,17 @@ public:
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture2DMetadataHeader(uint32 index);
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
+	DLL_EXPORT SpriteInstance&								 UpdateSpriteInstance(uint32 index);
+
+	DLL_EXPORT Vector<SpriteInstance*>						 GetActiveSpriteInstancePointers();
 
 	DLL_EXPORT Vector<MeshPropertiesStruct>					 MeshBufferList();
 	DLL_EXPORT Vector<GPUMaterial>							 MaterialBufferList();
 	DLL_EXPORT Vector<DirectionalLight>						 DirectionalLightBufferList();
 	DLL_EXPORT Vector<PointLight>							 PointLightBufferList();
+	DLL_EXPORT Vector<SpriteInstance>						 SpriteInstanceBufferList();
+
+	DLL_EXPORT void											 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
 
 	DLL_EXPORT const MemoryPoolSubBufferHeader				 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
 	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetBindlessDataBufferDescriptor() const;

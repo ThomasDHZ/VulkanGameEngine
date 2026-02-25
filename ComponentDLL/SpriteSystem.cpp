@@ -16,42 +16,67 @@ uint32 SpriteSystem::GetNextSpriteIndex()
 
 void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
 {
-    Vector<Vertex2DLayout> spriteVertexList =
+    if (SpriteMeshId != UINT32_MAX)
     {
-        Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
-        Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
-        Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
-        Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
-    };
+        Vector<Vertex2DLayout> spriteVertexList =
+        {
+            Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
+            Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
+            Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
+            Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
+        };
 
-    Vector<uint32> spriteIndexList =
-    {
-        0, 3, 1,
-        1, 3, 2
-    };
+        Vector<uint32> spriteIndexList =
+        {
+            0, 3, 1,
+            1, 3, 2
+        };
 
-    VertexLayout vertexData =
-    {
-        .VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
-        .VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
-        .VertexData = spriteVertexList.data(),
-    };
+        VertexLayout vertexData =
+        {
+            .VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
+            .VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
+            .VertexData = spriteVertexList.data(),
+        };
 
-    SpriteLayer spriteLayer = SpriteLayer
-    {
-        .RenderPassId = renderPassId,
-        .SpriteDrawLayer = spriteDrawLayer,
-        .SpriteLayerMeshId = meshSystem.CreateMesh("__SpriteMesh__Layer__" + std::to_string(SpriteLayerList.size()) + "__", kMesh_SpriteMesh, vertexData, spriteIndexList)
-    };
+        SpriteMeshId = meshSystem.CreateMesh("__SpriteMesh__", kMesh_SpriteMesh, vertexData, spriteIndexList);
+    }
 
-    Vector<SpriteInstance> spriteInstanceList = spriteSystem.FindSpriteInstancesByLayer(spriteLayer);
-    spriteLayer.SpriteLayerBufferId = bufferSystem.VMACreateDynamicBuffer(spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    spriteSystem.SpriteLayerList[spriteDrawLayer] = spriteLayer;
+    SpriteLayerList.emplace_back(SpriteLayer
+        {
+            .InstanceCount = 0,
+            .StartInstanceIndex = 0,
+            .SpriteDrawLayer = UINT32_MAX,
+        });
+}
+
+void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
+{
+
+    spriteSystem.SpriteList.emplace_back(Sprite
+        {
+            .SpriteId = static_cast<uint32>(spriteSystem.SpriteList.size()),
+            .GameObjectId = gameObject.GameObjectId,
+            .SpriteInstanceId = memoryPoolSystem.AllocateObject(kSpriteInstanceBuffer),
+            .CurrentAnimationId = 0,
+            .CurrentFrame = 0,
+            .SpriteLayer = FindSpriteVram(spriteVramId).SpriteLayer,
+            .SpritePosition = vec2(0.0f),
+            .SpriteRotation = vec2(0.0f),
+            .SpriteScale = vec2(1.0f),
+            .FlipSprite = ivec2(0),
+            .SpriteVramId = spriteVramId,
+            .CurrentFrameTime = 0.0f,
+            .SpriteAlive = true,
+            .IsSpriteTranformDirty = true,
+            .IsSpriteAnimationDirty = true,
+            .IsSpritePropertiesDirty = true,
+        });
+    SpriteListDirty = true;
 }
 
 VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
 {
-
     nlohmann::json json = fileSystem.LoadJsonFile(spriteVramPath.c_str());
     VramSpriteGuid vramId = VramSpriteGuid(json["VramSpriteId"].get<String>().c_str());
     if (vramSystem.SpriteVramExists(vramId))
@@ -67,103 +92,123 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
     return vramId;
 }
 
-void SpriteSystem::UpdateSprites(const float& deltaTime)
+void SpriteSystem::Update(const float& deltaTime)
 {
+    DestroyDeadSprites();
+    SyncSpritesWithSpriteInstances();
     for (auto& sprite : spriteSystem.SpriteList)
     {
-        const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);
-        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
-        const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationID);
-        const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
+        if (!sprite.IsSpriteTranformDirty &&
+            !sprite.IsSpriteAnimationDirty &&
+            !sprite.IsSpritePropertiesDirty)
+        {
+            continue;
+        }
 
-        mat4 spriteMatrix = mat4(1.0f);
-
+        SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
+        if (sprite.IsSpriteTranformDirty)
+        {
+            mat4 spriteMatrix = mat4(1.0f);
+            const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);   
             spriteMatrix = glm::translate(spriteMatrix, vec3(transform2D.GameObjectPosition.x, transform2D.GameObjectPosition.y, 0.0f));
             spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2D.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
             spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2D.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
             spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
             spriteMatrix = glm::scale(spriteMatrix, vec3(transform2D.GameObjectScale.x, transform2D.GameObjectScale.y, 1.0f));
-
-
-        sprite.CurrentFrameTime += deltaTime;
-        if (sprite.CurrentFrameTime >= animation.FrameHoldTime) 
-        {
-            sprite.CurrentFrame += 1;
-            sprite.CurrentFrameTime = 0.0f;
-            if (sprite.CurrentFrame >= animation.FrameList.size())
-            {
-                sprite.CurrentFrame = 0;
-            }
+            spriteInstance.SpritePosition = transform2D.GameObjectPosition;
+            spriteInstance.InstanceTransform = spriteMatrix;
         }
 
-        spriteSystem.SpriteInstanceList[sprite.SpriteInstance] = SpriteInstance
+        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
+        if (sprite.IsSpritePropertiesDirty)
         {
-            .SpritePosition = transform2D.GameObjectPosition,
-            .UVOffset = vec4(vram.SpriteUVSize.x * currentFrame.x, vram.SpriteUVSize.y * currentFrame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y),
-            .SpriteSize = vram.SpriteSize,
-            .FlipSprite = sprite.FlipSprite,
-            .InstanceTransform = spriteMatrix,
-            .MaterialID = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID),
+            spriteInstance.SpriteSize = vram.SpriteSize;
+            spriteInstance.FlipSprite = sprite.FlipSprite;
+            //spriteInstance.Color = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
+        }
+
+        if (sprite.IsSpriteAnimationDirty)
+        {
+            sprite.CurrentFrameTime += deltaTime;
+            const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationId);
+            const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
+            if (sprite.CurrentFrameTime >= animation.FrameHoldTime)
+            {
+                sprite.CurrentFrame += 1;
+                sprite.CurrentFrameTime = 0.0f;
+                if (sprite.CurrentFrame >= animation.FrameList.size())
+                {
+                    sprite.CurrentFrame = 0;
+                }
+                spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * currentFrame.x, vram.SpriteUVSize.y * currentFrame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
+            }
+        }
+    }
+}
+
+void SpriteSystem::SyncSpritesWithSpriteInstances()
+{
+    if (!SpriteListDirty)
+    {
+        return;
+    }
+
+    SpriteListDirty = false;
+    std::stable_sort(SpriteList.begin(), SpriteList.end(),
+        [](const Sprite& a, const Sprite& b)
+        {
+            return a.SpriteLayer < b.SpriteLayer;
+        });
+
+    uint32 currentInstanceIndex = 0;
+    for (auto& layer : SpriteLayerList)
+    {
+        layer.StartInstanceIndex = 0;
+        layer.InstanceCount = 0;
+    }
+
+    for (auto& sprite : SpriteList)
+    {
+        if (!sprite.SpriteAlive)
+        {
+            continue;
+        }
+
+        if (sprite.SpriteInstanceId != currentInstanceIndex)
+        {
+            if (sprite.SpriteInstanceId != UINT32_MAX)
+            {
+                memoryPoolSystem.FreeObject(kSpriteInstanceBuffer, sprite.SpriteInstanceId);
+            }
+            sprite.SpriteInstanceId = currentInstanceIndex;
+        }
+
+        for (auto& layer : SpriteLayerList)
+        {
+            if (layer.SpriteDrawLayer == sprite.SpriteLayer)
+            {
+                if (layer.InstanceCount == 0)
+                    layer.StartInstanceIndex = currentInstanceIndex;
+
+                layer.InstanceCount++;
+                break;
+            }
+        }
+        currentInstanceIndex++;
+    }
+
+    uint32 instanceStartIndex = 0;
+    for (int x = 0; x < SpriteLayerList.size(); x++)
+    {
+        uint32 layerCount = GetSpriteCountofLayer(x);
+        SpriteLayerList[x] = SpriteLayer
+        {
+            .InstanceCount = layerCount,
+            .StartInstanceIndex = instanceStartIndex,
+            .SpriteDrawLayer = static_cast<uint32>(x),
         };
+        instanceStartIndex += layerCount;
     }
-}
-
-void SpriteSystem::UpdateSpriteBatchLayers(const float& deltaTime)
-{
-    for (auto& spriteLayer : SpriteLayerList)
-    {
-        Vector<SpriteInstance> spriteInstanceList = FindSpriteInstancesByLayer(spriteLayer.second);
-        bufferSystem.VMAUpdateDynamicBuffer(spriteLayer.second.SpriteLayerBufferId, spriteInstanceList.data(), sizeof(SpriteInstance) * spriteInstanceList.size());
-    }
-}
-
-void SpriteSystem::UpdateBatchSprites(SpriteInstance* spriteInstanceList, Sprite* spriteList, const Transform2DComponent* transform2DList, const SpriteVram* vramList, const Animation2D* animationList, const Material* materialList, size_t spriteCount, float deltaTime)
-{
-    for (size_t x = 0; x < spriteCount; x++)
-    {
-        glm::mat4 spriteMatrix = glm::mat4(1.0f);
-        spriteMatrix = glm::translate(spriteMatrix, glm::vec3(transform2DList[x].GameObjectPosition.x, transform2DList[x].GameObjectPosition.y, 0.0f));
-        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2DList[x].GameObjectRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2DList[x].GameObjectRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        spriteMatrix = glm::scale(spriteMatrix, glm::vec3(transform2DList[x].GameObjectScale.x, transform2DList[x].GameObjectScale.y, 1.0f));
-
-        spriteList[x].CurrentFrameTime += deltaTime;
-        if (spriteList[x].CurrentFrameTime >= animationList[x].FrameHoldTime)
-        {
-            spriteList[x].CurrentFrame += 1;
-            spriteList[x].CurrentFrameTime = 0.0f;
-            if (spriteList[x].CurrentFrame >= spriteCount)
-            {
-                spriteList[x].CurrentFrame = 0;
-            }
-        }
-
-        const ivec2& currentFrame = animationList->FrameList[spriteList[x].CurrentFrame];
-        spriteInstanceList[x].SpritePosition = transform2DList[x].GameObjectPosition;
-        spriteInstanceList[x].SpriteSize = vramList[x].SpriteSize;
-        spriteInstanceList[x].MaterialID = materialSystem.FindMaterialPoolIndex(materialList[x].MaterialGuid);
-        spriteInstanceList[x].InstanceTransform = spriteMatrix;
-        spriteInstanceList[x].FlipSprite = spriteList[x].FlipSprite;
-        spriteInstanceList[x].UVOffset = glm::vec4(vramList[x].SpriteUVSize.x * currentFrame.x, vramList[x].SpriteUVSize.y * currentFrame.y, vramList[x].SpriteUVSize.x, vramList[x].SpriteUVSize.y);
-    }
-}
-
-Vector<SpriteInstance> SpriteSystem::FindSpriteInstancesByLayer(const SpriteLayer& spriteLayer)
-{
-    Vector<SpriteInstance> spriteInstanceList;
-    Vector<Sprite> spriteList = FindSpritesByLayer(spriteLayer);
-    for (auto& sprite : spriteList)
-    {
-        spriteInstanceList.emplace_back(spriteSystem.SpriteInstanceList[sprite.SpriteInstance]);
-    }
-
-    return spriteInstanceList;
-}
-
-SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
-{
-    return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }
 
 Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
@@ -171,49 +216,88 @@ Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, con
     return spriteSystem.SpriteAnimationMap.at(vramId)[animationId];
 }
 
+SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
+{
+    return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
+}
+
+uint32 SpriteSystem::GetSpriteCountofLayer(uint32 layerId)
+{
+    return std::count_if(SpriteList.begin(), SpriteList.end(), [layerId](const Sprite& sprite)
+        {
+            return sprite.SpriteLayer == layerId;
+        });
+}
+
+void SpriteSystem::DestroySprite(uint32 spriteId)
+{
+    auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [spriteId](const Sprite& sprite) 
+        { 
+            return sprite.SpriteId == spriteId; 
+        });
+
+    if (it != SpriteList.end())
+    {
+        Sprite& sprite = *it;
+        if (sprite.SpriteInstanceId != UINT32_MAX)
+        {
+            memoryPoolSystem.FreeObject(kSpriteInstanceBuffer, sprite.SpriteInstanceId);
+            sprite.SpriteInstanceId = UINT32_MAX;
+        }
+        sprite.SpriteAlive = false;
+        SpriteListDirty = true;
+    }
+}
+
+void SpriteSystem::DestroyDeadSprites()
+{
+    Vector<Sprite> deadSpritesList;
+    std::copy_if(deadSpritesList.begin(), deadSpritesList.end(), std::back_inserter(deadSpritesList), [](const Sprite& sprite)
+        {
+            return sprite.SpriteAlive == false;
+        });
+
+    for (auto& deadSprite : deadSpritesList)
+    {
+        DestroySprite(deadSprite.SpriteId);
+    };
+}
+
 void SpriteSystem::Destroy()
 {
 
 }
 
-const bool SpriteSystem::SpriteLayerExists(const uint32 spriteDrawLayer)
-{
-    return spriteSystem.SpriteLayerList.contains(spriteDrawLayer);
-}
-
-void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
-{
-    Sprite sprite;
-    sprite.SpriteID = GetNextSpriteIndex();
-    sprite.GameObjectId = gameObject.GameObjectId;
-    sprite.SpriteVramId = spriteVramId;
-    sprite.SpriteLayer = FindSpriteVram(spriteVramId).SpriteLayer;
-    sprite.SpriteInstance = spriteSystem.SpriteInstanceList.size();
-    spriteSystem.SpriteList.emplace_back(sprite);
-    spriteSystem.SpriteInstanceList.emplace_back(SpriteInstance());
-    if (!SpriteLayerExists(sprite.SpriteLayer))
-    {
-        VkGuid guid = VkGuid("de78235b-3c69-4298-99da-acd8c6622ece");
-        AddSpriteBatchLayer(guid, sprite.SpriteLayer);
-    }
-}
-
-void SpriteSystem::Update(float deltaTime)
-{
-    UpdateSprites(deltaTime);
-    UpdateSpriteBatchLayers(deltaTime);
-}
-
 void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
 {
-    if (sprite->CurrentAnimationID == spriteAnimationEnum)
+    if (sprite->CurrentAnimationId == spriteAnimationEnum)
     {
         return;
     }
 
-    sprite->CurrentAnimationID = spriteAnimationEnum;
+    sprite->CurrentAnimationId = spriteAnimationEnum;
     sprite->CurrentFrame = 0;
     sprite->CurrentFrameTime = 0.0f;
+}
+
+void SpriteSystem::SortSpritesbyLayer()
+{
+    if (SpriteListDirty)
+    {
+        auto pointers = memoryPoolSystem.GetActiveSpriteInstancePointers();
+        std::stable_sort(pointers.begin(), pointers.end(), [](SpriteInstance* a, SpriteInstance* b)
+            {
+                return a->LayerId < b->LayerId;
+            });
+
+        uint32 newIndex = 0;
+        for (SpriteInstance* ptr : pointers)
+        {
+            SpriteInstance& target = memoryPoolSystem.UpdateSpriteInstance(newIndex);
+            target = *ptr;
+            newIndex++;
+        }
+    }
 }
 
 Sprite SpriteSystem::FindSprite(uint gameObjectId)

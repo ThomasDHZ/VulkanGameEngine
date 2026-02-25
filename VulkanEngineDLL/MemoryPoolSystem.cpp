@@ -105,6 +105,19 @@ void MemoryPoolSystem::StartUp()
                 };
                 break;
             }
+            case MemoryPoolTypes::kSpriteInstanceBuffer:
+            {
+                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
+                {
+                    .ActiveCount = 0,
+                    .Count = SpriteInstanceInitialCapacity,
+                    .Size = sizeof(SpriteInstance),
+                    .IsActive = Vector<byte>(SpriteInstanceInitialCapacity, 0x00),
+                    .FreeIndices = Vector<uint32>(),
+                    .IsDirty = true
+                };
+                break;
+            }
         }
     }
     UpdateMemoryPoolHeader(kMeshBuffer, MeshInitialCapacity);
@@ -265,7 +278,10 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
         .Texture3DSize = MemorySubPoolHeader[kTexture3DMetadataBuffer].Size,
         .TextureCubeMapOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
         .TextureCubeMapCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
-        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size
+        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size,        
+        .SpriteInstanceOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
+        .SpriteInstanceCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
+        .SpriteInstanceSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size
     };
 }
 
@@ -349,6 +365,40 @@ TextureMetadataHeader& MemoryPoolSystem::UpdateTextureCubeMapMetadataHeader(uint
     return *reinterpret_cast<TextureMetadataHeader*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
+SpriteInstance& MemoryPoolSystem::UpdateSpriteInstance(uint32 index)
+{
+    MemoryPoolSubBufferHeader& pointLightSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    if (index >= pointLightSubPool.Count) throw std::out_of_range("Sprite Instance index out of range: " + std::to_string(index) + " >= " + std::to_string(pointLightSubPool.Count));
+    if (index >= pointLightSubPool.IsActive.size() || !pointLightSubPool.IsActive[index]) throw std::runtime_error("Sprite Instance slot inactive at index " + std::to_string(index));
+
+    uint32 offset = pointLightSubPool.Offset + (index * sizeof(SpriteInstance));
+    pointLightSubPool.IsDirty = true;
+    return *reinterpret_cast<SpriteInstance*>(static_cast<byte*>(MappedBufferPtr) + offset);
+}
+
+Vector<SpriteInstance*>	MemoryPoolSystem::GetActiveSpriteInstancePointers()
+{
+    const auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    if (sub.ActiveCount == 0 || !MappedBufferPtr)
+    {
+        return {};
+    }
+
+    Vector<SpriteInstance*> pointers;
+    pointers.reserve(sub.ActiveCount);
+    const byte* base = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
+    for (uint32 x = 0; x < sub.Count; ++x)
+    {
+        if (sub.IsActive[x])
+        {
+            SpriteInstance* ptr = reinterpret_cast<SpriteInstance*>(const_cast<byte*>(base) + x * sub.Size);
+            pointers.push_back(ptr);
+        }
+    }
+    MemorySubPoolHeader[kSpriteInstanceBuffer].IsDirty = true;
+    return pointers;
+}
+
 Vector<MeshPropertiesStruct> MemoryPoolSystem::MeshBufferList()
 {
     const auto& sub = MemorySubPoolHeader[kMeshBuffer];
@@ -403,6 +453,37 @@ Vector<PointLight> MemoryPoolSystem::PointLightBufferList()
     const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
     std::memcpy(result.data(), src, sub.ActiveCount * sizeof(PointLight));
     return result;
+}
+
+Vector<SpriteInstance> MemoryPoolSystem::SpriteInstanceBufferList()
+{
+    const auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    if (sub.ActiveCount == 0 || !MappedBufferPtr)
+    {
+        return {};
+    }
+
+    Vector<SpriteInstance> result(sub.ActiveCount);
+    const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(SpriteInstance));
+    return result;
+}
+
+void MemoryPoolSystem::FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index)
+{
+    MemoryPoolSubBufferHeader& sub = MemorySubPoolHeader[memoryPoolToUpdate];
+    if (index >= sub.Count || !sub.IsActive[index])
+    {
+        return;
+    }
+
+    sub.IsActive[index] = 0x00;
+    sub.FreeIndices.push_back(index);
+    sub.IsDirty = true;
+    while (sub.ActiveCount > 0 && sub.IsActive[sub.ActiveCount - 1] == 0)
+    {
+        sub.ActiveCount--;
+    }
 }
 
 const MemoryPoolSubBufferHeader MemoryPoolSystem::MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType)
