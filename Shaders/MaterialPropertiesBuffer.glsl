@@ -78,3 +78,10 @@ struct Material
     float ShiftedHeight;
 };
 
+struct CubeMapMaterial
+{
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+};
+

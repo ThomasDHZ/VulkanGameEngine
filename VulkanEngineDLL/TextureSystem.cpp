@@ -117,7 +117,8 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		CubeMap = texture;
+		CubeMapId = CubeMapTextureList.size();
+		CubeMapTextureList.emplace_back(texture);
 	}
 	else
 	{
@@ -403,7 +404,8 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		CubeMap = texture;
+		CubeMapId = CubeMapTextureList.size();
+		CubeMapTextureList.emplace_back(texture);
 	}
 	else
 	{
@@ -913,15 +915,15 @@ void TextureSystem::DestroyAllTextures()
 	}
 	DepthTextureMap.clear();
 
-	DestroyTexture(BRDFMap);
-	DestroyTexture(CubeMap);
-	DestroyTexture(IrradianceCubeMap);
-	DestroyTexture(PrefilterCubeMap);
+	//DestroyTexture(BRDFMap);
+	//DestroyTexture(CubeMap);
+	//DestroyTexture(IrradianceCubeMap);
+	//DestroyTexture(PrefilterCubeMap);
 
-	BRDFMap = Texture{};
-	CubeMap = Texture{};
-	IrradianceCubeMap = Texture{};
-	PrefilterCubeMap = Texture{};
+	//BRDFMap = Texture{};
+	//CubeMap = Texture{};
+	//IrradianceCubeMap = Texture{};
+	//PrefilterCubeMap = Texture{};
 }
 
 void TextureSystem::GenerateMipmaps(Texture& texture)

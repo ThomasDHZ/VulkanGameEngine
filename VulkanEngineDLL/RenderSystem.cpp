@@ -448,8 +448,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
     return renderPassLoader.RenderPassId;
 }
 
-void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime) 
-{ 
+void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
+{
     vkDeviceWaitIdle(vulkanSystem.Device);
     vulkanSystem.RebuildSwapChain(windowHandle);
     for (auto& renderPassPair : renderSystem.RenderPassMap)
@@ -607,13 +607,15 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
         Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, x);
         if (texture.textureType == TextureType_IrradianceMapTexture)
         {
-            textureSystem.IrradianceCubeMap = texture;
+            textureSystem.IrradianceMapId = textureSystem.CubeMapTextureList.size();
+            textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
         }
         else if (texture.textureType == TextureType_PrefilterMapTexture)
         {
-            textureSystem.PrefilterCubeMap = texture;
+            textureSystem.PrefilterMapId = textureSystem.CubeMapTextureList.size();
+            textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
         }
@@ -985,22 +987,22 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
             }*/
             case kSkyBoxDescriptor:
             {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetSkyBoxTextureBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetSkyBoxTextureBuffer();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetCubeMapTextureBuffer().size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetCubeMapTextureBuffer();
                 break;
             }
-            case kIrradianceMapDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIrradianceMapTextureBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetIrradianceMapTextureBuffer();
-                break;
-            }
-            case kPrefilterMapDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetPrefilterMapTextureBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetPrefilterMapTextureBuffer();
-                break;
-            }
+            //case kIrradianceMapDescriptor:
+            //{
+            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIrradianceMapTextureBuffer().size();
+            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetIrradianceMapTextureBuffer();
+            //    break;
+            //}
+            //case kPrefilterMapDescriptor:
+            //{
+            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetPrefilterMapTextureBuffer().size();
+            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetPrefilterMapTextureBuffer();
+            //    break;
+            //}
             case kSubpassInputDescriptor:
             {
                 Texture inputTexture = textureSystem.FindRenderedTextureList(renderPipelineLoader.RenderPassId)[x];
@@ -1186,39 +1188,18 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     return texturePropertiesBuffer;
 }
 
-Vector<VkDescriptorImageInfo> RenderSystem::GetSkyBoxTextureBuffer()
+Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
 {
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
-    texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
+    for (auto& cubeMap : textureSystem.CubeMapTextureList)
+    {
+        texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {
-            .sampler = textureSystem.CubeMap.textureSampler,
-            .imageView = textureSystem.CubeMap.textureViewList.front(),
-            .imageLayout = textureSystem.CubeMap.textureImageLayout
+            .sampler = cubeMap.textureSampler,
+            .imageView = cubeMap.textureViewList.front(),
+            .imageLayout = cubeMap.textureImageLayout
         });
-    return texturePropertiesBuffer;
-}
-
-Vector<VkDescriptorImageInfo> RenderSystem::GetIrradianceMapTextureBuffer()
-{
-    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
-    texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
-        {
-            .sampler = textureSystem.IrradianceCubeMap.textureSampler,
-            .imageView = textureSystem.IrradianceCubeMap.textureViewList.front(),
-            .imageLayout = textureSystem.IrradianceCubeMap.textureImageLayout
-        });
-    return texturePropertiesBuffer;
-}
-
-Vector<VkDescriptorImageInfo> RenderSystem::GetPrefilterMapTextureBuffer()
-{
-    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
-    texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
-        {
-            .sampler = textureSystem.PrefilterCubeMap.textureSampler,
-            .imageView = textureSystem.PrefilterCubeMap.textureViewList[0],
-            .imageLayout = textureSystem.PrefilterCubeMap.textureImageLayout,
-        });
+    }
     return texturePropertiesBuffer;
 }
 

@@ -4,6 +4,7 @@
 #include "VulkanSystem.h"
 #include "TextureSystem.h"
 
+
 class RenderSystem
 {
 public:
@@ -59,9 +60,7 @@ public:
     DLL_EXPORT void                          DestroyBuffer(VkBuffer& buffer);
 
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
-    Vector<VkDescriptorImageInfo>     GetSkyBoxTextureBuffer();
-    Vector<VkDescriptorImageInfo>     GetIrradianceMapTextureBuffer();
-    Vector<VkDescriptorImageInfo>     GetPrefilterMapTextureBuffer();
+    Vector<VkDescriptorImageInfo>     GetCubeMapTextureBuffer();
     Vector<VkDescriptorImageInfo>     GetBRDFMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;

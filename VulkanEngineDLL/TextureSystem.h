@@ -66,13 +66,15 @@ private:
     void GenerateMipmaps(Texture& texture);
 
 public:
+    uint32 BRDFMapId = UINT32_MAX;
+    uint32 CubeMapId = UINT32_MAX;
+    uint32 IrradianceMapId = UINT32_MAX;
+    uint32 PrefilterMapId = UINT32_MAX;
     Texture                                                        BRDFMap;
-    Texture                                                        CubeMap;
-    Texture                                                        IrradianceCubeMap;
-    Texture                                                        PrefilterCubeMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     Vector<Texture>                                                TextureList;
+    Vector<Texture>                                                CubeMapTextureList;
 
     DLL_EXPORT Texture                  CreateTexture(const String& texturePath);
     DLL_EXPORT Texture                  CreateTexture(TextureLoader textureLoader);

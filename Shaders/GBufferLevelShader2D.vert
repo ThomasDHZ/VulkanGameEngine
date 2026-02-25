@@ -27,8 +27,6 @@ layout(constant_id = 9)   const uint DescriptorBindingType9   = MemoryPoolDescri
 layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
 layout(constant_id = 11)  const uint DescriptorBindingType11  = BRDFDescriptor;
 layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
-layout(constant_id = 13)  const uint DescriptorBindingType13  = IrradianceCubeMapDescriptor;
-layout(constant_id = 14)  const uint DescriptorBindingType14  = PrefilterDescriptor;
 
 layout(binding = 9)  buffer BindlessBuffer 
 { 
@@ -60,9 +58,7 @@ layout(binding = 9)  buffer BindlessBuffer
 } bindlessBuffer;
 layout(binding = 10) uniform sampler2D TextureMap[];
 layout(binding = 11) uniform sampler2D BRDFMap;
-layout(binding = 12) uniform samplerCube CubeMap;
-layout(binding = 13) uniform samplerCube IrradianceMap;
-layout(binding = 14) uniform samplerCube PrefilterMap;
+layout(binding = 12) uniform samplerCube CubeMap[];
 
 layout(push_constant) uniform SceneDataBuffer
 {

@@ -252,8 +252,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
     renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-    textureSystem.CubeMap = textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back();
-
+    textureSystem.CubeMapId = textureSystem.CubeMapTextureList.size();
+    textureSystem.CubeMapTextureList.emplace_back(textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
@@ -362,6 +362,11 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
 
     ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
     shaderSystem.UpdatePushConstantValue<int>(gBufferSceneDataBuffer, "Isolate", isolateLayer);
+    shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "BRDFIndex", textureSystem.BRDFMapId);
+    shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "CubeMapIndex", textureSystem.CubeMapId);
+    shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "IrradianceMapId", textureSystem.IrradianceMapId);
+    shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "PrefilterMapId", textureSystem.PrefilterMapId);
+    shaderSystem.UpdatePushConstantValue<uint>(gBufferSceneDataBuffer, "Isolate", isolateLayer);
     shaderSystem.UpdatePushConstantValue<vec2>(gBufferSceneDataBuffer, "InvertResolution", vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y)));
     shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "OrthographicCameraPosition", OrthographicCamera->Position);
     shaderSystem.UpdatePushConstantValue<vec3>(gBufferSceneDataBuffer, "PerspectiveViewDirection", ViewDirection);
@@ -489,7 +494,7 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
 
     VkDeviceSize offsets[] = { 0 };
     uint32 baseSize = renderPass.RenderPassResolution.x;
-    uint32 prefilterMipmapCount = textureSystem.PrefilterCubeMap.mipMapLevels;
+    uint32 prefilterMipmapCount = textureSystem.CubeMapTextureList[textureSystem.PrefilterMapId].mipMapLevels;
     for (uint32 mip = 0; mip < prefilterMipmapCount; ++mip)
     {
         uint32 mipWidth = baseSize >> mip;
