@@ -152,10 +152,10 @@ void SpriteSystem::Update(const float& deltaTime)
 
 void SpriteSystem::SyncSpritesWithSpriteInstances()
 {
-    if (!SpriteListDirty)
-    {
-        return;
-    }
+    //if (!SpriteListDirty)
+    //{
+    //    return;
+    //}
 
     SpriteListDirty = false;
     std::stable_sort(SpriteList.begin(), SpriteList.end(),
