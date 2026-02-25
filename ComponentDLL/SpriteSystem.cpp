@@ -14,7 +14,7 @@ uint32 SpriteSystem::GetNextSpriteIndex()
     return spriteSystem.SpriteList.size();
 }
 
-void SpriteSystem::AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer)
+void SpriteSystem::AddSpriteBatchLayer()
 {
     if (SpriteMeshId != UINT32_MAX)
     {
@@ -72,6 +72,10 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
             .IsSpriteAnimationDirty = true,
             .IsSpritePropertiesDirty = true,
         });
+    SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(spriteSystem.SpriteList.back().SpriteInstanceId);
+    spriteInstance = SpriteInstance();
+
+    AddSpriteBatchLayer();
     SpriteListDirty = true;
 }
 
@@ -197,6 +201,24 @@ void SpriteSystem::SyncSpritesWithSpriteInstances()
         currentInstanceIndex++;
     }
 
+    auto oldSpriteListPtr = memoryPoolSystem.GetActiveSpriteInstancePointers();
+    auto a = oldSpriteListPtr[0];
+    auto oldSpriteList = SpriteList;
+    Vector<SpriteInstance*> spriteInstancePtrList = memoryPoolSystem.GetActiveSpriteInstancePointers();
+    for (int x = 0; x < SpriteList.size(); x++)
+    {
+        if (oldSpriteList[x].SpriteInstanceId == SpriteList[x].SpriteInstanceId)
+        {
+            continue;
+        }
+        else
+        {
+            SpriteInstance spriteInstance = *spriteInstancePtrList[x];
+            *spriteInstancePtrList[x] = *spriteInstancePtrList[oldSpriteList[x].SpriteInstanceId];
+            *spriteInstancePtrList[oldSpriteList[x].SpriteInstanceId] = *spriteInstancePtrList[x];
+        }
+    }
+
     uint32 instanceStartIndex = 0;
     for (int x = 0; x < SpriteLayerList.size(); x++)
     {
@@ -282,7 +304,7 @@ void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
 
 void SpriteSystem::SortSpritesbyLayer()
 {
-    if (SpriteListDirty)
+ /*   if (SpriteListDirty)
     {
         auto pointers = memoryPoolSystem.GetActiveSpriteInstancePointers();
         std::stable_sort(pointers.begin(), pointers.end(), [](SpriteInstance* a, SpriteInstance* b)
@@ -297,7 +319,7 @@ void SpriteSystem::SortSpritesbyLayer()
             target = *ptr;
             newIndex++;
         }
-    }
+    }*/
 }
 
 Sprite SpriteSystem::FindSprite(uint gameObjectId)

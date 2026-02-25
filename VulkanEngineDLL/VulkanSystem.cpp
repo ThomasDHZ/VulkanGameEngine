@@ -526,7 +526,10 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .features =
         {
             .vertexPipelineStoresAndAtomics = VK_TRUE,
-            .fragmentStoresAndAtomics = VK_TRUE
+            .fragmentStoresAndAtomics = VK_TRUE,
+            .shaderFloat64 = VK_TRUE,
+            .shaderInt64 = VK_TRUE,
+            .shaderInt16 = VK_TRUE,
         },
     };
 

@@ -52,7 +52,7 @@ private:
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
     uint32     GetNextSpriteIndex();
-    void       AddSpriteBatchLayer(RenderPassGuid& renderPassId, uint32 spriteDrawLayer);
+    void       AddSpriteBatchLayer();
     void       SyncSpritesWithSpriteInstances();
  
 public:
