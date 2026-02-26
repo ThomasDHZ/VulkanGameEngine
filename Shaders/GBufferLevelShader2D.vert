@@ -25,8 +25,7 @@ layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDesc
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
 layout(constant_id = 9)   const uint DescriptorBindingType9   = MemoryPoolDescriptor;
 layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = BRDFDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor;
 
 layout(binding = 9)  buffer BindlessBuffer 
 { 
@@ -57,8 +56,7 @@ layout(binding = 9)  buffer BindlessBuffer
     uint Data[]; 
 } bindlessBuffer;
 layout(binding = 10) uniform sampler2D TextureMap[];
-layout(binding = 11) uniform sampler2D BRDFMap;
-layout(binding = 12) uniform samplerCube CubeMap[];
+layout(binding = 11) uniform samplerCube CubeMap[];
 
 layout(push_constant) uniform SceneDataBuffer
 {

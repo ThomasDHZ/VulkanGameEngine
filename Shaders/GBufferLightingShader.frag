@@ -28,8 +28,7 @@ layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDesc
 layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
 layout(constant_id = 9)   const uint DescriptorBindingType9   = MemoryPoolDescriptor;
 layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = BRDFDescriptor;
-layout(constant_id = 12)  const uint DescriptorBindingType12  = SkyBoxDescriptor;
+layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor;
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
 layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
@@ -69,8 +68,7 @@ layout(binding = 9)  buffer BindlessBuffer
     uint Data[]; 
 } bindlessBuffer;
 layout(binding = 10) uniform sampler2D TextureMap[];
-layout(binding = 11) uniform sampler2D BRDFMap;
-layout(binding = 12) uniform samplerCube CubeMap[];
+layout(binding = 11) uniform samplerCube CubeMap[];
 
 layout(push_constant) uniform GBufferSceneDataBuffer
 {
@@ -640,7 +638,7 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
     lod = clamp(lod, 0.0, maxLod);
     vec3  prefilteredColor = textureLod(CubeMap[gBufferSceneDataBuffer.PrefilterMapId], R, lod).rgb;
 
-    vec2  brdf = texture(BRDFMap, vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
+    vec2  brdf = texture(TextureMap[gBufferSceneDataBuffer.BRDFIndex], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
     vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
@@ -656,7 +654,7 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
 
     vec3  coatPrefilter = textureLod(CubeMap[gBufferSceneDataBuffer.PrefilterMapId], coatR, coatLod).rgb;
 
-    vec2  coatBRDF = texture(TextureMap[BrdfMapBinding], vec2(coatNdotV, clearcoatRoughness)).rg;
+    vec2  coatBRDF = texture(TextureMap[gBufferSceneDataBuffer.BRDFIndex], vec2(coatNdotV, clearcoatRoughness)).rg;
     float coatF = 0.04 + (1.0 - 0.04) * pow(1.0 - coatNdotV, 5.0);
 
     vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;

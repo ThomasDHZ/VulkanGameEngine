@@ -70,7 +70,6 @@ public:
     uint32 CubeMapId = UINT32_MAX;
     uint32 IrradianceMapId = UINT32_MAX;
     uint32 PrefilterMapId = UINT32_MAX;
-    Texture                                                        BRDFMap;
     UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     Vector<Texture>                                                TextureList;

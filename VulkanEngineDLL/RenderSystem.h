@@ -61,7 +61,6 @@ public:
 
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>     GetCubeMapTextureBuffer();
-    Vector<VkDescriptorImageInfo>     GetBRDFMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()
