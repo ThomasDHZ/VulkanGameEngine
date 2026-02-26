@@ -91,5 +91,6 @@ enum DescriptorBindingPropertiesEnum
     kSubpassInputDescriptor,
     kBRDFMapDescriptor,
     kEnvironmentMapDescriptor,
-    kBindlessDataDescriptor
+    kBindlessDataDescriptor,
+    kTexture3DDescriptor
 };

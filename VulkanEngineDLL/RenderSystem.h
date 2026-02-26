@@ -61,6 +61,7 @@ public:
     DLL_EXPORT void                          DestroyBuffer(VkBuffer& buffer);
 
     Vector<VkDescriptorImageInfo>     GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
+    Vector<VkDescriptorImageInfo>     GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>     GetCubeMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;

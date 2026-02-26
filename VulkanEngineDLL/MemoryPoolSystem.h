@@ -50,6 +50,18 @@ struct TextureMetadataHeader
 	uint32 ArrayIndex = 0; // Index into the correct sampler array
 };
 
+struct SceneDataBuffer
+{
+	mat4  Projection;
+	mat4  View;
+	mat4  InverseProjection;
+	mat4  InverseView;
+	vec3  CameraPosition;
+	vec3  ViewDirection;
+	float Time;
+	uint  FrameIndex;
+};
+
 struct MemoryPoolBufferHeader
 {
 	//CPU side: in bytes

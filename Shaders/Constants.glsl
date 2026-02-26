@@ -18,6 +18,7 @@ const uint SubpassInputDescriptor = 12;
 const uint BRDFDescriptor = 13;
 const uint EnvironmentMapDescriptor = 14;
 const uint MemoryPoolDescriptor = 15;
+const uint Texture3DDescriptor = 16;
 
 #define saturate(x) clamp(x, 0.0, 1.0)
 #endif

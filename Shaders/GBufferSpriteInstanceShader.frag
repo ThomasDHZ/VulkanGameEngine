@@ -26,10 +26,23 @@ layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height        
 layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 layout(constant_id = 0)  const uint DescriptorBindingType0  = MemoryPoolDescriptor;
-layout(constant_id = 1)  const uint DescriptorBindingType1  = TextureDescriptor;
-layout(constant_id = 2)  const uint DescriptorBindingType2  = SkyBoxDescriptor;
+layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
+layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
+layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
-layout(binding = 0)  buffer BindlessBuffer 
+layout(binding = 0)  buffer SceneDataBuffer 
+{ 
+	mat4  Projection;
+	mat4  View;
+	mat4  InverseProjection;
+	mat4  InverseView;
+	vec3  CameraPosition;
+	vec3  ViewDirection;
+	float Time;
+	uint  FrameIndex;
+}sceneDataBuffer;
+layout(binding = 1)  buffer BindlessBuffer 
 { 
     uint64_t MeshOffset;     
     uint MeshCount;
@@ -57,8 +70,9 @@ layout(binding = 0)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 1) uniform sampler2D TextureMap[];
-layout(binding = 2) uniform samplerCube CubeMap[];
+layout(binding = 2) uniform sampler2D TextureMap[];
+layout(binding = 3) uniform sampler3D Texture3DMap[];
+layout(binding = 4) uniform samplerCube CubeMap[];
 
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
 layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;

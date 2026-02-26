@@ -578,6 +578,16 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 		});
 }
 
+void TextureSystem::GetTexture3DPropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList)
+{
+	textureDescriptorList.emplace_back(VkDescriptorImageInfo
+		{
+			.sampler = texture.textureSampler,
+			.imageView = texture.textureViewList.front(),
+			.imageLayout = texture.textureImageLayout
+		});
+}
+
 Texture TextureSystem::FindTexture(const VkGuid& textureId)
 {
 	for (auto& pair : RenderedTextureListMap)

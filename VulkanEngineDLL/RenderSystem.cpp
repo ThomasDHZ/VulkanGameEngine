@@ -1109,6 +1109,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
             //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetPrefilterMapTextureBuffer();
             //    break;
             //}
+            case kTexture3DDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexture3DPropertiesBuffer(renderPipelineLoader.RenderPassId).size();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetTexture3DPropertiesBuffer(renderPipelineLoader.RenderPassId);
+                break;
+            }
             case kSubpassInputDescriptor:
             {
                 Texture inputTexture = textureSystem.FindRenderedTextureList(renderPipelineLoader.RenderPassId)[x];
@@ -1291,6 +1297,56 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
         }
     }
     
+    return texturePropertiesBuffer;
+}
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid)
+{
+    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
+    if (textureSystem.Texture3DList.empty())
+    {
+        VkSamplerCreateInfo NullSamplerInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .magFilter = VK_FILTER_NEAREST,
+            .minFilter = VK_FILTER_NEAREST,
+            .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+            .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .mipLodBias = 0,
+            .anisotropyEnable = VK_TRUE,
+            .maxAnisotropy = 16.0f,
+            .compareEnable = VK_FALSE,
+            .compareOp = VK_COMPARE_OP_ALWAYS,
+            .minLod = 0,
+            .maxLod = 0,
+            .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+            .unnormalizedCoordinates = VK_FALSE,
+        };
+
+        VkSampler nullSampler = VK_NULL_HANDLE;
+        if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        {
+            throw std::runtime_error("Failed to create Sampler.");
+        }
+
+        VkDescriptorImageInfo nullBuffer =
+        {
+            .sampler = nullSampler,
+            .imageView = VK_NULL_HANDLE,
+            .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+        texturePropertiesBuffer.emplace_back(nullBuffer);
+    }
+    else
+    {
+        for (auto& texture : textureSystem.Texture3DList)
+        {
+            textureSystem.GetTexture3DPropertiesBuffer(texture, texturePropertiesBuffer);
+        }
+    }
+
     return texturePropertiesBuffer;
 }
 
