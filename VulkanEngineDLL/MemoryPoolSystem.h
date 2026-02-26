@@ -98,7 +98,7 @@ private:
 	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
 	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
 
-	static constexpr uint									 BindlessDataDescriptorBinding = 9;
+	static constexpr uint									 BindlessDataDescriptorBinding = 0;
 
 	static constexpr size_t									 MeshInitialCapacity = 4;
 	static constexpr size_t									 MaterialInitialCapacity = 4;
@@ -114,6 +114,10 @@ private:
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 
 public:
+	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
+	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
+	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
+
 	uint32													 GpuDataBufferIndex = UINT32_MAX;
 	size_t													 GpuDataBufferMemoryPoolSize = UINT32_MAX;
 	MemoryPoolBufferHeader									 GpuDataMemoryPoolHeader;

@@ -14,20 +14,12 @@ layout (location = 1) out vec2  PS_UV;
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
-layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
-layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
-layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
-layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = MemoryPoolDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor;
 
-layout(binding = 9)  buffer BindlessBuffer 
+layout(constant_id = 0)  const uint DescriptorBindingType0  = MemoryPoolDescriptor;
+layout(constant_id = 1)  const uint DescriptorBindingType1  = TextureDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType2  = SkyBoxDescriptor;
+
+layout(binding = 0)  buffer BindlessBuffer 
 { 
     uint64_t MeshOffset;     
     uint MeshCount;
@@ -55,8 +47,8 @@ layout(binding = 9)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 10) uniform sampler2D TextureMap[];
-layout(binding = 11) uniform samplerCube CubeMap[];
+layout(binding = 1) uniform sampler2D TextureMap[];
+layout(binding = 2) uniform samplerCube CubeMap[];
 
 layout(push_constant) uniform SceneDataBuffer
 {

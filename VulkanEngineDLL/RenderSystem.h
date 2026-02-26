@@ -26,6 +26,7 @@ private:
     DLL_EXPORT void RecreateSwapchain(void* windowHandle, const float& deltaTime);
     DLL_EXPORT void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT VkDescriptorPool CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader);
+    DLL_EXPORT void             CreateGlobalBindlessDescriptorSets();
     DLL_EXPORT Vector<VkDescriptorSetLayout> CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader);
     DLL_EXPORT Vector<VkDescriptorSet> AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
     DLL_EXPORT  void UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
@@ -44,7 +45,7 @@ public:
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                          RebuildSwapChain(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT void                          Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
-    DLL_EXPORT void                          UpdateDescriptorSet(VulkanPipeline& pipeline, Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSlot);
+    DLL_EXPORT void                          UpdateDescriptorSet(VulkanPipeline& pipeline, Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSet, uint32 descriptorBindingSlot);
     DLL_EXPORT void                          GenerateTexture(VkGuid& renderPassId);
     DLL_EXPORT void                          GenerateCubeMapTexture(VkGuid& renderPassId);
     DLL_EXPORT VulkanRenderPass              FindRenderPass(const RenderPassGuid& renderPassGuid);

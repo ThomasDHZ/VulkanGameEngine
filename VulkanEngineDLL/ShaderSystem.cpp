@@ -276,6 +276,29 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      for (auto& descriptorBinding : descriptorSetBindings)
      {
          String name(descriptorBinding->name);
+         if (descriptorBinding->set == 1)
+         {
+             shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBindingDLL
+                 {
+                     .Name = name,
+                     .DescriptorSet = descriptorBinding->set,
+                     .Binding = descriptorBinding->binding,
+                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
+                     .DescriptorBindingType = kSubpassInputDescriptor,
+                     .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
+                 });
+             continue;
+         }
+         else
+         {
+             auto it = std::find_if(shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.data() + shaderDescriptorSetBinding.size(),
+                 [&](ShaderDescriptorBindingDLL& var) {
+                     var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
+                     return var.Name == descriptorBinding->name;
+                 }
+             );
+         }
+
          if (!SearchShaderDescriptorBindingExists(shaderDescriptorSetBinding, name))
          {
              String searchString(String("DescriptorBindingType" + std::to_string(descriptorBinding->binding)));

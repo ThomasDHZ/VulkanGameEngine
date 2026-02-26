@@ -25,12 +25,12 @@ void RenderSystem::Update(void* windowHandle, LevelGuid& levelGuid, const float&
     }
 }
 
-void RenderSystem::UpdateDescriptorSet(VulkanPipeline& pipeline, Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSlot)
+void RenderSystem::UpdateDescriptorSet(VulkanPipeline& pipeline, Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSet, uint32 descriptorBindingSlot)
 {
     VkWriteDescriptorSet writeDescriptorSet = VkWriteDescriptorSet
     {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = pipeline.DescriptorSetList.front(),
+        .dstSet = pipeline.DescriptorSetList[descriptorBindingSet],
         .dstBinding = descriptorBindingSlot,
         .descriptorCount = static_cast<uint32>(descriptorInfo.size()),
         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
@@ -703,6 +703,106 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
     }
 }
 
+void RenderSystem::CreateGlobalBindlessDescriptorSets()
+{
+    Vector<VkDescriptorPoolSize> poolSizes =
+    {
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 65536 }, // 2D textures
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 65536 }, // 3D textures
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 }   // cubemaps
+    };
+    VkDescriptorPoolCreateInfo poolInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+        .maxSets = 1,
+        .poolSizeCount = static_cast<uint32>(poolSizes.size()),
+        .pPoolSizes = poolSizes.data()
+    };
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
+
+    Vector<VkDescriptorSetLayoutBinding> bindings = Vector<VkDescriptorSetLayoutBinding>
+    {
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .descriptorCount = 1,  //Scenedata
+            .stageFlags = VK_SHADER_STAGE_ALL
+        },
+         VkDescriptorSetLayoutBinding
+        {
+            .binding = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .descriptorCount = 1,  // array sized via variable count
+            .stageFlags = VK_SHADER_STAGE_ALL
+        },
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 2,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = 1,  // 2D textures array
+            .stageFlags = VK_SHADER_STAGE_ALL
+        },
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 3,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = 1,  // 3D textures array
+            .stageFlags = VK_SHADER_STAGE_ALL
+        },
+        VkDescriptorSetLayoutBinding
+        {
+            .binding = 4,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = 1,  // cubemaps array
+            .stageFlags = VK_SHADER_STAGE_ALL
+        }
+    };
+    Vector<VkDescriptorBindingFlags> flags =
+    {
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  // 2D
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  // 3D
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT }   // cubemap
+    };
+    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .bindingCount = static_cast<uint32>(flags.size()),
+        .pBindingFlags = flags.data()
+    };
+    VkDescriptorSetLayoutCreateInfo layoutInfo = VkDescriptorSetLayoutCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .pNext = &flagsInfo,
+        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+        .bindingCount = static_cast<uint32>(bindings.size()),
+        .pBindings = bindings.data()
+    };
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
+
+    Vector<uint32> variableCounts = { 1, 1, 65536, 32, 1024 };
+    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+        .descriptorSetCount = static_cast<uint32>(variableCounts.size()),
+        .pDescriptorCounts = variableCounts.data()
+    };
+    VkDescriptorSetAllocateInfo allocInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .pNext = &varInfo,
+        .descriptorPool = memoryPoolSystem.GlobalBindlessPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &memoryPoolSystem.GlobalBindlessDescriptorSetLayout
+    };
+    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
+}
+
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
 {
     Vector<VkDescriptorPoolSize> descriptorPoolSizeList = Vector<VkDescriptorPoolSize>();
@@ -944,6 +1044,12 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
 
 void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoader)
 {
+
+        std::sort(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.begin(), renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.end(), [](const ShaderDescriptorBindingDLL& a, const ShaderDescriptorBindingDLL& b) {
+            return a.DescriptorSet > b.DescriptorSet;
+            });
+ 
+
     Vector<ShaderDescriptorBinding> bindingList;
     for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
     {

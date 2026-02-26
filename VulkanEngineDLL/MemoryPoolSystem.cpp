@@ -226,9 +226,9 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
     if (IsDescriptorSetDirty)
     {
         auto info = GetBindlessDataBufferDescriptor();
-        for (auto& p : pipelineList)
+        for (auto& pipeline : pipelineList)
         {
-            renderSystem.UpdateDescriptorSet(p, info, BindlessDataDescriptorBinding);
+            renderSystem.UpdateDescriptorSet(pipeline, info, 0, BindlessDataDescriptorBinding);
         }
         IsDescriptorSetDirty = false;
     }

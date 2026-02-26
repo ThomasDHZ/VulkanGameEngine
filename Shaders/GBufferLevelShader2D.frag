@@ -20,29 +20,11 @@ layout(location = 7) out vec4 outEmission;           //Emission                 
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(constant_id = 0)   const uint DescriptorBindingType0   = SubpassInputDescriptor;
-layout(constant_id = 1)   const uint DescriptorBindingType1   = SubpassInputDescriptor;
-layout(constant_id = 2)   const uint DescriptorBindingType2   = SubpassInputDescriptor;
-layout(constant_id = 3)   const uint DescriptorBindingType3   = SubpassInputDescriptor;
-layout(constant_id = 4)   const uint DescriptorBindingType4   = SubpassInputDescriptor;
-layout(constant_id = 5)   const uint DescriptorBindingType5   = SubpassInputDescriptor;
-layout(constant_id = 6)   const uint DescriptorBindingType6   = SubpassInputDescriptor;
-layout(constant_id = 7)   const uint DescriptorBindingType7   = SubpassInputDescriptor;
-layout(constant_id = 8)   const uint DescriptorBindingType8   = SubpassInputDescriptor;
-layout(constant_id = 9)   const uint DescriptorBindingType9   = MemoryPoolDescriptor;
-layout(constant_id = 10)  const uint DescriptorBindingType10  = TextureDescriptor;
-layout(constant_id = 11)  const uint DescriptorBindingType11  = SkyBoxDescriptor;
+layout(constant_id = 0)  const uint DescriptorBindingType0  = MemoryPoolDescriptor;
+layout(constant_id = 1)  const uint DescriptorBindingType1  = TextureDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType2  = SkyBoxDescriptor;
 
-layout(input_attachment_index = 0, binding = 0) uniform subpassInput positionInput;
-layout(input_attachment_index = 1, binding = 1) uniform subpassInput albedoInput;
-layout(input_attachment_index = 2, binding = 2) uniform subpassInput normalInput;
-layout(input_attachment_index = 3, binding = 3) uniform subpassInput packedMROInput;
-layout(input_attachment_index = 4, binding = 4) uniform subpassInput packedSheenSSSInput;
-layout(input_attachment_index = 5, binding = 5) uniform subpassInput tempInput;
-layout(input_attachment_index = 6, binding = 6) uniform subpassInput parallaxUVInfoInput;
-layout(input_attachment_index = 7, binding = 7) uniform subpassInput emissionInput;
-layout(input_attachment_index = 8, binding = 8) uniform subpassInput depthInput;
-layout(binding = 9)  buffer BindlessBuffer 
+layout(binding = 0)  buffer BindlessBuffer 
 { 
     uint64_t MeshOffset;     
     uint MeshCount;
@@ -70,8 +52,18 @@ layout(binding = 9)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 10) uniform sampler2D TextureMap[];
-layout(binding = 11) uniform samplerCube CubeMap[];
+layout(binding = 1) uniform sampler2D TextureMap[];
+layout(binding = 2) uniform samplerCube CubeMap[];
+
+layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
+layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;
+layout(set = 1, binding = 2, input_attachment_index = 2) uniform subpassInput normalInput;
+layout(set = 1, binding = 3, input_attachment_index = 3) uniform subpassInput packedMROInput;
+layout(set = 1, binding = 4, input_attachment_index = 4) uniform subpassInput packedSheenSSSInput;
+layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput tempInput;
+layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput parallaxUVInfoInput;
+layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput emissionInput;
+layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput depthInput;
 
 layout(push_constant) uniform SceneDataBuffer
 {
