@@ -109,6 +109,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 
 	if (textureLoader.IsSkyBox)
 	{
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
 		textureMetaDataHeader.Width = texture.width;
@@ -117,7 +118,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		CubeMapId = CubeMapTextureList.size();
+		sceneDataBuffer.CubeMapId = CubeMapTextureList.size();
 		CubeMapTextureList.emplace_back(texture);
 	}
 	else
@@ -396,6 +397,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 
 	if (textureLoader.IsSkyBox && isCubemap)
 	{
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
 		textureMetaDataHeader.Width = texture.width;
@@ -404,7 +406,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		CubeMapId = CubeMapTextureList.size();
+		sceneDataBuffer.CubeMapId = CubeMapTextureList.size();
 		CubeMapTextureList.emplace_back(texture);
 	}
 	else

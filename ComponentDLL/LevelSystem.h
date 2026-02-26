@@ -74,7 +74,6 @@ private:
         SharedPtr<Camera> PerspectiveCamera;
 
         int UseHeightMap = 1;
-        int isolateLayer = 0;
         float HeightScale = 0.079f;
         vec3 ViewDirection = vec3(-0.037f, -0.062f, 1.0f);
         RenderPassGuid environmentToCubeMapRenderPassId;

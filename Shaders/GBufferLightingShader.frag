@@ -26,6 +26,10 @@ layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
+	uint BRDFMapId;
+	uint CubeMapId;
+	uint IrradianceMapId;
+	uint PrefilterMapId;
 	mat4  Projection;
 	mat4  View;
 	mat4  InverseProjection;
@@ -77,22 +81,6 @@ layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput te
 layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput parallaxUVInfoInput;
 layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput emissionInput;
 layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput depthInput;
-
-layout(push_constant) uniform GBufferSceneDataBuffer
-{
-    int  Isolate;
-    uint  BRDFIndex;
-    uint  CubeMapIndex;
-    uint  IrradianceMapId;
-    uint  PrefilterMapId;
-    vec2  InvertResolution; 
-    vec3  PerspectiveViewDirection;
-    vec3  OrthographicCameraPosition;
-    uint  DirectionalLightCount;
-    uint  PointLightCount;
-    mat4  InvProjection;
-    mat4  InvView;
-} gBufferSceneDataBuffer;
 
 #include "BindlessHelpers.glsl"
 
@@ -177,7 +165,7 @@ vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
     skyDir.y = max(skyDir.y, 0.1);
     
     float lod = mix(2.0, 6.0, abs(skyDir.y)); 
-    return textureLod(CubeMap[gBufferSceneDataBuffer.CubeMapIndex], skyDir, lod).rgb;
+    return textureLod(CubeMap[sceneDataBuffer.CubeMapId], skyDir, lod).rgb;
 }
 
 float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
@@ -260,12 +248,12 @@ void main()
 
     const float depth = subpassLoad(depthInput).r;
     if (depth >= 0.9999f) {
-        vec3 ndc = vec3(gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
-        vec4 viewPos = gBufferSceneDataBuffer.InvProjection * vec4(ndc, 1.0);
+        vec3 ndc = vec3(gl_FragCoord.xy * sceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
+        vec4 viewPos = sceneDataBuffer.InverseProjection * vec4(ndc, 1.0);
         viewPos /= viewPos.w;
         vec3 viewDir = normalize(viewPos.xyz);
-        vec3 worldDir = normalize((gBufferSceneDataBuffer.InvView * vec4(viewDir, 0.0)).xyz);
-        vec3 sky = textureLod(CubeMap[gBufferSceneDataBuffer.CubeMapIndex], worldDir, 0.0).rgb;
+        vec3 worldDir = normalize((sceneDataBuffer.InverseView * vec4(viewDir, 0.0)).xyz);
+        vec3 sky = textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb;
 
         outColor = vec4(sky, 1.0);
         outBloom = vec4(0.0);
@@ -278,13 +266,13 @@ void main()
     float clearcoatRoughness  = 0.05;
 
     vec2 parallaxOffset = material.ParallaxInfo.xy;
-    vec2 screenUV = gl_FragCoord.xy * gBufferSceneDataBuffer.InvertResolution;
+    vec2 screenUV = gl_FragCoord.xy * sceneDataBuffer.InvertResolution;
     vec2 finalUV = screenUV + material.ParallaxInfo.xy;  
 
     // View reconstruction
     vec2 ndc = screenUV * 2.0 - 1.0;
     vec4 clip = vec4(ndc, depth * 2.0 - 1.0, 1.0);
-    vec4 viewPos = gBufferSceneDataBuffer.InvProjection * clip;
+    vec4 viewPos = sceneDataBuffer.InverseProjection * clip;
     viewPos /= viewPos.w;
     vec3 V = normalize(-viewPos.xyz);
 
@@ -349,7 +337,7 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material materi
     float clearcoatRoughness  = 0.05;
 
     vec3 Lo = vec3(0.0f);
-    for (uint x = 0; x < gBufferSceneDataBuffer.DirectionalLightCount; ++x)
+    for (uint x = 0; x < bindlessBuffer.DirectionalLightCount; ++x)
     {
         const DirectionalLightBuffer light = GetDirectionalLight(x);
 
@@ -411,7 +399,7 @@ vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material)
     float clearcoatRoughness  = 0.05;
 
     vec3 Lo = vec3(0.0f);
-    for (uint x = 0; x < gBufferSceneDataBuffer.PointLightCount; ++x)
+    for (uint x = 0; x < bindlessBuffer.PointLightCount; ++x)
     {
         const PointLightBuffer light = GetPointLight(x);
 
@@ -462,15 +450,15 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
     vec3  kS = F;
     vec3  kD = (vec3(1.0f) - kS) * (1.0f - material.Metallic);
 
-    vec3  irradiance = texture(CubeMap[gBufferSceneDataBuffer.IrradianceMapId], N).rgb;
+    vec3  irradiance = texture(CubeMap[sceneDataBuffer.IrradianceMapId], N).rgb;
     vec3  diffuseIBL = (material.Albedo / PI) * irradiance;
 
-    float maxLod = textureQueryLevels(CubeMap[gBufferSceneDataBuffer.PrefilterMapId]) - 1.0;
+    float maxLod = textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0;
     float lod = material.Roughness * maxLod;
     lod = clamp(lod, 0.0, maxLod);
-    vec3  prefilteredColor = textureLod(CubeMap[gBufferSceneDataBuffer.PrefilterMapId], R, lod).rgb;
+    vec3  prefilteredColor = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], R, lod).rgb;
 
-    vec2  brdf = texture(TextureMap[gBufferSceneDataBuffer.BRDFIndex], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
+    vec2  brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
     vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
@@ -481,12 +469,12 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
 
     float coatNdotV = max(dot(N, V), 0.0f);
     vec3  coatR = reflect(-V, N);
-    float coatLod = clearcoatRoughness * (textureQueryLevels(CubeMap[gBufferSceneDataBuffer.PrefilterMapId]) - 1.0);
-    coatLod = clamp(coatLod, 0.0, textureQueryLevels(CubeMap[gBufferSceneDataBuffer.PrefilterMapId]) - 1.0);
+    float coatLod = clearcoatRoughness * (textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
+    coatLod = clamp(coatLod, 0.0, textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
 
-    vec3  coatPrefilter = textureLod(CubeMap[gBufferSceneDataBuffer.PrefilterMapId], coatR, coatLod).rgb;
+    vec3  coatPrefilter = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], coatR, coatLod).rgb;
 
-    vec2  coatBRDF = texture(TextureMap[gBufferSceneDataBuffer.BRDFIndex], vec2(coatNdotV, clearcoatRoughness)).rg;
+    vec2  coatBRDF = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(coatNdotV, clearcoatRoughness)).rg;
     float coatF = 0.04 + (1.0 - 0.04) * pow(1.0 - coatNdotV, 5.0);
 
     vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;

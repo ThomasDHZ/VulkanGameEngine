@@ -598,6 +598,8 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
 
 Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass)
 {
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+
     Texture depthTexture;
     Vector<Texture> renderedTextureList;
     Vector<Texture> frameBufferTextureList;
@@ -607,14 +609,14 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
         Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, x);
         if (texture.textureType == TextureType_IrradianceMapTexture)
         {
-            textureSystem.IrradianceMapId = textureSystem.CubeMapTextureList.size();
+            sceneDataBuffer.IrradianceMapId = textureSystem.CubeMapTextureList.size();
             textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
         }
         else if (texture.textureType == TextureType_PrefilterMapTexture)
         {
-            textureSystem.PrefilterMapId = textureSystem.CubeMapTextureList.size();
+            sceneDataBuffer.PrefilterMapId = textureSystem.CubeMapTextureList.size();
             textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);

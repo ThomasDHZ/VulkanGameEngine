@@ -107,7 +107,7 @@ void GameSystem::DebugUpdate(float deltaTime)
         ImGui::SliderInt("UseHeightMap ", &levelSystem.UseHeightMap, 0, 1);
         ImGui::SliderFloat("HeightScale ", &levelSystem.HeightScale, 0.0f, 1.0f);
         ImGui::SliderFloat3("ViewDirection ", &levelSystem.ViewDirection.x, -1.0f, 1.0f);
-        ImGui::SliderInt("IsolateLayer ", &levelSystem.isolateLayer, 0, 10);
+
 
     ImGui::Separator();
 

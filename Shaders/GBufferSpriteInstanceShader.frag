@@ -33,6 +33,10 @@ layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
+	uint BRDFMapId;
+	uint CubeMapId;
+	uint IrradianceMapId;
+	uint PrefilterMapId;
 	mat4  Projection;
 	mat4  View;
 	mat4  InverseProjection;
@@ -90,7 +94,6 @@ layout(push_constant) uniform SceneDataBuffer
     int   MeshBufferIndex;
     int   UseHeightMap;
     float HeightScale;
-    int   Buffer1;
 } sceneData;
 
 #include "BindlessHelpers.glsl"

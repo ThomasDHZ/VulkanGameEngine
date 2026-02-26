@@ -52,17 +52,21 @@ struct TextureMetadataHeader
 
 struct SceneDataBuffer
 {
-	mat4  Projection;
-	mat4  View;
-	mat4  InverseProjection;
-	mat4  InverseView;
-	vec3  CameraPosition;
-	float _pad0;
-	vec3  ViewDirection;
-	float _pad1;
-	vec2  InvertResolution;
-	float Time;
-	uint  FrameIndex;
+	uint32 BRDFMapId = UINT32_MAX;
+	uint32 CubeMapId = UINT32_MAX;
+	uint32 IrradianceMapId = UINT32_MAX;
+	uint32 PrefilterMapId = UINT32_MAX;
+	mat4   Projection;
+	mat4   View;
+	mat4   InverseProjection;
+	mat4   InverseView;
+	vec3   CameraPosition;
+	float  _pad0;
+	vec3   ViewDirection;
+	float  _pad1;
+	vec2   InvertResolution;
+	float  Time;
+	uint   FrameIndex;
 };
 
 struct MemoryPoolBufferHeader
