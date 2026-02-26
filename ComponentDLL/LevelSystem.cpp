@@ -208,6 +208,14 @@ void LevelSystem::Update(const float& deltaTime)
 {
     Camera_UpdateOrthographicPixelPerfect(*OrthographicCamera.get());
     Camera_PerspectiveUpdate(*PerspectiveCamera.get());
+
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    sceneDataBuffer.Projection = OrthographicCamera->ProjectionMatrix;
+    sceneDataBuffer.View = OrthographicCamera->ViewMatrix;
+    sceneDataBuffer.InverseProjection = glm::inverse(OrthographicCamera->ProjectionMatrix);
+    sceneDataBuffer.InverseView = glm::inverse(OrthographicCamera->ViewMatrix);
+    sceneDataBuffer.CameraPosition = OrthographicCamera->Position;
+    sceneDataBuffer.ViewDirection = ViewDirection;
 }
 
 void LevelSystem::LoadLevel(const char* levelPath)
@@ -354,13 +362,12 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
         .pClearValues = renderPass.ClearValueList.data()
     };
 
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
+
     ShaderPushConstantDLL& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
     shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
     shaderSystem.UpdatePushConstantValue<float>(sceneDataPushConstant, "HeightScale", HeightScale);
-    shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "ViewDirection", ViewDirection);
-    shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "Projection", OrthographicCamera->ProjectionMatrix);
-    shaderSystem.UpdatePushConstantValue<mat4>(sceneDataPushConstant, "View", OrthographicCamera->ViewMatrix);
-    shaderSystem.UpdatePushConstantValue<vec3>(sceneDataPushConstant, "CameraPosition", OrthographicCamera->Position);
 
     ShaderPushConstantDLL& gBufferSceneDataBuffer = shaderSystem.FindShaderPushConstant("gBufferSceneDataBuffer");
     shaderSystem.UpdatePushConstantValue<int>(gBufferSceneDataBuffer, "Isolate", isolateLayer);
@@ -383,10 +390,6 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
 
     auto pipelineList = renderSystem.FindRenderPipelineList(renderPassId);
-    spriteSystem.Update(deltaTime);
-    meshSystem.Update(deltaTime, pipelineList);
-    materialSystem.Update(deltaTime, pipelineList);
-    lightSystem.Update(deltaTime, pipelineList);
     memoryPoolSystem.UpdateMemoryPool(pipelineList);
 
     VkDeviceSize offsets[] = { 0 };

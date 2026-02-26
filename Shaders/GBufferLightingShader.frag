@@ -18,13 +18,13 @@ layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outBloom;
 
 
-layout(constant_id = 0)  const uint DescriptorBindingType0  = MemoryPoolDescriptor;
+layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
 layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
 layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
 layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
 layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
-layout(binding = 0)  buffer SceneDataBuffer 
+layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
 	mat4  Projection;
 	mat4  View;
@@ -32,6 +32,7 @@ layout(binding = 0)  buffer SceneDataBuffer
 	mat4  InverseView;
 	vec3  CameraPosition;
 	vec3  ViewDirection;
+    vec2  InvertResolution;
 	float Time;
 	uint  FrameIndex;
 }sceneDataBuffer;

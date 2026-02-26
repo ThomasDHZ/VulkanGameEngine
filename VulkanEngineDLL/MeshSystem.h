@@ -118,7 +118,7 @@ public:
 
 	DLL_EXPORT void StartUp();
 	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
-	DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList);
+	DLL_EXPORT void Update(const float& deltaTime);
 	DLL_EXPORT void Destroy(uint meshId);
 	DLL_EXPORT void DestroyAllGameObjects();
 	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);

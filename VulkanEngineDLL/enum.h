@@ -92,5 +92,6 @@ enum DescriptorBindingPropertiesEnum
     kBRDFMapDescriptor,
     kEnvironmentMapDescriptor,
     kBindlessDataDescriptor,
-    kTexture3DDescriptor
+    kTexture3DDescriptor,
+    kSceneDataDescriptor
 };

@@ -21,10 +21,6 @@ void Camera_UpdateOrthographicPixelPerfect(Camera& camera)
 {
 	camera.ProjectionMatrix = glm::ortho(0.0f, camera.Width, camera.Height, 0.0f, -1000.0f, 1000.0f);
 	camera.ViewMatrix = glm::translate(glm::mat4(1.0f), -camera.Position);
-
-	shaderSystem.UpdatePushConstantValue<glm::mat4>("sceneData", "Projection", camera.ProjectionMatrix);
-	shaderSystem.UpdatePushConstantValue<glm::mat4>("sceneData", "View", camera.ViewMatrix);
-	shaderSystem.UpdatePushConstantValue<glm::vec3>("sceneData", "CameraPosition", camera.Position);
 }
 
 Camera Camera_PerspectiveCamera(const vec2& viewScreenSize, const glm::vec3& position)

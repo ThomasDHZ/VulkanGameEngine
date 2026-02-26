@@ -15,13 +15,13 @@ layout (location = 1) out vec2  PS_UV;
 #include "MaterialPropertiesBuffer.glsl" 
 
 
-layout(constant_id = 0)  const uint DescriptorBindingType0  = MemoryPoolDescriptor;
+layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
 layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
 layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
 layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
 layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
-layout(binding = 0)  buffer SceneDataBuffer 
+layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
 	mat4  Projection;
 	mat4  View;
@@ -29,6 +29,7 @@ layout(binding = 0)  buffer SceneDataBuffer
 	mat4  InverseView;
 	vec3  CameraPosition;
 	vec3  ViewDirection;
+    vec2  InvertResolution;
 	float Time;
 	uint  FrameIndex;
 }sceneDataBuffer;
@@ -67,10 +68,6 @@ layout(binding = 4) uniform samplerCube CubeMap[];
 layout(push_constant) uniform SceneDataBuffer
 {
     int   MeshBufferIndex;
-    mat4  Projection;
-    mat4  View;
-    vec3  ViewDirection;
-    vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
     int   Buffer1;
@@ -97,8 +94,8 @@ void main()
     PS_Position = vec3(mesh.MeshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
 	PS_UV = VS_UV.xy;
 
-    gl_Position = sceneData.Projection * 
-                  sceneData.View *  
+    gl_Position = sceneDataBuffer.Projection * 
+                  sceneDataBuffer.View *  
                   mesh.MeshTransform *
                   vec4(VS_Position.xy, 0.0f, 1.0f);
 }

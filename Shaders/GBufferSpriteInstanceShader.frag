@@ -25,13 +25,13 @@ layout(location = 5) out vec4 outTempMap;            //vec4(                    
 layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
 layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
-layout(constant_id = 0)  const uint DescriptorBindingType0  = MemoryPoolDescriptor;
+layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
 layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
 layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
 layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
 layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
-layout(binding = 0)  buffer SceneDataBuffer 
+layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
 	mat4  Projection;
 	mat4  View;
@@ -39,6 +39,7 @@ layout(binding = 0)  buffer SceneDataBuffer
 	mat4  InverseView;
 	vec3  CameraPosition;
 	vec3  ViewDirection;
+    vec2  InvertResolution;
 	float Time;
 	uint  FrameIndex;
 }sceneDataBuffer;
@@ -87,10 +88,6 @@ layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput de
 layout(push_constant) uniform SceneDataBuffer
 {
     int   MeshBufferIndex;
-    mat4  Projection;
-    mat4  View;
-    vec3  ViewDirection;
-    vec3  CameraPosition;
     int   UseHeightMap;
     float HeightScale;
     int   Buffer1;
@@ -195,7 +192,7 @@ void main()
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
     if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-    vec3 viewDirWS = normalize(sceneData.ViewDirection);
+    vec3 viewDirWS = normalize(sceneDataBuffer.ViewDirection);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId);
 

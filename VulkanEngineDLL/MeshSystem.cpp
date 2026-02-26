@@ -65,7 +65,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 	return meshId;
 }
 
-void MeshSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
+void MeshSystem::Update(const float& deltaTime)
 {
 	for (size_t x = 0; x < MeshList.size(); ++x)
 	{

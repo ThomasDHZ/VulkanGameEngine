@@ -1055,6 +1055,12 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
     {
         switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
         {
+        case kSceneDataDescriptor:
+        {
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetSceneDataBufferDescriptor();
+            break;
+        }
         case kBindlessDataDescriptor:
         {
             renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;

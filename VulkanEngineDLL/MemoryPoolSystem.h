@@ -57,7 +57,10 @@ struct SceneDataBuffer
 	mat4  InverseProjection;
 	mat4  InverseView;
 	vec3  CameraPosition;
+	float _pad0;
 	vec3  ViewDirection;
+	float _pad1;
+	vec2  InvertResolution;
 	float Time;
 	uint  FrameIndex;
 };
@@ -110,7 +113,8 @@ private:
 	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
 	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
 
-	static constexpr uint									 BindlessDataDescriptorBinding = 0;
+	static constexpr uint									 SceneDataDescriptorBinding = 0;
+	static constexpr uint									 BindlessDataDescriptorBinding = 1;
 
 	static constexpr size_t									 MeshInitialCapacity = 4;
 	static constexpr size_t									 MaterialInitialCapacity = 4;
@@ -129,6 +133,10 @@ public:
 	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
+
+	uint32													 SceneDataBufferIndex = UINT32_MAX;
+	void*													 SceneDataPtr = nullptr;
+	bool													 IsSceneBufferDirty = true;
 
 	uint32													 GpuDataBufferIndex = UINT32_MAX;
 	size_t													 GpuDataBufferMemoryPoolSize = UINT32_MAX;
@@ -150,6 +158,7 @@ public:
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
 	DLL_EXPORT SpriteInstance&								 UpdateSpriteInstance(uint32 index);
+	DLL_EXPORT SceneDataBuffer&								 UpdateSceneDataBuffer();
 
 	DLL_EXPORT Vector<SpriteInstance*>						 GetActiveSpriteInstancePointers();
 
@@ -162,6 +171,7 @@ public:
 	DLL_EXPORT void											 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
 
 	DLL_EXPORT const MemoryPoolSubBufferHeader				 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
+	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetSceneDataBufferDescriptor() const;
 	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetBindlessDataBufferDescriptor() const;
 };
 extern DLL_EXPORT MemoryPoolSystem& memoryPoolSystem;

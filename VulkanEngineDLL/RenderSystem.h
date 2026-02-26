@@ -20,7 +20,6 @@ private:
     RenderSystem& operator=(RenderSystem&&) = delete;
 
     UnorderedMap<RenderPassGuid, VulkanRenderPass>                     RenderPassMap;
-    UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
     UnorderedMap<RenderPassGuid, String>                               RenderPassLoaderJsonMap;
 
     DLL_EXPORT void RecreateSwapchain(void* windowHandle, const float& deltaTime);
@@ -39,6 +38,7 @@ private:
     DLL_EXPORT void BuildFrameBuffer(VulkanRenderPass& renderPass);
 public:
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
+    UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
 
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);

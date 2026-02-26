@@ -128,7 +128,13 @@ void MemoryPoolSystem::StartUp()
     VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     MappedBufferPtr = buffer.BufferData;
 
+    SceneDataBuffer sceneData = SceneDataBuffer();
+    SceneDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    VulkanBuffer& sceneDataBuffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex);
+    SceneDataPtr = sceneDataBuffer.BufferData;
+
     vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, GpuDataBufferMemoryPool2.size());
+    vmaFlushAllocation(bufferSystem.vmaAllocator, sceneDataBuffer.Allocation, 0, GpuDataBufferMemoryPool2.size());
 }
 
 void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount)
@@ -199,7 +205,15 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
 
 void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
 {
-    if (!MappedBufferPtr) return;
+    if (IsSceneBufferDirty)
+    {
+        vmaFlushAllocation(bufferSystem.vmaAllocator, bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).Allocation, 0, sizeof(SceneDataBuffer));
+        IsSceneBufferDirty = false;
+    }
+    else if (!MappedBufferPtr)
+    {
+        return;
+    }
 
     VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     for (auto& [type, sub] : MemorySubPoolHeader)
@@ -376,6 +390,12 @@ SpriteInstance& MemoryPoolSystem::UpdateSpriteInstance(uint32 index)
     return *reinterpret_cast<SpriteInstance*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
+SceneDataBuffer& MemoryPoolSystem::UpdateSceneDataBuffer()
+{
+    IsSceneBufferDirty = true;
+    return *reinterpret_cast<SceneDataBuffer*>(SceneDataPtr);
+}
+
 Vector<SpriteInstance*>	MemoryPoolSystem::GetActiveSpriteInstancePointers()
 {
     const auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
@@ -489,6 +509,19 @@ void MemoryPoolSystem::FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 ind
 const MemoryPoolSubBufferHeader MemoryPoolSystem::MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType)
 {
     return MemorySubPoolHeader[memoryPoolType];
+}
+
+const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetSceneDataBufferDescriptor() const
+{
+    return Vector<VkDescriptorBufferInfo>
+    {
+        VkDescriptorBufferInfo
+        {
+            .buffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).Buffer,
+            .offset = 0,
+            .range = VK_WHOLE_SIZE
+        }
+    };
 }
 
 const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetBindlessDataBufferDescriptor() const
