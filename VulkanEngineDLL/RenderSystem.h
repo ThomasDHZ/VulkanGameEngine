@@ -25,12 +25,12 @@ private:
     DLL_EXPORT void RecreateSwapchain(void* windowHandle, const float& deltaTime);
     DLL_EXPORT void DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT VkDescriptorPool CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader);
-    DLL_EXPORT void             CreateGlobalBindlessDescriptorSets();
+    DLL_EXPORT void             CreateGlobalBindlessDescriptorSets(RenderPipelineLoader& renderPipelineLoader);
     DLL_EXPORT Vector<VkDescriptorSetLayout> CreatePipelineDescriptorSetLayout(RenderPipelineLoader& renderPipelineLoader);
     DLL_EXPORT Vector<VkDescriptorSet> AllocatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, const VkDescriptorPool& descriptorPool, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
-    DLL_EXPORT  void UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
-    DLL_EXPORT  VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
-    DLL_EXPORT  VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
+    DLL_EXPORT void UpdatePipelineDescriptorSets(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
+    DLL_EXPORT VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
+    DLL_EXPORT VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
     DLL_EXPORT void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);
     DLL_EXPORT void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
     DLL_EXPORT Vector<VkAttachmentDescription> BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass);

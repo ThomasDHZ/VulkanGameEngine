@@ -705,16 +705,50 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
     }
 }
 
-void RenderSystem::CreateGlobalBindlessDescriptorSets()
+void RenderSystem::CreateGlobalBindlessDescriptorSets(RenderPipelineLoader& renderPipelineLoader)
 {
+    Vector<uint32> variableCounts = { 1, 1, 65536, 32, 1024 };
     Vector<VkDescriptorPoolSize> poolSizes =
     {
-        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1 },
-        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1 },
-        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 65536 }, // 2D textures
-        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 65536 }, // 3D textures
-        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 }   // cubemaps
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         variableCounts[0] }, // SceneData
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         variableCounts[1] }, // Huge Buffer Data
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, variableCounts[2] }, // 2D textures
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, variableCounts[3] }, // 3D textures
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, variableCounts[4] }  // cubemaps
     };
+
+    Vector<VkDescriptorSetLayoutBinding> bindings = Vector<VkDescriptorSetLayoutBinding>
+    {
+        VkDescriptorSetLayoutBinding { .binding = 0, .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         .descriptorCount = 1, .stageFlags = VK_SHADER_STAGE_ALL }, //SceneData
+        VkDescriptorSetLayoutBinding { .binding = 1, .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         .descriptorCount = 1, .stageFlags = VK_SHADER_STAGE_ALL }, //Huge Buffer Data
+        VkDescriptorSetLayoutBinding { .binding = 2, .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 1, .stageFlags = VK_SHADER_STAGE_ALL }, //Texture2D
+        VkDescriptorSetLayoutBinding { .binding = 3, .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 1, .stageFlags = VK_SHADER_STAGE_ALL }, //Texture3D
+        VkDescriptorSetLayoutBinding { .binding = 4, .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 1, .stageFlags = VK_SHADER_STAGE_ALL }  //CubeMap
+    };
+
+    Vector<VkDescriptorBindingFlags> flags =
+    {
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT }, //SceneData
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT }, //Huge Buffer Data
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  //Texture2D
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  //Texture3D
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT }   //CubeMap
+    };
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .bindingCount = static_cast<uint32>(flags.size()),
+        .pBindingFlags = flags.data()
+    };
+
+    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+        .descriptorSetCount = static_cast<uint32>(variableCounts.size()),
+        .pDescriptorCounts = variableCounts.data()
+    };
+
     VkDescriptorPoolCreateInfo poolInfo
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -725,58 +759,6 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets()
     };
     VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
 
-    Vector<VkDescriptorSetLayoutBinding> bindings = Vector<VkDescriptorSetLayoutBinding>
-    {
-        VkDescriptorSetLayoutBinding
-        {
-            .binding = 0,
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .descriptorCount = 1,  //Scenedata
-            .stageFlags = VK_SHADER_STAGE_ALL
-        },
-         VkDescriptorSetLayoutBinding
-        {
-            .binding = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .descriptorCount = 1,  // array sized via variable count
-            .stageFlags = VK_SHADER_STAGE_ALL
-        },
-        VkDescriptorSetLayoutBinding
-        {
-            .binding = 2,
-            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .descriptorCount = 1,  // 2D textures array
-            .stageFlags = VK_SHADER_STAGE_ALL
-        },
-        VkDescriptorSetLayoutBinding
-        {
-            .binding = 3,
-            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .descriptorCount = 1,  // 3D textures array
-            .stageFlags = VK_SHADER_STAGE_ALL
-        },
-        VkDescriptorSetLayoutBinding
-        {
-            .binding = 4,
-            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .descriptorCount = 1,  // cubemaps array
-            .stageFlags = VK_SHADER_STAGE_ALL
-        }
-    };
-    Vector<VkDescriptorBindingFlags> flags =
-    {
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  // 2D
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT },  // 3D
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT }   // cubemap
-    };
-    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-        .bindingCount = static_cast<uint32>(flags.size()),
-        .pBindingFlags = flags.data()
-    };
     VkDescriptorSetLayoutCreateInfo layoutInfo = VkDescriptorSetLayoutCreateInfo
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
@@ -787,13 +769,6 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets()
     };
     VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
 
-    Vector<uint32> variableCounts = { 1, 1, 65536, 32, 1024 };
-    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
-        .descriptorSetCount = static_cast<uint32>(variableCounts.size()),
-        .pDescriptorCounts = variableCounts.data()
-    };
     VkDescriptorSetAllocateInfo allocInfo
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -803,6 +778,90 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets()
         .pSetLayouts = &memoryPoolSystem.GlobalBindlessDescriptorSetLayout
     };
     VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
+
+    Span<VkDescriptorSet> descriptorSetLayouts(descriptorSetList, descriptorSetCount);
+    for (int x = 0; x < descriptorSetLayouts.size(); x++)
+    {
+        Vector<VkWriteDescriptorSet> writeDescriptorSet = Vector<VkWriteDescriptorSet>();
+        for (auto& descriptorSetBinding : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)
+        {
+            if (descriptorSetBinding.DescriptorSet != x) continue;
+            writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+                {
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .pNext = nullptr,
+                    .dstSet = descriptorSetLayouts[x],
+                    .dstBinding = descriptorSetBinding.Binding,
+                    .dstArrayElement = 0,
+                    .descriptorCount = static_cast<uint32>(descriptorSetBinding.DescriptorCount),
+                    .descriptorType = descriptorSetBinding.DescripterType,
+                    .pImageInfo = descriptorSetBinding.DescriptorImageInfo.data(),
+                    .pBufferInfo = descriptorSetBinding.DescriptorBufferInfo.data(),
+                    .pTexelBufferView = nullptr
+                });
+        }
+        vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
+    }
+
+    //std::sort(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.begin(), renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.end(), [](const ShaderDescriptorBindingDLL& a, const ShaderDescriptorBindingDLL& b) {
+    //    return a.DescriptorSet > b.DescriptorSet;
+    //    });
+
+
+    //Vector<ShaderDescriptorBinding> bindingList;
+    //for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
+    //{
+    //    switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
+    //    {
+    //    case kSceneDataDescriptor:
+    //    {
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetSceneDataBufferDescriptor();
+    //        break;
+    //    }
+    //    case kBindlessDataDescriptor:
+    //    {
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetBindlessDataBufferDescriptor();
+    //        break;
+    //    }
+    //    case kTextureDescriptor:
+    //    {
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId).size();
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId);
+    //        break;
+    //    }
+    //    case kSkyBoxDescriptor:
+    //    {
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetCubeMapTextureBuffer().size();
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetCubeMapTextureBuffer();
+    //        break;
+    //    }
+    //    case kTexture3DDescriptor:
+    //    {
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexture3DPropertiesBuffer(renderPipelineLoader.RenderPassId).size();
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetTexture3DPropertiesBuffer(renderPipelineLoader.RenderPassId);
+    //        break;
+    //    }
+    //    case kSubpassInputDescriptor:
+    //    {
+    //        Texture inputTexture = textureSystem.FindRenderedTextureList(renderPipelineLoader.RenderPassId)[x];
+    //        VkDescriptorImageInfo descriptorImage = VkDescriptorImageInfo
+    //        {
+    //            .sampler = inputTexture.textureSampler,
+    //            .imageView = inputTexture.textureViewList.front(),
+    //            .imageLayout = inputTexture.textureImageLayout,
+    //        };
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+    //        renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = Vector<VkDescriptorImageInfo>{ descriptorImage };
+    //        break;
+    //    }
+    //    default:
+    //    {
+    //        throw std::runtime_error("Binding case hasn't been handled yet");
+    //    }
+    //    }
+    //}
 }
 
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
@@ -1047,76 +1106,40 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
 void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoader)
 {
 
-        std::sort(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.begin(), renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.end(), [](const ShaderDescriptorBindingDLL& a, const ShaderDescriptorBindingDLL& b) {
-            return a.DescriptorSet > b.DescriptorSet;
-            });
- 
+    std::sort(renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.begin(), renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.end(), [](const ShaderDescriptorBindingDLL& a, const ShaderDescriptorBindingDLL& b) {
+        return a.DescriptorSet > b.DescriptorSet;
+        });
+
 
     Vector<ShaderDescriptorBinding> bindingList;
     for (int x = 0; x < renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList.size(); x++)
     {
         switch (renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBindingType)
         {
-        case kSceneDataDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetSceneDataBufferDescriptor();
-            break;
-        }
-        case kBindlessDataDescriptor:
-        {
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
-            renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetBindlessDataBufferDescriptor();
-            break;
-        }
-           /* case kMeshPropertiesDescriptor:
+            case kSceneDataDescriptor:
             {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = meshSystem.GetMeshBufferInfo().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = meshSystem.GetMeshBufferInfo();
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetSceneDataBufferDescriptor();
                 break;
-            }*/
+            }
+            case kBindlessDataDescriptor:
+            {
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = 1;
+                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = memoryPoolSystem.GetBindlessDataBufferDescriptor();
+                break;
+            }
             case kTextureDescriptor:
             {
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId).size();
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetTexturePropertiesBuffer(renderPipelineLoader.RenderPassId);
                 break;
             }
-       /*     case kMaterialDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = materialSystem.GetMaterialBufferInfo().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = materialSystem.GetMaterialBufferInfo();
-                break;
-            }
-            case kDirectionalLightDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = lightSystem.GetDirectionalLightPropertiesBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = lightSystem.GetDirectionalLightPropertiesBuffer();
-                break;
-            }
-            case kPointLightDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = lightSystem.GetPointLightPropertiesBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorBufferInfo = lightSystem.GetPointLightPropertiesBuffer();
-                break;
-            }*/
             case kSkyBoxDescriptor:
             {
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetCubeMapTextureBuffer().size();
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetCubeMapTextureBuffer();
                 break;
             }
-            //case kIrradianceMapDescriptor:
-            //{
-            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetIrradianceMapTextureBuffer().size();
-            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetIrradianceMapTextureBuffer();
-            //    break;
-            //}
-            //case kPrefilterMapDescriptor:
-            //{
-            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetPrefilterMapTextureBuffer().size();
-            //    renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetPrefilterMapTextureBuffer();
-            //    break;
-            //}
             case kTexture3DDescriptor:
             {
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetTexture3DPropertiesBuffer(renderPipelineLoader.RenderPassId).size();
@@ -1136,18 +1159,6 @@ void RenderSystem::PipelineBindingData(RenderPipelineLoader& renderPipelineLoade
                 renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = Vector<VkDescriptorImageInfo>{ descriptorImage };
                 break;
             }
-    /*        case kBRDFMapDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
-                break;
-            } */
-       /*     case kEnvironmentMapDescriptor:
-            {
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorCount = renderSystem.GetBRDFMapTextureBuffer().size();
-                renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList[x].DescriptorImageInfo = renderSystem.GetBRDFMapTextureBuffer();
-                break;
-            }*/
             default:
             {
                 throw std::runtime_error("Binding case hasn't been handled yet");
