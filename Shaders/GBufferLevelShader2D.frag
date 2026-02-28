@@ -3,18 +3,6 @@
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
 
-layout(location = 0) in vec3 WorldPos; 
-layout(location = 1) in vec2 TexCoords;    
-
-layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
-layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
-layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
-layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
-
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
@@ -74,22 +62,24 @@ layout(binding = 2) uniform sampler2D TextureMap[];
 layout(binding = 3) uniform sampler3D Texture3DMap[];
 layout(binding = 4) uniform samplerCube CubeMap[];
 
-layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
-layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;
-layout(set = 1, binding = 2, input_attachment_index = 2) uniform subpassInput normalInput;
-layout(set = 1, binding = 3, input_attachment_index = 3) uniform subpassInput packedMROInput;
-layout(set = 1, binding = 4, input_attachment_index = 4) uniform subpassInput packedSheenSSSInput;
-layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput tempInput;
-layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput parallaxUVInfoInput;
-layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput emissionInput;
-layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput depthInput;
-
 layout(push_constant) uniform SceneDataBuffer
 {
     int   MeshBufferIndex;
     int   UseHeightMap;
     float HeightScale;
 } sceneData;
+
+layout(location = 0) in vec3 WorldPos; 
+layout(location = 1) in vec2 TexCoords;    
+
+layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
+layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
+layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
+layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
+layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
+layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 #include "BindlessHelpers.glsl"
 
@@ -119,9 +109,8 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
     if (sceneData.UseHeightMap == 0) return uv;
 
-    // Tile-local coordinates
-    vec2 tileUV     = fract(uv);               // [0,1] inside current tile
-    vec2 tileOrigin = uv - tileUV;             // Base UV of this tile
+    vec2 tileUV     = fract(uv);
+    vec2 tileOrigin = uv - tileUV; 
 
     const float minLayers = 8.0;
     const float maxLayers = 64.0;
@@ -144,7 +133,6 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
         if (currentDepth >= height) break;
     }
 
-    // Linear interpolate between last two steps
     vec2 prevUV        = currentUV + deltaUV;
     float afterDepth   = height - currentDepth;
     float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV + tileOrigin, 0.0).a) 
@@ -152,11 +140,8 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
     vec2 finalLocalUV  = mix(currentUV, prevUV, weight);
-
-    // Clamp to stay strictly inside tile (prevents bleeding)
     finalLocalUV = clamp(finalLocalUV, vec2(0.0), vec2(1.0));
 
-    // Reconstruct full UV
     return tileOrigin + finalLocalUV;
 }
 

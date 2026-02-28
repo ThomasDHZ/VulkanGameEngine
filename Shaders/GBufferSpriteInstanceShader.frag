@@ -8,22 +8,6 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout (location = 0) in vec3  WorldPos;
-layout (location = 1) in vec2  PS_UV;
-layout (location = 2) in vec2  PS_SpriteSize;
-layout (location = 3) in flat ivec2 PS_FlipSprite;
-layout (location = 4) in vec4  PS_Color;
-layout (location = 5) in flat uint  PS_MaterialID;
-layout (location = 6) in flat vec4  PS_UVOffset;
-
-layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
-layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
-layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
-layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
 layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
@@ -79,15 +63,22 @@ layout(binding = 2) uniform sampler2D TextureMap[];
 layout(binding = 3) uniform sampler3D Texture3DMap[];
 layout(binding = 4) uniform samplerCube CubeMap[];
 
-layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
-layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;
-layout(set = 1, binding = 2, input_attachment_index = 2) uniform subpassInput normalInput;
-layout(set = 1, binding = 3, input_attachment_index = 3) uniform subpassInput packedMROInput;
-layout(set = 1, binding = 4, input_attachment_index = 4) uniform subpassInput packedSheenSSSInput;
-layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput tempInput;
-layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput parallaxUVInfoInput;
-layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput emissionInput;
-layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput depthInput;
+layout (location = 0) in vec3  WorldPos;
+layout (location = 1) in vec2  PS_UV;
+layout (location = 2) in vec2  PS_SpriteSize;
+layout (location = 3) in flat ivec2 PS_FlipSprite;
+layout (location = 4) in vec4  PS_Color;
+layout (location = 5) in flat uint  PS_MaterialID;
+layout (location = 6) in flat vec4  PS_UVOffset;
+
+layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
+layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
+layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
+layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
+layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
+layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
+layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -102,11 +93,11 @@ vec4 SampleTexture(uint textureIndex, vec2 uv)
 {
     TextureMetadata meta = Get2DTextureMetadata(textureIndex);
 
-    if (meta.TextureType == 0) // 2D
+    if (meta.TextureType == 0) 
     {
         return texture(TextureMap[meta.ArrayIndex], uv);
     }
-    return vec4(1.0, 0.0, 1.0, 1.0); // error pink
+    return vec4(1.0, 0.0, 1.0, 1.0);
 }
 
 mat3 TBN = mat3(
@@ -120,7 +111,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
     if (sceneData.UseHeightMap == 0) return uv;
 
     const float minLayers = 16.0;
-    const float maxLayers = 64.0;  // Lower than tiled version — sprites don't need as many for performance
+    const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
 
     vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
@@ -128,7 +119,6 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     vec2  currentUV      = uv;
     float currentDepth   = 0.0;
-    // Consistent .a channel for height
     float height         = 1.0 - textureLod(TextureMap[heightIdx], currentUV, 0.0).a;
 
     int maxSteps = 96;
@@ -141,7 +131,6 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
         if (currentDepth >= height) break;
     }
 
-    // Refinement step
     vec2  prevUV       = currentUV + deltaUV;
     float afterDepth   = height - currentDepth;
     float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV, 0.0).a) 
@@ -150,8 +139,6 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
     float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
     vec2  finalUV      = mix(currentUV, prevUV, weight);
 
-    // Optional: Soft clamp/fade near texture edges to prevent minor bleeding
-    // (uncomment if you see artifacts at sprite borders)
      vec2 edgeDist = min(finalUV, 1.0 - finalUV);
      float edgeFade = smoothstep(0.0, 0.05, min(edgeDist.x, edgeDist.y));
      finalUV = uv + (finalUV - uv) * edgeFade;

@@ -8,14 +8,6 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-const int BrdfMapBinding              = 1;
-const int DirectionalShadowMapBinding = 2;
-const int SDFShadowMapBinding         = 3;
-
-layout(location = 0) in vec2 TexCoords;
-
-layout(location = 0) out vec4 outColor;
-layout(location = 1) out vec4 outBloom;
 
 
 layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
@@ -81,6 +73,11 @@ layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput te
 layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput parallaxUVInfoInput;
 layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput emissionInput;
 layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput depthInput;
+
+layout(location = 0) in vec2 TexCoords;
+
+layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec4 outBloom;
 
 #include "BindlessHelpers.glsl"
 
