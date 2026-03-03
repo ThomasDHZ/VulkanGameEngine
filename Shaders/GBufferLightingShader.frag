@@ -64,7 +64,6 @@ layout(constant_id = 4)  const uint DescriptorBindingType4  = SubpassInputDescri
 layout(constant_id = 5)  const uint DescriptorBindingType5  = SubpassInputDescriptor;
 layout(constant_id = 6)  const uint DescriptorBindingType6  = SubpassInputDescriptor;
 layout(constant_id = 7)  const uint DescriptorBindingType7  = SubpassInputDescriptor;
-layout(constant_id = 8)  const uint DescriptorBindingType8  = SubpassInputDescriptor;
 
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
 layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;

@@ -124,12 +124,12 @@ void MemoryPoolSystem::StartUp()
     
     Vector<byte> GpuDataBufferMemoryPool2 = Vector<byte>(sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize, 0xFF);
     memcpy(GpuDataBufferMemoryPool2.data(), &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-    GpuDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    GpuDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     MappedBufferPtr = buffer.BufferData;
 
     SceneDataBuffer sceneData = SceneDataBuffer();
-    SceneDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    SceneDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     VulkanBuffer& sceneDataBuffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex);
     SceneDataPtr = sceneDataBuffer.BufferData;
 
@@ -145,7 +145,7 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
 
     UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
     size_t newTotalSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
-    uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newBufferId);
     MappedBufferPtr = newBuf.BufferData;
 

@@ -256,6 +256,8 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
     commandBuffer = VK_NULL_HANDLE;
     fence = VK_NULL_HANDLE;
+
+    UpdateGlobalDescriptorSet();
 }
 
 void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
@@ -400,6 +402,8 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
     commandBuffer = VK_NULL_HANDLE;
     fence = VK_NULL_HANDLE;
+
+    UpdateGlobalDescriptorSet();
 }
 
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
@@ -659,9 +663,9 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
     if (vulkanRenderPass.IsRenderedToSwapchain)
     {
         vulkanRenderPass.FrameBufferList.resize(vulkanSystem.SwapChainImageCount);
-        for (size_t i = 0; i < vulkanSystem.SwapChainImageCount; ++i)
+        for (size_t x = 0; x < vulkanSystem.SwapChainImageCount; ++x)
         {
-            std::vector<VkImageView> attachments{ vulkanSystem.SwapChainImageViews[i] };
+            std::vector<VkImageView> attachments{ vulkanSystem.SwapChainImageViews[x] };
             VkFramebufferCreateInfo info = {
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .renderPass = vulkanRenderPass.RenderPass,
@@ -671,7 +675,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
                 .height = static_cast<uint32>(vulkanRenderPass.RenderPassResolution.y),
                 .layers = 1
             };
-            VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &vulkanRenderPass.FrameBufferList[i]));
+            VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &vulkanRenderPass.FrameBufferList[x]));
         }
     }
     else if (!frameBufferAttachment.empty() &&
@@ -736,7 +740,8 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets(VkGuid& renderPassId, Vulk
         {
             VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         5 },
             VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         5 },
-            VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, static_cast<uint32>(memoryPoolSystem.Texture2DInitialCapacity + memoryPoolSystem.Texture3DInitialCapacity + memoryPoolSystem.TextureCubeMapInitialCapacity) }
+            VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, static_cast<uint32>(memoryPoolSystem.Texture2DInitialCapacity + memoryPoolSystem.Texture3DInitialCapacity + memoryPoolSystem.TextureCubeMapInitialCapacity) },
+            VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       16 }
         };
 
         descriptorSetBindingList =
@@ -778,7 +783,7 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets(VkGuid& renderPassId, Vulk
                 {
                     .binding = descriptorBindingList[x].Binding,
                     .descriptorType = descriptorBindingList[x].DescripterType,
-                    .descriptorCount = static_cast<uint32>(descriptorBindingList[x].DescriptorCount),
+                    .descriptorCount = descriptorBindingList[x].DescriptorCount != 0 ? static_cast<uint32>(descriptorBindingList[x].DescriptorCount) : 1,
                     .stageFlags = descriptorBindingList[x].ShaderStageFlags,
                     .pImmutableSamplers = nullptr
                 });
@@ -843,7 +848,7 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets(VkGuid& renderPassId, Vulk
                 {
                     .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                     .pNext = nullptr,
-                    .dstSet = useGlobalDescriptorSet ? memoryPoolSystem.GlobalBindlessDescriptorSet : vulkanPipeline.DescriptorSet,
+                    .dstSet = vulkanPipeline.DescriptorSet,
                     .dstBinding = descriptorBindingList[x].Binding,
                     .dstArrayElement = 0,
                     .descriptorCount = descriptorImageBufferInfoList.size() > descriptorDataBufferInfoList.size() ? static_cast<uint32>(descriptorImageBufferInfoList.size()) : static_cast<uint32>(descriptorDataBufferInfoList.size()),
@@ -853,6 +858,7 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets(VkGuid& renderPassId, Vulk
                     .pTexelBufferView = nullptr
                 });
         }
+        vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
     }
     
 }

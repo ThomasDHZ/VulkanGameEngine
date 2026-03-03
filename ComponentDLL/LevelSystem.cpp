@@ -286,7 +286,7 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
     RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
     RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
-    RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
+    //RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
     //RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
     //RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
     //RenderBloomPass(commandBuffer, bloomRenderPassId);
@@ -415,6 +415,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, layer.InstanceCount, 0, 0,layer.StartInstanceIndex);
     }
+    renderSystem.UpdateGlobalDescriptorSet();
     vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.PipelineLayout, 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
