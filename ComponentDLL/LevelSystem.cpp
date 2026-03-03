@@ -220,6 +220,10 @@ void LevelSystem::Update(const float& deltaTime)
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
+    VkGuid a = VkGuid();
+    VulkanPipeline b = VulkanPipeline();
+    renderSystem.CreateGlobalBindlessDescriptorSets(a, b, Vector<ShaderDescriptorBindingDLL>(), 32, 0);
+
     OrthographicCamera = std::make_shared<Camera>(Camera_CreatePixelPerfectOrthographic(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec2(0.0f, 0.0f)));
     PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
 
@@ -255,9 +259,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 
-    VkGuid a = VkGuid();
-    VulkanPipeline b = VulkanPipeline();
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
+
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json");
     renderSystem.GenerateTexture(brdfRenderPassId);
     sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
@@ -268,8 +271,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
     textureSystem.CubeMapTextureList.emplace_back(textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
 
-
-    renderSystem.CreateGlobalBindlessDescriptorSets(a, b, Vector<ShaderDescriptorBindingDLL>(), 48, 0);
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");

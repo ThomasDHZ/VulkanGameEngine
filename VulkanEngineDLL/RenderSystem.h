@@ -45,6 +45,7 @@ public:
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    RebuildSwapChain(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT void                                                    Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
+    DLL_EXPORT void                                                    UpdateGlobalDescriptorSet();
     DLL_EXPORT void                                                    UpdateDescriptorSet(Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSlot);
     DLL_EXPORT void                                                    GenerateTexture(VkGuid& renderPassId);
     DLL_EXPORT void                                                    GenerateCubeMapTexture(VkGuid& renderPassId);

@@ -141,6 +141,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	//		<< " InitialLayout: " << texture.textureImageLayout << std::endl;
 	//#endif
 
+	renderSystem.UpdateGlobalDescriptorSet();
 	return texture;
 }
 
@@ -422,6 +423,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		TextureList.emplace_back(texture);  
 	}
 
+	renderSystem.UpdateGlobalDescriptorSet();
 	return texture;
 }
 
@@ -567,6 +569,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	CreateTextureView(texture, vulkanRenderPass.UseCubeMapMultiView, aspectMask);
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
+	renderSystem.UpdateGlobalDescriptorSet();
 	return texture;
 }
 
