@@ -8,13 +8,7 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
-layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
-layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
-layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
-layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
-
-layout(std430, binding = 0)  buffer SceneDataBuffer 
+layout(std430, set = 0, binding = 0)  buffer SceneDataBuffer 
 { 
 	uint BRDFMapId;
 	uint CubeMapId;
@@ -30,7 +24,7 @@ layout(std430, binding = 0)  buffer SceneDataBuffer
 	float Time;
 	uint  FrameIndex;
 }sceneDataBuffer;
-layout(binding = 1)  buffer BindlessBuffer 
+layout(set = 0, binding = 1)  buffer BindlessBuffer 
 { 
     uint64_t MeshOffset;     
     uint MeshCount;

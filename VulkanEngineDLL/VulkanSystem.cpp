@@ -507,6 +507,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
+        .descriptorBindingUpdateUnusedWhilePending = VK_TRUE,
         .descriptorBindingPartiallyBound = VK_TRUE,
         .descriptorBindingVariableDescriptorCount = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,

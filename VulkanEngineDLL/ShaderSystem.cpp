@@ -299,29 +299,29 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              );
          }
 
-         if (!SearchShaderDescriptorBindingExists(shaderDescriptorSetBinding, name))
-         {
-             String searchString(String("DescriptorBindingType" + std::to_string(descriptorBinding->binding)));
-             Vector<SpvReflectSpecializationConstant*> DescriptorBindingAttributeTypeResult = FindShaderSpecializationConstant(specializationConstantList, searchString.c_str());
-             shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBindingDLL
-                 {
-                     .Name = name,
-                     .DescriptorSet = descriptorBinding->set,
-                     .Binding = descriptorBinding->binding,
-                     .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
-                     .DescriptorBindingType = *static_cast<DescriptorBindingPropertiesEnum*>(DescriptorBindingAttributeTypeResult[0]->default_value),
-                     .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
-                 });
-         }
-         else
-         {
-             auto it = std::find_if(shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.data() + shaderDescriptorSetBinding.size(),
-                 [&](ShaderDescriptorBindingDLL& var) {
-                     var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
-                     return var.Name == descriptorBinding->name;
-                 }
-             );
-         }
+         //if (!SearchShaderDescriptorBindingExists(shaderDescriptorSetBinding, name))
+         //{
+         //    String searchString(String("DescriptorBindingType" + std::to_string(descriptorBinding->binding)));
+         //    Vector<SpvReflectSpecializationConstant*> DescriptorBindingAttributeTypeResult = FindShaderSpecializationConstant(specializationConstantList, searchString.c_str());
+         //    shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBindingDLL
+         //        {
+         //            .Name = name,
+         //            .DescriptorSet = descriptorBinding->set,
+         //            .Binding = descriptorBinding->binding,
+         //            .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
+         //            .DescriptorBindingType = *static_cast<DescriptorBindingPropertiesEnum*>(DescriptorBindingAttributeTypeResult[0]->default_value),
+         //            .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
+         //        });
+         //}
+         //else
+         //{
+         //    auto it = std::find_if(shaderDescriptorSetBinding.data(), shaderDescriptorSetBinding.data() + shaderDescriptorSetBinding.size(),
+         //        [&](ShaderDescriptorBindingDLL& var) {
+         //            var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
+         //            return var.Name == descriptorBinding->name;
+         //        }
+         //    );
+         //}
      }
 
      std::sort(shaderDescriptorSetBinding.begin(), shaderDescriptorSetBinding.end(),

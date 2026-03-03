@@ -124,9 +124,6 @@ private:
 	static constexpr size_t									 MaterialInitialCapacity = 4;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
 	static constexpr size_t									 PointLightInitialCapacity = 4;
-	static constexpr size_t									 Texture2DInitialCapacity = 32;
-	static constexpr size_t									 Texture3DInitialCapacity = 4;
-	static constexpr size_t									 TextureCubeMapInitialCapacity = 4;
 	static constexpr size_t									 SpriteInstanceInitialCapacity = 16384;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
@@ -134,6 +131,10 @@ private:
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 
 public:
+	static constexpr size_t									 Texture2DInitialCapacity = 65535;
+	static constexpr size_t									 Texture3DInitialCapacity = 32;
+	static constexpr size_t									 TextureCubeMapInitialCapacity = 32;
+
 	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
@@ -177,6 +178,7 @@ public:
 	DLL_EXPORT const MemoryPoolSubBufferHeader				 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
 	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetSceneDataBufferDescriptor() const;
 	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetBindlessDataBufferDescriptor() const;
+	DLL_EXPORT const Vector<VkDescriptorImageInfo>			 GetSubPassInputTextureDescriptor(VkGuid& renderPassId, uint32 index) const;
 };
 extern DLL_EXPORT MemoryPoolSystem& memoryPoolSystem;
 inline MemoryPoolSystem& MemoryPoolSystem::Get()

@@ -240,10 +240,7 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
     if (IsDescriptorSetDirty)
     {
         auto info = GetBindlessDataBufferDescriptor();
-        for (auto& pipeline : pipelineList)
-        {
-            renderSystem.UpdateDescriptorSet(pipeline, info, 0, BindlessDataDescriptorBinding);
-        }
+        renderSystem.UpdateDescriptorSet(info, BindlessDataDescriptorBinding);
         IsDescriptorSetDirty = false;
     }
 }
@@ -533,6 +530,20 @@ const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetBindlessDataBufferDesc
             .buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex).Buffer,
             .offset = 0,
             .range = VK_WHOLE_SIZE
+        }
+    };
+}
+
+const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDescriptor(VkGuid& renderPassId, uint32 index) const
+{
+    Texture inputTexture = textureSystem.FindRenderedTextureList(renderPassId)[index];
+    return Vector<VkDescriptorImageInfo>
+    {
+        VkDescriptorImageInfo
+        {
+            .sampler = inputTexture.textureSampler,
+            .imageView = inputTexture.textureViewList.front(),
+            .imageLayout = inputTexture.textureImageLayout
         }
     };
 }
