@@ -3,10 +3,23 @@
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
 
+layout (location = 0)  in vec2  VS_Position;
+layout (location = 1)  in vec2  VS_UV;
+
+layout (location = 0) out vec3  PS_Position;
+layout (location = 1) out vec2  PS_UV;
+
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
+
+
+layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
+layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
+layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
+layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
@@ -62,13 +75,6 @@ layout(push_constant) uniform SceneDataBuffer
     int   UseHeightMap;
     float HeightScale;
 } sceneData;
-
-layout (location = 0)  in vec2  VS_Position;
-layout (location = 1)  in vec2  VS_UV;
-
-layout (location = 0) out vec3  PS_Position;
-layout (location = 1) out vec2  PS_UV;
-
 
 #include "BindlessHelpers.glsl"
 

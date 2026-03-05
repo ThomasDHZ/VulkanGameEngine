@@ -8,6 +8,22 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
+const int BrdfMapBinding              = 1;
+const int DirectionalShadowMapBinding = 2;
+const int SDFShadowMapBinding         = 3;
+
+layout(location = 0) in vec2 TexCoords;
+
+layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec4 outBloom;
+
+
+layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
+layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
+layout(constant_id = 3)  const uint DescriptorBindingType3  = Texture3DDescriptor;
+layout(constant_id = 4)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
+
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
 	uint BRDFMapId;
@@ -56,15 +72,6 @@ layout(binding = 2) uniform sampler2D TextureMap[];
 layout(binding = 3) uniform sampler3D Texture3DMap[];
 layout(binding = 4) uniform samplerCube CubeMap[];
 
-layout(constant_id = 0)  const uint DescriptorBindingType0  = SubpassInputDescriptor;
-layout(constant_id = 1)  const uint DescriptorBindingType1  = SubpassInputDescriptor;
-layout(constant_id = 2)  const uint DescriptorBindingType2  = SubpassInputDescriptor;
-layout(constant_id = 3)  const uint DescriptorBindingType3  = SubpassInputDescriptor;
-layout(constant_id = 4)  const uint DescriptorBindingType4  = SubpassInputDescriptor;
-layout(constant_id = 5)  const uint DescriptorBindingType5  = SubpassInputDescriptor;
-layout(constant_id = 6)  const uint DescriptorBindingType6  = SubpassInputDescriptor;
-layout(constant_id = 7)  const uint DescriptorBindingType7  = SubpassInputDescriptor;
-
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
 layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;
 layout(set = 1, binding = 2, input_attachment_index = 2) uniform subpassInput normalInput;
@@ -74,11 +81,6 @@ layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput te
 layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput parallaxUVInfoInput;
 layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput emissionInput;
 layout(set = 1, binding = 8, input_attachment_index = 8) uniform subpassInput depthInput;
-
-layout(location = 0) in vec2 TexCoords;
-
-layout(location = 0) out vec4 outColor;
-layout(location = 1) out vec4 outBloom;
 
 #include "BindlessHelpers.glsl"
 

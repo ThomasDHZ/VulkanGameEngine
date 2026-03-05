@@ -1,61 +1,6 @@
 #version 460
-#extension GL_EXT_multiview : enable
 #extension GL_ARB_separate_shader_objects : enable
-#extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_ARB_gpu_shader_int64 : require
-
-#include "Lights.glsl"
-#include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
-
-layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 
-	uint BRDFMapId;
-	uint CubeMapId;
-	uint IrradianceMapId;
-	uint PrefilterMapId;
-	mat4  Projection;
-	mat4  View;
-	mat4  InverseProjection;
-	mat4  InverseView;
-	vec3  CameraPosition;
-	vec3  ViewDirection;
-    vec2  InvertResolution;
-	float Time;
-	uint  FrameIndex;
-}sceneDataBuffer;
-layout(binding = 1)  buffer BindlessBuffer 
-{ 
-    uint64_t MeshOffset;     
-    uint MeshCount;
-    uint MeshSize;   
-    uint64_t MaterialOffset; 
-    uint MaterialCount;
-    uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
-    uint DirectionalLightCount;
-    uint DirectionalLightSize;   
-    uint64_t PointLightOffset; 
-    uint PointLightCount;
-    uint PointLightSize;     
-    uint64_t Texture2DOffset;
-	uint Texture2DCount;
-	uint Texture2DSize;
-	uint64_t Texture3DOffset;
-	uint Texture3DCount;
-	uint Texture3DSize;
-	uint64_t TextureCubeMapOffset;
-	uint TextureCubeMapCount;
-	uint TextureCubeMapSize;
-    uint64_t SpriteInstanceOffset;
-	uint SpriteInstanceCount;
-    uint SpriteInstanceSize;
-    uint Data[]; 
-} bindlessBuffer;
-layout(binding = 2) uniform sampler2D TextureMap[];
-layout(binding = 3) uniform sampler3D Texture3DMap[];
-layout(binding = 4) uniform samplerCube CubeMap[];
+#extension GL_EXT_multiview : enable
 
 layout (location = 0) in vec3 aPos;
 layout(location = 0) out vec3 WorldPos;
@@ -65,11 +10,12 @@ layout(push_constant) uniform PrefilterSamplerProperties {
     float Roughness;
 } prefilterSamplerProperties;
 
+// Standard 90° perspective projection (shared for all views)
 const mat4 captureProjection = mat4(
     1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, -1.0, -1.0, 
-    0.0, 0.0, -0.1, 0.0  
+    0.0, 0.0, -1.0, -1.0,  // Standard OpenGL Z mapping
+    0.0, 0.0, -0.1, 0.0     // Near 0.1
 );
 
 // 6 view matrices (lookAt from origin to each face)
@@ -109,7 +55,10 @@ const mat4 captureViews[6] = mat4[](
 void main()
 {
     WorldPos = aPos;
+
+    // Full MVP = projection * view[gl_ViewIndex]
     mat4 view = captureViews[gl_ViewIndex];
     vec4 pos = captureProjection * view * vec4(aPos, 1.0);
-    gl_Position = pos.xyww;
+
+    gl_Position = pos.xyww;  // Force depth = w for cubemap projection
 }

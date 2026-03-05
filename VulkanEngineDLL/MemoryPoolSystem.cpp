@@ -240,7 +240,10 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
     if (IsDescriptorSetDirty)
     {
         auto info = GetBindlessDataBufferDescriptor();
-        renderSystem.UpdateDescriptorSet(info, BindlessDataDescriptorBinding);
+        for (auto& pipeline : pipelineList)
+        {
+            renderSystem.UpdateDescriptorSet(pipeline, info, 0, BindlessDataDescriptorBinding);
+        }
         IsDescriptorSetDirty = false;
     }
 }
@@ -534,16 +537,18 @@ const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetBindlessDataBufferDesc
     };
 }
 
-const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDescriptor(VkGuid& renderPassId, uint32 index) const
+const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const
 {
-    Texture inputTexture = textureSystem.FindRenderedTextureList(renderPassId)[index];
-    return Vector<VkDescriptorImageInfo>
-    {
-        VkDescriptorImageInfo
-        {
-            .sampler = inputTexture.textureSampler,
-            .imageView = inputTexture.textureViewList.front(),
-            .imageLayout = inputTexture.textureImageLayout
-        }
-    };
+    Vector<VkDescriptorImageInfo> descriptorSetInfoList;
+    Vector<Texture> inputTextureList = textureSystem.FindRenderedTextureList(renderPassId);
+    for(auto& texture : inputTextureList)
+    { 
+        descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = texture.textureSampler,
+                .imageView = texture.textureViewList.front(),
+                .imageLayout = texture.textureImageLayout
+            });
+    }
+    return descriptorSetInfoList;
 }

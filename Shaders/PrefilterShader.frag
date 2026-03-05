@@ -1,60 +1,12 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_debug_printf : enable
 
-#include "Lights.glsl"
 #include "Constants.glsl"
-#include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl" 
 
-layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 
-	uint BRDFMapId;
-	uint CubeMapId;
-	uint IrradianceMapId;
-	uint PrefilterMapId;
-	mat4  Projection;
-	mat4  View;
-	mat4  InverseProjection;
-	mat4  InverseView;
-	vec3  CameraPosition;
-	vec3  ViewDirection;
-    vec2  InvertResolution;
-	float Time;
-	uint  FrameIndex;
-}sceneDataBuffer;
-layout(binding = 1)  buffer BindlessBuffer 
-{ 
-    uint64_t MeshOffset;     
-    uint MeshCount;
-    uint MeshSize;   
-    uint64_t MaterialOffset; 
-    uint MaterialCount;
-    uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
-    uint DirectionalLightCount;
-    uint DirectionalLightSize;   
-    uint64_t PointLightOffset; 
-    uint PointLightCount;
-    uint PointLightSize;     
-    uint64_t Texture2DOffset;
-	uint Texture2DCount;
-	uint Texture2DSize;
-	uint64_t Texture3DOffset;
-	uint Texture3DCount;
-	uint Texture3DSize;
-	uint64_t TextureCubeMapOffset;
-	uint TextureCubeMapCount;
-	uint TextureCubeMapSize;
-    uint64_t SpriteInstanceOffset;
-	uint SpriteInstanceCount;
-    uint SpriteInstanceSize;
-    uint Data[]; 
-} bindlessBuffer;
-layout(binding = 2) uniform sampler2D TextureMap[];
-layout(binding = 3) uniform sampler3D Texture3DMap[];
-layout(binding = 4) uniform samplerCube CubeMap[];
+layout(constant_id = 0) const uint DescriptorBindingType0 = SkyBoxDescriptor;
+layout(binding = 0) uniform samplerCube CubeMap;
 
 layout(location = 0) in vec3 WorldPos;
 layout(location = 0) out vec4 outColor;
@@ -63,8 +15,6 @@ layout(push_constant) uniform PrefilterSamplerProperties {
     uint CubeMapResolution;
     float Roughness;
 } prefilterSamplerProperties;
-
-#include "BindlessHelpers.glsl"
 
 float RadicalInverse_VdC(uint bits) 
 {
@@ -131,7 +81,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0f);
         if(NdotL > 0.0f)
         {
-            prefilteredColor += textureLod(CubeMap[sceneDataBuffer.CubeMapId], L, 0.0).rgb * NdotL;
+            prefilteredColor += textureLod(CubeMap, L, 0.0).rgb * NdotL;
         }
     }
     prefilteredColor /= float(SAMPLE_COUNT);
@@ -139,7 +89,7 @@ void main()
     // Perfect mirror for near-zero roughness
     if (prefilterSamplerProperties.Roughness < 0.01f)
     {
-        prefilteredColor = textureLod(CubeMap[sceneDataBuffer.CubeMapId], N, 0.0).rgb;
+        prefilteredColor = textureLod(CubeMap, N, 0.0).rgb;
     } 
 
     outColor = vec4(prefilteredColor, 1.0f);

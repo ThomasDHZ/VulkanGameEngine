@@ -43,6 +43,12 @@ layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 layout(constant_id = 15) const uint VertexInputRateLocation10 = 1;
 
+layout(constant_id = 16)  const uint DescriptorBindingType0  = SceneDataDescriptor;
+layout(constant_id = 17)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
+layout(constant_id = 18)  const uint DescriptorBindingType2  = TextureDescriptor;
+layout(constant_id = 19)  const uint DescriptorBindingType3  = Texture3DDescriptor;
+layout(constant_id = 20)  const uint DescriptorBindingType4  = SkyBoxDescriptor;
+
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
 	uint BRDFMapId;
