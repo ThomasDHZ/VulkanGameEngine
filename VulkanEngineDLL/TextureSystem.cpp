@@ -576,7 +576,7 @@ void TextureSystem::GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescri
 		{
 			.sampler = texture.textureSampler,
 			.imageView = texture.textureViewList.front(),
-			.imageLayout = texture.textureImageLayout
+			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 		});
 }
 
@@ -1186,3 +1186,39 @@ void TextureSystem::TransitionImageLayout(VkCommandBuffer& commandBuffer, Textur
 	texture.textureImageLayout = newLayout;
 }
 
+void TextureSystem::DestroyTexture(uint32_t index) {
+	if (index >= TextureList.size()) {
+		printf("DestroyTexture: index %u out of range (size %zu)\n", index, TextureList.size());
+		return;
+	}
+	auto& tex = TextureList[index];
+	printf("Destroying texture index %u, VkImage %p\n", index, (void*)tex.textureImage);
+
+    vkDestroyImageView(vulkanSystem.Device, tex.textureViewList.front(), nullptr);
+    vkDestroySampler(vulkanSystem.Device, tex.textureSampler, nullptr);
+    vkDestroyImage(vulkanSystem.Device, tex.textureImage, nullptr);
+
+
+        vmaFreeMemory(bufferSystem.vmaAllocator, tex.TextureAllocation);
+        tex.TextureAllocation = VK_NULL_HANDLE;
+
+    tex.textureImage = VK_NULL_HANDLE;
+    tex.textureViewList.clear();
+    tex.textureSampler = VK_NULL_HANDLE;
+}
+
+void TextureSystem::DestroyCubeTexture(uint32_t index) {
+	if (index >= CubeMapTextureList.size()) return;
+	auto& tex = CubeMapTextureList[index];
+
+	// Cubemaps may have multiple views or single view for all faces
+	for (auto view : tex.textureViewList) {
+		vkDestroyImageView(vulkanSystem.Device, view, nullptr);
+	}
+	if (tex.textureSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(vulkanSystem.Device, tex.textureSampler, nullptr);
+	}
+	vkDestroyImage(vulkanSystem.Device, tex.textureImage, nullptr);
+	vmaFreeMemory(bufferSystem.vmaAllocator, tex.TextureAllocation);
+	tex = {};
+}

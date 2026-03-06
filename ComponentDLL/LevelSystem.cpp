@@ -237,13 +237,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
     levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
-    for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
-    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
-    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& texture : json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
-    for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
-    for (auto& skyBox      : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
+    for (auto& light : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
+    for (auto& skyBox : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
@@ -254,83 +254,16 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-
-    VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
-    brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", false);
-    renderSystem.GenerateTexture(brdfRenderPassId);
-    sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
-    textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(brdfRenderPassId).back());
-
-    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", false);
-    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-    sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
-    textureSystem.CubeMapTextureList.emplace_back(textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
-
-    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();  // or begin a new one-time cmd buffer
-
-    VkImageMemoryBarrier barriers[2] = {};
-
-    // Barrier 0: BRDF LUT (2D texture)
-    barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[0].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    barriers[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[0].image = textureSystem.TextureList.back().textureImage;  // BRDF is the last added
-    barriers[0].subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = 1,  // BRDF usually no mips
-        .baseArrayLayer = 0,
-        .layerCount = 1
-    };
-
-    // Barrier 1: Environment cubemap
-    barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barriers[1].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[1].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    barriers[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[1].image = textureSystem.CubeMapTextureList.back().textureImage;
-    barriers[1].subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = VK_REMAINING_MIP_LEVELS,  // cubemaps often have mips
-        .baseArrayLayer = 0,
-        .layerCount = 6                         // cubemap layers
-    };
-
-    vkCmdPipelineBarrier(
-        cmd,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0,
-        0, nullptr,  // no memory barriers needed
-        0, nullptr,  // no buffer barriers
-        2, barriers
-    );
-     vkEndCommandBuffer(cmd);
-     VkSubmitInfo submitInfo{
-         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-         .commandBufferCount = 1,
-         .pCommandBuffers = &cmd
-     };
-     vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-     vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
-
     renderSystem.CreateGlobalBindlessDescriptorSets(VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"), 32, 0);
-    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", false);
-    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", false);
-    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
+    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", false);
+    prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", false);
+    gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
     /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json", false);
-    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json", false);
+    hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", false);
+    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", false);
+    renderSystem.UpdateGlobalDescriptorSet();  // safe now
 }
 
 

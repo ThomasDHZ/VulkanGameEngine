@@ -71,8 +71,8 @@ layout(binding = 1)  buffer BindlessBuffer
     uint Data[]; 
 } bindlessBuffer;
 layout(binding = 2) uniform sampler2D TextureMap[];
-layout(binding = 3) uniform sampler3D Texture3DMap[];
-layout(binding = 4) uniform samplerCube CubeMap[];
+//layout(binding = 3) uniform sampler3D Texture3DMap[];
+//layout(binding = 4) uniform samplerCube CubeMap[];
 
 layout(push_constant) uniform SceneDataBuffer
 {

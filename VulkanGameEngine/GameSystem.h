@@ -10,6 +10,7 @@ class MeshSystem;
 class GameSystem
 {
 private:
+    void InitPrecomputedMaps();
 public:
     GameSystem();
     ~GameSystem();

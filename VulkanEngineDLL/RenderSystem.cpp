@@ -45,43 +45,51 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
-    if (renderPassTexture.empty() || renderPassTexture[0].textureImage == VK_NULL_HANDLE)
+    if (renderPassTexture.empty())
     {
         std::cerr << "[GenerateTexture] No render texture found for pass " << renderPassId.ToString() << std::endl;
         return;
     }
 
     VkImage targetImage = renderPassTexture[0].textureImage;
+
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
     VkFence fence = VK_NULL_HANDLE;
 
     auto cleanup = [&]() {
         if (commandBuffer != VK_NULL_HANDLE) {
             vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+            commandBuffer = VK_NULL_HANDLE;
         }
         if (fence != VK_NULL_HANDLE) {
             vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+            fence = VK_NULL_HANDLE;
         }
         };
 
-    VkCommandBufferAllocateInfo allocInfo{
+    VkCommandBufferAllocateInfo allocInfo
+    {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool = vulkanSystem.CommandPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
+
     if (vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
         std::cerr << "[GenerateTexture] Failed to allocate command buffer" << std::endl;
         cleanup();
         return;
     }
 
-    VkCommandBufferBeginInfo beginInfo{
+    VkCommandBufferBeginInfo beginInfo
+    {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
     };
 
-    VkViewport viewport{
+
+    VkViewport viewport
+    {
         .x = 0.0f,
         .y = 0.0f,
         .width = static_cast<float>(renderPass.RenderPassResolution.x),
@@ -90,15 +98,18 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
         .maxDepth = 1.0f
     };
 
-    VkRect2D scissor{
+    VkRect2D scissor
+    {
         .offset = {0, 0},
-        .extent = {
+        .extent =
+        {
             static_cast<uint32_t>(renderPass.RenderPassResolution.x),
             static_cast<uint32_t>(renderPass.RenderPassResolution.y)
         }
     };
 
-    VkRenderPassBeginInfo renderPassBeginInfo{
+    VkRenderPassBeginInfo renderPassBeginInfo
+    {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = renderPass.RenderPass,
         .framebuffer = renderPass.FrameBufferList[0],
@@ -122,82 +133,54 @@ void RenderSystem::GenerateTexture(VkGuid& renderPassId)
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        pipeline.PipelineLayout,
-        0,
-        static_cast<uint32_t>(pipeline.DescriptorSetList.size()),
-        pipeline.DescriptorSetList.data(),
-        0, nullptr);
-
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, static_cast<uint32_t>(pipeline.DescriptorSetList.size()), pipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-
     vkCmdEndRenderPass(commandBuffer);
-
-    // ────────────────────────────────────────────────────────────────
-    // CRITICAL: Transition the rendered texture to shader-readable layout
-    // ────────────────────────────────────────────────────────────────
-    VkImageMemoryBarrier barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;           // what it was after render
-    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;          // what shader needs
-    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = targetImage;  // ← get from textureSystem.CubeMapTextureList.back().image or similar
-    barrier.subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = VK_REMAINING_MIP_LEVELS,  // or actual mip count
-        .baseArrayLayer = 0,
-        .layerCount = 1                         // cubemap
-    };
-
-    vkCmdPipelineBarrier(
-        commandBuffer,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0,                  // no dependency flags needed here
-        0, nullptr,         // no memory barriers
-        0, nullptr,         // no buffer barriers
-        1, &barrier
-    );
-
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         std::cerr << "[GenerateTexture] Failed to end command buffer" << std::endl;
         cleanup();
         return;
     }
 
-    VkFenceCreateInfo fenceCreateInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-    if (vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS) {
+    VkFenceCreateInfo fenceCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = 0
+    };
+
+    if (vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)
+    {
         std::cerr << "[GenerateTexture] Failed to create fence" << std::endl;
         cleanup();
         return;
     }
 
-    VkSubmitInfo submitInfo{
+    VkSubmitInfo submitInfo
+    {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .commandBufferCount = 1,
         .pCommandBuffers = &commandBuffer
     };
 
-    if (vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS) {
+    if (vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
+    {
         std::cerr << "[GenerateTexture] Failed to submit queue" << std::endl;
         cleanup();
         return;
     }
 
-    if (vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
+    if (vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+    {
         std::cerr << "[GenerateTexture] Failed to wait for fence" << std::endl;
         cleanup();
         return;
     }
 
-    cleanup();  // free cmd buffer + destroy fence
+    vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+    commandBuffer = VK_NULL_HANDLE;
+    fence = VK_NULL_HANDLE;
 }
 
 void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
@@ -219,9 +202,11 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
     auto cleanup = [&]() {
         if (commandBuffer != VK_NULL_HANDLE) {
             vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+            commandBuffer = VK_NULL_HANDLE;
         }
         if (fence != VK_NULL_HANDLE) {
             vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+            fence = VK_NULL_HANDLE;
         }
         };
 
@@ -231,6 +216,7 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
+
     if (vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
         std::cerr << "[GenerateCubeMapTexture] Failed to allocate command buffer" << std::endl;
         cleanup();
@@ -259,7 +245,8 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         }
     };
 
-    VkRenderPassBeginInfo renderPassBeginInfo{
+    VkRenderPassBeginInfo renderPassBeginInfo
+    {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = renderPass.RenderPass,
         .framebuffer = renderPass.FrameBufferList[0],
@@ -274,69 +261,30 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         .pClearValues = renderPass.ClearValueList.data()
     };
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+    {
         std::cerr << "[GenerateCubeMapTexture] Failed to begin command buffer" << std::endl;
         cleanup();
         return;
     }
 
+    VkDeviceSize offsets[] = { 0 };
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        skyboxPipeline.PipelineLayout,
-        0,
-        static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()),
-        skyboxPipeline.DescriptorSetList.data(),
-        0, nullptr);
-
-    VkDeviceSize offsets[] = { 0 };
-
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
     for (const auto& skyboxMesh : skyBoxList)
     {
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
-        const VkBuffer& vertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-        const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
-
     vkCmdEndRenderPass(commandBuffer);
-
-    // ────────────────────────────────────────────────────────────────
-    // CRITICAL: Transition the cubemap to shader-readable layout
-    // ────────────────────────────────────────────────────────────────
-    VkImageMemoryBarrier barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;           // what it was after render
-    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;          // what shader needs
-    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = targetCubemap;  // ← get from textureSystem.CubeMapTextureList.back().image or similar
-    barrier.subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = VK_REMAINING_MIP_LEVELS,  // or actual mip count
-        .baseArrayLayer = 0,
-        .layerCount = 6                         // cubemap
-    };
-
-    vkCmdPipelineBarrier(
-        commandBuffer,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0,                  // no dependency flags needed here
-        0, nullptr,         // no memory barriers
-        0, nullptr,         // no buffer barriers
-        1, &barrier
-    );
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         std::cerr << "[GenerateCubeMapTexture] Failed to end command buffer" << std::endl;
@@ -344,7 +292,11 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         return;
     }
 
-    VkFenceCreateInfo fenceCreateInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+    VkFenceCreateInfo fenceCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = 0
+    };
+
     if (vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS) {
         std::cerr << "[GenerateCubeMapTexture] Failed to create fence" << std::endl;
         cleanup();
@@ -369,7 +321,10 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         return;
     }
 
-    cleanup();
+    vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+    commandBuffer = VK_NULL_HANDLE;
+    fence = VK_NULL_HANDLE;
 }
 
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, bool useGlobalDescriptorSet)
@@ -472,7 +427,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(
 
             descriptorSetList = {
                 memoryPoolSystem.GlobalBindlessDescriptorSet,
-                globalSet1
+               globalSet1
             };
 
             pipelineLayout = CreatePipelineLayout(
@@ -665,7 +620,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         const RenderPassAttachmentTexture& renderAttachment = renderPassAttachmentTextureInfoList[x];
         switch (renderAttachment.RenderTextureType)
         {
-            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR;               break;
+            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;               break;
             case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
             case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
@@ -816,15 +771,15 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets(VkGuid guid, uint32 variab
         {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL},
         {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL},
         {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_2D, VK_SHADER_STAGE_ALL},
-        {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_3D, VK_SHADER_STAGE_ALL},
-        {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},
+        //{3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_3D, VK_SHADER_STAGE_ALL},
+        //{4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},
     };
 
     Vector<VkDescriptorBindingFlags> flags(bindings.size(),
         VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
         VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
         VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT);
-    flags[4] |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+    flags[2] |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
 
     uint32_t counts[1] = {
         131072
@@ -1033,33 +988,33 @@ void RenderSystem::UpdateGlobalDescriptorSet()
             });
     }
 
-    if (!texture3DBuffer.empty())
-    {
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 3,
-                .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = texture3DBuffer.data(),
-            });
-    }
+    //if (!texture3DBuffer.empty())
+    //{
+    //    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+    //        {
+    //            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+    //            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+    //            .dstBinding = 3,
+    //            .dstArrayElement = 0,
+    //            .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
+    //            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    //            .pImageInfo = texture3DBuffer.data(),
+    //        });
+    //}
 
-    if (!cubeMapBuffer.empty())
-    {
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 4,
-                .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(cubeMapBuffer.size()),
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = cubeMapBuffer.data(),
-            });
-    }
+    //if (!cubeMapBuffer.empty())
+    //{
+    //    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+    //        {
+    //            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+    //            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+    //            .dstBinding = 4,
+    //            .dstArrayElement = 0,
+    //            .descriptorCount = static_cast<uint32>(cubeMapBuffer.size()),
+    //            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    //            .pImageInfo = cubeMapBuffer.data(),
+    //        });
+    //}
 
     vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
 }
@@ -1626,7 +1581,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
         {
             .sampler = cubeMap.textureSampler,
             .imageView = cubeMap.textureViewList.front(),
-            .imageLayout = cubeMap.textureImageLayout
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         });
     }
     return texturePropertiesBuffer;
