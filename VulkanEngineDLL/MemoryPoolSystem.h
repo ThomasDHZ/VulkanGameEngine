@@ -30,9 +30,9 @@ struct SpriteInstance
 struct MemoryPoolSubBufferHeader
 {
 	uint32					ActiveCount = UINT32_MAX;
-	size_t					Offset		= UINT32_MAX;
-	uint32					Count		= UINT32_MAX;
-	uint32					Size		= UINT32_MAX;
+	size_t					Offset = UINT32_MAX;
+	uint32					Count = UINT32_MAX;
+	uint32					Size = UINT32_MAX;
 	Vector<byte>			IsActive;         // 0 = inactive, 1 = active
 	Vector<uint32>			FreeIndices;
 	bool					IsDirty = true;
@@ -40,13 +40,13 @@ struct MemoryPoolSubBufferHeader
 
 struct TextureMetadataHeader
 {
-	uint32 Width	  = 0;
-	uint32 Height	  = 0;
-	uint32 Depth	  = 0;
-	uint32 MipLevels  = 1;
+	uint32 Width = 0;
+	uint32 Height = 0;
+	uint32 Depth = 0;
+	uint32 MipLevels = 1;
 	uint32 LayerCount = 1; // 1 = 2D, 6 = Cubemap
-	uint32 Format	  = 1;
-	uint32 Type		  = 0; // 0 = 2D, 1 = Cube
+	uint32 Format = 1;
+	uint32 Type = 0; // 0 = 2D, 1 = Cube
 	uint32 ArrayIndex = 0; // Index into the correct sampler array
 };
 
@@ -143,14 +143,14 @@ public:
 	VkDescriptorSetLayout									 GlobalDescriptorSetLayout2 = VK_NULL_HANDLE;
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;
-	void*													 SceneDataPtr = nullptr;
+	void* SceneDataPtr = nullptr;
 	bool													 IsSceneBufferDirty = true;
 
 	uint32													 GpuDataBufferIndex = UINT32_MAX;
 	size_t													 GpuDataBufferMemoryPoolSize = UINT32_MAX;
 	MemoryPoolBufferHeader									 GpuDataMemoryPoolHeader;
 	Vector<byte>											 GpuDataBufferMemoryPool;
-	void*													 MappedBufferPtr = nullptr;
+	void* MappedBufferPtr = nullptr;
 	bool													 IsHeaderDirty = true;
 	bool													 IsDescriptorSetDirty = true;
 
@@ -158,15 +158,15 @@ public:
 	DLL_EXPORT uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
 	DLL_EXPORT void											 UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList);
 
-	DLL_EXPORT MeshPropertiesStruct&						 UpdateMesh(uint32 index);
-	DLL_EXPORT GPUMaterial&									 UpdateMaterial(uint32 index);
-	DLL_EXPORT DirectionalLight&							 UpdateDirectionalLight(uint32 index);
-	DLL_EXPORT PointLight&									 UpdatePointLight(uint32 index);
-	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture2DMetadataHeader(uint32 index);
-	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
-	DLL_EXPORT TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
-	DLL_EXPORT SpriteInstance&								 UpdateSpriteInstance(uint32 index);
-	DLL_EXPORT SceneDataBuffer&								 UpdateSceneDataBuffer();
+	DLL_EXPORT MeshPropertiesStruct& UpdateMesh(uint32 index);
+	DLL_EXPORT GPUMaterial& UpdateMaterial(uint32 index);
+	DLL_EXPORT DirectionalLight& UpdateDirectionalLight(uint32 index);
+	DLL_EXPORT PointLight& UpdatePointLight(uint32 index);
+	DLL_EXPORT TextureMetadataHeader& UpdateTexture2DMetadataHeader(uint32 index);
+	DLL_EXPORT TextureMetadataHeader& UpdateTexture3DMetadataHeader(uint32 index);
+	DLL_EXPORT TextureMetadataHeader& UpdateTextureCubeMapMetadataHeader(uint32 index);
+	DLL_EXPORT SpriteInstance& UpdateSpriteInstance(uint32 index);
+	DLL_EXPORT SceneDataBuffer& UpdateSceneDataBuffer();
 
 	DLL_EXPORT Vector<SpriteInstance*>						 GetActiveSpriteInstancePointers();
 

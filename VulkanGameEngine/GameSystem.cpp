@@ -9,7 +9,6 @@
 #include "GameController.h"
 #include <MaterialBakerSystem.h>
 #include <LevelSystem.h>
-#include <VkGuid.h>
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
 #endif
@@ -17,34 +16,6 @@
 #ifndef __ANDROID__
 GameSystem gameSystem = GameSystem();
 #endif
-
-void GameSystem::InitPrecomputedMaps() {
-    static bool s_mapsGenerated = false;
-    if (s_mapsGenerated) return;
-    s_mapsGenerated = true;
-
-    printf("[InitPrecomputedMaps] Preparing BRDF + cubemap (no submit)\n");
-
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    VkGuid dummyGuid = VkGuid();
-
-    vkDeviceWaitIdle(vulkanSystem.Device);
-
-    // Cleanup
-    if (sceneDataBuffer.BRDFMapId != UINT32_MAX) textureSystem.DestroyTexture(sceneDataBuffer.BRDFMapId);
-    if (sceneDataBuffer.CubeMapId != UINT32_MAX) textureSystem.DestroyCubeTexture(sceneDataBuffer.CubeMapId);
-    sceneDataBuffer.BRDFMapId = UINT32_MAX;
-    sceneDataBuffer.CubeMapId = UINT32_MAX;
-    textureSystem.TextureList.clear();
-    textureSystem.CubeMapTextureList.clear();
-
-    // Just load render passes — generation will happen in first frame
-    levelSystem.brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", false);
-    levelSystem.environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(
-        dummyGuid, "RenderPass/EnvironmentToCubeMapRenderPass.json", false);
-
-    printf("[InitPrecomputedMaps] Ready for first-frame execution\n");
-}
 
 GameSystem::GameSystem()
 {
@@ -60,36 +31,35 @@ void GameSystem::StartUp(void* windowHandle)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkInstance instance = vulkanSystem.CreateVulkanInstance();
-
 #ifdef PLATFORM_ANDROID
     ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
+
     VkAndroidSurfaceCreateInfoKHR surfaceInfo = { VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR };
     surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
     surfaceInfo.pNext = nullptr;
     surfaceInfo.flags = 0;
     surfaceInfo.window = nativeWindow;
+
     VkResult result = vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
     if (result != VK_SUCCESS || surface == VK_NULL_HANDLE)
     {
         __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "FATAL: vkCreateAndroidSurfaceKHR failed! Result: %d", result);
         return;
     }
+
     __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
 #else
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
-
     renderSystem.StartUp(windowHandle, instance, surface);
     meshSystem.StartUp();
     materialSystem.StartUp();
     lightSystem.StartUp();
     memoryPoolSystem.StartUp();
-
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-    // materialBakerSystem.Run();  // Uncomment if needed
+ //   materialBakerSystem.Run();
 #endif
-    //InitPrecomputedMaps();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 

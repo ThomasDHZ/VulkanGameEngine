@@ -39,14 +39,14 @@ public:
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
 
-    DLL_EXPORT void             CreateGlobalBindlessDescriptorSets(VkGuid guid, uint32 variableCounts, uint32 descriptorSetLayoutIndex);
-    DLL_EXPORT void             CreateGlobalBindlessDescriptorSets2(VkGuid guid, uint32 variableCounts, uint32 descriptorSetLayoutIndex);
+    DLL_EXPORT void                          CreateGlobalBindlessDescriptorSets();
+    DLL_EXPORT void                          CreateGlobalBindlessDescriptorSets2(VkGuid renderpassGuid);
+    DLL_EXPORT void                          UpdateGlobalDescriptorSet();
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, bool useGlobalDescriptorSet);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet);
     DLL_EXPORT void                          RebuildSwapChain(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT void                          Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
-    DLL_EXPORT void                          UpdateGlobalDescriptorSet();
     DLL_EXPORT void                          UpdateDescriptorSet(VulkanPipeline& pipeline, Vector<VkDescriptorBufferInfo>& descriptorInfo, uint32 descriptorBindingSet, uint32 descriptorBindingSlot);
     DLL_EXPORT void                          GenerateTexture(VkGuid& renderPassId);
     DLL_EXPORT void                          GenerateCubeMapTexture(VkGuid& renderPassId);

@@ -8,6 +8,8 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
+
+
 layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
 layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
 layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
@@ -279,7 +281,7 @@ void main()
     Lo += PointLightFunc(F0, V, R, finalUV, material);
     vec3 ambient = ImageBasedLighting(F0, V, R, material);
 
-    vec3  color = Lo;
+    vec3  color = ambient + Lo;
     outColor = vec4(color, 1.0);
 
     vec3  bloomColor = max(vec3(0.0f), color - vec3(1.0f));

@@ -507,7 +507,6 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
-        .descriptorBindingUpdateUnusedWhilePending = VK_TRUE,
         .descriptorBindingPartiallyBound = VK_TRUE,
         .descriptorBindingVariableDescriptorCount = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
@@ -1015,73 +1014,57 @@ void VulkanSystem::StartFrame()
 
 void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
 {
-    // ────────────────────────────────────────────────────────────────
-    // 1. END the command buffer BEFORE submitting it
-    // ────────────────────────────────────────────────────────────────
-    VkResult endResult = vkEndCommandBuffer(commandBufferSubmit);
-    if (endResult != VK_SUCCESS) {
-        printf("ERROR: vkEndCommandBuffer failed: %d\n", endResult);
-        if (endResult == VK_ERROR_DEVICE_LOST) {
-            // Handle device lost (recreate swapchain, etc.)
-            RebuildRendererFlag = true;
-            return;
-        }
-        VULKAN_THROW_IF_FAIL(endResult);
-    }
+    VkPipelineStageFlags waitStages[] =
+    {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
 
-    // Make sure we're ending the correct buffer (safety)
-    assert(commandBufferSubmit == CommandBuffers[CommandIndex] &&
-        "EndFrame received wrong command buffer!");
+    VkSubmitInfo submitInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
+        .pWaitDstStageMask = waitStages,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBufferSubmit,
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.CommandIndex]
+    };
 
-    // ────────────────────────────────────────────────────────────────
-    // 2. Submit graphics work
-    // ────────────────────────────────────────────────────────────────
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &AcquireImageSemaphores[CommandIndex];
-    submitInfo.pWaitDstStageMask = waitStages;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBufferSubmit;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &PresentImageSemaphores[CommandIndex];
-
-    VkResult submitResult = vkQueueSubmit(GraphicsQueue, 1, &submitInfo, InFlightFences[CommandIndex]);
-    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR || submitResult == VK_SUBOPTIMAL_KHR) {
-        RebuildRendererFlag = true;
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
+    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        submitResult == VK_SUBOPTIMAL_KHR)
+    {
+        vulkanSystem.RebuildRendererFlag = true;
         return;
     }
-    if (submitResult == VK_ERROR_DEVICE_LOST) {
-        printf("CRITICAL: Device lost during submit!\n");
-        RebuildRendererFlag = true; // or trigger full recovery
-        return;
+    else if (submitResult != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(submitResult);
     }
-    VULKAN_THROW_IF_FAIL(submitResult);
 
-    // ────────────────────────────────────────────────────────────────
-    // 3. Present
-    // ────────────────────────────────────────────────────────────────
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &PresentImageSemaphores[CommandIndex];
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &Swapchain;
-    presentInfo.pImageIndices = &ImageIndex;
+    VkPresentInfoKHR presentInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.CommandIndex],
+        .swapchainCount = 1,
+        .pSwapchains = &vulkanSystem.Swapchain,
+        .pImageIndices = &vulkanSystem.ImageIndex
+    };
 
-    VkResult presentResult = vkQueuePresentKHR(PresentQueue, &presentInfo);
-    if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-        RebuildRendererFlag = true;
+    VkResult result = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+        result == VK_SUBOPTIMAL_KHR)
+    {
+        vulkanSystem.RebuildRendererFlag = true;
         return;
     }
-    if (presentResult == VK_ERROR_DEVICE_LOST) {
-        printf("CRITICAL: Device lost during present!\n");
-        RebuildRendererFlag = true;
-        return;
+    else if (result != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(result);
     }
-    VULKAN_THROW_IF_FAIL(presentResult);
 }
 
 void VulkanSystem::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator)

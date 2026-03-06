@@ -237,13 +237,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
     levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
 
-    for (auto& texture : json["LoadTextures"])    textureSystem.CreateTexture(texture);
-    for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
-    for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
-    for (auto& light : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
-    for (auto& skyBox : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
+    for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
+    for (auto& skyBox      : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
@@ -254,72 +254,27 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", false);
     renderSystem.GenerateTexture(brdfRenderPassId);
     sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
     textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(brdfRenderPassId).back());
 
-    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", false);
+    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", false);
     renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
     sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
     textureSystem.CubeMapTextureList.emplace_back(textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
 
-    renderSystem.CreateGlobalBindlessDescriptorSets(VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"), 32, 0);
-    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", false);
-    prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", false);
-    gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
+
+    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", false);
+    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", false);
+    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
     /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", false);
-    frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", false);
-    renderSystem.UpdateGlobalDescriptorSet();  // safe now
-
-    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
-    // Generate BRDF (if needed)
-    renderSystem.GenerateTexture(brdfRenderPassId);
-    sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
-    textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(brdfRenderPassId).back());
-
-    // Generate cubemap
-    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-    sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
-    textureSystem.CubeMapTextureList.emplace_back(
-        textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
-
-    // Transition BOTH to shader-readable
-    VkImageMemoryBarrier barriers[2] = {};
-
-    // BRDF LUT (usually 2D)
-    barriers[0] = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        .image = textureSystem.TextureList.back().textureImage,
-        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
-    };
-
-    // Cubemap (with mips + 6 layers)
-    barriers[1] = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        .image = textureSystem.CubeMapTextureList.back().textureImage,
-        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, 6}
-    };
-
-    vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0, 0, nullptr, 0, nullptr, 2, barriers);
-
-    vulkanSystem.EndSingleUseCommand(cmd);  // This submits and waits for fence → blocking!
-    printf("[Startup] BRDF + Cubemap generated and transitioned to SHADER_READ_ONLY\n");
+    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json", false);
+    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json", false);
 }
 
 
@@ -389,17 +344,9 @@ void LevelSystem::RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandB
 void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
 {
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-
-    // Safety: make sure we have the expected 3 pipelines
-    Vector<VulkanPipeline> pipelineList = renderSystem.FindRenderPipelineList(renderPassId);
-    if (pipelineList.size() != 3) {
-        printf("ERROR: GBuffer render pass has %zu pipelines instead of 3!\n", pipelineList.size());
-        return;
-    }
-
-    VulkanPipeline spritePipeline = pipelineList[0];
-    VulkanPipeline levelPipeline = pipelineList[1];
-    VulkanPipeline lightingPipeline = pipelineList[2];
+    VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+    VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
+    VulkanPipeline lightingPipeline = renderSystem.FindRenderPipelineList(renderPassId)[2];
 
     const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
 
@@ -408,123 +355,65 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
         .renderPass = renderPass.RenderPass,
         .framebuffer = renderPass.FrameBufferList.front(),
         .renderArea = VkRect2D{
-            .offset = {0, 0},
-            .extent = {
-                static_cast<uint32_t>(renderPass.RenderPassResolution.x),
-                static_cast<uint32_t>(renderPass.RenderPassResolution.y)
+            .offset = VkOffset2D{0, 0},
+            .extent = VkExtent2D{
+                static_cast<uint>(renderPass.RenderPassResolution.x),
+                static_cast<uint>(renderPass.RenderPassResolution.y)
             }
         },
-        .clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
+        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
         .pClearValues = renderPass.ClearValueList.data()
     };
 
-    // ????????????????????????????????????????????????????????????????
-    // Update global data BEFORE any drawing commands
-    // This helps ensure descriptors & buffers are fresh
-    // ????????????????????????????????????????????????????????????????
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.InvertResolution = vec2(
-        1.0f / static_cast<float>(renderPass.RenderPassResolution.x),
-        1.0f / static_cast<float>(renderPass.RenderPassResolution.y)
-    );
+    sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
 
     ShaderPushConstantDLL& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
     shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
     shaderSystem.UpdatePushConstantValue<float>(sceneDataPushConstant, "HeightScale", HeightScale);
 
-    // Very important: refresh the global bindless descriptor set every frame
-    // (move this out to Draw() if you prefer, but doing it here is safe for now)
-    renderSystem.UpdateGlobalDescriptorSet();
 
-    // Also flush memory pool updates
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.PipelineLayout, 0, levelPipeline.DescriptorSetList.size(), levelPipeline.DescriptorSetList.data(), 0, nullptr);
+
+    auto pipelineList = renderSystem.FindRenderPipelineList(renderPassId);
     memoryPoolSystem.UpdateMemoryPool(pipelineList);
 
-    // Descriptor sets we will bind (global + subpass inputs)
-    Vector<VkDescriptorSet> descriptorSets = {
-        memoryPoolSystem.GlobalBindlessDescriptorSet,
-        memoryPoolSystem.GlobalDescriptorSet2
-    };
-
-    // ????????????????????????????????????????????????????????????????
-    // Start render pass
-    // ????????????????????????????????????????????????????????????????
-    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    // ????????????????????????????????????????????????????????????????
-    // Subpass 0: Geometry (level meshes)
-    // ????????????????????????????????????????????????????????????????
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, levelPipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        levelPipeline.PipelineLayout,
-        0, static_cast<uint32_t>(descriptorSets.size()),
-        descriptorSets.data(), 0, nullptr);
-
     VkDeviceSize offsets[] = { 0 };
-
-    for (const auto& levelLayer : levelLayerList)
+    VkDeviceSize vertexOffset = 0;
+    VkDeviceSize instanceOffset = memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).Offset;
+    for (auto& levelLayer : levelLayerList)
     {
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);
-        const VkBuffer vertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-        const VkBuffer indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
         shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
         shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
-
-        vkCmdPushConstants(commandBuffer,
-            levelPipeline.PipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sceneDataPushConstant.PushConstantSize,
-            sceneDataPushConstant.PushConstantBuffer.data());
-
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdPushConstants(commandBuffer, levelPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
-
-    // ????????????????????????????????????????????????????????????????
-    // Still in subpass 0: Sprites
-    // ????????????????????????????????????????????????????????????????
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        spritePipeline.PipelineLayout,
-        0, static_cast<uint32_t>(descriptorSets.size()),
-        descriptorSets.data(), 0, nullptr);
-
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, spritePipeline.PipelineLayout, 0, spritePipeline.DescriptorSetList.size(), spritePipeline.DescriptorSetList.data(), 0, nullptr);
     for (const auto& layer : spriteSystem.SpriteLayerList)
     {
         if (layer.InstanceCount == 0) continue;
 
         const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-        const VkBuffer indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
-
-        VkDeviceSize instanceOffsets[] = { memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset };
-
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instanceBuffer.Buffer, instanceOffsets);
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instanceBuffer.Buffer, &memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset);
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer,
-            meshAsset.IndexCount,
-            layer.InstanceCount,
-            0, 0,
-            layer.StartInstanceIndex);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, layer.InstanceCount, 0, 0,layer.StartInstanceIndex);
     }
-    // ????????????????????????????????????????????????????????????????
-    // Subpass 1: Lighting (full-screen triangle)
-    // ????????????????????????????????????????????????????????????????
     vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        lightingPipeline.PipelineLayout,
-        0, static_cast<uint32_t>(descriptorSets.size()),
-        descriptorSets.data(), 0, nullptr);
-
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline.PipelineLayout, 0, lightingPipeline.DescriptorSetList.size(), lightingPipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
     vkCmdEndRenderPass(commandBuffer);
 }
 

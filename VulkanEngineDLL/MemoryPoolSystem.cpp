@@ -13,115 +13,115 @@ void MemoryPoolSystem::StartUp()
         MemoryPoolTypes type = (MemoryPoolTypes)x;
         switch (x)
         {
-            case MemoryPoolTypes::kMeshBuffer:
+        case MemoryPoolTypes::kMeshBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = MeshInitialCapacity,
-                    .Size = sizeof(MeshPropertiesStruct),
-                    .IsActive = Vector<byte>(MeshInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kMaterialBuffer:
+                .ActiveCount = 0,
+                .Count = MeshInitialCapacity,
+                .Size = sizeof(MeshPropertiesStruct),
+                .IsActive = Vector<byte>(MeshInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kMaterialBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = MaterialInitialCapacity,
-                    .Size = sizeof(GPUMaterial),
-                    .IsActive = Vector<byte>(MaterialInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kDirectionalLightBuffer:
-            {
+                .ActiveCount = 0,
+                .Count = MaterialInitialCapacity,
+                .Size = sizeof(GPUMaterial),
+                .IsActive = Vector<byte>(MaterialInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kDirectionalLightBuffer:
+        {
 
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = DirectionalLightInitialCapacity,
-                    .Size = sizeof(DirectionalLight),
-                    .IsActive = Vector<byte>(DirectionalLightInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kPointLightBuffer:
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = PointLightInitialCapacity,
-                    .Size = sizeof(PointLight),
-                    .IsActive = Vector<byte>(PointLightInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kTexture2DMetadataBuffer:
+                .ActiveCount = 0,
+                .Count = DirectionalLightInitialCapacity,
+                .Size = sizeof(DirectionalLight),
+                .IsActive = Vector<byte>(DirectionalLightInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kPointLightBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = Texture2DInitialCapacity,
-                    .Size = sizeof(TextureMetadataHeader),
-                    .IsActive = Vector<byte>(Texture2DInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kTexture3DMetadataBuffer:
+                .ActiveCount = 0,
+                .Count = PointLightInitialCapacity,
+                .Size = sizeof(PointLight),
+                .IsActive = Vector<byte>(PointLightInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kTexture2DMetadataBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = Texture3DInitialCapacity,
-                    .Size = sizeof(TextureMetadataHeader),
-                    .IsActive = Vector<byte>(Texture3DInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kTextureCubeMapMetadataBuffer:
+                .ActiveCount = 0,
+                .Count = Texture2DInitialCapacity,
+                .Size = sizeof(TextureMetadataHeader),
+                .IsActive = Vector<byte>(Texture2DInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kTexture3DMetadataBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = TextureCubeMapInitialCapacity,
-                    .Size = sizeof(TextureMetadataHeader),
-                    .IsActive = Vector<byte>(TextureCubeMapInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
-            case MemoryPoolTypes::kSpriteInstanceBuffer:
+                .ActiveCount = 0,
+                .Count = Texture3DInitialCapacity,
+                .Size = sizeof(TextureMetadataHeader),
+                .IsActive = Vector<byte>(Texture3DInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kTextureCubeMapMetadataBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
             {
-                MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-                {
-                    .ActiveCount = 0,
-                    .Count = SpriteInstanceInitialCapacity,
-                    .Size = sizeof(SpriteInstance),
-                    .IsActive = Vector<byte>(SpriteInstanceInitialCapacity, 0x00),
-                    .FreeIndices = Vector<uint32>(),
-                    .IsDirty = true
-                };
-                break;
-            }
+                .ActiveCount = 0,
+                .Count = TextureCubeMapInitialCapacity,
+                .Size = sizeof(TextureMetadataHeader),
+                .IsActive = Vector<byte>(TextureCubeMapInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MemoryPoolTypes::kSpriteInstanceBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
+            {
+                .ActiveCount = 0,
+                .Count = SpriteInstanceInitialCapacity,
+                .Size = sizeof(SpriteInstance),
+                .IsActive = Vector<byte>(SpriteInstanceInitialCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
         }
     }
     UpdateMemoryPoolHeader(kMeshBuffer, MeshInitialCapacity);
-    
+
     Vector<byte> GpuDataBufferMemoryPool2 = Vector<byte>(sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize, 0xFF);
     memcpy(GpuDataBufferMemoryPool2.data(), &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
     GpuDataBufferIndex = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -141,7 +141,7 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
 {
     void* oldMappedPtr = MappedBufferPtr;
     uint32 oldBufferId = GpuDataBufferIndex;
-    auto oldSubHeaders = MemorySubPoolHeader;  
+    auto oldSubHeaders = MemorySubPoolHeader;
 
     UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
     size_t newTotalSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
@@ -292,7 +292,7 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
         .Texture3DSize = MemorySubPoolHeader[kTexture3DMetadataBuffer].Size,
         .TextureCubeMapOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
         .TextureCubeMapCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Count,
-        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size,        
+        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size,
         .SpriteInstanceOffset = MemorySubPoolHeader[kSpriteInstanceBuffer].Offset,
         .SpriteInstanceCount = MemorySubPoolHeader[kSpriteInstanceBuffer].Count,
         .SpriteInstanceSize = MemorySubPoolHeader[kSpriteInstanceBuffer].Size
@@ -541,8 +541,8 @@ const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDesc
 {
     Vector<VkDescriptorImageInfo> descriptorSetInfoList;
     Vector<Texture> inputTextureList = textureSystem.FindRenderedTextureList(renderPassId);
-    for(auto& texture : inputTextureList)
-    { 
+    for (auto& texture : inputTextureList)
+    {
         descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
             {
                 .sampler = texture.textureSampler,
