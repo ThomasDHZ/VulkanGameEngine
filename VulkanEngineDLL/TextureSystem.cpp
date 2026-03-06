@@ -506,7 +506,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture;  texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR;               break;
+		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
 		case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture;		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 	}
 

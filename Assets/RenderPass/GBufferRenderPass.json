@@ -363,26 +363,26 @@
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
       "SrcStageMask": 1,
-      "DstStageMask": 1536,
+      "DstStageMask": 320,
       "SrcAccessMask": 0,
-      "DstAccessMask": 1792, 
+      "DstAccessMask": 1280,
       "DependencyFlags": 1
     },
     {
       "SrcSubpass": 0,
       "DstSubpass": 1,
-      "SrcStageMask": 1536,
-      "DstStageMask": 128,
+      "SrcStageMask": 576,
+      "DstStageMask": 704,
       "SrcAccessMask": 1280,
-      "DstAccessMask": 48,
+      "DstAccessMask": 1424,
       "DependencyFlags": 1
     },
     {
       "SrcSubpass": 1,
       "DstSubpass": 4294967295,
-      "SrcStageMask": 1664,
+      "SrcStageMask": 576,
       "DstStageMask": 8192,
-      "SrcAccessMask": 1328,
+      "SrcAccessMask": 1280,
       "DstAccessMask": 0,
       "DependencyFlags": 1
     }
