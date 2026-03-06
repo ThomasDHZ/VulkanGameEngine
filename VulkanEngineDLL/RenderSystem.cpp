@@ -606,6 +606,12 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
         .dependencyCount = static_cast<uint32_t>(renderPassJsonLoader.SubpassDependencyModelList.size()),
         .pDependencies = renderPassJsonLoader.SubpassDependencyModelList.data(),
     };
+    for (size_t i = 0; i < renderPassJsonLoader.SubpassDependencyModelList.size(); ++i) {
+        auto& dep = renderPassJsonLoader.SubpassDependencyModelList[i];
+        printf("Dep %zu: srcStage=0x%llx dstStage=0x%llx srcAccess=0x%llx dstAccess=0x%llx\n",
+            i, (uint64_t)dep.srcStageMask, (uint64_t)dep.dstStageMask,
+            (uint64_t)dep.srcAccessMask, (uint64_t)dep.dstAccessMask);
+    }
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
 }
 
@@ -620,14 +626,31 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         const RenderPassAttachmentTexture& renderAttachment = renderPassAttachmentTextureInfoList[x];
         switch (renderAttachment.RenderTextureType)
         {
-            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;               break;
-            case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-            case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-            case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-            case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-            case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-            case RenderType_CubeMapTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-            default: throw std::runtime_error("Unknown RenderTextureType");
+        case RenderType_SwapChainTexture:
+            initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            break;
+
+        case RenderType_OffscreenColorTexture:
+        case RenderType_GBufferTexture:
+        case RenderType_IrradianceTexture:
+        case RenderType_CubeMapTexture:
+            initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;           // <--- Force this
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
+
+        case RenderType_DepthBufferTexture:
+            initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;           // <--- Force this too
+            finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            break;
+
+        case RenderType_PrefilterTexture:
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Keep if you re-use mips across frames
+            finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            break;
+
+        default:
+            throw std::runtime_error("Unknown RenderTextureType");
         }
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
@@ -771,15 +794,15 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets(VkGuid guid, uint32 variab
         {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL},
         {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL},
         {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_2D, VK_SHADER_STAGE_ALL},
-        //{3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_3D, VK_SHADER_STAGE_ALL},
-        //{4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},
+        {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_3D, VK_SHADER_STAGE_ALL},
+        {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},
     };
 
     Vector<VkDescriptorBindingFlags> flags(bindings.size(),
         VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
         VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
         VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT);
-    flags[2] |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+    flags[4] |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
 
     uint32_t counts[1] = {
         131072
@@ -940,83 +963,97 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets2(
 
 void RenderSystem::UpdateGlobalDescriptorSet()
 {
-    Vector<VkWriteDescriptorSet>   writeDescriptorSet = Vector<VkWriteDescriptorSet>();
+    Vector<VkWriteDescriptorSet> writeDescriptorSet;
+
     Vector<VkDescriptorBufferInfo> sceneDataBuffer = memoryPoolSystem.GetSceneDataBufferDescriptor();
     Vector<VkDescriptorBufferInfo> bindlessDataBuffer = memoryPoolSystem.GetBindlessDataBufferDescriptor();
-    Vector<VkDescriptorImageInfo>  texture3DBuffer = renderSystem.GetTexture3DPropertiesBuffer(VkGuid());
-    Vector<VkDescriptorImageInfo>  cubeMapBuffer = renderSystem.GetCubeMapTextureBuffer();
-
-    Vector<VkDescriptorImageInfo>	texture2DBuffer;
+    Vector<VkDescriptorImageInfo> texture3DBuffer = renderSystem.GetTexture3DPropertiesBuffer(VkGuid());
+    Vector<VkDescriptorImageInfo> cubeMapBuffer = renderSystem.GetCubeMapTextureBuffer();
+    Vector<VkDescriptorImageInfo> texture2DBuffer;
     for (auto& texture : textureSystem.TextureList)
     {
         textureSystem.GetTexturePropertiesBuffer(texture, texture2DBuffer);
     }
 
-    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-        {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorCount = static_cast<uint32>(sceneDataBuffer.size()),
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .pBufferInfo = sceneDataBuffer.data(),
+    // FORCE layouts BEFORE queuing writes
+    if (!texture2DBuffer.empty()) {
+        for (auto& info : texture2DBuffer) {
+            info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
+    }
+    if (!texture3DBuffer.empty()) {
+        for (auto& info : texture3DBuffer) {
+            info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
+    }
+    if (!cubeMapBuffer.empty()) {
+        for (auto& info : cubeMapBuffer) {
+            info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
+        printf("Forced %zu cubemap entries to SHADER_READ_ONLY_OPTIMAL before write\n", cubeMapBuffer.size());
+    }
+
+    // Now queue the writes with updated info
+    writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+        .dstBinding = 0,
+        .dstArrayElement = 0,
+        .descriptorCount = static_cast<uint32>(sceneDataBuffer.size()),
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        .pBufferInfo = sceneDataBuffer.data(),
         });
 
-    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-        {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-            .dstBinding = 1,
-            .dstArrayElement = 0,
-            .descriptorCount = static_cast<uint32>(bindlessDataBuffer.size()),
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .pBufferInfo = bindlessDataBuffer.data(),
+    writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+        .dstBinding = 1,
+        .dstArrayElement = 0,
+        .descriptorCount = static_cast<uint32>(bindlessDataBuffer.size()),
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        .pBufferInfo = bindlessDataBuffer.data(),
         });
 
-    if (!texture2DBuffer.empty())
-    {
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 2,
-                .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(texture2DBuffer.size()),
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = texture2DBuffer.data(),
+    if (!texture2DBuffer.empty()) {
+        writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+            .dstBinding = 2,
+            .dstArrayElement = 0,
+            .descriptorCount = static_cast<uint32>(texture2DBuffer.size()),
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .pImageInfo = texture2DBuffer.data(),
             });
     }
 
-    //if (!texture3DBuffer.empty())
-    //{
-    //    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-    //        {
-    //            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-    //            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-    //            .dstBinding = 3,
-    //            .dstArrayElement = 0,
-    //            .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
-    //            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-    //            .pImageInfo = texture3DBuffer.data(),
-    //        });
-    //}
+    if (!texture3DBuffer.empty()) {
+        writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+            .dstBinding = 3,
+            .dstArrayElement = 0,
+            .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .pImageInfo = texture3DBuffer.data(),
+            });
+    }
 
-    //if (!cubeMapBuffer.empty())
-    //{
-    //    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-    //        {
-    //            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-    //            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-    //            .dstBinding = 4,
-    //            .dstArrayElement = 0,
-    //            .descriptorCount = static_cast<uint32>(cubeMapBuffer.size()),
-    //            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-    //            .pImageInfo = cubeMapBuffer.data(),
-    //        });
-    //}
+    if (!cubeMapBuffer.empty()) {
+        writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+            .dstBinding = 4,
+            .dstArrayElement = 0,
+            .descriptorCount = static_cast<uint32>(cubeMapBuffer.size()),
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .pImageInfo = cubeMapBuffer.data(),
+            });
+    }
 
-    vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
+    vkUpdateDescriptorSets(vulkanSystem.Device,
+        static_cast<uint32>(writeDescriptorSet.size()),
+        writeDescriptorSet.data(),
+        0, nullptr);
 }
 
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
@@ -1574,16 +1611,18 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexture3DPropertiesBuffer(const R
 
 Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
 {
-    Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
+    Vector<VkDescriptorImageInfo> texturePropertiesBuffer;
     for (auto& cubeMap : textureSystem.CubeMapTextureList)
     {
-        texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
-        {
+        VkDescriptorImageInfo info = {
             .sampler = cubeMap.textureSampler,
-            .imageView = cubeMap.textureViewList.front(),
-            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        });
+            .imageView = cubeMap.textureViewList.front(),  // or correct view
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL  // FORCE HERE
+        };
+        texturePropertiesBuffer.emplace_back(info);
     }
+    printf("GetCubeMapTextureBuffer: Forced %zu cubemap entries to SHADER_READ_ONLY_OPTIMAL\n",
+        texturePropertiesBuffer.size());
     return texturePropertiesBuffer;
 }
 

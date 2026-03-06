@@ -59,8 +59,8 @@ layout(binding = 1)  buffer BindlessBuffer
     uint Data[]; 
 } bindlessBuffer;
 layout(binding = 2) uniform sampler2D TextureMap[];
-//layout(binding = 3) uniform sampler3D Texture3DMap[];
-//layout(binding = 4) uniform samplerCube CubeMap[];
+layout(binding = 3) uniform sampler3D Texture3DMap[];
+layout(binding = 4) uniform samplerCube CubeMap[];
 
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
 layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;
@@ -154,14 +154,14 @@ mat3 ReconstructTBN(vec3 normalWS)
     return mat3(T, B, N);
 }
 
-//vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
-//{
-//    vec3 skyDir = reflect(viewDirWS, vec3(0,1,0));
-//    skyDir.y = max(skyDir.y, 0.1);
-//    
-//    float lod = mix(2.0, 6.0, abs(skyDir.y)); 
-//    return textureLod(CubeMap[sceneDataBuffer.CubeMapId], skyDir, lod).rgb;
-//}
+vec3 SampleSkyboxViewDependent(vec3 viewDirWS)
+{
+    vec3 skyDir = reflect(viewDirWS, vec3(0,1,0));
+    skyDir.y = max(skyDir.y, 0.1);
+    
+    float lod = mix(2.0, 6.0, abs(skyDir.y)); 
+    return textureLod(CubeMap[sceneDataBuffer.CubeMapId], skyDir, lod).rgb;
+}
 
 float DisneyDiffuse(float NdotV, float NdotL, float LdotH, float roughness) {
     float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
@@ -242,18 +242,18 @@ void main()
 {
 
     const float depth = subpassLoad(depthInput).r;
-//    if (depth >= 0.9999f) {
-//        vec3 ndc = vec3(gl_FragCoord.xy * sceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
-//        vec4 viewPos = sceneDataBuffer.InverseProjection * vec4(ndc, 1.0);
-//        viewPos /= viewPos.w;
-//        vec3 viewDir = normalize(viewPos.xyz);
-//        vec3 worldDir = normalize((sceneDataBuffer.InverseView * vec4(viewDir, 0.0)).xyz);
-//        vec3 sky = textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb;
-//
-//        outColor = vec4(sky, 1.0);
-//        outBloom = vec4(0.0);
-//        return;
-//    }
+    if (depth >= 0.9999f) {
+        vec3 ndc = vec3(gl_FragCoord.xy * sceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
+        vec4 viewPos = sceneDataBuffer.InverseProjection * vec4(ndc, 1.0);
+        viewPos /= viewPos.w;
+        vec3 viewDir = normalize(viewPos.xyz);
+        vec3 worldDir = normalize((sceneDataBuffer.InverseView * vec4(viewDir, 0.0)).xyz);
+        vec3 sky = textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb;
+
+        outColor = vec4(sky, 1.0);
+        outBloom = vec4(0.0);
+        return;
+    }
 
     Material material = UnpackMaterial();
     vec3 N = material.Normal;
@@ -277,7 +277,7 @@ void main()
     vec3 Lo = vec3(0.0);
     Lo += DirectionalLightFunc(F0, V, R, finalUV, material);
     Lo += PointLightFunc(F0, V, R, finalUV, material);
-   // vec3 ambient = ImageBasedLighting(F0, V, R, material);
+    vec3 ambient = ImageBasedLighting(F0, V, R, material);
 
     vec3  color = Lo;
     outColor = vec4(color, 1.0);
@@ -432,48 +432,48 @@ vec3 PointLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material material)
     return Lo;
 }
       
-//vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
-//{
-//    float clearcoatStrength   = 0.0;
-//    float clearcoatRoughness  = 0.05;
-//
-//    vec3  N = material.Normal;
-//    vec3  sheenColor = mix(material.Sheen, material.Albedo, 0.5);
-//    float sheenIntensity = 0.4f;
-//
-//    vec3  F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, material.Roughness);
-//    vec3  kS = F;
-//    vec3  kD = (vec3(1.0f) - kS) * (1.0f - material.Metallic);
-//
-//    vec3  irradiance = texture(CubeMap[sceneDataBuffer.IrradianceMapId], N).rgb;
-//    vec3  diffuseIBL = (material.Albedo / PI) * irradiance;
-//
-//    float maxLod = textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0;
-//    float lod = material.Roughness * maxLod;
-//    lod = clamp(lod, 0.0, maxLod);
-//    vec3  prefilteredColor = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], R, lod).rgb;
-//
-//    vec2  brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
-//    vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
-//
-//    float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
-//    vec3  iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
-//
-//    float subsurfaceStrength = 0.7f;
-//    vec3  iblSSSContrib = subsurfaceStrength * irradiance * (material.Albedo * material.SubSurfaceScattering);
-//
-//    float coatNdotV = max(dot(N, V), 0.0f);
-//    vec3  coatR = reflect(-V, N);
-//    float coatLod = clearcoatRoughness * (textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
-//    coatLod = clamp(coatLod, 0.0, textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
-//
-//    vec3  coatPrefilter = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], coatR, coatLod).rgb;
-//
-//    vec2  coatBRDF = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(coatNdotV, clearcoatRoughness)).rg;
-//    float coatF = 0.04 + (1.0 - 0.04) * pow(1.0 - coatNdotV, 5.0);
-//
-//    vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
-//
-//    vec3  ambient = (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * material.AmbientOcclusion + clearcoatIBL * material.AmbientOcclusion;
-//    return max(ambient, vec3(0.02) * material.Albedo);
-//}
+vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
+{
+    float clearcoatStrength   = 0.0;
+    float clearcoatRoughness  = 0.05;
+
+    vec3  N = material.Normal;
+    vec3  sheenColor = mix(material.Sheen, material.Albedo, 0.5);
+    float sheenIntensity = 0.4f;
+
+    vec3  F = fresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, material.Roughness);
+    vec3  kS = F;
+    vec3  kD = (vec3(1.0f) - kS) * (1.0f - material.Metallic);
+
+    vec3  irradiance = texture(CubeMap[sceneDataBuffer.IrradianceMapId], N).rgb;
+    vec3  diffuseIBL = (material.Albedo / PI) * irradiance;
+
+    float maxLod = textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0;
+    float lod = material.Roughness * maxLod;
+    lod = clamp(lod, 0.0, maxLod);
+    vec3  prefilteredColor = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], R, lod).rgb;
+
+    vec2  brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
+    vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
+
+    float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
+    vec3  iblSheenContrib = sheenColor * sheenIntensity * iblSheenFactor * irradiance;
+
+    float subsurfaceStrength = 0.7f;
+    vec3  iblSSSContrib = subsurfaceStrength * irradiance * (material.Albedo * material.SubSurfaceScattering);
+
+    float coatNdotV = max(dot(N, V), 0.0f);
+    vec3  coatR = reflect(-V, N);
+    float coatLod = clearcoatRoughness * (textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
+    coatLod = clamp(coatLod, 0.0, textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
+
+    vec3  coatPrefilter = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], coatR, coatLod).rgb;
+
+    vec2  coatBRDF = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(coatNdotV, clearcoatRoughness)).rg;
+    float coatF = 0.04 + (1.0 - 0.04) * pow(1.0 - coatNdotV, 5.0);
+
+    vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
+
+    vec3  ambient = (kD * (diffuseIBL + iblSSSContrib) + specularIBL + iblSheenContrib) * material.AmbientOcclusion + clearcoatIBL * material.AmbientOcclusion;
+    return max(ambient, vec3(0.02) * material.Albedo);
+}

@@ -362,29 +362,29 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1536, 
-      "DstStageMask": 1536,
-      "SrcAccessMask": 256, 
-      "DstAccessMask": 384, 
-      "DependencyFlags": 1
+      "SrcStageMask": 32768, 
+      "DstStageMask": 655360,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 576,
+      "DependencyFlags": 4 
     },
     {
       "SrcSubpass": 0,
       "DstSubpass": 1,
-      "SrcStageMask": 1536,
-      "DstStageMask": 1152,
-      "SrcAccessMask": 384, 
-      "DstAccessMask": 18,
-      "DependencyFlags": 1
+      "SrcStageMask": 655360,
+      "DstStageMask": 262144,
+      "SrcAccessMask": 576,
+      "DstAccessMask": 8192,
+      "DependencyFlags": 4
     },
     {
       "SrcSubpass": 1,
       "DstSubpass": 4294967295,
-      "SrcStageMask": 512,
-      "DstStageMask": 8192, 
-      "SrcAccessMask": 256,
+      "SrcStageMask": 393216,
+      "DstStageMask": 32768,
+      "SrcAccessMask": 64,
       "DstAccessMask": 0,
-      "DependencyFlags": 1
+      "DependencyFlags": 4
     }
   ],
   "ClearValueList": [

@@ -254,6 +254,17 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
+    brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", false);
+    renderSystem.GenerateTexture(brdfRenderPassId);
+    sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
+    textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(brdfRenderPassId).back());
+
+    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", false);
+    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
+    sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
+    textureSystem.CubeMapTextureList.emplace_back(textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
+
     renderSystem.CreateGlobalBindlessDescriptorSets(VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"), 32, 0);
     irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", false);
     prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", false);
@@ -264,6 +275,51 @@ void LevelSystem::LoadLevel(const char* levelPath)
     hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json", false);
     frameBufferId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/FrameBufferRenderPass.json", false);
     renderSystem.UpdateGlobalDescriptorSet();  // safe now
+
+    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+    // Generate BRDF (if needed)
+    renderSystem.GenerateTexture(brdfRenderPassId);
+    sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
+    textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(brdfRenderPassId).back());
+
+    // Generate cubemap
+    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
+    sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
+    textureSystem.CubeMapTextureList.emplace_back(
+        textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
+
+    // Transition BOTH to shader-readable
+    VkImageMemoryBarrier barriers[2] = {};
+
+    // BRDF LUT (usually 2D)
+    barriers[0] = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+        .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .image = textureSystem.TextureList.back().textureImage,
+        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
+    };
+
+    // Cubemap (with mips + 6 layers)
+    barriers[1] = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+        .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .image = textureSystem.CubeMapTextureList.back().textureImage,
+        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, 6}
+    };
+
+    vkCmdPipelineBarrier(cmd,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        0, 0, nullptr, 0, nullptr, 2, barriers);
+
+    vulkanSystem.EndSingleUseCommand(cmd);  // This submits and waits for fence → blocking!
+    printf("[Startup] BRDF + Cubemap generated and transitioned to SHADER_READ_ONLY\n");
 }
 
 

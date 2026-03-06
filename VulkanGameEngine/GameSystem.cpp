@@ -20,157 +20,30 @@ GameSystem gameSystem = GameSystem();
 
 void GameSystem::InitPrecomputedMaps() {
     static bool s_mapsGenerated = false;
-    if (s_mapsGenerated) {
-        printf("[InitPrecomputedMaps] Already generated — skipping\n");
-        return;
-    }
+    if (s_mapsGenerated) return;
     s_mapsGenerated = true;
-    printf("[InitPrecomputedMaps] Starting one-time BRDF LUT + default cubemap generation\n");
+
+    printf("[InitPrecomputedMaps] Preparing BRDF + cubemap (no submit)\n");
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     VkGuid dummyGuid = VkGuid();
 
-    // 1. Full sync + cleanup old resources
-    printf("Waiting for device idle before cleanup...\n");
     vkDeviceWaitIdle(vulkanSystem.Device);
-    if (sceneDataBuffer.BRDFMapId != UINT32_MAX) {
-        printf("Destroying old BRDF texture index %u\n", sceneDataBuffer.BRDFMapId);
-        textureSystem.DestroyTexture(sceneDataBuffer.BRDFMapId);
-    }
-    if (sceneDataBuffer.CubeMapId != UINT32_MAX) {
-        printf("Destroying old cubemap index %u\n", sceneDataBuffer.CubeMapId);
-        textureSystem.DestroyCubeTexture(sceneDataBuffer.CubeMapId);
-    }
+
+    // Cleanup
+    if (sceneDataBuffer.BRDFMapId != UINT32_MAX) textureSystem.DestroyTexture(sceneDataBuffer.BRDFMapId);
+    if (sceneDataBuffer.CubeMapId != UINT32_MAX) textureSystem.DestroyCubeTexture(sceneDataBuffer.CubeMapId);
     sceneDataBuffer.BRDFMapId = UINT32_MAX;
     sceneDataBuffer.CubeMapId = UINT32_MAX;
+    textureSystem.TextureList.clear();
+    textureSystem.CubeMapTextureList.clear();
 
-    // Clear stale list entries
-    while (!textureSystem.TextureList.empty() &&
-        textureSystem.TextureList.back().textureImage == VK_NULL_HANDLE) {
-        textureSystem.TextureList.pop_back();
-    }
-    while (!textureSystem.CubeMapTextureList.empty() &&
-        textureSystem.CubeMapTextureList.back().textureImage == VK_NULL_HANDLE) {
-        textureSystem.CubeMapTextureList.pop_back();
-    }
-    printf("Cleanup complete. TextureList size = %zu | CubeMapList size = %zu\n",
-        textureSystem.TextureList.size(), textureSystem.CubeMapTextureList.size());
-
-    // 2. Generate BRDF LUT
-    printf("Loading & generating BRDF LUT...\n");
+    // Just load render passes — generation will happen in first frame
     levelSystem.brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", false);
-    vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
-
-    renderSystem.GenerateTexture(levelSystem.brdfRenderPassId);
-
-    sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
-    textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(levelSystem.brdfRenderPassId).back());
-
-    printf("BRDF generated — new image handle = %p\n",
-        (void*)textureSystem.TextureList.back().textureImage);
-
-    // Reset barrier for BRDF (after creation!)
-    VkCommandBuffer cmdReset = vulkanSystem.BeginSingleUseCommand();
-    VkImageMemoryBarrier resetBRDF{};
-    resetBRDF.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    resetBRDF.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    resetBRDF.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    resetBRDF.srcAccessMask = 0;
-    resetBRDF.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    resetBRDF.image = textureSystem.TextureList.back().textureImage;
-    resetBRDF.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-    vkCmdPipelineBarrier(cmdReset,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        0, 0, nullptr, 0, nullptr, 1, &resetBRDF);
-    vulkanSystem.EndSingleUseCommand(cmdReset);
-
-    vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
-
-    // 3. Generate default cubemap
-    printf("Loading & generating default environment cubemap...\n");
     levelSystem.environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(
         dummyGuid, "RenderPass/EnvironmentToCubeMapRenderPass.json", false);
-    vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
 
-    renderSystem.GenerateCubeMapTexture(levelSystem.environmentToCubeMapRenderPassId);
-
-    sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
-    textureSystem.CubeMapTextureList.emplace_back(
-        textureSystem.FindRenderedTextureList(levelSystem.environmentToCubeMapRenderPassId).back());
-
-    printf("Cubemap generated — new image handle = %p\n",
-        (void*)textureSystem.CubeMapTextureList.back().textureImage);
-
-    // Reset barrier for cubemap
-    cmdReset = vulkanSystem.BeginSingleUseCommand();
-    VkImageMemoryBarrier resetCube{};
-    resetCube.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    resetCube.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    resetCube.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    resetCube.srcAccessMask = 0;
-    resetCube.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    resetCube.image = textureSystem.CubeMapTextureList.back().textureImage;
-    resetCube.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, 6 };
-    vkCmdPipelineBarrier(cmdReset,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        0, 0, nullptr, 0, nullptr, 1, &resetCube);
-    vulkanSystem.EndSingleUseCommand(cmdReset);
-
-    vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
-
-    // 4. Final transition to SHADER_READ_ONLY_OPTIMAL
-    printf("Transitioning precomputed maps to shader-readable layout...\n");
-    VkCommandBuffer cmd = VK_NULL_HANDLE;
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = vulkanSystem.CommandPool;
-    allocInfo.commandBufferCount = 1;
-    vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &cmd);
-
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    vkBeginCommandBuffer(cmd, &beginInfo);
-
-    VkImageMemoryBarrier barriers[2]{};
-    // BRDF
-    barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[0].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    barriers[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barriers[0].image = textureSystem.TextureList.back().textureImage;  // still BRDF (last 2D)
-    barriers[0].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-    // Cubemap (now last in list)
-    barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barriers[1].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[1].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    barriers[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barriers[1].image = textureSystem.CubeMapTextureList.back().textureImage;
-    barriers[1].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, 6 };
-
-    vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0, 0, nullptr, 0, nullptr, 2, barriers);
-
-    vkEndCommandBuffer(cmd);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &cmd;
-    vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
-    vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &cmd);
-
-    printf("Precomputed maps transitioned and ready\n");
-
-    vkDeviceWaitIdle(vulkanSystem.Device);
+    printf("[InitPrecomputedMaps] Ready for first-frame execution\n");
 }
 
 GameSystem::GameSystem()
@@ -216,7 +89,7 @@ void GameSystem::StartUp(void* windowHandle)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
     // materialBakerSystem.Run();  // Uncomment if needed
 #endif
-    InitPrecomputedMaps();
+    //InitPrecomputedMaps();
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 
@@ -331,7 +204,7 @@ void GameSystem::Draw(float deltaTime)
     VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
     //materialBakerSystem.Draw(commandBuffer);
     levelSystem.Draw(commandBuffer, deltaTime);
-    //ImGui_Draw(commandBuffer, imGuiRenderer);
+    ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }
 
