@@ -837,23 +837,15 @@ void RenderSystem::UpdateGlobalDescriptorSet()
         textureSystem.GetTexturePropertiesBuffer(texture, texture2DBuffer);
     }
 
-    //// FORCE layouts BEFORE queuing writes
-    //if (!texture2DBuffer.empty()) {
-    //    for (auto& info : texture2DBuffer) {
-    //        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //    }
-    //}
-    //if (!texture3DBuffer.empty()) {
-    //    for (auto& info : texture3DBuffer) {
-    //        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //    }
-    //}
-    //if (!cubeMapBuffer.empty()) {
-    //    for (auto& info : cubeMapBuffer) {
-    //        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //    }
-    //    printf("Forced %zu cubemap entries to SHADER_READ_ONLY_OPTIMAL before write\n", cubeMapBuffer.size());
-    //}
+    for (auto& info : texture2DBuffer) {
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
+    for (auto& info : texture3DBuffer) {
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
+    for (auto& info : cubeMapBuffer) {
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
 
     //// Now queue the writes with updated info
     writeDescriptorSet.emplace_back(VkWriteDescriptorSet
@@ -1424,6 +1416,12 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     {
         for (auto& texture : textureList)
         {
+            if (texture.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR ||
+                texture.textureImageLayout == VK_IMAGE_LAYOUT_UNDEFINED)
+            {
+                continue;
+            }
+
             textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
         }
     }
@@ -1486,6 +1484,12 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
     for (auto& cubeMap : textureSystem.CubeMapTextureList)
     {
+        if (cubeMap.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR ||
+            cubeMap.textureImageLayout == VK_IMAGE_LAYOUT_UNDEFINED)  // also skip uninitialized
+        {
+            continue;  // Do NOT bind present-src or undefined images as samplers
+        }
+
         texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {
             .sampler = cubeMap.textureSampler,

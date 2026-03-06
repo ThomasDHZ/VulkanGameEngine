@@ -525,6 +525,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .pNext = &colorWriteFeatures,
         .features =
         {
+            .geometryShader = VK_FALSE,
             .vertexPipelineStoresAndAtomics = VK_TRUE,
             .fragmentStoresAndAtomics = VK_TRUE,
             .shaderFloat64 = VK_TRUE,

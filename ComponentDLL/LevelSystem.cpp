@@ -266,7 +266,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
     textureSystem.CubeMapTextureList.emplace_back(textureSystem.FindRenderedTextureList(environmentToCubeMapRenderPassId).back());
 
-
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", false);
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", false);
     gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
