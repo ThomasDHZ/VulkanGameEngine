@@ -541,7 +541,7 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     };
 
     renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
-    renderSystem.BuildRenderPass(vulkanRenderPass, renderPassLoader);
+    renderSystem.BuildRenderPass(vulkanRenderPass, renderPassLoader, false);
     renderSystem.BuildFrameBuffer(vulkanRenderPass);
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String> { configSystem.TextureAssetRenderer });
 

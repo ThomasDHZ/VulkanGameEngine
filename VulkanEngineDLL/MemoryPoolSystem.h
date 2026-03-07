@@ -133,8 +133,8 @@ private:
 public:
 
 	static constexpr size_t									 Texture2DInitialCapacity = 65535;
-	static constexpr size_t									 Texture3DInitialCapacity = 32;
-	static constexpr size_t									 TextureCubeMapInitialCapacity = 32;
+	static constexpr uint32_t Texture3DInitialCapacity = 4;     // tiny for testing
+	static constexpr uint32_t TextureCubeMapInitialCapacity = 4;
 
 	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;

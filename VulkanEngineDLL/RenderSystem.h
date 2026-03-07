@@ -31,9 +31,9 @@ private:
     DLL_EXPORT  VkPipelineLayout CreatePipelineLayout(RenderPipelineLoader& renderPipelineLoader, VkDescriptorSetLayout* descriptorSetLayoutList, size_t descriptorSetLayoutCount);
     DLL_EXPORT  VkPipeline CreatePipeline(RenderPipelineLoader& renderPipelineLoader, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, VkDescriptorSet* descriptorSetList, size_t descriptorSetCount);
     DLL_EXPORT void PipelineBindingData(RenderPipelineLoader& renderPipelineLoader);
-    DLL_EXPORT void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
-    DLL_EXPORT Vector<VkAttachmentDescription> BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass);
-    DLL_EXPORT Vector<Texture> BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass);
+    DLL_EXPORT void BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader, bool globalDescriptorSet);
+    DLL_EXPORT Vector<VkAttachmentDescription> BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, bool globalDescriptorSet);
+    DLL_EXPORT Vector<Texture> BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, bool globalDescriptorSet);
     DLL_EXPORT void BuildFrameBuffer(VulkanRenderPass& renderPass);
 public:
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;

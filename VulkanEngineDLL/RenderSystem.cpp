@@ -355,7 +355,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
 
     static bool s_alreadyCreated = false;
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
-    BuildRenderPass(vulkanRenderPass, renderPassLoader);
+    BuildRenderPass(vulkanRenderPass, renderPassLoader, useGlobalDescriptorSet);
     BuildFrameBuffer(vulkanRenderPass);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
     if (useGlobalDescriptorSet)
@@ -445,20 +445,20 @@ void RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
     vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList.data(), vulkanSystem.SwapChainImageCount);
     if (vulkanRenderPass.IsRenderedToSwapchain)
     {
-        vulkanRenderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
+//vulkanRenderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
         //DestoryRenderPassSwapChainTextures(renderedTextureList.data(), renderedTextureList.size(), depthTexture);
-        BuildRenderPassAttachmentTextures(vulkanRenderPass);
-        BuildFrameBuffer(vulkanRenderPass);
+       // BuildRenderPassAttachmentTextures(vulkanRenderPass);
+      //  BuildFrameBuffer(vulkanRenderPass);
     }
     else
     {
-        vulkanRenderPass.RenderPassResolution = vulkanRenderPass.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : vulkanRenderPass.RenderPassResolution;
-        BuildRenderPassAttachmentTextures(vulkanRenderPass);
-        BuildFrameBuffer(vulkanRenderPass);
+       // vulkanRenderPass.RenderPassResolution = vulkanRenderPass.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : vulkanRenderPass.RenderPassResolution;
+      ///  BuildRenderPassAttachmentTextures(vulkanRenderPass);
+       // BuildFrameBuffer(vulkanRenderPass);
     }
 }
 
-void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const RenderPassLoader& renderPassJsonLoader)
+void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const RenderPassLoader& renderPassJsonLoader, bool globalDescriptorSet)
 {
     VkAttachmentReference unusedRef = {};
     VkAttachmentReference depthReference = VkAttachmentReference();
@@ -510,8 +510,8 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
             });
     }
 
-    Vector<VkAttachmentDescription> attachmentDescriptionList = BuildRenderPassAttachments(vulkanRenderPass);
-    Vector<Texture> frameBufferTextureList = BuildRenderPassAttachmentTextures(vulkanRenderPass);
+    Vector<VkAttachmentDescription> attachmentDescriptionList = BuildRenderPassAttachments(vulkanRenderPass, globalDescriptorSet);
+    Vector<Texture> frameBufferTextureList = BuildRenderPassAttachmentTextures(vulkanRenderPass, globalDescriptorSet);
 
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
     if (renderPassJsonLoader.UseCubeMapMultiView)
@@ -527,6 +527,55 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
         };
     }
 
+    Vector<VkSubpassDependency> subpassDependencies = renderPassJsonLoader.SubpassDependencyModelList;
+    if (globalDescriptorSet)
+    {
+        subpassDependencies = 
+        {
+            VkSubpassDependency
+            {
+                .srcSubpass = VK_SUBPASS_EXTERNAL,
+                .dstSubpass = 0,
+                .srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                                   | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                .srcAccessMask = 0,
+                .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                                   | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+            },
+            VkSubpassDependency
+            {
+                .srcSubpass = 0,
+                .dstSubpass = 1,
+                .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                                   | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                                   | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+                                   | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                                   | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                .dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT
+                                   | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+                                   | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                                   | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+            },
+            VkSubpassDependency
+            {
+                .srcSubpass = 1,
+                .dstSubpass = VK_SUBPASS_EXTERNAL,
+                .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                                   | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                                   | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                .dstAccessMask = 0,
+                .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+            }
+        };
+    }
+
     VkRenderPassCreateInfo renderPassInfo = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .pNext = renderPassJsonLoader.UseCubeMapMultiView ? &multiviewCreateInfo : nullptr,
@@ -534,13 +583,13 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
         .pAttachments = attachmentDescriptionList.data(),
         .subpassCount = static_cast<uint32_t>(subPassDescriptionList.size()),
         .pSubpasses = subPassDescriptionList.data(),
-        .dependencyCount = static_cast<uint32_t>(renderPassJsonLoader.SubpassDependencyModelList.size()),
-        .pDependencies = renderPassJsonLoader.SubpassDependencyModelList.data(),
+        .dependencyCount = static_cast<uint32_t>(subpassDependencies.size()),
+        .pDependencies = subpassDependencies.data(),
     };
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
 }
 
-Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass)
+Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, bool globalDescriptorSet)
 {
     Vector<VkAttachmentDescription> attachmentDescriptionList;
     Vector<RenderPassAttachmentTexture> renderPassAttachmentTextureInfoList = RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId];
@@ -576,7 +625,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
     return attachmentDescriptionList;
 }
 
-Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass)
+Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, bool globalDescriptorSet)
 {
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 
@@ -687,8 +736,8 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
 
 void RenderSystem::CreateGlobalBindlessDescriptorSets()
 {
-    constexpr uint32_t MAX_2D = 32768;   // realistic for now
-    constexpr uint32_t MAX_CUBE = 2048;
+    constexpr uint32_t MAX_2D = 32768;
+    constexpr uint32_t MAX_CUBE = 128;   // fixed — safe & stable
 
     Vector<VkDescriptorPoolSize> poolSizes = {
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
@@ -698,34 +747,20 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets()
     };
 
     Vector<VkDescriptorSetLayoutBinding> bindings = {
-        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL},
-        {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL},
-        {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_2D,   VK_SHADER_STAGE_ALL},
-        {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE / 2, VK_SHADER_STAGE_ALL}, // 3D
-        {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,        1,       VK_SHADER_STAGE_ALL},
+        {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,        1,       VK_SHADER_STAGE_ALL},
+        {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},  // CubeMap - fixed count
+        {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_2D, VK_SHADER_STAGE_ALL},
     };
 
-    Vector<VkDescriptorBindingFlags> flags(bindings.size(),
-        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
-        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT);
+    // NO variable count flag at all — remove these lines:
+    // Vector<VkDescriptorBindingFlags> flags(...);
+    // flags.back() |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+    // No varInfo / varCount needed anymore
 
-    flags[4] |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+    VkDescriptorSetLayoutBindingFlagsCreateInfo flagInfo{};  // empty — no flags needed for stability
 
-    uint32_t varCount = MAX_CUBE;  // <--- this is what was missing in some paths
-
-    VkDescriptorSetVariableDescriptorCountAllocateInfo varInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
-        .descriptorSetCount = 1,
-        .pDescriptorCounts = &varCount
-    };
-
-    VkDescriptorSetLayoutBindingFlagsCreateInfo flagInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-        .bindingCount = static_cast<uint32_t>(flags.size()),
-        .pBindingFlags = flags.data()
-    };
-
-    VkDescriptorPoolCreateInfo poolInfo{
+    VkDescriptorPoolCreateInfo poolInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
         .maxSets = 64,
@@ -734,21 +769,21 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets()
     };
     VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo{
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = &flagInfo,
+        .pNext = &flagInfo,  // still pass it (empty)
         .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
         .bindingCount = static_cast<uint32_t>(bindings.size()),
         .pBindings = bindings.data()
     };
     VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
 
-    VkDescriptorSetAllocateInfo allocInfo{
+    VkDescriptorSetAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .pNext = &varInfo,
         .descriptorPool = memoryPoolSystem.GlobalBindlessPool,
         .descriptorSetCount = 1,
         .pSetLayouts = &memoryPoolSystem.GlobalBindlessDescriptorSetLayout
+        // NO pNext = &varInfo anymore
     };
     VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
 
@@ -870,21 +905,30 @@ void RenderSystem::UpdateGlobalDescriptorSet()
             .pBufferInfo = bindlessDataBuffer.data(),
         });
 
-    if (!texture2DBuffer.empty()) 
+    constexpr uint32_t MAX_CUBE = 128;
+    if (!cubeMapBuffer.empty())
     {
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 2,
-                .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(texture2DBuffer.size()),
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = texture2DBuffer.data(),
+        if (cubeMapBuffer.size() > MAX_CUBE) {
+            printf("[Global] Too many cube maps (%zu > %u) — truncating\n", cubeMapBuffer.size(), MAX_CUBE);
+            cubeMapBuffer.resize(MAX_CUBE);
+        }
+
+        writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+            .dstBinding = 2,
+            .dstArrayElement = 0,
+            .descriptorCount = static_cast<uint32_t>(cubeMapBuffer.size()),
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .pImageInfo = cubeMapBuffer.data(),
             });
     }
+    else
+    {
+        printf("[UpdateGlobal] No cube maps — skipping binding 3 write\n");
+    }
 
-    if (!texture3DBuffer.empty())
+    if (!texture2DBuffer.empty()) 
     {
         writeDescriptorSet.emplace_back(VkWriteDescriptorSet
             {
@@ -892,25 +936,50 @@ void RenderSystem::UpdateGlobalDescriptorSet()
                 .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
                 .dstBinding = 3,
                 .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
+                .descriptorCount = static_cast<uint32>(texture2DBuffer.size()),
                 .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = texture3DBuffer.data(),
+                .pImageInfo = texture2DBuffer.data(),
             });
     }
 
-    if (!cubeMapBuffer.empty()) 
-    {
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 4,
-                .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(cubeMapBuffer.size()),
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = cubeMapBuffer.data(),
-            });
+    //if (!texture3DBuffer.empty())
+    //{
+    //    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
+    //        {
+    //            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+    //            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
+    //            .dstBinding = 3,
+    //            .dstArrayElement = 0,
+    //            .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
+    //            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    //            .pImageInfo = texture3DBuffer.data(),
+    //        });
+    //}
+
+    //for (auto& info : texture3DBuffer) {
+    //    if (info.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    //        printf("[GLOBAL] Fixing bad 3D layout: %d → SHADER_READ_ONLY\n", info.imageLayout);
+    //        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //    }
+    //    if (info.imageView == VK_NULL_HANDLE || info.sampler == VK_NULL_HANDLE) {
+    //        printf("[GLOBAL] ERROR: Null imageView or sampler in 3D texture!\n");
+    //    }
+    //}
+
+    for (auto& info : cubeMapBuffer) {
+        if (info.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            printf("[GLOBAL] Fixing bad Cube layout: %d → SHADER_READ_ONLY\n", info.imageLayout);
+            info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
+        if (info.imageView == VK_NULL_HANDLE || info.sampler == VK_NULL_HANDLE) {
+            printf("[GLOBAL] ERROR: Null imageView or sampler in CubeMap!\n");
+        }
     }
+
+    //// Print summary before update
+    //printf("[GLOBAL] Binding 3 (Texture3D): %zu entries\n", texture3DBuffer.size());
+    printf("[GLOBAL] Binding 4 (CubeMap): %zu entries\n", cubeMapBuffer.size());
+
     vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
 }
 
