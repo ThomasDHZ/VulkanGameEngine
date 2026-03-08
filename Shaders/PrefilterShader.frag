@@ -58,7 +58,7 @@ layout(binding = 1)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[128];
+layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 
 layout(location = 0) in vec3 WorldPos;
@@ -134,7 +134,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0f);
         if(NdotL > 0.0f)
         {
-            prefilteredColor += textureLod(CubeMap[sceneDataBuffer.CubeMapId], L, 0.0).rgb * NdotL;
+            prefilteredColor += textureLod(CubeMap[0], L, 0.0).rgb * NdotL;
         }
     }
     prefilteredColor /= float(SAMPLE_COUNT);

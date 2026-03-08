@@ -70,6 +70,7 @@ layout(push_constant) uniform IrradianceShaderConstants {
 
 void main() 
 {
+
     vec3 N = normalize(WorldPos);
     vec3 up    = abs(N.y) < 0.999f ? vec3(0.0f, 1.0f, 0.0f) : vec3(0.0f, 0.0f, 1.0f);
     vec3 right = normalize(cross(up, N));
@@ -85,7 +86,7 @@ void main()
         {
             vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
             vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
-            irradiance += texture(CubeMap[sceneDataBuffer.CubeMapId], sampleVec).rgb * cos(theta) * sin(theta);
+            irradiance += texture(CubeMap[0], sampleVec).rgb * cos(theta) * sin(theta);
             nrSamples++;
         }
     }

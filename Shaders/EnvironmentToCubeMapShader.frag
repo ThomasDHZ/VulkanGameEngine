@@ -15,10 +15,10 @@ layout(constant_id = 3)  const uint DescriptorBindingType3  = SkyBoxDescriptor;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
-	uint BRDFMapId;
-	uint CubeMapId;
-	uint IrradianceMapId;
-	uint PrefilterMapId;
+	uint  BRDFMapId;
+	uint  CubeMapId;
+	uint  IrradianceMapId;
+	uint  PrefilterMapId;
 	mat4  Projection;
 	mat4  View;
 	mat4  InverseProjection;
@@ -57,7 +57,7 @@ layout(binding = 1)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[128];
+layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 
 layout(location = 0) in vec3 pos;

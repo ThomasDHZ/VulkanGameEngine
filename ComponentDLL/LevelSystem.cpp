@@ -239,9 +239,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
     for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    Texture texture = textureSystem.TextureList.back();
-    textureSystem.TransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
     for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
@@ -259,15 +256,14 @@ void LevelSystem::LoadLevel(const char* levelPath)
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
+
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", true);
     renderSystem.GenerateTexture(brdfRenderPassId);
-    sceneDataBuffer.BRDFMapId = textureSystem.TextureList.size();
-    textureSystem.TextureList.emplace_back(textureSystem.FindRenderedTextureList(brdfRenderPassId).back());
 
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
     renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-    sceneDataBuffer.CubeMapId = textureSystem.CubeMapTextureList.size();
 
+    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", true);
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", true);
     gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);

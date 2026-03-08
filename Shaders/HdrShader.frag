@@ -57,7 +57,7 @@ layout(binding = 1)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[128];
+layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 
 layout(location = 0) in vec2 TexCoords;
@@ -67,7 +67,7 @@ const float Gamma = 2.2;
 const float Exposure = 1.0;
 void main() 
 {
-    vec3 hdrColor = texture(TextureMap[0], TexCoords).rgb;
+    vec3 hdrColor = texture(TextureMap[19], TexCoords).rgb;
     vec3 finalColor = hdrColor;
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
     mapped = pow(mapped, vec3(1.0 / Gamma));

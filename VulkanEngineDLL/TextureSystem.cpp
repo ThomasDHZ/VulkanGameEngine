@@ -153,10 +153,10 @@ Texture TextureSystem::LoadKTXTexture(const String& texturePath)
 
 Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 {
-	if (TextureExists(textureLoader.TextureId))
-	{
-		return FindTexture(textureLoader.TextureId);
-	}
+	//if (TextureExists(textureLoader.TextureId))
+	//{
+	//	return FindTexture(textureLoader.TextureId);
+	//}
 
 	String path = textureLoader.TextureFilePath.front();
 	if (fileSystem.GetFileExtention(path.c_str()) != "ktx2")
@@ -511,6 +511,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
 		case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture;		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case RenderType_BRDFTexture:			texture.textureType = TextureType_BRDFTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 	}
 
 	if (isDepthFormat)

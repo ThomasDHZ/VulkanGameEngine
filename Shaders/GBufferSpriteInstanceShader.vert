@@ -92,7 +92,7 @@ layout(binding = 1)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[128];
+layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 
 layout(push_constant) uniform SceneDataBuffer

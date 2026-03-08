@@ -50,7 +50,8 @@ enum TextureTypeEnum
     TextureType_DepthTexture,
     TextureType_SkyboxTexture,
     TextureType_IrradianceMapTexture,
-    TextureType_PrefilterMapTexture
+    TextureType_PrefilterMapTexture,
+    TextureType_BRDFTexture
 };
 
 enum RenderTextureTypeEnum
@@ -62,7 +63,8 @@ enum RenderTextureTypeEnum
     RenderType_GBufferTexture,
     RenderType_IrradianceTexture,
     RenderType_PrefilterTexture,
-    RenderType_CubeMapTexture
+    RenderType_CubeMapTexture,
+    RenderType_BRDFTexture
 };
 
 enum RenderAttachmentTypeEnum

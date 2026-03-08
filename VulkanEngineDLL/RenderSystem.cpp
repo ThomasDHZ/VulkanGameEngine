@@ -525,6 +525,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
             case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             case RenderType_CubeMapTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+            case RenderType_BRDFTexture:           initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             default: throw std::runtime_error("Unknown RenderTextureType");
         }
 
@@ -569,6 +570,19 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
             memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        }
+        else if (texture.textureType == TextureType_SkyboxTexture)
+        {
+            textureSystem.CubeMapTextureList.emplace_back(texture);
+            renderedTextureList.emplace_back(texture);
+            frameBufferTextureList.emplace_back(texture);
+            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        }
+        else if (texture.textureType == TextureType_BRDFTexture)
+        {
+            renderedTextureList.emplace_back(texture);
+            frameBufferTextureList.emplace_back(texture);
+            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
         }
         else if (texture.textureType == TextureType_DepthTexture)
         {

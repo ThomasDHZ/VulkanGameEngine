@@ -57,7 +57,7 @@ layout(binding = 1)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[128];
+layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 
 layout(location = 0) in vec2 TexCoords;
@@ -65,5 +65,10 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
-    outColor = vec4(texture(TextureMap[0], TexCoords).rgb, 1.0f);
+    vec4 colorish;
+    for(int x = 0; x < 22; x++)
+    {
+        colorish = texture(TextureMap[x], TexCoords);
+    }
+    outColor = vec4(texture(TextureMap[21], TexCoords).rgb, 1.0f);
 }

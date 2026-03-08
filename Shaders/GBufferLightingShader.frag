@@ -59,7 +59,7 @@ layout(binding = 1)  buffer BindlessBuffer
     uint SpriteInstanceSize;
     uint Data[]; 
 } bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[128];
+layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput positionInput;
@@ -248,7 +248,7 @@ void main()
         viewPos /= viewPos.w;
         vec3 viewDir = normalize(viewPos.xyz);
         vec3 worldDir = normalize((sceneDataBuffer.InverseView * vec4(viewDir, 0.0)).xyz);
-        vec3 sky = textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb;
+        vec3 sky = textureLod(CubeMap[0], worldDir, 0.0).rgb;
 
         outColor = vec4(sky, 1.0);
         outBloom = vec4(0.0);
@@ -445,15 +445,15 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
     vec3  kS = F;
     vec3  kD = (vec3(1.0f) - kS) * (1.0f - material.Metallic);
 
-    vec3  irradiance = texture(CubeMap[sceneDataBuffer.IrradianceMapId], N).rgb;
+    vec3  irradiance = texture(CubeMap[1], N).rgb;
     vec3  diffuseIBL = (material.Albedo / PI) * irradiance;
 
-    float maxLod = textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0;
+    float maxLod = textureQueryLevels(CubeMap[3]) - 1.0;
     float lod = material.Roughness * maxLod;
     lod = clamp(lod, 0.0, maxLod);
-    vec3  prefilteredColor = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], R, lod).rgb;
+    vec3  prefilteredColor = textureLod(CubeMap[3], R, lod).rgb;
 
-    vec2  brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
+    vec2  brdf = texture(TextureMap[9], vec2(max(dot(N, V), 0.0f), material.Roughness)).rg;
     vec3  specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
     float iblSheenFactor = pow(1.0 - max(dot(N, V), 0.0f), 5.0);
@@ -464,12 +464,12 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 R, Material material)
 
     float coatNdotV = max(dot(N, V), 0.0f);
     vec3  coatR = reflect(-V, N);
-    float coatLod = clearcoatRoughness * (textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
-    coatLod = clamp(coatLod, 0.0, textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1.0);
+    float coatLod = clearcoatRoughness * (textureQueryLevels(CubeMap[3]) - 1.0);
+    coatLod = clamp(coatLod, 0.0, textureQueryLevels(CubeMap[3]) - 1.0);
 
-    vec3  coatPrefilter = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], coatR, coatLod).rgb;
+    vec3  coatPrefilter = textureLod(CubeMap[3], coatR, coatLod).rgb;
 
-    vec2  coatBRDF = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(coatNdotV, clearcoatRoughness)).rg;
+    vec2  coatBRDF = texture(TextureMap[9], vec2(coatNdotV, clearcoatRoughness)).rg;
     float coatF = 0.04 + (1.0 - 0.04) * pow(1.0 - coatNdotV, 5.0);
 
     vec3  clearcoatIBL = coatPrefilter * (coatF * coatBRDF.x + coatBRDF.y) * clearcoatStrength;
