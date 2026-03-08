@@ -60,6 +60,8 @@ private:
     TextureSystem(TextureSystem&&) = delete;
     TextureSystem& operator=(TextureSystem&&) = delete;
 
+    bool IsDepthFormat(VkFormat format);
+    bool HasStencilComponent(VkFormat format);
     void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount);
     void CreateTextureView(Texture& texture, bool usingMultiView, VkImageAspectFlags imageAspectFlags);
@@ -84,7 +86,7 @@ public:
     DLL_EXPORT void                     GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
     DLL_EXPORT void                     GetTexture3DPropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);
     DLL_EXPORT void                     TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
-    DLL_EXPORT void                     TransitionImageLayout(VkCommandBuffer& commandBuffer, Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
+    DLL_EXPORT void                     TransitionImageLayout(VkCommandBuffer cmd, Texture& texture, VkImageLayout newLayout, uint32_t baseMip = 0, uint32_t mipCount = VK_REMAINING_MIP_LEVELS, uint32_t baseLayer = 0,  uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS);
     DLL_EXPORT Texture                  FindTexture(const VkGuid& textureId);
     DLL_EXPORT Texture&                 FindDepthTexture(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);

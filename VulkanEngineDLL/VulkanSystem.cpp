@@ -541,6 +541,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .uniformAndStorageBuffer8BitAccess = VK_TRUE,
         .descriptorIndexing = VK_TRUE,
         .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+        .descriptorBindingUpdateUnusedWhilePending = VK_TRUE,
         .descriptorBindingVariableDescriptorCount = VK_TRUE,
         .runtimeDescriptorArray = VK_TRUE,
         .scalarBlockLayout = VK_TRUE,
@@ -548,7 +549,7 @@ VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graph
         .timelineSemaphore = VK_TRUE,
         .bufferDeviceAddress = VK_TRUE,
         .vulkanMemoryModel = VK_TRUE,
-        .vulkanMemoryModelDeviceScope = VK_TRUE,
+        .vulkanMemoryModelDeviceScope = VK_TRUE
     };
 
     VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features = {

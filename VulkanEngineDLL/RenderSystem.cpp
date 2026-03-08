@@ -363,7 +363,6 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         if (!s_alreadyCreated) 
         {
             s_alreadyCreated = true;
-            CreateGlobalBindlessDescriptorSets();
             CreateGlobalBindlessDescriptorSets2(renderPassLoader.RenderPassId);
         }
     }
@@ -395,13 +394,9 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
             descriptorPool = memoryPoolSystem.GlobalBindlessPool;
             descriptorSetLayoutList = { memoryPoolSystem.GlobalBindlessDescriptorSetLayout, memoryPoolSystem.GlobalDescriptorSetLayout2 };
             descriptorSetList = { memoryPoolSystem.GlobalBindlessDescriptorSet, memoryPoolSystem.GlobalDescriptorSet2 };
-
-            // DO NOT call AllocatePipelineDescriptorSets or UpdatePipelineDescriptorSets here
-            // (we are sharing the global sets)
         }
         else
         {
-            // normal per-pipeline path (keep the rest of your code)
             descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
             descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
             descriptorSetList = AllocatePipelineDescriptorSets(renderPipelineLoader, descriptorPool, descriptorSetLayoutList.data(), descriptorSetLayoutList.size());
@@ -600,7 +595,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         const RenderPassAttachmentTexture& renderAttachment = renderPassAttachmentTextureInfoList[x];
         switch (renderAttachment.RenderTextureType)
         {
-            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;               break;
+            case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
             case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
             case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
@@ -642,6 +637,7 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
             textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
+            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         }
         else if (texture.textureType == TextureType_PrefilterMapTexture)
         {
@@ -649,17 +645,20 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
             textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
+            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         }
         else if (texture.textureType == TextureType_DepthTexture)
         {
             depthTexture = texture;
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
+            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
         }
         else
         {
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
+            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
         }
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
@@ -734,67 +733,10 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
     }
 }
 
-void RenderSystem::CreateGlobalBindlessDescriptorSets()
-{
-    constexpr uint32_t MAX_2D = 32768;
-    constexpr uint32_t MAX_CUBE = 128;   // fixed — safe & stable
-
-    Vector<VkDescriptorPoolSize> poolSizes = {
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
-        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_2D + MAX_CUBE + 1024},
-        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 64}
-    };
-
-    Vector<VkDescriptorSetLayoutBinding> bindings = {
-        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,        1,       VK_SHADER_STAGE_ALL},
-        {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,        1,       VK_SHADER_STAGE_ALL},
-        {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_CUBE, VK_SHADER_STAGE_ALL},  // CubeMap - fixed count
-        {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_2D, VK_SHADER_STAGE_ALL},
-    };
-
-    // NO variable count flag at all — remove these lines:
-    // Vector<VkDescriptorBindingFlags> flags(...);
-    // flags.back() |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
-    // No varInfo / varCount needed anymore
-
-    VkDescriptorSetLayoutBindingFlagsCreateInfo flagInfo{};  // empty — no flags needed for stability
-
-    VkDescriptorPoolCreateInfo poolInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = 64,
-        .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-        .pPoolSizes = poolSizes.data()
-    };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = &flagInfo,  // still pass it (empty)
-        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
-        .bindingCount = static_cast<uint32_t>(bindings.size()),
-        .pBindings = bindings.data()
-    };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
-
-    VkDescriptorSetAllocateInfo allocInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = memoryPoolSystem.GlobalBindlessPool,
-        .descriptorSetCount = 1,
-        .pSetLayouts = &memoryPoolSystem.GlobalBindlessDescriptorSetLayout
-        // NO pNext = &varInfo anymore
-    };
-    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
-
-    UpdateGlobalDescriptorSet();
-}
-
 void RenderSystem::CreateGlobalBindlessDescriptorSets2(VkGuid renderpassGuid)
 {
     static bool s_alreadyCreated = false;
     if (s_alreadyCreated) {
-        // Optional: log "already created - skipping"
         return;
     }
     s_alreadyCreated = true;
@@ -857,133 +799,6 @@ void RenderSystem::CreateGlobalBindlessDescriptorSets2(VkGuid renderpassGuid)
     }
     vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 }
-
-void RenderSystem::UpdateGlobalDescriptorSet()
-{
-    Vector<VkWriteDescriptorSet> writeDescriptorSet;
-
-    Vector<VkDescriptorBufferInfo> sceneDataBuffer = memoryPoolSystem.GetSceneDataBufferDescriptor();
-    Vector<VkDescriptorBufferInfo> bindlessDataBuffer = memoryPoolSystem.GetBindlessDataBufferDescriptor();
-    Vector<VkDescriptorImageInfo> texture3DBuffer = renderSystem.GetTexture3DPropertiesBuffer(VkGuid());
-    Vector<VkDescriptorImageInfo> cubeMapBuffer = renderSystem.GetCubeMapTextureBuffer();
-    Vector<VkDescriptorImageInfo> texture2DBuffer;
-    for (auto& texture : textureSystem.TextureList)
-    {
-        textureSystem.GetTexturePropertiesBuffer(texture, texture2DBuffer);
-    }
-
-    for (auto& info : texture2DBuffer) {
-        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    }
-    for (auto& info : texture3DBuffer) {
-        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    }
-    for (auto& info : cubeMapBuffer) {
-        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    }
-
-    //// Now queue the writes with updated info
-    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-        {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorCount = static_cast<uint32>(sceneDataBuffer.size()),
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .pBufferInfo = sceneDataBuffer.data(),
-        });
-
-    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-        {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-            .dstBinding = 1,
-            .dstArrayElement = 0,
-            .descriptorCount = static_cast<uint32>(bindlessDataBuffer.size()),
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .pBufferInfo = bindlessDataBuffer.data(),
-        });
-
-    constexpr uint32_t MAX_CUBE = 128;
-    if (!cubeMapBuffer.empty())
-    {
-        if (cubeMapBuffer.size() > MAX_CUBE) {
-            printf("[Global] Too many cube maps (%zu > %u) — truncating\n", cubeMapBuffer.size(), MAX_CUBE);
-            cubeMapBuffer.resize(MAX_CUBE);
-        }
-
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-            .dstBinding = 2,
-            .dstArrayElement = 0,
-            .descriptorCount = static_cast<uint32_t>(cubeMapBuffer.size()),
-            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = cubeMapBuffer.data(),
-            });
-    }
-    else
-    {
-        printf("[UpdateGlobal] No cube maps — skipping binding 3 write\n");
-    }
-
-    if (!texture2DBuffer.empty()) 
-    {
-        writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 3,
-                .dstArrayElement = 0,
-                .descriptorCount = static_cast<uint32>(texture2DBuffer.size()),
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .pImageInfo = texture2DBuffer.data(),
-            });
-    }
-
-    //if (!texture3DBuffer.empty())
-    //{
-    //    writeDescriptorSet.emplace_back(VkWriteDescriptorSet
-    //        {
-    //            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-    //            .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-    //            .dstBinding = 3,
-    //            .dstArrayElement = 0,
-    //            .descriptorCount = static_cast<uint32>(texture3DBuffer.size()),
-    //            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-    //            .pImageInfo = texture3DBuffer.data(),
-    //        });
-    //}
-
-    //for (auto& info : texture3DBuffer) {
-    //    if (info.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-    //        printf("[GLOBAL] Fixing bad 3D layout: %d → SHADER_READ_ONLY\n", info.imageLayout);
-    //        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //    }
-    //    if (info.imageView == VK_NULL_HANDLE || info.sampler == VK_NULL_HANDLE) {
-    //        printf("[GLOBAL] ERROR: Null imageView or sampler in 3D texture!\n");
-    //    }
-    //}
-
-    for (auto& info : cubeMapBuffer) {
-        if (info.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            printf("[GLOBAL] Fixing bad Cube layout: %d → SHADER_READ_ONLY\n", info.imageLayout);
-            info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        }
-        if (info.imageView == VK_NULL_HANDLE || info.sampler == VK_NULL_HANDLE) {
-            printf("[GLOBAL] ERROR: Null imageView or sampler in CubeMap!\n");
-        }
-    }
-
-    //// Print summary before update
-    //printf("[GLOBAL] Binding 3 (Texture3D): %zu entries\n", texture3DBuffer.size());
-    printf("[GLOBAL] Binding 4 (CubeMap): %zu entries\n", cubeMapBuffer.size());
-
-    vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSet.size()), writeDescriptorSet.data(), 0, nullptr);
-}
-
-
 
 VkDescriptorPool RenderSystem::CreatePipelineDescriptorPool(RenderPipelineLoader& renderPipelineLoader)
 {
@@ -1553,11 +1368,6 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
     for (auto& cubeMap : textureSystem.CubeMapTextureList)
     {
-        if (cubeMap.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR ||
-            cubeMap.textureImageLayout == VK_IMAGE_LAYOUT_UNDEFINED)  // also skip uninitialized
-        {
-            continue;  // Do NOT bind present-src or undefined images as samplers
-        }
 
         texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {

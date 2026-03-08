@@ -117,8 +117,6 @@ private:
 	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
 	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
 
-	static constexpr uint									 SceneDataDescriptorBinding = 0;
-	static constexpr uint									 BindlessDataDescriptorBinding = 1;
 
 	static constexpr size_t									 MeshInitialCapacity = 4;
 	static constexpr size_t									 MaterialInitialCapacity = 4;
@@ -129,12 +127,17 @@ private:
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
-
+	void													 CreateGlobalBindlessDescriptorSet();
 public:
 
-	static constexpr size_t									 Texture2DInitialCapacity = 65535;
+	static constexpr uint									 SceneDataDescriptorBinding = 0;
+	static constexpr uint									 BindlessDataDescriptorBinding = 1;
+	static constexpr uint									 CubeMapDescriptorBinding = 2;
+	static constexpr uint									 Texture2DBinding = 3;
+
+	static constexpr size_t									 Texture2DInitialCapacity = 32768;
 	static constexpr uint32_t Texture3DInitialCapacity = 4;     // tiny for testing
-	static constexpr uint32_t TextureCubeMapInitialCapacity = 4;
+	static constexpr uint32_t TextureCubeMapInitialCapacity = 128;
 
 	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
@@ -157,16 +160,17 @@ public:
 	DLL_EXPORT void											 StartUp();
 	DLL_EXPORT uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
 	DLL_EXPORT void											 UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList);
-
-	DLL_EXPORT MeshPropertiesStruct& UpdateMesh(uint32 index);
-	DLL_EXPORT GPUMaterial& UpdateMaterial(uint32 index);
-	DLL_EXPORT DirectionalLight& UpdateDirectionalLight(uint32 index);
-	DLL_EXPORT PointLight& UpdatePointLight(uint32 index);
-	DLL_EXPORT TextureMetadataHeader& UpdateTexture2DMetadataHeader(uint32 index);
-	DLL_EXPORT TextureMetadataHeader& UpdateTexture3DMetadataHeader(uint32 index);
-	DLL_EXPORT TextureMetadataHeader& UpdateTextureCubeMapMetadataHeader(uint32 index);
-	DLL_EXPORT SpriteInstance& UpdateSpriteInstance(uint32 index);
-	DLL_EXPORT SceneDataBuffer& UpdateSceneDataBuffer();
+	DLL_EXPORT void											 UpdateTextureDescriptorSet(Texture& texture, uint binding);
+	DLL_EXPORT void											 UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
+	DLL_EXPORT MeshPropertiesStruct&						 UpdateMesh(uint32 index);
+	DLL_EXPORT GPUMaterial&									 UpdateMaterial(uint32 index);
+	DLL_EXPORT DirectionalLight&							 UpdateDirectionalLight(uint32 index);
+	DLL_EXPORT PointLight&									 UpdatePointLight(uint32 index);
+	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture2DMetadataHeader(uint32 index);
+	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
+	DLL_EXPORT TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
+	DLL_EXPORT SpriteInstance&								 UpdateSpriteInstance(uint32 index);
+	DLL_EXPORT SceneDataBuffer&								 UpdateSceneDataBuffer();
 
 	DLL_EXPORT Vector<SpriteInstance*>						 GetActiveSpriteInstancePointers();
 

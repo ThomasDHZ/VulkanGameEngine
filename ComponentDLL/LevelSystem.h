@@ -90,7 +90,111 @@ private:
        
         RenderPassGuid levelWireFrameRenderPass2DId;
         RenderPassGuid spriteWireFrameRenderPass2DId;
+        void TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount = 1)
+        {
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcAccessMask = oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ? VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT : VK_ACCESS_SHADER_READ_BIT;
+            barrier.dstAccessMask = newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.oldLayout = oldLayout;
+            barrier.newLayout = newLayout;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = image;
+            barrier.subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = mipLevels,
+                .baseArrayLayer = 0,
+                .layerCount = layerCount
+            };
 
+            vkCmdPipelineBarrier(
+                cmd,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier
+            );
+
+            printf("[Transition] Image %p %s ? %s (mips: %u, layers: %u)\n",
+                (void*)image,
+                oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ? "COLOR_ATTACHMENT" : "SHADER_READ",
+                newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ? "SHADER_READ" : "COLOR_ATTACHMENT",
+                mipLevels, layerCount);
+        }
+        void ResetAndDestroyOldTexture(uint32_t& mapId, Vector<Texture>& textureList)
+        {
+            if (mapId >= textureList.size()) return;
+
+            Texture& tex = textureList[mapId];
+            if (tex.textureImage == VK_NULL_HANDLE) return;
+
+            // Reset layout if necessary
+            VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.image = tex.textureImage;
+            barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, tex.mipMapLevels, 0, 1 };
+
+            vkCmdPipelineBarrier(cmd,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            vulkanSystem.EndSingleUseCommand(cmd);
+            printf("[ResetAndDestroy] Texture %p reset to COLOR_ATTACHMENT before destroy\n", (void*)tex.textureImage);
+
+            // Now safe to destroy
+            textureSystem.DestroyTexture(tex);
+            mapId = UINT32_MAX;
+        }
+        void ResetAndDestroyOldCubemap(uint32_t& mapId, Vector<Texture>& cubemapList)
+        {
+            if (mapId >= cubemapList.size()) return;
+
+            Texture& tex = cubemapList[mapId];
+            if (tex.textureImage == VK_NULL_HANDLE) return;
+
+            // Reset layout to COLOR_ATTACHMENT_OPTIMAL
+            VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.image = tex.textureImage;
+            barrier.subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = tex.mipMapLevels,
+                .baseArrayLayer = 0,
+                .layerCount = 6   // cubemap has 6 layers
+            };
+
+            vkCmdPipelineBarrier(cmd,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            vulkanSystem.EndSingleUseCommand(cmd);
+            printf("[ResetAndDestroyCubemap] Image %p reset to COLOR_ATTACHMENT before destroy\n", (void*)tex.textureImage);
+
+            // Destroy
+            textureSystem.DestroyTexture(tex);
+            mapId = UINT32_MAX;
+        }
+        DLL_EXPORT void TransitionImageToShaderRead(VkCommandBuffer cmd, VkImage image, uint32_t mipLevels, uint32_t layerCount = 1);
+        DLL_EXPORT void                 TransitionCubeMapToShaderRead(VkCommandBuffer cmd, VkImage cubeImage, uint32_t mipLevels);
         DLL_EXPORT void                 Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
         DLL_EXPORT void                 RenderEnvironmentToCubeMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
         DLL_EXPORT void                 RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);

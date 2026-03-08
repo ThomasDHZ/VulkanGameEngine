@@ -38,10 +38,9 @@ private:
 public:
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
-
-    DLL_EXPORT void                          CreateGlobalBindlessDescriptorSets();
+    DLL_EXPORT void                          UpdateTextureDescriptorSet(Texture& texture, uint binding);
+    DLL_EXPORT void                          UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
     DLL_EXPORT void                          CreateGlobalBindlessDescriptorSets2(VkGuid renderpassGuid);
-    DLL_EXPORT void                          UpdateGlobalDescriptorSet();
     DLL_EXPORT void                          StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, bool useGlobalDescriptorSet);
     DLL_EXPORT RenderPassGuid                LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet);
