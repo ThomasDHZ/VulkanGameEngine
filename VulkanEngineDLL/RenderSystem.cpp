@@ -188,55 +188,49 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
-    const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
 
-    if (renderPassTexture.empty() || renderPassTexture[0].textureImage == VK_NULL_HANDLE) {
+    if (renderPassTexture.empty() || renderPassTexture[0].textureImage == VK_NULL_HANDLE)
+    {
         std::cerr << "[GenerateCubeMapTexture] No valid cubemap texture found for pass " << renderPassId.ToString() << std::endl;
         return;
     }
 
-    VkImage targetCubemap = renderPassTexture[0].textureImage;
+    Texture& targetCubemap = renderPassTexture[0];
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
     VkFence fence = VK_NULL_HANDLE;
 
-    auto cleanup = [&]() {
-        if (commandBuffer != VK_NULL_HANDLE) {
-            vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
-            commandBuffer = VK_NULL_HANDLE;
-        }
-        if (fence != VK_NULL_HANDLE) {
-            vkDestroyFence(vulkanSystem.Device, fence, nullptr);
-            fence = VK_NULL_HANDLE;
-        }
+    auto cleanup = [&]() 
+        {
+            if (commandBuffer != VK_NULL_HANDLE) {
+                vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+            }
+            if (fence != VK_NULL_HANDLE) {
+                vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+            }
         };
 
-    VkCommandBufferAllocateInfo allocInfo{
+    VkCommandBufferAllocateInfo allocInfo
+    {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool = vulkanSystem.CommandPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
+    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer));
 
-    if (vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
-        std::cerr << "[GenerateCubeMapTexture] Failed to allocate command buffer" << std::endl;
-        cleanup();
-        return;
-    }
-
-    VkCommandBufferBeginInfo beginInfo{
+    VkCommandBufferBeginInfo beginInfo
+    {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
     };
+    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
     VkViewport viewport{
-        .x = 0.0f,
-        .y = 0.0f,
+        .x = 0.0f, .y = 0.0f,
         .width = static_cast<float>(renderPass.RenderPassResolution.x),
         .height = static_cast<float>(renderPass.RenderPassResolution.y),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
+        .minDepth = 0.0f, .maxDepth = 1.0f
     };
-
     VkRect2D scissor{
         .offset = {0, 0},
         .extent = {
@@ -250,81 +244,51 @@ void RenderSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = renderPass.RenderPass,
         .framebuffer = renderPass.FrameBufferList[0],
-        .renderArea = {
-            .offset = {0, 0},
-            .extent = {
-                static_cast<uint32_t>(renderPass.RenderPassResolution.x),
-                static_cast<uint32_t>(renderPass.RenderPassResolution.y)
-            }
-        },
+        .renderArea = scissor,
         .clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
         .pClearValues = renderPass.ClearValueList.data()
     };
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-    {
-        std::cerr << "[GenerateCubeMapTexture] Failed to begin command buffer" << std::endl;
-        cleanup();
-        return;
-    }
-
-    VkDeviceSize offsets[] = { 0 };
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
-    for (const auto& skyboxMesh : skyBoxList)
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()),  skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
+    const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
+    if (!skyBoxList.empty())
     {
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
-        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyBoxList.front().SharedAssetId);
+        const VkBuffer& vb = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& ib = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        VkDeviceSize offsets[] = { 0 };
 
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &meshVertexBuffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, meshIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vb, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, ib, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
     }
     vkCmdEndRenderPass(commandBuffer);
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
 
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        std::cerr << "[GenerateCubeMapTexture] Failed to end command buffer" << std::endl;
-        cleanup();
-        return;
-    }
+    VkFenceCreateInfo fenceInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceInfo, nullptr, &fence));
 
-    VkFenceCreateInfo fenceCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .flags = 0
-    };
-
-    if (vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS) {
-        std::cerr << "[GenerateCubeMapTexture] Failed to create fence" << std::endl;
-        cleanup();
-        return;
-    }
-
-    VkSubmitInfo submitInfo{
+    VkSubmitInfo submitInfo
+    {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .commandBufferCount = 1,
         .pCommandBuffers = &commandBuffer
     };
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+    cleanup();
 
-    if (vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS) {
-        std::cerr << "[GenerateCubeMapTexture] Failed to submit queue" << std::endl;
-        cleanup();
-        return;
+    Vector<Texture>& cubeMapList = textureSystem.FindRenderedTextureList(renderPassId);
+    VkCommandBuffer commandBuffer2 = vulkanSystem.BeginSingleUseCommand();
+    for (auto& cubeMap : cubeMapList)
+    {
+        textureSystem.TransitionImageLayout(commandBuffer2, cubeMap, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, cubeMap.mipMapLevels, 0, 6);
     }
-
-    if (vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
-        std::cerr << "[GenerateCubeMapTexture] Failed to wait for fence" << std::endl;
-        cleanup();
-        return;
-    }
-
-    vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
-    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
-    commandBuffer = VK_NULL_HANDLE;
-    fence = VK_NULL_HANDLE;
+    vulkanSystem.EndSingleUseCommand(commandBuffer2);
 }
 
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, bool useGlobalDescriptorSet)
@@ -358,7 +322,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
     BuildRenderPass(vulkanRenderPass, renderPassLoader, useGlobalDescriptorSet);
     BuildFrameBuffer(vulkanRenderPass);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
-    if (useGlobalDescriptorSet)
+    if (useGlobalDescriptorSet && renderPassLoader.RenderPassId == VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"))
     {
         if (!s_alreadyCreated) 
         {
@@ -389,11 +353,17 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         descriptorPool = CreatePipelineDescriptorPool(renderPipelineLoader);
         descriptorSetLayoutList = CreatePipelineDescriptorSetLayout(renderPipelineLoader);
 
-        if (useGlobalDescriptorSet && s_alreadyCreated)
+        if (useGlobalDescriptorSet && renderPassLoader.RenderPassId == VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"))
         {
             descriptorPool = memoryPoolSystem.GlobalBindlessPool;
             descriptorSetLayoutList = { memoryPoolSystem.GlobalBindlessDescriptorSetLayout, memoryPoolSystem.GlobalDescriptorSetLayout2 };
             descriptorSetList = { memoryPoolSystem.GlobalBindlessDescriptorSet, memoryPoolSystem.GlobalDescriptorSet2 };
+        }
+        else if (useGlobalDescriptorSet)
+        {
+            descriptorPool = memoryPoolSystem.GlobalBindlessPool;
+            descriptorSetLayoutList = { memoryPoolSystem.GlobalBindlessDescriptorSetLayout };
+            descriptorSetList = { memoryPoolSystem.GlobalBindlessDescriptorSet };
         }
         else
         {
@@ -523,7 +493,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     }
 
     Vector<VkSubpassDependency> subpassDependencies = renderPassJsonLoader.SubpassDependencyModelList;
-    if (globalDescriptorSet)
+    if (globalDescriptorSet && renderPassJsonLoader.RenderPassId == VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"))
     {
         subpassDependencies = 
         {

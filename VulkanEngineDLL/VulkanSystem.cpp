@@ -992,86 +992,37 @@ void VulkanSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
 
 void VulkanSystem::StartFrame()
 {
-    // Round-robin frame index
-    vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
-
-    printf("[StartFrame] === Frame %u starting (fence index %u, fence %p) ===\n",
-        vulkanSystem.CommandIndex, vulkanSystem.CommandIndex,
-        (void*)vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
-
-    VkFence currentFence = vulkanSystem.InFlightFences[vulkanSystem.CommandIndex];
-    VkCommandBuffer cmd = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-
-    // 1. Wait for previous work on this fence
-    VkResult waitResult = vkWaitForFences(vulkanSystem.Device, 1, &currentFence, VK_TRUE, UINT64_MAX);
-    if (waitResult != VK_SUCCESS) {
-        printf("[StartFrame] vkWaitForFences FAILED: %d\n", waitResult);
-        if (waitResult == VK_ERROR_DEVICE_LOST) {
-            printf("DEVICE LOST during waitForFences!\n");
-        }
-        vulkanSystem.RebuildRendererFlag = true;
-        return;
-    }
-
-    // 2. Reset fence for this frame
-    vkResetFences(vulkanSystem.Device, 1, &currentFence);
-
-    // 3. Reset command buffer
-    vkResetCommandBuffer(cmd, 0);
-
-    // 4. Begin recording
-    VkCommandBufferBeginInfo beginInfo = {
+    VkCommandBufferBeginInfo commandBufferBeginInfo
+    {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
     };
-    VkResult beginResult = vkBeginCommandBuffer(cmd, &beginInfo);
-    if (beginResult != VK_SUCCESS) {
-        printf("[StartFrame] vkBeginCommandBuffer FAILED: %d\n", beginResult);
-        vulkanSystem.RebuildRendererFlag = true;
-        return;
-    }
+    vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
 
-    // 5. Acquire next swapchain image
-    VkResult acquireResult = vkAcquireNextImageKHR(
-        vulkanSystem.Device,
-        vulkanSystem.Swapchain,
-        UINT64_MAX,
-        vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
-        VK_NULL_HANDLE,
-        &vulkanSystem.ImageIndex
-    );
-
-    if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR || acquireResult == VK_SUBOPTIMAL_KHR) {
-        printf("[StartFrame] Swapchain out of date during acquire\n");
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
+    VULKAN_THROW_IF_FAIL(vkResetFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
+    VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], 0));
+    VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], &commandBufferBeginInfo));
+    VkResult result = vkAcquireNextImageKHR(vulkanSystem.Device, vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
         vulkanSystem.RebuildRendererFlag = true;
-        vkEndCommandBuffer(cmd);
-        return;
     }
-    else if (acquireResult != VK_SUCCESS) {
-        printf("[StartFrame] vkAcquireNextImageKHR FAILED: %d\n", acquireResult);
-        vulkanSystem.RebuildRendererFlag = true;
-        vkEndCommandBuffer(cmd);
-        return;
+    else if (result != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(result);
     }
-
-    printf("[StartFrame] Frame %u ready - image %u acquired\n",
-        vulkanSystem.CommandIndex, vulkanSystem.ImageIndex);
 }
 
 void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
 {
-    // End recording
-    VkResult endResult = vkEndCommandBuffer(commandBufferSubmit);
-    if (endResult != VK_SUCCESS) {
-        printf("[EndFrame] vkEndCommandBuffer FAILED: %d\n", endResult);
-        vulkanSystem.RebuildRendererFlag = true;
-        return;
-    }
+    VkPipelineStageFlags waitStages[] =
+    {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
 
-    // Submit
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-    VkSubmitInfo submitInfo = {
+    VkSubmitInfo submitInfo =
+    {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex],
@@ -1082,20 +1033,21 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
         .pSignalSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.CommandIndex]
     };
 
-    VkFence submitFence = vulkanSystem.InFlightFences[vulkanSystem.CommandIndex];
-
-    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, submitFence);
-    if (submitResult != VK_SUCCESS) {
-        printf("[EndFrame] vkQueueSubmit FAILED: %d\n", submitResult);
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
+    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        submitResult == VK_SUBOPTIMAL_KHR)
+    {
         vulkanSystem.RebuildRendererFlag = true;
         return;
     }
+    else if (submitResult != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(submitResult);
+    }
 
-    printf("[EndFrame] Frame %u submitted successfully (fence %p)\n",
-        vulkanSystem.CommandIndex, (void*)submitFence);
-
-    // Present
-    VkPresentInfoKHR presentInfo = {
+    VkPresentInfoKHR presentInfo =
+    {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &vulkanSystem.PresentImageSemaphores[vulkanSystem.CommandIndex],
@@ -1104,27 +1056,17 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
         .pImageIndices = &vulkanSystem.ImageIndex
     };
 
-    VkResult presentResult = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
-    if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-        printf("[EndFrame] Swapchain out of date during present\n");
+    VkResult result = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+        result == VK_SUBOPTIMAL_KHR)
+    {
         vulkanSystem.RebuildRendererFlag = true;
         return;
     }
-    else if (presentResult != VK_SUCCESS) {
-        printf("[EndFrame] vkQueuePresentKHR FAILED: %d\n", presentResult);
-        vulkanSystem.RebuildRendererFlag = true;
-        return;
+    else if (result != VK_SUCCESS)
+    {
+        VULKAN_THROW_IF_FAIL(result);
     }
-
-    // Force idle for debugging (you can remove this later)
-    VkResult idleResult = vkDeviceWaitIdle(vulkanSystem.Device);
-    if (idleResult != VK_SUCCESS) {
-        printf("[EndFrame] vkDeviceWaitIdle FAILED: %d\n", idleResult);
-        vulkanSystem.RebuildRendererFlag = true;
-        return;
-    }
-
-    printf("[EndFrame] Frame %u completed successfully\n", vulkanSystem.CommandIndex);
 }
 
 void VulkanSystem::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator)
