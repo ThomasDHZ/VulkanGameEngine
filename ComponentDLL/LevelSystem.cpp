@@ -153,11 +153,8 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
     }
 }
 
-void LevelSystem::LoadSkyBox(const char* skyBoxMaterialPath)
+void LevelSystem::LoadSkyBox()
 {
-    nlohmann::json json = fileSystem.LoadJsonFile(skyBoxMaterialPath);
-    VkGuid skyBoxMaterialGuid = VkGuid(json["MaterialId"]);
-
     Vector<SkyboxVertexLayout> skyBoxVertices = 
     {
         {{-1.0f, -1.0f, -1.0f}},
@@ -187,7 +184,7 @@ void LevelSystem::LoadSkyBox(const char* skyBoxMaterialPath)
         .VertexData = skyBoxVertices.data()
     };
 
-    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, skyBoxMaterialGuid);
+    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, VkGuid());
 }
 
 void LevelSystem::DestroyLevel()
@@ -243,13 +240,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
     for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
-    for (auto& skyBox      : json["LoadSkyBox"])      LoadSkyBox(skyBox.get<String>().c_str());
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
         gameObjectSystem.CreateGameObject(objectJson, positionOverride);
     }
+    LoadSkyBox();
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 
@@ -263,7 +260,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
     renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
 
-    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", true);
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", true);
     gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
@@ -431,6 +427,8 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
     const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
     const SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     
+    auto a = textureSystem.CubeMapTextureList;
+
     VkDeviceSize offsets[] = { 0 };
     uint32 baseSize = renderPass.RenderPassResolution.x;
     uint32 prefilterMipmapCount = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].mipMapLevels;

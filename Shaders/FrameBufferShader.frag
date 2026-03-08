@@ -65,10 +65,5 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
-    vec4 colorish;
-    for(int x = 0; x < 22; x++)
-    {
-        colorish = texture(TextureMap[x], TexCoords);
-    }
     outColor = vec4(texture(TextureMap[21], TexCoords).rgb, 1.0f);
 }

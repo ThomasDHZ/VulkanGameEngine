@@ -134,7 +134,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0f);
         if(NdotL > 0.0f)
         {
-            prefilteredColor += textureLod(CubeMap[0], L, 0.0).rgb * NdotL;
+            prefilteredColor += textureLod(CubeMap[sceneDataBuffer.CubeMapId], L, 0.0).rgb * NdotL;
         }
     }
     prefilteredColor /= float(SAMPLE_COUNT);

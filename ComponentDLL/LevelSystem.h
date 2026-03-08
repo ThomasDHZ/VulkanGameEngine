@@ -62,7 +62,7 @@ private:
         VkGuid      LoadTileSetVRAM(const char* tileSetPath);
         void        LoadLevelLayout(const char* levelLayoutPath);
         void        LoadLevelMesh(VkGuid& tileSetId);
-        void        LoadSkyBox(const char* skyBoxMaterialPath);
+        void        LoadSkyBox();
         void        DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2DLayout* VertexList, uint32* IndexList);
 
     public:

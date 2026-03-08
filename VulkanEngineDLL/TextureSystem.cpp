@@ -118,7 +118,6 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		sceneDataBuffer.CubeMapId = CubeMapTextureList.size();
 		CubeMapTextureList.emplace_back(texture);
 		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
 	}
@@ -153,10 +152,10 @@ Texture TextureSystem::LoadKTXTexture(const String& texturePath)
 
 Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 {
-	//if (TextureExists(textureLoader.TextureId))
-	//{
-	//	return FindTexture(textureLoader.TextureId);
-	//}
+	if (TextureExists(textureLoader.TextureId))
+	{
+		return FindTexture(textureLoader.TextureId);
+	}
 
 	String path = textureLoader.TextureFilePath.front();
 	if (fileSystem.GetFileExtention(path.c_str()) != "ktx2")
@@ -399,8 +398,16 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 
 	if (textureLoader.IsSkyBox && isCubemap)
 	{
-		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+		switch (textureLoader.TextureType)
+		{
+			case TextureType_SkyboxTexture: sceneDataBuffer.CubeMapId = texture.bindlessTextureIndex; break;
+			case TextureType_IrradianceMapTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
+			case TextureType_PrefilterMapTexture: sceneDataBuffer.PrefilterMapId = texture.bindlessTextureIndex; break;
+		}
+
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
@@ -408,13 +415,20 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		textureMetaDataHeader.LayerCount = (textureLoader.IsSkyBox) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		sceneDataBuffer.CubeMapId = CubeMapTextureList.size();
+
 		CubeMapTextureList.emplace_back(texture);
 		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
 	}
 	else
 	{
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+		if (textureLoader.TextureType == TextureType_BRDFTexture)
+		{
+			sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
+		}
+
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
@@ -490,7 +504,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-	Texture texture = 
+	Texture texture =
 	{
 		.textureGuid = renderPassAttachmentTexture.RenderedTextureId,
 		.width = vulkanRenderPass.RenderPassResolution.x,
@@ -499,7 +513,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
 		.sampleCount = vulkanRenderPass.SampleCount,
-		
+
 	};
 
 	switch (renderPassAttachmentTexture.RenderTextureType)
@@ -530,7 +544,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
 
-	VkImageCreateInfo imageInfo = 
+	VkImageCreateInfo imageInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.flags = vulkanRenderPass.IsCubeMapRenderPass ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u,
@@ -546,7 +560,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
-	VmaAllocationCreateInfo allocInfo = 
+	VmaAllocationCreateInfo allocInfo =
 	{
 		.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE
 	};
@@ -574,27 +588,42 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	if (vulkanRenderPass.IsCubeMapRenderPass)
 	{
-		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+		switch (texture.textureType)
+		{
+		case TextureType_SkyboxTexture: sceneDataBuffer.CubeMapId = texture.bindlessTextureIndex; break;
+		case TextureType_IrradianceMapTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
+		case TextureType_PrefilterMapTexture: sceneDataBuffer.PrefilterMapId = texture.bindlessTextureIndex; break;
+		}
+
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
-		textureMetaDataHeader.LayerCount = vulkanRenderPass.IsCubeMapRenderPass ? 6u : 1u;
+		textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 1;
-		sceneDataBuffer.CubeMapId = CubeMapTextureList.size();
+
 		CubeMapTextureList.emplace_back(texture);
 		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
 	}
 	else
 	{
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+		if (texture.textureType == TextureType_BRDFTexture)
+		{
+			sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
+		}
+
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
-		textureMetaDataHeader.LayerCount = vulkanRenderPass.IsCubeMapRenderPass ? 6u : 1u;
+		textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
 		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
 		textureMetaDataHeader.Type = 0;
 		TextureList.emplace_back(texture);

@@ -10,9 +10,6 @@
     "Materials/SparkManTileSetMaterial.json",
     "Materials/LavaCubeMapMaterial.json"
   ],
-  "LoadSkyBox": [
-    "SkyBoxes/LavaSkyBox.json"
-  ],
   "LoadSpriteVRAM": [
     "Sprites/AnimeGirl.json"
   ],

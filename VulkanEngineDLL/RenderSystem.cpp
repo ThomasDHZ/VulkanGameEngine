@@ -557,23 +557,18 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
         Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, x);
         if (texture.textureType == TextureType_IrradianceMapTexture)
         {
-            sceneDataBuffer.IrradianceMapId = textureSystem.CubeMapTextureList.size();
-            textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
             memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         }
         else if (texture.textureType == TextureType_PrefilterMapTexture)
         {
-            sceneDataBuffer.PrefilterMapId = textureSystem.CubeMapTextureList.size();
-            textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
             memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         }
         else if (texture.textureType == TextureType_SkyboxTexture)
         {
-            textureSystem.CubeMapTextureList.emplace_back(texture);
             renderedTextureList.emplace_back(texture);
             frameBufferTextureList.emplace_back(texture);
             memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
