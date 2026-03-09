@@ -134,10 +134,11 @@ public:
 	static constexpr uint									 BindlessDataDescriptorBinding = 1;
 	static constexpr uint									 CubeMapDescriptorBinding = 2;
 	static constexpr uint									 Texture2DBinding = 3;
+	static constexpr uint									 Texture3DBinding = 4;
 
 	static constexpr size_t									 Texture2DInitialCapacity = 32768;
-	static constexpr uint32_t Texture3DInitialCapacity = 4;     // tiny for testing
-	static constexpr uint32_t TextureCubeMapInitialCapacity = 128;
+	static constexpr uint32									 Texture3DInitialCapacity = 128; 
+	static constexpr uint32									 TextureCubeMapInitialCapacity = 128;
 
 	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;

@@ -10,8 +10,9 @@
 
 layout(constant_id = 0)  const uint DescriptorBindingType0  = SceneDataDescriptor;
 layout(constant_id = 1)  const uint DescriptorBindingType1  = MemoryPoolDescriptor;
-layout(constant_id = 2)  const uint DescriptorBindingType2  = TextureDescriptor;
-layout(constant_id = 3)  const uint DescriptorBindingType3  = SkyBoxDescriptor;
+layout(constant_id = 2)  const uint DescriptorBindingType2  = SkyBoxDescriptor;
+layout(constant_id = 3)  const uint DescriptorBindingType3  = TextureDescriptor;
+layout(constant_id = 4)  const uint DescriptorBindingType4  = Texture3DDescriptor;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
@@ -59,6 +60,8 @@ layout(binding = 1)  buffer BindlessBuffer
 } bindlessBuffer;
 layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
+layout(binding = 4) uniform sampler3D Texture3DMap[];
+
 
 layout(location = 0) out vec2 TexCoords;
 

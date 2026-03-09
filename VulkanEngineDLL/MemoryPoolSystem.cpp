@@ -195,20 +195,22 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
     Vector<VkDescriptorPoolSize> poolSizes = {
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
-        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture2DInitialCapacity + TextureCubeMapInitialCapacity + 1024},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture2DInitialCapacity + Texture3DInitialCapacity + TextureCubeMapInitialCapacity + 1024},
         {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 64}
     };
 
     Vector<VkDescriptorSetLayoutBinding> bindings =
     {
-        {SceneDataDescriptorBinding   , VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1,                             VK_SHADER_STAGE_ALL},
-        {BindlessDataDescriptorBinding, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1,                             VK_SHADER_STAGE_ALL},
-        {CubeMapDescriptorBinding     , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureCubeMapInitialCapacity, VK_SHADER_STAGE_ALL},
-        {Texture2DBinding             , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture2DInitialCapacity,      VK_SHADER_STAGE_ALL},
+        { SceneDataDescriptorBinding   , VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1,                             VK_SHADER_STAGE_ALL},
+        { BindlessDataDescriptorBinding, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1,                             VK_SHADER_STAGE_ALL},
+        { CubeMapDescriptorBinding     , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureCubeMapInitialCapacity, VK_SHADER_STAGE_ALL},
+        { Texture2DBinding             , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture2DInitialCapacity,      VK_SHADER_STAGE_ALL},
+        { Texture3DBinding             , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture3DInitialCapacity,      VK_SHADER_STAGE_ALL},
     };
 
     Vector<VkDescriptorBindingFlags> flags =
     {
+        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
         VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
         VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
         VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
@@ -222,7 +224,8 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
         .pBindingFlags = flags.data()
     };
 
-    VkDescriptorPoolCreateInfo poolInfo = {
+    VkDescriptorPoolCreateInfo poolInfo = 
+    {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
         .maxSets = 64,
@@ -231,7 +234,8 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
     };
     VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+    VkDescriptorSetLayoutCreateInfo layoutInfo = 
+    {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .pNext = &flagsInfo,
         .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
@@ -240,7 +244,8 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
     };
     VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
 
-    VkDescriptorSetAllocateInfo allocInfo = {
+    VkDescriptorSetAllocateInfo allocInfo = 
+    {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
         .descriptorPool = memoryPoolSystem.GlobalBindlessPool,
         .descriptorSetCount = 1,
