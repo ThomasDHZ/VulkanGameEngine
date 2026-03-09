@@ -185,7 +185,6 @@ void MaterialBakerSystem::CleanRenderPass()
         for (auto& dsl : vulkanRenderPipeline.DescriptorSetLayoutList) {
             vkDestroyDescriptorSetLayout(vulkanSystem.Device, dsl, nullptr);
         }
-        vkDestroyDescriptorPool(vulkanSystem.Device, vulkanRenderPipeline.DescriptorPool, nullptr);
     }
 }
 
@@ -591,7 +590,6 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     vulkanRenderPipeline = VulkanPipeline
     {
         .RenderPipelineId = renderPipelineLoader.PipelineId,
-        .DescriptorPool = descriptorPool,
         .DescriptorSetLayoutList = descriptorSetLayoutList,
         .DescriptorSetList = descriptorSetList,
         .Pipeline = pipeline,

@@ -99,7 +99,6 @@ struct RenderPassAttachementTextures
 struct VulkanPipeline
 {
     VkGuid RenderPipelineId;
-    VkDescriptorPool DescriptorPool = VK_NULL_HANDLE;
     Vector<VkDescriptorSetLayout> DescriptorSetLayoutList = Vector<VkDescriptorSetLayout>();
     Vector<VkDescriptorSet> DescriptorSetList = Vector<VkDescriptorSet>();
     VkPipeline Pipeline = VK_NULL_HANDLE;
