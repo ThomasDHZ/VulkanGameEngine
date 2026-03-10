@@ -255,10 +255,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
     VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
 
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", true);
-    renderSystem.GenerateTexture(brdfRenderPassId);
+    textureSystem.GenerateTexture(brdfRenderPassId);
 
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
-    renderSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
+    textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
 
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", true);
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", true);

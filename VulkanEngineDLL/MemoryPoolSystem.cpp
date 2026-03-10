@@ -316,7 +316,8 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
         vmaFlushAllocation(bufferSystem.vmaAllocator, bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).Allocation, 0, sizeof(SceneDataBuffer));
         IsSceneBufferDirty = false;
     }
-    else if (!MappedBufferPtr)
+
+    if (!MappedBufferPtr)
     {
         return;
     }
@@ -345,11 +346,7 @@ void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
 
     if (IsDescriptorSetDirty)
     {
-        auto info = GetBindlessDataBufferDescriptor();
-        for (auto& pipeline : pipelineList)
-        {
-            renderSystem.UpdateDescriptorSet(pipeline, info, 0, BindlessDataDescriptorBinding);
-        }
+        UpdateDataBufferDescriptorSet(GpuDataBufferIndex, BindlessDataDescriptorBinding);
         IsDescriptorSetDirty = false;
     }
 }

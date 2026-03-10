@@ -138,6 +138,7 @@
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="MaterialBakerSystem.cpp" />
+    <ClCompile Include="MaterialMemoryPoolSystem.cpp" />
     <ClCompile Include="TextureBakerSystem.cpp" />
     <ClCompile Include="TextureSamplers.cpp" />
   </ItemGroup>
@@ -148,6 +149,7 @@
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h" />
     <ClInclude Include="MaterialBakerSystem.h" />
+    <ClInclude Include="MaterialMemoryPoolSystem.h" />
     <ClInclude Include="TextureBakerSystem.h" />
     <ClInclude Include="TextureSamplers.h" />
   </ItemGroup>

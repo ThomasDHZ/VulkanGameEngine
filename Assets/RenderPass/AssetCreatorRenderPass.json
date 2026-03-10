@@ -234,7 +234,7 @@
     {
       "TextureAttachment": 1,
       "Color": {
-        "Float32_0": 0.0,
+        "Float32_0": 1.0,
         "Float32_1": 1.0,
         "Float32_2": 0.0,
         "Float32_3": 1.0

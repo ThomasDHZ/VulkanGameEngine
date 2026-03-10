@@ -11,6 +11,7 @@
 #include "JsonStruct.h"
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include "MemoryPoolSystem.h"
+#include "MeshSystem.h"
 
 TextureSystem& textureSystem = TextureSystem::Get();
 
@@ -611,23 +612,25 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	}
 	else
 	{
-		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
-
-		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		if (texture.textureType == TextureType_BRDFTexture)
+		if (!renderSystem.UsingMaterialBaker)
 		{
-			sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
-		}
+			texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+			SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+			if (texture.textureType == TextureType_BRDFTexture)
+			{
+				sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
+			}
 
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
-		textureMetaDataHeader.Width = texture.width;
-		textureMetaDataHeader.Height = texture.height;
-		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
-		textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
-		textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
-		textureMetaDataHeader.Type = 0;
-		TextureList.emplace_back(texture);
-		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+			TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+			textureMetaDataHeader.Width = texture.width;
+			textureMetaDataHeader.Height = texture.height;
+			textureMetaDataHeader.MipLevels = texture.mipMapLevels;
+			textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
+			textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
+			textureMetaDataHeader.Type = 0;
+			TextureList.emplace_back(texture);
+			memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+		}
 	}
 	return texture;
 }
@@ -1173,4 +1176,257 @@ bool TextureSystem::HasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D16_UNORM_S8_UINT ||
 		format == VK_FORMAT_D24_UNORM_S8_UINT ||
 		format == VK_FORMAT_D32_SFLOAT_S8_UINT;
+}
+
+
+void TextureSystem::GenerateTexture(VkGuid& renderPassId)
+{
+	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
+	VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
+
+	if (renderPassTexture.empty())
+	{
+		std::cerr << "[GenerateTexture] No render texture found for pass " << renderPassId.ToString() << std::endl;
+		return;
+	}
+
+	VkImage targetImage = renderPassTexture[0].textureImage;
+
+	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	VkFence fence = VK_NULL_HANDLE;
+
+	auto cleanup = [&]() {
+		if (commandBuffer != VK_NULL_HANDLE) {
+			vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+			commandBuffer = VK_NULL_HANDLE;
+		}
+		if (fence != VK_NULL_HANDLE) {
+			vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+			fence = VK_NULL_HANDLE;
+		}
+		};
+
+	VkCommandBufferAllocateInfo allocInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+		.commandPool = vulkanSystem.CommandPool,
+		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+		.commandBufferCount = 1
+	};
+
+	if (vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+		std::cerr << "[GenerateTexture] Failed to allocate command buffer" << std::endl;
+		cleanup();
+		return;
+	}
+
+	VkCommandBufferBeginInfo beginInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+	};
+
+
+	VkViewport viewport
+	{
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = static_cast<float>(renderPass.RenderPassResolution.x),
+		.height = static_cast<float>(renderPass.RenderPassResolution.y),
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f
+	};
+
+	VkRect2D scissor
+	{
+		.offset = {0, 0},
+		.extent =
+		{
+			static_cast<uint32_t>(renderPass.RenderPassResolution.x),
+			static_cast<uint32_t>(renderPass.RenderPassResolution.y)
+		}
+	};
+
+	VkRenderPassBeginInfo renderPassBeginInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.renderPass = renderPass.RenderPass,
+		.framebuffer = renderPass.FrameBufferList[0],
+		.renderArea = {
+			.offset = {0, 0},
+			.extent = {
+				static_cast<uint32_t>(renderPass.RenderPassResolution.x),
+				static_cast<uint32_t>(renderPass.RenderPassResolution.y)
+			}
+		},
+		.clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
+		.pClearValues = renderPass.ClearValueList.data()
+	};
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+		std::cerr << "[GenerateTexture] Failed to begin command buffer" << std::endl;
+		cleanup();
+		return;
+	}
+
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, static_cast<uint32_t>(pipeline.DescriptorSetList.size()), pipeline.DescriptorSetList.data(), 0, nullptr);
+	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+	vkCmdEndRenderPass(commandBuffer);
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+		std::cerr << "[GenerateTexture] Failed to end command buffer" << std::endl;
+		cleanup();
+		return;
+	}
+
+	VkFenceCreateInfo fenceCreateInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		.flags = 0
+	};
+
+	if (vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)
+	{
+		std::cerr << "[GenerateTexture] Failed to create fence" << std::endl;
+		cleanup();
+		return;
+	}
+
+	VkSubmitInfo submitInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &commandBuffer
+	};
+
+	if (vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
+	{
+		std::cerr << "[GenerateTexture] Failed to submit queue" << std::endl;
+		cleanup();
+		return;
+	}
+
+	if (vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		std::cerr << "[GenerateTexture] Failed to wait for fence" << std::endl;
+		cleanup();
+		return;
+	}
+
+	vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+	vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+	commandBuffer = VK_NULL_HANDLE;
+	fence = VK_NULL_HANDLE;
+}
+
+void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
+{
+	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
+	VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
+
+	if (renderPassTexture.empty() || renderPassTexture[0].textureImage == VK_NULL_HANDLE)
+	{
+		std::cerr << "[GenerateCubeMapTexture] No valid cubemap texture found for pass " << renderPassId.ToString() << std::endl;
+		return;
+	}
+
+	Texture& targetCubemap = renderPassTexture[0];
+	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	VkFence fence = VK_NULL_HANDLE;
+
+	auto cleanup = [&]()
+		{
+			if (commandBuffer != VK_NULL_HANDLE) {
+				vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+			}
+			if (fence != VK_NULL_HANDLE) {
+				vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+			}
+		};
+
+	VkCommandBufferAllocateInfo allocInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+		.commandPool = vulkanSystem.CommandPool,
+		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+		.commandBufferCount = 1
+	};
+	VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer));
+
+	VkCommandBufferBeginInfo beginInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+	};
+	VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+
+	VkViewport viewport{
+		.x = 0.0f, .y = 0.0f,
+		.width = static_cast<float>(renderPass.RenderPassResolution.x),
+		.height = static_cast<float>(renderPass.RenderPassResolution.y),
+		.minDepth = 0.0f, .maxDepth = 1.0f
+	};
+	VkRect2D scissor{
+		.offset = {0, 0},
+		.extent = {
+			static_cast<uint32_t>(renderPass.RenderPassResolution.x),
+			static_cast<uint32_t>(renderPass.RenderPassResolution.y)
+		}
+	};
+
+	VkRenderPassBeginInfo renderPassBeginInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.renderPass = renderPass.RenderPass,
+		.framebuffer = renderPass.FrameBufferList[0],
+		.renderArea = scissor,
+		.clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
+		.pClearValues = renderPass.ClearValueList.data()
+	};
+
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout, 0, static_cast<uint32_t>(skyboxPipeline.DescriptorSetList.size()), skyboxPipeline.DescriptorSetList.data(), 0, nullptr);
+	const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
+	if (!skyBoxList.empty())
+	{
+		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyBoxList.front().SharedAssetId);
+		const VkBuffer& vb = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+		const VkBuffer& ib = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+		VkDeviceSize offsets[] = { 0 };
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vb, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, ib, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
+	}
+	vkCmdEndRenderPass(commandBuffer);
+	VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+
+	VkFenceCreateInfo fenceInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+	VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceInfo, nullptr, &fence));
+
+	VkSubmitInfo submitInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &commandBuffer
+	};
+	VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+	VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+	cleanup();
+
+	Vector<Texture>& cubeMapList = textureSystem.FindRenderedTextureList(renderPassId);
+	VkCommandBuffer commandBuffer2 = vulkanSystem.BeginSingleUseCommand();
+	for (auto& cubeMap : cubeMapList)
+	{
+		textureSystem.TransitionImageLayout(commandBuffer2, cubeMap, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, cubeMap.mipMapLevels, 0, 6);
+	}
+	vulkanSystem.EndSingleUseCommand(commandBuffer2);
 }

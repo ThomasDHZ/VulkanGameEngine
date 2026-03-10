@@ -117,7 +117,6 @@ private:
 	MemoryPoolSystem(MemoryPoolSystem&&) = delete;
 	MemoryPoolSystem& operator=(MemoryPoolSystem&&) = delete;
 
-
 	static constexpr size_t									 MeshInitialCapacity = 4;
 	static constexpr size_t									 MaterialInitialCapacity = 4;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
@@ -147,14 +146,14 @@ public:
 	VkDescriptorSetLayout									 GlobalDescriptorSetLayout2 = VK_NULL_HANDLE;
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;
-	void* SceneDataPtr = nullptr;
+	void*													 SceneDataPtr = nullptr;
 	bool													 IsSceneBufferDirty = true;
 
 	uint32													 GpuDataBufferIndex = UINT32_MAX;
 	size_t													 GpuDataBufferMemoryPoolSize = UINT32_MAX;
 	MemoryPoolBufferHeader									 GpuDataMemoryPoolHeader;
 	Vector<byte>											 GpuDataBufferMemoryPool;
-	void* MappedBufferPtr = nullptr;
+	void*													 MappedBufferPtr = nullptr;
 	bool													 IsHeaderDirty = true;
 	bool													 IsDescriptorSetDirty = true;
 

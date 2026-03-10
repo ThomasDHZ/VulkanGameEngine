@@ -39,6 +39,9 @@
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
       <Filter>Source Files\External</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialMemoryPoolSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MaterialBakerSystem.h">
@@ -64,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h">
       <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialMemoryPoolSystem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
