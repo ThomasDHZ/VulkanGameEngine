@@ -16,13 +16,6 @@ uint32 MeshSystem::GetNextMeshId()
 	return MeshList.size();
 }
 
-void MeshSystem::StartUp()
-{
-	//ObjectDataPool.CreateMemoryPool(4096, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-	//constexpr size_t InitialCapacity = 4096;
-	//MeshPropertiesPool.CreateMemoryPool(InitialCapacity, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-}
-
 uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
 {
 	uint meshId = meshSystem.GetNextMeshId();

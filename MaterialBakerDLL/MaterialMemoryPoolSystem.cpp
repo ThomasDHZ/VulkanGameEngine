@@ -302,6 +302,14 @@ void MaterialMemoryPoolSystem::FreeObject(MaterialBakerMemoryPoolTypes memoryPoo
     }
 }
 
+void MaterialMemoryPoolSystem::BakerResetMemoryPool()
+{
+    MaterialMemoryPoolSize = UINT32_MAX;
+    MemorySubPoolHeader.clear();
+    MaterialPoolHeader = MaterialBakerBufferHeader();
+    MaterialBufferMemoryPool.clear();
+}
+
 void MaterialMemoryPoolSystem::CreateMaterialBakerBindlessDescriptorSet()
 {
     VkDescriptorBufferInfo materialInfo = 

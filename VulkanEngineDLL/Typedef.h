@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 #include "VkGuid.h"
+#include <entt/entt.hpp>
 
 typedef uint32_t uint;
 typedef uint8_t  uint8;
@@ -54,4 +55,3 @@ typedef uint RenderPassId;
 typedef uint RenderPipelineId;
 typedef uint LevelId;
 typedef uint AnimationListId;
-

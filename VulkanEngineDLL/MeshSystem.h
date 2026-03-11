@@ -1,9 +1,9 @@
 #pragma once
 #include "Platform.h"
 #include "ShaderSystem.h"
-#include "MemoryPool.h"
 #include "MemoryPoolSystem.h"
 #include <xxhash.h>
+#include <entt/entt.hpp>
 
 enum MeshTypeEnum
 {
@@ -22,6 +22,7 @@ enum VertexLayoutEnum
 	kVertexLayout_SkyBoxVertex,
 	kVertexLayout_Undefined
 };
+
 
 struct NullVertexLayout
 {
@@ -116,7 +117,6 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	DLL_EXPORT void StartUp();
 	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
 	DLL_EXPORT void Update(const float& deltaTime);
 	DLL_EXPORT void Destroy(uint meshId);

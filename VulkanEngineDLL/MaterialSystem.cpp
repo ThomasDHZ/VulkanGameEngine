@@ -7,13 +7,6 @@
 
 MaterialSystem& materialSystem = MaterialSystem::Get();
 
-void MaterialSystem::StartUp()
-{
-    //constexpr size_t InitialCapacity = 65536;
-    //MaterialPool.CreateMemoryPool(InitialCapacity, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-
-}
-
 VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
 {
     if (materialPath.empty()) return VkGuid::Empty();

@@ -129,9 +129,6 @@
     <ClInclude Include="..\External\ktx\include\ktxvulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\External\xxHash\xxhash.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>

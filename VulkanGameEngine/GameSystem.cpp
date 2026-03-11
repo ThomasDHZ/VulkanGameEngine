@@ -52,9 +52,6 @@ void GameSystem::StartUp(void* windowHandle)
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
-    meshSystem.StartUp();
-    materialSystem.StartUp();
-    lightSystem.StartUp();
     memoryPoolSystem.StartUp();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
@@ -64,7 +61,6 @@ void GameSystem::StartUp(void* windowHandle)
 }
 
 #ifndef __ANDROID__
-void Update(float deltaTime);
 void GameSystem::Update(float deltaTime)
 {
     inputSystem.Update(deltaTime);

@@ -3,7 +3,6 @@
 #include "BufferSystem.h"
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
-#include "MemoryPool.h"
 
 struct Material
 {
@@ -50,7 +49,6 @@ private:
 
     public:
 
-        DLL_EXPORT void StartUp();
         DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
         DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline);
         DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;

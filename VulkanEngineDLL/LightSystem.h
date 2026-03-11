@@ -1,8 +1,8 @@
 #pragma once
 #include "Platform.h"
 #include "JsonStruct.h"
-#include "MemoryPool.h"
 #include "MemoryPoolSystem.h"
+
 enum LightTypeEnum
 {
     kDirectionalLight,
@@ -44,8 +44,6 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-
-    DLL_EXPORT void StartUp();
     DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList);
     DLL_EXPORT void LoadSceneLights(const String& directionalLightPath);
 };

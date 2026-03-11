@@ -33,6 +33,27 @@ struct Sprite
     bool IsSpritePropertiesDirty = true;
 };
 
+struct SpriteTransform2DComponent 
+{
+    glm::vec2 position{ 0.0f };
+    float rotation = 0.0f;
+    glm::vec2 scale{ 1.0f };
+};
+
+struct SpriteComponent 
+{
+    VkGuid spriteVramId;
+    uint32 currentAnimationId = 0;
+    uint32 currentFrame = 0;
+    float frameTimeAccumulator = 0.0f;
+    bool flipX = false;
+    bool flipY = false;
+    int layer = 0;
+    glm::vec4 tint{ 1.0f };
+};
+
+struct RenderableTag {};
+
 class SpriteSystem
 {
 public:
@@ -62,6 +83,9 @@ public:
     Vector<SpriteVram>                                SpriteVramList;
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
+
+    DLL_EXPORT entt::entity CreateSprite(entt::registry& registry, VkGuid spriteVramId, vec2 pos, int layer = 0, vec4 tint = vec4{ 1.0f });
+    DLL_EXPORT void UpdateSprites(entt::registry& registry, float dt);
 
     DLL_EXPORT void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
     DLL_EXPORT VkGuid LoadSpriteVRAM(const String& spriteVramPath);

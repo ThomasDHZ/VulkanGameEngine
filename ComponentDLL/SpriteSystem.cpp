@@ -50,6 +50,30 @@ void SpriteSystem::AddSpriteBatchLayer()
         });
 }
 
+//entt::entity SpriteSystem::CreateSprite(entt::registry& registry, VkGuid spriteVramId, vec2 pos, int layer, vec4 tint)
+//{
+//    entt::entity entity = registry.create();
+//    registry.emplace<SpriteComponent>(entity, spriteVramId, 0, 0, 0.0f, false, false, layer, tint);
+//    registry.emplace<Transform2DComponent>(entity, pos, 0.0f, glm::vec2(1.0f));
+//    registry.emplace<RenderableTag>(entity);
+//    return entity;
+//}
+//
+//void UpdateSprites(entt::registry& registry, float deltaTime)
+//{
+//    registry.view<SpriteComponent>().each([&](SpriteComponent& sprite)
+//        {
+//            sprite.frameTimeAccumulator += deltaTime;
+//            const SpriteVram& vram = spriteSystem.FindSpriteVram(sprite.spriteVramId);
+//            const Animation2D& anim = spriteSystem.FindSpriteAnimation(vram.VramSpriteID, sprite.currentAnimationId);
+//            const AnimationFrames& frame = anim.FrameList[sprite.currentFrame];
+//            if (s.frameTimeAccumulator >= frame.duration) 
+//            {
+//                s.currentFrame = (s.currentFrame + 1) % anim.FrameList.size();
+//                s.frameTimeAccumulator = 0.0f;
+//            }
+//        });
+//}
 void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 {
 

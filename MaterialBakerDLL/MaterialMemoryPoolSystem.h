@@ -92,6 +92,7 @@ public:
     //static constexpr uint									              BakerTexture3DBinding = 2;
     //static constexpr uint									              BakerTextureCubeMapBinding = 3;
 
+    void*                                                                 MaterialBufferPtr = nullptr;
     bool													              IsHeaderDirty = true;
     bool													              IsDescriptorSetDirty = true;
 
@@ -103,7 +104,6 @@ public:
     size_t													              MaterialMemoryPoolSize = UINT32_MAX;
     UnorderedMap<MaterialBakerMemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
     MaterialBakerBufferHeader									          MaterialPoolHeader;
-    void* MaterialBufferPtr = nullptr;
     Vector<byte>											              MaterialBufferMemoryPool;
 
     DLL_EXPORT void											              StartUp();
@@ -113,6 +113,7 @@ public:
     DLL_EXPORT void											              UpdateTextureDescriptorSet(Texture& texture, uint binding);
     DLL_EXPORT void											              UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
     DLL_EXPORT void											              FreeObject(MaterialBakerMemoryPoolTypes memoryPoolToUpdate, uint32 index);
+    DLL_EXPORT void                                                       BakerResetMemoryPool();
 
 };
 extern DLL_EXPORT MaterialMemoryPoolSystem& materialMemoryPoolSystem;

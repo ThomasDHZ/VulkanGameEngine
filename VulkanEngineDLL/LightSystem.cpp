@@ -6,13 +6,6 @@
 
 LightSystem& lightSystem = LightSystem::Get();
 
-void LightSystem::StartUp()
-{
-    //constexpr size_t InitialCapacity = 4096;
-    //DirectionalLightPool.CreateMemoryPool(InitialCapacity, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    //PointLightPool.CreateMemoryPool(InitialCapacity, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-}
-
 void LightSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
 {
 

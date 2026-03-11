@@ -188,7 +188,6 @@
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="InputSystem.h" />
-    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SystemClock.h" />
     <ClInclude Include="TimeSystem.h" />

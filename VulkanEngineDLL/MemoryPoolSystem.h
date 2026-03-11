@@ -142,8 +142,6 @@ public:
 	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
-	VkDescriptorSet											 GlobalDescriptorSet2 = VK_NULL_HANDLE;
-	VkDescriptorSetLayout									 GlobalDescriptorSetLayout2 = VK_NULL_HANDLE;
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;
 	void*													 SceneDataPtr = nullptr;

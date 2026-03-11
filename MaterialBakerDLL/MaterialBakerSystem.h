@@ -29,7 +29,7 @@ private:
     void                                    TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel = 0, uint32 levelCount = VK_REMAINING_MIP_LEVELS);
     void                                    CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount);
     void                                    CreateTextureView(Texture& texture, VkImageAspectFlags imageAspectFlags);
-    Texture                                 LoadTexture(TextureLoader textureLoader);
+    Texture                                 LoadTexture(TextureLoader textureLoader, VkSampler sampler);
     void                                    LoadMaterial(const String& materialPath);
     void                                    CleanInputResources();
     void                                    CleanRenderPass();

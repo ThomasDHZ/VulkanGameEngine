@@ -18,7 +18,6 @@ void MaterialBakerSystem::Run()
     Vector<String> ext = { "json" };
     Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String>{configSystem.TextureAssetRenderer});
-    materialMemoryPoolSystem.StartUp();
     renderSystem.UsingMaterialBaker = true;
     for (auto& materialPath : materialFiles)
     {
@@ -29,6 +28,7 @@ void MaterialBakerSystem::Run()
         ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
         /*  if (UpdateNeeded(materialPath))
           {*/
+        materialMemoryPoolSystem.StartUp();
         LoadMaterial(materialPath);
         BuildRenderPass(resolution);
        // vulkanSystem.StartFrame();
@@ -38,6 +38,7 @@ void MaterialBakerSystem::Run()
         textureBakerSystem.BakeTexture(materialPath, finalFilePath.string(), vulkanRenderPass.RenderPassId);
         vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
         CleanRenderPass();
+        materialMemoryPoolSystem.BakerResetMemoryPool();
       //  CleanInputResources();
 
         std::cout << "Baked: " << src.filename() << std::endl;
@@ -47,12 +48,6 @@ void MaterialBakerSystem::Run()
             continue;
         }*/
     }
-
-    for (auto dsl : vulkanRenderPipeline.DescriptorSetLayoutList) 
-    {
-        vkDestroyDescriptorSetLayout(vulkanSystem.Device, dsl, nullptr);
-    }
-    vulkanRenderPipeline.DescriptorSetLayoutList.clear();
 }
 
 bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
@@ -217,6 +212,12 @@ void MaterialBakerSystem::CleanRenderPass()
     vkDestroyPipelineLayout(vulkanSystem.Device, vulkanRenderPipeline.PipelineLayout, nullptr);
     vulkanRenderPipeline.PipelineLayout = VK_NULL_HANDLE;
     vulkanRenderPass = VulkanRenderPass{};
+
+    for (auto dsl : vulkanRenderPipeline.DescriptorSetLayoutList)
+    {
+        vkDestroyDescriptorSetLayout(vulkanSystem.Device, dsl, nullptr);
+    }
+    vulkanRenderPipeline.DescriptorSetLayoutList.clear();
 }
 
 void MaterialBakerSystem::LoadMaterial(const String& materialPath)
@@ -245,62 +246,62 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
 
     if (!json["AlbedoMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["AlbedoMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["AlbedoMap"].get<TextureLoader>(), TextureSamplers::GetImportAlbedoMapSamplerSettings()));
         material.AlbedoMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["MetallicMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["MetallicMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["MetallicMap"].get<TextureLoader>(), TextureSamplers::GetImportPackedORMMapSamplerSettings()));
         material.MetallicMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["RoughnessMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["RoughnessMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["RoughnessMap"].get<TextureLoader>(), TextureSamplers::GetImportPackedORMMapSamplerSettings()));
         material.RoughnessMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["ThicknessMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["ThicknessMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["ThicknessMap"].get<TextureLoader>(), TextureSamplers::GetImportThicknessMapSamplerSettings()));
         material.ThicknessMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["SubSurfaceScatteringColorMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["SubSurfaceScatteringColorMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["SubSurfaceScatteringColorMap"].get<TextureLoader>(), TextureSamplers::GetImportSubSurfaceScatteringMapSamplerSettings()));
         material.SubSurfaceScatteringColorMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["SheenMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["SheenMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["SheenMap"].get<TextureLoader>(), TextureSamplers::GetImportSheenMapSamplerSettings()));
         material.SheenMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["ClearCoatMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["ClearCoatMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["ClearCoatMap"].get<TextureLoader>(), TextureSamplers::GetImportClearCoatMapSamplerSettings()));
         material.ClearCoatMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["AmbientOcclusionMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["AmbientOcclusionMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["AmbientOcclusionMap"].get<TextureLoader>(), TextureSamplers::GetImportPackedORMMapSamplerSettings()));
         material.AmbientOcclusionMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["NormalMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["NormalMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["NormalMap"].get<TextureLoader>(), TextureSamplers::GetImportNormalMapSamplerSettings()));
         material.NormalMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["AlphaMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["AlphaMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["AlphaMap"].get<TextureLoader>(), TextureSamplers::GetImportAlphaMapSamplerSettings()));
         material.AlphaMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["EmissionMap"].is_null())
     {
-        TextureList.emplace_back(LoadTexture(json["EmissionMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["EmissionMap"].get<TextureLoader>(), TextureSamplers::GetImportEmissionMapSamplerSettings()));
         material.EmissionMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["HeightMap"].is_null()) 
     {
-        TextureList.emplace_back(LoadTexture(json["HeightMap"].get<TextureLoader>()));
+        TextureList.emplace_back(LoadTexture(json["HeightMap"].get<TextureLoader>(), TextureSamplers::GetImportParallaxMapSamplerSettings()));
         material.HeightMap = TextureList.back().bindlessTextureIndex;
     }
     materialMemoryPoolSystem.IsHeaderDirty = true;
@@ -602,7 +603,7 @@ void MaterialBakerSystem::CreateTextureView(Texture& texture, VkImageAspectFlags
     texture.textureViewList.emplace_back(imageView);
 }
 
-Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
+Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader, VkSampler sampler)
 {
     int width = 0;
     int height = 0;
@@ -623,6 +624,7 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
         .height = height,
         .depth = 1,
         .mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+        .textureSampler = sampler,
         .textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
         .textureByteFormat = textureLoader.TextureByteFormat,
         .textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -652,23 +654,9 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
     };
     if (texture.mipMapLevels > 1) imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-    switch (texture.textureIndex)
-    {
-        case 0: texture.textureSampler = TextureSamplers::GetImportAlbedoMapSamplerSettings(); break;
-        case 1: texture.textureSampler = TextureSamplers::GetImportNormalMapSamplerSettings(); break;
-        case 2: texture.textureSampler = TextureSamplers::GetImportPackedORMMapSamplerSettings(); break;
-        case 3: texture.textureSampler = TextureSamplers::GetImportParallaxMapSamplerSettings(); break;
-        case 4: texture.textureSampler = TextureSamplers::GetImportAlphaMapSamplerSettings(); break;
-        case 5: texture.textureSampler = TextureSamplers::GetImportThicknessMapSamplerSettings(); break;
-        case 6: texture.textureSampler = TextureSamplers::GetImportSubSurfaceScatteringMapSamplerSettings(); break;
-        case 7: texture.textureSampler = TextureSamplers::GetImportSheenMapSamplerSettings(); break;
-        case 8: texture.textureSampler = TextureSamplers::GetImportClearCoatMapSamplerSettings(); break;
-        case 9: texture.textureSampler = TextureSamplers::GetImportEmissionMapSamplerSettings(); break;
-    }
     CreateTextureImage(texture, imageCreateInfo, textureData, textureLoader.TextureFilePath.size());
     CreateTextureView(texture, textureLoader.ImageType);
     materialMemoryPoolSystem.UpdateTextureDescriptorSet(texture, materialMemoryPoolSystem.BakerTexture2DBinding);
-
     TransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS);
     texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     return texture;
