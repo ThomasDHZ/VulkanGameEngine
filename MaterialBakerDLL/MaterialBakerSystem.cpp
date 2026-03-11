@@ -12,54 +12,44 @@ MaterialBakerSystem& materialBakerSystem = MaterialBakerSystem::Get();
 
 void MaterialBakerSystem::Run()
 {
-    std::cout << "Run Built" << std::endl;
     const String inDir = configSystem.MaterialSourceDirectory.c_str();
     std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
     std::filesystem::create_directories(outDir);
-    std::cout << "create_directories Built" << std::endl;
     Vector<String> ext = { "json" };
     Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
-    std::cout << "GetFilesFromDirectory Built" << std::endl;
     shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String>{configSystem.TextureAssetRenderer});
-    std::cout << "LoadShaderPipelineStructPrototypes Built" << std::endl;
     materialMemoryPoolSystem.StartUp();
-    std::cout << "materialMemoryPoolSystem Built" << std::endl;
     renderSystem.UsingMaterialBaker = true;
-  /*  for (auto& materialPath : materialFiles)
-    {*/
+    for (auto& materialPath : materialFiles)
+    {
         std::filesystem::path src = materialFiles[0];
         nlohmann::json json = fileSystem.LoadJsonFile(materialFiles[0].c_str());
         std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
         std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
         ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
-      /*  if (UpdateNeeded(materialPath))
-        {*/
-        std::cout << "Before LoadMaterial Built" << std::endl;
-            LoadMaterial(materialFiles[0]);
-            std::cout << "LoadMaterial Built" << std::endl;
-            CleanRenderPass();
-            std::cout << "CleanRenderPass Built" << std::endl;
-            BuildRenderPass(resolution);
-            std::cout << "BuildRenderPass Built" << std::endl;
-      //       vulkanSystem.StartFrame();
-  /*          VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-            Draw(commandBuffer);
-            vulkanSystem.EndFrame(commandBuffer);*/
-          //  textureBakerSystem.BakeTexture(materialFiles[0], finalFilePath.string(), vulkanRenderPass.RenderPassId);
-          //  CleanInputResources();
+        /*  if (UpdateNeeded(materialPath))
+          {*/
+        LoadMaterial(materialFiles[0]);
+        CleanRenderPass();
+        BuildRenderPass(resolution);
+      //  vulkanSystem.StartFrame();
+        VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+        Draw(commandBuffer);
+       // vulkanSystem.EndFrame(commandBuffer);
+        textureBakerSystem.BakeTexture(materialFiles[0], finalFilePath.string(), vulkanRenderPass.RenderPassId);
+        //  CleanInputResources();
 
-            std::cout << "Baked: " << src.filename() << std::endl;
- /*       }
-        else
+        std::cout << "Baked: " << src.filename() << std::endl;
+        //}
+       /* else
         {
             continue;
         }*/
-    //}
+    }
 }
 
 bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
 {
-
     std::filesystem::path src = materialPath;
     std::filesystem::path dst = std::regex_replace(materialPath, std::regex("Import"), "");
     if (!std::filesystem::exists(dst))
@@ -108,32 +98,70 @@ bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
             return true;
         }
     }
-
-    printf("No update needed for %s\n", materialPath.c_str());
     return false;
 }
 
 void MaterialBakerSystem::Draw(VkCommandBuffer cmd)
 {
-    // Safety checks first
-    if (vulkanRenderPass.RenderPass == VK_NULL_HANDLE || 
-        vulkanRenderPass.FrameBufferList.empty() || 
-        vulkanRenderPass.FrameBufferList[0] == VK_NULL_HANDLE) {
-        std::cerr << "[Baker] Invalid render pass/fb\n";
-        return;
-    }
+    VkCommandBufferBeginInfo beginInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+    };
 
-    // Transition ALL input textures RIGHT HERE in the same cmd buffer
-    for (auto& tex : TextureList) {
-        if (tex.textureImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            VkImageMemoryBarrier barrier = {
+    VkViewport viewport
+    {
+        .x = 0.0f,
+        .y = 0.0f,
+        .width = static_cast<float>(vulkanRenderPass.RenderPassResolution.x),
+        .height = static_cast<float>(vulkanRenderPass.RenderPassResolution.y),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+
+    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = vulkanRenderPass.RenderPass,
+        .framebuffer = vulkanRenderPass.FrameBufferList[0],
+        .renderArea = VkRect2D
+        {
+           .offset = VkOffset2D {.x = 0, .y = 0 },
+           .extent = VkExtent2D {.width = static_cast<uint>(vulkanRenderPass.RenderPassResolution.x), .height = static_cast<uint>(vulkanRenderPass.RenderPassResolution.y) }
+        },
+        .clearValueCount = static_cast<uint32>(vulkanRenderPass.ClearValueList.size()),
+        .pClearValues = vulkanRenderPass.ClearValueList.data()
+    };
+
+    VkFenceCreateInfo fenceCreateInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = 0
+    };
+
+    VkFence fence = VK_NULL_HANDLE;
+    VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+    VkSubmitInfo submitInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBuffer,
+    };
+
+    for (auto& tex : TextureList)
+    {
+        if (tex.textureImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            VkImageMemoryBarrier barrier =
+            {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                 .oldLayout = tex.textureImageLayout,
                 .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .image = tex.textureImage,
-                .subresourceRange = {
+                .subresourceRange =
+                {
                     .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                     .baseMipLevel = 0,
                     .levelCount = tex.mipMapLevels,
@@ -141,68 +169,23 @@ void MaterialBakerSystem::Draw(VkCommandBuffer cmd)
                     .layerCount = 1
                 }
             };
-
-            vkCmdPipelineBarrier(cmd,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,           // assume copies happened earlier
-                                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,    // before fragment shader reads
-                                 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
             tex.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            std::cout << "[Baker] Transitioned texture " << tex.bindlessTextureIndex 
-                      << " to SHADER_READ_ONLY\n";
         }
     }
 
-    // Now safe to begin render pass
-    VkViewport viewport = {0,0, (float)vulkanRenderPass.RenderPassResolution.x, (float)vulkanRenderPass.RenderPassResolution.y, 0,1};
-    VkRect2D scissor = {{0,0}, {vulkanRenderPass.RenderPassResolution.x, vulkanRenderPass.RenderPassResolution.y}};
-
-    VkRenderPassBeginInfo rpBegin = {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = vulkanRenderPass.RenderPass,
-        .framebuffer = vulkanRenderPass.FrameBufferList[0],
-        .renderArea = scissor,
-        .clearValueCount = (uint32_t)vulkanRenderPass.ClearValueList.size(),
-        .pClearValues = vulkanRenderPass.ClearValueList.data()
-    };
-
-    vkCmdBeginRenderPass(cmd, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdSetViewport(cmd, 0, 1, &viewport);
-    vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.Pipeline);
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            vulkanRenderPipeline.PipelineLayout, 0,
-                            (uint32_t)vulkanRenderPipeline.DescriptorSetList.size(),
-                            vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
-
-    vkCmdDraw(cmd, 3, 1, 0, 0);
-
-    vkCmdEndRenderPass(cmd);
-
-
-    std::cout << "Run Built" << std::endl;
-    const String inDir = configSystem.MaterialSourceDirectory.c_str();
-    std::filesystem::path outDir = configSystem.MaterialDstDirectory.c_str();
-    std::filesystem::create_directories(outDir);
-    std::cout << "create_directories Built" << std::endl;
-    Vector<String> ext = { "json" };
-    Vector<String> materialFiles = fileSystem.GetFilesFromDirectory(configSystem.MaterialSourceDirectory.c_str(), ext);
-    std::cout << "GetFilesFromDirectory Built" << std::endl;
-    shaderSystem.LoadShaderPipelineStructPrototypes(Vector<String>{configSystem.TextureAssetRenderer});
-    std::cout << "LoadShaderPipelineStructPrototypes Built" << std::endl;
-    materialMemoryPoolSystem.StartUp();
-    std::cout << "materialMemoryPoolSystem Built" << std::endl;
-    renderSystem.UsingMaterialBaker = true;
-    /*  for (auto& materialPath : materialFiles)
-      {*/
-    std::filesystem::path src = materialFiles[0];
-    nlohmann::json json = fileSystem.LoadJsonFile(materialFiles[0].c_str());
-    std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
-    std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
-    ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
-    textureBakerSystem.BakeTexture(materialFiles[0], finalFilePath.string(), vulkanRenderPass.RenderPassId);
-    std::cout << "[Baker] Draw recorded successfully\n";
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.Pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.PipelineLayout, 0, vulkanRenderPipeline.DescriptorSetList.size(), vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdEndRenderPass(commandBuffer);
+    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+    vkDestroyFence(vulkanSystem.Device, fence, nullptr);
 }
 
 void MaterialBakerSystem::CleanRenderPass()
@@ -255,74 +238,61 @@ void MaterialBakerSystem::LoadMaterial(const String& materialPath)
 
     if (!json["AlbedoMap"].is_null())
     {
-        std::cout << "Before AlbedoMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["AlbedoMap"].get<TextureLoader>()));
         material.AlbedoMap = TextureList.back().bindlessTextureIndex;
-        std::cout << "After AlbedoMap Built" << std::endl;
     }
     if (!json["MetallicMap"].is_null())
     {
-        std::cout << "Before MetallicMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["MetallicMap"].get<TextureLoader>()));
         material.MetallicMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["RoughnessMap"].is_null())
     {
-        std::cout << "Before RoughnessMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["RoughnessMap"].get<TextureLoader>()));
         material.RoughnessMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["ThicknessMap"].is_null())
     {
-        std::cout << "Before ThicknessMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["ThicknessMap"].get<TextureLoader>()));
         material.ThicknessMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["SubSurfaceScatteringColorMap"].is_null())
     {
-        std::cout << "Before SubSurfaceScatteringColorMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["SubSurfaceScatteringColorMap"].get<TextureLoader>()));
         material.SubSurfaceScatteringColorMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["SheenMap"].is_null())
     {
-        std::cout << "Before SheenMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["SheenMap"].get<TextureLoader>()));
         material.SheenMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["ClearCoatMap"].is_null())
     {
-        std::cout << "Before ClearCoatMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["ClearCoatMap"].get<TextureLoader>()));
         material.ClearCoatMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["AmbientOcclusionMap"].is_null())
     {
-        std::cout << "Before AmbientOcclusionMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["AmbientOcclusionMap"].get<TextureLoader>()));
         material.AmbientOcclusionMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["NormalMap"].is_null())
     {
-        std::cout << "Before NormalMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["NormalMap"].get<TextureLoader>()));
         material.NormalMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["AlphaMap"].is_null())
     {
-        std::cout << "Before AlphaMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["AlphaMap"].get<TextureLoader>()));
         material.AlphaMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["EmissionMap"].is_null())
     {
-        std::cout << "Before EmissionMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["EmissionMap"].get<TextureLoader>()));
         material.EmissionMap = TextureList.back().bindlessTextureIndex;
     }
     if (!json["HeightMap"].is_null()) 
     {
-        std::cout << "Before HeightMap Built" << std::endl;
         TextureList.emplace_back(LoadTexture(json["HeightMap"].get<TextureLoader>()));
         material.HeightMap = TextureList.back().bindlessTextureIndex;
     }
@@ -625,22 +595,16 @@ void MaterialBakerSystem::CreateTextureView(Texture& texture, VkImageAspectFlags
 
 Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
 {
-    std::cout << "In LoadTexture Built" << std::endl;
     int width = 0;
     int height = 0;
     int textureChannels = 0;
     Vector<byte> textureData;
     for (size_t x = 0; x < textureLoader.TextureFilePath.size(); x++)
     {
-        std::cout << "Befoer LoadFile Built" << std::endl;
         Vector<byte> layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
-        std::cout << layerData.size() << std::endl;
-        std::cout << "After LoadTexture Built" << std::endl;
         textureData.insert(textureData.end(), layerData.begin(), layerData.end());
-        std::cout << "After insert Built" << std::endl;
     }
 
-    std::cout << "Before Texture Allocate Built" << std::endl;
     Texture texture = Texture
     {
         .textureGuid = textureLoader.TextureId,
@@ -656,7 +620,7 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
         .sampleCount = VK_SAMPLE_COUNT_1_BIT,
         .colorChannels = static_cast<ColorChannelUsed>(textureChannels)
     };
-    std::cout << "Before Texture Built" << std::endl;
+
     VkImageCreateInfo imageCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -678,7 +642,7 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
         .initialLayout = texture.textureImageLayout
     };
     if (texture.mipMapLevels > 1) imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    std::cout << "Before Image Create Built" << std::endl;
+
     switch (texture.textureIndex)
     {
         case 0: texture.textureSampler = TextureSamplers::GetImportAlbedoMapSamplerSettings(); break;
@@ -692,12 +656,8 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
         case 8: texture.textureSampler = TextureSamplers::GetImportClearCoatMapSamplerSettings(); break;
         case 9: texture.textureSampler = TextureSamplers::GetImportEmissionMapSamplerSettings(); break;
     }
-    std::cout << "Before CreateTextureImage Built" << std::endl;
     CreateTextureImage(texture, imageCreateInfo, textureData, textureLoader.TextureFilePath.size());
-    std::cout << "After CreateTextureImage Built" << std::endl;
     CreateTextureView(texture, textureLoader.ImageType);
-    std::cout << "After CreateTextureView Built" << std::endl;
     materialMemoryPoolSystem.UpdateTextureDescriptorSet(texture, materialMemoryPoolSystem.BakerTexture2DBinding);
-    std::cout << "Update DescriptorSet Built" << std::endl;
     return texture;
 }

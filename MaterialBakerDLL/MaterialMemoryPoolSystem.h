@@ -20,12 +20,12 @@ struct MaterialBakerBufferHeader
     uint64 Texture2DOffset = UINT64_MAX;
     uint32 Texture2DCount = UINT32_MAX;
     uint32 Texture2DSize = UINT32_MAX;
-    uint64 Texture3DOffset = UINT64_MAX;
-    uint32 Texture3DCount = UINT32_MAX;
-    uint32 Texture3DSize = UINT32_MAX;
-    uint64 TextureCubeMapOffset = UINT64_MAX;
-    uint32 TextureCubeMapCount = UINT32_MAX;
-    uint32 TextureCubeMapSize = UINT32_MAX;
+    //uint64 Texture3DOffset = UINT64_MAX;
+    //uint32 Texture3DCount = UINT32_MAX;
+    //uint32 Texture3DSize = UINT32_MAX;
+    //uint64 TextureCubeMapOffset = UINT64_MAX;
+    //uint32 TextureCubeMapCount = UINT32_MAX;
+    //uint32 TextureCubeMapSize = UINT32_MAX;
 };
 
 struct ImportMaterialShader
@@ -84,13 +84,13 @@ private:
 public:
     static constexpr size_t									              BakerMaterialCapacity = 1;
     static constexpr size_t									              BakerTexture2DCapacity = 20;
-    //static constexpr size_t									              BakerTexture3DCapacity = 4;
-    //static constexpr size_t									              BakerTextureCubeMapCapacity = 4;
+    static constexpr size_t									              BakerTexture3DCapacity = 4;
+    static constexpr size_t									              BakerTextureCubeMapCapacity = 4;
 
     static constexpr uint									              BakerMaterialDescriptorBinding = 0;
-   // static constexpr uint									              BakerTextureCubeMapBinding = 1;
     static constexpr uint									              BakerTexture2DBinding = 1;
-    //static constexpr uint									              BakerTexture3DBinding = 3;
+    //static constexpr uint									              BakerTexture3DBinding = 2;
+    //static constexpr uint									              BakerTextureCubeMapBinding = 3;
 
     bool													              IsHeaderDirty = true;
     bool													              IsDescriptorSetDirty = true;

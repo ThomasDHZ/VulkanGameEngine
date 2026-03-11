@@ -35,32 +35,32 @@ void MaterialMemoryPoolSystem::StartUp()
             };
             break;
         }
-        //case MaterialBakerMemoryPoolTypes::BakerTexture3DMetadataBuffer:
-        //{
-        //    MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-        //    {
-        //        .ActiveCount = 0,
-        //        .Count = BakerTexture3DCapacity,
-        //        .Size = sizeof(TextureMetadataHeader),
-        //        .IsActive = Vector<byte>(BakerTexture3DCapacity, 0x00),
-        //        .FreeIndices = Vector<uint32>(),
-        //        .IsDirty = true
-        //    };
-        //    break;
-        //}
-        //case MaterialBakerMemoryPoolTypes::BakerTextureCubeMapMetadataBuffer:
-        //{
-        //    MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-        //    {
-        //        .ActiveCount = 0,
-        //        .Count = BakerTextureCubeMapCapacity,
-        //        .Size = sizeof(TextureMetadataHeader),
-        //        .IsActive = Vector<byte>(BakerTextureCubeMapCapacity, 0x00),
-        //        .FreeIndices = Vector<uint32>(),
-        //        .IsDirty = true
-        //    };
-        //    break;
-        //}
+      /*  case MaterialBakerMemoryPoolTypes::BakerTexture3DMetadataBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
+            {
+                .ActiveCount = 0,
+                .Count = BakerTexture3DCapacity,
+                .Size = sizeof(TextureMetadataHeader),
+                .IsActive = Vector<byte>(BakerTexture3DCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }
+        case MaterialBakerMemoryPoolTypes::BakerTextureCubeMapMetadataBuffer:
+        {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
+            {
+                .ActiveCount = 0,
+                .Count = BakerTextureCubeMapCapacity,
+                .Size = sizeof(TextureMetadataHeader),
+                .IsActive = Vector<byte>(BakerTextureCubeMapCapacity, 0x00),
+                .FreeIndices = Vector<uint32>(),
+                .IsDirty = true
+            };
+            break;
+        }*/
         }
     }
     UpdateMemoryPoolHeader(BakerMaterialBuffer, BakerMaterialCapacity);
@@ -77,26 +77,18 @@ void MaterialMemoryPoolSystem::StartUp()
 
 void MaterialMemoryPoolSystem::ResizeMemoryPool(MaterialBakerMemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount)
 {
-    void* oldMappedPtr = MaterialBufferPtr;
+    void*  oldMappedPtr = MaterialBufferPtr;
     uint32 oldBufferId = MaterialBakerBufferId;
-    auto   oldSubHeaders = MemorySubPoolHeader;  // copy is cheap
+    auto   oldSubHeaders = MemorySubPoolHeader;
 
-    // 1. Prepare new size & header
     UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
     size_t newTotalSize = sizeof(MaterialBakerBufferHeader) + MaterialMemoryPoolSize;
-
-    // 2. Create new buffer
-    uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newTotalSize,
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
     VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newBufferId);
     MaterialBufferPtr = newBuf.BufferData;
 
-    // 3. Copy old → new (while old buffer still alive!)
     std::memcpy(MaterialBufferPtr, &MaterialPoolHeader, sizeof(MaterialBakerBufferHeader));
-
     for (const auto& [type, sub] : MemorySubPoolHeader)
     {
         const auto& oldSub = oldSubHeaders[type];
@@ -109,20 +101,14 @@ void MaterialMemoryPoolSystem::ResizeMemoryPool(MaterialBakerMemoryPoolTypes mem
         }
     }
 
-    // 4. Flush the new allocation
     vmaFlushAllocation(bufferSystem.vmaAllocator, newBuf.Allocation, 0, newTotalSize);
-
-    // 5. Now safe to destroy old buffer (no more references to oldMappedPtr)
     if (oldBufferId != UINT32_MAX)
     {
-        // Optional but strongly recommended for safety:
-        // vkQueueWaitIdle(vulkanSystem.GraphicsQueue);   // or use fence if you have active submits
-     //   bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(oldBufferId)); // here
+       //vkQueueWaitIdle(vulkanSystem.GraphicsQueue);  
+       //bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(oldBufferId));
     }
 
     MaterialBakerBufferId = newBufferId;
-
-    // Mark dirty — but ideally call UpdateDataBufferDescriptorSet(...) here if safe
     IsDescriptorSetDirty = true;
     IsHeaderDirty = true;
 }
@@ -138,7 +124,7 @@ void MaterialMemoryPoolSystem::UpdateMemoryPoolHeader(MaterialBakerMemoryPoolTyp
         MemorySubPoolHeader[memoryPoolType] = MemoryPoolSubBufferHeader
         {
            .ActiveCount = MemorySubPoolHeader[memoryPoolType].ActiveCount,
-           .Offset = lastMemoryPoolType == MaterialBakerMemoryPoolTypes::BakerEndofPool ? sizeof(MemoryPoolBufferHeader) : MemorySubPoolHeader[lastMemoryPoolType].Offset + (MemorySubPoolHeader[lastMemoryPoolType].Count * MemorySubPoolHeader[lastMemoryPoolType].Size),
+           .Offset = lastMemoryPoolType == MaterialBakerMemoryPoolTypes::BakerEndofPool ? sizeof(MaterialBakerBufferHeader) : MemorySubPoolHeader[lastMemoryPoolType].Offset + (MemorySubPoolHeader[lastMemoryPoolType].Count * MemorySubPoolHeader[lastMemoryPoolType].Size),
            .Count = memoryPoolType == memoryPoolTypeToUpdate ? newPoolSize : MemorySubPoolHeader[memoryPoolType].Count,
            .Size = MemorySubPoolHeader[memoryPoolType].Size,
            .IsActive = memoryPoolType == memoryPoolTypeToUpdate ? Vector<byte>(newPoolSize, 0x00) : MemorySubPoolHeader[memoryPoolType].IsActive,
@@ -185,13 +171,9 @@ uint32 MaterialMemoryPoolSystem::AllocateObject(MaterialBakerMemoryPoolTypes mem
         return index;
     }
 
-
     if (subPoolHeader.ActiveCount == subPoolHeader.Count)
     {
-    std::cout << "Before resize" << std::endl;
         ResizeMemoryPool(memoryPoolToUpdate, subPoolHeader.Count * 2);
-
-        std::cout << "After resize" << std::endl;
     }
 
     uint32 index = subPoolHeader.ActiveCount++;
@@ -249,20 +231,17 @@ ImportMaterialShader& MaterialMemoryPoolSystem::UpdateMaterial(uint32 index)
 
 void MaterialMemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding)
 {
-    if (texture.textureViewList.empty() || texture.textureViewList.front() == VK_NULL_HANDLE) {
+    if (texture.textureViewList.empty() || texture.textureViewList.front() == VK_NULL_HANDLE) 
+    {
         std::cerr << "ERROR: Trying to update descriptor with invalid image view for texture index "
             << texture.bindlessTextureIndex << std::endl;
         return;
     }
-    if (texture.textureSampler == VK_NULL_HANDLE) {
+    if (texture.textureSampler == VK_NULL_HANDLE) 
+    {
         std::cerr << "ERROR: Null sampler for texture index " << texture.bindlessTextureIndex << std::endl;
         return;
     }
-
-    std::cout << "Updating descriptor: binding=" << binding
-        << ", arrayElement=" << texture.bindlessTextureIndex
-        << ", view=0x" << std::hex << texture.textureViewList.front()
-        << ", sampler=0x" << texture.textureSampler << std::endl;
 
     VkDescriptorImageInfo textureUpdate = VkDescriptorImageInfo
     {
@@ -341,18 +320,18 @@ void MaterialMemoryPoolSystem::CreateMaterialBakerBindlessDescriptorSet()
 
     Vector<VkDescriptorSetLayoutBinding> bindings =
     {
-        { BakerMaterialDescriptorBinding,   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,          1, VK_SHADER_STAGE_ALL },  // 0 - material buffer
-       // { BakerTextureCubeMapBinding,       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, BakerTextureCubeMapCapacity, VK_SHADER_STAGE_ALL },  // 1 - cube maps (matches shader binding 1)
-        { BakerTexture2DBinding,            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, BakerTexture2DCapacity,      VK_SHADER_STAGE_ALL },  // 2 - 2D textures (matches shader binding 2)
-       // { BakerTexture3DBinding,            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, BakerTexture3DCapacity,      VK_SHADER_STAGE_ALL }   // 3 - 3D textures (matches shader binding 3)
+        { BakerMaterialDescriptorBinding,   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,          1, VK_SHADER_STAGE_ALL }, 
+        { BakerTexture2DBinding,            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, BakerTexture2DCapacity,      VK_SHADER_STAGE_ALL }, 
+        //{ BakerTexture3DBinding,            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, BakerTexture3DCapacity,      VK_SHADER_STAGE_ALL },  
+        //{ BakerTextureCubeMapBinding,       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, BakerTextureCubeMapCapacity, VK_SHADER_STAGE_ALL }
     };
 
     Vector<VkDescriptorBindingFlags> flags =
     {
         VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
         VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT }
+        //VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+        //VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT }
     };
 
     VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
