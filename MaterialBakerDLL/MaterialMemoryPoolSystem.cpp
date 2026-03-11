@@ -161,7 +161,7 @@ uint32 MaterialMemoryPoolSystem::AllocateObject(MaterialBakerMemoryPoolTypes mem
         uint32 index = subPoolHeader.FreeIndices.back();
         subPoolHeader.FreeIndices.pop_back();
 
-        subPoolHeader.IsActive[index] = 1;
+        subPoolHeader.IsActive[index] = 0x01;
         if (index + 1 > subPoolHeader.ActiveCount)
         {
             subPoolHeader.ActiveCount = index + 1;

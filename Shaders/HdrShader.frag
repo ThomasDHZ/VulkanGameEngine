@@ -63,7 +63,8 @@ const float Gamma = 2.2;
 const float Exposure = 1.0;
 void main() 
 {
-    vec3 hdrColor = texture(TextureMap[19], TexCoords).rgb;
+
+    vec3 hdrColor = texture(TextureMap[18], TexCoords).rgb;
     vec3 finalColor = hdrColor;
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
     mapped = pow(mapped, vec3(1.0 / Gamma));

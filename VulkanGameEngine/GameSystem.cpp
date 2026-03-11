@@ -52,28 +52,28 @@ void GameSystem::StartUp(void* windowHandle)
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
-    //meshSystem.StartUp();
-    //materialSystem.StartUp();
-    //lightSystem.StartUp();
-    //memoryPoolSystem.StartUp();
+    meshSystem.StartUp();
+    materialSystem.StartUp();
+    lightSystem.StartUp();
+    memoryPoolSystem.StartUp();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-    materialBakerSystem.Run();
+   // materialBakerSystem.Run();
 #endif
-  //  levelSystem.LoadLevel("Levels/TestLevel.json");
+    levelSystem.LoadLevel("Levels/TestLevel.json");
 }
 
 #ifndef __ANDROID__
 void Update(float deltaTime);
 void GameSystem::Update(float deltaTime)
 {
-    //inputSystem.Update(deltaTime);
-    //gameObjectSystem.Update(deltaTime);
-    //levelSystem.Update(deltaTime);
-    //spriteSystem.Update(deltaTime);
-    //meshSystem.Update(deltaTime);
-    //renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
-    //gameObjectSystem.DestroyDeadGameObjects();
+    inputSystem.Update(deltaTime);
+    gameObjectSystem.Update(deltaTime);
+    levelSystem.Update(deltaTime);
+    spriteSystem.Update(deltaTime);
+    meshSystem.Update(deltaTime);
+    renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
+    gameObjectSystem.DestroyDeadGameObjects();
 }
 
 #else
@@ -172,9 +172,9 @@ void GameSystem::Draw(float deltaTime)
 {
     vulkanSystem.StartFrame();
     VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
-    materialBakerSystem.Draw(commandBuffer);
-    //levelSystem.Draw(commandBuffer, deltaTime);
-    //ImGui_Draw(commandBuffer, imGuiRenderer);
+   // materialBakerSystem.Draw(commandBuffer);
+    levelSystem.Draw(commandBuffer, deltaTime);
+    ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }
 

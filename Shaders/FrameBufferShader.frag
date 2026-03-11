@@ -62,5 +62,5 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
-    outColor = vec4(texture(TextureMap[21], TexCoords).rgb, 1.0f);
+    outColor = vec4(texture(TextureMap[20], TexCoords).rgb, 1.0f);
 }

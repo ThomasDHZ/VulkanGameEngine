@@ -38,7 +38,7 @@ private:
 public:
 
     DLL_EXPORT void Run();
-    DLL_EXPORT void Draw(VkCommandBuffer commandBuffer);
+    DLL_EXPORT void Draw(VkCommandBuffer& commandBuffer);
 };
 
 extern DLL_EXPORT MaterialBakerSystem& materialBakerSystem;

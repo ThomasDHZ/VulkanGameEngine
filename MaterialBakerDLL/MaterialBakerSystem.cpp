@@ -22,22 +22,23 @@ void MaterialBakerSystem::Run()
     renderSystem.UsingMaterialBaker = true;
     for (auto& materialPath : materialFiles)
     {
-        std::filesystem::path src = materialFiles[0];
-        nlohmann::json json = fileSystem.LoadJsonFile(materialFiles[0].c_str());
+        std::filesystem::path src = materialPath;
+        nlohmann::json json = fileSystem.LoadJsonFile(materialPath.c_str());
         std::filesystem::path dst = outDir / (src.filename().stem().string() + ".json");
         std::filesystem::path finalFilePath = outDir / (src.filename().stem().string());
         ivec2 resolution = ivec2(json["TextureSetResolution"][0], json["TextureSetResolution"][1]);
         /*  if (UpdateNeeded(materialPath))
           {*/
-        LoadMaterial(materialFiles[0]);
-        CleanRenderPass();
+        LoadMaterial(materialPath);
         BuildRenderPass(resolution);
-      //  vulkanSystem.StartFrame();
+       // vulkanSystem.StartFrame();
         VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
         Draw(commandBuffer);
-       // vulkanSystem.EndFrame(commandBuffer);
-        textureBakerSystem.BakeTexture(materialFiles[0], finalFilePath.string(), vulkanRenderPass.RenderPassId);
-        //  CleanInputResources();
+       //vulkanSystem.EndFrame(commandBuffer);
+        textureBakerSystem.BakeTexture(materialPath, finalFilePath.string(), vulkanRenderPass.RenderPassId);
+        vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
+        CleanRenderPass();
+      //  CleanInputResources();
 
         std::cout << "Baked: " << src.filename() << std::endl;
         //}
@@ -46,6 +47,12 @@ void MaterialBakerSystem::Run()
             continue;
         }*/
     }
+
+    for (auto dsl : vulkanRenderPipeline.DescriptorSetLayoutList) 
+    {
+        vkDestroyDescriptorSetLayout(vulkanSystem.Device, dsl, nullptr);
+    }
+    vulkanRenderPipeline.DescriptorSetLayoutList.clear();
 }
 
 bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
@@ -101,8 +108,9 @@ bool MaterialBakerSystem::UpdateNeeded(const String& materialPath)
     return false;
 }
 
-void MaterialBakerSystem::Draw(VkCommandBuffer cmd)
+void MaterialBakerSystem::Draw(VkCommandBuffer& commandBuffer2)
 {
+
     VkCommandBufferBeginInfo beginInfo =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -133,12 +141,6 @@ void MaterialBakerSystem::Draw(VkCommandBuffer cmd)
         .pClearValues = vulkanRenderPass.ClearValueList.data()
     };
 
-    VkFenceCreateInfo fenceCreateInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .flags = 0
-    };
-
     VkFence fence = VK_NULL_HANDLE;
     VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
     VkSubmitInfo submitInfo =
@@ -148,68 +150,73 @@ void MaterialBakerSystem::Draw(VkCommandBuffer cmd)
         .pCommandBuffers = &commandBuffer,
     };
 
-    for (auto& tex : TextureList)
+    VkFenceCreateInfo fenceCreateInfo
     {
-        if (tex.textureImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        {
-            VkImageMemoryBarrier barrier =
-            {
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .oldLayout = tex.textureImageLayout,
-                .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = tex.textureImage,
-                .subresourceRange =
-                {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = tex.mipMapLevels,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1
-                }
-            };
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-            tex.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        }
-    }
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = 0
+    };
+
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &renderPassBeginInfo.renderArea);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.Pipeline);
+    
+    for (const auto& tex : TextureList) {
+        if (tex.textureImageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            char layoutName[64];
+            switch (tex.textureImageLayout) {
+            case VK_IMAGE_LAYOUT_UNDEFINED: strcpy(layoutName, "UNDEFINED"); break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL: strcpy(layoutName, "TRANSFER_SRC_OPTIMAL"); break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL: strcpy(layoutName, "TRANSFER_DST_OPTIMAL"); break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL: strcpy(layoutName, "SHADER_READ_ONLY_OPTIMAL"); break;
+            default: sprintf(layoutName, "0x%08x", tex.textureImageLayout); break;
+            }
+            printf("Texture bindless idx %u (%dx%d) is in wrong layout: %s\n",
+                tex.bindlessTextureIndex, tex.width, tex.height, layoutName);
+        }
+    }
+
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline.PipelineLayout, 0, vulkanRenderPipeline.DescriptorSetList.size(), vulkanRenderPipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
-    VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
-    VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
-    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
-    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+    VULKAN_CHECK(vkEndCommandBuffer(commandBuffer));
+    VULKAN_CHECK(vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence));
+    VULKAN_CHECK(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
+    VULKAN_CHECK(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX * 1000ull));
     vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+    vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
 void MaterialBakerSystem::CleanRenderPass()
 {
-    if (vulkanRenderPass.RenderPass != VK_NULL_HANDLE)
-    {
-        for (auto& fb : vulkanRenderPass.FrameBufferList)
-        {
-            vkDestroyFramebuffer(vulkanSystem.Device, fb, nullptr);
-        }
-        for (auto& texture : textureSystem.FindRenderedTextureList(vulkanRenderPass.RenderPassId))
-        {
-            materialMemoryPoolSystem.FreeObject(BakerTexture2DMetadataBuffer, texture.bindlessTextureIndex);
-            textureSystem.DestroyTexture(texture);
-        }
-
-        materialMemoryPoolSystem.FreeObject(BakerMaterialBuffer, 0);
-        vkDestroyRenderPass(vulkanSystem.Device, vulkanRenderPass.RenderPass, nullptr);
-        vkDestroyPipeline(vulkanSystem.Device, vulkanRenderPipeline.Pipeline, nullptr);
-        vkDestroyPipelineLayout(vulkanSystem.Device, vulkanRenderPipeline.PipelineLayout, nullptr);
-        for (auto& dsl : vulkanRenderPipeline.DescriptorSetLayoutList) {
-            vkDestroyDescriptorSetLayout(vulkanSystem.Device, dsl, nullptr);
-        }
+    if (vulkanRenderPass.RenderPass == VK_NULL_HANDLE) {
+        return;
     }
+
+    vkQueueWaitIdle(vulkanSystem.GraphicsQueue);
+    for (auto fb : vulkanRenderPass.FrameBufferList) 
+    {
+        vkDestroyFramebuffer(vulkanSystem.Device, fb, nullptr);
+    }
+    vulkanRenderPass.FrameBufferList.clear();
+
+    for (auto& tex : TextureList) 
+    {
+        if(tex.bindlessTextureIndex != UINT32_MAX) materialMemoryPoolSystem.FreeObject(BakerTexture2DMetadataBuffer, tex.bindlessTextureIndex);
+        textureSystem.DestroyTexture(tex);
+    }
+    TextureList.clear();
+
+    vkDestroyRenderPass(vulkanSystem.Device, vulkanRenderPass.RenderPass, nullptr);
+    vulkanRenderPass.RenderPass = VK_NULL_HANDLE;
+
+    vkDestroyPipeline(vulkanSystem.Device, vulkanRenderPipeline.Pipeline, nullptr);
+    vulkanRenderPipeline.Pipeline = VK_NULL_HANDLE;
+
+    vkDestroyPipelineLayout(vulkanSystem.Device, vulkanRenderPipeline.PipelineLayout, nullptr);
+    vulkanRenderPipeline.PipelineLayout = VK_NULL_HANDLE;
+    vulkanRenderPass = VulkanRenderPass{};
 }
 
 void MaterialBakerSystem::LoadMaterial(const String& materialPath)
@@ -376,7 +383,9 @@ void MaterialBakerSystem::CleanInputResources()
     for (auto& texture : TextureList)
     {
         destroyTexture(texture);
+        materialMemoryPoolSystem.FreeObject(BakerTexture2DMetadataBuffer, texture.bindlessTextureIndex);
     }
+    materialMemoryPoolSystem.FreeObject(BakerMaterialBuffer, 0);
 }
 
 void MaterialBakerSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
@@ -609,7 +618,7 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
     {
         .textureGuid = textureLoader.TextureId,
         .textureIndex = TextureList.size(),
-        .bindlessTextureIndex = materialMemoryPoolSystem.AllocateObject(MaterialBakerMemoryPoolTypes::BakerMaterialBuffer),
+        .bindlessTextureIndex = materialMemoryPoolSystem.AllocateObject(MaterialBakerMemoryPoolTypes::BakerTexture2DMetadataBuffer),
         .width = width,
         .height = height,
         .depth = 1,
@@ -659,5 +668,8 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader)
     CreateTextureImage(texture, imageCreateInfo, textureData, textureLoader.TextureFilePath.size());
     CreateTextureView(texture, textureLoader.ImageType);
     materialMemoryPoolSystem.UpdateTextureDescriptorSet(texture, materialMemoryPoolSystem.BakerTexture2DBinding);
+
+    TransitionImageLayout(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS);
+    texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     return texture;
 }
