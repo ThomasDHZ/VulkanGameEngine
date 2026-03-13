@@ -24,7 +24,7 @@ enum ComponentTypeEnum
 
 struct GameObject
 {
-    entt::entity Entity;
+    uint32 GameObjectComponentIndex = UINT32_MAX;
     GameObjectTypeEnum GameObjectType = kGameObjectNone;
     uint64 GameObjectComponentMask = kUndefined;
     uint32 GameObjectId = UINT32_MAX;
@@ -34,6 +34,11 @@ struct GameObject
     uint32 SpriteComponentId = UINT32_MAX;
     void* GameObjectData = nullptr;
     bool  GameObjectAlive = true;
+};
+
+struct GameObjectComponentLinker
+{
+    uint32 GameObjectId = UINT32_MAX;
 };
 
 class GameObjectSystem
@@ -51,6 +56,8 @@ private:
 
 public:
     Vector<GameObject> GameObjectList;
+    Vector<entt::entity> GameObjectComponentList;
+
     Vector<uint32> FreeGameObjectIndices;
     Vector<InputComponent> InputComponentList;
     Vector<Transform2DComponent> Transform2DComponentList;

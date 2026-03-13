@@ -97,9 +97,15 @@ void GameObjectSystem::LoadComponentTable(GameObject& gameObject, vec2& objectPo
 
 void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition)
 {
+    uint32 gameObjectComponentId = GameObjectComponentList.size();
+    entt::entity& entity = GameObjectComponentList.emplace_back(levelSystem.EntityRegistry.create());
+    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(entity, GameObjectComponentLinker
+        {
+            .GameObjectId = static_cast<uint32>(GameObjectList.size())
+        });
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
-            .Entity = levelSystem.EntityRegistry.create(),
+            .GameObjectComponentIndex = gameObjectComponentId,
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
             .GameObjectId = static_cast<uint32>(GameObjectList.size()),
             .GameObjectData = LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
@@ -122,9 +128,15 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
 
 void GameObjectSystem::CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
 {
+    uint32 gameObjectComponentId = GameObjectComponentList.size();
+    entt::entity& entity = GameObjectComponentList.emplace_back(levelSystem.EntityRegistry.create());
+    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(entity, GameObjectComponentLinker
+        {
+            .GameObjectId = static_cast<uint32>(GameObjectList.size())
+        });
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
-            .Entity = levelSystem.EntityRegistry.create(),
+            .GameObjectComponentIndex = gameObjectComponentId,
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot,
             .GameObjectComponentMask = gameObjectComponentMask,
             .GameObjectId = static_cast<uint32>(GameObjectList.size()),
@@ -164,7 +176,7 @@ void GameObjectSystem::LoadComponentBehavior(GameObject& gameObject, GameObjectT
 uint GameObjectSystem::LoadTransformComponent(GameObject& gameObject, const char* jsonString, const vec2& gameObjectPosition)
 {
     nlohmann::json json = json.parse(jsonString);
-    levelSystem.EntityRegistry.emplace<Transform2DComponent>(gameObject.Entity, Transform2DComponent
+    levelSystem.EntityRegistry.emplace<Transform2DComponent>(GameObjectComponentList[gameObject.GameObjectComponentIndex], Transform2DComponent
         {
             .GameObjectId = gameObject.GameObjectId,
             .GameObjectPosition = gameObjectPosition,

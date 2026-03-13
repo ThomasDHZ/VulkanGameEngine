@@ -138,9 +138,9 @@ void SpriteSystem::Update(const float& deltaTime)
         if (sprite.IsSpriteTranformDirty)
         {
             GameObject& gameObject = gameObjectSystem.FindGameObject(sprite.GameObjectId);
-            entt::entity entity = gameObject.Entity;
-            auto view = levelSystem.EntityRegistry.view<Transform2DComponent>();
-            for (auto [entity, transform] : view.each())
+            entt::entity entity = gameObjectSystem.GameObjectComponentList[gameObject.GameObjectComponentIndex];
+            auto view = levelSystem.EntityRegistry.view<GameObjectComponentLinker, Transform2DComponent>();
+            for (auto [entity, gameObjectId, transform] : view.each())
             {
                 if (transform.GameObjectId != sprite.GameObjectId) continue;
 
