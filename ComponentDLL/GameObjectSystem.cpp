@@ -24,7 +24,7 @@ uint32 GameObjectSystem::GetNextGameObjectIndex()
 
             if (gameObject.GameObjectComponentMask & kSpriteComponent)
             {
-                spriteSystem.SpriteList[x].GameObjectId++;
+               // spriteSystem.SpriteList[x].GameObjectId++;
             }
 
             if (gameObject.GameObjectComponentMask & kInputComponent)
@@ -90,8 +90,8 @@ void GameObjectSystem::LoadComponentTable(GameObject& gameObject, vec2& objectPo
     }
     if (mask & kSpriteComponent)
     {
-        gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
-        spriteSystem.AddSprite(gameObject, vramId);
+  /*      gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
+        spriteSystem.AddSprite(gameObject, vramId);*/
     }
 }
 
@@ -280,11 +280,11 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
 
     if (obj.GameObjectComponentMask & kSpriteComponent)
     {
-        spriteSystem.SpriteList.erase(spriteSystem.SpriteList.begin() + gameObjectId);
+      /*  spriteSystem.SpriteList.erase(spriteSystem.SpriteList.begin() + gameObjectId);
         for (int x = gameObjectId; x < spriteSystem.SpriteList.size(); x++)
         {
             spriteSystem.SpriteList[x].GameObjectId--;
-        }
+        }*/
     }
 
     if (obj.GameObjectComponentMask & kInputComponent)

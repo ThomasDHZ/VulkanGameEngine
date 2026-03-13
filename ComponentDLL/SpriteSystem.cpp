@@ -3,16 +3,11 @@
 #include "LevelSystem.h"
 
 SpriteSystem& spriteSystem = SpriteSystem::Get();
+uint32 SpriteSystem::SpriteIdd = 0;
 
 uint32 SpriteSystem::GetNextSpriteIndex()
 {
-    if (!spriteSystem.FreeSpriteIndicesList.empty())
-    {
-        uint index = spriteSystem.FreeSpriteIndicesList.back();
-        spriteSystem.FreeSpriteIndicesList.pop_back();
-        return index;
-    }
-    return spriteSystem.SpriteList.size();
+    return SpriteIdd++;
 }
 
 void SpriteSystem::AddSpriteBatchLayer()
@@ -77,10 +72,9 @@ void SpriteSystem::AddSpriteBatchLayer()
 //}
 void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
 {
-
-    spriteSystem.SpriteList.emplace_back(Sprite
+    Sprite sprite = levelSystem.EntityRegistry.emplace<Sprite>(gameObjectSystem.GameObjectComponentList[gameObject.GameObjectComponentIndex], Sprite
         {
-            .SpriteId = static_cast<uint32>(spriteSystem.SpriteList.size()),
+            .SpriteId = static_cast<uint32>(GetNextSpriteIndex()),
             .GameObjectId = gameObject.GameObjectId,
             .SpriteInstanceId = memoryPoolSystem.AllocateObject(kSpriteInstanceBuffer),
             .CurrentAnimationId = 0,
@@ -97,7 +91,7 @@ void SpriteSystem::AddSprite(GameObject& gameObject, VkGuid& spriteVramId)
             .IsSpriteAnimationDirty = true,
             .IsSpritePropertiesDirty = true,
         });
-    SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(spriteSystem.SpriteList.back().SpriteInstanceId);
+    SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
     spriteInstance = SpriteInstance();
 
     AddSpriteBatchLayer();
@@ -125,7 +119,8 @@ void SpriteSystem::Update(const float& deltaTime)
 {
     DestroyDeadSprites();
     SyncSpritesWithSpriteInstances();
-    for (auto& sprite : spriteSystem.SpriteList)
+    auto view = levelSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent>();
+    for (auto [entity, gameObjectId, sprite, transform] : view.each())
     {
         if (!sprite.IsSpriteTranformDirty &&
             !sprite.IsSpriteAnimationDirty &&
@@ -139,20 +134,17 @@ void SpriteSystem::Update(const float& deltaTime)
         {
             GameObject& gameObject = gameObjectSystem.FindGameObject(sprite.GameObjectId);
             entt::entity entity = gameObjectSystem.GameObjectComponentList[gameObject.GameObjectComponentIndex];
-            auto view = levelSystem.EntityRegistry.view<GameObjectComponentLinker, Transform2DComponent>();
-            for (auto [entity, gameObjectId, transform] : view.each())
-            {
-                if (transform.GameObjectId != sprite.GameObjectId) continue;
+            if (transform.GameObjectId != sprite.GameObjectId) continue;
 
-                mat4 spriteMatrix = mat4(1.0f);
-                spriteMatrix = glm::translate(spriteMatrix, vec3(transform.GameObjectPosition.x, transform.GameObjectPosition.y, 0.0f));
-                spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
-                spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
-                spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
-                spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale.x, transform.GameObjectScale.y, 1.0f));
-                spriteInstance.SpritePosition = transform.GameObjectPosition;
-                spriteInstance.InstanceTransform = spriteMatrix;
-            }
+            mat4 spriteMatrix = mat4(1.0f);
+            spriteMatrix = glm::translate(spriteMatrix, vec3(transform.GameObjectPosition.x, transform.GameObjectPosition.y, 0.0f));
+            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
+            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
+            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
+            spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale.x, transform.GameObjectScale.y, 1.0f));
+            spriteInstance.SpritePosition = transform.GameObjectPosition;
+            spriteInstance.InstanceTransform = spriteMatrix;
+
         }
 
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
@@ -184,85 +176,110 @@ void SpriteSystem::Update(const float& deltaTime)
 
 void SpriteSystem::SyncSpritesWithSpriteInstances()
 {
-    //if (!SpriteListDirty)
-    //{
-    //    return;
-    //}
+    // 1. Collect living sprites from EnTT
+    struct SortEntry {
+        entt::entity entity;
+        uint32_t     layer;
+    };
 
-    SpriteListDirty = false;
-    std::stable_sort(SpriteList.begin(), SpriteList.end(),
-        [](const Sprite& a, const Sprite& b)
+    auto view = levelSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
+
+    std::vector<SortEntry> entries;
+    entries.reserve(view.size_hint());
+
+    for (auto [entity, sprite, transform] : view.each())
+    {
+        if (sprite.SpriteAlive)
         {
-            return a.SpriteLayer < b.SpriteLayer;
+            entries.push_back({ entity, sprite.SpriteLayer });
+        }
+    }
+
+    printf("Collected %zu living sprites for sorting\n", entries.size());
+
+    // 2. Stable sort by layer
+    std::stable_sort(entries.begin(), entries.end(), [](const SortEntry& a, const SortEntry& b) 
+        {
+            return a.layer < b.layer;
         });
 
-    uint32 currentInstanceIndex = 0;
+    // 3. Reset layer buckets (keep this if render still uses SpriteLayerList)
     for (auto& layer : SpriteLayerList)
     {
         layer.StartInstanceIndex = 0;
         layer.InstanceCount = 0;
     }
 
-    for (auto& sprite : SpriteList)
+    // 4. Re-fill layer buckets + write instance data sequentially
+    uint32_t currentInstanceIndex = 0;
+    for (const auto& entry : entries)
     {
-        if (!sprite.SpriteAlive)
-        {
-            continue;
-        }
+        auto [sprite, transform] = levelSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entry.entity);
+        SpriteInstance& instanceBuffer = memoryPoolSystem.UpdateSpriteInstance(currentInstanceIndex); // assume this maps the buffer
 
-        if (sprite.SpriteInstanceId != currentInstanceIndex)
-        {
-            if (sprite.SpriteInstanceId != UINT32_MAX)
-            {
-                memoryPoolSystem.FreeObject(kSpriteInstanceBuffer, sprite.SpriteInstanceId);
-            }
-            sprite.SpriteInstanceId = currentInstanceIndex;
-        }
-
+        // Fill layer bucket
+        bool found = false;
         for (auto& layer : SpriteLayerList)
         {
             if (layer.SpriteDrawLayer == sprite.SpriteLayer)
             {
                 if (layer.InstanceCount == 0)
                     layer.StartInstanceIndex = currentInstanceIndex;
-
                 layer.InstanceCount++;
+                found = true;
                 break;
             }
         }
+        if (!found)
+        {
+            // Add missing layer bucket
+            SpriteLayer newLayer;
+            newLayer.SpriteDrawLayer = sprite.SpriteLayer;
+            newLayer.StartInstanceIndex = currentInstanceIndex;
+            newLayer.InstanceCount = 1;
+            SpriteLayerList.push_back(newLayer);
+        }
+
+        // Transform
+        mat4 spriteMatrix = glm::translate(mat4(1.0f), vec3(transform.GameObjectPosition, 0.0f));
+        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.y), vec3(0, 1, 0));
+        spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.x), vec3(1, 0, 0));
+        spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale, 1.0f));
+
+        instanceBuffer.SpritePosition = transform.GameObjectPosition;
+        instanceBuffer.InstanceTransform = spriteMatrix;
+
+        // VRAM data
+        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
+        instanceBuffer.SpriteSize = vram.SpriteSize;
+        instanceBuffer.FlipSprite = sprite.FlipSprite;
+        instanceBuffer.Color = vram.SpriteColor;
+        instanceBuffer.MaterialId = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
+
+        // Animation UV (always set — safe and cheap)
+        const auto& anim = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationId);
+        const auto& frame = anim.FrameList[sprite.CurrentFrame];
+        instanceBuffer.UVOffset = vec4(
+            vram.SpriteUVSize.x * frame.x,
+            vram.SpriteUVSize.y * frame.y,
+            vram.SpriteUVSize.x,
+            vram.SpriteUVSize.y
+        );
+
         currentInstanceIndex++;
     }
 
-    auto oldSpriteListPtr = memoryPoolSystem.GetActiveSpriteInstancePointers();
-    auto a = oldSpriteListPtr[0];
-    auto oldSpriteList = SpriteList;
-    Vector<SpriteInstance*> spriteInstancePtrList = memoryPoolSystem.GetActiveSpriteInstancePointers();
-    for (int x = 0; x < SpriteList.size(); x++)
+    uint32 instanceStartIndex = 0;
+    for (size_t x = 0; x < SpriteLayerList.size(); ++x)
     {
-        if (oldSpriteList[x].SpriteInstanceId == SpriteList[x].SpriteInstanceId)
-        {
-            continue;
-        }
-        else
-        {
-            SpriteInstance spriteInstance = *spriteInstancePtrList[x];
-            *spriteInstancePtrList[x] = *spriteInstancePtrList[oldSpriteList[x].SpriteInstanceId];
-            *spriteInstancePtrList[oldSpriteList[x].SpriteInstanceId] = *spriteInstancePtrList[x];
-        }
+        SpriteLayerList[x].InstanceCount = SpriteLayerList[x].InstanceCount; // already set
+        SpriteLayerList[x].StartInstanceIndex = instanceStartIndex;
+        SpriteLayerList[x].SpriteDrawLayer = static_cast<uint32>(x);
+        instanceStartIndex += SpriteLayerList[x].InstanceCount;
     }
 
-    uint32 instanceStartIndex = 0;
-    for (int x = 0; x < SpriteLayerList.size(); x++)
-    {
-        uint32 layerCount = GetSpriteCountofLayer(x);
-        SpriteLayerList[x] = SpriteLayer
-        {
-            .InstanceCount = layerCount,
-            .StartInstanceIndex = instanceStartIndex,
-            .SpriteDrawLayer = static_cast<uint32>(x),
-        };
-        instanceStartIndex += layerCount;
-    }
+    printf("Sync complete: %zu sorted sprites, %zu layer buckets\n",
+        entries.size(), SpriteLayerList.size());
 }
 
 Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
@@ -275,32 +292,24 @@ SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
     return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }
 
-uint32 SpriteSystem::GetSpriteCountofLayer(uint32 layerId)
-{
-    return std::count_if(SpriteList.begin(), SpriteList.end(), [layerId](const Sprite& sprite)
-        {
-            return sprite.SpriteLayer == layerId;
-        });
-}
-
 void SpriteSystem::DestroySprite(uint32 spriteId)
 {
-    auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [spriteId](const Sprite& sprite) 
-        { 
-            return sprite.SpriteId == spriteId; 
-        });
+    //auto it = std::find_if(SpriteList.begin(), SpriteList.end(), [spriteId](const Sprite& sprite) 
+    //    { 
+    //        return sprite.SpriteId == spriteId; 
+    //    });
 
-    if (it != SpriteList.end())
-    {
-        Sprite& sprite = *it;
-        if (sprite.SpriteInstanceId != UINT32_MAX)
-        {
-            memoryPoolSystem.FreeObject(kSpriteInstanceBuffer, sprite.SpriteInstanceId);
-            sprite.SpriteInstanceId = UINT32_MAX;
-        }
-        sprite.SpriteAlive = false;
-        SpriteListDirty = true;
-    }
+    //if (it != SpriteList.end())
+    //{
+    //    Sprite& sprite = *it;
+    //    if (sprite.SpriteInstanceId != UINT32_MAX)
+    //    {
+    //        memoryPoolSystem.FreeObject(kSpriteInstanceBuffer, sprite.SpriteInstanceId);
+    //        sprite.SpriteInstanceId = UINT32_MAX;
+    //    }
+    //    sprite.SpriteAlive = false;
+    //    SpriteListDirty = true;
+    //}
 }
 
 void SpriteSystem::DestroyDeadSprites()
@@ -352,31 +361,4 @@ void SpriteSystem::SortSpritesbyLayer()
             newIndex++;
         }
     }*/
-}
-
-Sprite SpriteSystem::FindSprite(uint gameObjectId)
-{
-    auto it = std::find_if(spriteSystem.SpriteList.begin(), spriteSystem.SpriteList.end(), [gameObjectId](const Sprite& sprite) { return sprite.GameObjectId == gameObjectId; });
-    if (it != spriteSystem.SpriteList.end())
-    {
-        return *it;
-    }
-    else
-    {
-        return Sprite{};
-    }
-}
-
-Vector<Sprite> SpriteSystem::FindSpritesByLayer(const SpriteLayer& spriteLayer)
-{
-    Vector<Sprite> matches;
-    auto it = spriteSystem.SpriteList.begin();
-    while ((it = std::find_if(it, spriteSystem.SpriteList.end(), [spriteLayer](const Sprite& sprite)
-        {
-            return sprite.SpriteLayer == spriteLayer.SpriteDrawLayer;
-        })) != spriteSystem.SpriteList.end()) {
-        matches.emplace_back(std::ref(*it));
-        ++it;
-    }
-    return matches;
 }

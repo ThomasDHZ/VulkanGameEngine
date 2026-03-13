@@ -77,9 +77,8 @@ private:
     void       SyncSpritesWithSpriteInstances();
  
 public:
-    
+    static uint32 SpriteIdd;
     uint32                                            SpriteMeshId;
-    Vector<Sprite>									  SpriteList;
     Vector<SpriteVram>                                SpriteVramList;
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
@@ -89,11 +88,8 @@ public:
     DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
     DLL_EXPORT void SortSpritesbyLayer();
-    DLL_EXPORT Sprite FindSprite(uint gameObjectId);
     DLL_EXPORT SpriteVram& FindSpriteVram(VramSpriteGuid vramSpriteId);
-    DLL_EXPORT Vector<Sprite> FindSpritesByLayer(const SpriteLayer& spriteLayer);
     DLL_EXPORT Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
-    DLL_EXPORT uint32 GetSpriteCountofLayer(uint32 layerId);
     DLL_EXPORT void DestroySprite(uint32 spriteId);
     DLL_EXPORT void DestroyDeadSprites();
     DLL_EXPORT void Destroy();
