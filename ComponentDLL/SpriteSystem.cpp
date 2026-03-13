@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SpriteSystem.h"
+#include "LevelSystem.h"
 
 SpriteSystem& spriteSystem = SpriteSystem::Get();
 
@@ -136,15 +137,22 @@ void SpriteSystem::Update(const float& deltaTime)
         SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
         if (sprite.IsSpriteTranformDirty)
         {
-            mat4 spriteMatrix = mat4(1.0f);
-            const auto& transform2D = gameObjectSystem.FindTransform2DComponent(sprite.GameObjectId);   
-            spriteMatrix = glm::translate(spriteMatrix, vec3(transform2D.GameObjectPosition.x, transform2D.GameObjectPosition.y, 0.0f));
-            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2D.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
-            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform2D.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
-            spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
-            spriteMatrix = glm::scale(spriteMatrix, vec3(transform2D.GameObjectScale.x, transform2D.GameObjectScale.y, 1.0f));
-            spriteInstance.SpritePosition = transform2D.GameObjectPosition;
-            spriteInstance.InstanceTransform = spriteMatrix;
+            GameObject& gameObject = gameObjectSystem.FindGameObject(sprite.GameObjectId);
+            entt::entity entity = gameObject.Entity;
+            auto view = levelSystem.EntityRegistry.view<Transform2DComponent>();
+            for (auto [entity, transform] : view.each())
+            {
+                if (transform.GameObjectId != sprite.GameObjectId) continue;
+
+                mat4 spriteMatrix = mat4(1.0f);
+                spriteMatrix = glm::translate(spriteMatrix, vec3(transform.GameObjectPosition.x, transform.GameObjectPosition.y, 0.0f));
+                spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
+                spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
+                spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
+                spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale.x, transform.GameObjectScale.y, 1.0f));
+                spriteInstance.SpritePosition = transform.GameObjectPosition;
+                spriteInstance.InstanceTransform = spriteMatrix;
+            }
         }
 
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);

@@ -484,12 +484,12 @@ TextureMetadataHeader& MemoryPoolSystem::UpdateTextureCubeMapMetadataHeader(uint
 
 SpriteInstance& MemoryPoolSystem::UpdateSpriteInstance(uint32 index)
 {
-    MemoryPoolSubBufferHeader& pointLightSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    if (index >= pointLightSubPool.Count) throw std::out_of_range("Sprite Instance index out of range: " + std::to_string(index) + " >= " + std::to_string(pointLightSubPool.Count));
-    if (index >= pointLightSubPool.IsActive.size() || !pointLightSubPool.IsActive[index]) throw std::runtime_error("Sprite Instance slot inactive at index " + std::to_string(index));
+    MemoryPoolSubBufferHeader& spriteInstanceSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    if (index >= spriteInstanceSubPool.Count) throw std::out_of_range("Sprite Instance index out of range: " + std::to_string(index) + " >= " + std::to_string(spriteInstanceSubPool.Count));
+    if (index >= spriteInstanceSubPool.IsActive.size() || !spriteInstanceSubPool.IsActive[index]) throw std::runtime_error("Sprite Instance slot inactive at index " + std::to_string(index));
 
-    uint32 offset = pointLightSubPool.Offset + (index * sizeof(SpriteInstance));
-    pointLightSubPool.IsDirty = true;
+    uint32 offset = spriteInstanceSubPool.Offset + (index * sizeof(SpriteInstance));
+    spriteInstanceSubPool.IsDirty = true;
     return *reinterpret_cast<SpriteInstance*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 

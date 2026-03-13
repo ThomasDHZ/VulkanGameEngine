@@ -3,6 +3,7 @@
 #include "VRAM.h"
 #include "Camera.h"
 #include "SpriteSystem.h"
+#include <entt/entt.hpp>
 
 #ifndef PLATFORM_ANDROID
 #pragma comment(lib, "vulkan-1.lib")
@@ -66,6 +67,8 @@ private:
         void        DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2DLayout* VertexList, uint32* IndexList);
 
     public:
+
+        entt::registry EntityRegistry;
         LevelLayout levelLayout;
         Vector<LevelLayer> LevelLayerList;
         Vector<Vector<uint>> LevelTileMapList;

@@ -2,6 +2,7 @@
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
 #include "MegaManObject.h"
+#include "LevelSystem.h"
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
@@ -98,6 +99,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
 {
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
+            .Entity = levelSystem.EntityRegistry.create(),
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
             .GameObjectId = static_cast<uint32>(GameObjectList.size()),
             .GameObjectData = LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
@@ -112,7 +114,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         {
             case kInputComponent: gameObject.InputComponentId = LoadInputComponent(componentJson.dump().c_str(), gameObject.GameObjectId); break;
             case kSpriteComponent: gameObject.SpriteComponentId = LoadSpriteComponent(componentJson.dump().c_str(), gameObject); break;
-            case kTransform2DComponent: gameObject.Transform2DComponentId = LoadTransformComponent(componentJson.dump().c_str(), gameObject.GameObjectId, gameObjectPosition); break;
+            case kTransform2DComponent: gameObject.Transform2DComponentId = LoadTransformComponent(gameObject, componentJson.dump().c_str(), gameObjectPosition); break;
         }
     }
     LoadComponentBehavior(gameObject, json["GameObjectType"]);
@@ -122,6 +124,7 @@ void GameObjectSystem::CreateGameObject(const String& name, uint parentGameObjec
 {
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
+            .Entity = levelSystem.EntityRegistry.create(),
             .GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot,
             .GameObjectComponentMask = gameObjectComponentMask,
             .GameObjectId = static_cast<uint32>(GameObjectList.size()),
@@ -158,17 +161,17 @@ void GameObjectSystem::LoadComponentBehavior(GameObject& gameObject, GameObjectT
     }
 }
 
-uint GameObjectSystem::LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition)
+uint GameObjectSystem::LoadTransformComponent(GameObject& gameObject, const char* jsonString, const vec2& gameObjectPosition)
 {
     nlohmann::json json = json.parse(jsonString);
-    Transform2DComponentList.emplace_back(Transform2DComponent
+    levelSystem.EntityRegistry.emplace<Transform2DComponent>(gameObject.Entity, Transform2DComponent
         {
-            .GameObjectId = gameObjectId,
+            .GameObjectId = gameObject.GameObjectId,
             .GameObjectPosition = gameObjectPosition,
             .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
             .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
         });
-    return gameObjectId;
+    return gameObject.GameObjectId;
 }
 
 uint GameObjectSystem::LoadInputComponent(const char* jsonString, uint gameObjectId)
@@ -207,16 +210,6 @@ bool GameObjectSystem::GameObjectBehaviorExists(const GameObjectTypeEnum objectE
 GameObjectBehavior& GameObjectSystem::FindGameObjectBehavior(const GameObjectTypeEnum& id)
 {
     return ComponentBehaviorMap.at(id);
-}
-
-Transform2DComponent GameObjectSystem::FindTransform2DComponent(uint gameObjectId)
-{
-    auto it = std::find_if(Transform2DComponentList.begin(), Transform2DComponentList.end(),
-        [gameObjectId](const Transform2DComponent& transformComponent) {
-            return transformComponent.GameObjectId == gameObjectId;
-        }
-    );
-    return *it;
 }
 
 InputComponent GameObjectSystem::FindInputComponent(uint gameObjectId)

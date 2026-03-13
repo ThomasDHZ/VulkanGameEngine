@@ -84,9 +84,6 @@ public:
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
 
-    DLL_EXPORT entt::entity CreateSprite(entt::registry& registry, VkGuid spriteVramId, vec2 pos, int layer = 0, vec4 tint = vec4{ 1.0f });
-    DLL_EXPORT void UpdateSprites(entt::registry& registry, float dt);
-
     DLL_EXPORT void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
     DLL_EXPORT VkGuid LoadSpriteVRAM(const String& spriteVramPath);
     DLL_EXPORT void Update(const float& deltaTime);

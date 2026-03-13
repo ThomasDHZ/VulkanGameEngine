@@ -24,6 +24,7 @@ enum ComponentTypeEnum
 
 struct GameObject
 {
+    entt::entity Entity;
     GameObjectTypeEnum GameObjectType = kGameObjectNone;
     uint64 GameObjectComponentMask = kUndefined;
     uint32 GameObjectId = UINT32_MAX;
@@ -67,14 +68,13 @@ public:
     DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition);
     DLL_EXPORT void CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
     DLL_EXPORT void Update(const float& deltaTime);
-    DLL_EXPORT uint LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition);
+    DLL_EXPORT uint LoadTransformComponent(GameObject& gameObject, const char* jsonString, const vec2& gameObjectPosition);
     DLL_EXPORT uint LoadInputComponent(const char* jsonString, uint gameObjectId);
     DLL_EXPORT uint LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
     DLL_EXPORT void DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void DestroyGameObjects();
     DLL_EXPORT void DestroyDeadGameObjects(); 
     DLL_EXPORT GameObject& FindGameObject(uint gameObjectId);
-    DLL_EXPORT Transform2DComponent FindTransform2DComponent(uint gameObjectId);
     DLL_EXPORT InputComponent FindInputComponent(uint gameObjectId);
     DLL_EXPORT Vector<GameObject> GetGameObjectList();
     DLL_EXPORT Vector<Transform2DComponent> GetTransform2DComponentList();

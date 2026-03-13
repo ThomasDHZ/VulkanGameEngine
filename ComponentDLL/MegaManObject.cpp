@@ -70,7 +70,7 @@ void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyS
 
 void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controllerState)
 {
-    Sprite sprite = spriteSystem.FindSprite(gameObjectId);
+   /* Sprite sprite = spriteSystem.FindSprite(gameObjectId);
     const GameObject& gameObject = gameObjectSystem.FindGameObject(gameObjectId);
     Transform2DComponent transform = gameObjectSystem.FindTransform2DComponent(gameObjectId);
     if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
@@ -114,5 +114,5 @@ void MegaMan_ControllerInput(uint gameObjectId, const float& deltaTime, const GL
     else
     {
         spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kStanding);
-    }
+    }*/
 }
