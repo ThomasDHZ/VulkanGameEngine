@@ -189,7 +189,7 @@ void LevelSystem::LoadSkyBox()
 
 void LevelSystem::DestroyLevel()
 {
-    spriteSystem.Destroy();
+    //spriteSystem.Destroy();
     for (auto& tileMap : LevelTileSetMap)
     {
         vramSystem.DeleteLevelVRAM(tileMap.second.LevelTileListPtr);

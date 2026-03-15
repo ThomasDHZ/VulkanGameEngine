@@ -48,33 +48,21 @@ private:
     GameObjectSystem(GameObjectSystem&&) = delete;
     GameObjectSystem& operator=(GameObjectSystem&&) = delete;
 
+    Vector<uint32> FreeGameObjectIndex;
+    Vector<uint32> FreeGameObjectComponentIndex;
+
+    uint32 AllocateGameObject();
+    uint32 AllocateGameObjectComponent();
+
 public:
     Vector<GameObject> GameObjectList;
     Vector<entt::entity> GameObjectComponentList;
 
-    Vector<uint32> FreeGameObjectIndices;
-    UnorderedMap<GameObjectTypeEnum, GameObjectBehavior> ComponentBehaviorMap;
-
-    DLL_EXPORT uint32 GetNextGameObjectIndex();
-    DLL_EXPORT void*  LoadObjectData(GameObjectTypeEnum gameObjectType);
-    DLL_EXPORT void   LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId);
-    DLL_EXPORT void   LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum);
-    DLL_EXPORT bool   GameObjectBehaviorExists(const GameObjectTypeEnum objectEnum);
-    DLL_EXPORT GameObjectBehavior& FindGameObjectBehavior(const GameObjectTypeEnum& id);
-    DLL_EXPORT Vector<GameObject> FindGameObjectByType(const GameObjectTypeEnum& gameObjectType);
-
-    DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition);
-    DLL_EXPORT void CreateGameObject(const String& name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition);
+    DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT void Update(const float& deltaTime);
-    DLL_EXPORT uint LoadTransformComponent(GameObject& gameObject, const char* jsonString, const vec2& gameObjectPosition);
-    DLL_EXPORT uint LoadInputComponent(const char* jsonString, uint gameObjectId);
-    DLL_EXPORT uint LoadSpriteComponent(const char* jsonString, GameObject& gameObject);
     DLL_EXPORT void DestroyGameObject(uint gameObjectId);
-    DLL_EXPORT void DestroyGameObjects();
     DLL_EXPORT void DestroyDeadGameObjects(); 
     DLL_EXPORT GameObject& FindGameObject(uint gameObjectId);
-    //DLL_EXPORT InputComponent FindInputComponent(uint gameObjectId);
-    DLL_EXPORT Vector<GameObject> GetGameObjectList();
 };
 extern DLL_EXPORT GameObjectSystem& gameObjectSystem;
 inline GameObjectSystem& GameObjectSystem::Get()

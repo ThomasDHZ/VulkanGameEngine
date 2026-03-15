@@ -196,7 +196,7 @@ SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
     return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }
 
-void SpriteSystem::Destroy()
+void SpriteSystem::Destroy(Sprite& sprite)
 {
 
 }

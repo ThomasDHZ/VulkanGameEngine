@@ -127,6 +127,7 @@ private:
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();
+
 public:
 
 	static constexpr uint									 SceneDataDescriptorBinding = 0;

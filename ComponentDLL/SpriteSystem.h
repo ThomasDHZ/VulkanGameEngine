@@ -87,7 +87,7 @@ public:
     DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
     DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
     DLL_EXPORT Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
-    DLL_EXPORT void                                   Destroy();
+    DLL_EXPORT void                                   Destroy(Sprite& sprite);
 };
 extern DLL_EXPORT SpriteSystem& spriteSystem;
 inline SpriteSystem& SpriteSystem::Get()
