@@ -16,29 +16,6 @@ uint32 GameObjectSystem::GetNextGameObjectIndex()
         for (int x = index; x < GameObjectList.size(); x++)
         {
             GameObject& gameObject = FindGameObject(index);
-
-            if (gameObject.GameObjectComponentMask & kTransform2DComponent)
-            {
-                Transform2DComponentList[x].GameObjectId++;
-            }
-
-            if (gameObject.GameObjectComponentMask & kSpriteComponent)
-            {
-               // spriteSystem.SpriteList[x].GameObjectId++;
-            }
-
-            if (gameObject.GameObjectComponentMask & kInputComponent)
-            {
-                InputComponentList[x].GameObjectId++;
-            }
-
-            if (GameObjectList[x].ParentGameObjectId > index)
-            {
-                GameObjectList[x].ParentGameObjectId++;
-            }
-            if (GameObjectList[x].InputComponentId != UINT64_MAX) GameObjectList[x].InputComponentId++;
-            if (GameObjectList[x].SpriteComponentId != UINT64_MAX) GameObjectList[x].SpriteComponentId++;
-            if (GameObjectList[x].Transform2DComponentId != UINT64_MAX) GameObjectList[x].Transform2DComponentId++;
             GameObjectList[x].GameObjectId++;
         }
 
@@ -51,12 +28,12 @@ void* GameObjectSystem::LoadObjectData(GameObjectTypeEnum gameObjectType)
 {
     switch (gameObjectType)
     {
-    case GameObjectTypeEnum::kGameObjectMegaMan:
-    {
-        MegaManObject megaManObject;
-        MegaManObject* megaManObjectPtr = memorySystem.AddPtrBuffer<MegaManObject>(megaManObject, __FILE__, __LINE__, __func__);
-        return static_cast<void*>(megaManObjectPtr);
-    }
+    //case GameObjectTypeEnum::kGameObjectMegaMan:
+    //{
+    //    MegaManObject megaManObject;
+    //    MegaManObject* megaManObjectPtr = memorySystem.AddPtrBuffer<MegaManObject>(megaManObject, __FILE__, __LINE__, __func__);
+    //    return static_cast<void*>(megaManObjectPtr);
+    //}
     case GameObjectTypeEnum::kGameObjectMegaManShot:
     {
         MegaManShot megaManObject;
@@ -68,31 +45,30 @@ void* GameObjectSystem::LoadObjectData(GameObjectTypeEnum gameObjectType)
 
 void GameObjectSystem::LoadComponentTable(GameObject& gameObject, vec2& objectPosition, VkGuid& vramId)
 {
-    uint64 mask = gameObject.GameObjectComponentMask;
-    if (mask & kTransform2DComponent)
-    {
-        gameObject.Transform2DComponentId = Transform2DComponentList.size();
-        Transform2DComponentList.emplace_back(Transform2DComponent
-            {
-                .GameObjectId = gameObject.GameObjectId,
-                .GameObjectPosition = objectPosition,
-                .GameObjectRotation = vec2(),
-                .GameObjectScale = vec2()
-            });
-    }
-    if (mask & kInputComponent)
-    {
-        gameObject.InputComponentId = InputComponentList.size();
-        InputComponentList.emplace_back(InputComponent
-            {
-                .GameObjectId = gameObject.GameObjectId
-            });
-    }
-    if (mask & kSpriteComponent)
-    {
-  /*      gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
-        spriteSystem.AddSprite(gameObject, vramId);*/
-    }
+    //uint64 mask = gameObject.GameObjectComponentMask;
+  //  if (mask & kTransform2DComponent)
+  //  {
+  //      //gameObject.Transform2DComponentId = Transform2DComponentList.size();
+  //      //Transform2DComponentList.emplace_back(Transform2DComponent
+  //      //    {
+  //      //        .GameObjectPosition = objectPosition,
+  //      //        .GameObjectRotation = vec2(),
+  //      //        .GameObjectScale = vec2()
+  //      //    });
+  //  }
+  //  if (mask & kInputComponent)
+  //  {
+  //      //gameObject.InputComponentId = InputComponentList.size();
+  //      //InputComponentList.emplace_back(InputComponent
+  //      //    {
+  //      //        .GameObjectId = gameObject.GameObjectId
+  //      //    });
+  //  }
+  //  if (mask & kSpriteComponent)
+  //  {
+  ///*      gameObject.SpriteComponentId = spriteSystem.SpriteList.size();
+  //      spriteSystem.AddSprite(gameObject, vramId);*/
+  //  }
 }
 
 void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition)
@@ -106,21 +82,43 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
             .GameObjectComponentIndex = gameObjectComponentId,
-            .GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
-            .GameObjectId = static_cast<uint32>(GameObjectList.size()),
-            .GameObjectData = LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
+            //.GameObjectType = GameObjectTypeEnum::kGameObjectMegaMan,
+           // .GameObjectId = static_cast<uint32>(GameObjectList.size()),
+         //   .GameObjectData = LoadObjectData(GameObjectTypeEnum::kGameObjectMegaMan),
         });
 
     nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
+    switch (json["GameObjectType"].get<GameObjectTypeEnum>())
+    {
+        case kGameObjectMegaMan:     levelSystem.EntityRegistry.emplace<MegaManObject>(entity, MegaManObject{ }); break;
+        case kGameObjectMegaManShot: levelSystem.EntityRegistry.emplace<MegaManShot>(entity, MegaManShot{ }); break;
+    }
     for (const auto& componentJson : json["GameObjectComponentList"])
     {
         uint64 componentType = componentJson["ComponentType"].get<uint64>();
-        gameObject.GameObjectComponentMask |= (1ULL << componentType);
         switch (componentType)
         {
-            case kInputComponent: gameObject.InputComponentId = LoadInputComponent(componentJson.dump().c_str(), gameObject.GameObjectId); break;
-            case kSpriteComponent: gameObject.SpriteComponentId = LoadSpriteComponent(componentJson.dump().c_str(), gameObject); break;
-            case kTransform2DComponent: gameObject.Transform2DComponentId = LoadTransformComponent(gameObject, componentJson.dump().c_str(), gameObjectPosition); break;
+            case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(entity, InputComponent{ }); break;
+            case kSpriteComponent:
+            {
+                String s = componentJson.dump().c_str();
+                nlohmann::json json = json.parse(componentJson.dump().c_str());
+                VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
+                spriteSystem.CreateSprite(gameObject, vramId);
+                break;
+            }
+            case kTransform2DComponent:
+            {
+                String s = componentJson.dump().c_str();
+                nlohmann::json json = json.parse(componentJson.dump().c_str());
+                levelSystem.EntityRegistry.emplace<Transform2DComponent>(GameObjectComponentList[gameObject.GameObjectComponentIndex], Transform2DComponent
+                    {
+                        .GameObjectPosition = gameObjectPosition,
+                        .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
+                        .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
+                    });
+                break;
+            }
         }
     }
     LoadComponentBehavior(gameObject, json["GameObjectType"]);
@@ -136,12 +134,9 @@ void GameObjectSystem::CreateGameObject(const String& name, uint parentGameObjec
         });
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
-            .GameObjectComponentIndex = gameObjectComponentId,
-            .GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot,
-            .GameObjectComponentMask = gameObjectComponentMask,
             .GameObjectId = static_cast<uint32>(GameObjectList.size()),
             .ParentGameObjectId = parentGameObjectId,
-            .GameObjectData = LoadObjectData(GameObjectTypeEnum::kGameObjectMegaManShot)
+            .GameObjectComponentIndex = gameObjectComponentId,
         });
     LoadComponentTable(gameObject, objectPosition, vramId);
     LoadComponentBehavior(gameObject, objectEnum);
@@ -149,14 +144,14 @@ void GameObjectSystem::CreateGameObject(const String& name, uint parentGameObjec
 
 void GameObjectSystem::Update(const float& deltaTime)
 {
-    for (auto& gameObject : GameObjectList)
-    {
-        GameObjectBehavior gameObjectBehavior = FindGameObjectBehavior(gameObject.GameObjectType);
-        if (gameObjectBehavior.Update)
-        {
-            gameObjectBehavior.Update(gameObject.GameObjectId, deltaTime);
-        }
-    }
+    //for (auto& gameObject : GameObjectList)
+    //{
+    //    GameObjectBehavior gameObjectBehavior = FindGameObjectBehavior(gameObject.GameObjectType);
+    //    if (gameObjectBehavior.Update)
+    //    {
+    //        gameObjectBehavior.Update(gameObject.GameObjectId, deltaTime);
+    //    }
+    //}
 }
 
 void GameObjectSystem::LoadComponentBehavior(GameObject& gameObject, GameObjectTypeEnum objectEnum)
@@ -164,11 +159,11 @@ void GameObjectSystem::LoadComponentBehavior(GameObject& gameObject, GameObjectT
     GameObjectBehavior componentBehavior;
     if (!GameObjectBehaviorExists(objectEnum))
     {
-        switch (objectEnum)
-        {
-        case kGameObjectMegaMan: MegaMan_Behaviors(componentBehavior); break;
-        case kGameObjectMegaManShot: MegaManShot_Behaviors(componentBehavior); break;
-        }
+        //switch (objectEnum)
+        //{
+        //case kGameObjectMegaMan: MegaMan_Behaviors(componentBehavior); break;
+        //case kGameObjectMegaManShot: MegaManShot_Behaviors(componentBehavior); break;
+        //}
         ComponentBehaviorMap[objectEnum] = componentBehavior;
     }
 }
@@ -178,7 +173,6 @@ uint GameObjectSystem::LoadTransformComponent(GameObject& gameObject, const char
     nlohmann::json json = json.parse(jsonString);
     levelSystem.EntityRegistry.emplace<Transform2DComponent>(GameObjectComponentList[gameObject.GameObjectComponentIndex], Transform2DComponent
         {
-            .GameObjectId = gameObject.GameObjectId,
             .GameObjectPosition = gameObjectPosition,
             .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
             .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
@@ -189,10 +183,7 @@ uint GameObjectSystem::LoadTransformComponent(GameObject& gameObject, const char
 uint GameObjectSystem::LoadInputComponent(const char* jsonString, uint gameObjectId)
 {
     nlohmann::json json = json.parse(jsonString);
-    InputComponentList.emplace_back(InputComponent
-        {
-            .GameObjectId = gameObjectId
-        });
+
     return gameObjectId;
 }
 
@@ -200,7 +191,7 @@ uint GameObjectSystem::LoadSpriteComponent(const char* jsonString, GameObject& g
 {
     nlohmann::json json = json.parse(jsonString);
     VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
-    spriteSystem.AddSprite(gameObject, vramId);
+    //spriteSystem.AddSprite(gameObject, vramId);
     return gameObject.GameObjectId;
 }
 
@@ -224,41 +215,21 @@ GameObjectBehavior& GameObjectSystem::FindGameObjectBehavior(const GameObjectTyp
     return ComponentBehaviorMap.at(id);
 }
 
-InputComponent GameObjectSystem::FindInputComponent(uint gameObjectId)
-{
-    auto it = std::find_if(InputComponentList.begin(), InputComponentList.end(),
-        [gameObjectId](const InputComponent& inputComponent) {
-            return inputComponent.GameObjectId == gameObjectId;
-        }
-    );
-    return *it;
-}
-
 Vector<GameObject> GameObjectSystem::FindGameObjectByType(const GameObjectTypeEnum& gameObjectType)
 {
     Vector<GameObject> gameObjectList;
-    std::copy_if(GameObjectList.begin(), GameObjectList.end(), std::back_inserter(gameObjectList),
-        [gameObjectType](const GameObject& gameObject)
-        {
-            return gameObject.GameObjectType == gameObjectType;
-        }
-    );
+    //std::copy_if(GameObjectList.begin(), GameObjectList.end(), std::back_inserter(gameObjectList),
+    //    [gameObjectType](const GameObject& gameObject)
+    //    {
+    //        return gameObject.GameObjectType == gameObjectType;
+    //    }
+    //);
     return gameObjectList;
 }
 
 Vector<GameObject> GameObjectSystem::GetGameObjectList()
 {
     return GameObjectList;
-}
-
-Vector<Transform2DComponent> GameObjectSystem::GetTransform2DComponentList()
-{
-    return Transform2DComponentList;
-}
-
-Vector<InputComponent> GameObjectSystem::GetInputComponentList()
-{
-    return InputComponentList;
 }
 
 void GameObjectSystem::DestroyGameObject(uint gameObjectId)
@@ -268,38 +239,11 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
         return;
     }
 
-    const GameObject& obj = GameObjectList[gameObjectId];
-    if (obj.GameObjectComponentMask & kTransform2DComponent)
-    {
-        Transform2DComponentList.erase(Transform2DComponentList.begin() + gameObjectId);
-        for (int x = gameObjectId; x < Transform2DComponentList.size(); x++)
-        {
-            Transform2DComponentList[x].GameObjectId--;
-        }
-    }
-
-    if (obj.GameObjectComponentMask & kSpriteComponent)
-    {
-      /*  spriteSystem.SpriteList.erase(spriteSystem.SpriteList.begin() + gameObjectId);
-        for (int x = gameObjectId; x < spriteSystem.SpriteList.size(); x++)
-        {
-            spriteSystem.SpriteList[x].GameObjectId--;
-        }*/
-    }
-
-    if (obj.GameObjectComponentMask & kInputComponent)
-    {
-        InputComponentList.erase(InputComponentList.begin() + gameObjectId);
-        for (int x = gameObjectId; x < InputComponentList.size(); x++)
-        {
-            InputComponentList[x].GameObjectId--;
-        }
-    }
-
+ /*   const GameObject& obj = GameObjectList[gameObjectId];
     if (ComponentBehaviorMap[obj.GameObjectType].Destroy)
     {
         ComponentBehaviorMap[obj.GameObjectType].Destroy(gameObjectId);
-    }
+    }*/
 
     GameObjectList.erase(GameObjectList.begin() + gameObjectId);
     for (int x = gameObjectId; x < GameObjectList.size(); x++)
@@ -308,17 +252,12 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
         {
             GameObjectList[x].ParentGameObjectId--;
         }
-        if (GameObjectList[x].InputComponentId != UINT32_MAX) GameObjectList[x].InputComponentId--;
-        if (GameObjectList[x].SpriteComponentId != UINT32_MAX) GameObjectList[x].SpriteComponentId--;
-        if (GameObjectList[x].Transform2DComponentId != UINT32_MAX) GameObjectList[x].Transform2DComponentId--;
         GameObjectList[x].GameObjectId--;
     }
 }
 
 void GameObjectSystem::DestroyGameObjects()
 {
-    Transform2DComponentList.clear();
-    InputComponentList.clear();
     GameObjectList.clear();
 }
 

@@ -2,6 +2,14 @@
   "GameObjectType": 1,
   "GameObjectComponentList": [
     {
+      "ComponentType": 1
+    },
+    {
+      "ComponentType": 2,
+      "VramId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e"
+    },
+    {
+      "ComponentType": 3,
       "GameObjectPosition": [
         0.0,
         0.0
@@ -13,15 +21,7 @@
       "GameObjectScale": [
         1.0,
         1.0
-      ],
-      "ComponentType": 4
-    },
-    {
-      "ComponentType": 1
-    },
-    {
-      "ComponentType": 2,
-      "VramId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e"
+      ]
     }
   ]
 }

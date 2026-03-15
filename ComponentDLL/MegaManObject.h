@@ -27,6 +27,7 @@ struct MegaManObject
     float CurrentShotTime = 0.0f;
 };
 
+DLL_EXPORT void MegaMan_Create(GameObject& gameObject, vec2 position);
 DLL_EXPORT void MegaMan_Behaviors(GameObjectBehavior& componentBehavior);
 DLL_EXPORT void MegaMan_Update(uint gameObjectId, const float& deltaTime);
 DLL_EXPORT void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray);

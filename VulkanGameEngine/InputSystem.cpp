@@ -10,10 +10,11 @@ InputSystem& inputSystem = InputSystem::Get();
 void InputSystem::Update(const float& deltaTime)
 {
 #ifndef PLATFORM_ANDROID
-    int joy = GLFW_JOYSTICK_1;
-    for (auto& input : gameObjectSystem.InputComponentList)
+   /* int joy = GLFW_JOYSTICK_1;
+    auto view = levelSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent, InputComponent>();
+    for (auto [entity, gameObjectLinker, sprite, transform, input] : view.each())
     {
-        const GameObject& gameObject = gameObjectSystem.GameObjectList[input.GameObjectId];
+        const GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectLinker.GameObjectId];
         if (gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput)
         {
             int joy = GLFW_JOYSTICK_1;
@@ -23,7 +24,7 @@ void InputSystem::Update(const float& deltaTime)
                 {
                     GLFWgamepadstate state;
                     glfwGetGamepadState(joy, &state);
-                    gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput(input.GameObjectId, deltaTime, state);
+                    gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput(gameObjectLinker.GameObjectId, deltaTime, state);
                 }
             }
             else 
@@ -38,7 +39,7 @@ void InputSystem::Update(const float& deltaTime)
         }
         if (gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].ControllerInput)
         {
-            gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].KeyBoardInput(input.GameObjectId, deltaTime, keyboard.GetKeyBoardState());
+            gameObjectSystem.ComponentBehaviorMap[gameObject.GameObjectType].KeyBoardInput(gameObjectLinker.GameObjectId, deltaTime, keyboard.GetKeyBoardState());
         }
     }
 
@@ -67,7 +68,7 @@ void InputSystem::Update(const float& deltaTime)
         if (levelSystem.PerspectiveCamera->Pitch < -89.9999f)
         {
             levelSystem.PerspectiveCamera->Pitch = -89.9999f;
-        }
+        }*/
 
 #endif
 }

@@ -2,6 +2,6 @@
 
 struct InputComponent
 {
-	uint GameObjectId = -1;
+	byte a = 0x00;
 };
 

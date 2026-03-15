@@ -21,9 +21,6 @@ struct Sprite
     uint CurrentAnimationId = 0;
     uint CurrentFrame = 0;
     uint SpriteLayer = 0;
-    vec2 SpritePosition = vec2(0.0f);
-    vec2 SpriteRotation = vec2(0.0f);
-    vec2 SpriteScale = vec2(1.0f);
     ivec2 FlipSprite = ivec2(0);
     VkGuid SpriteVramId = VkGuid();
     float CurrentFrameTime = 0.0f;
@@ -31,13 +28,6 @@ struct Sprite
     bool IsSpriteTranformDirty = true;
     bool IsSpriteAnimationDirty = true;
     bool IsSpritePropertiesDirty = true;
-};
-
-struct SpriteTransform2DComponent 
-{
-    glm::vec2 position{ 0.0f };
-    float rotation = 0.0f;
-    glm::vec2 scale{ 1.0f };
 };
 
 struct SpriteComponent 
@@ -67,32 +57,37 @@ private:
     SpriteSystem(SpriteSystem&&) = delete;
     SpriteSystem& operator=(SpriteSystem&&) = delete;
 
+    struct SpritesToUpdate
+    {
+        entt::entity              entity;
+        GameObjectComponentLinker gameObject;
+        Sprite                    sprite;
+        Transform2DComponent      transform2D;
+    };
+
 private:
 
     Vector<uint32>				                      FreeSpriteIndicesList;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
-    uint32     GetNextSpriteIndex();
-    void       AddSpriteBatchLayer();
-    void       SyncSpritesWithSpriteInstances();
- 
+    uint32                                            GetNextSpriteIndex();
+    void                                              AddSpriteBatchLayer();
+    void                                              SortSpriteLayers();
+
 public:
-    static uint32 SpriteIdd;
+    static uint32                                     SpriteIdd;
     uint32                                            SpriteMeshId;
     Vector<SpriteVram>                                SpriteVramList;
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
 
-    DLL_EXPORT void AddSprite(GameObject& gameObject, VkGuid& spriteVramId);
-    DLL_EXPORT VkGuid LoadSpriteVRAM(const String& spriteVramPath);
-    DLL_EXPORT void Update(const float& deltaTime);
-    DLL_EXPORT void SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-    DLL_EXPORT void SortSpritesbyLayer();
-    DLL_EXPORT SpriteVram& FindSpriteVram(VramSpriteGuid vramSpriteId);
-    DLL_EXPORT Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
-    DLL_EXPORT void DestroySprite(uint32 spriteId);
-    DLL_EXPORT void DestroyDeadSprites();
-    DLL_EXPORT void Destroy();
+    DLL_EXPORT void                                   CreateSprite(GameObject& gameObject, VkGuid& spriteVramId);
+    DLL_EXPORT VkGuid                                 LoadSpriteVRAM(const String& spriteVramPath);
+    DLL_EXPORT void                                   Update(const float& deltaTime);
+    DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
+    DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
+    DLL_EXPORT Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+    DLL_EXPORT void                                   Destroy();
 };
 extern DLL_EXPORT SpriteSystem& spriteSystem;
 inline SpriteSystem& SpriteSystem::Get()

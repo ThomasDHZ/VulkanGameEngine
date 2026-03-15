@@ -2,6 +2,20 @@
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
 #include "MegaManObject.h"
+#include "LevelSystem.h"
+
+void MegaMan_Create(GameObject& gameObject, vec2 position)
+{
+    entt::entity entity = gameObjectSystem.GameObjectComponentList[gameObject.GameObjectComponentIndex];
+    levelSystem.EntityRegistry.emplace<MegaManObject>(entity, MegaManObject{ });
+    levelSystem.EntityRegistry.emplace<InputComponent>(entity, InputComponent{ });
+    levelSystem.EntityRegistry.emplace<Transform2DComponent>(entity, Transform2DComponent
+        {
+            .GameObjectPosition = position,
+            .GameObjectRotation = vec2(0.0f),
+            .GameObjectScale = vec2(1.0f)
+        });
+}
 
 void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)
 {
@@ -14,10 +28,10 @@ void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)
 void MegaMan_Update(uint gameObjectId, const float& deltaTime)
 {
     GameObject& gameObject = gameObjectSystem.FindGameObject(gameObjectId);
-    if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaMan)
+ /*   if (gameObject.GameObjectType == GameObjectTypeEnum::kGameObjectMegaMan)
     {
         static_cast<MegaManObject*>(gameObject.GameObjectData)->CurrentShotTime += deltaTime;
-    }
+    }*/
 }
 
 void MegaMan_KeyBoardInput(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray)
