@@ -17,44 +17,31 @@ uint32 GameObjectSystem::AllocateGameObject()
     return GameObjectList.size();
 }
 
-uint32 GameObjectSystem::AllocateGameObjectComponent()
-{
-    if (!FreeGameObjectComponentIndex.empty())
-    {
-        uint32 index = FreeGameObjectComponentIndex.back();
-        FreeGameObjectComponentIndex.pop_back();
-        return index;
-    }
-    return GameObjectComponentList.size();
-}
-
 void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
-    uint32 gameObjectComponentId = GameObjectComponentList.size();
-    entt::entity& entity = GameObjectComponentList.emplace_back(levelSystem.EntityRegistry.create());
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
-            .GameObjectId = static_cast<uint32>(GameObjectList.size()),
+            .GameObjectId = AllocateGameObject(),
             .ParentGameObjectId = parentGameObjectId,
-            .GameObjectComponentIndex = gameObjectComponentId,
+            .GameObjectComponents = levelSystem.EntityRegistry.create(),
         });
-    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(entity, GameObjectComponentLinker
+    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(gameObject.GameObjectComponents, GameObjectComponentLinker
         {
-            .GameObjectId = static_cast<uint32>(GameObjectList.size())
+            .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
         });
 
     nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
     switch (json["GameObjectType"].get<GameObjectTypeEnum>())
     {
-        case kGameObjectMegaMan:     levelSystem.EntityRegistry.emplace<MegaManObject>(entity, MegaManObject{ }); break;
-        case kGameObjectMegaManShot: levelSystem.EntityRegistry.emplace<MegaManShot>(entity, MegaManShot{ }); break;
+        case kGameObjectMegaMan:     levelSystem.EntityRegistry.emplace<MegaManObject>(gameObject.GameObjectComponents, MegaManObject{ }); break;
+        case kGameObjectMegaManShot: levelSystem.EntityRegistry.emplace<MegaManShot>(gameObject.GameObjectComponents, MegaManShot{ }); break;
     }
     for (const auto& componentJson : json["GameObjectComponentList"])
     {
         uint64 componentType = componentJson["ComponentType"].get<uint64>();
         switch (componentType)
         {
-            case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(entity, InputComponent{ }); break;
+            case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
             case kSpriteComponent:
             {
                 nlohmann::json json = json.parse(componentJson.dump().c_str());
@@ -65,7 +52,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
             case kTransform2DComponent:
             {
                 nlohmann::json json = json.parse(componentJson.dump().c_str());
-                levelSystem.EntityRegistry.emplace<Transform2DComponent>(GameObjectComponentList[gameObject.GameObjectComponentIndex], Transform2DComponent
+                levelSystem.EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
                     {
                         .GameObjectPosition = gameObjectPosition,
                         .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
@@ -73,6 +60,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
                     });
                 break;
             }
+            case kCameraFollowComponent: levelSystem.EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
         }
     }
 }
@@ -101,11 +89,12 @@ GameObject& GameObjectSystem::FindGameObject(uint gameObjectId)
 
 void GameObjectSystem::DestroyGameObject(uint gameObjectId)
 {
+    GameObject& gameObject = GameObjectList[gameObjectId];
     FreeGameObjectIndex.push_back(gameObjectId);
-    FreeGameObjectComponentIndex.push_back(GameObjectList[gameObjectId].GameObjectComponentIndex);
+
+    if (levelSystem.EntityRegistry.all_of<Sprite>(gameObject.GameObjectComponents)) spriteSystem.Destroy(levelSystem.EntityRegistry.get<Sprite>(gameObject.GameObjectComponents));
 
     GameObjectList.erase(GameObjectList.begin() + gameObjectId);
-    GameObjectComponentList.erase(GameObjectComponentList.begin() + GameObjectList[gameObjectId].GameObjectComponentIndex);
     for (int x = gameObjectId; x < GameObjectList.size(); x++)
     {
         if (GameObjectList[x].ParentGameObjectId > gameObjectId)
@@ -114,10 +103,6 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
         }
         GameObjectList[x].GameObjectId--;
     }
-
-    entt::entity& entity = GameObjectComponentList[GameObjectList[gameObjectId].GameObjectComponentIndex];
-    if (levelSystem.EntityRegistry.all_of<Sprite>(entity)) spriteSystem.Destroy(levelSystem.EntityRegistry.get<Sprite>(entity));
-
 }
 
 void GameObjectSystem::DestroyDeadGameObjects()

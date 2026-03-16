@@ -6,15 +6,15 @@
 
 void MegaMan_Create(GameObject& gameObject, vec2 position)
 {
-    entt::entity entity = gameObjectSystem.GameObjectComponentList[gameObject.GameObjectComponentIndex];
-    levelSystem.EntityRegistry.emplace<MegaManObject>(entity, MegaManObject{ });
-    levelSystem.EntityRegistry.emplace<InputComponent>(entity, InputComponent{ });
-    levelSystem.EntityRegistry.emplace<Transform2DComponent>(entity, Transform2DComponent
-        {
-            .GameObjectPosition = position,
-            .GameObjectRotation = vec2(0.0f),
-            .GameObjectScale = vec2(1.0f)
-        });
+    //entt::entity entity = gameObjectSystem.GameObjectComponentList[gameObject.GameObjectComponentIndex];
+    //levelSystem.EntityRegistry.emplace<MegaManObject>(entity, MegaManObject{ });
+    //levelSystem.EntityRegistry.emplace<InputComponent>(entity, InputComponent{ });
+    //levelSystem.EntityRegistry.emplace<Transform2DComponent>(entity, Transform2DComponent
+    //    {
+    //        .GameObjectPosition = position,
+    //        .GameObjectRotation = vec2(0.0f),
+    //        .GameObjectScale = vec2(1.0f)
+    //    });
 }
 
 void MegaMan_Behaviors(GameObjectBehavior& componentBehavior)

@@ -1,7 +1,83 @@
 #include "pch.h"
 #include "LevelSystem.h"
 #include "GameObjectSystem.h"
+#include <CameraSystem.h>
+
 LevelSystem& levelSystem = LevelSystem::Get();
+
+void LevelSystem::LoadLevel(const char* levelPath)
+{
+    cameraSystem.CreateCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec2(0.0f, 0.0f));
+    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+
+    VkGuid dummyGuid = VkGuid();
+    VkGuid tileSetId = VkGuid();
+
+#if defined(_WIN32)
+    shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
+#endif
+
+    nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
+    shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+    for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
+    for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
+    for (size_t x = 0; x <   json["GameObjectList"].size(); x++)
+    {
+        String objectJson = json["GameObjectList"][x]["GameObjectPath"];
+        vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
+        gameObjectSystem.CreateGameObject(objectJson, positionOverride);
+    }
+    LoadSkyBox();
+    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
+    LoadLevelMesh(tileSetId);
+
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+
+    brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", true);
+    textureSystem.GenerateTexture(brdfRenderPassId);
+
+    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
+    textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
+
+    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", true);
+    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", true);
+    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
+    /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/VertGaussianBlurRenderPass.json");
+    horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
+    bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
+    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json", true);
+    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json", true);
+}
+
+void LevelSystem::Update(const float& deltaTime)
+{
+    cameraSystem.Update();
+    Camera_PerspectiveUpdate(*PerspectiveCamera.get());
+
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    sceneDataBuffer.Projection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
+    sceneDataBuffer.View = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
+    sceneDataBuffer.InverseProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
+    sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
+    sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
+    sceneDataBuffer.ViewDirection = ViewDirection;
+}
+
+void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
+{
+    RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
+    RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
+    RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
+    //RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
+    //RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
+    //RenderBloomPass(commandBuffer, bloomRenderPassId);
+    RenderHdrPass(commandBuffer, hdrRenderPassId);
+    RenderFrameBuffer(commandBuffer, frameBufferId);
+}
 
 LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
 {
@@ -25,22 +101,22 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
 
             const uint VertexCount = vertexList.size();
             const vec2 TilePixelSize = tileSet.TilePixelSize * tileSet.TileScale;
-            const Vertex2DLayout BottomLeftVertex = 
+            const Vertex2DLayout BottomLeftVertex =
             {
                 { x * TilePixelSize.x, y * TilePixelSize.y },
                 { LeftSideUV, BottomSideUV }
             };
-            const Vertex2DLayout BottomRightVertex = 
+            const Vertex2DLayout BottomRightVertex =
             {
                 { (x * TilePixelSize.x) + TilePixelSize.x, y * TilePixelSize.y },
                 { RightSideUV, BottomSideUV }
             };
-            const Vertex2DLayout TopRightVertex = 
+            const Vertex2DLayout TopRightVertex =
             {
                 { (x * TilePixelSize.x) + TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
                 { RightSideUV, TopSideUV }
             };
-            const Vertex2DLayout TopLeftVertex = 
+            const Vertex2DLayout TopLeftVertex =
             {
                 { x * TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
                 { LeftSideUV, TopSideUV }
@@ -51,48 +127,29 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
             vertexList.emplace_back(TopRightVertex);
             vertexList.emplace_back(TopLeftVertex);
 
-            indexList.emplace_back(VertexCount + 0);  
-            indexList.emplace_back(VertexCount + 1);  
-            indexList.emplace_back(VertexCount + 2); 
-            indexList.emplace_back(VertexCount + 2);  
-            indexList.emplace_back(VertexCount + 3); 
-            indexList.emplace_back(VertexCount + 0); 
+            indexList.emplace_back(VertexCount + 0);
+            indexList.emplace_back(VertexCount + 1);
+            indexList.emplace_back(VertexCount + 2);
+            indexList.emplace_back(VertexCount + 2);
+            indexList.emplace_back(VertexCount + 3);
+            indexList.emplace_back(VertexCount + 0);
 
             tileMap.emplace_back(tile);
         }
     }
 
-    LevelLayer levelLayout = LevelLayer
+    return LevelLayer
     {
         .LevelId = levelId,
         .MaterialId = tileSet.MaterialId,
         .TileSetId = tileSet.TileSetId,
         .LevelLayerIndex = levelLayerIndex,
         .LevelBounds = levelBounds,
-        .TileIdMap = memorySystem.AddPtrBuffer<uint>(tileIdMapList.size(), __FILE__, __LINE__, __func__),
-        .TileMap = memorySystem.AddPtrBuffer<Tile>(tileMap.size(), __FILE__, __LINE__, __func__),
-        .VertexList = memorySystem.AddPtrBuffer<Vertex2DLayout>(vertexList.size(), __FILE__, __LINE__, __func__),
-        .IndexList = memorySystem.AddPtrBuffer<uint32>(indexList.size(), __FILE__, __LINE__, __func__),
-        .TileIdMapCount = tileIdMapList.size(),
-        .TileMapCount = tileMap.size(),
-        .VertexListCount = vertexList.size(),
-        .IndexListCount = indexList.size()
+        .TileIdMap = tileIdMapList,
+        .TileMap = tileMap,
+        .VertexList = vertexList,
+        .IndexList = indexList,
     };
-
-    std::memcpy(levelLayout.TileMap, tileMap.data(), tileMap.size() * sizeof(Tile));
-    std::memcpy(levelLayout.TileIdMap, tileIdMapList.data(), tileIdMapList.size() * sizeof(uint));
-    std::memcpy(levelLayout.VertexList, vertexList.data(), vertexList.size() * sizeof(Vertex2DLayout));
-    std::memcpy(levelLayout.IndexList, indexList.data(), indexList.size() * sizeof(uint32));
-
-    return levelLayout;
-}
-
-void LevelSystem::DeleteLevel(uint* TileIdMap, Tile* TileMap, Vertex2DLayout* VertexList, uint32* IndexList)
-{
-    memorySystem.DeletePtr<uint>(TileIdMap);
-    memorySystem.DeletePtr<Tile>(TileMap);
-    memorySystem.DeletePtr<Vertex2DLayout>(VertexList);
-    memorySystem.DeletePtr<uint32>(IndexList);
 }
 
 VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
@@ -105,7 +162,6 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
     auto json = fileSystem.LoadJsonFile(tileSetPath);
     VkGuid tileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
     VkGuid materialId = VkGuid(json["MaterialId"].get<String>().c_str());
-
     if (LevelTileSetMap.find(tileSetId) != LevelTileSetMap.end())
     {
         return tileSetId;
@@ -114,8 +170,8 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
     const Material& material = materialSystem.FindMaterial(materialId);
     const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoDataId);
 
-    LevelTileSetMap[tileSetId] = vramSystem.LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
-    vramSystem.LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);
+    LevelTileSetMap[tileSetId] = LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
+    LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);
 
     return tileSetId;
 }
@@ -127,10 +183,23 @@ void LevelSystem::LoadLevelLayout(const char* levelLayoutPath)
         return;
     }
 
-    size_t levelLayerCount = 0;
-    size_t levelLayerMapCount = 0;
-    levelLayout = vramSystem.LoadLevelInfo(levelLayoutPath);
-    LevelTileMapList = vramSystem.LoadLevelLayout(levelLayoutPath);
+    levelLayout = LoadLevelInfo(levelLayoutPath);
+
+    Vector<Vector<uint>> levelLayerList;
+    nlohmann::json json = fileSystem.LoadJsonFile(levelLayoutPath);
+    for (int x = 0; x < json["LevelLayouts"].size(); x++)
+    {
+        Vector<uint> levelLayerMap;
+        for (int y = 0; y < json["LevelLayouts"][x].size(); y++)
+        {
+            for (int z = 0; z < json["LevelLayouts"][x][y].size(); z++)
+            {
+                levelLayerMap.push_back(json["LevelLayouts"][x][y][z]);
+            }
+        }
+        levelLayerList.push_back(levelLayerMap);
+    }
+    LevelTileMapList = levelLayerList;
 }
 
 void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
@@ -140,22 +209,19 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
         const LevelTileSet& levelTileSet = LevelTileSetMap[tileSetId];
         LevelLayerList.emplace_back(LoadLevelInfo(levelLayout.LevelLayoutId, levelTileSet, LevelTileMapList[x].data(), LevelTileMapList[x].size(), levelLayout.LevelBounds, x));
 
-        Vector<Vertex2DLayout> vertexList(LevelLayerList[x].VertexList, LevelLayerList[x].VertexList + LevelLayerList[x].VertexListCount);
-        Vector<uint> indexList(LevelLayerList[x].IndexList, LevelLayerList[x].IndexList + LevelLayerList[x].IndexListCount);
-
         VertexLayout vertexData =
         {
             .VertexType = VertexLayoutEnum::kVertexLayout_Vertex2D,
-            .VertexDataSize = vertexList.size() * sizeof(Vertex2DLayout),
-            .VertexData = vertexList.data()
+            .VertexDataSize = LevelLayerList[x].VertexList.size() * sizeof(Vertex2DLayout),
+            .VertexData = LevelLayerList[x].VertexList.data()
         };
-        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_LevelMesh, vertexData, indexList, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_LevelMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
     }
 }
 
 void LevelSystem::LoadSkyBox()
 {
-    Vector<SkyboxVertexLayout> skyBoxVertices = 
+    Vector<SkyboxVertexLayout> skyBoxVertices =
     {
         {{-1.0f, -1.0f, -1.0f}},
         {{ 1.0f, -1.0f, -1.0f}},
@@ -167,7 +233,7 @@ void LevelSystem::LoadSkyBox()
         {{-1.0f,  1.0f,  1.0f}}
     };
 
-    Vector<uint32> indexList = 
+    Vector<uint32> indexList =
     {
         0, 2, 1,   0, 3, 2,
         4, 5, 6,   4, 6, 7,
@@ -185,101 +251,6 @@ void LevelSystem::LoadSkyBox()
     };
 
     meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, VkGuid());
-}
-
-void LevelSystem::DestroyLevel()
-{
-    //spriteSystem.Destroy();
-    for (auto& tileMap : LevelTileSetMap)
-    {
-        vramSystem.DeleteLevelVRAM(tileMap.second.LevelTileListPtr);
-    }
-
-    for (auto& levelLayer : LevelLayerList)
-    {
-        DeleteLevel(levelLayer.TileIdMap, levelLayer.TileMap, levelLayer.VertexList, levelLayer.IndexList);
-    }
-}
-
-void LevelSystem::Update(const float& deltaTime)
-{
-    Camera_UpdateOrthographicPixelPerfect(*OrthographicCamera.get());
-    Camera_PerspectiveUpdate(*PerspectiveCamera.get());
-
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.Projection = OrthographicCamera->ProjectionMatrix;
-    sceneDataBuffer.View = OrthographicCamera->ViewMatrix;
-    sceneDataBuffer.InverseProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
-    sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
-    sceneDataBuffer.CameraPosition = OrthographicCamera->Position;
-    sceneDataBuffer.ViewDirection = ViewDirection;
-}
-
-void LevelSystem::LoadLevel(const char* levelPath)
-{
-    OrthographicCamera = std::make_shared<Camera>(Camera_CreatePixelPerfectOrthographic(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec2(0.0f, 0.0f)));
-    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
-
-    VkGuid dummyGuid = VkGuid();
-    VkGuid tileSetId = VkGuid();
-
-#if defined(_WIN32)
-    shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-#endif
-    nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    nlohmann::json shaderJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DRenderPass.json");
-    nlohmann::json shaderWiredJson = fileSystem.LoadJsonFile("RenderPass/LevelShader2DWireFrameRenderPass.json");
-    nlohmann::json shaderLightJson = fileSystem.LoadJsonFile("RenderPass/GBufferLightingRenderPass.json");
-    // spriteRenderPass2DId = VkGuid(shaderJson["RenderPassId"].get<String>().c_str());
-    levelWireFrameRenderPass2DId = VkGuid(shaderWiredJson["RenderPassId"].get<String>().c_str());
-    shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
-
-    for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
-    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
-    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
-    for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
-    for (auto& light       : json["LoadSceneLights"]) lightSystem.LoadSceneLights(light);
-    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
-    {
-        String objectJson = json["GameObjectList"][x]["GameObjectPath"];
-        vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
-        gameObjectSystem.CreateGameObject(objectJson, positionOverride);
-    }
-    LoadSkyBox();
-    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
-    LoadLevelMesh(tileSetId);
-
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-
-    VkGuid levelId = VkGuid(json["LevelID"].get<String>().c_str());
-
-    brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json", true);
-    textureSystem.GenerateTexture(brdfRenderPassId);
-
-    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json", true);
-    textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
-
-    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json", true);
-    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json", true);
-    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json", true);
-    /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/VertGaussianBlurRenderPass.json");
-    horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
-    bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json", true);
-    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json", true);
-}
-
-void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
-{
-    RenderIrradianceMapRenderPass(commandBuffer, irradianceMapRenderPassId, deltaTime);
-    RenderPrefilterMapRenderPass(commandBuffer, prefilterMapRenderPassId, deltaTime);
-    RenderGBuffer(commandBuffer, gBufferRenderPassId, levelLayout.LevelLayoutId, deltaTime);
-    //RenderGaussianBlurPass(commandBuffer, verticalGaussianBlurRenderPassId, 0);
-    //RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
-    //RenderBloomPass(commandBuffer, bloomRenderPassId);
-    RenderHdrPass(commandBuffer, hdrRenderPassId);
-    RenderFrameBuffer(commandBuffer, frameBufferId);
 }
 
 void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
@@ -616,6 +587,54 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
     vkCmdEndRenderPass(commandBuffer);
 }
 
+LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)
+{
+    nlohmann::json json = fileSystem.LoadJsonFile(tileSetPath);
+
+    LevelTileSet tileSet = LevelTileSet();
+    tileSet.TileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
+    tileSet.MaterialId = material.MaterialGuid;
+    tileSet.TilePixelSize = ivec2{ json["TilePixelSize"][0], json["TilePixelSize"][1] };
+    tileSet.TileSetBounds = ivec2{ tileVramTexture.width / tileSet.TilePixelSize.x,  tileVramTexture.height / tileSet.TilePixelSize.y };
+    tileSet.TileUVSize = vec2(1.0f / (float)tileSet.TileSetBounds.x, 1.0f / (float)tileSet.TileSetBounds.y);
+
+    return tileSet;
+}
+
+
+void LevelSystem::LoadTileSets(const char* tileSetPath, LevelTileSet& tileSet)
+{
+    nlohmann::json json = fileSystem.LoadJsonFile(tileSetPath);
+
+    Vector<Tile> tileList;
+    for (int x = 0; x < json["TileList"].size(); x++)
+    {
+        Tile tile;
+        tile.TileId = json["TileList"][x]["TileId"];
+        tile.TileUVCellOffset = ivec2(json["TileList"][x]["TileUVCellOffset"][0], json["TileList"][x]["TileUVCellOffset"][1]);
+        tile.TileLayer = json["TileList"][x]["TileLayer"];
+        tile.TileCollider = json["TileList"][x]["TileCollider"];
+        tile.IsAnimatedTile = json["TileList"][x]["IsAnimatedTile"];
+        tile.TileUVOffset = vec2(tile.TileUVCellOffset.x * tileSet.TileUVSize.x, tile.TileUVCellOffset.y * tileSet.TileUVSize.y);
+        tileList.emplace_back(tile);
+    }
+    tileSet.LevelTileCount = tileList.size();
+
+    tileSet.LevelTileListPtr = memorySystem.AddPtrBuffer<Tile>(tileList.size(), __FILE__, __LINE__, __func__);
+    std::memcpy(tileSet.LevelTileListPtr, tileList.data(), tileList.size() * sizeof(Tile));
+}
+
+LevelLayout LevelSystem::LoadLevelInfo(const char* levelLayoutPath)
+{
+    nlohmann::json json = fileSystem.LoadJsonFile(levelLayoutPath);
+
+    LevelLayout levelLayout;
+    levelLayout.LevelLayoutId = VkGuid(json["LevelLayoutId"].get<String>().c_str());
+    levelLayout.LevelBounds = ivec2(json["LevelBounds"][0], json["LevelBounds"][1]);
+    levelLayout.TileSizeinPixels = ivec2(json["TileSizeInPixels"][0], json["TileSizeInPixels"][1]);
+    return levelLayout;
+}
+
 LevelLayout LevelSystem::GetLevelLayout()
 {
     return levelLayout;
@@ -640,3 +659,4 @@ Vector<LevelTileSet> LevelSystem::GetLevelTileSetList()
     }
     return levelTileSetList;
 }
+

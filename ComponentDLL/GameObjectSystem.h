@@ -20,13 +20,16 @@ enum ComponentTypeEnum
     kSpriteComponent,
     kTransform2DComponent,
     kTransform3DComponent,
+    kCameraFollowComponent,
 };
+
+struct CameraFollowComponent { int a = 0; };
 
 struct GameObject
 {
     uint32 GameObjectId = UINT32_MAX;
     uint32 ParentGameObjectId = UINT32_MAX;
-    uint32 GameObjectComponentIndex = UINT32_MAX;
+    entt::entity GameObjectComponents;
     bool   GameObjectAlive = true;
 };
 
@@ -49,14 +52,10 @@ private:
     GameObjectSystem& operator=(GameObjectSystem&&) = delete;
 
     Vector<uint32> FreeGameObjectIndex;
-    Vector<uint32> FreeGameObjectComponentIndex;
-
     uint32 AllocateGameObject();
-    uint32 AllocateGameObjectComponent();
 
 public:
     Vector<GameObject> GameObjectList;
-    Vector<entt::entity> GameObjectComponentList;
 
     DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT void Update(const float& deltaTime);

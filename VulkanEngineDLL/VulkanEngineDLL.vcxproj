@@ -150,6 +150,7 @@
     <ClInclude Include="..\External\xxHash\xxh3.h" />
     <ClInclude Include="..\External\xxHash\xxhash.h" />
     <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h" />
+    <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="DebugSystem.h" />
     <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="enum.h" />
@@ -183,6 +184,7 @@
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="..\External\xxHash\xxhash.c" />
     <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c" />
+    <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />

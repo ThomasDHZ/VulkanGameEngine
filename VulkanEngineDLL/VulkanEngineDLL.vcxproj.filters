@@ -138,6 +138,9 @@
     <ClInclude Include="..\External\xxHash\xxh3.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CameraSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JsonLoader.cpp">
@@ -217,6 +220,9 @@
     </ClCompile>
     <ClCompile Include="..\External\xxHash\xxhash.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

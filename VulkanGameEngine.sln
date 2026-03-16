@@ -121,7 +121,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sprites", "Sprites", "{93D4
 		Assets\Sprites\AnimeGirl.json = Assets\Sprites\AnimeGirl.json
 		Assets\Sprites\MegaManShot.json = Assets\Sprites\MegaManShot.json
 		Assets\Sprites\MegaManShotSprite.json = Assets\Sprites\MegaManShotSprite.json
-		Assets\Sprites\TestSprite.json = Assets\Sprites\TestSprite.json
+		Assets\Sprites\MegaManSprite.json = Assets\Sprites\MegaManSprite.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{9352A260-EB46-4E2B-AD94-08F0665C8B63}"

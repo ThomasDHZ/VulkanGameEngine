@@ -47,7 +47,6 @@ int main()
         textureSystem.DestroyAllTextures();
         meshSystem.DestroyAllGameObjects();
         materialSystem.DestroyAllMaterials();
-        levelSystem.DestroyLevel();
         bufferSystem.DestroyAllBuffers();
 
         memorySystem.ReportLeaks();

@@ -2,10 +2,11 @@
 #include "pch.h"
 #include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
-#include "VRAM.h"
 #include <MemoryPoolSystem.h>
 
 typedef uint32 SpriteLayerId;
+typedef Vector<ivec2> AnimationFrames;
+
 struct SpriteLayer
 {
     uint32 InstanceCount = 0;
@@ -13,21 +14,30 @@ struct SpriteLayer
     uint32 SpriteDrawLayer = UINT32_MAX;
 };
 
+struct SpriteVram
+{
+    VkGuid VramSpriteID = VkGuid();
+    VkGuid SpriteMaterialID = VkGuid();
+    uint SpriteLayer = 0;
+    vec4 SpriteColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    ivec2 SpritePixelSize = ivec2();
+    vec2 SpriteScale = vec2(1.0f, 1.0f);
+    ivec2 SpriteCells = ivec2(0, 0);
+    vec2 SpriteUVSize = vec2();
+    vec2 SpriteSize = vec2(50.0f);
+    uint AnimationListID = 0;
+};
+
 struct Sprite
 {
-    uint SpriteId = UINT32_MAX;
-    uint GameObjectId = UINT32_MAX;
-    uint SpriteInstanceId = 0;
-    uint CurrentAnimationId = 0;
-    uint CurrentFrame = 0;
-    uint SpriteLayer = 0;
-    ivec2 FlipSprite = ivec2(0);
+    uint32 GameObjectId = UINT32_MAX;
+    uint32 SpriteInstanceId = 0;
+    uint32 CurrentAnimationId = 0;
+    uint32 CurrentFrame = 0;
+    uint32 SpriteLayer = 0;
+    ivec2  FlipSprite = ivec2(0);
     VkGuid SpriteVramId = VkGuid();
-    float CurrentFrameTime = 0.0f;
-    bool SpriteAlive = true;
-    bool IsSpriteTranformDirty = true;
-    bool IsSpriteAnimationDirty = true;
-    bool IsSpritePropertiesDirty = true;
+    float  CurrentFrameTime = 0.0f;
 };
 
 struct SpriteComponent 
@@ -40,6 +50,19 @@ struct SpriteComponent
     bool flipY = false;
     int layer = 0;
     glm::vec4 tint{ 1.0f };
+};
+
+struct Animation2D
+{
+    uint          AnimationId;
+    Vector<ivec2> FrameList;
+    float         FrameHoldTime;
+};
+
+enum TileColliderTypeEnum
+{
+    kTileColliderNone,
+    kTileCollidable
 };
 
 struct RenderableTag {};
@@ -70,12 +93,12 @@ private:
     Vector<uint32>				                      FreeSpriteIndicesList;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
-    uint32                                            GetNextSpriteIndex();
+    SpriteVram                                        LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture);
+    Vector<Animation2D>                               LoadSpriteAnimations(const char* spritePath);
     void                                              AddSpriteBatchLayer();
     void                                              SortSpriteLayers();
 
 public:
-    static uint32                                     SpriteIdd;
     uint32                                            SpriteMeshId;
     Vector<SpriteVram>                                SpriteVramList;
     Vector<SpriteLayer>                               SpriteLayerList;
@@ -87,6 +110,7 @@ public:
     DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
     DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
     DLL_EXPORT Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+    DLL_EXPORT bool                                   SpriteVramExists(const VkGuid& vramId);
     DLL_EXPORT void                                   Destroy(Sprite& sprite);
 };
 extern DLL_EXPORT SpriteSystem& spriteSystem;
