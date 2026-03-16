@@ -1,62 +1,76 @@
-//#include "RenderSystemDLL.h"
-//
-//void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
-//{
-//    renderSystem.StartUp(windowHandle, instance, surface);
-//}
-//
-//void RenderSystem_Update(void* windowHandle, RenderPassGuid& spriteRenderPassGuidId, LevelGuid& levelGuid, const float& deltaTime)
-//{
-//    return renderSystem.Update(windowHandle, spriteRenderPassGuidId, levelGuid, deltaTime);
-//}
-//
-//RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, ivec2 renderPassResolution)
-//{
-//    return renderSystem.LoadRenderPass(levelGuid, jsonPath, renderPassResolution);
-//}
-//
-//void RenderSystem_StartFrame()
-//{
-//    renderSystem.StartFrame();
-//}
-//
-//void RenderSystem_EndFrame(VkCommandBuffer* commandBufferListPtr, size_t commandBufferCount)
-//{
-//    Vector<VkCommandBuffer> commandBufferList = Vector<VkCommandBuffer>(commandBufferListPtr, commandBufferListPtr + commandBufferCount);
-//    renderSystem.EndFrame(commandBufferList);
-//}
-//
-//void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface, VkDebugUtilsMessengerEXT& debugMessenger)
-//{
-//   renderSystem.StartUp(windowHandle, instance, surface);
-//}
-//
-//void RenderSystem_RecreateSwapChain(void* windowHandle, VkGuid& spriteRenderPass2DId, VkGuid& levelId, const float& deltaTime)
-//{
-//    throw std::runtime_error("Not Implimented Yet");
-//}
-//
-//VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)
-//{
-//    return renderSystem.FindRenderPass(renderPassGuid);
-//}
-//
-//Vector<VulkanPipeline> RenderSystem_FindRenderPipelineList(const RenderPassGuid& renderPassGuid)
-//{
-//    return renderSystem.FindRenderPipelineList(renderPassGuid);
-//}
-//
-//void RenderSystem_DestroyRenderPasses()
-//{
-//    return renderSystem.DestroyRenderPasses();
-//}
-//
-//void RenderSystem_DestroyRenderPipelines()
-//{
-//    return renderSystem.DestroyRenderPipelines();
-//}
-//
-//void RenderSystem_Destroy()
-//{
-//    return renderSystem.Destroy();
-//}
+#include "RenderSystemDLL.h"
+
+ void RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
+{
+	 renderSystem.StartUp(windowHandle, instance, surface);
+}
+
+ RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath, bool useGlobalDescriptorSet)
+{
+	 renderSystem.LoadRenderPass(levelGuid, jsonPath, useGlobalDescriptorSet);
+}
+
+ RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet)
+{
+	 renderSystem.LoadRenderPass(levelGuid, renderPassLoader, useGlobalDescriptorSet);
+}
+
+ void RenderSystem_RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
+{
+	 renderSystem.RebuildSwapChain(vulkanRenderPass);
+}
+
+ void RenderSystem_Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime)
+{
+	 renderSystem.Update(windowHandle, levelGuid, deltaTime);
+}
+
+ VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)
+{
+	 renderSystem.FindRenderPass(renderPassGuid);
+}
+
+ const Vector<VulkanPipeline> RenderSystem_FindRenderPipelineList(const RenderPassGuid& renderPassGuid)
+{
+	 renderSystem.FindRenderPipelineList(renderPassGuid);
+}
+
+ void RenderSystem_Destroy()
+{
+	 renderSystem.Destroy();
+}
+
+ void RenderSystem_DestroyRenderPass(VulkanRenderPass& renderPass)
+{
+	 renderSystem.DestroyRenderPass(renderPass);
+}
+
+ void RenderSystem_DestroyRenderPasses()
+{
+	 renderSystem.DestroyRenderPasses();
+}
+
+ void RenderSystem_DestroyRenderPipelines()
+{
+	 renderSystem.DestroyRenderPipelines();
+}
+
+ void RenderSystem_DestroyPipeline(VulkanPipeline& vulkanPipelineDLL)
+{
+	 renderSystem.DestroyPipeline(vulkanPipelineDLL);
+}
+
+ void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
+{
+	 renderSystem.DestroyFrameBuffers(frameBufferList);
+}
+
+ void RenderSystem_DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
+{
+	 renderSystem.DestroyCommandBuffers(commandBuffer);
+}
+
+ void RenderSystem_DestroyBuffer(VkBuffer& buffer)
+{
+	 renderSystem.DestroyBuffer(buffer);
+}
