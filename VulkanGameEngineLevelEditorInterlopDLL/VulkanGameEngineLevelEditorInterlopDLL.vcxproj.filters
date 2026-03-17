@@ -48,6 +48,9 @@
     <ClInclude Include="VulkanSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderSystemDLL.cpp">

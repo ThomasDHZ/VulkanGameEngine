@@ -13,10 +13,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         private static bool _sharedDirSet = false;
         private static string ExeDirectory => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private static string EngineRoot => Path.GetFullPath(Path.Combine(ExeDirectory, @"..\..\..\..\"));
-        public static string GameEnginePath => Path.Combine(EngineRoot, @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll");
-        public static string Game2DPath => Path.Combine(EngineRoot, @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll");
-        public const string GameEngineDLL = @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll";
-        public const string Game2DDLL = @"C:\Users\dotha\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll";
+        public static string GameEnginePath => Path.Combine(EngineRoot, @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll");
+        public static string Game2DPath => Path.Combine(EngineRoot, @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll");
+        public const string GameEngineDLL = @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll";
+        public const string Game2DDLL = @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll";
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)] private static extern IntPtr LoadLibrary(string lpFileName);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void Debug_SetRootDirectory([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string engineRoot);

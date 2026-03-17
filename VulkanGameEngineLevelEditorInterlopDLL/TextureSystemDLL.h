@@ -1,5 +1,5 @@
-//#pragma once
-//#include <TextureSystem.h>
+#pragma once
+#include <TextureSystem.h>
 //
 //#ifdef __cplusplus
 //extern "C"

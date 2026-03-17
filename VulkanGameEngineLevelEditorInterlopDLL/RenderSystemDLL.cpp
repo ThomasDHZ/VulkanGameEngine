@@ -7,12 +7,12 @@
 
  RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath, bool useGlobalDescriptorSet)
 {
-	 renderSystem.LoadRenderPass(levelGuid, jsonPath, useGlobalDescriptorSet);
+	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath, useGlobalDescriptorSet);
 }
 
- RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet)
+ RenderPassGuid RenderSystem_LoadRenderPass2(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet)
 {
-	 renderSystem.LoadRenderPass(levelGuid, renderPassLoader, useGlobalDescriptorSet);
+	 return  renderSystem.LoadRenderPass(levelGuid, renderPassLoader, useGlobalDescriptorSet);
 }
 
  void RenderSystem_RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
@@ -27,12 +27,7 @@
 
  VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)
 {
-	 renderSystem.FindRenderPass(renderPassGuid);
-}
-
- const Vector<VulkanPipeline> RenderSystem_FindRenderPipelineList(const RenderPassGuid& renderPassGuid)
-{
-	 renderSystem.FindRenderPipelineList(renderPassGuid);
+	 return renderSystem.FindRenderPass(renderPassGuid);
 }
 
  void RenderSystem_Destroy()

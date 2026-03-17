@@ -106,7 +106,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void LoadShaderPipelineStructPrototypes(List<string> shaderList)
         {
             var shaderDirectory = Path.GetDirectoryName(Path.Combine(ConstConfig.BaseDirectoryPath, "Assets\\Shaders"));
-            List<string> fullPathString = shaderList.Select(path => Path.Combine("C:\\Users\\dotha\\Documents\\GitHub\\VulkanGameEngine\\VulkanGameEngine\\", path)).ToList();
+            List<string> fullPathString = shaderList.Select(path => Path.Combine("C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\VulkanGameEngine\\", path)).ToList();
             IntPtr[] cShaderPathList = CHelper.VectorToConstCharPtrPtr(fullPathString);
             IntPtr shaderPathsPtr = IntPtr.Zero;
 
