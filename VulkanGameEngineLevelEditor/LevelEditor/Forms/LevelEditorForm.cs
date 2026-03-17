@@ -55,7 +55,7 @@ namespace VulkanGameEngineLevelEditor
         [DllImport("kernel32.dll")] static extern bool AllocConsole();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void LogVulkanMessageDelegate(string message, int severity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.Cdecl)] public static extern void Renderer_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.Cdecl)] public static extern void RenderSystem_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
 
         public LevelEditorForm()
         {
@@ -81,7 +81,7 @@ namespace VulkanGameEngineLevelEditor
      
             LogVulkanMessageDelegate callback = LogVulkanMessage;
             _callbackHandle = GCHandle.Alloc(callback);
-            Renderer_CreateLogMessageCallback(callback);
+            RenderSystem_CreateLogMessageCallback(callback);
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
         }

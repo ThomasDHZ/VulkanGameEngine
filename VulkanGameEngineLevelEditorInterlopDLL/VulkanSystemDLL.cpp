@@ -1,5 +1,5 @@
-//#include "VulkanSystemDLL.h"
-//
+#include "VulkanSystemDLL.h"
+
 //LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
 //
 //void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback)
@@ -15,15 +15,15 @@
 //    }
 //}
 //
-// VkInstance VulkanSystem_CreateVulkanInstance()
-//{
-//	 return vulkanSystem.CreateVulkanInstance();
-//}
-//
-//VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance)
-//{
-//	return vulkanSystem.CreateVulkanSurface(windowHandle, instance);
-//}
+ VkInstance VulkanSystem_CreateVulkanInstance()
+{
+	 return vulkanSystem.CreateVulkanInstance();
+}
+
+VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance)
+{
+	return vulkanSystem.CreateVulkanSurface(windowHandle, instance);
+}
 //
 //VkCommandBuffer VulkanSystem_BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool)
 //{

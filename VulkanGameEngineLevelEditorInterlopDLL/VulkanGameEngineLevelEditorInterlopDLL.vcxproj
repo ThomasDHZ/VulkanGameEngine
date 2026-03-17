@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
     <ClInclude Include="BufferSystemDLL.h" />
+    <ClInclude Include="DebugSystemDLL.h" />
     <ClInclude Include="FileSystemDLL.h" />
     <ClInclude Include="GameObjectSystemDLL.h" />
     <ClInclude Include="GPUSystemDLL.h" />
@@ -160,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BufferSystemDLL.cpp" />
+    <ClCompile Include="DebugSystemDLL.cpp" />
     <ClCompile Include="FileSystemDLL.cpp" />
     <ClCompile Include="GameObjectSystemDLL.cpp" />
     <ClCompile Include="GPUSystemDLL.cpp" />

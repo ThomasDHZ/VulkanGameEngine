@@ -15,11 +15,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         private static string EngineRoot => Path.GetFullPath(Path.Combine(ExeDirectory, @"..\..\..\..\"));
         public static string GameEnginePath => Path.Combine(EngineRoot, @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll");
         public static string Game2DPath => Path.Combine(EngineRoot, @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll");
-        public const string GameEngineDLL = @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanEngineDLL.dll";
+        public const string GameEngineDLL = @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanGameEngineLevelEditorInterlopDLL.dll";
         public const string Game2DDLL = @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\ComponentDLL.dll";
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)] private static extern IntPtr LoadLibrary(string lpFileName);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void Debug_SetRootDirectory([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string engineRoot);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void DebugSystem_SetRootDirectory([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string engineRoot);
 
         public static void SetSharedDllDirectory()
         {
@@ -31,7 +31,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 throw new DirectoryNotFoundException($"DLL folder missing: {dllDir}");
             }
 
-            Debug_SetRootDirectory("..\\..\\..\\..\\Assets");
+            DebugSystem_SetRootDirectory("..\\..\\..\\..\\Assets");
             IntPtr gameEngineDLLPtr = LoadLibrary(GameEnginePath);
             IntPtr game2DDLLPtr = LoadLibrary(Game2DDLL);
             if (gameEngineDLLPtr == IntPtr.Zero ||

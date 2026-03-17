@@ -30,9 +30,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
     public unsafe struct RenderPassAttachementTextures
     {
-        public size_t RenderPassTextureCount {  get; set; }
-        public Texture* RenderPassTexture {  get; set; }
-        public Texture* DepthTexture {  get; set; }
+        public size_t RenderPassTextureCount { get; set; }
+        public Texture* RenderPassTexture { get; set; }
+        public Texture* DepthTexture { get; set; }
     };
 
     public unsafe static class RenderSystem
@@ -51,8 +51,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void CreateVulkanRenderer(WindowType windowType, void* renderAreaHandle, void* debuggerHandle)
         {
             RenderAreaHandle = renderAreaHandle;
-            VkInstance instance = Renderer_CreateVulkanInstance();
-            VkSurfaceKHR surface = Renderer_CreateVulkanSurface(RenderAreaHandle, instance);
+            VkInstance instance = VulkanSystem_CreateVulkanInstance();
+            VkSurfaceKHR surface = VulkanSystem_CreateVulkanSurface(RenderAreaHandle, instance);
             renderer = DLLSystem.CallDLLFunc(() => RenderSystem_StartUp(RenderAreaHandle, ref instance, ref surface));
         }
 
@@ -111,9 +111,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             DLLSystem.CallDLLFunc(() => RenderSystem_DestroyRenderPipelines());
         }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkInstance Renderer_CreateVulkanInstance();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkDebugUtilsMessengerEXT Renderer_SetupDebugMessenger(VkInstance instance);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkSurfaceKHR Renderer_CreateVulkanSurface(void* windowHandle, VkInstance instance);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkInstance VulkanSystem_CreateVulkanInstance();
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VkCommandBuffer Renderer_BeginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void Renderer_EndSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
 
@@ -129,5 +128,22 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyRenderPasses();
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyRenderPipelines();
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_Destroy();
+
+
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance instance, ref VkSurfaceKHR surface);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath, bool useGlobalDescriptorSet);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern RenderPassGuid RenderSystem_LoadRenderPass2(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_RebuildSwapChain(VulkanRenderPass& vulkanRenderPass);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_Destroy();
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyRenderPass(VulkanRenderPass& renderPass);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyRenderPasses();
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyRenderPipelines();
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyPipeline(VulkanPipeline& vulkanPipelineDLL);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
+        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyBuffer(VkBuffer& buffer);
     }
 }
