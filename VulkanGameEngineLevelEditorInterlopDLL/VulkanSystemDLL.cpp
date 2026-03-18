@@ -66,127 +66,66 @@ GraphicsSystem VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instan
 	};
 }
 
-//size_t VulkanSystem_GetInFlightFenceCount()
-//{
-//	return vulkanSystem.InFlightFences.size();
-//}
-//
-//size_t VulkanSystem_GetInFlightFences(VkFence* pFence, size_t capacity)
-//{
-//    size_t count = vulkanSystem.InFlightFences.size();
-//    if (capacity < count) return MAXSIZE_T; 
-//
-//    std::copy(vulkanSystem.InFlightFences.begin(), vulkanSystem.InFlightFences.end(), pFence);
-//    return count;
-//}
-//
-//size_t VulkanSystem_GetSwapChainImageCount()
-//{
-//	return vulkanSystem.SwapChainImages.size();
-//}
-//
-//size_t VulkanSystem_GetSwapChainImages(VkImage* pImages, size_t capacity)
-//{
-//	size_t count = vulkanSystem.SwapChainImages.size();
-//	if (capacity < count) return MAXSIZE_T;
-//
-//	std::copy(vulkanSystem.SwapChainImages.begin(), vulkanSystem.SwapChainImages.end(), pImages);
-//	return count;
-//}
-//
-//size_t VulkanSystem_GetCommandBufferCount()
-//{
-//	return vulkanSystem.CommandBuffers.size();
-//}
-//
-//size_t VulkanSystem_GetCommandBuffers(VkCommandBuffer* pCommandBuffer, size_t capacity)
-//{
-//	size_t count = vulkanSystem.CommandBuffers.size();
-//	if (capacity < count) return MAXSIZE_T;
-//
-//	std::copy(vulkanSystem.CommandBuffers.begin(), vulkanSystem.CommandBuffers.end(), pCommandBuffer);
-//	return count;
-//}
-//
-//size_t VulkanSystem_GetSwapChainImageViewCount()
-//{
-//	return vulkanSystem.SwapChainImages.size();
-//}
-//
-//size_t VulkanSystem_GetSwapChainImageViews(VkImageView* pSwapChainImages, size_t capacity)
-//{
-//	size_t count = vulkanSystem.SwapChainImages.size();
-//	if (capacity < count) return MAXSIZE_T;
-//
-//	std::copy(vulkanSystem.SwapChainImages.begin(), vulkanSystem.SwapChainImages.end(), pSwapChainImages);
-//	return count;
-//}
-//
-//size_t VulkanSystem_GetAcquireImageSemaphoreCount()
-//{
-//	return vulkanSystem.AcquireImageSemaphores.size();
-//}
-//
-//size_t VulkanSystem_GetAcquireImageSemaphores(VkSemaphore* pAcquireImageSemaphores, size_t capacity)
-//{
-//	size_t count = vulkanSystem.AcquireImageSemaphores.size();
-//	if (capacity < count) return MAXSIZE_T;
-//
-//	std::copy(vulkanSystem.AcquireImageSemaphores.begin(), vulkanSystem.AcquireImageSemaphores.end(), pAcquireImageSemaphores);
-//	return count;
-//}
-//
-//size_t VulkanSystem_GetPresentImageSemaphoreCount()
-//{
-//	return vulkanSystem.PresentImageSemaphores.size();
-//}
-//
-//size_t VulkanSystem_GetPresentImageSemaphores(VkSemaphore* pPresentImageSemaphores, size_t capacity)
-//{
-//	size_t count = vulkanSystem.PresentImageSemaphores.size();
-//	if (capacity < count) return MAXSIZE_T;
-//
-//	std::copy(vulkanSystem.PresentImageSemaphores.begin(), vulkanSystem.PresentImageSemaphores.end(), pPresentImageSemaphores);
-//	return count;
-//}
-//
-////
-////VkCommandBuffer VulkanSystem_BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool)
-////{
-////	return vulkanSystem.BeginSingleUseCommand(device, commandPool);
-////}
-////
-////void VulkanSystem_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
-////{
-////	return vulkanSystem.EndSingleUseCommand(device, commandPool, graphicsQueue, commandBuffer);
-////}
-////
-////void VulkanSystem_DestroyRenderer()
-////{
-////	vulkanSystem.DestroyRenderer();
-////}
-////
-////void VulkanSystem_DestroyRenderPass(VkDevice device, VkRenderPass* renderPass)
-////{
-////	return vulkanSystem.DestroyRenderPass(device, renderPass);
-////}
-////
-////void VulkanSystem_DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count)
-////{
-////	return vulkanSystem.DestroyFrameBuffers(device, frameBufferList, count);
-////}
-////
-////void VulkanSystem_DestroyDescriptorPool(VkDevice device, VkDescriptorPool* descriptorPool)
-////{
-////	return vulkanSystem.DestroyDescriptorPool(device, descriptorPool);
-////}
-////
-////void VulkanSystem_DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, VkCommandBuffer* commandBufferList, uint32 count)
-////{
-////	return vulkanSystem.DestroyCommandBuffers(device, commandPool, commandBufferList, count);
-////}
-////
-////void VulkanSystem_DestroyBuffer(VkDevice device, VkBuffer* buffer)
-////{
-////	return vulkanSystem.DestroyBuffer(device, buffer);
-////}
+ VkCommandBuffer VulkanSystem_BeginSingleUseCommand()
+{
+	 return vulkanSystem.BeginSingleUseCommand();
+}
+
+ void VulkanSystem_EndSingleUseCommand(VkCommandBuffer commandBuffer)
+{
+	 return vulkanSystem.EndSingleUseCommand(commandBuffer);
+}
+
+ VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount)
+{
+	 Vector<VkPresentModeKHR> presentModeList = vulkanSystem.GetSurfacePresentModes(physicalDevice, surface);
+	 *outCount = presentModeList.size();
+	 return presentModeList.data();
+}
+
+ VkSurfaceCapabilitiesKHR VulkanSystem_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
+{
+	 return vulkanSystem.GetSurfaceCapabilities(physicalDevice, surface);
+}
+
+ VkPhysicalDeviceProperties VulkanSystem_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice)
+{
+	 return vulkanSystem.GetPhysicalDeviceProperties(physicalDevice);
+}
+
+ VkPhysicalDeviceFeatures VulkanSystem_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice)
+{
+	 return vulkanSystem.GetPhysicalDeviceFeatures(physicalDevice);
+}
+
+ VkPhysicalDeviceFeatures2 VulkanSystem_GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice)
+{
+	 return vulkanSystem.GetPhysicalDeviceFeatures2(physicalDevice);
+}
+
+ VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, uint32* outCount)
+{
+	 Vector<VkPhysicalDevice> presentModeList = vulkanSystem.GetPhysicalDeviceList(instance);
+	 *outCount = presentModeList.size();
+	 return presentModeList.data();
+}
+
+ VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount)
+{
+	 Vector<VkSurfaceFormatKHR> physicalDeviceList = vulkanSystem.GetPhysicalDeviceFormats(physicalDevice, surface);
+	 *outCount = physicalDeviceList.size();
+	 return physicalDeviceList.data();
+}
+
+ VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount)
+{
+	 Vector<VkPresentModeKHR> physicalDevicePresentList = vulkanSystem.GetPhysicalDevicePresentModes(physicalDevice, surface);
+	 *outCount = physicalDevicePresentList.size();
+	 return physicalDevicePresentList.data();
+}
+
+
+ void VulkanSystem_DestroyRenderer()
+{
+	 return vulkanSystem.DestroyRenderer();
+}

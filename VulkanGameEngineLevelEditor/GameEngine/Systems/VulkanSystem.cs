@@ -138,17 +138,16 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkInstance VulkanSystem_CreateVulkanInstance();
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GraphicsRendererDLL VulkanSystem_RendererSetUp(void* windowHandle, ref VkInstance instance, ref VkSurfaceKHR surface);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetInFlightFenceCount();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetSwapChainImageCount();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetCommandBufferCount();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetSwapChainImageViewCount();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetAcquireImageSemaphoreCount();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetPresentImageSemaphoreCount();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetInFlightFences(VkFence* pFence, size_t capacity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetSwapChainImages(VkImage* pImages, size_t capacity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetCommandBuffers(VkCommandBuffer* pImages, size_t capacity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetSwapChainImageViews(VkImageView* pImages, size_t capacity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetAcquireImageSemaphores(VkSemaphore* pImages, size_t capacity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern size_t VulkanSystem_GetPresentImageSemaphores(VkSemaphore* pImages, size_t capacity);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer VulkanSystem_BeginSingleUseCommand();
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void VulkanSystem_EndSingleUseCommand(VkCommandBuffer commandBuffer);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out uint outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceCapabilitiesKHR VulkanSystem_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDeviceProperties VulkanSystem_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDeviceFeatures VulkanSystem_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDeviceFeatures2 VulkanSystem_GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, out uint outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out uint outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out uint outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void VulkanSystem_DestroyRenderer();
     }
 }

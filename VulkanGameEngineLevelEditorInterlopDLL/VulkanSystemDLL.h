@@ -43,32 +43,22 @@ typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT void				VulkanSystem_LogVulkanMessage(const char* message, int severity);
-	DLL_EXPORT void				VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
-	DLL_EXPORT VkInstance		VulkanSystem_CreateVulkanInstance();
-	DLL_EXPORT VkSurfaceKHR		VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
-	DLL_EXPORT GraphicsSystem   VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
-//	DLL_EXPORT size_t			VulkanSystem_GetInFlightFenceCount();
-//	DLL_EXPORT size_t			VulkanSystem_GetSwapChainImageCount();
-//	DLL_EXPORT size_t			VulkanSystem_GetCommandBufferCount();
-//	DLL_EXPORT size_t			VulkanSystem_GetSwapChainImageViewCount();
-//	DLL_EXPORT size_t			VulkanSystem_GetAcquireImageSemaphoreCount();
-//	DLL_EXPORT size_t			VulkanSystem_GetPresentImageSemaphoreCount();
-//	DLL_EXPORT size_t			VulkanSystem_GetInFlightFences(VkFence* pFence, size_t capacity);
-//	DLL_EXPORT size_t			VulkanSystem_GetSwapChainImages(VkImage* pImages, size_t capacity);
-//	DLL_EXPORT size_t			VulkanSystem_GetCommandBuffers(VkCommandBuffer* pImages, size_t capacity);
-//	DLL_EXPORT size_t			VulkanSystem_GetSwapChainImageViews(VkImageView* pImages, size_t capacity);
-//	DLL_EXPORT size_t			VulkanSystem_GetAcquireImageSemaphores(VkSemaphore* pImages, size_t capacity);
-//	DLL_EXPORT size_t			VulkanSystem_GetPresentImageSemaphores(VkSemaphore* pImages, size_t capacity);
-//
-////	DLL_EXPORT VkCommandBuffer  VulkanSystem_BeginSingleUseCommand(VkDevice device, VkCommandPool commandPool);
-////	DLL_EXPORT void				VulkanSystem_EndSingleUseCommand(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
-////	DLL_EXPORT void				VulkanSystem_DestroyRenderer();
-////	DLL_EXPORT void				VulkanSystem_DestroyRenderPass(VkDevice device, VkRenderPass* renderPass);
-////	DLL_EXPORT void				VulkanSystem_DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count);
-////	DLL_EXPORT void				VulkanSystem_DestroyDescriptorPool(VkDevice device, VkDescriptorPool* descriptorPool);
-////	DLL_EXPORT void				VulkanSystem_DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, VkCommandBuffer* commandBufferList, uint32 count);
-////	DLL_EXPORT void				VulkanSystem_DestroyBuffer(VkDevice device, VkBuffer* buffer);
+	DLL_EXPORT void						   VulkanSystem_LogVulkanMessage(const char* message, int severity);
+	DLL_EXPORT void					       VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
+	DLL_EXPORT VkInstance				   VulkanSystem_CreateVulkanInstance();
+	DLL_EXPORT VkSurfaceKHR				   VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
+	DLL_EXPORT GraphicsSystem			   VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
+	DLL_EXPORT VkCommandBuffer			   VulkanSystem_BeginSingleUseCommand();
+	DLL_EXPORT void						   VulkanSystem_EndSingleUseCommand(VkCommandBuffer commandBuffer);
+	DLL_EXPORT VkPresentModeKHR*		   VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount);
+	DLL_EXPORT VkSurfaceCapabilitiesKHR    VulkanSystem_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	DLL_EXPORT VkPhysicalDeviceProperties  VulkanSystem_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
+	DLL_EXPORT VkPhysicalDeviceFeatures    VulkanSystem_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
+	DLL_EXPORT VkPhysicalDeviceFeatures2   VulkanSystem_GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice);
+	DLL_EXPORT VkPhysicalDevice*		   VulkanSystem_GetPhysicalDeviceList(VkInstance instance, uint32* outCount);
+	DLL_EXPORT VkSurfaceFormatKHR*		   VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount);
+	DLL_EXPORT VkPresentModeKHR*		   VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount);
+	DLL_EXPORT void						   VulkanSystem_DestroyRenderer();
 #ifdef __cplusplus
 }
 #endif
