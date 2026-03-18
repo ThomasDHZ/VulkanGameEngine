@@ -1,3 +1,4 @@
+#include "LevelSystemDLL.h"
 //#include "LevelSystemDLL.h"
 //
 //VkCommandBuffer LevelSystem_RenderBloomPass(VkGuid& renderPassId)
@@ -58,3 +59,18 @@
 //    outCount = static_cast<int>(levelTileSetList.size());
 //    return memorySystem.AddPtrBuffer<LevelTileSet>(levelTileSetList.data(), levelTileSetList.size(), __FILE__, __LINE__, __func__);
 //}
+
+void LevelSystem_LoadLevel(const char* levelPath)
+{
+	levelSystem.LoadLevel(levelPath);
+}
+
+void LevelSystem_Update(const float& deltaTime)
+{
+	levelSystem.Update(deltaTime);
+}
+
+void LevelSystem_Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
+{
+	levelSystem.Draw(commandBuffer, deltaTime);
+}

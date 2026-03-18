@@ -90,6 +90,5 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
                 return default(TResult);
             }
         }
-
     }
 }

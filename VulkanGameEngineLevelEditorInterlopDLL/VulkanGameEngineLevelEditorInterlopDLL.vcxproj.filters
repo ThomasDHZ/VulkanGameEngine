@@ -54,6 +54,12 @@
     <ClInclude Include="DebugSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MemorySystemDLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPoolSystemDLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderSystemDLL.cpp">
@@ -90,6 +96,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DebugSystemDLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemorySystemDLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPoolSystemDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

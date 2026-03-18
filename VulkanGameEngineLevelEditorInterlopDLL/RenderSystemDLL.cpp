@@ -1,43 +1,5 @@
 #include "RenderSystemDLL.h"
 
-LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
-
-void RenderSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback)
-{
-	g_logVulkanMessageCallback = callback;
-}
-
-GraphicsSystem RenderSystem_StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
-{
-    renderSystem.StartUp(windowHandle, instance, surface);
-    return GraphicsSystem
-    {
-        .ApiVersion = vulkanSystem.ApiVersion,
-        .Instance = vulkanSystem.Instance,
-        .Device = vulkanSystem.Device,
-        .PhysicalDevice = vulkanSystem.PhysicalDevice,
-        .Surface = vulkanSystem.Surface,
-        .CommandPool = vulkanSystem.CommandPool,
-        .DebugMessenger = vulkanSystem.DebugMessenger,
-        .Swapchain = vulkanSystem.Swapchain,
-        .GraphicsQueue = vulkanSystem.GraphicsQueue,
-        .PresentQueue = vulkanSystem.PresentQueue,
-
-        .InFlightFencesPtr = vulkanSystem.InFlightFences.data(),
-        .SwapChainImagesPtr = vulkanSystem.SwapChainImages.data(),
-        .CommandBuffersPtr = vulkanSystem.CommandBuffers.data(),
-        .SwapChainImageViewPtr = vulkanSystem.SwapChainImageViews.data(),
-        .AcquireImageSemaphoresPtr = vulkanSystem.AcquireImageSemaphores.data(),
-        .PresentImageSemaphoresPtr = vulkanSystem.PresentImageSemaphores.data(),
-        .InFlightFencesCount = vulkanSystem.InFlightFences.size(),
-        .SwapChainImagesCount = vulkanSystem.SwapChainImages.size(),
-        .CommandBuffersCount = vulkanSystem.CommandBuffers.size(),
-        .SwapChainImageViewCount = vulkanSystem.SwapChainImageViews.size(),
-        .AcquireImageSemaphoresCount = vulkanSystem.AcquireImageSemaphores.size(),
-        .PresentImageSemaphoresCount = vulkanSystem.PresentImageSemaphores.size()
-    };
-}
-
  RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath, bool useGlobalDescriptorSet)
 {
 	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath, useGlobalDescriptorSet);

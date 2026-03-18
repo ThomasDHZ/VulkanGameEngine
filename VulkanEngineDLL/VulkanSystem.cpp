@@ -144,22 +144,31 @@ void VulkanSystem::DestroyRenderer()
 
 VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
 {
-    if (!windowHandle || !instance)
+    if (!windowHandle || instance == VK_NULL_HANDLE)  // note: compare to VK_NULL_HANDLE, not just !instance
     {
-        fprintf(stderr, "Invalid window handle (%p) or instance (%p)\n", windowHandle, instance);
+        fprintf(stderr, "Invalid window handle (%p) or instance (%p)\n", windowHandle, (void*)instance);
         return VK_NULL_HANDLE;
     }
 
     VkSurfaceKHR surface = VK_NULL_HANDLE;
 #if defined(_WIN32)
-    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo =
+    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
+    surfaceCreateInfo.hwnd = (HWND)windowHandle;
+
+    VkResult result = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
+    if (result != VK_SUCCESS)
     {
-        .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-        .pNext = nullptr,
-        .hinstance = GetModuleHandle(nullptr),
-        .hwnd = (HWND)windowHandle
-    };
-    Vector<VkPresentModeKHR>(vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface));
+        fprintf(stderr, "vkCreateWin32SurfaceKHR failed: %d (%s)\n",
+            result,
+            (result == VK_ERROR_EXTENSION_NOT_PRESENT) ? "VK_ERROR_EXTENSION_NOT_PRESENT" :
+            (result == VK_ERROR_INITIALIZATION_FAILED) ? "VK_ERROR_INITIALIZATION_FAILED" :
+            /* add more if needed */ "unknown");
+
+        // Optional: VulkanSystem_LogVulkanMessage if you have a formatted string helper
+        return VK_NULL_HANDLE;
+    }
 
 #elif defined(__linux__) && !defined(__ANDROID__)
     GLFWwindow* window = (GLFWwindow*)windowHandle;
@@ -180,6 +189,7 @@ VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance in
     }
 #endif
 
+    fprintf(stdout, "Surface created successfully: %p\n", (void*)surface);  // debug success
     return surface;
 }
 

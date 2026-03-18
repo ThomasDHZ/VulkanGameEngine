@@ -39,7 +39,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void LoadLevel(string levelPath)
         {
-            LevelSystem_LoadLevel(levelPath);
+            DLLSystem.CallDLLFunc(() => LevelSystem_LoadLevel(levelPath));
         }
 
         public static void Update(float deltaTime)
@@ -47,10 +47,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             DLLSystem.CallDLLFunc(() => LevelSystem_Update(deltaTime));
         }
 
-        public static void Draw(ListPtr<VkCommandBuffer> commandBufferList, float deltaTime)
+        public static void Draw(VkCommandBuffer commandBufferList, float deltaTime)
         {
-            commandBufferList.Add(DLLSystem.CallDLLFunc(() => LevelSystem_RenderLevel(SpriteRenderPass2DId, SpriteRenderPass2DId, deltaTime)));
-            commandBufferList.Add(DLLSystem.CallDLLFunc(() => LevelSystem_RenderFrameBuffer(FrameBufferId)));
+            DLLSystem.CallDLLFunc(() => LevelSystem_Draw(commandBufferList, deltaTime));
         }
 
         public static void DestroyLevel()
@@ -83,12 +82,17 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderFrameBuffer(Guid renderPassId);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer LevelSystem_RenderLevel(Guid renderPassId, Guid levelId, float deltaTime);
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
-        [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
+       // [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
+        //[DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_DestroyLevel();
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelLayout LevelSystem_GetLevelLayout();
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelLayer* LevelSystem_GetLevelLayerList(out int outCount);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint** LevelSystem_GetLevelTileMapList(out int outCount);
         [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern LevelTileSet* LevelSystem_GetLevelTileSetList(out int outCount);
+
+
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] String levelPath);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Update(float deltaTime);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void LevelSystem_Draw(VkCommandBuffer commandBuffer, float deltaTime);
     }
 }

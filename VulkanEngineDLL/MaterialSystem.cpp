@@ -40,11 +40,6 @@ VkGuid MaterialSystem::LoadMaterial(const String& materialPath)
     return materialGuid;
 }
 
-void MaterialSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
-{
-    //MaterialPool.UpdateMemoryPool(10, pipelineList);
-}
-
 const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const
 {
     auto it = GuidToPoolIndex.find(materialGuid);

@@ -54,6 +54,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             VkInstance instance = VulkanSystem_CreateVulkanInstance();
             VkSurfaceKHR surface = VulkanSystem_CreateVulkanSurface(RenderAreaHandle, instance);
             renderer = DLLSystem.CallDLLFunc(() => RenderSystem_StartUp(RenderAreaHandle, ref instance, ref surface));
+            VulkanSystem.StartUpVulkan(windowType, renderAreaHandle, debuggerHandle);
         }
 
         public static void LoadRenderPass(Guid levelId, string jsonPath, ivec2 renderPassResolution)
@@ -130,7 +131,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_Destroy();
 
 
-        //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
         //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance instance, ref VkSurfaceKHR surface);
         //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath, bool useGlobalDescriptorSet);
         //[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern RenderPassGuid RenderSystem_LoadRenderPass2(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet);

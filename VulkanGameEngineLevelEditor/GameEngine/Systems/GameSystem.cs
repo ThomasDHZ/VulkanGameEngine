@@ -31,16 +31,14 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static ListPtr<VkCommandBuffer> CommandBufferSubmitList { get; set; } = new ListPtr<VkCommandBuffer>();
         public static unsafe void StartUp(void* renderAreaHandle, void* debuggerHandle)
         {
-            RenderSystem.CreateVulkanRenderer(WindowType.Win32, renderAreaHandle, debuggerHandle);
-            MeshSystem.FindMesh(2);
-            GPUSystem.StartUp();
+            VulkanSystem.StartUpVulkan(WindowType.Win32, renderAreaHandle, debuggerHandle);
+            MemoryPoolSystem.StartUp();
             LevelSystem.LoadLevel(@$"Levels/TestLevel.json");
         }
 
         public static void Update(float deltaTime)
         {
             LevelSystem.Update(deltaTime);
-            TextureSystem.Update(deltaTime);
             MaterialSystem.Update(deltaTime);
             RenderSystem.Update(LevelSystem.SpriteRenderPass2DId, LevelSystem.LevelId, deltaTime);
 
@@ -52,7 +50,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void Draw(float deltaTime)
         {
             RenderSystem.StartFrame();
-            LevelSystem.Draw(CommandBufferSubmitList, deltaTime);
+            LevelSystem.Draw(CommandBufferSubmitList.First(), deltaTime);
             //  CommandBufferSubmitList.Add(ImGui_Draw(RenderSystem.renderer, RenderSystem.imGuiRenderer));
             RenderSystem.EndFrame(CommandBufferSubmitList);
             CommandBufferSubmitList.Clear();

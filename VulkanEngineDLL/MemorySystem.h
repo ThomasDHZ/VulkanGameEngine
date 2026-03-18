@@ -139,9 +139,3 @@ inline MemorySystem& MemorySystem::Get()
     static MemorySystem instance;
     return instance;
 }
-
-extern "C" {
-     MemoryLeakPtr MemoryLeakPtr_NewPtr(size_t size, size_t count, const char* file, int line, const char* type, const char* func, const char* notes);
-     void MemoryLeakPtr_DeletePtr(void* ptr);
-     void MemoryLeakPtr_ReportLeaks();
-}
