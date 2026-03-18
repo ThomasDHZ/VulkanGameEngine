@@ -50,7 +50,6 @@ private:
     public:
 
         DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
-        DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipeline);
         DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
         DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
         DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);

@@ -10,9 +10,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
@@ -22,24 +24,28 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 {
     public static unsafe class MaterialSystem
     {
-        public static Guid CreateMaterial(string materialPath)
+        public static Guid LoadMaterial(string materialPath)
         {
-            return DLLSystem.CallDLLFunc(() => MaterialSystem_CreateMaterial(materialPath));
+            return DLLSystem.CallDLLFunc(() => MaterialSystem_LoadMaterial(materialPath));
         }
 
-        public static void Update(float deltaTime)
+        public static bool MaterialExists(MaterialGuid materialGuid)
         {
-            DLLSystem.CallDLLFunc(() => MaterialSystem_Update(deltaTime));
+            return DLLSystem.CallDLLFunc(() => MaterialSystem_MaterialExists(materialGuid));
         }
 
-        public static bool MaterialMapExists(MaterialGuid materialGuid)
+        public static Material* FindMaterial(MaterialGuid materialGuid)
         {
-            return DLLSystem.CallDLLFunc(() => MaterialSystem_MaterialMapExists(materialGuid));
-        }
-
-        public static Material FindMaterial(MaterialGuid materialGuid)
-        {
-            return DLLSystem.CallDLLFunc(() => MaterialSystem_FindMaterial(materialGuid));
+            try
+            {
+                return MaterialSystem_FindMaterial(materialGuid);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                MessageBox.Show(ex.ToString());
+                return null;
+            }
         }
 
         public static void Destroy(MaterialGuid materialGuid)
@@ -52,11 +58,11 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             DLLSystem.CallDLLFunc(() => MaterialSystem_DestroyAllMaterials());
         }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Guid MaterialSystem_CreateMaterial([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string materialPath);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_Update(float deltaTime);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool MaterialSystem_MaterialMapExists(MaterialGuid materialGuid);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Material MaterialSystem_FindMaterial(MaterialGuid materialGuid);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_Destroy(MaterialGuid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Guid MaterialSystem_LoadMaterial([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string materialPath);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool MaterialSystem_MaterialExists(Guid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Material* MaterialSystem_FindMaterial(Guid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint MaterialSystem_FindMaterialPoolIndex(Guid materialGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_Destroy(Guid materialGuid);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MaterialSystem_DestroyAllMaterials();
     }
 }

@@ -39,7 +39,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void Update(float deltaTime)
         {
             LevelSystem.Update(deltaTime);
-            MaterialSystem.Update(deltaTime);
             RenderSystem.Update(LevelSystem.SpriteRenderPass2DId, LevelSystem.LevelId, deltaTime);
 
             VkCommandBuffer commandBuffer = RenderSystem.BeginSingleTimeCommands();
