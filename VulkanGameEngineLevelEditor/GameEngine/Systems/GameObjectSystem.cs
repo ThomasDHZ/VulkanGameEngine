@@ -23,144 +23,60 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         kGameObjectMegaManShot
     };
 
-    public enum ComponentTypeEnum : UInt64
+    public enum ComponentTypeEnum
     {
-        kUndefined = 0,
-        kInputComponent = 1 << 0,
-        kSpriteComponent = 1 << 1,
-        kTransform2DComponent = 1 << 2,
-        kTransform3DComponent = 1 << 3,
+        kUndefined,
+        kInputComponent,
+        kSpriteComponent,
+        kTransform2DComponent,
+        kTransform3DComponent,
+        kCameraFollowComponent,
     }
 
-    public unsafe struct GameObject
+    public struct GameObject
     {
-        public GameObjectTypeEnum GameObjectType { get; set; } = GameObjectTypeEnum.kGameObjectNone;
+        public uint GameObjectId = uint.MaxValue;
+        public uint ParentGameObjectId = uint.MaxValue;
+        public bool GameObjectAlive = true;
+        public uint Padding; //entt::entity GameObjectComponents in C++ side
 
-        [IgnoreProperty] // ← Hide
-        public UInt64 GameObjectComponentMask { get; set; } = (ulong)ComponentTypeEnum.kUndefined;
-
-        public UInt32 GameObjectId { get; set; } = UInt32.MaxValue;
-        public UInt32 ParentGameObjectId { get; set; } = UInt32.MaxValue;
-
-        [GameObjectComponent(ComponentTypeEnum.kTransform2DComponent)]
-        [IgnoreProperty] // ← Hide ID field
-        public UInt32 Transform2DComponentId { get; set; } = UInt32.MaxValue;
-
-        [GameObjectComponent(ComponentTypeEnum.kInputComponent)]
-        [IgnoreProperty]
-        public UInt32 InputComponentId { get; set; } = UInt32.MaxValue;
-
-        [GameObjectComponent(ComponentTypeEnum.kSpriteComponent)]
-        [IgnoreProperty]
-        public UInt32 SpriteComponentId { get; set; } = UInt32.MaxValue;
-
-        [IgnoreProperty] // ← Hide pointer
-        public void* GameObjectData { get; set; } = null;
-
-        public bool GameObjectAlive { get; set; } = true;
-
-        public GameObject() { }
-    }
-
-    namespace VulkanGameEngineLevelEditor.GameEngine.Systems
-    {
-        public static unsafe class GameObjectSystem
+        public GameObject()
         {
-            public static void CreateGameObjectFromJson(string gameObjectPath, vec2 gameObjectPosition)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObjectFromJson(gameObjectPath, gameObjectPosition));
-            }
-
-            public static void CreateGameObject(string name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, UInt16 gameObjectComponentMask, Guid vramId, vec2 objectPosition)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(name, parentGameObjectId, objectEnum, gameObjectComponentMask, vramId, objectPosition));
-            }
-
-            public static void Update(float deltaTime)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_Update(deltaTime));
-            }
-
-            public static void LoadTransformComponent(string jsonString, uint gameObjectId, vec2 gameObjectPosition)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_LoadTransformComponent(jsonString, gameObjectId, gameObjectPosition));
-            }
-
-            public static void LoadInputComponent(string jsonString, uint gameObjectId)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_LoadInputComponent(jsonString, gameObjectId));
-            }
-
-            public static void LoadSpriteComponent(string jsonString, GameObject gameObject)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_LoadSpriteComponent(jsonString, gameObject));
-            }
-
-            public static void DestroyGameObject(uint gameObjectId)
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyGameObject(gameObjectId));
-            }
-
-            public static void DestroyGameObjects()
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyGameObjects());
-            }
-
-            public static void DestroyDeadGameObjects()
-            {
-                DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyDeadGameObjects());
-            }
-
-            public static GameObject FindGameObject(uint gameObjectId)
-            {
-                return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindGameObject(gameObjectId));
-            }
-
-            public static Transform2DComponent FindTransform2DComponent(uint gameObjectId)
-            {
-                return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindTransform2DComponent(gameObjectId));
-            }
-
-            public static InputComponent FindInputComponent(uint gameObjectId)
-            {
-                return DLLSystem.CallDLLFunc(() => GameObjectSystem_FindInputComponent(gameObjectId));
-            }
-
-            public static List<GameObject> GameObjectList()
-            {
-                GameObject* gameObjectListPtr = GameObjectSystem_GameObjectList(out int outCount);
-                List<GameObject> gameObjectList = new ListPtr<GameObject>(gameObjectListPtr, outCount).ToList();
-                return gameObjectList;
-            }
-            public static List<Transform2DComponent> Transform2DComponentList()
-            {
-                Transform2DComponent* Transform2DComponentListPtr = GameObjectSystem_Transform2DComponentList(out int outCount);
-                List<Transform2DComponent> Transform2DComponentList = new ListPtr<Transform2DComponent>(Transform2DComponentListPtr, outCount).ToList();
-                return Transform2DComponentList;
-            }
-
-            public static List<InputComponent> InputComponentList()
-            {
-                InputComponent* inputComponentListPtr = GameObjectSystem_InputComponentList(out int outCount);
-                List<InputComponent> inputComponentList = new ListPtr<InputComponent>(inputComponentListPtr, outCount).ToList();
-                return inputComponentList;
-            }
-
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObjectFromJson([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string gameObjectPath, vec2 gameObjectPosition);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObject([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, UInt16 gameObjectComponentMask, Guid vramId, vec2 objectPosition);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_Update(float deltaTime);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_LoadTransformComponent([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, uint gameObjectId, vec2 gameObjectPosition);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_LoadInputComponent([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, uint gameObjectId);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_LoadSpriteComponent([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string jsonString, GameObject gameObject);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObjects();
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyDeadGameObjects();
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject GameObjectSystem_FindGameObject(uint gameObjectId);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject* GameObjectSystem_GameObjectList(out int returnListCount);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern Transform2DComponent* GameObjectSystem_Transform2DComponentList(out int returnListCount);
-            [DllImport(DLLSystem.Game2DDLL, CallingConvention = CallingConvention.StdCall)] private static extern InputComponent* GameObjectSystem_InputComponentList(out int returnListCount);
         }
+    }
+
+    public static unsafe class GameObjectSystem
+    {
+        public static void CreateGameObject(String gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
+        {
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(gameObjectJson, gameObjectPosition, parentGameObjectId));
+        }
+
+        public static void Update(float deltaTime)
+        {
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_Update(deltaTime));
+        }
+
+        public static void UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType)
+        {
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_UpdateGameObjectComponent(gameObjectId, componentType));
+        }
+
+        public static void DestroyGameObject(uint gameObjectId)
+        {
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyGameObject(gameObjectId));
+        }
+
+        public static void DestroyDeadGameObjects()
+        {
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyDeadGameObjects());
+        }
+
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObject([MarshalAs(UnmanagedType.LPStr)] String gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_Update(float deltaTime);
+        // [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObject* GameObjectSystem_UpdateGameObject(uint gameObjectIndex);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyDeadGameObjects();
     }
 }

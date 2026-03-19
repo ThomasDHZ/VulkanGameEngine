@@ -76,7 +76,7 @@ GraphicsSystem VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instan
 	 return vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
- VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount)
+ VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
 {
 	 Vector<VkPresentModeKHR> presentModeList = vulkanSystem.GetSurfacePresentModes(physicalDevice, surface);
 	 *outCount = presentModeList.size();
@@ -103,21 +103,21 @@ GraphicsSystem VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instan
 	 return vulkanSystem.GetPhysicalDeviceFeatures2(physicalDevice);
 }
 
- VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, uint32* outCount)
+ VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, size_t* outCount)
 {
 	 Vector<VkPhysicalDevice> presentModeList = vulkanSystem.GetPhysicalDeviceList(instance);
 	 *outCount = presentModeList.size();
 	 return presentModeList.data();
 }
 
- VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount)
+ VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
 {
 	 Vector<VkSurfaceFormatKHR> physicalDeviceList = vulkanSystem.GetPhysicalDeviceFormats(physicalDevice, surface);
 	 *outCount = physicalDeviceList.size();
 	 return physicalDeviceList.data();
 }
 
- VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32* outCount)
+ VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
 {
 	 Vector<VkPresentModeKHR> physicalDevicePresentList = vulkanSystem.GetPhysicalDevicePresentModes(physicalDevice, surface);
 	 *outCount = physicalDevicePresentList.size();

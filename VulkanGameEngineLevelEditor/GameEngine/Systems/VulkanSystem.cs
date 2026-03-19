@@ -3,9 +3,11 @@ using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Vulkan;
 using static VulkanGameEngineLevelEditor.LevelEditorForm;
 
@@ -91,7 +93,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void StartUpVulkan(WindowType windowType, void* renderAreaHandle, void* debuggerHandle)
         {
-            var a = sizeof(GraphicsRendererDLL);
             RenderAreaHandle = renderAreaHandle;
             VkInstance instance = VulkanSystem_CreateVulkanInstance();
             VkSurfaceKHR surface = VulkanSystem_CreateVulkanSurface(RenderAreaHandle, instance);
@@ -124,30 +125,125 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             MaxSampleCount = renderer.MaxSampleCount;
         }
 
-        public static VkInstance CreateVulkanInstance()
+        public static void CreateVulkanInstance()
         {
-            return DLLSystem.CallDLLFunc(() => VulkanSystem_CreateVulkanInstance());
+            Instance = DLLSystem.CallDLLFunc(() => VulkanSystem_CreateVulkanInstance());
         }
 
-        public static VkSurfaceKHR CreateVulkanSurface()
+        public static void CreateVulkanSurface()
         {
-            return DLLSystem.CallDLLFunc(() => VulkanSystem_CreateVulkanSurface(RenderAreaHandle, Instance));
+            Surface = DLLSystem.CallDLLFunc(() => VulkanSystem_CreateVulkanSurface(RenderAreaHandle, Instance));
+        }
+        public static VkCommandBuffer BeginSingleUseCommand() 
+        {
+            return DLLSystem.CallDLLFunc(() => VulkanSystem_BeginSingleUseCommand());
         }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.Cdecl)] public static extern void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
+        public static void EndSingleUseCommand(VkCommandBuffer commandBuffer) 
+        {
+            DLLSystem.CallDLLFunc(() => VulkanSystem_EndSingleUseCommand(commandBuffer));
+        }
+
+        public static ListPtr<VkPresentModeKHR> GetSurfacePresentModes() 
+        {
+            try
+            {
+                VkPresentModeKHR* ptr = VulkanSystem_GetSurfacePresentModes(PhysicalDevice, Instance, out size_t outCount);
+                return new ListPtr<VkPresentModeKHR>(ptr, outCount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                MessageBox.Show(ex.ToString());
+                return null;
+            }
+        }
+
+        public static VkSurfaceCapabilitiesKHR GetSurfaceCapabilities() 
+        {
+            return DLLSystem.CallDLLFunc(() => VulkanSystem_GetSurfaceCapabilities(PhysicalDevice, Surface));
+        }
+
+        public static VkPhysicalDeviceProperties GetPhysicalDeviceProperties() 
+        {
+            return DLLSystem.CallDLLFunc(() => VulkanSystem_GetPhysicalDeviceProperties(PhysicalDevice));
+        }
+
+        public static VkPhysicalDeviceFeatures GetPhysicalDeviceFeatures() 
+        {
+            return DLLSystem.CallDLLFunc(() => VulkanSystem_GetPhysicalDeviceFeatures(PhysicalDevice));
+        }
+
+        public static VkPhysicalDeviceFeatures2 GetPhysicalDeviceFeatures2()
+        {
+            return DLLSystem.CallDLLFunc(() => VulkanSystem_GetPhysicalDeviceFeatures2(PhysicalDevice));
+        }
+
+        public static ListPtr<VkPhysicalDevice> GetPhysicalDeviceList() 
+        {
+            try
+            {
+                VkPhysicalDevice* ptr = VulkanSystem_GetPhysicalDeviceList(Instance, out size_t outCount);
+                return new ListPtr<VkPhysicalDevice>(ptr, outCount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                MessageBox.Show(ex.ToString());
+                return null;
+            }
+        }
+
+        public static ListPtr<VkSurfaceFormatKHR> GetPhysicalDeviceFormats() 
+        {
+            try
+            {
+                VkSurfaceFormatKHR* ptr = VulkanSystem_GetPhysicalDeviceFormats(PhysicalDevice, Instance, out size_t outCount);
+                return new ListPtr<VkSurfaceFormatKHR>(ptr, outCount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                MessageBox.Show(ex.ToString());
+                return null;
+            }
+        }
+
+        public static ListPtr<VkPresentModeKHR> GetPhysicalDevicePresentModes() 
+        {
+            try
+            {
+                VkPresentModeKHR* ptr = VulkanSystem_GetPhysicalDevicePresentModes(PhysicalDevice, Instance, out size_t outCount);
+                return new ListPtr<VkPresentModeKHR>(ptr, outCount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                MessageBox.Show(ex.ToString());
+                return null;
+            }
+        }
+
+        public static void DestroyRenderer()
+        {
+            DLLSystem.CallDLLFunc(() => VulkanSystem_DestroyRenderer());
+        }
+
+
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.Cdecl)]   public static extern void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkInstance VulkanSystem_CreateVulkanInstance();
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GraphicsRendererDLL VulkanSystem_RendererSetUp(void* windowHandle, ref VkInstance instance, ref VkSurfaceKHR surface);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkCommandBuffer VulkanSystem_BeginSingleUseCommand();
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void VulkanSystem_EndSingleUseCommand(VkCommandBuffer commandBuffer);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out uint outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out size_t outCount);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceCapabilitiesKHR VulkanSystem_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDeviceProperties VulkanSystem_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDeviceFeatures VulkanSystem_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDeviceFeatures2 VulkanSystem_GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, out uint outCount);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out uint outCount);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out uint outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, out size_t outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out size_t outCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, out size_t outCount);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void VulkanSystem_DestroyRenderer();
     }
 }

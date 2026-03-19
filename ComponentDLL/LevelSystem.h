@@ -74,6 +74,18 @@ public:
     static LevelSystem& Get();
 
 private:
+    template <typename T>
+    ComponentTypeEnum GetComponentEnum()
+    {
+        if constexpr (std::is_same_v<T, InputComponent>)         return kInputComponent;
+        if constexpr (std::is_same_v<T, SpriteComponent>)        return kSpriteComponent;
+        if constexpr (std::is_same_v<T, Transform2DComponent>)   return kTransform2DComponent;
+        if constexpr (std::is_same_v<T, Transform3DComponent>)   return kTransform3DComponent;
+        if constexpr (std::is_same_v<T, CameraFollowComponent>)  return kCameraFollowComponent;
+        return kUndefined;
+    }
+
+private:
     LevelSystem() = default;
     ~LevelSystem() = default;
     LevelSystem(const LevelSystem&) = delete;
@@ -135,6 +147,17 @@ public:
     DLL_EXPORT Vector<LevelLayer>              GetLevelLayerList();
     DLL_EXPORT Vector<Vector<uint>>            GetLevelTileMapList();
     DLL_EXPORT Vector<LevelTileSet>            GetLevelTileSetList();
+
+    template <typename T>
+    void* GetGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType)
+    {
+        GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
+        auto view = EntityRegistry.view<GameObjectComponentLinker, T>();
+        for (auto [entity, gameObjectId, component] : view.each())
+        {
+            return &component;
+        }
+    }
 };
 extern DLL_EXPORT LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()

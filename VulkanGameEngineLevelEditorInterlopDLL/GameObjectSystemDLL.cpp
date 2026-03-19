@@ -1,77 +1,40 @@
-//#include "pch.h"
-//#include "GameObjectSystemDLL.h"
-//
-// void GameObjectSystem_CreateGameObjectFromJson(const char* gameObjectPath, vec2 gameObjectPosition)
-//{
-//
-//}
-//
-// void GameObjectSystem_CreateGameObject(const char* name, uint parentGameObjectId, GameObjectTypeEnum objectEnum, uint64 gameObjectComponentMask, VkGuid vramId, vec2 objectPosition)
-//{
-//
-//}
-//
-// void GameObjectSystem_Update(const float& deltaTime)
-//{
-//
-//}
-//
-// uint GameObjectSystem_LoadTransformComponent(const char* jsonString, uint gameObjectId, const vec2& gameObjectPosition)
-//{
-//	return  uint();
-//}
-//
-// uint GameObjectSystem_LoadInputComponent(const char* jsonString, uint gameObjectId)
-//{
-//	return  uint();
-//}
-//
-// uint GameObjectSystem_LoadSpriteComponent(const char* jsonString, GameObject& gameObject)
-//{
-//	return  uint();
-//}
-//
-// void GameObjectSystem_DestroyGameObject(uint gameObjectId)
-//{
-//
-//}
-//
-// void GameObjectSystem_DestroyGameObjects()
-//{
-//
-//}
-//
-// void GameObjectSystem_DestroyDeadGameObjects()
-//{
-//
-//}
-//
-// GameObject& GameObjectSystem_FindGameObject(uint gameObjectId)
-//{
-//	// TODO: insert return statement here
-//}
-//
-// Transform2DComponent GameObjectSystem_FindTransform2DComponent(uint gameObjectId)
-//{
-//	return  Transform2DComponent();
-//}
-//
-// InputComponent GameObjectSystem_FindInputComponent(uint gameObjectId)
-//{
-//	return  InputComponent();
-//}
-//
-// GameObject* GameObjectSystem_GetGameObjectList(int& outCount)
-//{
-//	return nullptr;
-//}
-//
-// Transform2DComponent* GameObjectSystem_GetTransform2DComponentList(int& outCount)
-//{
-//	return nullptr;
-//}
-//
-// InputComponent* GameObjectSystem_GetInputComponentList(int& outCount)
-//{
-//	return nullptr;
-//}
+#include "GameObjectSystemDLL.h"
+#include <LevelSystem.h>
+
+void GameObjectSystem_CreateGameObject(const char* gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
+{
+	gameObjectSystem.CreateGameObject(gameObjectJson, gameObjectPosition, parentGameObjectId);
+}
+
+void GameObjectSystem_Update(float deltaTime)
+{
+	gameObjectSystem.Update(deltaTime);
+}
+
+GameObject* GameObjectSystem_UpdateGameObject(uint gameObjectIndex)
+{
+	return &gameObjectSystem.GameObjectList[gameObjectIndex];
+}
+
+void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType)
+{
+    switch (componentType)
+    {
+        case kInputComponent: return levelSystem.GetGameObjectComponent<InputComponent>(gameObjectId, componentType);
+        case kSpriteComponent: return levelSystem.GetGameObjectComponent<SpriteComponent>(gameObjectId, componentType);
+        case kTransform2DComponent:  return levelSystem.GetGameObjectComponent<Transform2DComponent>(gameObjectId, componentType);
+        case kTransform3DComponent: return levelSystem.GetGameObjectComponent<Transform3DComponent>(gameObjectId, componentType);
+        case kCameraFollowComponent: return levelSystem.GetGameObjectComponent<CameraFollowComponent>(gameObjectId, componentType);
+        default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");
+    }
+}
+
+void GameObjectSystem_DestroyGameObject(uint gameObjectId)
+{
+	gameObjectSystem.DestroyGameObject(gameObjectId);
+}
+
+void GameObjectSystem_DestroyDeadGameObjects()
+{
+	gameObjectSystem.DestroyDeadGameObjects();
+}

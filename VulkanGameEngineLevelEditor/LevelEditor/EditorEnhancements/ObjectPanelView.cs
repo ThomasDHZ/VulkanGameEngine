@@ -39,7 +39,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private TableLayoutPanel _propTable;
         private Panel _headerPanel;
         private Panel _contentPanel;
-        private bool _isExpanded = true; 
+        private bool _isExpanded = true;
 
         public ObjectPanelView(LevelEditorForm form, object obj, ToolTip toolTip, ObjectPanelView parentPanel = null)
         {
@@ -171,7 +171,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             contentPanel.Controls.Add(addComponentButton);
         }
 
-   
+
         private void PopulateProperties()
         {
             try
@@ -273,16 +273,16 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                         switch (component)
                         {
                             case ComponentTypeEnum.kTransform2DComponent:
-                            //    object transformComponent = GameObjectSystem.Transform2DComponentMap[gameObject.GameObjectId];
-                             //   AddPropertyControls(transformComponent, componentPanel, ChildObjectPanels);
+                                //    object transformComponent = GameObjectSystem.Transform2DComponentMap[gameObject.GameObjectId];
+                                //   AddPropertyControls(transformComponent, componentPanel, ChildObjectPanels);
                                 break;
                             case ComponentTypeEnum.kInputComponent:
-                           //     object inputComponent = GameObjectSystem.InputComponentMap[gameObject.GameObjectId];
-                            //    AddPropertyControls(inputComponent, componentPanel, ChildObjectPanels);
+                                //     object inputComponent = GameObjectSystem.InputComponentMap[gameObject.GameObjectId];
+                                //    AddPropertyControls(inputComponent, componentPanel, ChildObjectPanels);
                                 break;
                             case ComponentTypeEnum.kSpriteComponent:
-                             //   Sprite componentObject = SpriteSystem.FindSprite(gameObject.GameObjectId);
-                            //    AddPropertyControls(componentObject, componentPanel, ChildObjectPanels);
+                                //   Sprite componentObject = SpriteSystem.FindSprite(gameObject.GameObjectId);
+                                //    AddPropertyControls(componentObject, componentPanel, ChildObjectPanels);
                                 break;
                             default:
                                 MessageBox.Show(@$"Component type not implemented: {component}");
@@ -592,7 +592,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         {
             var depthWriteProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.depthWriteEnable));
             var depthCompareProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.depthCompareOp));
-           // var stencilTestProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.stencilTestEnable));
+            // var stencilTestProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.stencilTestEnable));
             var frontProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.front));
             var backProp = typeof(VkPipelineDepthStencilStateCreateInfoModel).GetProperty(nameof(depthStencil.back));
 

@@ -17,7 +17,6 @@ using Vulkan;
 using VulkanGameEngineLevelEditor.Compilers;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngine.Systems;
-using VulkanGameEngineLevelEditor.GameEngine.Systems.VulkanGameEngineLevelEditor.GameEngine.Systems;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
@@ -51,7 +50,7 @@ namespace VulkanGameEngineLevelEditor
         public List<System.String> ShaderList = new List<string>();
 
 
-        BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
+       // BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
         [DllImport("kernel32.dll")] static extern bool AllocConsole();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void LogVulkanMessageDelegate(string message, int severity);

@@ -1,13 +1,8 @@
 #include "RenderSystemDLL.h"
 
- RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath, bool useGlobalDescriptorSet)
+ RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath)
 {
-	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath, useGlobalDescriptorSet);
-}
-
- RenderPassGuid RenderSystem_LoadRenderPass2(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet)
-{
-	 return  renderSystem.LoadRenderPass(levelGuid, renderPassLoader, useGlobalDescriptorSet);
+	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath);
 }
 
  void RenderSystem_RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
@@ -15,9 +10,9 @@
 	 renderSystem.RebuildSwapChain(vulkanRenderPass);
 }
 
- void RenderSystem_Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime)
+ void RenderSystem_Update(void* windowHandle, const float& deltaTime)
 {
-	 renderSystem.Update(windowHandle, levelGuid, deltaTime);
+	 renderSystem.Update(windowHandle, deltaTime);
 }
 
  VulkanRenderPass RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)

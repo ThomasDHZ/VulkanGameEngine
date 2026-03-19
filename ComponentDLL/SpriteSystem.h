@@ -104,6 +104,7 @@ public:
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
 
+    DLL_EXPORT void                                   CreateSprite(uint32 gameObjectId, VkGuid& spriteVramId);
     DLL_EXPORT void                                   CreateSprite(GameObject& gameObject, VkGuid& spriteVramId);
     DLL_EXPORT VkGuid                                 LoadSpriteVRAM(const String& spriteVramPath);
     DLL_EXPORT void                                   Update(const float& deltaTime);

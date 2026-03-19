@@ -29,8 +29,8 @@ struct GameObject
 {
     uint32 GameObjectId = UINT32_MAX;
     uint32 ParentGameObjectId = UINT32_MAX;
-    entt::entity GameObjectComponents;
     bool   GameObjectAlive = true;
+    entt::entity GameObjectComponents; //Don't use in level editor side
 };
 
 struct GameObjectComponentLinker
@@ -38,11 +38,12 @@ struct GameObjectComponentLinker
     uint32 GameObjectId = UINT32_MAX;
 };
 
+class LevelSystem;
 class GameObjectSystem
 {
 public:
     static GameObjectSystem& Get();
-
+    
 private:
     GameObjectSystem() = default;
     ~GameObjectSystem() = default;

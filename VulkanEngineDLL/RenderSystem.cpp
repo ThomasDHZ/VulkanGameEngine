@@ -16,7 +16,7 @@ void RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKH
     vulkanSystem.RendererSetUp(windowHandle, instance, surface);
 }
 
-void RenderSystem::Update(void* windowHandle, LevelGuid& levelGuid, const float& deltaTime)
+void RenderSystem::Update(void* windowHandle, const float& deltaTime)
 {
     if (vulkanSystem.RebuildRendererFlag)
     {
@@ -25,14 +25,14 @@ void RenderSystem::Update(void* windowHandle, LevelGuid& levelGuid, const float&
     }
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath, bool useGlobalDescriptorSet)
+RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
     renderSystem.RenderPassLoaderJsonMap[renderPassLoader.RenderPassId] = jsonPath;
-    return LoadRenderPass(levelGuid, renderPassLoader, useGlobalDescriptorSet);
+    return LoadRenderPass(levelGuid, renderPassLoader);
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader, bool useGlobalDescriptorSet)
+RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader)
 {
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
@@ -53,7 +53,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
 
     static bool s_alreadyCreated = false;
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
-    BuildRenderPass(vulkanRenderPass, renderPassLoader, useGlobalDescriptorSet);
+    BuildRenderPass(vulkanRenderPass, renderPassLoader);
     BuildFrameBuffer(vulkanRenderPass);
     RenderPassMap[vulkanRenderPass.RenderPassId] = vulkanRenderPass;
 
@@ -203,7 +203,7 @@ void RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
     }
 }
 
-void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const RenderPassLoader& renderPassJsonLoader, bool globalDescriptorSet)
+void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const RenderPassLoader& renderPassJsonLoader)
 {
     VkAttachmentReference unusedRef = {};
     VkAttachmentReference depthReference = VkAttachmentReference();
@@ -255,8 +255,8 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
             });
     }
 
-    Vector<VkAttachmentDescription> attachmentDescriptionList = BuildRenderPassAttachments(vulkanRenderPass, globalDescriptorSet);
-    Vector<Texture> frameBufferTextureList = BuildRenderPassAttachmentTextures(vulkanRenderPass, globalDescriptorSet);
+    Vector<VkAttachmentDescription> attachmentDescriptionList = BuildRenderPassAttachments(vulkanRenderPass);
+    Vector<Texture> frameBufferTextureList = BuildRenderPassAttachmentTextures(vulkanRenderPass);
 
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
     if (renderPassJsonLoader.UseCubeMapMultiView)
@@ -287,7 +287,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
 }
 
-Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, bool globalDescriptorSet)
+Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass)
 {
     Vector<VkAttachmentDescription> attachmentDescriptionList;
     Vector<RenderPassAttachmentTexture> renderPassAttachmentTextureInfoList = RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId];
@@ -324,7 +324,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
     return attachmentDescriptionList;
 }
 
-Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, bool globalDescriptorSet)
+Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass)
 {
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 

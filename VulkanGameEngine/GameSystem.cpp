@@ -68,8 +68,7 @@ void GameSystem::Update(float deltaTime)
     levelSystem.Update(deltaTime);
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
-    renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
-    gameObjectSystem.DestroyDeadGameObjects();
+   // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 }
 
 #else

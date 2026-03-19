@@ -22,12 +22,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         GLFW
     }
 
-    public static class GameSystem
+    public unsafe static class GameSystem
     {
-        public static Guid TileSetId { get; set; }
-        public static Guid LevelRendererId { get; set; }
-        public static Guid SpriteRenderPass2DId { get; set; }
-        public static Guid FrameBufferId { get; set; }
         public static ListPtr<VkCommandBuffer> CommandBufferSubmitList { get; set; } = new ListPtr<VkCommandBuffer>();
         public static unsafe void StartUp(void* renderAreaHandle, void* debuggerHandle)
         {
@@ -39,20 +35,20 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         public static void Update(float deltaTime)
         {
             LevelSystem.Update(deltaTime);
-            RenderSystem.Update(LevelSystem.SpriteRenderPass2DId, LevelSystem.LevelId, deltaTime);
-
-            VkCommandBuffer commandBuffer = RenderSystem.BeginSingleTimeCommands();
+            GameObjectSystem.Update(deltaTime);
+            LevelSystem.Update(deltaTime);
+            SpriteSystem.Update(deltaTime);
             MeshSystem.Update(deltaTime);
-            RenderSystem.EndSingleTimeCommands(commandBuffer);
+            RenderSystem.Update(deltaTime);
         }
 
         public static void Draw(float deltaTime)
         {
-            RenderSystem.StartFrame();
+            //RenderSystem.StartFrame();
             LevelSystem.Draw(CommandBufferSubmitList.First(), deltaTime);
-            //  CommandBufferSubmitList.Add(ImGui_Draw(RenderSystem.renderer, RenderSystem.imGuiRenderer));
-            RenderSystem.EndFrame(CommandBufferSubmitList);
-            CommandBufferSubmitList.Clear();
+            ////  CommandBufferSubmitList.Add(ImGui_Draw(RenderSystem.renderer, RenderSystem.imGuiRenderer));
+            //RenderSystem.EndFrame(CommandBufferSubmitList);
+            //CommandBufferSubmitList.Clear();
         }
 
         public static void Destroy()

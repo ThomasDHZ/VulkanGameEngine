@@ -111,7 +111,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             foreach (var buffer in VulkanBufferMap)
             {
-                VulkanBuffer_DestroyBuffer(RenderSystem.renderer, buffer.Value);
+             //   VulkanBuffer_DestroyBuffer(RenderSystem.renderer, buffer.Value);
             }
         }
 
