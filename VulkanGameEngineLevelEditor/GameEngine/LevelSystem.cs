@@ -12,14 +12,13 @@ using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
-using VulkanGameEngineLevelEditor;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using VulkanGameEngineLevelEditor.Models;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public static unsafe class LevelSystem
     {

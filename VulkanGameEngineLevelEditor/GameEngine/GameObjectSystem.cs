@@ -9,12 +9,11 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using VulkanGameEngineLevelEditor.GameEngine.GameObjectComponents;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public enum GameObjectTypeEnum
     {

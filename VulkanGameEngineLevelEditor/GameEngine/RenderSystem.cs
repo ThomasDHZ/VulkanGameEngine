@@ -26,7 +26,7 @@ using VulkanGameEngineLevelEditor.Models;
 using static System.Windows.Forms.DataFormats;
 
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public unsafe struct RenderPassAttachementTextures
     {
@@ -46,7 +46,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             RenderAreaHandle = renderAreaHandle;
             VulkanSystem.CreateVulkanInstance();
             VulkanSystem.CreateVulkanSurface();
-            //renderer = DLLSystem.CallDLLFunc(() => RenderSystem_StartUp(RenderAreaHandle, ref instance, ref surface));
             VulkanSystem.StartUpVulkan(windowType, renderAreaHandle, debuggerHandle);
         }
 

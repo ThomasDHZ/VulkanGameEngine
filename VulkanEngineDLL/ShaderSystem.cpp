@@ -29,14 +29,14 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      };
  }
 
- ShaderPipelineDataDLL ShaderSystem::LoadPipelineShaderData(const Vector<String>& pipelineShaderPathList)
+ ShaderPipelineData ShaderSystem::LoadPipelineShaderData(const Vector<String>& pipelineShaderPathList)
  {
      SpvReflectShaderModule spvModule;
      Vector<VkVertexInputBindingDescription> vertexInputBindingList;
      Vector<VkVertexInputAttributeDescription> vertexInputAttributeList;
-     Vector<ShaderPushConstantDLL> constBuffers;
+     Vector<ShaderPushConstant> constBuffers;
      Vector<ShaderStruct> shaderStructs;
-     Vector<ShaderDescriptorBindingDLL> descriptorBindings;
+     Vector<ShaderDescriptorBinding> descriptorBindings;
 
      for (auto& pipelineShaderPath : pipelineShaderPathList)
      {
@@ -51,7 +51,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          spvReflectDestroyShaderModule(&spvModule);
      }
 
-     return ShaderPipelineDataDLL
+     return ShaderPipelineData
      {
           .ShaderList = pipelineShaderPathList,
           .DescriptorBindingsList = descriptorBindings,
@@ -71,13 +71,13 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              auto asdf = renderPassJson["RenderPipelineList"][y].get<String>();
              nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassJson["RenderPipelineList"][y].get<String>().c_str());
              Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
-             Vector<ShaderStructDLL> shaderStructList = LoadProtoTypeStructs(shaderJsonList);
+             Vector<ShaderStruct> shaderStructList = LoadProtoTypeStructs(shaderJsonList);
              for (auto& shaderStruct : shaderStructList)
              {
                  if (!ShaderStructPrototypeExists(shaderStruct.Name))
                  {
                      String name = shaderStruct.Name;
-                     shaderSystem.PipelineShaderStructPrototypeMap[name] = ShaderStructDLL
+                     shaderSystem.PipelineShaderStructPrototypeMap[name] = ShaderStruct
                      {
                          .Name = name,
                          .ShaderBufferSize = shaderStruct.ShaderBufferSize,
@@ -226,7 +226,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return outputs;
  }
 
- void ShaderSystem::LoadShaderConstantBufferData(const SpvReflectShaderModule& module, Vector<ShaderPushConstantDLL>& shaderPushConstantList)
+ void ShaderSystem::LoadShaderConstantBufferData(const SpvReflectShaderModule& module, Vector<ShaderPushConstant>& shaderPushConstantList)
  {
      uint32 pushConstCount = 0;
      SPV_VULKAN_RESULT(spvReflectEnumeratePushConstantBlocks(&module, &pushConstCount, nullptr));
@@ -239,8 +239,8 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          if (!SearchShaderConstantBufferExists(shaderPushConstantList, pushConstantName))
          {
              size_t bufferSize = 0;
-             Vector<ShaderVariableDLL> shaderStructVariableList = LoadShaderStructVariables(*pushConstant->type_description, bufferSize);
-             shaderSystem.ShaderPushConstantMap[pushConstantName] = ShaderPushConstantDLL
+             Vector<ShaderVariable> shaderStructVariableList = LoadShaderStructVariables(*pushConstant->type_description, bufferSize);
+             shaderSystem.ShaderPushConstantMap[pushConstantName] = ShaderPushConstant
              {
                 .PushConstantName = pushConstantName,
                 .PushConstantSize = bufferSize,
@@ -257,7 +257,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          else
          {
              auto it = std::find_if(shaderPushConstantList.data(), shaderPushConstantList.data() + shaderPushConstantList.size(),
-                 [&](ShaderPushConstantDLL& var) {
+                 [&](ShaderPushConstant& var) {
                      var.ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
                      return var.PushConstantName == pushConstant->name;
                  }
@@ -266,7 +266,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      }
  }
 
- void ShaderSystem::LoadShaderDescriptorBindings(const SpvReflectShaderModule& module, Vector<ShaderDescriptorBindingDLL>& shaderDescriptorSetBinding)
+ void ShaderSystem::LoadShaderDescriptorBindings(const SpvReflectShaderModule& module, Vector<ShaderDescriptorBinding>& shaderDescriptorSetBinding)
  {
      uint32_t descriptorBindingsCount = 0;
      SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorBindings(&module, &descriptorBindingsCount, nullptr));
@@ -277,10 +277,10 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      for (auto& descriptorBinding : descriptorSetBindings)
      {
          String name(descriptorBinding->name);
-         auto it = std::ranges::find(shaderDescriptorSetBinding, name, &ShaderDescriptorBindingDLL::Name);
+         auto it = std::ranges::find(shaderDescriptorSetBinding, name, &ShaderDescriptorBinding::Name);
          if(it == shaderDescriptorSetBinding.end())
          {
-             shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBindingDLL
+             shaderDescriptorSetBinding.emplace_back(ShaderDescriptorBinding
                  {
                      .Name = name,
                      .DescriptorSet = descriptorBinding->set,
@@ -295,13 +295,13 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              it->ShaderStageFlags |= static_cast<VkShaderStageFlags>(module.shader_stage);
          }
      }
-     std::sort(shaderDescriptorSetBinding.begin(), shaderDescriptorSetBinding.end(), [](const ShaderDescriptorBindingDLL& a, const ShaderDescriptorBindingDLL& b) 
+     std::sort(shaderDescriptorSetBinding.begin(), shaderDescriptorSetBinding.end(), [](const ShaderDescriptorBinding& a, const ShaderDescriptorBinding& b) 
          {
              return a.Binding < b.Binding;
          });
  }
 
- void ShaderSystem::LoadShaderDescriptorSets(const SpvReflectShaderModule& module, Vector<ShaderStructDLL>& shaderStructList)
+ void ShaderSystem::LoadShaderDescriptorSets(const SpvReflectShaderModule& module, Vector<ShaderStruct>& shaderStructList)
  {
      uint descriptorSetCount = 0;
      SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorSets(&module, &descriptorSetCount, nullptr));
@@ -336,11 +336,11 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return specializationConstantList;
  }
 
- ShaderStructDLL ShaderSystem::LoadShaderPipelineStruct(const SpvReflectTypeDescription& shaderInfo)
+ ShaderStruct ShaderSystem::LoadShaderPipelineStruct(const SpvReflectTypeDescription& shaderInfo)
  {
      size_t bufferSize = 0;
-     Vector<ShaderVariableDLL> structVariableList = LoadShaderStructVariables(shaderInfo, bufferSize);
-     ShaderStructDLL shaderStruct =
+     Vector<ShaderVariable> structVariableList = LoadShaderStructVariables(shaderInfo, bufferSize);
+     ShaderStruct shaderStruct =
      {
          .Name = String(shaderInfo.type_name),
          .ShaderBufferSize = bufferSize,
@@ -350,9 +350,9 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return shaderStruct;
  }
 
- Vector<ShaderVariableDLL> ShaderSystem::LoadShaderStructVariables(const SpvReflectTypeDescription& shaderInfo, size_t& returnBufferSize)
+ Vector<ShaderVariable> ShaderSystem::LoadShaderStructVariables(const SpvReflectTypeDescription& shaderInfo, size_t& returnBufferSize)
  {
-     Vector<ShaderVariableDLL> shaderVariables;
+     Vector<ShaderVariable> shaderVariables;
      Vector<SpvReflectTypeDescription> shaderVariableList = Vector<SpvReflectTypeDescription>(shaderInfo.members, shaderInfo.members + shaderInfo.member_count);
      for (auto& variable : shaderVariableList)
      {
@@ -452,7 +452,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
              }
          }
 
-         shaderVariables.emplace_back(ShaderVariableDLL
+         shaderVariables.emplace_back(ShaderVariable
              {
                  .Name = String(variable.struct_member_name),
                  .Size = arraySize == 0 ? memberSize : memberSize * arraySize,
@@ -467,9 +467,9 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return shaderVariables;
  }
 
- Vector<ShaderStructDLL> ShaderSystem::LoadProtoTypeStructs(const Vector<String>& pipelineShaderList)
+ Vector<ShaderStruct> ShaderSystem::LoadProtoTypeStructs(const Vector<String>& pipelineShaderList)
  {
-     Vector<ShaderStructDLL> shaderStructs;
+     Vector<ShaderStruct> shaderStructs;
      SpvReflectShaderModule spvModule{};
 
      for (const auto& filePath : pipelineShaderList)
@@ -488,7 +488,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return shaderStructs;
  }
 
- void ShaderSystem::LoadShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vector<ShaderStructDLL>& shaderStructList)
+ void ShaderSystem::LoadShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vector<ShaderStruct>& shaderStructList)
  {
      uint descriptorSetCount = 0;
      SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorSets(&module, &descriptorSetCount, nullptr));
@@ -558,7 +558,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return true;
  }
 
- void ShaderSystem::UpdatePushConstantBuffer(ShaderPushConstantDLL& pushConstantStruct)
+ void ShaderSystem::UpdatePushConstantBuffer(ShaderPushConstant& pushConstantStruct)
  {
      size_t offset = 0;
      for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
@@ -580,7 +580,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      UpdatePushConstantBuffer(ShaderPushConstantMap[pushConstantName]);
  }
 
- void ShaderSystem::UpdateShaderBuffer(ShaderStructDLL& shaderStruct, uint vulkanBufferId)
+ void ShaderSystem::UpdateShaderBuffer(ShaderStruct& shaderStruct, uint vulkanBufferId)
  {
      if (!ShaderPipelineStructExists(vulkanBufferId))
      {
@@ -596,13 +596,13 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
          offset += shaderStrucVar.Size;
      }
-     bufferSystem.VMAUpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
+     bufferSystem.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
  }
 
- ShaderStructDLL ShaderSystem::CopyShaderStructProtoType(const String& structName)
+ ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)
  {
-     ShaderStructDLL shaderStructCopy = FindShaderProtoTypeStruct(structName);
-     ShaderStructDLL shaderStruct = ShaderStructDLL
+     ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName);
+     ShaderStruct shaderStruct = ShaderStruct
      {
          .Name = shaderStructCopy.Name,
          .ShaderBufferSize = shaderStructCopy.ShaderBufferSize,
@@ -612,8 +612,8 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      };
      for (size_t x = 0; x < shaderStructCopy.ShaderBufferVariableList.size(); ++x)
      {
-         ShaderVariableDLL& destVar = shaderStruct.ShaderBufferVariableList[x];
-         const ShaderVariableDLL& srcVar = shaderStructCopy.ShaderBufferVariableList[x];
+         ShaderVariable& destVar = shaderStruct.ShaderBufferVariableList[x];
+         const ShaderVariable& srcVar = shaderStructCopy.ShaderBufferVariableList[x];
 
          destVar.Name = srcVar.Name;
          destVar.Size = srcVar.Size;
@@ -642,29 +642,29 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return results;
  }
 
- ShaderPipelineDataDLL ShaderSystem::FindShaderModule(const String& shaderFile)
+ ShaderPipelineData ShaderSystem::FindShaderModule(const String& shaderFile)
  {
      return shaderSystem.ShaderModuleMap.at(shaderFile);
  }
 
- ShaderPushConstantDLL& ShaderSystem::FindShaderPushConstant(const String& shaderFile)
+ ShaderPushConstant& ShaderSystem::FindShaderPushConstant(const String& shaderFile)
  {
      return shaderSystem.ShaderPushConstantMap.at(shaderFile);
  }
 
- ShaderStructDLL ShaderSystem::FindShaderProtoTypeStruct(const String& shaderKey)
+ ShaderStruct ShaderSystem::FindShaderProtoTypeStruct(const String& shaderKey)
  {
      return shaderSystem.PipelineShaderStructPrototypeMap.at(shaderKey);
  }
 
- ShaderStructDLL& ShaderSystem::FindShaderStruct(int vulkanBufferId)
+ ShaderStruct& ShaderSystem::FindShaderStruct(int vulkanBufferId)
  {
      return shaderSystem.PipelineShaderStructMap.at(vulkanBufferId);
  }
 
- ShaderVariableDLL& ShaderSystem::FindShaderPipelineStructVariable(ShaderStructDLL& shaderStruct, const String& variableName)
+ ShaderVariable& ShaderSystem::FindShaderPipelineStructVariable(ShaderStruct& shaderStruct, const String& variableName)
  {
-     auto it = std::ranges::find_if(shaderStruct.ShaderBufferVariableList, [&](const ShaderVariableDLL& var)
+     auto it = std::ranges::find_if(shaderStruct.ShaderBufferVariableList, [&](const ShaderVariable& var)
          {
              return var.Name == variableName;
          });
@@ -676,9 +676,9 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return *it;
  }
 
- ShaderVariableDLL& ShaderSystem::FindShaderPushConstantStructVariable(ShaderPushConstantDLL& shaderPushConstant, const String& variableName)
+ ShaderVariable& ShaderSystem::FindShaderPushConstantStructVariable(ShaderPushConstant& shaderPushConstant, const String& variableName)
  {
-     auto it = std::ranges::find_if(shaderPushConstant.PushConstantVariableList, [&](const ShaderVariableDLL& var)
+     auto it = std::ranges::find_if(shaderPushConstant.PushConstantVariableList, [&](const ShaderVariable& var)
          {
              return var.Name == variableName; 
          });
@@ -689,27 +689,27 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return *it;
  }
 
- bool ShaderSystem::SearchShaderConstantBufferExists(const Vector<ShaderPushConstantDLL>& shaderPushConstantList, const String& constBufferName)
+ bool ShaderSystem::SearchShaderConstantBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName)
  {
-     auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstantDLL& var)
+     auto it = std::ranges::find_if(shaderPushConstantList, [&](const ShaderPushConstant& var)
          {
              return var.PushConstantName == constBufferName;
          });
      return it != shaderPushConstantList.end();
  }
 
- bool ShaderSystem::SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBindingDLL>& shaderDescriptorBindingList, const String& descriptorBindingName)
+ bool ShaderSystem::SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName)
  {
-     auto it = std::ranges::find_if(shaderDescriptorBindingList, [&](const ShaderDescriptorBindingDLL& var)
+     auto it = std::ranges::find_if(shaderDescriptorBindingList, [&](const ShaderDescriptorBinding& var)
          {
              return var.Name == descriptorBindingName;
          });
      return it != shaderDescriptorBindingList.end();
  }
 
- bool ShaderSystem::SearchShaderPipelineStructExists(const Vector<ShaderStructDLL>& shaderStructList, const String& structName)
+ bool ShaderSystem::SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName)
  {
-     auto it = std::ranges::find_if(shaderStructList, [&](const ShaderStructDLL& var)
+     auto it = std::ranges::find_if(shaderStructList, [&](const ShaderStruct& var)
          {
              return var.Name == structName;
          });

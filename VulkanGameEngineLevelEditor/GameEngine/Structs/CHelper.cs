@@ -8,10 +8,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Vulkan;
-using VulkanGameEngineLevelEditor.GameEngine.Structs;
-using VulkanGameEngineLevelEditor.GameEngine.Systems;
 
-namespace VulkanGameEngineLevelEditor.GameEngine
+namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
     public static class CHelper
     {

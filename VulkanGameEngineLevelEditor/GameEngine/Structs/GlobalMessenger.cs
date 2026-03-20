@@ -4,7 +4,7 @@ using System.Threading;
 using VulkanGameEngineLevelEditor.Models;
 using Silk.NET.Vulkan;
 
-namespace VulkanGameEngineLevelEditor.GameEngineAPI
+namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
     public static class GlobalMessenger
     {

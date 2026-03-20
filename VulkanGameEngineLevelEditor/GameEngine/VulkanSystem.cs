@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using Vulkan;
 using static VulkanGameEngineLevelEditor.LevelEditorForm;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -228,7 +228,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             DLLSystem.CallDLLFunc(() => VulkanSystem_DestroyRenderer());
         }
-
 
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.Cdecl)]   public static extern void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkInstance VulkanSystem_CreateVulkanInstance();

@@ -44,8 +44,7 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-    DLL_EXPORT void Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList);
-    DLL_EXPORT void LoadSceneLights(const String& directionalLightPath);
+    DLL_EXPORT void LoadSceneLights(const String& sceneLights);
 };
 extern DLL_EXPORT LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()

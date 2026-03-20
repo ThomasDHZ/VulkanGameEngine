@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public enum MeshTypeEnum
     {

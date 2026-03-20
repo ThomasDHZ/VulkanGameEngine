@@ -81,7 +81,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         }
         size_t uniqueDescriptorSetCount = uniqueSets.size();
 
-        Vector<Vector<ShaderDescriptorBindingDLL>> descriptorSetLists;
+        Vector<Vector<ShaderDescriptorBinding>> descriptorSetLists;
         descriptorSetLists.resize(uniqueDescriptorSetCount);
         if (uniqueDescriptorSetCount > 1)
         {

@@ -13,7 +13,7 @@ using VulkanGameEngineLevelEditor.LevelEditor;
 using VulkanGameEngineLevelEditor.Models;
 
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public enum WindowType
     {

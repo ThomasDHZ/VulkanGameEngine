@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using VulkanGameEngineLevelEditor.GameEngine.Systems;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public unsafe static class MemorySystem
     {

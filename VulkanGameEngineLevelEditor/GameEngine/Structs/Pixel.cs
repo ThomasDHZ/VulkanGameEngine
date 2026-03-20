@@ -1,4 +1,4 @@
-﻿namespace VulkanGameEngineLevelEditor.GameEngineAPI
+﻿namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
     public struct Pixel3
     {

@@ -1,27 +1,31 @@
-//#include "pch.h"
-//#include "BufferSystemDLL.h"
-//
-//VulkanBuffer VulkanBuffer_CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
-//{
-//    return bufferSystem.CreateVulkanBuffer(bufferId, bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
-//}
-//
-//VulkanBuffer VulkanBuffer_CreateVulkanBuffer2(uint bufferId, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer)
-//{
-//    return bufferSystem.CreateVulkanBuffer(bufferId, bufferData, bufferElementSize, bufferElementCount, bufferTypeEnum, usage, properties, usingStagingBuffer);
-//}
-//
-//void VulkanBuffer_UpdateBufferMemory(VulkanBuffer& vulkanBuffer, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount)
-//{
-//    bufferSystem.UpdateBufferMemory(vulkanBuffer, bufferData, bufferElementSize, bufferElementCount);
-//}
-//
-//void VulkanBuffer_CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size)
-//{
-//    bufferSystem.CopyBuffer(srcBuffer, dstBuffer, size);
-//}
-//
-//void VulkanBuffer_DestroyBuffer(VulkanBuffer& vulkanBuffer)
-//{
-//    bufferSystem.DestroyBuffer(vulkanBuffer);
-//}
+#include "BufferSystemDLL.h"
+
+ uint32 BufferSystem_CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset)
+{
+     return  BufferSystem_CreateStaticVulkanBuffer(srcData, size, shaderUsageFlags, offset);
+}
+
+ uint32 BufferSystem_CreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags)
+{
+     return BufferSystem_CreateDynamicBuffer(srcData, size, usageFlags);
+}
+
+ void BufferSystem_UpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset)
+{
+     return BufferSystem_UpdateDynamicBuffer(bufferId, data, size, offset);
+}
+
+ void BufferSystem_CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset)
+{
+     return BufferSystem_CopyBuffer(srcBuffer, dstBuffer, size, shaderUsageFlags, offset);
+}
+
+ void BufferSystem_DestroyBuffer(VulkanBuffer& vulkanBuffer)
+{
+     return BufferSystem_DestroyBuffer(vulkanBuffer);
+}
+
+ void BufferSystem_DestroyAllBuffers()
+{
+     return BufferSystem_DestroyAllBuffers();
+}

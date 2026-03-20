@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using Vulkan;
 using static VulkanGameEngineLevelEditor.LevelEditorForm;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public enum MemoryPoolTypes
     {

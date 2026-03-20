@@ -8,12 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using VulkanGameEngineLevelEditor.GameEngine.GameObjectComponents;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public struct SpriteLayer
     {
@@ -127,7 +126,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             DLLSystem.CallDLLFunc(() => SpriteSystem_Destroy(sprite));
         }
-
 
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void SpriteSystem_CreateSprite(uint gameObjectId, Guid spriteVramId);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern Guid SpriteSystem_LoadSpriteVRAM([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string spriteVramPath);

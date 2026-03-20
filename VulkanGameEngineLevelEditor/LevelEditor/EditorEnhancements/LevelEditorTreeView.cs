@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Vulkan;
-using VulkanGameEngineLevelEditor.GameEngine.Systems;
+using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 using MethodInvoker = System.Windows.Forms.MethodInvoker;

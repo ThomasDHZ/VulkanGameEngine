@@ -15,10 +15,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vulkan;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
-using VulkanGameEngineLevelEditor.GameEngineAPI;
 
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
     public struct Texture
     {
@@ -109,6 +108,5 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_TextureExists(Guid textureGuid);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_DepthTextureExists(Guid renderPassGuid);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern bool TextureSystem_RenderedTextureExists(Guid renderPassGuid, Guid textureGuid);
-
     }
 }

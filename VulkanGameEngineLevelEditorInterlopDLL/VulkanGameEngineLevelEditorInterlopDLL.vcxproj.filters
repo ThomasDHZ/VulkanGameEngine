@@ -27,9 +27,6 @@
     <ClInclude Include="MaterialSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GPUSystemDLL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +57,12 @@
     <ClInclude Include="MemoryPoolSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderSystemDLL.cpp">
@@ -72,9 +75,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MaterialSystemDLL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPUSystemDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileSystemDLL.cpp">
@@ -102,6 +102,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryPoolSystemDLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LightSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

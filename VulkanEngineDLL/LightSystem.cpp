@@ -6,14 +6,9 @@
 
 LightSystem& lightSystem = LightSystem::Get();
 
-void LightSystem::Update(const float& deltaTime, Vector<VulkanPipeline>& pipelineList)
+void LightSystem::LoadSceneLights(const String& sceneLights)
 {
-
-}
-
-void LightSystem::LoadSceneLights(const String& directionalLightPath)
-{
-    nlohmann::json json = fileSystem.LoadJsonFile(directionalLightPath.c_str());
+    nlohmann::json json = fileSystem.LoadJsonFile(sceneLights.c_str());
     uint lightType = json["LightType"];
     switch (lightType)
     {

@@ -20,8 +20,22 @@ using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.Models;
 
-namespace VulkanGameEngineLevelEditor.GameEngine.Systems
+namespace VulkanGameEngineLevelEditor.GameEngine
 {
+    public struct Material
+    {
+        public Guid MaterialGuid { get; set; } = new Guid();
+        public Guid AlbedoDataId { get; set; } = new Guid();
+        public Guid NormalDataId { get; set; } = new Guid();
+        public Guid PackedMRODataId { get; set; } = new Guid();
+        public Guid PackedSheenSSSDataId { get; set; } = new Guid();
+        public Guid UnusedDataId { get; set; } = new Guid();
+        public Guid EmissionDataId { get; set; } = new Guid();
+        public Material()
+        {
+        }
+    };
+
     public static unsafe class MaterialSystem
     {
         public static Guid LoadMaterial(string materialPath)

@@ -106,7 +106,7 @@ struct VulkanPipeline
     VkPipelineCache PipelineCache = VK_NULL_HANDLE;
 };
 
-struct ShaderVariableDLL
+struct ShaderVariable
 {
     String                          Name;
     size_t                          Size = 0;
@@ -115,24 +115,24 @@ struct ShaderVariableDLL
     ShaderMemberType                MemberTypeEnum = shaderUnknown;
 };
 
-struct ShaderStructDLL
+struct ShaderStruct
 {
     String                          Name;
     size_t			                ShaderBufferSize = 0;
-    Vector<ShaderVariableDLL>       ShaderBufferVariableList;
+    Vector<ShaderVariable>       ShaderBufferVariableList;
     int                             ShaderStructBufferId;
     Vector<byte>                    ShaderStructBuffer;
 };
 
-struct ShaderDescriptorSetDLL
+struct ShaderDescriptorSet
 {
     String                          Name;
     uint32                          Binding;
     VkDescriptorType                DescripterType;
-    Vector<ShaderStructDLL>         ShaderStructList;
+    Vector<ShaderStruct>         ShaderStructList;
 };
 
-struct ShaderDescriptorBindingDLL
+struct ShaderDescriptorBinding
 {
     String                          Name;
     uint32                          DescriptorSet = UINT32_MAX;
@@ -145,24 +145,24 @@ struct ShaderDescriptorBindingDLL
     Vector<VkDescriptorBufferInfo>  DescriptorBufferInfo;
 };
 
-struct ShaderPushConstantDLL
+struct ShaderPushConstant
 {
     String                          PushConstantName;
     size_t			                PushConstantSize = 0;
     VkShaderStageFlags              ShaderStageFlags;
-    Vector<ShaderVariableDLL>       PushConstantVariableList;
+    Vector<ShaderVariable>       PushConstantVariableList;
     Vector<byte>                    PushConstantBuffer;
     bool			                GlobalPushContsant = false;
 };
 
-struct ShaderPipelineDataDLL
+struct ShaderPipelineData
 {
     Vector<String>                              ShaderList;
-    Vector<ShaderDescriptorBindingDLL>             DescriptorBindingsList;
-    Vector<ShaderStructDLL>                        ShaderStructList;
+    Vector<ShaderDescriptorBinding>             DescriptorBindingsList;
+    Vector<ShaderStruct>                        ShaderStructList;
     Vector<VkVertexInputBindingDescription>     VertexInputBindingList;
     Vector<VkVertexInputAttributeDescription>   VertexInputAttributeList;
-    Vector<ShaderPushConstantDLL>                  PushConstantList;
+    Vector<ShaderPushConstant>                  PushConstantList;
 };
 
 struct RenderPipelineLoader
@@ -173,7 +173,7 @@ struct RenderPipelineLoader
     uint32 SubPassId = UINT32_MAX;
     ivec2 RenderPassResolution = ivec2();
     VkRenderPass RenderPass = VK_NULL_HANDLE;
-    ShaderPipelineDataDLL ShaderPiplineInfo;
+    ShaderPipelineData ShaderPiplineInfo;
     Vector<VkViewport> ViewportList;
     Vector<VkRect2D> ScissorList;
     Vector<VkPipelineColorBlendAttachmentState> PipelineColorBlendAttachmentStateList;

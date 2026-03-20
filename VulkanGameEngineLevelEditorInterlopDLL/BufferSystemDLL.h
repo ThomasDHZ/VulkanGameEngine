@@ -1,14 +1,15 @@
-//#pragma once
-//#include <BufferSystem.h>
-//
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
-//	DLL_EXPORT VulkanBuffer VulkanBuffer_CreateVulkanBuffer(uint bufferId, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
-//	DLL_EXPORT VulkanBuffer VulkanBuffer_CreateVulkanBuffer2(uint bufferId, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount, BufferTypeEnum bufferTypeEnum, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool usingStagingBuffer);
-//	DLL_EXPORT void         VulkanBuffer_UpdateBufferMemory(VulkanBuffer& vulkanBuffer, void* bufferData, VkDeviceSize bufferElementSize, uint bufferElementCount);
-//	DLL_EXPORT void         VulkanBuffer_CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size);
-//	DLL_EXPORT void         VulkanBuffer_DestroyBuffer(VulkanBuffer& vulkanBuffer);
-//#ifdef __cplusplus
-//}
-//#endif
+#pragma once
+#include <BufferSystem.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    DLL_EXPORT uint32                      BufferSystem_CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
+    DLL_EXPORT uint32                      BufferSystem_CreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
+    DLL_EXPORT void                        BufferSystem_UpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
+    DLL_EXPORT void                        BufferSystem_CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
+    DLL_EXPORT void                        BufferSystem_DestroyBuffer(VulkanBuffer& vulkanBuffer);
+    DLL_EXPORT void                        BufferSystem_DestroyAllBuffers();
+#ifdef __cplusplus
+}
+#endif

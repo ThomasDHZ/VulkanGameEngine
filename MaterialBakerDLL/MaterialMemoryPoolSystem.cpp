@@ -67,7 +67,7 @@ void MaterialMemoryPoolSystem::StartUp()
 
     Vector<byte> GpuDataBufferMemoryPool2 = Vector<byte>(sizeof(MaterialBakerBufferHeader) + MaterialMemoryPoolSize, 0xFF);
     memcpy(GpuDataBufferMemoryPool2.data(), &MaterialPoolHeader, sizeof(MaterialBakerBufferHeader));
-    MaterialBakerBufferId = bufferSystem.VMACreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    MaterialBakerBufferId = bufferSystem.CreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(MaterialBakerBufferId);
     MaterialBufferPtr = buffer.BufferData;
     vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, GpuDataBufferMemoryPool2.size());
@@ -83,7 +83,7 @@ void MaterialMemoryPoolSystem::ResizeMemoryPool(MaterialBakerMemoryPoolTypes mem
 
     UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
     size_t newTotalSize = sizeof(MaterialBakerBufferHeader) + MaterialMemoryPoolSize;
-    uint32 newBufferId = bufferSystem.VMACreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    uint32 newBufferId = bufferSystem.CreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
     VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newBufferId);
     MaterialBufferPtr = newBuf.BufferData;

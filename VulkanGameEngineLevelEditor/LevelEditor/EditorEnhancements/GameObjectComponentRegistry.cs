@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using VulkanGameEngineLevelEditor.GameEngine.Systems;
+using VulkanGameEngineLevelEditor.GameEngine;
 
 public static class ComponentRegistry
 {

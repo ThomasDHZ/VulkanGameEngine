@@ -280,7 +280,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
 
-    ShaderPushConstantDLL& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
+    ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
     shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
     shaderSystem.UpdatePushConstantValue<float>(sceneDataPushConstant, "HeightScale", HeightScale);
 
@@ -334,7 +334,7 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
     const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-    ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("irradianceShaderConstants");
+    ShaderPushConstant& pushConstant = shaderSystem.FindShaderPushConstant("irradianceShaderConstants");
 
     VkViewport viewport
     {
@@ -390,7 +390,7 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
     VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
     VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-    ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
+    ShaderPushConstant& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
 
     const Mesh& skyboxMesh = skyBoxList[0];
     const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
@@ -457,7 +457,7 @@ void LevelSystem::RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid&
     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
     const VulkanPipeline  pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
 
-    ShaderPushConstantDLL& pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
+    ShaderPushConstant& pushConstant = shaderSystem.FindShaderPushConstant("bloomSettings");
     shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "blurDirection", blurDirection);
     shaderSystem.UpdatePushConstantValue<float>(pushConstant, "blurScale", 1.0f);
     shaderSystem.UpdatePushConstantValue<float>(pushConstant, "blurStrength", 0.04f);

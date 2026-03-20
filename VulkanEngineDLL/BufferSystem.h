@@ -59,54 +59,26 @@ public:
     UnorderedMap<int, VulkanBuffer> VulkanBufferMap;
 
 private:
-    template <typename T>
-    BufferTypeEnum GetBufferType()
-    {
-        if constexpr (std::is_same_v<T, uint32>)
-        {
-            return BufferType_UInt;
-        }
-        else if constexpr (std::is_same_v<T, mat4>)
-        {
-            return BufferType_Mat4;
-        }
-        else if constexpr (std::is_same_v<T, MeshPropertiesStruct>)
-        {
-            return BufferType_MeshPropertiesStruct;
-        }
-        else if constexpr (std::is_same_v<T, SpriteInstance>)
-        {
-            return BufferType_SpriteInstanceStruct;
-        }
-        else if constexpr (std::is_same_v<T, Vertex2D>)
-        {
-            return BufferType_Vertex2D;
-        }
-        else {
-            throw std::runtime_error("Buffer type doesn't match");
-        }
-    }
-
     void     CopyBufferMemory(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize bufferSize);
 
 public:
     VmaAllocator			vmaAllocator;
 
     template <typename T>
-    uint32 VMACreateVulkanBuffer(T& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
+    uint32 CreateVulkanBuffer(T& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
     {
         if (usingStagingBuffer)
         {
-            return VMACreateStaticVulkanBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
+            return CreateStaticVulkanBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
         }
         else
         {
-            return VMACreateDynamicBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
+            return CreateDynamicBuffer(static_cast<void*>(&bufferData), sizeof(T), shaderUsageFlags);
         }
     }
 
     template <typename T>
-    uint32 VMACreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
+    uint32 CreateVulkanBuffer(Vector<T>& bufferData, VkBufferUsageFlags shaderUsageFlags, bool usingStagingBuffer)
     {
         VkDeviceSize bufferSize = sizeof(T) * bufferData.size();
         if (bufferData.empty())
@@ -116,24 +88,24 @@ public:
 
         if (usingStagingBuffer)
         {
-            return VMACreateStaticVulkanBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
+            return CreateStaticVulkanBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
         }
         else
         {
-            return VMACreateDynamicBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
+            return CreateDynamicBuffer(bufferData.data(), bufferSize, shaderUsageFlags);
         }
     }
 
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, T& bufferData)
     {
-        VMAUpdateDynamicBuffer(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), sizeof(T));
+        UpdateDynamicBuffer(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), sizeof(T));
     }
 
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, Vector<T>& bufferData)
     {
-        VMAUpdateDynamicBuffer(VulkanBufferMap[bufferId], bufferData.data(), sizeof(T) * bufferData.size());
+        UpdateDynamicBuffer(VulkanBufferMap[bufferId], bufferData.data(), sizeof(T) * bufferData.size());
     }
 
     template <typename T>
@@ -162,9 +134,9 @@ public:
         return DataList;
     }
 
-    DLL_EXPORT uint32 VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
-    DLL_EXPORT uint32 VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
-    DLL_EXPORT void   VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
+    DLL_EXPORT uint32                      CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
+    DLL_EXPORT uint32                      CreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
+    DLL_EXPORT void                        UpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
     DLL_EXPORT void                        CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
     DLL_EXPORT void                        DestroyBuffer(VulkanBuffer& vulkanBuffer);
     DLL_EXPORT void                        DestroyAllBuffers();

@@ -32,7 +32,7 @@ void VulkanBufferSystem::DestroyAllBuffers()
     }
 }
 
-uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset)
+uint32 VulkanBufferSystem::CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset)
 {
     assert(offset < size);
 
@@ -120,7 +120,7 @@ uint32 VulkanBufferSystem::VMACreateStaticVulkanBuffer(const void* srcData, VkDe
     return bufferId;
 }
 
-uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags)
+uint32 VulkanBufferSystem::CreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags)
 {
     uint32 bufferId = ++NextBufferId;
 
@@ -167,7 +167,7 @@ uint32 VulkanBufferSystem::VMACreateDynamicBuffer(const void* srcData, VkDeviceS
     return bufferId;
 }
 
-void VulkanBufferSystem::VMAUpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset)
+void VulkanBufferSystem::UpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset)
 {
     VulkanBuffer& buffer = VulkanBufferMap[bufferId];
     assert(buffer.IsPersistentlyMapped && buffer.BufferData);
