@@ -20,6 +20,7 @@ extern "C"
     DLL_EXPORT void                                                    RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
     DLL_EXPORT void                                                    RenderSystem_DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    RenderSystem_DestroyBuffer(VkBuffer& buffer);
+    DLL_EXPORT void                                                    RenderSystem_RenderTest(float deltaTime);
 #ifdef __cplusplus
 }
 #endif

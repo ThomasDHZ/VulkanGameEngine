@@ -20,17 +20,31 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         Mesh_LineMesh
     };
 
-    struct Temp
-    {  // Anonymous temp struct
-        int Age { get; set; }
-        int Score { get; set; }
-    }
+    public enum VertexLayoutEnum
+    {
+        kVertexLayout_NullVertex,
+        kVertexLayout_Vertex2D,
+        kVertexLayout_SpriteInstanceVertex,
+        kVertexLayout_SkyBoxVertex,
+        kVertexLayout_Undefined
+    };
+
+    public unsafe struct VertexLayout
+    {
+        public VertexLayoutEnum VertexType { get; set; } = VertexLayoutEnum.kVertexLayout_Undefined;
+        public UInt64 VertexDataSize { get; set; } = UInt64.MaxValue;
+        public void* VertexData { get; set; } = null;
+
+        public VertexLayout()
+        {
+        }
+    };
 
     public unsafe static class MeshSystem
     {
-        public static uint CreateMesh(MeshTypeEnum meshType, ListPtr<Vertex2D> vertexList, ListPtr<UInt32> indexList)
+        public static uint CreateMesh(string key, MeshTypeEnum meshType, VertexLayout vertexData, ListPtr<uint> indexList, Guid materialId = new Guid())
         {
-            return DLLSystem.CallDLLFunc(() => MeshSystem_CreateMesh(meshType, vertexList.Ptr, indexList.Ptr, vertexList.Count, indexList.Count));
+            return DLLSystem.CallDLLFunc(() => MeshSystem_CreateMesh(key, meshType, vertexData, indexList.Ptr, indexList.Count, materialId));
         }
         public static void Update(float deltaTime)
         {
@@ -40,25 +54,19 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         {
             DLLSystem.CallDLLFunc(() => MeshSystem_Destroy(meshId));
         }
-        public static void DestroyMesh(Mesh mesh, VulkanBuffer vertexBuffer, VulkanBuffer indexBuffer, VulkanBuffer transformBuffer, VulkanBuffer propertiesBuffer)
+        public static void DestroyMesh(uint meshId)
         {
-            DLLSystem.CallDLLFunc(() => MeshSystem_DestroyMesh(mesh, vertexBuffer, indexBuffer, transformBuffer, propertiesBuffer));
+            DLLSystem.CallDLLFunc(() => MeshSystem_Destroy(meshId));
         }
+
         public static void DestroyAllGameObjects()
         {
             DLLSystem.CallDLLFunc(() => MeshSystem_DestroyAllGameObjects());
         }
-        public static Mesh FindMesh(uint meshId)
-        {
-            Temp temp = Marshal.PtrToStructure<Temp>(DLLSystem.CallDLLFunc(() => MeshSystem_FindMesh(meshId)));
-            return new Mesh();
-        }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint MeshSystem_CreateMesh(MeshTypeEnum meshType, Vertex2D* vertexListPtr, UInt32* indexListPtr, size_t vertexListCount, size_t indexListCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern uint MeshSystem_CreateMesh([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string key, MeshTypeEnum meshType, VertexLayout vertexData, uint* indexListPtr, size_t indexListCount, Guid materialId);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_Update(float deltaTime);
-		[DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_Destroy(uint meshId);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_DestroyMesh(Mesh mesh, VulkanBuffer vertexBuffer, VulkanBuffer indexBuffer, VulkanBuffer transformBuffer, VulkanBuffer propertiesBuffer);
+	    [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_Destroy(uint meshId);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void MeshSystem_DestroyAllGameObjects();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern IntPtr MeshSystem_FindMesh(uint meshId);
     }
 }

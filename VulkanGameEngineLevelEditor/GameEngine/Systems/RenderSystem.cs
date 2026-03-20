@@ -62,7 +62,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void Update(float deltaTime) 
         {
-            DLLSystem.CallDLLFunc(() => RenderSystem_Update(RenderAreaHandle, LevelId, deltaTime));
+            DLLSystem.CallDLLFunc(() => RenderSystem_Update(VulkanSystem.RenderAreaHandle, LevelId, deltaTime));
         }
 
         public static VulkanRenderPass FindRenderPass(RenderPassGuid renderPassGuid) 

@@ -44,8 +44,9 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
 
         public static void Draw(float deltaTime)
         {
+            DLLSystem.CallDLLFunc(() => RenderSystem_RenderTest(deltaTime));
             //RenderSystem.StartFrame();
-            LevelSystem.Draw(CommandBufferSubmitList.First(), deltaTime);
+            // LevelSystem.Draw(CommandBufferSubmitList.First(), deltaTime);
             ////  CommandBufferSubmitList.Add(ImGui_Draw(RenderSystem.renderer, RenderSystem.imGuiRenderer));
             //RenderSystem.EndFrame(CommandBufferSubmitList);
             //CommandBufferSubmitList.Clear();
@@ -63,5 +64,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
             //RenderSystem.Destroy();
             //MemorySystem.ReportLeaks();
         }
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_RenderTest(float deltaTime);
     }
 }
