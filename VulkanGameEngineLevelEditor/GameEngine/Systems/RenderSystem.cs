@@ -111,7 +111,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine.Systems
         }
 
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern GraphicsRenderer RenderSystem_StartUp(void* windowHandle, VkInstance instance, ref VkSurfaceKHR surface);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid levelGuid, [MarshalAs(UnmanagedType.LPStr)] String jsonPath);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_RebuildSwapChain(VulkanRenderPass vulkanRenderPass);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_Update(void* windowHandle, LevelGuid levelGuid, float deltaTime);
