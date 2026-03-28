@@ -109,18 +109,23 @@ namespace VulkanGameEngineLevelEditor.GameEngine
             DLLSystem.CallDLLFunc(() => RenderSystem_DestroyBuffer(buffer));
         }
 
+        public static vec4 SampleRenderPassPixel(Guid textureGuid, ivec2 mousePosition)
+        {
+            return DLLSystem.CallDLLFunc(() => RenderSystem_SampleRenderPassPixel(textureGuid, mousePosition));
+        }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid levelGuid, [MarshalAs(UnmanagedType.LPStr)] String jsonPath);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_RebuildSwapChain(VulkanRenderPass vulkanRenderPass);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_Update(void* windowHandle, LevelGuid levelGuid, float deltaTime);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern VulkanRenderPass RenderSystem_FindRenderPass(RenderPassGuid renderPassGuid);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_Destroy();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyRenderPass(VulkanRenderPass renderPass);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyRenderPasses();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyRenderPipelines();
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyPipeline(VulkanPipeline vulkanPipelineDLL);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer> frameBufferList);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyCommandBuffers(VkCommandBuffer commandBuffer);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] public static extern void RenderSystem_DestroyBuffer(VkBuffer buffer);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid levelGuid, [MarshalAs(UnmanagedType.LPStr)] String jsonPath);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_RebuildSwapChain(VulkanRenderPass vulkanRenderPass);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_Update(void* windowHandle, LevelGuid levelGuid, float deltaTime);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VulkanRenderPass RenderSystem_FindRenderPass(RenderPassGuid renderPassGuid);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_Destroy();
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyRenderPass(VulkanRenderPass renderPass);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyRenderPasses();
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyRenderPipelines();
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyPipeline(VulkanPipeline vulkanPipelineDLL);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer> frameBufferList);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyCommandBuffers(VkCommandBuffer commandBuffer);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void RenderSystem_DestroyBuffer(VkBuffer buffer);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern vec4 RenderSystem_SampleRenderPassPixel(Guid textureGuid, ivec2 mousePosition);
     }
 }

@@ -1,7 +1,7 @@
 #version 460
-#extension GL_ARB_gpu_shader_int64 : require
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
+#extension GL_ARB_gpu_shader_int64 : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
@@ -57,12 +57,31 @@ layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
 
-layout(location = 0) in vec2 TexCoords;
-layout(location = 0) out vec4 outColor;
+layout (location = 0) in vec3  WorldPos;
+layout (location = 1) in vec2  PS_UV;
+layout (location = 2) in vec2  PS_SpriteSize;
+layout (location = 3) in flat ivec2 PS_FlipSprite;
+layout (location = 4) in vec4  PS_Color;
+layout (location = 5) in flat uint  PS_MaterialID;
+layout (location = 6) in flat vec4  PS_UVOffset;
 
+layout(location = 0) out vec4 outGameObjectId; 
+layout(push_constant) uniform GameObjectPickerConst
+{
+    uint   gameObjectIndex;
+} gameObjectPickerId;
+
+#include "BindlessHelpers.glsl"
+#define UINT_MAX 4294967295u
 void main() 
 {
-    vec4 renderPassPicture = vec4(texture(TextureMap[20], TexCoords).rgb, 1.0f);
-	vec4 mixTexture = vec4(texture(TextureMap[22], TexCoords).rgb, 1.0f);
-	outColor = mix(renderPassPicture, mixTexture, 0.5f);
+    PackedMaterial material = GetMaterial(PS_MaterialID);
+
+   vec2 UV = PS_UV;
+   if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
+   if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
+
+   vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            PS_UV, -0.5f).rgba;    
+   if (albedoData.a < 0.1f) discard; 
+   else outGameObjectId = vec4(1.0f, 0.0f, 0.0f, 0.01f);
 }

@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5
 		Shaders\EnvironmentToCubeMapShader.vert = Shaders\EnvironmentToCubeMapShader.vert
 		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
 		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
+		Shaders\GameObjectPicker.frag = Shaders\GameObjectPicker.frag
+		Shaders\GameObjectPicker.vert = Shaders\GameObjectPicker.vert
 		Shaders\GaussianBlurShader.frag = Shaders\GaussianBlurShader.frag
 		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
 		Shaders\GBufferLevelShader2D.frag = Shaders\GBufferLevelShader2D.frag
@@ -41,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5
 		Shaders\MeshPropertiesBuffer.glsl = Shaders\MeshPropertiesBuffer.glsl
 		Shaders\PrefilterShader.frag = Shaders\PrefilterShader.frag
 		Shaders\PrefilterShader.vert = Shaders\PrefilterShader.vert
+		Shaders\SelectedGameObjectPicker.frag = Shaders\SelectedGameObjectPicker.frag
+		Shaders\SelectedGameObjectPicker.vert = Shaders\SelectedGameObjectPicker.vert
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E282A3D5-3DCC-485B-AA01-B66AB307DBE2}"
@@ -62,18 +66,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		Assets\Pipelines\HdrPipeline.json = Assets\Pipelines\HdrPipeline.json
 		Assets\Pipelines\IrradiancePipeline.json = Assets\Pipelines\IrradiancePipeline.json
 		Assets\Pipelines\LevelDirectionalShadowPipeline.json = Assets\Pipelines\LevelDirectionalShadowPipeline.json
-		Assets\Pipelines\LevelObjectPickerPipeline.json = Assets\Pipelines\LevelObjectPickerPipeline.json
 		Assets\Pipelines\LevelShader2DPipeline.json = Assets\Pipelines\LevelShader2DPipeline.json
 		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
+		Assets\Pipelines\ObjectPickerPipeline.json = Assets\Pipelines\ObjectPickerPipeline.json
 		Assets\Pipelines\PrefilterPipeline.json = Assets\Pipelines\PrefilterPipeline.json
 		Assets\Pipelines\SDFLevelShadowPipeline.json = Assets\Pipelines\SDFLevelShadowPipeline.json
 		Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json = Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json
+		Assets\Pipelines\SelectedObjectPickerPipeline.json = Assets\Pipelines\SelectedObjectPickerPipeline.json
 		Assets\Pipelines\ShadowDebugPipeline.json = Assets\Pipelines\ShadowDebugPipeline.json
 		Assets\Pipelines\SkyBoxPipeline.json = Assets\Pipelines\SkyBoxPipeline.json
 		Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json = Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json
 		Assets\Pipelines\SpriteInstancePipeline.json = Assets\Pipelines\SpriteInstancePipeline.json
 		Assets\Pipelines\SpriteInstanceWireFramePipeline.json = Assets\Pipelines\SpriteInstanceWireFramePipeline.json
-		Assets\Pipelines\SpriteObjectPickerPipeline.json = Assets\Pipelines\SpriteObjectPickerPipeline.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"
@@ -97,6 +101,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasse
 		Assets\RenderPass\ObjectPickerRenderPass.json = Assets\RenderPass\ObjectPickerRenderPass.json
 		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
 		Assets\RenderPass\SDFShadowRenderPass.json = Assets\RenderPass\SDFShadowRenderPass.json
+		Assets\RenderPass\SelectedGameObjectPickerRenderPass.json = Assets\RenderPass\SelectedGameObjectPickerRenderPass.json
 		Assets\RenderPass\ShadowDebugRenderPass.json = Assets\RenderPass\ShadowDebugRenderPass.json
 		Assets\RenderPass\SkyBoxRenderPass.json = Assets\RenderPass\SkyBoxRenderPass.json
 		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json

@@ -132,6 +132,8 @@ public:
 
     RenderPassGuid                             levelWireFrameRenderPass2DId;
     RenderPassGuid                             spriteWireFrameRenderPass2DId;
+    RenderPassGuid                             objectPickerRenderPassId;
+    RenderPassGuid                             selectedObjectPickerRenderPassId;
 
     DLL_EXPORT void                            LoadLevel(const char* levelPath);
     DLL_EXPORT void                            Update(const float& deltaTime);
@@ -142,6 +144,9 @@ public:
     DLL_EXPORT void                            RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
     DLL_EXPORT void                            RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
     DLL_EXPORT void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
+    DLL_EXPORT void                            RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId);
+    DLL_EXPORT void                            RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId);
+
     DLL_EXPORT void                            Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
     DLL_EXPORT LevelLayout                     GetLevelLayout();
     DLL_EXPORT Vector<LevelLayer>              GetLevelLayerList();
@@ -149,7 +154,7 @@ public:
     DLL_EXPORT Vector<LevelTileSet>            GetLevelTileSetList();
 
     template <typename T>
-    void* GetGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType)
+    T* GetGameObjectComponent(uint gameObjectId)
     {
         GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
         auto view = EntityRegistry.view<GameObjectComponentLinker, T>();

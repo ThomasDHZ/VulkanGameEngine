@@ -1,8 +1,8 @@
 {
   "Name": "GameObjectPickerRenderPass",
-  "RenderPassId": "40183518-063f-449b-8a0a-4cef7938958c",
+  "RenderPassId": "2ae2f01d-bc00-43e8-9830-35c836ae9a6c",
   "RenderPipelineList": [
-    "Pipelines/ObjectPickerPipeline.json"
+    "Pipelines/SelectedObjectPickerPipeline.json"
   ],
   "RenderPassResolution": [ 0, 0 ],
   "SubPassCount": 1,
@@ -14,7 +14,7 @@
   "SampleCount": 1,
   "RenderAttachmentList": [
     {
-      "RenderedTextureId": "7047804f-d32e-4cb5-ba95-90783b28d1df",
+      "RenderedTextureId": "0fbb7666-2745-4bd0-8635-45665b6665c6",
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],

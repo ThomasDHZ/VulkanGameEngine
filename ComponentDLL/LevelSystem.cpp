@@ -50,6 +50,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
     hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json");
+    objectPickerRenderPassId           = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/ObjectPickerRenderPass.json");
+    selectedObjectPickerRenderPassId   = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/SelectedGameObjectPickerRenderPass.json");
     frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json");
 }
 
@@ -76,6 +78,8 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
     //RenderGaussianBlurPass(commandBuffer, horizontalGaussianBlurRenderPassId, 1);
     //RenderBloomPass(commandBuffer, bloomRenderPassId);
     RenderHdrPass(commandBuffer, hdrRenderPassId);
+    RenderGameObjectPickerRenderPass(commandBuffer, objectPickerRenderPassId);
+    RenderSelectedGameObjectPickerRenderPass(commandBuffer, selectedObjectPickerRenderPassId);
     RenderFrameBuffer(commandBuffer, frameBufferId);
 }
 
@@ -584,6 +588,92 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdEndRenderPass(commandBuffer);
+}
+
+void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId)
+{
+    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
+    VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+
+    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = renderPass.RenderPass,
+        .framebuffer = renderPass.FrameBufferList.front(),
+        .renderArea = VkRect2D{
+            .offset = VkOffset2D{0, 0},
+            .extent = VkExtent2D{
+                static_cast<uint>(renderPass.RenderPassResolution.x),
+                static_cast<uint>(renderPass.RenderPassResolution.y)
+            }
+        },
+        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+        .pClearValues = renderPass.ClearValueList.data()
+    };
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+    for (const auto& layer : spriteSystem.SpriteLayerList)
+    {
+        if (layer.InstanceCount == 0) continue;
+
+        const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+        const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
+
+        ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("gameObjectPickerId");
+        shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "gameObjectIndex", 34534534);
+
+        vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instanceBuffer.Buffer, &memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, layer.InstanceCount, 0, 0, layer.StartInstanceIndex);
+    }
+    vkCmdEndRenderPass(commandBuffer);
+}
+
+void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId)
+{
+    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
+    VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+
+    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = renderPass.RenderPass,
+        .framebuffer = renderPass.FrameBufferList.front(),
+        .renderArea = VkRect2D{
+            .offset = VkOffset2D{0, 0},
+            .extent = VkExtent2D{
+                static_cast<uint>(renderPass.RenderPassResolution.x),
+                static_cast<uint>(renderPass.RenderPassResolution.y)
+            }
+        },
+        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+        .pClearValues = renderPass.ClearValueList.data()
+    };
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+    for (const auto& layer : spriteSystem.SpriteLayerList)
+    {
+        if (layer.InstanceCount == 0) continue;
+
+        const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+        const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
+
+        ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("gameObjectPickerId");
+        shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "gameObjectIndex", 34534534);
+
+        vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instanceBuffer.Buffer, &memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, layer.InstanceCount, 0, 0, layer.StartInstanceIndex);
+    }
     vkCmdEndRenderPass(commandBuffer);
 }
 

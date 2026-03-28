@@ -1,4 +1,3 @@
-// MemorySystem.h
 #pragma once
 #include "Platform.h"
 
@@ -62,8 +61,9 @@ public:
         if (!memory) return nullptr;
 
         T* buffer = static_cast<T*>(memory);
-        for (size_t i = 0; i < elementCount; ++i) {
-            new (&buffer[i]) T();
+        for (size_t x = 0; x < elementCount; ++x) 
+        {
+            new (&buffer[x]) T();
         }
 
         MemoryLeakPtr info;
@@ -81,29 +81,35 @@ public:
     }
 
     template <typename T>
-    T* AddPtrBuffer(T elementData, const char* file, int line, const char* func, const char* notes = "") {
+    T* AddPtrBuffer(T elementData, const char* file, int line, const char* func, const char* notes = "") 
+    {
         T* ptr = AddPtrBuffer<T>(1, file, line, func, notes);
         if (ptr) *ptr = elementData;
         return ptr;
     }
 
     template <typename T>
-    T* AddPtrBuffer(T* src, size_t count, const char* file, int line, const char* func, const char* notes = "") {
+    T* AddPtrBuffer(T* src, size_t count, const char* file, int line, const char* func, const char* notes = "") 
+    {
         T* ptr = AddPtrBuffer<T>(count, file, line, func, notes);
-        if (ptr && src) {
-            for (size_t i = 0; i < count; ++i) {
-                ptr[i] = src[i];
+        if (ptr && src) 
+        {
+            for (size_t x = 0; x < count; ++x) 
+            {
+                ptr[x] = src[x];
             }
         }
         return ptr;
     }
 
     template <typename T>
-    T* ReplacePtrBuffer(T*& oldPtr, size_t count, const char* file, int line, const char* func, const char* notes = "") {
+    T* ReplacePtrBuffer(T*& oldPtr, size_t count, const char* file, int line, const char* func, const char* notes = "") 
+    {
         T* newPtr = AddPtrBuffer<T>(count, file, line, func, notes);
-        if (newPtr && oldPtr) {
-            for (size_t i = 0; i < count; ++i) {
-                newPtr[i] = std::move(oldPtr[i]);
+        if (newPtr && oldPtr)
+        {
+            for (size_t x = 0; x < count; ++x) {
+                newPtr[x] = std::move(oldPtr[x]);
             }
             DeletePtr(oldPtr);
         }

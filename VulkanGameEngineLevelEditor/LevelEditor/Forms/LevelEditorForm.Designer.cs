@@ -54,7 +54,6 @@ namespace VulkanGameEngineLevelEditor
             buildRenderPassToolStripMenuItem = new ToolStripMenuItem();
             saveToolStripMenuItem = new ToolStripMenuItem();
             loadToolStripMenuItem = new ToolStripMenuItem();
-            dynamicControlPanelView1 = new DynamicControlPanelView(this);
             tableLayoutPanel1 = new TableLayoutPanel();
             levelEditorTreeView1 = new LevelEditorTreeView();
             tableLayoutPanel2 = new TableLayoutPanel();
@@ -177,7 +176,7 @@ namespace VulkanGameEngineLevelEditor
             // 
             buildShadersToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { buildRenderPassShadersToolStripMenuItem });
             buildShadersToolStripMenuItem.Name = "buildShadersToolStripMenuItem";
-            buildShadersToolStripMenuItem.Size = new Size(270, 34);
+            buildShadersToolStripMenuItem.Size = new Size(247, 34);
             buildShadersToolStripMenuItem.Text = "Build Shaders";
             buildShadersToolStripMenuItem.Click += buildShadersToolStripMenuItem_Click;
             // 
@@ -190,7 +189,7 @@ namespace VulkanGameEngineLevelEditor
             // buildRenderPassToolStripMenuItem
             // 
             buildRenderPassToolStripMenuItem.Name = "buildRenderPassToolStripMenuItem";
-            buildRenderPassToolStripMenuItem.Size = new Size(270, 34);
+            buildRenderPassToolStripMenuItem.Size = new Size(247, 34);
             buildRenderPassToolStripMenuItem.Text = "Build RenderPass";
             buildRenderPassToolStripMenuItem.Click += buildRenderPassToolStripMenuItem_Click;
             // 
@@ -203,21 +202,6 @@ namespace VulkanGameEngineLevelEditor
             // 
             loadToolStripMenuItem.Name = "loadToolStripMenuItem";
             loadToolStripMenuItem.Size = new Size(32, 19);
-            // 
-            // dynamicControlPanelView1
-            // 
-            dynamicControlPanelView1.AutoScroll = true;
-            dynamicControlPanelView1.ColumnCount = 1;
-            dynamicControlPanelView1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            dynamicControlPanelView1.Dock = DockStyle.Right;
-            dynamicControlPanelView1.Location = new Point(1985, 58);
-            dynamicControlPanelView1.MinimumSize = new Size(100, 0);
-            dynamicControlPanelView1.Name = "dynamicControlPanelView1";
-            dynamicControlPanelView1.RowCount = 1;
-            dynamicControlPanelView1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            dynamicControlPanelView1.SelectedObject = null;
-            dynamicControlPanelView1.Size = new Size(529, 958);
-            dynamicControlPanelView1.TabIndex = 14;
             // 
             // tableLayoutPanel1
             // 
@@ -254,7 +238,7 @@ namespace VulkanGameEngineLevelEditor
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 1;
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel2.Size = new Size(1675, 958);
+            tableLayoutPanel2.Size = new Size(2204, 958);
             tableLayoutPanel2.TabIndex = 17;
             // 
             // RendererBox
@@ -262,9 +246,12 @@ namespace VulkanGameEngineLevelEditor
             RendererBox.Dock = DockStyle.Fill;
             RendererBox.Location = new Point(3, 3);
             RendererBox.Name = "RendererBox";
-            RendererBox.Size = new Size(1669, 952);
+            RendererBox.Size = new Size(2198, 952);
             RendererBox.TabIndex = 0;
             RendererBox.TabStop = false;
+            RendererBox.MouseDown += RendererBox_MouseDown;
+            RendererBox.MouseMove += RendererBox_MouseMove;
+            RendererBox.MouseUp += RendererBox_MouseUp;
             RendererBox.Resize += RendererBox_Resize;
             // 
             // leftSplitter
@@ -281,7 +268,7 @@ namespace VulkanGameEngineLevelEditor
             // 
             rightSplitter.BackColor = Color.Gray;
             rightSplitter.Dock = DockStyle.Right;
-            rightSplitter.Location = new Point(1980, 58);
+            rightSplitter.Location = new Point(2509, 58);
             rightSplitter.MinSize = 100;
             rightSplitter.Name = "rightSplitter";
             rightSplitter.Size = new Size(5, 958);
@@ -307,7 +294,6 @@ namespace VulkanGameEngineLevelEditor
             ClientSize = new Size(2514, 1201);
             Controls.Add(tableLayoutPanel2);
             Controls.Add(rightSplitter);
-            Controls.Add(dynamicControlPanelView1);
             Controls.Add(leftSplitter);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(bottomSplitter);

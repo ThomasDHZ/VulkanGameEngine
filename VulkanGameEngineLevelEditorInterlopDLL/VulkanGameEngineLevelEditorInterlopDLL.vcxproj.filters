@@ -60,7 +60,7 @@
     <ClInclude Include="LightSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderSystem.h">
+    <ClInclude Include="ShaderSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,7 +107,7 @@
     <ClCompile Include="LightSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderSystem.cpp">
+    <ClCompile Include="ShaderSystemDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

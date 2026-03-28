@@ -68,6 +68,8 @@ void GameSystem::Update(float deltaTime)
     levelSystem.Update(deltaTime);
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
+    auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
+    renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
    // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 }
 
@@ -153,7 +155,6 @@ void GameSystem::DebugUpdate(float deltaTime)
     ImGui::Text("L3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_THUMB) ? "Pressed" : "Released");
     ImGui::Text("R3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) ? "Pressed" : "Released");
     ImGui::Text("R2L2: (%.03f, %.03f)", r2L2.x, r2L2.y);
-
 
     ImGui::Separator();
 

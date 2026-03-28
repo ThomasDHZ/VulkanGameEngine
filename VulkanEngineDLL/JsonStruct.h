@@ -119,7 +119,7 @@ struct ShaderStruct
 {
     String                          Name;
     size_t			                ShaderBufferSize = 0;
-    Vector<ShaderVariable>       ShaderBufferVariableList;
+    Vector<ShaderVariable>          ShaderBufferVariableList;
     int                             ShaderStructBufferId;
     Vector<byte>                    ShaderStructBuffer;
 };
@@ -129,7 +129,7 @@ struct ShaderDescriptorSet
     String                          Name;
     uint32                          Binding;
     VkDescriptorType                DescripterType;
-    Vector<ShaderStruct>         ShaderStructList;
+    Vector<ShaderStruct>            ShaderStructList;
 };
 
 struct ShaderDescriptorBinding

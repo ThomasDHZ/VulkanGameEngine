@@ -157,7 +157,7 @@
     <ClInclude Include="MemorySystemDLL.h" />
     <ClInclude Include="MeshSystemDLL.h" />
     <ClInclude Include="RenderSystemDLL.h" />
-    <ClInclude Include="ShaderSystem.h" />
+    <ClInclude Include="ShaderSystemDLL.h" />
     <ClInclude Include="SpriteSystemDLL.h" />
     <ClInclude Include="TextureSystemDLL.h" />
     <ClInclude Include="VulkanSystemDLL.h" />
@@ -174,7 +174,7 @@
     <ClCompile Include="MemorySystemDLL.cpp" />
     <ClCompile Include="MeshSystemDLL.cpp" />
     <ClCompile Include="RenderSystemDLL.cpp" />
-    <ClCompile Include="ShaderSystem.cpp" />
+    <ClCompile Include="ShaderSystemDLL.cpp" />
     <ClCompile Include="SpriteSystemDLL.cpp" />
     <ClCompile Include="TextureSystemDLL.cpp" />
     <ClCompile Include="VulkanSystemDLL.cpp" />

@@ -1,9 +1,9 @@
 {
-  "Name": "SpriteObjectPickerPipeline",
-  "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
+  "Name": "objectPickerRenderPassId",
+  "PipelineId": "3f7db895-9486-4259-93b3-cb0672f985ce",
   "ShaderList": [
-    "Shaders/SpriteObjectPickerShaderVert.spv",
-    "Shaders/SpriteObjectPickerShaderFrag.spv"
+    "Shaders/SelectedGameObjectPickerVert.spv",
+    "Shaders/SelectedGameObjectPickerFrag.spv"
   ],
   "VertexType": 1,
   "SubPassId": 0,
@@ -32,23 +32,23 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "BlendEnable": false,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
+      "TextureAttachment": "Attachment 0: Highlight",
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 1, 
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 0,
+      "DstAlphaBlendFactor": 1,
       "AlphaBlendOp": 0,
-      "ColorWriteMask": 15
+      "ColorWriteMask": 15 
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
-    "BlendConstants": { "FixedElementField": 0.0 },
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
-    "AttachmentCount": 0,
-    "pAttachments": { "value": 0 }
+    "AttachmentCount": 1,
+    "BlendConstants": { "FixedElementField": 0.0 }
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
@@ -69,7 +69,6 @@
     "rasterizationSamples": 1,
     "sampleShadingEnable": false,
     "minSampleShading": 0.0,
-    "pSampleMask": { "value": 0 },
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false,
     "flags": 0
@@ -107,28 +106,5 @@
     "sType": 20,
     "topology": 3,
     "primitiveRestartEnable": 0
-  },
-  "PipelineDescriptorModelsList": [
-    {
-      "BindingNumber": 0,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 0,
-      "DescriptorType": 7,
-      "StageFlags": 2147483647
-    },
-    {
-      "BindingNumber": 1,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 1,
-      "DescriptorType": 1,
-      "StageFlags": 2147483647
-    },
-    {
-      "BindingNumber": 2,
-      "DstArrayElement": 0,
-      "BindingPropertiesList": 2,
-      "DescriptorType": 7,
-      "StageFlags": 2147483647
-    }
-  ]
+  }
 }

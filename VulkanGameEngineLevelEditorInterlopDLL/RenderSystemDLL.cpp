@@ -70,3 +70,8 @@
 	// ImGui_Draw(commandBuffer, imGuiRenderer);
 	 vulkanSystem.EndFrame(commandBuffer);
  }
+
+ const vec4 RenderSystem_SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
+ {
+	 return renderSystem.SampleRenderPassPixel(textureGuid, mousePosition);
+ }

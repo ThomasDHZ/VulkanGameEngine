@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using GlmSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using Silk.NET.Vulkan;
 using System;
@@ -9,6 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Json;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -39,7 +41,7 @@ namespace VulkanGameEngineLevelEditor
         private volatile bool levelEditorRunning;
         private volatile bool isResizing;
         private Stopwatch stopwatch = new Stopwatch();
-      //  public SystemMessenger textBoxWriter;
+        //  public SystemMessenger textBoxWriter;
         private Thread renderThread { get; set; }
         private MessengerModel _messenger;
         private GCHandle _callbackHandle;
@@ -47,9 +49,14 @@ namespace VulkanGameEngineLevelEditor
         private object lockObject = new object();
         private object sharedData;
         public List<System.String> ShaderList = new List<string>();
+        public static Guid GameObjectIdTexture { get; private set; } = new Guid("7047804f-d32e-4cb5-ba95-90783b28d1df");
+
+        public uint SelectedGameObjectId { get; set; }
+        public bool LeftMouseButtonDown { get; set; }
 
 
-       // BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
+
+        // BlockingCollection<Dictionary<int, GameObject>> gameObjectData = new BlockingCollection<Dictionary<int, GameObject>>();
         [DllImport("kernel32.dll")] static extern bool AllocConsole();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void LogVulkanMessageDelegate(string message, int severity);
@@ -70,12 +77,12 @@ namespace VulkanGameEngineLevelEditor
 
             Thread.CurrentThread.Name = "LevelEditor";
 
-        //    textBoxWriter = new SystemMessenger(richTextBox2);
-       //     ShaderCompiler.systemMessenger = textBoxWriter;
+            //    textBoxWriter = new SystemMessenger(richTextBox2);
+            //     ShaderCompiler.systemMessenger = textBoxWriter;
 
 
             string originalDir = Directory.GetCurrentDirectory();
-     
+
             LogVulkanMessageDelegate callback = LogVulkanMessage;
             _callbackHandle = GCHandle.Alloc(callback);
             VulkanSystem.CreateLogMessageCallback(callback);
@@ -227,7 +234,7 @@ namespace VulkanGameEngineLevelEditor
                 {
                     isResizing = true;
                     RenderSystem.RebuildRendererFlag = true;
-                   // RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(RendererBox.Width, RendererBox.Height));
+                    // RenderSystem.RecreateSwapchain(LevelSystem.spriteRenderPass2DId, LevelSystem.levelLayout.LevelLayoutId, 0.0f, new GlmSharp.ivec2(RendererBox.Width, RendererBox.Height));
                     isResizing = false;
                 }
             }
@@ -251,7 +258,7 @@ namespace VulkanGameEngineLevelEditor
                     levelEditorTreeView1._rootObject is List<RenderPassLoaderModel>)
                 {
                     var renderPassJsonMap = new Dictionary<Guid, string>();
-                    var pipelineJsonMap = new Dictionary<Guid, List<string>>(); 
+                    var pipelineJsonMap = new Dictionary<Guid, List<string>>();
                     foreach (var renderPassJsonModel in levelEditorTreeView1._rootObject as List<RenderPassLoaderModel>)
                     {
                         var pipelineJsonList = new List<string>();
@@ -269,7 +276,7 @@ namespace VulkanGameEngineLevelEditor
                         {
                             isResizing = true;
                             RenderSystem.RebuildRendererFlag = true;
-                           // RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap, ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
+                            // RenderSystem.UpdateRenderPasses(renderPassJsonMap, pipelineJsonMap, ShaderSystem.GetGlobalShaderPushConstant("sceneData"));
                             isResizing = false;
                         }
                     }
@@ -295,10 +302,10 @@ namespace VulkanGameEngineLevelEditor
                         var renderPassJson = JsonConvert.SerializeObject(renderPassJsonModel);
                         File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}RenderPass\{renderPassJsonModel.Name}.json", renderPassJson);
                         renderPassPathList.Add($@"{ConstConfig.BaseDirectoryPath}RenderPass\{renderPassJsonModel.Name}.json");
-                        foreach(var pipelineModel in renderPassJsonModel.renderPipelineModelList)
+                        foreach (var pipelineModel in renderPassJsonModel.renderPipelineModelList)
                         {
                             var pipelineJson = JsonConvert.SerializeObject(pipelineModel);
-                           // File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", pipelineJson);
+                            // File.WriteAllText($@"{ConstConfig.BaseDirectoryPath}Pipelines\{pipelineModel.Name}.json", pipelineJson);
                         }
                     }
                 }
@@ -308,5 +315,35 @@ namespace VulkanGameEngineLevelEditor
                 MessageBox.Show(@$"Failed to build renderpass {ex.Message}.");
             }
         }
+        private void RendererBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                Point mousePosition = RendererBox.PointToClient(Cursor.Position);
+                ivec2 mousePos = new ivec2(mousePosition.X, mousePosition.Y);
+                vec4 pixel = RenderSystem.SampleRenderPassPixel(GameObjectIdTexture, mousePos);
+                SelectedGameObjectId = 32;
+            }
+        }
+
+        private void RendererBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                Point mousePosition = RendererBox.PointToClient(Cursor.Position);
+               ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform2DComponent>(0, ComponentTypeEnum.kTransform2DComponent);
+                transform.GameObjectPosition = new ivec2(mousePosition.X, mousePosition.Y);
+                transform.Dirty = true;
+            }
+        }
+
+        private void RendererBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                SelectedGameObjectId = uint.MaxValue;
+            }
+        }
+
     }
 }

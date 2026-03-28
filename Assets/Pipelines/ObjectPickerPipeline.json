@@ -1,9 +1,9 @@
 {
-  "Name": "LevelObjectPickerPipeline",
-  "PipelineId": "241a46da-4621-4574-9eb4-7c3509f18710",
+  "Name": "objectPickerRenderPassId",
+  "PipelineId": "766fdbb9-67c5-4ff0-af29-04f55afc7717",
   "ShaderList": [
-    "Shaders/LevelObjectPickerShader2DVert.spv",
-    "Shaders/LevelObjectPickerShader2DFrag.spv"
+    "Shaders/GameObjectPickerVert.spv",
+    "Shaders/GameObjectPickerFrag.spv"
   ],
   "VertexType": 1,
   "SubPassId": 0,
@@ -32,12 +32,13 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
+      "TextureAttachment": "Attachment 0: Position",
       "BlendEnable": false,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
       "ColorBlendOp": 0,
       "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 9,
+      "DstAlphaBlendFactor": 0,
       "AlphaBlendOp": 0,
       "ColorWriteMask": 15
     }
@@ -47,8 +48,7 @@
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
-    "AttachmentCount": 0,
-    "pAttachments": { "value": 0 }
+    "AttachmentCount": 0
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
@@ -69,7 +69,6 @@
     "rasterizationSamples": 1,
     "sampleShadingEnable": false,
     "minSampleShading": 0.0,
-    "pSampleMask": { "value": 0 },
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false,
     "flags": 0

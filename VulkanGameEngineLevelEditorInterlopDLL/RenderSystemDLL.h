@@ -21,6 +21,7 @@ extern "C"
     DLL_EXPORT void                                                    RenderSystem_DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    RenderSystem_DestroyBuffer(VkBuffer& buffer);
     DLL_EXPORT void                                                    RenderSystem_RenderTest(float deltaTime);
+    DLL_EXPORT const vec4                                              RenderSystem_SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 #ifdef __cplusplus
 }
 #endif
