@@ -29,11 +29,6 @@ void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTyp
     }
 }
 
-Transform2DComponent* GameObjectSystem_UpdateTransform2DComponent(uint gameObjectId)
-{
-    return levelSystem.GetGameObjectComponent<Transform2DComponent>(gameObjectId);
-}
-
 void GameObjectSystem_DestroyGameObject(uint gameObjectId)
 {
 	gameObjectSystem.DestroyGameObject(gameObjectId);

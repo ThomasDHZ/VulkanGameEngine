@@ -18,7 +18,7 @@
       "MipMapCount": 1,
       "RenderTextureType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 109,
+      "Format": 98,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,
@@ -59,10 +59,7 @@
   "ClearValueList": [
     {
       "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+        "Uint32_0": 4294967295
       }
     }
   ]

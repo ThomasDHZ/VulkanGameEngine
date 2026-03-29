@@ -56,26 +56,26 @@ layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
-
 layout (location = 0) in vec3  WorldPos;
 layout (location = 1) in vec2  PS_UV;
 layout (location = 2) in vec2  PS_SpriteSize;
 layout (location = 3) in flat ivec2 PS_FlipSprite;
 layout (location = 4) in vec4  PS_Color;
-layout (location = 5) in flat uint  PS_MaterialID;
+layout (location = 5) in flat uint  PS_MaterialId;
 layout (location = 6) in flat vec4  PS_UVOffset;
+layout (location = 7) in flat uint  PS_SpriteId;
 
 layout(location = 0) out vec4 outGameObjectId; 
-layout(push_constant) uniform GameObjectPickerConst
+layout(push_constant) uniform SelectedGameObjectPickerConst
 {
     uint   gameObjectIndex;
-} gameObjectPickerId;
+} selectedGameObjectPickerId;
 
 #include "BindlessHelpers.glsl"
 #define UINT_MAX 4294967295u
 void main() 
 {
-    PackedMaterial material = GetMaterial(PS_MaterialID);
+    PackedMaterial material = GetMaterial(PS_MaterialId);
 
    vec2 UV = PS_UV;
    if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
@@ -83,5 +83,6 @@ void main()
 
    vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            PS_UV, -0.5f).rgba;    
    if (albedoData.a < 0.1f) discard; 
-   else outGameObjectId = vec4(1.0f, 0.0f, 0.0f, 0.01f);
+   if (selectedGameObjectPickerId.gameObjectIndex == PS_SpriteId) outGameObjectId = vec4(1.0f, 0.0f, 0.0f, 0.01f);
+   else outGameObjectId = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 }

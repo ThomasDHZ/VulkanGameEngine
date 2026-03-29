@@ -63,6 +63,9 @@
     <ClInclude Include="ShaderSystemDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LevelEditorSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderSystemDLL.cpp">
@@ -108,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSystemDLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelEditorSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

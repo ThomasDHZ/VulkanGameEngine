@@ -131,9 +131,11 @@ void GameSystem::DebugUpdate(float deltaTime)
     //}
 
     ImGui::Separator();
+    uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df"), ivec2(mouse.X, mouse.Y));
 
     ImGui::Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
     ImGui::Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
+    ImGui::Text("Mouse Hover Id: %u", hoverId);
     ImGui::Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
     ImGui::Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
     ImGui::Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");

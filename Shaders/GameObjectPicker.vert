@@ -15,16 +15,17 @@ layout (location = 2)  in vec2  VS_SpriteSize;
 layout (location = 3)  in ivec2 VS_FlipSprite;
 layout (location = 4)  in vec4  VS_Color;
 layout (location = 5)  in mat4  VS_InstanceTransform;
-layout (location = 9)  in uint  VS_MaterialID;
-layout (location = 10) in uint  VS_Padding;
+layout (location = 9)  in uint  VS_MaterialId;
+layout (location = 10) in uint  VS_SpriteId;
 
 layout (location = 0) out vec3  PS_Position;
 layout (location = 1) out vec2  PS_UV;
 layout (location = 2) out vec2  PS_SpriteSize;
 layout (location = 3) out ivec2 PS_FlipSprite;
 layout (location = 4) out vec4  PS_Color;
-layout (location = 5) out uint  PS_MaterialID;
+layout (location = 5) out uint  PS_MaterialId;
 layout (location = 6) out vec4  PS_UVOffset;
+layout (location = 7) out uint  PS_SpriteId;
 
 layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
 layout(constant_id = 1)  const uint VertexInputRateLocation0 = 1;
@@ -91,12 +92,6 @@ layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
-
-layout(push_constant) uniform GameObjectPickerConst
-{
-    uint   gameObjectIndex;
-} gameObjectPickerId;
-
 #include "BindlessHelpers.glsl"
 
 struct Vertex2D
@@ -121,8 +116,9 @@ void main()
     PS_SpriteSize = VS_SpriteSize;
 	PS_FlipSprite = VS_FlipSprite;
 	PS_Color = VS_Color;
-	PS_MaterialID = VS_MaterialID;
+	PS_MaterialId = VS_MaterialId;
 	PS_UVOffset = VS_UVOffset;
+    PS_SpriteId = VS_SpriteId;
 
     gl_Position = sceneDataBuffer.Projection * 
                   sceneDataBuffer.View *  

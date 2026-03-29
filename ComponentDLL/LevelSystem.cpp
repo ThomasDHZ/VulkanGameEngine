@@ -623,10 +623,6 @@ void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffe
         const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
 
-        ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("gameObjectPickerId");
-        shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "gameObjectIndex", 34534534);
-
-        vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instanceBuffer.Buffer, &memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset);
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, layer.InstanceCount, 0, 0, layer.StartInstanceIndex);
@@ -667,7 +663,7 @@ void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& comm
         const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
 
         ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("gameObjectPickerId");
-        shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "gameObjectIndex", 34534534);
+        shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "gameObjectIndex", SelectedGameObject);
 
         vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sceneDataPushConstant.PushConstantSize, sceneDataPushConstant.PushConstantBuffer.data());
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &instanceBuffer.Buffer, &memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset);

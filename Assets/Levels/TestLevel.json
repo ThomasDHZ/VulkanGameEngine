@@ -31,7 +31,7 @@
     "RenderPass/BloomRenderPass.json",
     "RenderPass/HdrRenderPass.json",
     "RenderPass/FrameBufferRenderPass.json",
-    "RenderPass/ObjectPickerRenderPass.json"
+    "RenderPass/SelectedGameObjectPickerRenderPass.json"
   ],
   "GameObjectList": [
     {

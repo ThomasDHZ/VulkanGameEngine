@@ -150,6 +150,7 @@
     <ClInclude Include="DebugSystemDLL.h" />
     <ClInclude Include="FileSystemDLL.h" />
     <ClInclude Include="GameObjectSystemDLL.h" />
+    <ClInclude Include="LevelEditorSystem.h" />
     <ClInclude Include="LevelSystemDLL.h" />
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="MaterialSystemDLL.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="DebugSystemDLL.cpp" />
     <ClCompile Include="FileSystemDLL.cpp" />
     <ClCompile Include="GameObjectSystemDLL.cpp" />
+    <ClCompile Include="LevelEditorSystem.cpp" />
     <ClCompile Include="LevelSystemDLL.cpp" />
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="MaterialSystemDLL.cpp" />

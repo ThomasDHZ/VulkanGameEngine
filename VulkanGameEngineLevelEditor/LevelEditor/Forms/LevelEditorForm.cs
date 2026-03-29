@@ -51,8 +51,11 @@ namespace VulkanGameEngineLevelEditor
         public List<System.String> ShaderList = new List<string>();
         public static Guid GameObjectIdTexture { get; private set; } = new Guid("7047804f-d32e-4cb5-ba95-90783b28d1df");
 
-        public uint SelectedGameObjectId { get; set; }
-        public bool LeftMouseButtonDown { get; set; }
+        private bool LeftMouseButtonDown { get; set; } = false;
+        private Point LastMousePosition { get; set; }
+        private vec2  SelectedGameObjectPosition { get; set; } = new vec2();
+        private bool IsDragging { get; set; } = false;
+        private uint SelectedSpriteIndex { get; set; } = uint.MaxValue;
 
 
 
@@ -315,14 +318,21 @@ namespace VulkanGameEngineLevelEditor
                 MessageBox.Show(@$"Failed to build renderpass {ex.Message}.");
             }
         }
+
+
         private void RendererBox_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                Point mousePosition = RendererBox.PointToClient(Cursor.Position);
-                ivec2 mousePos = new ivec2(mousePosition.X, mousePosition.Y);
-                vec4 pixel = RenderSystem.SampleRenderPassPixel(GameObjectIdTexture, mousePos);
-                SelectedGameObjectId = 32;
+                Point currentPos = e.Location;
+                uint pickedId = LevelEditorSystem.SampleRenderPassPixel(GameObjectIdTexture, new ivec2(currentPos.X, currentPos.Y));
+                if (pickedId != uint.MaxValue)
+                {
+                    SelectedSpriteIndex = pickedId;
+                    IsDragging = true;
+                    LastMousePosition = currentPos;
+                    RendererBox.Capture = true;
+                }
             }
         }
 
@@ -330,10 +340,17 @@ namespace VulkanGameEngineLevelEditor
         {
             if (e.Button == MouseButtons.Left)
             {
-                Point mousePosition = RendererBox.PointToClient(Cursor.Position);
-               ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform2DComponent>(0, ComponentTypeEnum.kTransform2DComponent);
-                transform.GameObjectPosition = new ivec2(mousePosition.X, mousePosition.Y);
-                transform.Dirty = true;
+                if (!IsDragging)
+                {
+                    return;
+                }
+
+                Point currentPos = e.Location;
+                int deltaX = currentPos.X - LastMousePosition.X;
+                int deltaY = currentPos.Y - LastMousePosition.Y;
+                ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform2DComponent>(SelectedSpriteIndex, ComponentTypeEnum.kTransform2DComponent);
+                transform.GameObjectPosition = new vec2(transform.GameObjectPosition.x + deltaX, transform.GameObjectPosition.y - deltaY);
+                LastMousePosition = currentPos;
             }
         }
 
@@ -341,9 +358,10 @@ namespace VulkanGameEngineLevelEditor
         {
             if (e.Button == MouseButtons.Left)
             {
-                SelectedGameObjectId = uint.MaxValue;
+                IsDragging = false;
+                SelectedSpriteIndex = 0;
+                RendererBox.Capture = false;
             }
         }
-
     }
 }

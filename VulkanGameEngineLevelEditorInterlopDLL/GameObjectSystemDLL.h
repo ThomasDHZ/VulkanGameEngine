@@ -10,6 +10,7 @@ extern "C" {
     DLL_EXPORT void*       GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
     DLL_EXPORT void        GameObjectSystem_DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void        GameObjectSystem_DestroyDeadGameObjects();
+    DLL_EXPORT void        GameObjectSystem_SetSelectedGameObject(uint gameObjectId);
 #ifdef __cplusplus
 }
 #endif

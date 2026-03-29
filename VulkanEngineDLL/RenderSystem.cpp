@@ -792,60 +792,64 @@ const Vector<VulkanPipeline> RenderSystem::FindRenderPipelineList(const RenderPa
     return RenderPipelineMap.at(renderPassGuid);
 }
 
-vec4 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
+uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
-    Texture texture = textureSystem.FindRenderedTexture(textureGuid);
-    if (texture.textureImage == VK_NULL_HANDLE)
+    Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
+    if (!texture || texture->textureImage == VK_NULL_HANDLE)
     {
-        return vec4(0.0f);
+        return UINT32_MAX;
     }
 
-    int x = std::max(0, std::min(mousePosition.x, texture.width - 1));
-    int y = std::max(0, std::min(mousePosition.y, texture.height - 1));
+    int x = std::clamp(mousePosition.x, 0, texture->width - 1);
+    int y = std::clamp(mousePosition.y, 0, texture->height - 1);
+
     VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
-    VkImageMemoryBarrier barrier =
+    VkImageMemoryBarrier barrier = 
     {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-        .oldLayout = texture.textureImageLayout,
+        .oldLayout = texture->textureImageLayout,
         .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = texture.textureImage,
+        .image = texture->textureImage,
         .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
     };
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->width) * texture->height * 4;
 
-    VkBufferCreateInfo bufferInfo =
+    VkBufferCreateInfo bufferInfo = 
     {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = static_cast<VkDeviceSize>(texture.width) * texture.height * 16,
+        .size = bufferSize,
         .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
     };
 
-    VmaAllocationCreateInfo allocInfo =
+    VmaAllocationCreateInfo allocInfo = 
     {
         .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
         .usage = VMA_MEMORY_USAGE_AUTO
     };
 
-    VmaAllocationInfo allocOut{};
+    VmaAllocationInfo allocOut = {};
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
     VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut));
-    VkBufferImageCopy region =
+
+    VkBufferImageCopy region = 
     {
         .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 },
-        .imageExtent = { static_cast<uint32_t>(texture.width), static_cast<uint32_t>(texture.height), 1 }
+        .imageExtent = { static_cast<uint32>(texture->width),
+                         static_cast<uint32>(texture->height), 1 }
     };
-    vkCmdCopyImageToBuffer(cmd, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+
+    vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
     vulkanSystem.EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkanSystem.Device);
 
-    size_t pixelIndex = (static_cast<size_t>(y) * texture.width + x) * 4;
-    const float* pData = static_cast<const float*>(allocOut.pMappedData);
-    vec4 pixelColor = vec4(pData[pixelIndex + 0], pData[pixelIndex + 1], pData[pixelIndex + 2], pData[pixelIndex + 3]);
+    const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
+    uint32 pixelColor = pData[y * texture->width + x];
     vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
     return pixelColor;
 }

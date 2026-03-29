@@ -42,7 +42,7 @@ public:
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
     DLL_EXPORT VulkanRenderPass                                        FindRenderPass(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT vec4                                                    SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
+    DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
     DLL_EXPORT void                                                    Destroy();
     DLL_EXPORT void                                                    DestroyRenderPass(VulkanRenderPass& renderPass);

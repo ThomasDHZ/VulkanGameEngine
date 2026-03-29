@@ -24,7 +24,7 @@ struct SpriteInstance
 	vec4  Color;
 	mat4  InstanceTransform;
 	uint  MaterialId;
-	uint  Padding;
+	uint  SpriteId;
 };
 
 struct MemoryPoolSubBufferHeader
