@@ -165,6 +165,13 @@ public:
             return &component;
         }
     }
+
+    template <typename T>
+    void CreateGameObjectComponent(uint32 gameObjectId, T* gameObjectComponent)
+    {
+        GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
+        EntityRegistry.emplace<T>(gameObject.GameObjectComponents, *gameObjectComponent);
+    }
 };
 extern DLL_EXPORT LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()

@@ -1,166 +1,183 @@
-﻿// LevelEditor/EditorEnhancements/DynamicControlPanelView.cs
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using VulkanGameEngineLevelEditor.GameEngine;
-using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
-using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Drawing;
+//using System.Linq;
+//using System.Reflection;
+//using System.Windows.Forms;
+//using VulkanGameEngineLevelEditor.GameEngine;
+//using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 
-namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
-{
-    public class DynamicControlPanelView : TableLayoutPanel
-    {
-        private LevelEditorForm levelEditorForm;
-        private TableLayoutPanel _contentPanel;
-        private ToolTip _toolTip;
-        private List<ObjectPanelView> _objectPanelViewList = new();
-        public static Dictionary<object, ObjectPanelView> ObjectPanelViewMap = new();
-        public static Dictionary<MemberInfo, List<Attribute>> _dynamicAttributes = new Dictionary<MemberInfo, List<Attribute>>();
-        public static object rootObject;
+//namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
+//{
+//    public class DynamicControlPanelView : TableLayoutPanel
+//    {
+//        private readonly LevelEditorForm _levelEditorForm;
+//        private object _selectedObject;
+//        public object SelectedObject
+//        {
+//            get => _selectedObject;
+//        }
+//        private readonly ToolTip _toolTip;
 
-        public DynamicControlPanelView(LevelEditorForm form)
-        {
-            levelEditorForm = form;
-            _toolTip = new ToolTip();
-            InitializeComponents();
-        }
+//        // We only need one map now: object → its panel
+//        private readonly Dictionary<object, ObjectPanelView> _objectPanelMap = new();
 
-        private void InitializeComponents()
-        {
-            this.Dock = DockStyle.Right;
-            this.AutoScroll = true;
-            this.BackColor = Color.FromArgb(40, 40, 40);
+//        public void SetSelectedObject(object value)
+//        {
+//            if (_selectedObject != value)
+//            {
+//                _selectedObject = value;
+//                RefreshPanels();        // renamed from UpdatePanels for clarity
+//            }
+//        }
 
-            _contentPanel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true,
-                AutoSize = true,
-                BackColor = Color.FromArgb(40, 40, 40),
-                ColumnCount = 1,
-                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
-            };
-            this.Controls.Add(_contentPanel);
-        }
+//        public DynamicControlPanelView(LevelEditorForm form)
+//        {
+//            _levelEditorForm = form;
+//            _toolTip = new ToolTip();
 
-        public object SelectedObject
-        {
-            get => rootObject;
-            set
-            {
-                if (rootObject != value)
-                {
-                    rootObject = value;
-                    UpdatePanels();
-                }
-            }
-        }
+//            InitializeComponents();
+//        }
 
-        public void UpdatePanels()
-        {
-            try
-            {
-                _contentPanel.Controls.Clear();
-                _objectPanelViewList.Clear();
-                ObjectPanelViewMap.Clear();
+//        private void InitializeComponents()
+//        {
+//            this.Dock = DockStyle.Right;
+//            this.AutoScroll = true;
+//            this.BackColor = Color.FromArgb(40, 40, 40);
+//            this.Padding = new Padding(4);
 
-                if (rootObject is GameObject go && go.GameObjectId != uint.MaxValue)
-                {
-                    Console.WriteLine($"[UpdatePanels] GameObject ID: {go.GameObjectId}");
-                    AddPanel(new ObjectPanelView(levelEditorForm, go, _toolTip));
-                    AddComponentPanels(go);
-                }
-                else if (rootObject != null)
-                {
-                    AddPanel(new ObjectPanelView(levelEditorForm, rootObject, _toolTip));
-                }
+//            _contentPanel = new TableLayoutPanel
+//            {
+//                Dock = DockStyle.Fill,
+//                AutoScroll = true,
+//                AutoSize = true,
+//                BackColor = Color.FromArgb(40, 40, 40),
+//                ColumnCount = 1,
+//                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) },
+//                Padding = new Padding(4)
+//            };
 
-                AdjustHeight();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[UpdatePanels] CRASH: {ex}");
-            }
-        }
+//            this.Controls.Add(_contentPanel);
+//        }
 
-        private void AddPanel(ObjectPanelView panel)
-        {
-            _objectPanelViewList.Add(panel);
-            _contentPanel.Controls.Add(panel);
-            ObjectPanelViewMap[panel.PanelObject] = panel;
-        }
+//        public void SetSelectedObject(object obj)
+//        {
+//            if (SelectedObject == obj)
+//                return;
 
-        private void AddComponentPanels(GameObject go)
-        {
-            var members = go.GetType()
-                .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                .Where(m => m.GetCustomAttribute<GameObjectComponentAttribute>() != null);
+//            SelectedObject = obj;
+//            RefreshPanels();
+//        }
 
-            foreach (var member in members)
-            {
-                var attr = member.GetCustomAttribute<GameObjectComponentAttribute>();
-                uint id = uint.MaxValue;
+//        private void RefreshPanels()
+//        {
+//            try
+//            {
+//                _contentPanel.Controls.Clear();
+//                _objectPanelMap.Clear();
 
-                try
-                {
-                    id = member.MemberType switch
-                    {
-                        MemberTypes.Property => (uint)((PropertyInfo)member).GetValue(go),
-                        MemberTypes.Field => (uint)((FieldInfo)member).GetValue(go),
-                        _ => uint.MaxValue
-                    };
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[AddComponentPanels] Failed to read {member.Name}: {ex.Message}");
-                    continue;
-                }
+//                if (SelectedObject == null)
+//                    return;
 
-                if (id == uint.MaxValue) continue;
+//                if (SelectedObject is GameObject go && go.GameObjectId != uint.MaxValue)
+//                {
+//                    // 1. Add the GameObject itself (header)
+//                    AddObjectPanel(go);
 
-                if (!ComponentRegistry.Finders.TryGetValue(attr.ComponentType, out var finder))
-                {
-                    Console.WriteLine($"[AddComponentPanels] No finder for {attr.ComponentType}");
-                    continue;
-                }
+//                    // 2. Add all attached components
+//                    AddAllComponentPanels(go);
+//                }
+//                else
+//                {
+//                    // Regular object (component data, etc.)
+//                    AddObjectPanel(SelectedObject);
+//                }
 
-                object comp = null;
-                try { comp = finder(id); }
-                catch (Exception ex) { Console.WriteLine($"[AddComponentPanels] Finder failed: {ex}"); }
+//                AdjustHeight();
+//            }
+//            catch (Exception ex)
+//            {
+//                Console.WriteLine($"[DynamicControlPanel] RefreshPanels CRASH: {ex}");
+//            }
+//        }
 
-                if (comp == null)
-                {
-                    Console.WriteLine($"[AddComponentPanels] Component NULL: {attr.ComponentType} (ID: {id})");
-                    continue;
-                }
+//        private void AddObjectPanel(object obj)
+//        {
+//            var panel = new ObjectPanelView(_levelEditorForm, obj, _toolTip);
+//            _contentPanel.Controls.Add(panel);
+//            _objectPanelMap[obj] = panel;
+//        }
 
-                if (ObjectPanelViewMap.ContainsKey(comp))
-                {
-                    Console.WriteLine($"[AddComponentPanels] Already exists: {attr.ComponentType} (Hash: {comp.GetHashCode()})");
-                    continue;
-                }
+//        private void AddAllComponentPanels(GameObject go)
+//        {
+//            var componentMembers = go.GetType()
+//                .GetMembers(BindingFlags.Public | BindingFlags.Instance)
+//                .Where(m => m.GetCustomAttribute<GameObjectComponentAttribute>() != null);
 
-                try
-                {
-                    var panel = new ObjectPanelView(levelEditorForm, comp, _toolTip);
-                    AddPanel(panel);
-                    Console.WriteLine($"[AddComponentPanels] ADDED {attr.ComponentType} (ID: {id}) Hash: {comp.GetHashCode()}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[AddComponentPanels] FAILED to create panel: {ex}");
-                }
-            }
-        }
+//            foreach (var member in componentMembers)
+//            {
+//                var attr = member.GetCustomAttribute<GameObjectComponentAttribute>();
+//                if (attr == null) continue;
 
-        private void AdjustHeight()
-        {
-            int h = _contentPanel.Controls.Cast<Control>().Sum(c => c.Height + c.Margin.Vertical);
-            _contentPanel.Height = Math.Max(h + 20, 320);
-            this.PerformLayout();
-        }
-    }
-}
+//                uint componentId = GetComponentId(member, go);
+//                if (componentId == uint.MaxValue || componentId == 0)
+//                    continue;
+
+//                if (!ComponentRegistry.Finders.TryGetValue(attr.ComponentType, out var finder))
+//                    continue;
+
+//                object component = null;
+//                try
+//                {
+//                    component = finder(componentId);
+//                }
+//                catch (Exception ex)
+//                {
+//                    Console.WriteLine($"[Component Finder Failed] {attr.ComponentType}: {ex.Message}");
+//                }
+
+//                if (component == null || _objectPanelMap.ContainsKey(component))
+//                    continue;
+
+//                try
+//                {
+//                    var panel = new ObjectPanelView(_levelEditorForm, component, _toolTip);
+//                    _contentPanel.Controls.Add(panel);
+//                    _objectPanelMap[component] = panel;
+
+//                    Console.WriteLine($"[Inspector] Added component: {attr.ComponentType} (ID: {componentId})");
+//                }
+//                catch (Exception ex)
+//                {
+//                    Console.WriteLine($"[Inspector] Failed to create panel for {attr.ComponentType}: {ex}");
+//                }
+//            }
+//        }
+
+//        private static uint GetComponentId(MemberInfo member, GameObject go)
+//        {
+//            try
+//            {
+//                return member switch
+//                {
+//                    PropertyInfo p => (uint)p.GetValue(go),
+//                    FieldInfo f => (uint)f.GetValue(go),
+//                    _ => uint.MaxValue
+//                };
+//            }
+//            catch
+//            {
+//                return uint.MaxValue;
+//            }
+//        }
+
+//        private void AdjustHeight()
+//        {
+//            int totalHeight = _contentPanel.Controls.Cast<Control>()
+//                                  .Sum(c => c.Height + c.Margin.Vertical) + 40;
+
+//            _contentPanel.Height = Math.Max(totalHeight, 300);
+//            this.PerformLayout();
+//        }
+//    }
+//}

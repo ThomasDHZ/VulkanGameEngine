@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
+using VulkanGameEngineLevelEditor.LevelEditor.Forms;
 
 namespace VulkanGameEngineLevelEditor
 {

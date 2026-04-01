@@ -17,6 +17,20 @@ uint32 GameObjectSystem::AllocateGameObject()
     return GameObjectList.size();
 }
 
+void GameObjectSystem::CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId)
+{
+    GameObject& gameObject = GameObjectList.emplace_back(GameObject
+        {
+            .GameObjectId = AllocateGameObject(),
+            .ParentGameObjectId = parentGameObjectId,
+            .GameObjectComponents = levelSystem.EntityRegistry.create(),
+        });
+    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(gameObject.GameObjectComponents, GameObjectComponentLinker
+        {
+            .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
+        });
+}
+
 void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
     GameObject& gameObject = GameObjectList.emplace_back(GameObject

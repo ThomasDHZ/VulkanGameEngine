@@ -27,10 +27,10 @@ struct CameraFollowComponent { int a = 0; };
 
 struct GameObject
 {
-    uint32 GameObjectId = UINT32_MAX;
-    uint32 ParentGameObjectId = UINT32_MAX;
-    bool   GameObjectAlive = true;
-    entt::entity GameObjectComponents; //Don't use in level editor side
+    uint32       GameObjectId = UINT32_MAX;
+    uint32       ParentGameObjectId = UINT32_MAX;
+    bool         GameObjectAlive = true;
+    entt::entity GameObjectComponents; //Not accessible directly in level editor side
 };
 
 struct GameObjectComponentLinker
@@ -58,6 +58,7 @@ private:
 public:
     Vector<GameObject> GameObjectList;
 
+    DLL_EXPORT void CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId);
     DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT void DestroyGameObject(uint gameObjectId);

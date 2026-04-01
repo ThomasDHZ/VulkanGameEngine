@@ -44,8 +44,9 @@ public:
 	uint ActiveCameraIndex = 0;
     Vector<Camera> CameraList;
 
-    DLL_EXPORT void CreateCamera(const ivec2& renderResolution, const vec2& worldPosition = glm::vec2(0.0f));
+    DLL_EXPORT void CreateCamera(const ivec2& renderResolution, const vec2& worldPosition = vec2(0.0f));
 	DLL_EXPORT void Update();
+	DLL_EXPORT void SetCameraPosition(uint cameraIndex, vec2 worldPosition, float zoom);
 };
 extern DLL_EXPORT CameraSystem& cameraSystem;
 inline CameraSystem& CameraSystem::Get()

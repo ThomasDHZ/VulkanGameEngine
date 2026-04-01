@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements

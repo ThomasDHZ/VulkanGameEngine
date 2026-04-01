@@ -19,6 +19,6 @@ void CameraSystem::CreateCamera(const ivec2& renderResolution, const vec2& world
 
 void CameraSystem::Update()
 { 
-	CameraList[ActiveCameraIndex].ProjectionMatrix = glm::ortho(0.0f, CameraList[ActiveCameraIndex].Width, CameraList[ActiveCameraIndex].Height, 0.0f, -1000.0f, 1000.0f);
+	CameraList[ActiveCameraIndex].ProjectionMatrix = glm::ortho(0.0f, CameraList[ActiveCameraIndex].Width * CameraList[ActiveCameraIndex].Zoom, CameraList[ActiveCameraIndex].Height * CameraList[ActiveCameraIndex].Zoom, 0.0f, -1000.0f, 1000.0f);
 	CameraList[ActiveCameraIndex].ViewMatrix = glm::translate(mat4(1.0f), -CameraList[ActiveCameraIndex].Position);
 }

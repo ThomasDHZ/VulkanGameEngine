@@ -66,6 +66,9 @@
     <ClInclude Include="LevelEditorSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CameraSystemDLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderSystemDLL.cpp">
@@ -114,6 +117,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LevelEditorSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraSystemDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
