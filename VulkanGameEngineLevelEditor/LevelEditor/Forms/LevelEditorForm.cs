@@ -1,4 +1,7 @@
-﻿using GlmSharp;
+﻿using CSScripting;
+using GlmSharp;
+using Newtonsoft.Json;
+using Silk.NET.SDL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -6,29 +9,46 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static VulkanGameEngineLevelEditor.GameEngine.VulkanSystem;
+using Point = System.Drawing.Point;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 {
+
     public unsafe partial class LevelEditorForm : Form
     {
+        public enum AssetDataTypeEnum
+        {
+            kAssetTypeGameObject,
+            kAssetTypeMaterial,
+            kAssetTypeTexture
+        };
+
+        public class DragAssetData
+        {
+            public AssetDataTypeEnum AssetType { get; set; }
+            public System.String JsonPath { get; set; }
+        };
         private volatile bool running;
         private volatile bool isResizing;
         private GCHandle _callbackHandle;
         private object lockObject = new object();
-        private Thread renderThread { get; set; }
+        private System.Threading.Thread renderThread { get; set; }
 
         private bool LeftMouseButtonDown { get; set; } = false;
-        private Point LastMousePosition { get; set; }
+        private System.Drawing.Point LastMousePosition { get; set; }
         private vec2 SelectedGameObjectPosition { get; set; } = new vec2();
         private bool IsDragging { get; set; } = false;
         private uint SelectedSpriteIndex { get; set; } = uint.MaxValue;
@@ -43,15 +63,21 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             {
                 richTextBox = VulkanLoggerBox,
                 TextBoxName = VulkanLoggerBox.Name,
-                ThreadId = Thread.CurrentThread.ManagedThreadId,
+                ThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId,
                 IsActive = true
             });
-            Thread.CurrentThread.Name = "LevelEditor";
+            System.Threading.Thread.CurrentThread.Name = "LevelEditor";
             LogVulkanMessageDelegate callback = LogVulkanMessage;
             _callbackHandle = GCHandle.Alloc(callback);
             VulkanSystem.CreateLogMessageCallback(callback);
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
+
+            List<System.String> gameObjectPrefabList = Directory.GetFiles(@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\GameObjects").ToList();
+            foreach (var gameObjectPrefab in gameObjectPrefabList)
+            {
+                AddListItem(gameObjectPrefab.GetFileName(), AssetDataTypeEnum.kAssetTypeGameObject, gameObjectPrefab);
+            }
         }
 
         public void LevelEditorForm_Load(object sender, EventArgs e)
@@ -68,7 +94,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         public void StartRenderer()
         {
             running = true;
-            renderThread = new Thread(RenderLoop)
+            renderThread = new System.Threading.Thread(RenderLoop)
             {
                 IsBackground = true,
                 Name = "VulkanRenderer"
@@ -82,7 +108,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             {
                 GameSystem.StartUp(RenderBox.Handle.ToPointer(), RenderBox.Handle.ToPointer());
 
-                List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
+               // List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
                 //  GameObjectList = GameObjectSystem.GetGameObjectList().ToList();
                 //levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
                 //   levelEditorTreeView1.PopulateWithGameObject(GameObjectList.First().GameObjectId);
@@ -96,7 +122,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             {
                 if (isResizing)
                 {
-                    Thread.Sleep(10);
+                    System.Threading.Thread.Sleep(10);
                     continue;
                 }
 
@@ -116,9 +142,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RendererBox_MouseDown(object sender, MouseEventArgs e)
         {
-            Point currentPos = e.Location;
+            System.Drawing.Point currentPos = e.Location;
             if (e.Button == MouseButtons.Left)
             {
+                ivec2 worldPos = ClientToWorld(currentPos);
+                string a = @$"X: {worldPos.x} \n Y: {worldPos.y}";
+                MessageBox.Show(a);
+
                 uint pickedId = LevelEditorSystem.SampleRenderPassPixel(GameObjectIdTexture, new ivec2(currentPos.X, currentPos.Y));
                 if (pickedId != uint.MaxValue)
                 {
@@ -136,15 +166,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RendererBox_MouseWheel(object sender, MouseEventArgs e)
         {
-            Point mousePos = e.Location;
+            System.Drawing.Point mousePos = e.Location;
             float scrollDelta = e.Delta / 1200.0f;
             ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
-            cameraTransform.Zoom += scrollDelta;
+            cameraTransform.Zoom -= scrollDelta;
         }
 
         private void RendererBox_MouseMove(object sender, MouseEventArgs e)
         {
-            Point currentPos = e.Location;
+            if (SelectedSpriteIndex == uint.MaxValue) return;
+
+            System.Drawing.Point currentPos = e.Location;
             int deltaX = currentPos.X - LastMousePosition.X;
             int deltaY = currentPos.Y - LastMousePosition.Y;
             if (e.Button == MouseButtons.Left)
@@ -173,25 +205,80 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             }
         }
 
-        private void listView1_SelectedIndexChanged(object sender, MouseEventArgs e)
+        private void AddListItem(string name, AssetDataTypeEnum assetType, System.String jsonPath)
         {
-
+            System.Drawing.Image displayIcon = SystemIcons.Application.ToBitmap();
+            int index = imageList1.Images.Add(displayIcon, System.Drawing.Color.Transparent);
+            var item = new ListViewItem(name)
+            {
+                ImageIndex = index,
+                Tag = new DragAssetData
+                {
+                    AssetType = assetType,
+                    JsonPath = jsonPath
+                }
+            };
+            GameObjectListView.Items.Add(item);
         }
 
-        //private void AddListViewItem(string name, System.Drawing.Image icon, string assetType, object data)
-        //{
-        //    int idx = imageListPalette.Images.Add(icon ?? Properties.Resources.DefaultIcon, Color.Transparent);
-        //    var item = new ListViewItem(name)
-        //    {
-        //        ImageIndex = idx,
-        //        Tag = new DragAssetData
-        //        {
-        //            Type = assetType,
-        //            Data = data
-        //        }
-        //    };
+        private void RenderBox_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(DragAssetData)))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
 
-        //    lstPalette.Items.Add(item);
-        //}
+        private void RenderBox_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetData(typeof(DragAssetData)) is not DragAssetData asset ||
+                asset.AssetType != AssetDataTypeEnum.kAssetTypeGameObject)
+                return;
+
+            Point clientPos = RenderBox.PointToClient(new Point(e.X, e.Y));
+            ivec2 worldPos = ClientToWorld(clientPos);
+
+            ivec2 spriteSize = new ivec2(464, 688);
+
+            // Diagnostic version - let's try negative Y offset
+            worldPos.x += spriteSize.x / 2;
+            worldPos.y += 0;
+
+            uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, worldPos);
+        }
+
+        private void GameObjectListView_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            if (e.Item is ListViewItem item && item.Tag is DragAssetData asset)
+            {
+                GameObjectListView.DoDragDrop(asset, DragDropEffects.Copy);
+            }
+        }
+
+        public ivec2 ClientToWorld(System.Drawing.Point clientPos)
+        {
+            ref Camera camera = ref CameraSystem.UpdateActiveCamera();
+
+            float centerX = RenderBox.ClientSize.Width * 0.5f;
+            float centerY = RenderBox.ClientSize.Height * 0.5f;
+            float worldX = (clientPos.X - centerX) * camera.Zoom + camera.Position.x;
+            float worldY = (clientPos.Y - centerY) * camera.Zoom + camera.Position.y;
+            return new ivec2((int)Math.Round(worldX), (int)Math.Round(worldY));
+        }
+
+        public System.Drawing.Point WorldToClient(vec2 worldPos)
+        {
+            ref Camera camera = ref CameraSystem.UpdateActiveCamera();
+
+            float centerX = RenderBox.ClientSize.Width * 0.5f;
+            float centerY = RenderBox.ClientSize.Height * 0.5f;
+            float clientX = (worldPos.x - camera.Position.x) / camera.Zoom + centerX;
+            float clientY = (worldPos.y - camera.Position.y) / camera.Zoom + centerY;
+            return new System.Drawing.Point((int)MathF.Round(clientX), (int)MathF.Round(clientY));
+        }
     }
 }

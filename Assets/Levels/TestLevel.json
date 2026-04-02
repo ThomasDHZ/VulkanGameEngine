@@ -37,8 +37,8 @@
     {
       "GameObjectPath": "GameObjects/TestGameObject.json",
       "GameObjectPositionOverride": [
-        240.0,
-        100.0
+        0.0,
+        0.0
       ]
     }
   ],

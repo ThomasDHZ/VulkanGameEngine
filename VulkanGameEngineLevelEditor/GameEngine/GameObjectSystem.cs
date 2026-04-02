@@ -48,10 +48,10 @@ namespace VulkanGameEngineLevelEditor.GameEngine
 
     public struct GameObject
     {
-        public uint GameObjectId = uint.MaxValue;
-        public uint ParentGameObjectId = uint.MaxValue;
-        public bool GameObjectAlive = true;
-        public uint Padding; //entt::entity GameObjectComponents in C++ side
+        public uint GameObjectId { get; set; } = uint.MaxValue;
+        public uint ParentGameObjectId { get; set; } = uint.MaxValue;
+        public bool GameObjectAlive { get; set; } = true;
+        public uint Padding { get; set; } //entt::entity GameObjectComponents in C++ side
 
         public GameObject()
         {
