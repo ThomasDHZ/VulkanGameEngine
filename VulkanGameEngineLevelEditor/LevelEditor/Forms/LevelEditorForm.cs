@@ -242,13 +242,16 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             Point clientPos = RenderBox.PointToClient(new Point(e.X, e.Y));
             ivec2 worldPos = ClientToWorld(clientPos);
 
-            ivec2 spriteSize = new ivec2(464, 688);
+            Console.WriteLine($"=== DROPPING === Screen({clientPos.X},{clientPos.Y}) → World({worldPos.x}, {worldPos.y})");
 
-            // Diagnostic version - let's try negative Y offset
-            worldPos.x += spriteSize.x / 2;
-            worldPos.y += 0;
+            // TEMP: Try placing it at HALF the calculated position to test
+            ivec2 testPos = new ivec2(worldPos.x / 2, worldPos.y / 2);
 
-            uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, worldPos);
+            Console.WriteLine($"Trying test position: ({testPos.x}, {testPos.y})");
+
+            uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, testPos);
+
+            // Also print the actual transform after creation if possible
         }
 
         private void GameObjectListView_ItemDrag(object sender, ItemDragEventArgs e)
@@ -261,12 +264,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         public ivec2 ClientToWorld(System.Drawing.Point clientPos)
         {
-            ref Camera camera = ref CameraSystem.UpdateActiveCamera();
+            ref Camera camera = ref CameraSystem.UpdateActiveCamera();  // assuming this returns ref
 
-            float centerX = RenderBox.ClientSize.Width * 0.5f;
-            float centerY = RenderBox.ClientSize.Height * 0.5f;
-            float worldX = (clientPos.X - centerX) * camera.Zoom + camera.Position.x;
-            float worldY = (clientPos.Y - centerY) * camera.Zoom + camera.Position.y;
+            float zoom = camera.Zoom;
+            float camX = camera.Position.x;
+            float camY = camera.Position.y;
+
+            float worldX = camX + clientPos.X * zoom;
+            float worldY = camY + (RenderBox.ClientSize.Height - clientPos.Y) * zoom;
+
+            Console.WriteLine($"[ClientToWorld] Screen({clientPos.X}, {clientPos.Y}) | Cam({camX:F1}, {camY:F1}) Zoom={zoom:F2} | World({worldX:F1}, {worldY:F1})");
+
             return new ivec2((int)Math.Round(worldX), (int)Math.Round(worldY));
         }
 
@@ -274,10 +282,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         {
             ref Camera camera = ref CameraSystem.UpdateActiveCamera();
 
-            float centerX = RenderBox.ClientSize.Width * 0.5f;
-            float centerY = RenderBox.ClientSize.Height * 0.5f;
-            float clientX = (worldPos.x - camera.Position.x) / camera.Zoom + centerX;
-            float clientY = (worldPos.y - camera.Position.y) / camera.Zoom + centerY;
+            float clientX = (worldPos.x - camera.Position.x) / camera.Zoom;
+            float clientY = (worldPos.y - camera.Position.y) / camera.Zoom;
+
+            clientY = RenderBox.ClientSize.Height - clientY;   // Flip Y back
+
             return new System.Drawing.Point((int)MathF.Round(clientX), (int)MathF.Round(clientY));
         }
     }
