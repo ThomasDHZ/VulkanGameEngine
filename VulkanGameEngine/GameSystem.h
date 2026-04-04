@@ -27,7 +27,7 @@ public:
     void StartUp(void* windowHandle);
 
 #ifndef __ANDROID__
-    void Update(float deltaTime);
+    void Update(void* windowHandle, float deltaTime);
 #else
     void Update(void* windowHandle, float deltaTime);
 #endif

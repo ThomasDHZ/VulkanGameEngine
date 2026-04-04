@@ -56,6 +56,7 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 void VulkanSystem::RebuildSwapChain(void* windowHandle)
 {
     vkDeviceWaitIdle(vulkanSystem.Device);
+    //DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList.data(), vulkanSystem.SwapChainImageCount);
     DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
     DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
 

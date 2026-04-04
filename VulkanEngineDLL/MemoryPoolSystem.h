@@ -52,10 +52,13 @@ struct TextureMetadataHeader
 
 struct SceneDataBuffer
 {
+	uint HDRMapIndex;
+	uint FrameBufferIndex;
 	uint32 BRDFMapId = UINT32_MAX;
 	uint32 CubeMapId = UINT32_MAX;
 	uint32 IrradianceMapId = UINT32_MAX;
 	uint32 PrefilterMapId = UINT32_MAX;
+	ivec2  _pad2;
 	mat4   Projection;
 	mat4   View;
 	mat4   InverseProjection;

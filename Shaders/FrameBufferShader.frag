@@ -10,6 +10,8 @@
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
+	uint HDRMapIndex;
+	uint FrameBufferIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
 	uint IrradianceMapId;
@@ -62,7 +64,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() 
 {
-    vec4 renderPassPicture = vec4(texture(TextureMap[20], TexCoords).rgb, 1.0f);
+    vec4 renderPassPicture = vec4(texture(TextureMap[sceneDataBuffer.FrameBufferIndex], TexCoords).rgb, 1.0f);
 	vec4 mixTexture = vec4(texture(TextureMap[22], TexCoords).rgb, 1.0f);
 	outColor = renderPassPicture; //mix(renderPassPicture, mixTexture, 0.5f);
 }

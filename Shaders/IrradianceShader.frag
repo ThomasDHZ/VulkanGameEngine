@@ -10,7 +10,8 @@
 #include "MaterialPropertiesBuffer.glsl" 
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 
+{ 	uint HDRMapIndex;
+	uint FrameBufferIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
 	uint IrradianceMapId;

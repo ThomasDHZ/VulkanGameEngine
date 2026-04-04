@@ -39,6 +39,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json");
     textureSystem.GenerateTexture(brdfRenderPassId);
+    Vector<Texture> textures = textureSystem.RenderedTextureListMap[brdfRenderPassId];
 
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
     textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
@@ -53,6 +54,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     objectPickerRenderPassId           = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/ObjectPickerRenderPass.json");
     selectedObjectPickerRenderPassId   = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/SelectedGameObjectPickerRenderPass.json");
     frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json");
+
+    sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().bindlessTextureIndex - 1;
+    sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().bindlessTextureIndex;
 }
 
 void LevelSystem::Update(const float& deltaTime)

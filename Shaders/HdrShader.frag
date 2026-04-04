@@ -9,7 +9,8 @@
 #include "MaterialPropertiesBuffer.glsl" 
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 
+{ 	uint HDRMapIndex;
+	uint FrameBufferIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
 	uint IrradianceMapId;
@@ -64,7 +65,7 @@ const float Exposure = 1.0;
 void main() 
 {
 
-    vec3 hdrColor = texture(TextureMap[18], TexCoords).rgb;
+    vec3 hdrColor = texture(TextureMap[sceneDataBuffer.HDRMapIndex], TexCoords).rgb;
     vec3 finalColor = hdrColor;
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
     mapped = pow(mapped, vec3(1.0 / Gamma));

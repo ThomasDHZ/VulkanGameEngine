@@ -45,7 +45,8 @@ layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 layout(constant_id = 15) const uint VertexInputRateLocation10 = 1;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 
+{ 	uint HDRMapIndex;
+	uint FrameBufferIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
 	uint IrradianceMapId;

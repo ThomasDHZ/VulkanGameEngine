@@ -72,16 +72,14 @@ layout(binding = 0) buffer BindlessBuffer
     uint Data[];    // flattened uint buffer
 } bindlessBuffer;
 
-layout(binding = 1) uniform sampler2D TextureMap[];   // bindless 2D textures
+layout(binding = 1) uniform sampler2D TextureMap[];   
 
-// Helper: octahedral normal encoding (unchanged)
 vec2 OctahedronEncode(vec3 normal)
 {
     vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
     return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
 }
 
-// Helper: pack two [0,1] values into one 16-bit UNORM channel (0..1 range)
 float Pack8bitPair(float high, float low)
 {
     uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
@@ -93,11 +91,10 @@ float Pack8bitPair(float high, float low)
 ImportMaterial GetImportMaterial()
 {
     // Material starts at byte offset MaterialOffset → uint index = MaterialOffset / 4
-    uint offset = 0;   // should be 32
+    uint offset = 0;
 
     ImportMaterial mat;
 
-    // 12 floats (4 × vec3)
     mat.Albedo.r                        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     mat.Albedo.g                        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     mat.Albedo.b                        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
@@ -114,7 +111,6 @@ ImportMaterial GetImportMaterial()
     mat.Emission.g                      = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     mat.Emission.b                      = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    // 14 scalar floats
     mat.ClearcoatTint                   = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     mat.Metallic                        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     mat.Roughness                       = uintBitsToFloat(bindlessBuffer.Data[offset++]);
@@ -130,8 +126,7 @@ ImportMaterial GetImportMaterial()
     mat.Height                          = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     mat.Alpha                           = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    // 14 texture indices (uints)
-    mat.AlbedoMap                       = bindlessBuffer.Data[offset++];   // ← this is Data[58]
+    mat.AlbedoMap                       = bindlessBuffer.Data[offset++];
     mat.MetallicMap                     = bindlessBuffer.Data[offset++];
     mat.RoughnessMap                    = bindlessBuffer.Data[offset++];
     mat.ThicknessMap                    = bindlessBuffer.Data[offset++];
@@ -151,68 +146,26 @@ ImportMaterial GetImportMaterial()
 void main()
 {
     ImportMaterial material = GetImportMaterial();
+    vec4 albedo = (material.AlbedoMap != 0xFFFFFFFFu)  ? textureLod(TextureMap[nonuniformEXT(material.AlbedoMap)], UV, 0.0) : vec4(material.Albedo, 1.0);
+    float metallic = (material.MetallicMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.MetallicMap)], UV, 0.0).r : material.Metallic;
+    float roughness = (material.RoughnessMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.RoughnessMap)], UV, 0.0).r : material.Roughness;
+    vec3 normalMapRaw = (material.NormalMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.NormalMap)], UV, 0.0).rgb : vec3(0.5, 0.5, 1.0);
+    float thickness = (material.ThicknessMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.ThicknessMap)], UV, 0.0).r : material.Thickness;
+    vec3 sssColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.SubSurfaceScatteringColorMap)], UV, 0.0).rgb : material.SubSurfaceScatteringColor;
+    vec3 sheenColor = (material.SheenMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.SheenMap)], UV, 0.0).rgb : material.SheenColor;
+    float clearcoatTint = (material.ClearCoatMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatMap)], UV, 0.0).r : material.ClearcoatTint;
+    float ambientOcclusion = (material.AmbientOcclusionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.AmbientOcclusionMap)], UV, 0.0).r : material.AmbientOcclusion;
+    vec3 emission = (material.EmissionMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.EmissionMap)], UV, 0.0).rgb: material.Emission;  
+    float height = (material.HeightMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.HeightMap)], UV, 0.0).r : material.Height;
 
-    // Sample textures or fallback to constant values
-    vec4 albedo = (material.AlbedoMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.AlbedoMap)], UV, 0.0)
-        : vec4(material.Albedo, 1.0);
-
-    float metallic = (material.MetallicMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.MetallicMap)], UV, 0.0).r
-        : material.Metallic;
-
-    float roughness = (material.RoughnessMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.RoughnessMap)], UV, 0.0).r
-        : material.Roughness;
-
-    vec3 normalMapRaw = (material.NormalMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.NormalMap)], UV, 0.0).rgb
-        : vec3(0.5, 0.5, 1.0);
-
-    float thickness = (material.ThicknessMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.ThicknessMap)], UV, 0.0).r
-        : material.Thickness;
-
-    vec3 sssColor = (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.SubSurfaceScatteringColorMap)], UV, 0.0).rgb
-        : material.SubSurfaceScatteringColor;
-
-    vec3 sheenColor = (material.SheenMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.SheenMap)], UV, 0.0).rgb
-        : material.SheenColor;
-
-    float clearcoatTint = (material.ClearCoatMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatMap)], UV, 0.0).r
-        : material.ClearcoatTint;
-
-    float ambientOcclusion = (material.AmbientOcclusionMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.AmbientOcclusionMap)], UV, 0.0).r
-        : material.AmbientOcclusion;
-
-    vec3 emission = (material.EmissionMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.EmissionMap)], UV, 0.0).rgb
-        : material.Emission;   // ← note: was vec3(1.0) before — probably want material.Emission here
-
-    float height = (material.HeightMap != 0xFFFFFFFFu)
-        ? textureLod(TextureMap[nonuniformEXT(material.HeightMap)], UV, 0.0).r
-        : material.Height;
-
-    // Normal handling
     vec3 tangentNormal = normalMapRaw * 2.0 - 1.0;
     tangentNormal = normalize(tangentNormal);
     vec2 encodedNormal = OctahedronEncode(tangentNormal);
 
-    // Pack outputs
     outAlbedo        = albedo;
     outNormalData    = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
-    outPackedMRO     = vec4(Pack8bitPair(metallic, roughness),
-                            Pack8bitPair(ambientOcclusion, clearcoatTint),
-                            Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness),
-                            1.0);
-    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g),
-                             Pack8bitPair(sheenColor.b, material.SheenIntensity),
-                             Pack8bitPair(sssColor.r, sssColor.g),
-                             Pack8bitPair(sssColor.b, thickness));
-    outUnused        = vec4(0.0);   // or whatever placeholder
+    outPackedMRO     = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0f);
+    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity),  Pack8bitPair(sssColor.r, sssColor.g),  Pack8bitPair(sssColor.b, thickness));
+    outUnused        = vec4(0.0);   
     outEmission      = vec4(emission, 1.0);
 }

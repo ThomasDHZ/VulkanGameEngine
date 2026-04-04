@@ -41,7 +41,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
         .RenderPass = VK_NULL_HANDLE,
         .InputTextureIdList = renderPassLoader.InputTextureList,
-        .FrameBufferList = Vector<VkFramebuffer>(),
+        //.FrameBufferList = Vector<VkFramebuffer>(),
         .ClearValueList = renderPassLoader.ClearValueList,
         .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : renderPassLoader.RenderPassResolution,
         .MaxPushConstantSize = 0,
@@ -187,19 +187,19 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 
 void RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
 {
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList.data(), vulkanSystem.SwapChainImageCount);
+    //vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList.data(), vulkanSystem.SwapChainImageCount);
     if (vulkanRenderPass.IsRenderedToSwapchain)
     {
-//vulkanRenderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
-        //DestoryRenderPassSwapChainTextures(renderedTextureList.data(), renderedTextureList.size(), depthTexture);
-       // BuildRenderPassAttachmentTextures(vulkanRenderPass);
-      //  BuildFrameBuffer(vulkanRenderPass);
+        vulkanRenderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
+    //    DestoryRenderPassSwapChainTextures(renderedTextureList.data(), renderedTextureList.size(), depthTexture);
+        BuildRenderPassAttachmentTextures(vulkanRenderPass);
+        BuildFrameBuffer(vulkanRenderPass);
     }
     else
     {
-       // vulkanRenderPass.RenderPassResolution = vulkanRenderPass.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : vulkanRenderPass.RenderPassResolution;
-      ///  BuildRenderPassAttachmentTextures(vulkanRenderPass);
-       // BuildFrameBuffer(vulkanRenderPass);
+        vulkanRenderPass.RenderPassResolution = vulkanRenderPass.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : vulkanRenderPass.RenderPassResolution;
+        BuildRenderPassAttachmentTextures(vulkanRenderPass);
+        BuildFrameBuffer(vulkanRenderPass);
     }
 }
 
