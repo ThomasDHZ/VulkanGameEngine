@@ -7,8 +7,8 @@ LevelSystem& levelSystem = LevelSystem::Get();
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
-    cameraSystem.CreateCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec2(0.0f, 0.0f));
-    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.SwapChainResolution.width, (float)vulkanSystem.SwapChainResolution.height), vec3(0.0f, 0.0f, 0.0f)));
+    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkanSystem.DefaultRenderPassResolution.x, (float)vulkanSystem.DefaultRenderPassResolution.y), vec2(0.0f, 0.0f));
+    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.DefaultRenderPassResolution.x, (float)vulkanSystem.DefaultRenderPassResolution.y), vec3(0.0f, 0.0f, 0.0f)));
 
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
@@ -61,8 +61,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    cameraSystem.Update();
-    Camera_PerspectiveUpdate(*PerspectiveCamera.get());
+   Camera_PerspectiveUpdate(*PerspectiveCamera.get());
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     sceneDataBuffer.Projection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
@@ -71,6 +70,7 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
     sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
     sceneDataBuffer.ViewDirection = ViewDirection;
+    cameraSystem.Update();
 }
 
 void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
@@ -571,10 +571,11 @@ void LevelSystem::RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& render
 
 void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
 {
-    const Texture texture = textureSystem.FindRenderedTextureList(hdrRenderPassId).back();
+    const Texture& srcTexture = textureSystem.FindRenderedTextureList(hdrRenderPassId).back();
+
     VkImageBlit blitRegion
     {
-        .srcSubresource = 
+        .srcSubresource =
         {
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             .mipLevel = 0,
@@ -584,19 +585,19 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
         .srcOffsets =
         {
             VkOffset3D
-            { 
-                .x = 0, 
-                .y = 0, 
-                .z = 0 
+            {
+                .x = 0,
+                .y = 0,
+                .z = 0
             },
             VkOffset3D
             {
-                .x = texture.width,
-                .y = texture.height, 
-                .z = 1 
+                .x = srcTexture.width,
+                .y = srcTexture.height,
+                .z = 1
             }
         },
-        .dstSubresource = 
+        .dstSubresource =
         {
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             .mipLevel = 0,
@@ -619,7 +620,7 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             }
         }
     };
-    vkCmdBlitImage(commandBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanSystem.SwapChainImages[vulkanSystem.ImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
+    vkCmdBlitImage(commandBuffer, srcTexture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanSystem.SwapChainImages[vulkanSystem.ImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
 }
 
 void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId)

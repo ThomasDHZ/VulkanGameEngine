@@ -75,6 +75,7 @@ public:
 
 	VkExtent2D							   SwapChainResolution{};
 	uint32								   SwapChainImageCount = UINT32_MAX;
+	ivec2								   DefaultRenderPassResolution;
 	uint32								   ImageIndex = UINT32_MAX;
 	uint32								   CommandIndex = UINT32_MAX;
 	uint32								   GraphicsFamily = UINT32_MAX;

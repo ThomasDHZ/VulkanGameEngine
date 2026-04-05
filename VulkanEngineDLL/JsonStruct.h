@@ -26,7 +26,6 @@ struct PipelineDescriptorModel
 struct RenderPassBuildInfoModel
 {
     VkGuid RenderPassId;
-    bool IsRenderedToSwapchain;
     Vector<String> RenderPipelineList;
     Vector<RenderedTextureInfoModel> RenderedTextureInfoModelList;
     Vector<VkSubpassDependency> SubpassDependencyModelList;
@@ -52,8 +51,7 @@ struct VulkanRenderPass
     Vector<VkClearValue>                 ClearValueList;
     ivec2                                RenderPassResolution = ivec2();
     uint                                 MaxPushConstantSize = 0;
-    bool                                 UseDefaultSwapChainResolution = true;
-    bool                                 IsRenderedToSwapchain = false;
+    bool                                 UseDefaultRenderResolution = true;
     bool                                 UseCubeMapMultiView = false;
     bool                                 IsCubeMapRenderPass = false;
 };
@@ -77,7 +75,7 @@ struct RenderPassLoader
     VkGuid                               RenderPassId;
     uint32                               SubPassCount = UINT32_MAX;
     ivec2                                RenderPassResolution = ivec2();
-    bool                                 UseDefaultSwapChainResolution = true;
+    bool                                 UseDefaultRenderResolution = true;
     bool                                 UseCubeMapMultiView = false;
     bool                                 IsRenderedToSwapchain = false;
     bool                                 IsCubeMapRenderPass = false;

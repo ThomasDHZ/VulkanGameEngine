@@ -6,10 +6,11 @@ class ConfigSystem
 {
 private:
     ivec2 ParseWindowResolution(const nlohmann::json& j);
-
+    ivec2 ParseRenderResolution(const nlohmann::json& j);
 public:
 #ifndef PLATFORM_ANDROID
     const ivec2 WindowResolution;
+    const ivec2 RenderResolution;
     const String EngineBasePath;
     const String AssetDirectory;
     const String ShaderSourceDirectory;

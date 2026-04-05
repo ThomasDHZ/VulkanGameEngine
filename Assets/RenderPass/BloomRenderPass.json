@@ -6,7 +6,7 @@
   ],
   "RenderPassResolution": [ 0, 0 ],
   "SubPassCount": 1,
-  "UseDefaultSwapChainResolution": true,
+  "UseDefaultRenderResolution": true,
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [

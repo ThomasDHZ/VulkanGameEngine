@@ -28,6 +28,8 @@ uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 
 void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
 {
+    DefaultRenderPassResolution = configSystem.RenderResolution;
+
     vulkanSystem.ImageIndex = 0;
     vulkanSystem.CommandIndex = 0;
     vulkanSystem.RebuildRendererFlag = false;

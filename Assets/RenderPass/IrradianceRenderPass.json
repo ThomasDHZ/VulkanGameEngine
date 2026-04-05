@@ -6,7 +6,7 @@
   ],
   "RenderPassResolution": [ 128, 128 ],
   "SubPassCount": 1,
-  "UseDefaultSwapChainResolution": false,
+  "UseDefaultRenderResolution": false,
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": true,
@@ -24,7 +24,7 @@
       "UseSampler": true,
       "UseMipMaps": false,
       "SamplerCreateInfo": {
-         "SType": 31,
+        "SType": 31,
         "MagFilter": 1,
         "MinFilter": 1,
         "MipmapMode": 1,

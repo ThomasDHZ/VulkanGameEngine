@@ -6,7 +6,7 @@
   ],
   "RenderPassResolution": [ 256, 256 ],
   "SubPassCount": 1,
-  "UseDefaultSwapChainResolution": false,
+  "UseDefaultRenderResolution": false,
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": true,

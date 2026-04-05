@@ -1,8 +1,16 @@
 #pragma once
 #include "Platform.h"
 
+enum CameraTypeEnum
+{
+	kPixelPerfectOrthographicCam,
+	kPerspectiveCam
+};
+
 struct Camera
 {
+	CameraTypeEnum CameraType;
+
 	float Width;
 	float Height;
 	float AspectRatio;
@@ -39,14 +47,15 @@ private:
     CameraSystem(CameraSystem&&) = delete;
     CameraSystem& operator=(CameraSystem&&) = delete;
 
+	void CreatePixelPerfectOrthographicCamera(const ivec2& renderResolution, const vec2& worldPosition = vec2(0.0f));
+	void CreatePerspectiveCamera(const ivec2& renderResolution, const vec3& position);
 
 public:
 	uint ActiveCameraIndex = 0;
     Vector<Camera> CameraList;
 
-    DLL_EXPORT void CreateCamera(const ivec2& renderResolution, const vec2& worldPosition = vec2(0.0f));
+    DLL_EXPORT void CreateCamera(CameraTypeEnum cameraType, const ivec2& renderResolution, const vec2& position = vec2(0.0f));
 	DLL_EXPORT void Update();
-	DLL_EXPORT void SetCameraPosition(uint cameraIndex, vec2 worldPosition, float zoom);
 };
 extern DLL_EXPORT CameraSystem& cameraSystem;
 inline CameraSystem& CameraSystem::Get()

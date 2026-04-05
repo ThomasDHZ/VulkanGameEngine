@@ -4,7 +4,7 @@
   "RenderPipelineList": [ "Pipelines/BRDFPipeline.json" ],
   "RenderPassResolution": [ 256, 256 ],
   "SubPassCount": 1,
-  "UseDefaultSwapChainResolution": false,
+  "UseDefaultRenderResolution": false,
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": false,

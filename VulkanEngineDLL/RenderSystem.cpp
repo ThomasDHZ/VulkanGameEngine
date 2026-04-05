@@ -41,17 +41,15 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
         .RenderPass = VK_NULL_HANDLE,
         .InputTextureIdList = renderPassLoader.InputTextureList,
-        //.FrameBufferList = Vector<VkFramebuffer>(),
+        .FrameBufferList = Vector<VkFramebuffer>(),
         .ClearValueList = renderPassLoader.ClearValueList,
-        .RenderPassResolution = renderPassLoader.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : renderPassLoader.RenderPassResolution,
+        .RenderPassResolution = renderPassLoader.UseDefaultRenderResolution ? vulkanSystem.DefaultRenderPassResolution : renderPassLoader.RenderPassResolution,
         .MaxPushConstantSize = 0,
-        .UseDefaultSwapChainResolution = renderPassLoader.UseDefaultSwapChainResolution,
-        .IsRenderedToSwapchain = renderPassLoader.IsRenderedToSwapchain,
+        .UseDefaultRenderResolution = renderPassLoader.UseDefaultRenderResolution,
         .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
         .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
 
-    static bool s_alreadyCreated = false;
     RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList;
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
     BuildFrameBuffer(vulkanRenderPass);
@@ -184,16 +182,6 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
     for (auto& renderPassPair : renderSystem.RenderPassMap)
     {
         auto& renderPass = renderPassPair.second;
-
-        if (renderPass.IsRenderedToSwapchain)
-        {
-           /* for (auto& texture : textureSystem.FindRenderedTextureList(renderPass.RenderPassId))
-            {
-                textureSystem.DestroyTexture(texture);
-            }*/
-            renderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
-            BuildRenderPassAttachmentTextures(renderPass);
-        }
         BuildFrameBuffer(renderPass);
     }
     // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
@@ -240,9 +228,9 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
         subPassDescriptionList.emplace_back(VkSubpassDescription{
             .flags = 0,
             .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-            .inputAttachmentCount = static_cast<uint32_t>(inputAttachmentReferenceList[x].size()),
+            .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList[x].size()),
             .pInputAttachments = inputAttachmentReferenceList[x].empty() ? nullptr : inputAttachmentReferenceList[x].data(),
-            .colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferenceList[x].size()),
+            .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList[x].size()),
             .pColorAttachments = colorAttachmentReferenceList[x].empty() ? nullptr : colorAttachmentReferenceList[x].data(),
             .pResolveAttachments = resolveAttachmentReferenceList[x].empty() ? nullptr : resolveAttachmentReferenceList[x].data(),
             .pDepthStencilAttachment = useDepthReferences[x] ? &depthReferences[x] : nullptr,
@@ -257,8 +245,8 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
     if (renderPassJsonLoader.UseCubeMapMultiView)
     {
-        const uint32_t viewMask = 0b00111111;
-        const uint32_t correlationMask = 0b00111111;
+        const uint32 viewMask = 0b00111111;
+        const uint32 correlationMask = 0b00111111;
         multiviewCreateInfo = VkRenderPassMultiviewCreateInfo{
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
             .subpassCount = 1,
@@ -273,11 +261,11 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .pNext = renderPassJsonLoader.UseCubeMapMultiView ? &multiviewCreateInfo : nullptr,
-        .attachmentCount = static_cast<uint32_t>(attachmentDescriptionList.size()),
+        .attachmentCount = static_cast<uint32>(attachmentDescriptionList.size()),
         .pAttachments = attachmentDescriptionList.data(),
-        .subpassCount = static_cast<uint32_t>(subPassDescriptionList.size()),
+        .subpassCount = static_cast<uint32>(subPassDescriptionList.size()),
         .pSubpasses = subPassDescriptionList.data(),
-        .dependencyCount = static_cast<uint32_t>(subpassDependencies.size()),
+        .dependencyCount = static_cast<uint32>(subpassDependencies.size()),
         .pDependencies = subpassDependencies.data(),
     };
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
@@ -361,25 +349,7 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
 void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
 {
     Vector<Texture>  frameBufferAttachment = textureSystem.FindRenderedTextureList(vulkanRenderPass.RenderPassId);
-    if (vulkanRenderPass.IsRenderedToSwapchain)
-    {
-        vulkanRenderPass.FrameBufferList.resize(vulkanSystem.SwapChainImageCount);
-        for (size_t i = 0; i < vulkanSystem.SwapChainImageCount; ++i)
-        {
-            std::vector<VkImageView> attachments{ vulkanSystem.SwapChainImageViews[i] };
-            VkFramebufferCreateInfo info = {
-                .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-                .renderPass = vulkanRenderPass.RenderPass,
-                .attachmentCount = static_cast<uint32_t>(attachments.size()),
-                .pAttachments = attachments.data(),
-                .width = static_cast<uint32_t>(vulkanRenderPass.RenderPassResolution.x),
-                .height = static_cast<uint32_t>(vulkanRenderPass.RenderPassResolution.y),
-                .layers = 1
-            };
-            VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &vulkanRenderPass.FrameBufferList[i]));
-        }
-    }
-    else if (!frameBufferAttachment.empty() &&
+    if (!frameBufferAttachment.empty() &&
             (frameBufferAttachment[0].textureType == TextureType_SkyboxTexture ||
              frameBufferAttachment[0].textureType == TextureType_IrradianceMapTexture ||
              frameBufferAttachment[0].textureType == TextureType_PrefilterMapTexture))
@@ -578,8 +548,7 @@ void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
     renderPass.ClearValueList.clear();
     renderPass.RenderPassResolution = ivec2();
     renderPass.MaxPushConstantSize = 0;
-    renderPass.UseDefaultSwapChainResolution = false;
-    renderPass.IsRenderedToSwapchain = false;
+    renderPass.UseDefaultRenderResolution = false;
     renderPass.UseCubeMapMultiView = false;
     renderPass.IsCubeMapRenderPass = false;
 }

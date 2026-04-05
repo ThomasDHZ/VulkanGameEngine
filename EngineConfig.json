@@ -1,6 +1,6 @@
 {
   "WindowResolution": [ 1920, 1080 ],
-  "DefaultRenderResolution": [ 1920, 1080 ],
+  "RenderResolution": [ 3840, 2160 ],
   "ShaderSourceDirectory": "../Shaders",
   "AssetDirectory": "../Assets/",
   "MaterialSourceDirectory": "../Assets/ImportMaterials",

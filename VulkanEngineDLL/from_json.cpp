@@ -186,7 +186,6 @@ namespace nlohmann
 
     void from_json(const json& j, RenderPassBuildInfoModel& model)
     {
-        model.IsRenderedToSwapchain = j.at("IsRenderedToSwapchain").get<bool>();
         for (int x = 0; x < j.at("RenderPipelineList").size(); x++)
         {
             model.RenderPipelineList.emplace_back(j.at("RenderPipelineList")[x]["Path"]);
@@ -353,13 +352,13 @@ namespace nlohmann
         j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyModelList);
         j.at("ClearValueList").get_to(model.ClearValueList);
-        j.at("UseDefaultSwapChainResolution").get_to(model.UseDefaultSwapChainResolution);
+        j.at("UseDefaultRenderResolution").get_to(model.UseDefaultRenderResolution);
         j.at("UseCubeMapMultiView").get_to(model.UseCubeMapMultiView);
         j.at("IsCubeMapRenderPass").get_to(model.IsCubeMapRenderPass);
 
-        if (model.UseDefaultSwapChainResolution)
+        if (model.UseDefaultRenderResolution)
         {
-            model.RenderPassResolution = ivec2(static_cast<int>(vulkanSystem.SwapChainResolution.width, static_cast<int>(vulkanSystem.SwapChainResolution.height)));
+            model.RenderPassResolution = vulkanSystem.DefaultRenderPassResolution;
         }
         else
         {
