@@ -176,31 +176,27 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
     vkDeviceWaitIdle(vulkanSystem.Device);
-    vulkanSystem.RebuildSwapChain(windowHandle);
+    for (auto& renderPassPair : renderSystem.RenderPassMap) vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, renderPassPair.second.FrameBufferList);
+    vulkanSystem.DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.SwapChainImageViews);
+    vulkanSystem.DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
+
+    vulkanSystem.SetUpSwapChain(windowHandle);
     for (auto& renderPassPair : renderSystem.RenderPassMap)
     {
-        VulkanRenderPass& renderPass = renderPassPair.second;
-        RebuildSwapChain(renderPass);
+        auto& renderPass = renderPassPair.second;
+
+        if (renderPass.IsRenderedToSwapchain)
+        {
+           /* for (auto& texture : textureSystem.FindRenderedTextureList(renderPass.RenderPassId))
+            {
+                textureSystem.DestroyTexture(texture);
+            }*/
+            renderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
+            BuildRenderPassAttachmentTextures(renderPass);
+        }
+        BuildFrameBuffer(renderPass);
     }
     // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
-}
-
-void RenderSystem::RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
-{
-    //vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList.data(), vulkanSystem.SwapChainImageCount);
-    if (vulkanRenderPass.IsRenderedToSwapchain)
-    {
-        vulkanRenderPass.RenderPassResolution = ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height);
-    //    DestoryRenderPassSwapChainTextures(renderedTextureList.data(), renderedTextureList.size(), depthTexture);
-        BuildRenderPassAttachmentTextures(vulkanRenderPass);
-        BuildFrameBuffer(vulkanRenderPass);
-    }
-    else
-    {
-        vulkanRenderPass.RenderPassResolution = vulkanRenderPass.UseDefaultSwapChainResolution ? ivec2(vulkanSystem.SwapChainResolution.width, vulkanSystem.SwapChainResolution.height) : vulkanRenderPass.RenderPassResolution;
-        BuildRenderPassAttachmentTextures(vulkanRenderPass);
-        BuildFrameBuffer(vulkanRenderPass);
-    }
 }
 
 void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const RenderPassLoader& renderPassJsonLoader)
@@ -571,7 +567,7 @@ void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 {
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &renderPass.RenderPass);
 //    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.com, 1);
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &renderPass.FrameBufferList[0], vulkanSystem.SwapChainImageCount);
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, renderPass.FrameBufferList);
 
     renderPass.RenderPassId = VkGuid();
     renderPass.SubPassCount = UINT32_MAX;
@@ -625,12 +621,12 @@ void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, frameBufferList.data(), frameBufferList.size());
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, frameBufferList);
 }
 
-void RenderSystem::DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
+void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
-    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &commandBuffer, 1);
+    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, commandBuffer);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)

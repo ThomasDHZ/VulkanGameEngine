@@ -53,16 +53,6 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 
 }
 
-void VulkanSystem::RebuildSwapChain(void* windowHandle)
-{
-    vkDeviceWaitIdle(vulkanSystem.Device);
-    //DestroyFrameBuffers(vulkanSystem.Device, vulkanRenderPass.FrameBufferList.data(), vulkanSystem.SwapChainImageCount);
-    DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
-    DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
-
-    SetUpSwapChain(windowHandle);
-}
-
 VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
 {
 #ifndef PLATFORM_ANDROID
@@ -132,9 +122,9 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
 
 void VulkanSystem::DestroyRenderer()
 {
-    DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.Surface, &vulkanSystem.SwapChainImageViews[0], vulkanSystem.SwapChainImageCount);
+    DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.SwapChainImageViews);
     DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
-    DestroyFences(vulkanSystem.Device, &vulkanSystem.AcquireImageSemaphores[0], &vulkanSystem.PresentImageSemaphores[0], &vulkanSystem.InFlightFences[0], vulkanSystem.SwapChainImageCount);
+    DestroyFences(vulkanSystem.Device, vulkanSystem.AcquireImageSemaphores, vulkanSystem.PresentImageSemaphores, vulkanSystem.InFlightFences);
     DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
     vmaDestroyAllocator(bufferSystem.vmaAllocator); 
     DestroyDevice(vulkanSystem.Device);
@@ -868,6 +858,10 @@ void VulkanSystem::SetUpSwapChain()
     VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(vulkanSystem.Device, &SwapChainCreateInfo, nullptr, &vulkanSystem.Swapchain));
 }
 
+void VulkanSystem::RebuildSwapChain(void* windowHandle)
+{
+}
+
 void VulkanSystem::SetUpSwapChainImages()
 {
     uint32 swapChainImageCount = UINT32_MAX;
@@ -1093,26 +1087,37 @@ void VulkanSystem::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUti
     }
 }
 
-void VulkanSystem::DestroyFences(VkDevice device, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, VkFence* fences, size_t semaphoreCount)
+void VulkanSystem::DestroyFences(VkDevice device, Vector<VkSemaphore>& acquireImageSemaphores, Vector<VkSemaphore>& presentImageSemaphores, Vector<VkFence>& fences)
 {
-    for (size_t x = 0; x < semaphoreCount; x++)
+    for (auto& acquireImageSemaphore : acquireImageSemaphores)
     {
-        if (acquireImageSemaphores[x] != VK_NULL_HANDLE)
+        if (acquireImageSemaphore != VK_NULL_HANDLE)
         {
-            vkDestroySemaphore(device, acquireImageSemaphores[x], NULL);
-            acquireImageSemaphores[x] = VK_NULL_HANDLE;
-        }
-        if (presentImageSemaphores[x] != VK_NULL_HANDLE)
-        {
-            vkDestroySemaphore(device, presentImageSemaphores[x], NULL);
-            presentImageSemaphores[x] = VK_NULL_HANDLE;
-        }
-        if (fences[x] != VK_NULL_HANDLE)
-        {
-            vkDestroyFence(device, fences[x], NULL);
-            fences[x] = VK_NULL_HANDLE;
+            vkDestroySemaphore(device, acquireImageSemaphore, NULL);
+            acquireImageSemaphore = VK_NULL_HANDLE;
         }
     }
+    acquireImageSemaphores.clear();
+
+    for (auto& presentImageSemaphore : presentImageSemaphores)
+    {
+        if (presentImageSemaphore != VK_NULL_HANDLE)
+        {
+            vkDestroySemaphore(device, presentImageSemaphore, NULL);
+            presentImageSemaphore = VK_NULL_HANDLE;
+        }
+    }
+    presentImageSemaphores.clear();
+
+    for (auto& fence : fences)
+    {
+        if (fence != VK_NULL_HANDLE)
+        {
+            vkDestroyFence(device, fence, NULL);
+            fence = VK_NULL_HANDLE;
+        }
+    }
+    fences.clear();
 }
 
 void VulkanSystem::DestroyCommandPool(VkDevice device, VkCommandPool* commandPool)
@@ -1165,16 +1170,17 @@ void VulkanSystem::DestroyRenderPass(VkDevice device, VkRenderPass* renderPass)
     }
 }
 
-void VulkanSystem::DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count)
+void VulkanSystem::DestroyFrameBuffers(VkDevice device, Vector<VkFramebuffer>& frameBufferList)
 {
-    for (size_t x = 0; x < count; x++)
+    for (auto& frameBuffer : frameBufferList)
     {
-        if (frameBufferList[x] != VK_NULL_HANDLE)
+        if (frameBuffer != VK_NULL_HANDLE)
         {
-            vkDestroyFramebuffer(device, frameBufferList[x], NULL);
-            frameBufferList[x] = VK_NULL_HANDLE;
+            vkDestroyFramebuffer(device, frameBuffer, nullptr);
+            frameBuffer = VK_NULL_HANDLE;
         }
     }
+    frameBufferList.clear();
 }
 
 void VulkanSystem::DestroyDescriptorPool(VkDevice device, VkDescriptorPool* descriptorPool)
@@ -1195,16 +1201,14 @@ void VulkanSystem::DestroyDescriptorSetLayout(VkDevice device, VkDescriptorSetLa
     }
 }
 
-void VulkanSystem::DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, VkCommandBuffer* commandBufferList, uint32 count)
+void VulkanSystem::DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, Vector<VkCommandBuffer>& commandBufferList)
 {
-    if (*commandBufferList != VK_NULL_HANDLE)
+    vkFreeCommandBuffers(device, *commandPool, commandBufferList.size(), commandBufferList.data());
+    for (size_t x = 0; x < commandBufferList.size(); x++)
     {
-        vkFreeCommandBuffers(device, *commandPool, count, &*commandBufferList);
-        for (size_t x = 0; x < count; x++)
-        {
-            commandBufferList[x] = VK_NULL_HANDLE;
-        }
+        commandBufferList[x] = VK_NULL_HANDLE;
     }
+    commandBufferList.clear();
 }
 
 void VulkanSystem::DestroyBuffer(VkDevice device, VkBuffer* buffer)
@@ -1225,16 +1229,17 @@ void VulkanSystem::FreeDeviceMemory(VkDevice device, VkDeviceMemory* memory)
     }
 }
 
-void VulkanSystem::DestroySwapChainImageView(VkDevice device, VkSurfaceKHR surface, VkImageView* pSwapChainImageViewList, uint32 count)
+void VulkanSystem::DestroySwapChainImageView(VkDevice device, Vector<VkImageView>& swapChainImageViewList)
 {
-    for (uint32 x = 0; x < count; x++)
+    for (auto& swapChainImageView : swapChainImageViewList)
     {
-        if (surface != VK_NULL_HANDLE)
+        if (swapChainImageView != VK_NULL_HANDLE)
         {
-            vkDestroyImageView(device, pSwapChainImageViewList[x], NULL);
-            pSwapChainImageViewList[x] = VK_NULL_HANDLE;
+            vkDestroyImageView(device, swapChainImageView, nullptr);
+            swapChainImageView = VK_NULL_HANDLE;
         }
     }
+    swapChainImageViewList.clear();
 }
 
 void VulkanSystem::DestroySwapChain(VkDevice device, VkSwapchainKHR* swapChain)

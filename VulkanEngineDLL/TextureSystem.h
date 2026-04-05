@@ -62,7 +62,6 @@ private:
 
     bool IsDepthFormat(VkFormat format);
     bool HasStencilComponent(VkFormat format);
-    void UpdateTextureBufferIndex(Texture& texture, uint32 bufferIndex);
     void CreateTextureImage(Texture& texture, VkImageCreateInfo& imageCreateInfo, Vector<byte>& textureData, uint layerCount);
     void CreateTextureView(Texture& texture, bool usingMultiView, VkImageAspectFlags imageAspectFlags);
     void GenerateMipmaps(Texture& texture);

@@ -108,7 +108,7 @@ void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer)
 void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer)
 {
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &imGuiRenderer.SwapChainFramebuffers[0], vulkanSystem.SwapChainImageCount);
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
     imGuiRenderer.RenderPass = ImGui_CreateRenderPass();
     imGuiRenderer.SwapChainFramebuffers = ImGui_CreateRendererFramebuffers(imGuiRenderer.RenderPass);
 }
@@ -118,7 +118,7 @@ void ImGui_Destroy(ImGuiRenderer& imGuiRenderer)
     ImGui_ImplVulkan_Shutdown();
     vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &imGuiRenderer.ImGuiDescriptorPool);
     vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, &imGuiRenderer.SwapChainFramebuffers[0], vulkanSystem.SwapChainImageCount);
+    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }

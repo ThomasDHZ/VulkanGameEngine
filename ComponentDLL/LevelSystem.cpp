@@ -571,28 +571,55 @@ void LevelSystem::RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& render
 
 void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
 {
-    const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-    VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-
-    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
+    const Texture texture = textureSystem.FindRenderedTextureList(hdrRenderPassId).back();
+    VkImageBlit blitRegion
     {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = renderPass.RenderPass,
-        .framebuffer = renderPass.FrameBufferList[vulkanSystem.ImageIndex],
-        .renderArea = VkRect2D
+        .srcSubresource = 
         {
-           .offset = VkOffset2D {.x = 0, .y = 0 },
-           .extent = VkExtent2D {.width = static_cast<uint>(renderPass.RenderPassResolution.x), .height = static_cast<uint>(renderPass.RenderPassResolution.y) }
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .mipLevel = 0,
+            .baseArrayLayer = 0,
+            .layerCount = 1
         },
-        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-        .pClearValues = renderPass.ClearValueList.data()
+        .srcOffsets =
+        {
+            VkOffset3D
+            { 
+                .x = 0, 
+                .y = 0, 
+                .z = 0 
+            },
+            VkOffset3D
+            {
+                .x = texture.width,
+                .y = texture.height, 
+                .z = 1 
+            }
+        },
+        .dstSubresource = 
+        {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .mipLevel = 0,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        },
+        .dstOffsets =
+        {
+            VkOffset3D
+            {
+                .x = 0,
+                .y = 0,
+                .z = 0
+            },
+            VkOffset3D
+            {
+                .x = static_cast<int>(vulkanSystem.SwapChainResolution.width),
+                .y = static_cast<int>(vulkanSystem.SwapChainResolution.height),
+                .z = 1
+            }
+        }
     };
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    vkCmdEndRenderPass(commandBuffer);
+    vkCmdBlitImage(commandBuffer, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanSystem.SwapChainImages[vulkanSystem.ImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
 }
 
 void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId)

@@ -50,7 +50,7 @@ public:
     DLL_EXPORT void                                                    DestroyRenderPipelines();
     DLL_EXPORT void                                                    DestroyPipeline(VulkanPipeline& vulkanPipelineDLL);
     DLL_EXPORT void                                                    DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
-    DLL_EXPORT void                                                    DestroyCommandBuffers(VkCommandBuffer& commandBuffer);
+    DLL_EXPORT void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
     DLL_EXPORT void                                                    DestroyBuffer(VkBuffer& buffer);
 
     Vector<VkDescriptorImageInfo>                                      GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);

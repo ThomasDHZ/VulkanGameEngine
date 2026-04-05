@@ -22,13 +22,11 @@ private:
 	VkExtent2D							   SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkDevice							   SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
 	VkPhysicalDevice					   SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
-	void								   SetUpSwapChain();
 	void								   SetUpSwapChainImages();
 	void								   SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat);
 	VkCommandPool						   SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
 	void								   SetUpSemaphores();
 	void								   SetUpCommandBuffers();
-	void								   SetUpSwapChain(void* windowHandle);
 	VmaAllocator						   SetUpVmaAllocation();
 
 	void								   GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue);
@@ -44,14 +42,12 @@ private:
 
 
 	void								   DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator);
-	void								   DestroyFences(VkDevice device, VkSemaphore* acquireImageSemaphores, VkSemaphore* presentImageSemaphores, VkFence* fences, size_t semaphoreCount);
+	void								   DestroyFences(VkDevice device, Vector<VkSemaphore>& acquireImageSemaphores, Vector<VkSemaphore>& presentImageSemaphores, Vector<VkFence>& fences);
 	void								   DestroyCommandPool(VkDevice device, VkCommandPool* commandPool);
 	void								   DestroyDevice(VkDevice device);
 	void								   DestroySurface(VkInstance instance, VkSurfaceKHR* surface);
 	void								   DestroyDebugger(VkInstance* instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT);
 	void								   DestroyInstance(VkInstance* instance);
-	void								   DestroySwapChainImageView(VkDevice device, VkSurfaceKHR surface, VkImageView* pSwapChainImageViewList, uint32 count);
-	void								   DestroySwapChain(VkDevice device, VkSwapchainKHR* swapChain);
 
 public:
 	static VulkanSystem& Get();
@@ -101,6 +97,8 @@ public:
 	DLL_EXPORT VkSurfaceKHR				   CreateVulkanSurface(void* windowHandle, VkInstance instance);
 
 	DLL_EXPORT void						   RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
+	DLL_EXPORT void						   SetUpSwapChain();
+	DLL_EXPORT void						   SetUpSwapChain(void* windowHandle);
 	DLL_EXPORT void						   RebuildSwapChain(void* windowHandle);
 	DLL_EXPORT void						   StartFrame();
 	DLL_EXPORT void						   EndFrame(VkCommandBuffer& commandBufferSubmit);
@@ -119,10 +117,12 @@ public:
 	DLL_EXPORT Vector<VkPresentModeKHR>    GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
 	DLL_EXPORT void						   DestroyRenderer();
+	DLL_EXPORT void						   DestroySwapChainImageView(VkDevice device, Vector<VkImageView>& pSwapChainImageViewList);
+	DLL_EXPORT void						   DestroySwapChain(VkDevice device, VkSwapchainKHR* swapChain);
 	DLL_EXPORT void						   DestroyRenderPass(VkDevice device, VkRenderPass* renderPass);
-	DLL_EXPORT void						   DestroyFrameBuffers(VkDevice device, VkFramebuffer* frameBufferList, uint32 count);
+	DLL_EXPORT void						   DestroyFrameBuffers(VkDevice device, Vector<VkFramebuffer>& frameBufferList);
 	DLL_EXPORT void						   DestroyDescriptorPool(VkDevice device, VkDescriptorPool* descriptorPool);
-	DLL_EXPORT void						   DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, VkCommandBuffer* commandBufferList, uint32 count);
+	DLL_EXPORT void						   DestroyCommandBuffers(VkDevice device, VkCommandPool* commandPool, Vector<VkCommandBuffer>& commandBufferList);
 	DLL_EXPORT void						   DestroyBuffer(VkDevice device, VkBuffer* buffer);
 	DLL_EXPORT void						   DestroyImageView(VkDevice device, VkImageView* imageView);
 	DLL_EXPORT void						   DestroyImage(VkDevice device, VkImage* image);

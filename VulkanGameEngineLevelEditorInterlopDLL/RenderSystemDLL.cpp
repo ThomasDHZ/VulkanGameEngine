@@ -51,7 +51,7 @@
 	 renderSystem.DestroyFrameBuffers(frameBufferList);
 }
 
- void RenderSystem_DestroyCommandBuffers(VkCommandBuffer& commandBuffer)
+ void RenderSystem_DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
 	 renderSystem.DestroyCommandBuffers(commandBuffer);
 }

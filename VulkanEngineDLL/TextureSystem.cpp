@@ -945,6 +945,7 @@ void TextureSystem::DestroyTexture(Texture& texture)
 		}
 		texture.textureImage = VK_NULL_HANDLE;
 	}
+	memoryPoolSystem.FreeObject(MemoryPoolTypes::kTexture2DMetadataBuffer, texture.bindlessTextureIndex);
 	texture = Texture();
 }
 
