@@ -4,7 +4,8 @@
 enum CameraTypeEnum
 {
 	kPixelPerfectOrthographicCam,
-	kPerspectiveCam
+	kPerspectiveCam,
+	kLevelEditorCamera
 };
 
 struct Camera
@@ -49,6 +50,7 @@ private:
 
 	void CreatePixelPerfectOrthographicCamera(const ivec2& renderResolution, const vec2& worldPosition = vec2(0.0f));
 	void CreatePerspectiveCamera(const ivec2& renderResolution, const vec3& position);
+	void CreateLevelEditorCamera(const ivec2& renderResolution, const vec2& position);
 
 public:
 	uint ActiveCameraIndex = 0;

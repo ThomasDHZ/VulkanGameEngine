@@ -46,7 +46,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private GCHandle _callbackHandle;
         private object lockObject = new object();
         private System.Threading.Thread renderThread { get; set; }
-
+        private ivec2 RenderResolution = new ivec2(3840, 2160);
         private bool LeftMouseButtonDown { get; set; } = false;
         private System.Drawing.Point LastMousePosition { get; set; }
         private vec2 SelectedGameObjectPosition { get; set; } = new vec2();
@@ -169,7 +169,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             System.Drawing.Point mousePos = e.Location;
             float scrollDelta = e.Delta / 1200.0f;
             ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
-            cameraTransform.Zoom -= scrollDelta;
+            cameraTransform.Zoom += scrollDelta;
         }
 
         private void RendererBox_MouseMove(object sender, MouseEventArgs e)
@@ -264,16 +264,24 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         public ivec2 ClientToWorld(System.Drawing.Point clientPos)
         {
-            ref Camera camera = ref CameraSystem.UpdateActiveCamera();  // assuming this returns ref
+            ref Camera camera = ref CameraSystem.UpdateActiveCamera();
 
             float zoom = camera.Zoom;
+            if (zoom <= 0.01f) zoom = 1.0f;
+
             float camX = camera.Position.x;
             float camY = camera.Position.y;
 
-            float worldX = camX + clientPos.X * zoom;
-            float worldY = camY + (RenderBox.ClientSize.Height - clientPos.Y) * zoom;
+            float scaleX = RenderResolution.x / (float)RenderBox.ClientSize.Width;
+            float scaleY = RenderResolution.y / (float)RenderBox.ClientSize.Height;
 
-            Console.WriteLine($"[ClientToWorld] Screen({clientPos.X}, {clientPos.Y}) | Cam({camX:F1}, {camY:F1}) Zoom={zoom:F2} | World({worldX:F1}, {worldY:F1})");
+            float renderX = clientPos.X * scaleX;
+            float renderY = (RenderBox.ClientSize.Height - clientPos.Y) * scaleY;   
+
+            float worldX = camX + (renderX / zoom);
+            float worldY = camY + (renderY / zoom);
+
+            Console.WriteLine($"[ClientToWorld] Window({clientPos.X}, {clientPos.Y}) Scale({scaleX:F2},{scaleY:F2}) Zoom({zoom:F2}) → World({worldX:F1}, {worldY:F1})");
 
             return new ivec2((int)Math.Round(worldX), (int)Math.Round(worldY));
         }

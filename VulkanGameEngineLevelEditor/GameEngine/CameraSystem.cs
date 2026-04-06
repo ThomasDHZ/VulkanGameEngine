@@ -10,8 +10,16 @@ using System.Threading.Tasks;
 
 namespace VulkanGameEngineLevelEditor.GameEngine
 {
+    public enum CameraTypeEnum
+    {
+        kPixelPerfectOrthographicCam,
+        kPerspectiveCam,
+        kLevelEditorCam
+    };
+
     public struct Camera
     {
+        public CameraTypeEnum CameraType { get; set; }
         public float Width { get; set; }
         public float Height { get; set; }
         public float AspectRatio { get; set; }

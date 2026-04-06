@@ -7,8 +7,7 @@ typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
 extern "C"
 {
 #endif
-    DLL_EXPORT RenderPassGuid                                          RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath);
-    DLL_EXPORT void                                                    RenderSystem_RebuildSwapChain(VulkanRenderPass& vulkanRenderPass);
+    DLL_EXPORT RenderPassGuid                                          RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath);     
     DLL_EXPORT void                                                    RenderSystem_Update(void* windowHandle, const float deltaTime);
     DLL_EXPORT VulkanRenderPass                                        RenderSystem_FindRenderPass(RenderPassGuid renderPassGuid);
 

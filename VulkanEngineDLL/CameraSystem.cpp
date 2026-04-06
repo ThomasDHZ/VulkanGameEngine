@@ -39,22 +39,35 @@ void CameraSystem::CreatePerspectiveCamera(const ivec2& renderResolution, const 
     CameraList.emplace_back(std::move(cam));
 }
 
+void CameraSystem::CreateLevelEditorCamera(const ivec2& renderResolution, const vec2& worldPosition)
+{
+    Camera cam{};
+    cam.CameraType = kPixelPerfectOrthographicCam;
+    cam.Width = static_cast<float>(renderResolution.x);
+    cam.Height = static_cast<float>(renderResolution.y);
+    cam.AspectRatio = cam.Width / cam.Height;
+    cam.Zoom = 1.0f;
+    cam.Position = vec3(worldPosition.x, worldPosition.y, 0.0f);
+    cam.ViewScreenSize = vec2(renderResolution);
+    cam.ProjectionMatrix = glm::ortho(0.0f, cam.Width, cam.Height, 0.0f, -1000.0f, 1000.0f);
+    cam.ViewMatrix = glm::translate(glm::mat4(1.0f), -cam.Position);
+
+    CameraList.emplace_back(std::move(cam));
+}
+
 void CameraSystem::CreateCamera(CameraTypeEnum cameraType, const ivec2& renderResolution, const vec2& position)
 {
-    if (cameraType == kPixelPerfectOrthographicCam)
+    switch (cameraType)
     {
-        CreatePixelPerfectOrthographicCamera(renderResolution, position);
-    }
-    else if (cameraType == kPerspectiveCam)
-    {
-        CreatePerspectiveCamera(renderResolution, vec3(position.x, position.y, 0.0f));
-    }
+        case kPixelPerfectOrthographicCam: CreatePixelPerfectOrthographicCamera(renderResolution, position); break;
+        case kPerspectiveCam: CreatePerspectiveCamera(renderResolution, vec3(position.x, position.y, 0.0f)); break;
+        case kLevelEditorCamera: CreateLevelEditorCamera(renderResolution, position); break;
+    };
 }
 
 void CameraSystem::Update()
 {
     Camera& cam = CameraList[ActiveCameraIndex];
-
     switch (cam.CameraType)
     {
         case kPixelPerfectOrthographicCam:
@@ -62,8 +75,7 @@ void CameraSystem::Update()
             if (cam.Zoom != 1.0f)
             {
                 vec3 scaledPosition = cam.Position * (1.0f - cam.Zoom);
-                cam.ViewMatrix = glm::scale(glm::mat4(1.0f), vec3(cam.Zoom)) *
-                    glm::translate(glm::mat4(1.0f), -cam.Position - scaledPosition);
+                cam.ViewMatrix = glm::scale(glm::mat4(1.0f), vec3(cam.Zoom)) * glm::translate(glm::mat4(1.0f), -cam.Position - scaledPosition);
             }
             else
             {
@@ -71,7 +83,6 @@ void CameraSystem::Update()
             }
             break;
         }
-
         case kPerspectiveCam:
         {
             vec3 front{};
@@ -84,6 +95,12 @@ void CameraSystem::Update()
             cam.Up = glm::normalize(glm::cross(cam.Right, cam.Front));
 
             cam.ViewMatrix = glm::lookAt(cam.Position, cam.Position + cam.Front, cam.Up);
+            break;
+        }
+        case kLevelEditorCamera:
+        {
+            CameraList[ActiveCameraIndex].ProjectionMatrix = glm::ortho(0.0f, CameraList[ActiveCameraIndex].Width * CameraList[ActiveCameraIndex].Zoom, CameraList[ActiveCameraIndex].Height * CameraList[ActiveCameraIndex].Zoom, 0.0f, -1000.0f, 1000.0f);
+            CameraList[ActiveCameraIndex].ViewMatrix = glm::translate(mat4(1.0f), -CameraList[ActiveCameraIndex].Position);
             break;
         }
     }

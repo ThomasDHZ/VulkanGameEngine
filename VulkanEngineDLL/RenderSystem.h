@@ -38,7 +38,6 @@ public:
     DLL_EXPORT void                                                    StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
-    DLL_EXPORT void                                                    RebuildSwapChain(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
     DLL_EXPORT VulkanRenderPass                                        FindRenderPass(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);

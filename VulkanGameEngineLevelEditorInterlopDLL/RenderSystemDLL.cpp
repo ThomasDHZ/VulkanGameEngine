@@ -6,11 +6,6 @@
 	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath);
 }
 
- void RenderSystem_RebuildSwapChain(VulkanRenderPass& vulkanRenderPass)
-{
-	 renderSystem.RebuildSwapChain(vulkanRenderPass);
-}
-
  void RenderSystem_Update(void* windowHandle, const float deltaTime)
 {
 	 renderSystem.Update(windowHandle, deltaTime);
