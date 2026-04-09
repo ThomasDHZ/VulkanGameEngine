@@ -59,8 +59,30 @@ void GameObjectSystem_DestroyDeadGameObjects()
 	gameObjectSystem.DestroyDeadGameObjects();
 }
 
+GameObject* GameObjectSystem_GetGameObject(size_t gameObjectId)
+{
+    return &gameObjectSystem.FindGameObject(gameObjectId);
+}
+
 GameObject* GameObjectSystem_GetGameObjectList(size_t& returnCount)
 {
     returnCount = gameObjectSystem.GameObjectList.size();
     return gameObjectSystem.GameObjectList.data();
+}
+
+ComponentTypeEnum* GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, size_t& returnCount)
+{
+    Vector<ComponentTypeEnum> componentList;
+    GameObject gameObject = gameObjectSystem.FindGameObject(gameObjectId);
+    for (uint x = 0; x < ComponentTypeEnum::kEndOfEnum; x++)
+    {
+        void* componentPtr = GameObjectSystem_UpdateGameObjectComponent(gameObjectId, (ComponentTypeEnum)x);
+        if (componentPtr)
+        {
+            componentList.emplace_back(static_cast<ComponentTypeEnum>(x));
+        }
+    }
+
+    returnCount = componentList.size();
+    return memorySystem.AddPtrBuffer(componentList.data(), componentList.size(), __FILE__, __LINE__, __func__);
 }

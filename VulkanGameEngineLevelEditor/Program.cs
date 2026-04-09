@@ -16,6 +16,7 @@ namespace VulkanGameEngineLevelEditor
         {
             try
             {
+                ComponentRegistry.Initialize();
                 DLLSystem.SetSharedDllDirectory();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);

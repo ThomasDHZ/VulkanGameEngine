@@ -82,7 +82,7 @@ private:
         if constexpr (std::is_same_v<T, Transform2DComponent>)   return kTransform2DComponent;
         if constexpr (std::is_same_v<T, Transform3DComponent>)   return kTransform3DComponent;
         if constexpr (std::is_same_v<T, CameraFollowComponent>)  return kCameraFollowComponent;
-        return kUndefined;
+        return kEndOfEnum;
     }
 
 private:
@@ -164,6 +164,7 @@ public:
         {
             return &component;
         }
+        return nullptr;
     }
 
     template <typename T>

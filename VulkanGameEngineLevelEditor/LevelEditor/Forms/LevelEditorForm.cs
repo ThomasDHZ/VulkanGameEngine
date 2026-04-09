@@ -54,11 +54,51 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private uint SelectedSpriteIndex { get; set; } = uint.MaxValue;
         public static Guid GameObjectIdTexture { get; private set; } = new Guid("7047804f-d32e-4cb5-ba95-90783b28d1df");
 
-        [DllImport("kernel32.dll")] static extern bool AllocConsole();
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GetStdHandle(int nStdHandle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
+
+        private const int STD_OUTPUT_HANDLE = -11;
+        private const int STD_ERROR_HANDLE = -12;
+
+        private static void InitializeConsole()
+        {
+            if (!AllocConsole())
+            {
+                return;
+            }
+
+            try
+            {
+                IntPtr outHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+                IntPtr errHandle = GetStdHandle(STD_ERROR_HANDLE);
+
+                var stdout = new System.IO.FileStream(outHandle, System.IO.FileAccess.Write, false);
+                var stderr = new System.IO.FileStream(errHandle, System.IO.FileAccess.Write, false);
+
+                var writerOut = new System.IO.StreamWriter(stdout) { AutoFlush = true };
+                var writerErr = new System.IO.StreamWriter(stderr) { AutoFlush = true };
+
+                Console.SetOut(writerOut);
+                Console.SetError(writerErr);
+
+                Console.WriteLine("=== Console successfully initialized ===");
+                Console.WriteLine("Console output should now work from all threads.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to initialize console redirection:\n{ex.Message}");
+            }
+        }
         public LevelEditorForm()
         {
+            InitializeConsole();
             InitializeComponent();
-            AllocConsole();
             GlobalMessenger.AddMessenger(new MessengerModel
             {
                 richTextBox = VulkanLoggerBox,
@@ -107,7 +147,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             this.Invoke(new Action(() =>
             {
                 GameSystem.StartUp(RenderBox.Handle.ToPointer(), RenderBox.Handle.ToPointer());
-
+                Console.WriteLine("asdfadsfas");
                // List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
                 //  GameObjectList = GameObjectSystem.GetGameObjectList().ToList();
                 //levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
@@ -145,14 +185,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             System.Drawing.Point currentPos = e.Location;
             if (e.Button == MouseButtons.Left)
             {
-                ivec2 worldPos = ClientToWorld(currentPos);
-                string a = @$"X: {worldPos.x} \n Y: {worldPos.y}";
-                MessageBox.Show(a);
-
                 uint pickedId = LevelEditorSystem.SampleRenderPassPixel(GameObjectIdTexture, new ivec2(currentPos.X, currentPos.Y));
                 if (pickedId != uint.MaxValue)
                 {
                     SelectedSpriteIndex = pickedId;
+                    propertiesPanel1.SetSelectedEntity(SelectedSpriteIndex);
+
                     IsDragging = true;
                     LastMousePosition = currentPos;
                 }
@@ -187,7 +225,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             else if (e.Button == MouseButtons.Right)
             {
                 ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
-                cameraTransform.Position = new vec3(cameraTransform.Position.x + deltaX, cameraTransform.Position.y - deltaY, 0.0f);
+                cameraTransform.Position = new vec3(cameraTransform.Position.x - deltaX, cameraTransform.Position.y + deltaY, 0.0f);
             }
             LastMousePosition = currentPos;
         }
@@ -235,23 +273,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RenderBox_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData(typeof(DragAssetData)) is not DragAssetData asset ||
-                asset.AssetType != AssetDataTypeEnum.kAssetTypeGameObject)
-                return;
+            if (e.Data.GetData(typeof(DragAssetData)) is not DragAssetData asset || asset.AssetType != AssetDataTypeEnum.kAssetTypeGameObject) return;
 
             Point clientPos = RenderBox.PointToClient(new Point(e.X, e.Y));
             ivec2 worldPos = ClientToWorld(clientPos);
-
-            Console.WriteLine($"=== DROPPING === Screen({clientPos.X},{clientPos.Y}) → World({worldPos.x}, {worldPos.y})");
-
-            // TEMP: Try placing it at HALF the calculated position to test
-            ivec2 testPos = new ivec2(worldPos.x / 2, worldPos.y / 2);
-
-            Console.WriteLine($"Trying test position: ({testPos.x}, {testPos.y})");
-
-            uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, testPos);
-
-            // Also print the actual transform after creation if possible
+            ivec2 dropPos = new ivec2(worldPos.x / 2, worldPos.y / 2);
+            uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, dropPos);
         }
 
         private void GameObjectListView_ItemDrag(object sender, ItemDragEventArgs e)
@@ -266,9 +293,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         {
             ref Camera camera = ref CameraSystem.UpdateActiveCamera();
 
-            float zoom = camera.Zoom;
-            if (zoom <= 0.01f) zoom = 1.0f;
-
             float camX = camera.Position.x;
             float camY = camera.Position.y;
 
@@ -276,12 +300,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             float scaleY = RenderResolution.y / (float)RenderBox.ClientSize.Height;
 
             float renderX = clientPos.X * scaleX;
-            float renderY = (RenderBox.ClientSize.Height - clientPos.Y) * scaleY;   
+            float renderY = (RenderBox.ClientSize.Height - clientPos.Y) * scaleY;
 
-            float worldX = camX + (renderX / zoom);
-            float worldY = camY + (renderY / zoom);
-
-            Console.WriteLine($"[ClientToWorld] Window({clientPos.X}, {clientPos.Y}) Scale({scaleX:F2},{scaleY:F2}) Zoom({zoom:F2}) → World({worldX:F1}, {worldY:F1})");
+            float worldX = camX + renderX;
+            float worldY = camY + renderY;
 
             return new ivec2((int)Math.Round(worldX), (int)Math.Round(worldY));
         }
@@ -293,7 +315,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             float clientX = (worldPos.x - camera.Position.x) / camera.Zoom;
             float clientY = (worldPos.y - camera.Position.y) / camera.Zoom;
 
-            clientY = RenderBox.ClientSize.Height - clientY;   // Flip Y back
+            clientY = RenderBox.ClientSize.Height - clientY;  
 
             return new System.Drawing.Point((int)MathF.Round(clientX), (int)MathF.Round(clientY));
         }

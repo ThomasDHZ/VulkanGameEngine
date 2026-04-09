@@ -13,14 +13,14 @@ enum GameObjectTypeEnum
     kGameObjectMegaManShot
 };
 
-enum ComponentTypeEnum
+enum ComponentTypeEnum : uint
 {
-    kUndefined,
     kInputComponent,
     kSpriteComponent,
     kTransform2DComponent,
     kTransform3DComponent,
     kCameraFollowComponent,
+    kEndOfEnum
 };
 
 struct CameraFollowComponent { int a = 0; };

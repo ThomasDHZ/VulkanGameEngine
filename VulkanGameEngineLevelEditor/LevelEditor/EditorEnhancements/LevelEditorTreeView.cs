@@ -1,14 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
 public class LevelEditorTreeView : TreeView
 {
- //   public DynamicControlPanelView DynamicControlPanel { get; set; }
+    public PropertiesPanel PropertiesPanel { get; set; }
+
+    public LevelEditorTreeView()
+    {
+        this.AfterSelect += OnNodeSelected;
+        this.ShowRootLines = true;
+        this.ShowPlusMinus = true;
+    }
 
     public void PopulateWithGameObject(uint gameObjectId)
     {
@@ -17,104 +21,43 @@ public class LevelEditorTreeView : TreeView
         if (gameObjectId == uint.MaxValue)
             return;
 
-        // Create root node for the entity
         var rootNode = new TreeNode($"GameObject [{gameObjectId}]")
         {
-            Tag = new GameObject { GameObjectId = gameObjectId }
+            Tag = gameObjectId, 
+            ImageIndex = 0,        
+            SelectedImageIndex = 0
         };
 
         this.Nodes.Add(rootNode);
-
-        // Populate all components attached to this entity
-        PopulateComponents(rootNode, gameObjectId);
-
+        AddComponentNodes(rootNode, gameObjectId);
         rootNode.Expand();
     }
 
-    private void PopulateComponents(TreeNode parentNode, uint gameObjectId)
+    private void AddComponentNodes(TreeNode parent, uint gameObjectId)
     {
-        // This is the key part for pure ECS
-        foreach (var entry in ComponentRegistry.Finders)
+        var componentTypes = GameObjectSystem.GetGameObjectComponentList(gameObjectId);
+
+        foreach (var compType in componentTypes)
         {
-            var componentTypeEnum = entry.Key;
-            var finderFunc = entry.Value;
-
-            try
+            var node = new TreeNode(compType.ToString())
             {
-                var component = finderFunc(gameObjectId);
-                if (component == null)
-                    continue;
-
-                string nodeText = componentTypeEnum.ToString();
-
-                var compNode = new TreeNode(nodeText)
-                {
-                    Tag = component
-                };
-
-                parentNode.Nodes.Add(compNode);
-
-                // Recursively populate the component's own data
-                PopulateNode(compNode, component);
-            }
-            catch (Exception ex)
-            {
-                // Some components might not be valid for this entity - that's normal
-                System.Diagnostics.Debug.WriteLine($"Component {componentTypeEnum} skipped: {ex.Message}");
-            }
+                Tag = gameObjectId     
+            };
+            parent.Nodes.Add(node);
         }
     }
 
-    // Keep your existing PopulateNode for drilling into component data
-    private void PopulateNode(TreeNode parentNode, object obj)
+    private void OnNodeSelected(object sender, TreeViewEventArgs e)
     {
-        if (obj == null) return;
-
-        var visited = new HashSet<object>(); // prevent cycles if needed
-
-        foreach (var prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        if (e.Node?.Tag is uint gameObjectId && gameObjectId != uint.MaxValue)
         {
-            if (ShouldSkipProperty(prop)) continue;
-
-            object value = prop.GetValue(obj);
-            if (value == null) continue;
-
-            string displayName = GetDisplayName(prop);
-
-            var childNode = new TreeNode(displayName) { Tag = value };
-            parentNode.Nodes.Add(childNode);
-
-            // If it's a complex type, expand it further
-            if (ShouldExpandFurther(value.GetType()))
-            {
-                PopulateNode(childNode, value);
-            }
+            PropertiesPanel?.SetSelectedEntity(gameObjectId);
         }
     }
 
-    private static bool ShouldSkipProperty(PropertyInfo prop)
+    public void SelectGameObject(uint gameObjectId)
     {
-        var t = prop.PropertyType;
-        return t.IsEnum ||
-               t == typeof(Guid) ||
-               t == typeof(IntPtr) ||
-               typeof(IEnumerable<string>).IsAssignableFrom(t);
-    }
-
-    private static bool ShouldExpandFurther(Type type)
-    {
-        return (type.IsClass && type != typeof(string)) ||
-               (type.IsValueType && !type.IsPrimitive && !type.IsEnum);
-    }
-
-    private static string GetDisplayName(PropertyInfo prop)
-    {
-        var attr = prop.GetCustomAttribute<DisplayNameAttribute>();
-        return attr?.DisplayName ?? prop.Name;
-    }
-
-    private void LevelEditorTreeView_AfterSelect(object sender, TreeViewEventArgs e)
-    {
-     //   DynamicControlPanel.SetSelectedObject(e.Node.Tag);
+        PopulateWithGameObject(gameObjectId);
+        if (Nodes.Count > 0) SelectedNode = Nodes[0];
     }
 }

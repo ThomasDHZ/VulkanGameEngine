@@ -1,22 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.Xml;
 using VulkanGameEngineLevelEditor.GameEngine;
 
 public static class ComponentRegistry
 {
-    public static readonly Dictionary<ComponentTypeEnum, Func<uint, object>> Finders = new()
+    public struct InputComponent { public int a { get; set; } };
+
+    private static readonly Dictionary<ComponentTypeEnum, Type> _typeMap = new();
+
+    public static void Register(ComponentTypeEnum enumValue, Type structType)
     {
-        //{ ComponentTypeEnum.kTransform2DComponent, id =>
-        //{
-        //    return GameObjectSystem.FindTransform2DComponent(id);
-        //}},
-        //{ ComponentTypeEnum.kInputComponent, id =>
-        //{
-        //    return GameObjectSystem.FindInputComponent(id);
-        //}},
-        //{ ComponentTypeEnum.kSpriteComponent, id =>
-        //{
-        //    return SpriteSystem.FindSprite(id);
-        //}}
-    };
+        if (!structType.IsValueType && !structType.IsClass) // usually structs for ECS
+            throw new ArgumentException("Component must be struct or class with proper layout");
+
+        _typeMap[enumValue] = structType;
+    }
+
+    public static Type? GetTypeFor(ComponentTypeEnum componentType)
+    {
+        _typeMap.TryGetValue(componentType, out var type);
+        return type;
+    }
+
+    public static IEnumerable<Type> GetAllRegisteredTypes()
+    {
+        return _typeMap.Values;
+    }
+
+    public static IEnumerable<ComponentTypeEnum> GetAllRegisteredEnums()
+    {
+        return _typeMap.Keys;
+    }
+
+    public static void Initialize()
+    {
+        _typeMap.Clear();
+        Register(ComponentTypeEnum.kInputComponent, typeof(InputComponent)); 
+        Register(ComponentTypeEnum.kSpriteComponent, typeof(SpriteComponent));
+        Register(ComponentTypeEnum.kTransform2DComponent, typeof(Transform2DComponent));
+        Register(ComponentTypeEnum.kTransform3DComponent, typeof(Transform3DComponent));
+        Console.WriteLine($"ComponentRegistry initialized with {_typeMap.Count} components.");
+    }
 }

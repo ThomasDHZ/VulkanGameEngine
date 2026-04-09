@@ -2,32 +2,33 @@
 //using System.Collections.Generic;
 //using System.Drawing;
 //using System.Linq;
-//using System.Reflection;
 //using System.Windows.Forms;
 //using VulkanGameEngineLevelEditor.GameEngine;
-//using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
+//using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
+//using VulkanGameEngineLevelEditor.LevelEditor.Forms;
 
 //namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 //{
 //    public class DynamicControlPanelView : TableLayoutPanel
 //    {
 //        private readonly LevelEditorForm _levelEditorForm;
-//        private object _selectedObject;
-//        public object SelectedObject
-//        {
-//            get => _selectedObject;
-//        }
 //        private readonly ToolTip _toolTip;
 
-//        // We only need one map now: object → its panel
+//        private Entity? _selectedEntity;
 //        private readonly Dictionary<object, ObjectPanelView> _objectPanelMap = new();
 
-//        public void SetSelectedObject(object value)
+//        private TableLayoutPanel _contentPanel = null!;
+
+//        public Entity? SelectedEntity
 //        {
-//            if (_selectedObject != value)
+//            get => _selectedEntity;
+//            set
 //            {
-//                _selectedObject = value;
-//                RefreshPanels();        // renamed from UpdatePanels for clarity
+//                if (_selectedEntity?.Id != value?.Id)   // Safe comparison by ID
+//                {
+//                    _selectedEntity = value;
+//                    RefreshPanels();
+//                }
 //            }
 //        }
 
@@ -35,7 +36,6 @@
 //        {
 //            _levelEditorForm = form;
 //            _toolTip = new ToolTip();
-
 //            InitializeComponents();
 //        }
 
@@ -44,7 +44,7 @@
 //            this.Dock = DockStyle.Right;
 //            this.AutoScroll = true;
 //            this.BackColor = Color.FromArgb(40, 40, 40);
-//            this.Padding = new Padding(4);
+//            this.Padding = new Padding(6);
 
 //            _contentPanel = new TableLayoutPanel
 //            {
@@ -53,20 +53,10 @@
 //                AutoSize = true,
 //                BackColor = Color.FromArgb(40, 40, 40),
 //                ColumnCount = 1,
-//                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) },
-//                Padding = new Padding(4)
+//                ColumnStyles = { new ColumnStyle(SizeType.Percent, 100F) }
 //            };
 
 //            this.Controls.Add(_contentPanel);
-//        }
-
-//        public void SetSelectedObject(object obj)
-//        {
-//            if (SelectedObject == obj)
-//                return;
-
-//            SelectedObject = obj;
-//            RefreshPanels();
 //        }
 
 //        private void RefreshPanels()
@@ -76,108 +66,167 @@
 //                _contentPanel.Controls.Clear();
 //                _objectPanelMap.Clear();
 
-//                if (SelectedObject == null)
+//                if (_selectedEntity == null || !_selectedEntity.IsValid())
+//                {
+//                    _contentPanel.Controls.Add(CreateNoSelectionLabel());
 //                    return;
-
-//                if (SelectedObject is GameObject go && go.GameObjectId != uint.MaxValue)
-//                {
-//                    // 1. Add the GameObject itself (header)
-//                    AddObjectPanel(go);
-
-//                    // 2. Add all attached components
-//                    AddAllComponentPanels(go);
 //                }
-//                else
+
+//                // 1. Entity Header (like Unity's GameObject header)
+//                _contentPanel.Controls.Add(CreateEntityHeader());
+
+//                // 2. Add Component Button (top level, like Unity)
+//                _contentPanel.Controls.Add(CreateAddComponentButton());
+
+//                // 3. One ObjectPanelView per Component (Unity-style collapsible sections)
+//                var components = _selectedEntity.GetAllComponents();   // Your ECS method
+
+//                foreach (var component in components)
 //                {
-//                    // Regular object (component data, etc.)
-//                    AddObjectPanel(SelectedObject);
+//                    if (component == null) continue;
+
+//                    var componentPanel = new ObjectPanelView(_levelEditorForm, component, _toolTip);
+//                    _contentPanel.Controls.Add(componentPanel);
+//                    _objectPanelMap[component] = componentPanel;
 //                }
 
 //                AdjustHeight();
 //            }
 //            catch (Exception ex)
 //            {
-//                Console.WriteLine($"[DynamicControlPanel] RefreshPanels CRASH: {ex}");
+//                Console.WriteLine($"[DynamicControlPanel] RefreshPanels error: {ex}");
 //            }
 //        }
 
-//        private void AddObjectPanel(object obj)
+//        private Label CreateNoSelectionLabel()
 //        {
-//            var panel = new ObjectPanelView(_levelEditorForm, obj, _toolTip);
-//            _contentPanel.Controls.Add(panel);
-//            _objectPanelMap[obj] = panel;
+//            return new Label
+//            {
+//                Text = "No entity selected",
+//                ForeColor = Color.Silver,
+//                AutoSize = true,
+//                Padding = new Padding(20),
+//                Font = new Font("Segoe UI", 9f)
+//            };
 //        }
 
-//        private void AddAllComponentPanels(GameObject go)
+//        private Control CreateEntityHeader()
 //        {
-//            var componentMembers = go.GetType()
-//                .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-//                .Where(m => m.GetCustomAttribute<GameObjectComponentAttribute>() != null);
-
-//            foreach (var member in componentMembers)
+//            var header = new Panel
 //            {
-//                var attr = member.GetCustomAttribute<GameObjectComponentAttribute>();
-//                if (attr == null) continue;
+//                Height = 92,
+//                Dock = DockStyle.Top,
+//                BackColor = Color.FromArgb(48, 48, 52),
+//                Padding = new Padding(12)
+//            };
 
-//                uint componentId = GetComponentId(member, go);
-//                if (componentId == uint.MaxValue || componentId == 0)
-//                    continue;
+//            var nameLabel = new Label
+//            {
+//                Text = $"Entity: {_selectedEntity!.Name ?? $"Entity_{_selectedEntity.Id}"}",
+//                Font = new Font("Segoe UI", 10.5f, FontStyle.Bold),
+//                ForeColor = Color.White,
+//                AutoSize = true,
+//                Location = new Point(4, 10)
+//            };
 
-//                if (!ComponentRegistry.Finders.TryGetValue(attr.ComponentType, out var finder))
-//                    continue;
+//            var idLabel = new Label
+//            {
+//                Text = $"ID: {_selectedEntity.Id}",
+//                ForeColor = Color.Silver,
+//                AutoSize = true,
+//                Location = new Point(4, 34)
+//            };
 
-//                object component = null;
-//                try
-//                {
-//                    component = finder(componentId);
-//                }
-//                catch (Exception ex)
-//                {
-//                    Console.WriteLine($"[Component Finder Failed] {attr.ComponentType}: {ex.Message}");
-//                }
+//            var enabledCheck = new CheckBox
+//            {
+//                Text = "Enabled",
+//                Checked = _selectedEntity.Enabled,
+//                ForeColor = Color.White,
+//                Location = new Point(4, 60)
+//            };
+//            enabledCheck.CheckedChanged += (s, e) =>
+//            {
+//                if (_selectedEntity != null)
+//                    _selectedEntity.Enabled = enabledCheck.Checked;
+//            };
 
-//                if (component == null || _objectPanelMap.ContainsKey(component))
-//                    continue;
-
-//                try
-//                {
-//                    var panel = new ObjectPanelView(_levelEditorForm, component, _toolTip);
-//                    _contentPanel.Controls.Add(panel);
-//                    _objectPanelMap[component] = panel;
-
-//                    Console.WriteLine($"[Inspector] Added component: {attr.ComponentType} (ID: {componentId})");
-//                }
-//                catch (Exception ex)
-//                {
-//                    Console.WriteLine($"[Inspector] Failed to create panel for {attr.ComponentType}: {ex}");
-//                }
-//            }
+//            header.Controls.Add(nameLabel);
+//            header.Controls.Add(idLabel);
+//            header.Controls.Add(enabledCheck);
+//            return header;
 //        }
 
-//        private static uint GetComponentId(MemberInfo member, GameObject go)
+//        private Button CreateAddComponentButton()
 //        {
-//            try
+//            var btn = new Button
 //            {
-//                return member switch
+//                Text = "＋ Add Component",
+//                AutoSize = true,
+//                Margin = new Padding(8, 8, 8, 16),
+//                Padding = new Padding(8, 6, 8, 6),
+//                BackColor = Color.FromArgb(70, 130, 70),
+//                ForeColor = Color.White,
+//                FlatStyle = FlatStyle.Flat,
+//                Height = 38,
+//                Font = new Font("Segoe UI", 9.5f)
+//            };
+
+//            btn.Click += (s, e) => ShowAddComponentDialog();
+//            return btn;
+//        }
+
+//        private void ShowAddComponentDialog()
+//        {
+//            var componentTypes = ComponentRegistry.GetAllComponentTypes();
+
+//            using var dialog = new Form
+//            {
+//                Text = "Add Component",
+//                Size = new Size(360, 480),
+//                StartPosition = FormStartPosition.CenterParent,
+//                FormBorderStyle = FormBorderStyle.FixedDialog
+//            };
+
+//            var listBox = new ListBox
+//            {
+//                Dock = DockStyle.Fill,
+//                Font = new Font("Segoe UI", 10f)
+//            };
+
+//            listBox.Items.AddRange(componentTypes.Select(t => t.Name).ToArray());
+
+//            listBox.DoubleClick += (s, e) =>
+//            {
+//                if (listBox.SelectedItem is string selectedName && _selectedEntity != null)
 //                {
-//                    PropertyInfo p => (uint)p.GetValue(go),
-//                    FieldInfo f => (uint)f.GetValue(go),
-//                    _ => uint.MaxValue
-//                };
-//            }
-//            catch
-//            {
-//                return uint.MaxValue;
-//            }
+//                    var type = componentTypes.FirstOrDefault(t => t.Name == selectedName);
+//                    if (type != null)
+//                    {
+//                        var newComponent = Activator.CreateInstance(type);
+//                        _selectedEntity.AddComponent(newComponent);
+//                        dialog.Close();
+//                        RefreshPanels();
+//                    }
+//                }
+//            };
+
+//            dialog.Controls.Add(listBox);
+//            dialog.ShowDialog(this);
 //        }
 
 //        private void AdjustHeight()
 //        {
 //            int totalHeight = _contentPanel.Controls.Cast<Control>()
-//                                  .Sum(c => c.Height + c.Margin.Vertical) + 40;
+//                .Sum(c => c.Height + c.Margin.Vertical) + 120;
 
-//            _contentPanel.Height = Math.Max(totalHeight, 300);
+//            _contentPanel.Height = Math.Max(totalHeight, 500);
 //            this.PerformLayout();
+//        }
+
+//        // Optional: Public refresh method (useful for live updates)
+//        public void RefreshCurrentSelection()
+//        {
+//            RefreshPanels();
 //        }
 //    }
 //}

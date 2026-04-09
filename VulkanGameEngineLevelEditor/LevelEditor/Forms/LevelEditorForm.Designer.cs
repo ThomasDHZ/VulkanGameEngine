@@ -49,11 +49,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             treeView1 = new TreeView();
             toolStrip1 = new ToolStrip();
             openFileDialog1 = new OpenFileDialog();
+            propertiesPanel1 = new VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements.PropertiesPanel();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
             tabPage4.SuspendLayout();
+            panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)RenderBox).BeginInit();
             LevelEditorMenuStrip.SuspendLayout();
             SuspendLayout();
@@ -172,6 +174,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             // 
             panel1.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
             panel1.BorderStyle = BorderStyle.Fixed3D;
+            panel1.Controls.Add(propertiesPanel1);
             panel1.Dock = DockStyle.Right;
             panel1.Location = new System.Drawing.Point(1578, 33);
             panel1.Name = "panel1";
@@ -244,6 +247,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             // 
             openFileDialog1.FileName = "openFileDialog1";
             // 
+            // propertiesPanel1
+            // 
+            propertiesPanel1.Dock = DockStyle.Fill;
+            propertiesPanel1.Location = new System.Drawing.Point(0, 0);
+            propertiesPanel1.Name = "propertiesPanel1";
+            propertiesPanel1.Size = new System.Drawing.Size(316, 717);
+            propertiesPanel1.TabIndex = 0;
+            // 
             // LevelEditorForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
@@ -264,6 +275,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             tabPage2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
             tabPage4.ResumeLayout(false);
+            panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)RenderBox).EndInit();
             LevelEditorMenuStrip.ResumeLayout(false);
             LevelEditorMenuStrip.PerformLayout();
@@ -291,5 +303,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private ListView GameObjectListView;
         private ListView MaterialListView;
         private ListView TextureListView;
+        private EditorEnhancements.PropertiesPanel propertiesPanel1;
     }
 }
