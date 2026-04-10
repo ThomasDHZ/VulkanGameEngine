@@ -3,61 +3,104 @@ using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
-public class LevelEditorTreeView : TreeView
+namespace VulkanGameEngineLevelEditor.LevelEditor
 {
-    public PropertiesPanel PropertiesPanel { get; set; }
-
-    public LevelEditorTreeView()
+    public class LevelEditorTreeView : TreeView
     {
-        this.AfterSelect += OnNodeSelected;
-        this.ShowRootLines = true;
-        this.ShowPlusMinus = true;
-    }
+        public PropertiesPanel PropertiesPanel { get; set; }
 
-    public void PopulateWithGameObject(uint gameObjectId)
-    {
-        this.Nodes.Clear();
-
-        if (gameObjectId == uint.MaxValue)
-            return;
-
-        var rootNode = new TreeNode($"GameObject [{gameObjectId}]")
+        public LevelEditorTreeView()
         {
-            Tag = gameObjectId, 
-            ImageIndex = 0,        
-            SelectedImageIndex = 0
-        };
+            this.AfterSelect += LevelEditorTreeView_AfterSelect;
+        }
 
-        this.Nodes.Add(rootNode);
-        AddComponentNodes(rootNode, gameObjectId);
-        rootNode.Expand();
-    }
-
-    private void AddComponentNodes(TreeNode parent, uint gameObjectId)
-    {
-        var componentTypes = GameObjectSystem.GetGameObjectComponentList(gameObjectId);
-
-        foreach (var compType in componentTypes)
+        public void PopulateWithGameObjects()
         {
-            var node = new TreeNode(compType.ToString())
+            if (this.InvokeRequired)
             {
-                Tag = gameObjectId     
-            };
-            parent.Nodes.Add(node);
-        }
-    }
+                this.BeginInvoke(new Action(PopulateWithGameObjects));
+                return;
+            }
+            this.Nodes.Clear();
 
-    private void OnNodeSelected(object sender, TreeViewEventArgs e)
-    {
-        if (e.Node?.Tag is uint gameObjectId && gameObjectId != uint.MaxValue)
+            var gameObjectList = GameObjectSystem.GetGameObjectList();
+            foreach (var go in gameObjectList)
+            {
+                if (go.GameObjectId == uint.MaxValue) continue;
+                AddGameObject(go.GameObjectId);
+            }
+            if (Nodes.Count > 0)  SelectedNode = Nodes[0];
+        }
+
+        public void AddGameObject(uint gameObjectId, string customName = null)
         {
-            PropertiesPanel?.SetSelectedEntity(gameObjectId);
-        }
-    }
+            if (gameObjectId == uint.MaxValue) return;
 
-    public void SelectGameObject(uint gameObjectId)
-    {
-        PopulateWithGameObject(gameObjectId);
-        if (Nodes.Count > 0) SelectedNode = Nodes[0];
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action<uint, string>(AddGameObject), gameObjectId, customName);
+                return;
+            }
+
+            string nodeText = customName ?? $"GameObject [{gameObjectId}]";
+            var node = new TreeNode(nodeText)
+            {
+                Tag = gameObjectId
+            };
+            this.Nodes.Add(node);
+        }
+
+        private void LevelEditorTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node?.Tag is uint gameObjectId && gameObjectId != uint.MaxValue)
+            {
+                PropertiesPanel?.SetSelectedEntity(gameObjectId);
+            }
+        }
+
+        public void SelectGameObject(uint gameObjectId)
+        {
+            if (gameObjectId == uint.MaxValue) return;
+
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action<uint>(SelectGameObject), gameObjectId);
+                return;
+            }
+
+            var node = FindNodeById(gameObjectId);
+            if (node != null)
+            {
+                this.SelectedNode = node;
+                return;
+            }
+            AddGameObject(gameObjectId);
+        }
+
+        private TreeNode FindNodeById(uint gameObjectId)
+        {
+            foreach (TreeNode node in this.Nodes)
+            {
+                if (node.Tag is uint id && id == gameObjectId)
+                    return node;
+
+                foreach (TreeNode child in node.Nodes)
+                {
+                    if (child.Tag is uint cid && cid == gameObjectId)
+                        return child;
+                }
+            }
+            return null;
+        }
+
+        public void Clear()
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(Clear));
+                return;
+            }
+            this.Nodes.Clear();
+        }
     }
 }

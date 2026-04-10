@@ -1,21 +1,6 @@
 #include "VulkanSystemDLL.h"
 #include <RenderSystem.h>
 
-LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
-
-void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback)
-{
-	g_logVulkanMessageCallback = callback;
-}
-
-void VulkanSystem_LogVulkanMessage(const char* message, int severity)
-{
-    if (g_logVulkanMessageCallback)
-    {
-        g_logVulkanMessageCallback(message, severity);
-    }
-}
-
  VkInstance VulkanSystem_CreateVulkanInstance()
 {
 	 return vulkanSystem.CreateVulkanInstance();

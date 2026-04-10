@@ -144,12 +144,12 @@ namespace VulkanGameEngineLevelEditor.GameEngine
             }
         }
     
-        public static ListPtr<GameObject> GetGameObjectList()
+        public static List<GameObject> GetGameObjectList()
         {
             try
             {
                 GameObject* gameObjectList = GameObjectSystem_GetGameObjectList(out size_t gameObjectCount);
-                return new ListPtr<GameObject>(gameObjectList, gameObjectCount);
+                return new ListPtr<GameObject>(gameObjectList, gameObjectCount).ToList();
             }
             catch (Exception ex)
             {

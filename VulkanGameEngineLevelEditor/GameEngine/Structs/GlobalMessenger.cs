@@ -1,69 +1,72 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using VulkanGameEngineLevelEditor.Models;
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
 using Silk.NET.Vulkan;
 
 namespace VulkanGameEngineLevelEditor.GameEngine.Structs
 {
-    public static class GlobalMessenger
+    public static class MessageLogger
     {
-        private static readonly List<(string Message, DebugUtilsMessageSeverityFlagsEXT Severity)> _messageQueue = new List<(string, DebugUtilsMessageSeverityFlagsEXT)>();
-        private static readonly object _lockObject = new();
-        private static readonly ManualResetEvent _messageAvailable = new ManualResetEvent(false);
-        private static readonly List<MessengerModel> _messengers = new List<MessengerModel>();
+        public static RichTextBox RichTextBox { get; set; }
 
-        static GlobalMessenger()
-        {
-            Thread messageThread = new Thread(ProcessMessages)
-            {
-                IsBackground = true
-            };
-            messageThread.Start();
-        }
-
-        public static void AddMessenger(MessengerModel model)
-        {
-            lock (_lockObject)
-            {
-                _messengers.Add(model);
-            }
-        }
+        private static readonly object _lock = new object();
 
         public static void LogMessage(string message, DebugUtilsMessageSeverityFlagsEXT severity)
         {
-            lock (_lockObject)
+            if (RichTextBox == null) return;
+            if (RichTextBox.InvokeRequired)
             {
-                _messageQueue.Add((message, severity));
-                _messageAvailable.Set();
+                RichTextBox.BeginInvoke(new Action<string, DebugUtilsMessageSeverityFlagsEXT>(AppendMessage), message, severity);
+                return;
             }
+            AppendMessage(message, severity);
         }
 
-        private static void ProcessMessages()
+        private static void AppendMessage(string message, DebugUtilsMessageSeverityFlagsEXT severity)
         {
-            while (true)
-            {
-                _messageAvailable.WaitOne();
-                (string Message, DebugUtilsMessageSeverityFlagsEXT Severity)[] messages;
-                lock (_lockObject)
-                {
-                    messages = _messageQueue.ToArray();
-                    _messageQueue.Clear();
-                    if (_messageQueue.Count == 0)
-                    {
-                        _messageAvailable.Reset();
-                    }
-                }
+            if (RichTextBox == null) return;
 
-                var activeMessenger = _messengers.FirstOrDefault(m => m.IsActive);
-                if (activeMessenger != null)
-                {
-                    foreach (var (message, severity) in messages)
-                    {
-                        activeMessenger.LogMessage(message, severity);
-                    }
-                }
+            string prefix = severity switch
+            {
+                DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => "[ERROR] ",
+                DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => "[WARN]  ",
+                DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => "[INFO]  ",
+                DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt => "[VERBOSE] ",
+                _ => "[UNKNOWN] "
+            };
+
+            Color color = severity switch
+            {
+                DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt => Color.Red,
+                DebugUtilsMessageSeverityFlagsEXT.WarningBitExt => Color.Orange,
+                DebugUtilsMessageSeverityFlagsEXT.InfoBitExt => Color.LimeGreen,
+                DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt => Color.LightBlue,
+                _ => Color.White
+            };
+
+            RichTextBox.SelectionStart = RichTextBox.TextLength;
+            RichTextBox.SelectionLength = 0;
+
+            RichTextBox.SelectionColor = color;
+            RichTextBox.SelectionFont = new Font(RichTextBox.Font, FontStyle.Bold);
+            RichTextBox.AppendText(prefix);
+
+            RichTextBox.SelectionColor = Color.White;
+            RichTextBox.SelectionFont = new Font(RichTextBox.Font, FontStyle.Regular);
+            RichTextBox.AppendText(message.Trim() + Environment.NewLine);
+
+            RichTextBox.ScrollToCaret();
+        }
+
+        public static void Clear()
+        {
+            if (RichTextBox == null) return;
+            if (RichTextBox.InvokeRequired)
+            {
+                RichTextBox.BeginInvoke(new Action(Clear));
+                return;
             }
+            RichTextBox.Clear();
         }
     }
 }

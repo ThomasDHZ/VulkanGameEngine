@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 {
@@ -35,21 +36,21 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             tabPage1 = new TabPage();
             VulkanLoggerBox = new RichTextBox();
             tabPage2 = new TabPage();
-            GameObjectListView = new ListView();
+            GameObjectListView = new System.Windows.Forms.ListView();
             imageList1 = new ImageList(components);
             tabPage3 = new TabPage();
-            MaterialListView = new ListView();
+            MaterialListView = new System.Windows.Forms.ListView();
             tabPage4 = new TabPage();
-            TextureListView = new ListView();
+            TextureListView = new System.Windows.Forms.ListView();
             panel1 = new Panel();
+            propertiesPanel1 = new VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements.PropertiesPanel();
             RenderBox = new PictureBox();
             LevelEditorMenuStrip = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             buildToolStripMenuItem = new ToolStripMenuItem();
-            treeView1 = new TreeView();
+            treeView1 = new LevelEditorTreeView();
             toolStrip1 = new ToolStrip();
             openFileDialog1 = new OpenFileDialog();
-            propertiesPanel1 = new VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements.PropertiesPanel();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -181,6 +182,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             panel1.Size = new System.Drawing.Size(320, 721);
             panel1.TabIndex = 3;
             // 
+            // propertiesPanel1
+            // 
+            propertiesPanel1.Dock = DockStyle.Fill;
+            propertiesPanel1.Location = new System.Drawing.Point(0, 0);
+            propertiesPanel1.Name = "propertiesPanel1";
+            propertiesPanel1.Size = new System.Drawing.Size(316, 717);
+            propertiesPanel1.TabIndex = 0;
+            // 
             // RenderBox
             // 
             RenderBox.AllowDrop = true;
@@ -229,10 +238,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             // 
             treeView1.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
             treeView1.Dock = DockStyle.Left;
+            treeView1.ForeColor = System.Drawing.SystemColors.Window;
+            treeView1.HideSelection = false;
             treeView1.Location = new System.Drawing.Point(0, 33);
             treeView1.Name = "treeView1";
+            treeView1.PropertiesPanel = propertiesPanel1;
             treeView1.Size = new System.Drawing.Size(320, 721);
             treeView1.TabIndex = 2;
+            treeView1.AfterSelect += treeView1_AfterSelect;
             // 
             // toolStrip1
             // 
@@ -246,14 +259,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             // openFileDialog1
             // 
             openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // propertiesPanel1
-            // 
-            propertiesPanel1.Dock = DockStyle.Fill;
-            propertiesPanel1.Location = new System.Drawing.Point(0, 0);
-            propertiesPanel1.Name = "propertiesPanel1";
-            propertiesPanel1.Size = new System.Drawing.Size(316, 717);
-            propertiesPanel1.TabIndex = 0;
             // 
             // LevelEditorForm
             // 
@@ -294,15 +299,15 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private System.Windows.Forms.MenuStrip LevelEditorMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem buildToolStripMenuItem;
-        private System.Windows.Forms.TreeView treeView1;
+        private LevelEditorTreeView treeView1;
         private System.Windows.Forms.TabPage tabPage3;
         private TabPage tabPage4;
         private ToolStrip toolStrip1;
         private OpenFileDialog openFileDialog1;
         private ImageList imageList1;
-        private ListView GameObjectListView;
-        private ListView MaterialListView;
-        private ListView TextureListView;
+        private System.Windows.Forms.ListView GameObjectListView;
+        private System.Windows.Forms.ListView MaterialListView;
+        private System.Windows.Forms.ListView TextureListView;
         private EditorEnhancements.PropertiesPanel propertiesPanel1;
     }
 }

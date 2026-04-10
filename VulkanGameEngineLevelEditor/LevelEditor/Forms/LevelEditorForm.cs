@@ -12,6 +12,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +27,6 @@ using Point = System.Drawing.Point;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 {
-
     public unsafe partial class LevelEditorForm : Form
     {
         public enum AssetDataTypeEnum
@@ -95,20 +95,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
                 MessageBox.Show($"Failed to initialize console redirection:\n{ex.Message}");
             }
         }
+
         public LevelEditorForm()
         {
             InitializeConsole();
             InitializeComponent();
-            GlobalMessenger.AddMessenger(new MessengerModel
-            {
-                richTextBox = VulkanLoggerBox,
-                TextBoxName = VulkanLoggerBox.Name,
-                ThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId,
-                IsActive = true
-            });
+            MessageLogger.RichTextBox = VulkanLoggerBox;
+
             System.Threading.Thread.CurrentThread.Name = "LevelEditor";
+
             LogVulkanMessageDelegate callback = LogVulkanMessage;
-            _callbackHandle = GCHandle.Alloc(callback);
+            _callbackHandle = GCHandle.Alloc(callback);       
             VulkanSystem.CreateLogMessageCallback(callback);
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
@@ -128,7 +125,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         public static void LogVulkanMessage(string message, int severity)
         {
             Console.WriteLine(message);
-            GlobalMessenger.LogMessage(message, (DebugUtilsMessageSeverityFlagsEXT)severity);
+            MessageLogger.LogMessage(message, (DebugUtilsMessageSeverityFlagsEXT)severity);
         }
 
         public void StartRenderer()
@@ -147,17 +144,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             this.Invoke(new Action(() =>
             {
                 GameSystem.StartUp(RenderBox.Handle.ToPointer(), RenderBox.Handle.ToPointer());
-                Console.WriteLine("asdfadsfas");
-               // List<RenderPassLoaderModel> renderPassLoaderList = new List<RenderPassLoaderModel>();
-                //  GameObjectList = GameObjectSystem.GetGameObjectList().ToList();
-                //levelEditorTreeView1.DynamicControlPanel = dynamicControlPanelView1;
-                //   levelEditorTreeView1.PopulateWithGameObject(GameObjectList.First().GameObjectId);
             }));
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             double lastTime = 0.0;
 
+            treeView1.PopulateWithGameObjects();
             while (running)
             {
                 if (isResizing)
@@ -279,6 +272,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             ivec2 worldPos = ClientToWorld(clientPos);
             ivec2 dropPos = new ivec2(worldPos.x / 2, worldPos.y / 2);
             uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, dropPos);
+            treeView1.AddGameObject(newGoId);
         }
 
         private void GameObjectListView_ItemDrag(object sender, ItemDragEventArgs e)
@@ -315,9 +309,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             float clientX = (worldPos.x - camera.Position.x) / camera.Zoom;
             float clientY = (worldPos.y - camera.Position.y) / camera.Zoom;
 
-            clientY = RenderBox.ClientSize.Height - clientY;  
+            clientY = RenderBox.ClientSize.Height - clientY;
 
             return new System.Drawing.Point((int)MathF.Round(clientX), (int)MathF.Round(clientY));
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            int a = 34;
         }
     }
 }

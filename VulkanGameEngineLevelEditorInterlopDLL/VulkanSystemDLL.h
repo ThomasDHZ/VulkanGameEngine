@@ -38,13 +38,9 @@ struct GraphicsSystem
 	VkSampleCountFlagBits				   MaxSampleCount = VK_SAMPLE_COUNT_1_BIT;
 };
 
-typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT void						   VulkanSystem_LogVulkanMessage(const char* message, int severity);
-	DLL_EXPORT void					       VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
 	DLL_EXPORT VkInstance				   VulkanSystem_CreateVulkanInstance();
 	DLL_EXPORT VkSurfaceKHR				   VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
 	DLL_EXPORT GraphicsSystem			   VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);

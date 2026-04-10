@@ -21,7 +21,6 @@ namespace VulkanGameEngineLevelEditor
         private Stopwatch stopwatch = new Stopwatch();
         private Extent2D VulkanSwapChainResolution { get; set; }
         private Thread renderThread { get; set; }
-        public MessengerModel RenderPassMessager { get; set; }
         private object lockObject = new object();
 
 

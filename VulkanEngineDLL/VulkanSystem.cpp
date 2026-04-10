@@ -14,6 +14,20 @@
 #endif
 
 VulkanSystem& vulkanSystem = VulkanSystem::Get();
+LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
+
+void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback)
+{
+    g_logVulkanMessageCallback = callback;
+}
+
+void VulkanSystem_LogVulkanMessage(const char* message, int severity)
+{
+    if (g_logVulkanMessageCallback)
+    {
+        g_logVulkanMessageCallback(message, severity);
+    }
+}
 
 uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 {
@@ -300,8 +314,7 @@ VkBool32 VKAPI_CALL VulkanSystem::DebugCallBack(
     CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
     WORD originalAttributes = 7;
 
-    if (hConsole != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(hConsole, &consoleInfo))
-        originalAttributes = consoleInfo.wAttributes;
+    if (hConsole != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(hConsole, &consoleInfo)) originalAttributes = consoleInfo.wAttributes;
 
     WORD color = originalAttributes;
     if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)   color = FOREGROUND_RED;
@@ -317,6 +330,7 @@ VkBool32 VKAPI_CALL VulkanSystem::DebugCallBack(
     // Linux / macOS: ANSI escape codes (works in every terminal)
     fprintf(stderr, "%s%s: \033[0m%s\n", colorCode, severityStr, CallBackData->pMessage);
 #endif
+    VulkanSystem_LogVulkanMessage(CallBackData->pMessage, static_cast<int>(MessageSeverity));
     return VK_FALSE;
 }
 

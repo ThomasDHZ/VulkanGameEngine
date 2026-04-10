@@ -228,7 +228,7 @@ namespace VulkanGameEngineLevelEditor.GameEngine
             DLLSystem.CallDLLFunc(() => VulkanSystem_DestroyRenderer());
         }
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void LogVulkanMessageDelegate(string message, int severity);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.Cdecl)]   public static extern void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
+        [DllImport(DLLSystem.GameEngineaDLL, CallingConvention = CallingConvention.Cdecl)]  public static extern void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageDelegate callback);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkInstance VulkanSystem_CreateVulkanInstance();
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GraphicsRendererDLL VulkanSystem_RendererSetUp(void* windowHandle, ref VkInstance instance, ref VkSurfaceKHR surface);

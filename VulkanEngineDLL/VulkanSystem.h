@@ -6,6 +6,16 @@
 #include <android/log.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+	typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
+	DLL_EXPORT void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
+	DLL_EXPORT void VulkanSystem_LogVulkanMessage(const char* message, int severity);
+#ifdef __cplusplus
+}
+#endif
+
 class VulkanSystem
 {
 private:
@@ -140,3 +150,4 @@ inline VulkanSystem& VulkanSystem::Get()
 	static VulkanSystem instance;
 	return instance;
 }
+
