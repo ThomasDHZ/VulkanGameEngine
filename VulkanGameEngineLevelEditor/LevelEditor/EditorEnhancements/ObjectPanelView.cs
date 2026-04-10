@@ -136,8 +136,15 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         private string GetDisplayName()
         {
-            var attr = PanelObject.GetType().GetCustomAttribute<DisplayNameAttribute>();
-            return attr?.DisplayName ?? PanelObject.GetType().Name;
+            if (PanelObject is DynamicComponentWrapper wrapper)
+            {
+                var attr = wrapper.ComponentStructType.GetCustomAttribute<DisplayNameAttribute>();
+                if (attr != null) return attr.DisplayName;
+                return wrapper.ComponentType.ToString().Replace("k", "").Replace("Component", "");
+            }
+
+            var normalAttr = PanelObject.GetType().GetCustomAttribute<DisplayNameAttribute>();
+            return normalAttr?.DisplayName ?? PanelObject.GetType().Name;
         }
 
         private void PopulateProperties()

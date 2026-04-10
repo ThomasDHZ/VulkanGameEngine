@@ -188,7 +188,7 @@ void main()
     vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
     vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;
     float height              = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).a;
-   // if (albedoData.a < 0.1f) discard; 
+    if (albedoData.a < 0.1f) discard; 
 
     vec2 f = normalData.xy * 2.0f - 1.0f;
     float normalStrength = normalData.b;

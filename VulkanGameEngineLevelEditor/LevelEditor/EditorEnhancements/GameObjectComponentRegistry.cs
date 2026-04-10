@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Security.Cryptography.Xml;
 using VulkanGameEngineLevelEditor.GameEngine;
 
 public static class ComponentRegistry
 {
-    public struct InputComponent { public int a { get; set; } };
+    [DisplayName("Input Component")]
+    public class InputComponent 
+    { 
+    };
 
     private static readonly Dictionary<ComponentTypeEnum, Type> _typeMap = new();
 

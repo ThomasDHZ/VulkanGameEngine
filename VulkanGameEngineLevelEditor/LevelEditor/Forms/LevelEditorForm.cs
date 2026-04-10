@@ -41,6 +41,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             public AssetDataTypeEnum AssetType { get; set; }
             public System.String JsonPath { get; set; }
         };
+
         private volatile bool running;
         private volatile bool isResizing;
         private GCHandle _callbackHandle;
@@ -197,10 +198,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RendererBox_MouseWheel(object sender, MouseEventArgs e)
         {
-            System.Drawing.Point mousePos = e.Location;
-            float scrollDelta = e.Delta / 1200.0f;
-            ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
-            cameraTransform.Zoom += scrollDelta;
+            //System.Drawing.Point mousePos = e.Location;
+            //float scrollDelta = e.Delta / 1200.0f;
+            //ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
+            //cameraTransform.Zoom += scrollDelta;
         }
 
         private void RendererBox_MouseMove(object sender, MouseEventArgs e)
