@@ -64,18 +64,28 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
             try
             {
-                object structure = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
+                IntPtr gameObjectComponent = GameObjectSystem.GetGameObjectComponentPtr(GameObjectId, ComponentType);
+                object structure = Marshal.PtrToStructure(gameObjectComponent, ComponentStructType);
 
                 if (member is FieldInfo field)
+                {
                     field.SetValue(structure, value);
+                }
                 else if (member is PropertyInfo prop && prop.CanWrite)
+                {
                     prop.SetValue(structure, value);
-
-                Marshal.StructureToPtr(structure, ComponentPtr, false);
+                }
+                else
+                {
+                    Console.WriteLine($"[SetMemberValue] Cannot write to {member.Name}");
+                    return;
+                }
+                Marshal.StructureToPtr(structure, ComponentPtr, true);
+                Console.WriteLine($"[SetMemberValue] SUCCESS → {ComponentType}.{member.Name} = {value}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SetMemberValue] Failed on {ComponentType}.{member?.Name}: {ex.Message}");
+                Console.WriteLine($"[SetMemberValue] FAILED on {ComponentType}.{member?.Name}: {ex.Message}");
             }
         }
     }

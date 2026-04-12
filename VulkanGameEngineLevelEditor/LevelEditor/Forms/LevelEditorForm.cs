@@ -42,6 +42,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             public System.String JsonPath { get; set; }
         };
 
+        private float KeyBoardCameraSpeed = 25.0f;
         private volatile bool running;
         private volatile bool isResizing;
         private GCHandle _callbackHandle;
@@ -116,6 +117,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             {
                 AddListItem(gameObjectPrefab.GetFileName(), AssetDataTypeEnum.kAssetTypeGameObject, gameObjectPrefab);
             }
+
+            RenderBox.KeyDown += RenderBox_KeyDown;
+            RenderBox.KeyUp += RenderBox_KeyUp;
         }
 
         public void LevelEditorForm_Load(object sender, EventArgs e)
@@ -176,23 +180,34 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RendererBox_MouseDown(object sender, MouseEventArgs e)
         {
-            System.Drawing.Point currentPos = e.Location;
-            if (e.Button == MouseButtons.Left)
-            {
-                uint pickedId = LevelEditorSystem.SampleRenderPassPixel(GameObjectIdTexture, new ivec2(currentPos.X, currentPos.Y));
-                if (pickedId != uint.MaxValue)
-                {
-                    SelectedSpriteIndex = pickedId;
-                    propertiesPanel1.SetSelectedEntity(SelectedSpriteIndex);
-
-                    IsDragging = true;
-                    LastMousePosition = currentPos;
-                }
-            }
-            else if (e.Button == MouseButtons.Right)
+            RenderBox.Focus();
+            if (e.Button != MouseButtons.Left)
             {
                 IsDragging = true;
-                LastMousePosition = currentPos;
+                LastMousePosition = e.Location;
+                return;
+            }
+
+            Point controlPos = e.Location;
+
+            float scaleX = (float)RenderResolution.x / RenderBox.ClientSize.Width;
+            float scaleY = (float)RenderResolution.y / RenderBox.ClientSize.Height;
+
+            int sampleX = (int)(controlPos.X * scaleX);
+            int sampleY = (int)(controlPos.Y * scaleY);    
+
+            uint pickedId = LevelEditorSystem.SampleRenderPassPixel(GameObjectIdTexture, new ivec2(sampleX, sampleY));
+
+            LogVulkanMessage($"[C#] Clicked at ({controlPos.X}, {controlPos.Y}) → Scaled ({sampleX}, {sampleY}) → Picked ID = {pickedId}", 1);
+
+            if (pickedId != uint.MaxValue)
+            {
+                SelectedSpriteIndex = pickedId;
+                propertiesPanel1.SetSelectedEntity(pickedId);
+                treeView1.SelectGameObject(pickedId);
+
+                IsDragging = true;
+                LastMousePosition = controlPos;
             }
         }
 
@@ -206,21 +221,36 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RendererBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (SelectedSpriteIndex == uint.MaxValue) return;
+            if (SelectedSpriteIndex == uint.MaxValue)
+                return;
 
-            System.Drawing.Point currentPos = e.Location;
-            int deltaX = currentPos.X - LastMousePosition.X;
-            int deltaY = currentPos.Y - LastMousePosition.Y;
+            Point currentPos = e.Location;
+
             if (e.Button == MouseButtons.Left)
             {
+                int deltaX = currentPos.X - LastMousePosition.X;
+                int deltaY = currentPos.Y - LastMousePosition.Y;
+
                 ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform2DComponent>(SelectedSpriteIndex, ComponentTypeEnum.kTransform2DComponent);
+
                 transform.GameObjectPosition = new vec2(transform.GameObjectPosition.x + deltaX, transform.GameObjectPosition.y - deltaY);
+
+               // if (Math.Abs(deltaX) > 1 || Math.Abs(deltaY) > 1)
             }
             else if (e.Button == MouseButtons.Right)
             {
+                int deltaX = currentPos.X - LastMousePosition.X;
+                int deltaY = currentPos.Y - LastMousePosition.Y;
+
                 ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
-                cameraTransform.Position = new vec3(cameraTransform.Position.x - deltaX, cameraTransform.Position.y + deltaY, 0.0f);
+                cameraTransform.Position = new vec3(
+                    cameraTransform.Position.x - deltaX,
+                    cameraTransform.Position.y + deltaY,
+                    0.0f
+                );
             }
+
+            // Always update last position
             LastMousePosition = currentPos;
         }
 
@@ -318,6 +348,24 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             int a = 34;
+        }
+
+        private void RenderBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
+            if (e.KeyCode == Keys.W) cameraTransform.Position = new vec3(cameraTransform.Position.x, cameraTransform.Position.y + KeyBoardCameraSpeed, 0.0f);
+            if (e.KeyCode == Keys.A) cameraTransform.Position = new vec3(cameraTransform.Position.x - KeyBoardCameraSpeed, cameraTransform.Position.y, 0.0f);
+            if (e.KeyCode == Keys.D) cameraTransform.Position = new vec3(cameraTransform.Position.x + KeyBoardCameraSpeed, cameraTransform.Position.y, 0.0f);
+            if (e.KeyCode == Keys.S) cameraTransform.Position = new vec3(cameraTransform.Position.x, cameraTransform.Position.y - KeyBoardCameraSpeed, 0.0f);
+            if((e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back) &&
+                SelectedSpriteIndex != uint.MaxValue)
+            {
+                GameObjectSystem.DestroyGameObject(SelectedSpriteIndex);
+            }
+        }
+
+        private void RenderBox_KeyUp(object sender, KeyEventArgs e)
+        {
         }
     }
 }

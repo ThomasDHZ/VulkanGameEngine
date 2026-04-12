@@ -10,9 +10,7 @@ public class TypeOfVec2Form : PropertyEditorForm
 {
     private const int RowHeight = 32;
 
-    public TypeOfVec2Form(ObjectPanelView rootPanel, object obj, MemberInfo member,
-                          int minimumPanelSize, bool readOnly)
-        : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
+    public TypeOfVec2Form(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly) { }
 
     public override Control CreateControl()
     {
@@ -25,6 +23,7 @@ public class TypeOfVec2Form : PropertyEditorForm
             BackColor = Color.FromArgb(70, 70, 70),
             Padding = new Padding(4)
         };
+
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75F));
 
@@ -35,7 +34,6 @@ public class TypeOfVec2Form : PropertyEditorForm
             int row = table.RowCount++;
             table.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
 
-            // Label
             var lbl = new Label
             {
                 Text = label,
@@ -46,14 +44,13 @@ public class TypeOfVec2Form : PropertyEditorForm
             };
             table.Controls.Add(lbl, 0, row);
 
-            // NumericUpDown
             var num = new NumericUpDown
             {
-                Value = (decimal)getter(currentVec),
-                DecimalPlaces = 4,
-                Increment = 0.1m,
-                Minimum = decimal.MinValue,
-                Maximum = decimal.MaxValue,
+                DecimalPlaces = 3,
+                Increment = 1.0m,
+                Minimum = -100000m,
+                Maximum = 100000m,
+                Value = (decimal)Math.Clamp(getter(currentVec), -100000f, 100000f), 
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
@@ -65,7 +62,8 @@ public class TypeOfVec2Form : PropertyEditorForm
             {
                 vec2 vec = GetCurrentVec2();
                 setter(vec, (float)num.Value);
-                SetValue(vec);                  
+                SetValue(vec);
+               // rootPanel.NotifyPropertyChanged(); 
             };
 
             table.Controls.Add(num, 1, row);
@@ -79,7 +77,7 @@ public class TypeOfVec2Form : PropertyEditorForm
 
     private vec2 GetCurrentVec2()
     {
-        var value = GetValue();                
+        var value = GetValue();
         if (value is vec2 vec) return vec;
         if (value is float f) return new vec2(f, 0f);
         return vec2.Zero;

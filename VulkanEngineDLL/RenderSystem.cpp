@@ -762,17 +762,21 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
     if (!texture || texture->textureImage == VK_NULL_HANDLE)
     {
+        std::cout << "[SamplePixel] Texture not found" << std::endl;
         return UINT32_MAX;
     }
 
     int x = std::clamp(mousePosition.x, 0, texture->width - 1);
     int y = std::clamp(mousePosition.y, 0, texture->height - 1);
 
+    std::cout << "[SamplePixel] Sampling R32_UINT at (" << x << ", " << y << ") on texture " << textureGuid.ToString() << std::endl;
+
     VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
-    VkImageMemoryBarrier barrier = 
-    {
+
+    // Transition to TRANSFER_SRC
+    VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
         .oldLayout = texture->textureImageLayout,
         .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -781,40 +785,57 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .image = texture->textureImage,
         .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
     };
-    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+    vkCmdPipelineBarrier(cmd,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+    // Create staging buffer (R32_UINT = 4 bytes per pixel)
     VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->width) * texture->height * 4;
 
-    VkBufferCreateInfo bufferInfo = 
-    {
+    VkBufferCreateInfo bufferInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = bufferSize,
         .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
     };
 
-    VmaAllocationCreateInfo allocInfo = 
-    {
+    VmaAllocationCreateInfo allocInfo = {
         .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
         .usage = VMA_MEMORY_USAGE_AUTO
     };
 
-    VmaAllocationInfo allocOut = {};
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-    VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut));
+    VmaAllocationInfo allocOut = {};
 
-    VkBufferImageCopy region = 
+    if (vmaCreateBuffer(bufferSystem.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
     {
+        std::cout << "[SamplePixel] Failed to create staging buffer" << std::endl;
+        vulkanSystem.EndSingleUseCommand(cmd);
+        return UINT32_MAX;
+    }
+
+    VkBufferImageCopy region = {
+        .bufferOffset = 0,
+        .bufferRowLength = 0,
+        .bufferImageHeight = 0,
         .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 },
-        .imageExtent = { static_cast<uint32>(texture->width),
-                         static_cast<uint32>(texture->height), 1 }
+        .imageOffset = { 0, 0, 0 },
+        .imageExtent = { static_cast<uint32_t>(texture->width), static_cast<uint32_t>(texture->height), 1 }
     };
 
     vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
-    vulkanSystem.EndSingleUseCommand(cmd);
-    vkDeviceWaitIdle(vulkanSystem.Device);
 
-    const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
-    uint32 pixelColor = pData[y * texture->width + x];
+    vulkanSystem.EndSingleUseCommand(cmd);
+    vkDeviceWaitIdle(vulkanSystem.Device);   // Safe for debugging
+
+    const uint32_t* pData = static_cast<const uint32_t*>(allocOut.pMappedData);
+    uint32_t pickedId = pData[y * texture->width + x];
+
+    std::cout << "[SamplePixel] Picked ID = " << pickedId << " at (" << x << ", " << y << ")" << std::endl;
+
     vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
-    return pixelColor;
+
+    return pickedId;
 }

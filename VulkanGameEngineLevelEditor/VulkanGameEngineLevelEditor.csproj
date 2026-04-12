@@ -110,6 +110,7 @@
     <ProjectReference Include="..\Physics2DDLL\Physics2DDLL.vcxproj" />
     <ProjectReference Include="..\VulkanEngineDLL\VulkanEngineDLL.vcxproj" />
     <ProjectReference Include="..\VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj" />
+    <ProjectReference Include="..\VulkanGameEngine\VulkanGameEngine.vcxproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="VulkanCS">

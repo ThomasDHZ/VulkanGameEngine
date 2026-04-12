@@ -158,11 +158,16 @@ public:
     template <typename T>
     T* GetGameObjectComponent(uint gameObjectId)
     {
+        if(gameObjectId == UINT32_MAX) return nullptr;
+
         GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
         auto view = EntityRegistry.view<GameObjectComponentLinker, T>();
-        for (auto [entity, gameObjectId, component] : view.each())
+        for (auto [entity, linker, component] : view.each())
         {
-            return &component;
+            if (linker.GameObjectId == gameObjectId)
+            {
+                return &component;
+            }
         }
         return nullptr;
     }

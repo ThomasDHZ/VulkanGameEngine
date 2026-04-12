@@ -114,26 +114,29 @@ void VulkanSystem::SetUpSwapChain(void* windowHandle)
 
 VmaAllocator VulkanSystem::SetUpVmaAllocation()
 {
-    VmaVulkanFunctions vulkanFunctions =
-    {
+    VmaVulkanFunctions vulkanFunctions = {
         .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
         .vkGetDeviceProcAddr = vkGetDeviceProcAddr
     };
 
-    VmaAllocatorCreateInfo allocatorCreateInfo =
-    {
-        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+    VmaAllocatorCreateInfo allocatorCreateInfo = {
         .physicalDevice = PhysicalDevice,
         .device = Device,
-        .preferredLargeHeapBlockSize = 64ull << 20,
+        .preferredLargeHeapBlockSize = 64ull << 20,   // 64 MB
         .pVulkanFunctions = &vulkanFunctions,
         .instance = Instance,
         .vulkanApiVersion = ApiVersion,
     };
 
-    VmaAllocator vmaAllocator;
-    vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
-    return vmaAllocator;
+    VmaAllocator allocator = VK_NULL_HANDLE;
+    VkResult result = vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+
+    if (result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create VMA allocator: " << result << std::endl;
+    }
+
+    return allocator;
 }
 
 void VulkanSystem::DestroyRenderer()
