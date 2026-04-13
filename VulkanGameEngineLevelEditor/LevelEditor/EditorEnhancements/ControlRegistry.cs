@@ -13,12 +13,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private static readonly Dictionary<Type, Func<object, MemberInfo, int, bool, ObjectPanelView, Control>> _controlCreators = new()
         {
             { typeof(string), (obj, member, height, readOnly, parentPanel) => new TypeOfStringForm(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(float), (obj, member, height, readOnly, parentPanel) => new TypeOfFloat(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(int), (obj, member, height, readOnly, parentPanel) => new TypeOfIntForm(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(uint), (obj, member, height, readOnly, parentPanel) => new TypeOfUintForm(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(bool), (obj, member, height, readOnly, parentPanel) => new TypeOfBool(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(Guid), (obj, member, height, readOnly, parentPanel) => new TypeOfGuidForm(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(vec2), (obj, member, height, readOnly, parentPanel) => new TypeOfVec2Form(parentPanel, obj, member, height, readOnly).CreateControl() }
+            { typeof(float),  (obj, member, height, readOnly, parentPanel) => new TypeOfFloat(parentPanel, obj, member, height, readOnly).CreateControl() },
+            { typeof(int),    (obj, member, height, readOnly, parentPanel) => new TypeOfIntForm(parentPanel, obj, member, height, readOnly).CreateControl() },
+            { typeof(uint),   (obj, member, height, readOnly, parentPanel) => new TypeOfUintForm(parentPanel, obj, member, height, readOnly).CreateControl() },
+            { typeof(bool),   (obj, member, height, readOnly, parentPanel) => new TypeOfBool(parentPanel, obj, member, height, readOnly).CreateControl() },
+            { typeof(Guid),   (obj, member, height, readOnly, parentPanel) => new TypeOfGuidForm(parentPanel, obj, member, height, readOnly).CreateControl() },
+            { typeof(vec2),   (obj, member, height, readOnly, parentPanel) => new TypeOfVec2Form(parentPanel, obj, member, height, readOnly).CreateControl() }
         };
 
         public static Control CreateControl(ObjectPanelView parentPanel, Type type, object obj, MemberInfo member, int height, bool readOnly)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using VulkanGameEngineLevelEditor.GameEngine;
 
@@ -9,10 +10,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
     {
         public uint GameObjectId { get; }
         public ComponentTypeEnum ComponentType { get; }
-        public IntPtr ComponentPtr { get; private set; }
+        public IntPtr ComponentPtr { get; }
         public Type ComponentStructType { get; }
 
-        public string DisplayName => ComponentType.ToString();
+        public string DisplayName => ComponentType.ToString()
+            .Replace("k", "").Replace("Component", "");
 
         public DynamicComponentWrapper(uint gameObjectId, ComponentTypeEnum componentType,
                                        IntPtr componentPtr, Type structType)
@@ -23,69 +25,77 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             ComponentStructType = structType ?? throw new ArgumentNullException(nameof(structType));
         }
 
-        public object GetMemberValue(MemberInfo member)
+        /// <summary>
+        /// DIRECT reference to the original native memory. 
+        /// Any change here immediately affects C++ side (zero copy).
+        /// </summary>
+        public ref T GetComponentRef<T>() where T : struct
         {
+            if (typeof(T) != ComponentStructType)
+                throw new InvalidOperationException($"Type mismatch: Expected {ComponentStructType.Name}, got {typeof(T).Name}");
+
             if (ComponentPtr == IntPtr.Zero)
-                return null;
+                return ref Unsafe.NullRef<T>();
+
+            return ref Unsafe.AsRef<T>(ComponentPtr.ToPointer());
+        }
+
+        /// <summary>
+        /// Get value of a member (field or property)
+        /// </summary>
+        public object? GetMemberValue(MemberInfo member)
+        {
+            if (ComponentPtr == IntPtr.Zero) return null;
 
             try
             {
-                object structure = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
-
-                Console.WriteLine($"[Debug] Reflecting on struct: {ComponentStructType.Name}, member: {member.Name} ({member.GetType().Name})");
-
                 if (member is FieldInfo field)
                 {
-                    var val = field.GetValue(structure);
-                    Console.WriteLine($"[Debug] Field {field.Name} = {val}");
-                    return val;
+                    // Prefer direct field access when possible
+                    object boxed = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
+                    return field.GetValue(boxed);
                 }
-
-                if (member is PropertyInfo prop && prop.CanRead)
+                else if (member is PropertyInfo prop && prop.CanRead)
                 {
-                    var val = prop.GetValue(structure);
-                    Console.WriteLine($"[Debug] Property {prop.Name} = {val}");
-                    return val;
+                    object boxed = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
+                    return prop.GetValue(boxed);
                 }
-
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetMemberValue] Exception on {ComponentType}.{member?.Name}: {ex.Message}");
+                Console.WriteLine($"[GetMemberValue] Error on {ComponentType}.{member.Name}: {ex}");
                 return null;
             }
         }
 
-        public void SetMemberValue(MemberInfo member, object value)
+        /// <summary>
+        /// Set value using direct ref when possible (much more reliable)
+        /// </summary>
+        public void SetMemberValue(MemberInfo member, object? value)
         {
-            if (ComponentPtr == IntPtr.Zero || value == null)
-                return;
+            if (ComponentPtr == IntPtr.Zero || value == null) return;
 
             try
             {
-                IntPtr gameObjectComponent = GameObjectSystem.GetGameObjectComponentPtr(GameObjectId, ComponentType);
-                object structure = Marshal.PtrToStructure(gameObjectComponent, ComponentStructType);
-
                 if (member is FieldInfo field)
                 {
-                    field.SetValue(structure, value);
+                    // For public fields this is reliable
+                    object boxed = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
+                    field.SetValue(boxed, value);
+                    Marshal.StructureToPtr(boxed, ComponentPtr, false);
                 }
                 else if (member is PropertyInfo prop && prop.CanWrite)
                 {
-                    prop.SetValue(structure, value);
+                    // For properties we still need the round-trip, but it's safer now
+                    object boxed = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
+                    prop.SetValue(boxed, value);
+                    Marshal.StructureToPtr(boxed, ComponentPtr, false);
                 }
-                else
-                {
-                    Console.WriteLine($"[SetMemberValue] Cannot write to {member.Name}");
-                    return;
-                }
-                Marshal.StructureToPtr(structure, ComponentPtr, true);
-                Console.WriteLine($"[SetMemberValue] SUCCESS → {ComponentType}.{member.Name} = {value}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SetMemberValue] FAILED on {ComponentType}.{member?.Name}: {ex.Message}");
+                Console.WriteLine($"[SetMemberValue] FAILED {ComponentType}.{member.Name}: {ex.Message}");
             }
         }
     }

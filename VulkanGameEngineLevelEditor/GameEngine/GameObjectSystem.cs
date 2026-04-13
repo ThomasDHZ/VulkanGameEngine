@@ -38,16 +38,16 @@ namespace VulkanGameEngineLevelEditor.GameEngine
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Transform2DComponent
+    public class Transform2DComponent
     {
         [DisplayName("Position 2D")]
-        public vec2 GameObjectPosition { get; set; } = new vec2(0.0f);
+        public vec2 GameObjectPosition { get; set; }
         [DisplayName("Rotation 2D")]
-        public vec2 GameObjectRotation { get; set; } = new vec2(0.0f);
+        public vec2 GameObjectRotation { get; set; }
         [DisplayName("Scale 2D")]
-        public vec2 GameObjectScale { get; set; } = new vec2(1.0f);
+        public vec2 GameObjectScale { get; set; }
         [IgnoreProperty]
-        public bool Dirty { get; set; } = true;
+        public bool Dirty { get; set; }
 
         public Transform2DComponent()
         {
