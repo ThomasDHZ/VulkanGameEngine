@@ -1,9 +1,11 @@
 ﻿using GlmSharp;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
@@ -21,9 +23,6 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
     {
         _member = member;
         _wrapper = obj as DynamicComponentWrapper;
-
-        if (_wrapper == null)
-            Console.WriteLine($"[TypeOfVec2Form] Warning: obj is not DynamicComponentWrapper for {member.Name}");
     }
 
     public override Control CreateControl()
@@ -42,10 +41,7 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75F));
 
         if (_wrapper == null || _wrapper.ComponentPtr == IntPtr.Zero)
-        {
-            Console.WriteLine($"[TypeOfVec2Form] Failed to create control - wrapper or pointer is null");
             return table;
-        }
 
         vec2 currentVec = GetCurrentVec2();
 
@@ -64,13 +60,15 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
             };
             table.Controls.Add(lbl, 0, row);
 
+            float currentValue = getter(currentVec);
+
             var num = new NumericUpDown
             {
-                Value = (decimal)Math.Clamp(getter(currentVec), -1000000f, 1000000f),
                 DecimalPlaces = 4,
                 Increment = 0.1m,
-                Minimum = -1000000m,
-                Maximum = 1000000m,
+                Minimum = -10000000m,   
+                Maximum = 10000000m, 
+                Value = (decimal)Math.Clamp(currentValue, -10000000f, 10000000f),
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
@@ -90,20 +88,18 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
         AddAxis("X", v => v.x, val => { ref vec2 r = ref GetVec2Ref(); r.x = val; });
         AddAxis("Y", v => v.y, val => { ref vec2 r = ref GetVec2Ref(); r.y = val; });
 
-        Console.WriteLine($"[TypeOfVec2Form] Created successfully for {_member.Name} ({_wrapper.ComponentType})");
         return table;
     }
 
     private ref vec2 GetVec2Ref()
     {
         if (_wrapper == null || _wrapper.ComponentPtr == IntPtr.Zero || _member is not FieldInfo fieldInfo)
-        {
-            Console.WriteLine($"[TypeOfVec2Form] Cannot get ref - not a FieldInfo or null wrapper for {_member?.Name}");
             return ref Unsafe.NullRef<vec2>();
-        }
 
         int offset = Marshal.OffsetOf(_wrapper.ComponentStructType, fieldInfo.Name).ToInt32();
-        return ref Unsafe.AsRef<vec2>((byte*)_wrapper.ComponentPtr.ToPointer() + offset);
+
+        return ref Unsafe.AsRef<vec2>(
+            (byte*)_wrapper.ComponentPtr.ToPointer() + offset);
     }
 
     private vec2 GetCurrentVec2()
