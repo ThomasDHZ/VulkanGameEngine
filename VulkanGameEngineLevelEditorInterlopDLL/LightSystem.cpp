@@ -1,6 +1,21 @@
 #include "LightSystem.h"
 
-void LightSystem_LoadSceneLights(const char* sceneLights)
+uint32 LightSystem_LoadLight(const char* sceneLight)
 {
-    lightSystem.LoadSceneLights(sceneLights);
+    return lightSystem.LoadLight(sceneLight);
+}
+
+uint32 LightSystem_AllocateLight(LightTypeEnum lightType)
+{
+    return lightSystem.AllocateLight(lightType);
+}
+
+DirectionalLight& LightSystem_GetDirectionalLight(uint directionalLightId)
+{
+    return lightSystem.GetDirectionalLight(directionalLightId);
+}
+
+PointLight& LightSystem_GetPointLight(uint pointLightId)
+{
+    return lightSystem.GetPointLight(pointLightId);
 }

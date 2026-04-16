@@ -11,41 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}"
-	ProjectSection(SolutionItems) = preProject
-		Shaders\AssetCreatorShader.frag = Shaders\AssetCreatorShader.frag
-		Shaders\AssetCreatorShader.vert = Shaders\AssetCreatorShader.vert
-		Shaders\BindlessHelpers.glsl = Shaders\BindlessHelpers.glsl
-		Shaders\BloomShader.frag = Shaders\BloomShader.frag
-		Shaders\BloomShader.vert = Shaders\BloomShader.vert
-		Shaders\BRDFShader.frag = Shaders\BRDFShader.frag
-		Shaders\BRDFShader.vert = Shaders\BRDFShader.vert
-		Shaders\Constants.glsl = Shaders\Constants.glsl
-		Shaders\EnvironmentToCubeMapShader.frag = Shaders\EnvironmentToCubeMapShader.frag
-		Shaders\EnvironmentToCubeMapShader.vert = Shaders\EnvironmentToCubeMapShader.vert
-		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
-		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
-		Shaders\GameObjectPicker.frag = Shaders\GameObjectPicker.frag
-		Shaders\GameObjectPicker.vert = Shaders\GameObjectPicker.vert
-		Shaders\GaussianBlurShader.frag = Shaders\GaussianBlurShader.frag
-		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
-		Shaders\GBufferLevelShader2D.frag = Shaders\GBufferLevelShader2D.frag
-		Shaders\GBufferLevelShader2D.vert = Shaders\GBufferLevelShader2D.vert
-		Shaders\GBufferLightingShader.frag = Shaders\GBufferLightingShader.frag
-		Shaders\GBufferLightingShader.vert = Shaders\GBufferLightingShader.vert
-		Shaders\GBufferSpriteInstanceShader.frag = Shaders\GBufferSpriteInstanceShader.frag
-		Shaders\GBufferSpriteInstanceShader.vert = Shaders\GBufferSpriteInstanceShader.vert
-		Shaders\HdrShader.frag = Shaders\HdrShader.frag
-		Shaders\HdrShader.vert = Shaders\HdrShader.vert
-		Shaders\IrradianceShader.frag = Shaders\IrradianceShader.frag
-		Shaders\IrradianceShader.vert = Shaders\IrradianceShader.vert
-		Shaders\Lights.glsl = Shaders\Lights.glsl
-		Shaders\MaterialPropertiesBuffer.glsl = Shaders\MaterialPropertiesBuffer.glsl
-		Shaders\MeshPropertiesBuffer.glsl = Shaders\MeshPropertiesBuffer.glsl
-		Shaders\PrefilterShader.frag = Shaders\PrefilterShader.frag
-		Shaders\PrefilterShader.vert = Shaders\PrefilterShader.vert
-		Shaders\SelectedGameObjectPicker.frag = Shaders\SelectedGameObjectPicker.frag
-		Shaders\SelectedGameObjectPicker.vert = Shaders\SelectedGameObjectPicker.vert
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E282A3D5-3DCC-485B-AA01-B66AB307DBE2}"
 	ProjectSection(SolutionItems) = preProject
@@ -53,59 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{0EDEA954-1D78-4E87-B6E9-6AD004194688}"
-	ProjectSection(SolutionItems) = preProject
-		Assets\Pipelines\AssetCreatorPipeline.json = Assets\Pipelines\AssetCreatorPipeline.json
-		Assets\Pipelines\BloomPipeline.json = Assets\Pipelines\BloomPipeline.json
-		Assets\Pipelines\BRDFPipeline.json = Assets\Pipelines\BRDFPipeline.json
-		Assets\Pipelines\EnvironmentToCubeMapPipeline.json = Assets\Pipelines\EnvironmentToCubeMapPipeline.json
-		Assets\Pipelines\FrameBufferPipeline.json = Assets\Pipelines\FrameBufferPipeline.json
-		Assets\Pipelines\GaussianBlurPipeline.json = Assets\Pipelines\GaussianBlurPipeline.json
-		Assets\Pipelines\GBufferLevelShader2DPipeline.json = Assets\Pipelines\GBufferLevelShader2DPipeline.json
-		Assets\Pipelines\GBufferLightingPipeline.json = Assets\Pipelines\GBufferLightingPipeline.json
-		Assets\Pipelines\GBufferSpriteInstancePipeline.json = Assets\Pipelines\GBufferSpriteInstancePipeline.json
-		Assets\Pipelines\HdrPipeline.json = Assets\Pipelines\HdrPipeline.json
-		Assets\Pipelines\IrradiancePipeline.json = Assets\Pipelines\IrradiancePipeline.json
-		Assets\Pipelines\LevelDirectionalShadowPipeline.json = Assets\Pipelines\LevelDirectionalShadowPipeline.json
-		Assets\Pipelines\LevelShader2DPipeline.json = Assets\Pipelines\LevelShader2DPipeline.json
-		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
-		Assets\Pipelines\ObjectPickerPipeline.json = Assets\Pipelines\ObjectPickerPipeline.json
-		Assets\Pipelines\PrefilterPipeline.json = Assets\Pipelines\PrefilterPipeline.json
-		Assets\Pipelines\SDFLevelShadowPipeline.json = Assets\Pipelines\SDFLevelShadowPipeline.json
-		Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json = Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json
-		Assets\Pipelines\SelectedObjectPickerPipeline.json = Assets\Pipelines\SelectedObjectPickerPipeline.json
-		Assets\Pipelines\ShadowDebugPipeline.json = Assets\Pipelines\ShadowDebugPipeline.json
-		Assets\Pipelines\SkyBoxPipeline.json = Assets\Pipelines\SkyBoxPipeline.json
-		Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json = Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json
-		Assets\Pipelines\SpriteInstancePipeline.json = Assets\Pipelines\SpriteInstancePipeline.json
-		Assets\Pipelines\SpriteInstanceWireFramePipeline.json = Assets\Pipelines\SpriteInstanceWireFramePipeline.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderPasses", "RenderPasses", "{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}"
-	ProjectSection(SolutionItems) = preProject
-		Assets\RenderPass\AssetCreatorRenderPass.json = Assets\RenderPass\AssetCreatorRenderPass.json
-		Assets\RenderPass\BasicRenderPass.json = Assets\RenderPass\BasicRenderPass.json
-		Assets\RenderPass\BloomRenderPass.json = Assets\RenderPass\BloomRenderPass.json
-		Assets\RenderPass\BRDFRenderPass.json = Assets\RenderPass\BRDFRenderPass.json
-		Assets\RenderPass\DefaultRenderPass.json = Assets\RenderPass\DefaultRenderPass.json
-		Assets\RenderPass\DirectionalShadowRenderPass.json = Assets\RenderPass\DirectionalShadowRenderPass.json
-		Assets\RenderPass\EnvironmentToCubeMapRenderPass.json = Assets\RenderPass\EnvironmentToCubeMapRenderPass.json
-		Assets\RenderPass\FrameBufferRenderPass.json = Assets\RenderPass\FrameBufferRenderPass.json
-		Assets\RenderPass\GBufferRenderPass.json = Assets\RenderPass\GBufferRenderPass.json
-		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
-		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
-		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
-		Assets\RenderPass\LevelDirectionalShadowRenderPass.json = Assets\RenderPass\LevelDirectionalShadowRenderPass.json
-		Assets\RenderPass\LevelShader2DMultiSampledRenderPass.json = Assets\RenderPass\LevelShader2DMultiSampledRenderPass.json
-		Assets\RenderPass\LevelShader2DRenderPass.json = Assets\RenderPass\LevelShader2DRenderPass.json
-		Assets\RenderPass\LevelShader2DWireFrameRenderPass.json = Assets\RenderPass\LevelShader2DWireFrameRenderPass.json
-		Assets\RenderPass\ObjectPickerRenderPass.json = Assets\RenderPass\ObjectPickerRenderPass.json
-		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
-		Assets\RenderPass\SDFShadowRenderPass.json = Assets\RenderPass\SDFShadowRenderPass.json
-		Assets\RenderPass\SelectedGameObjectPickerRenderPass.json = Assets\RenderPass\SelectedGameObjectPickerRenderPass.json
-		Assets\RenderPass\ShadowDebugRenderPass.json = Assets\RenderPass\ShadowDebugRenderPass.json
-		Assets\RenderPass\SkyBoxRenderPass.json = Assets\RenderPass\SkyBoxRenderPass.json
-		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B804-7274-445A-AF83-A71B1E9AAFC5}"
 	ProjectSection(SolutionItems) = preProject
@@ -116,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{
 	ProjectSection(SolutionItems) = preProject
 		Assets\Materials\AnimeGirlMaterial.json = Assets\Materials\AnimeGirlMaterial.json
 		Assets\Materials\LavaCubeMapMaterial.json = Assets\Materials\LavaCubeMapMaterial.json
+		Assets\Materials\LightIconMaterial.json = Assets\Materials\LightIconMaterial.json
 		Assets\Materials\MegaManMaterial.json = Assets\Materials\MegaManMaterial.json
 		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
 		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
@@ -124,6 +39,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sprites", "Sprites", "{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A}"
 	ProjectSection(SolutionItems) = preProject
 		Assets\Sprites\AnimeGirl.json = Assets\Sprites\AnimeGirl.json
+		Assets\Sprites\LightIconSprite.json = Assets\Sprites\LightIconSprite.json
 		Assets\Sprites\MegaManShot.json = Assets\Sprites\MegaManShot.json
 		Assets\Sprites\MegaManShotSprite.json = Assets\Sprites\MegaManShotSprite.json
 		Assets\Sprites\MegaManSprite.json = Assets\Sprites\MegaManSprite.json
@@ -194,6 +110,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelMapLevelLayout", "Leve
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects", "{21F6500D-6E92-4717-815C-AB3C6E100B64}"
 	ProjectSection(SolutionItems) = preProject
+		Assets\GameObjects\LightGameObject.json = Assets\GameObjects\LightGameObject.json
 		Assets\GameObjects\MegaManShotObject.json = Assets\GameObjects\MegaManShotObject.json
 		Assets\GameObjects\TestGameObject.json = Assets\GameObjects\TestGameObject.json
 	EndProjectSection
@@ -256,6 +173,125 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaterialBakerDLL", "MaterialBakerDLL\MaterialBakerDLL.vcxproj", "{6B063291-FC4A-47D6-94FA-3047179B26A4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngineLevelEditorInterlopDLL", "VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj", "{E7C26245-5E86-4FA3-957C-3A281866F273}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorShaders", "LevelEditorShaders", "{E7685364-290B-4B5E-AA46-71C9806F21F6}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\GameObjectPicker.frag = Shaders\GameObjectPicker.frag
+		Shaders\GameObjectPicker.vert = Shaders\GameObjectPicker.vert
+		Shaders\LightObjectPicker.frag = Shaders\LightObjectPicker.frag
+		Shaders\LightObjectPicker.vert = Shaders\LightObjectPicker.vert
+		Shaders\SelectedGameObjectPicker.frag = Shaders\SelectedGameObjectPicker.frag
+		Shaders\SelectedGameObjectPicker.vert = Shaders\SelectedGameObjectPicker.vert
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{CB921F9C-0640-4B3C-B4F0-4403F1FD58E1}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\BindlessHelpers.glsl = Shaders\BindlessHelpers.glsl
+		Shaders\Constants.glsl = Shaders\Constants.glsl
+		Shaders\Lights.glsl = Shaders\Lights.glsl
+		Shaders\MaterialPropertiesBuffer.glsl = Shaders\MaterialPropertiesBuffer.glsl
+		Shaders\MeshPropertiesBuffer.glsl = Shaders\MeshPropertiesBuffer.glsl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameShaders", "GameShaders", "{C8319AC3-B638-4E8F-8885-9C1B93547028}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\BloomShader.frag = Shaders\BloomShader.frag
+		Shaders\BloomShader.vert = Shaders\BloomShader.vert
+		Shaders\BRDFShader.frag = Shaders\BRDFShader.frag
+		Shaders\BRDFShader.vert = Shaders\BRDFShader.vert
+		Shaders\EnvironmentToCubeMapShader.frag = Shaders\EnvironmentToCubeMapShader.frag
+		Shaders\EnvironmentToCubeMapShader.vert = Shaders\EnvironmentToCubeMapShader.vert
+		Shaders\FrameBufferShader.frag = Shaders\FrameBufferShader.frag
+		Shaders\FrameBufferShader.vert = Shaders\FrameBufferShader.vert
+		Shaders\GaussianBlurShader.frag = Shaders\GaussianBlurShader.frag
+		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
+		Shaders\GBufferLevelShader2D.frag = Shaders\GBufferLevelShader2D.frag
+		Shaders\GBufferLevelShader2D.vert = Shaders\GBufferLevelShader2D.vert
+		Shaders\GBufferLightingShader.frag = Shaders\GBufferLightingShader.frag
+		Shaders\GBufferLightingShader.vert = Shaders\GBufferLightingShader.vert
+		Shaders\GBufferSpriteInstanceShader.frag = Shaders\GBufferSpriteInstanceShader.frag
+		Shaders\GBufferSpriteInstanceShader.vert = Shaders\GBufferSpriteInstanceShader.vert
+		Shaders\HdrShader.frag = Shaders\HdrShader.frag
+		Shaders\HdrShader.vert = Shaders\HdrShader.vert
+		Shaders\IrradianceShader.frag = Shaders\IrradianceShader.frag
+		Shaders\IrradianceShader.vert = Shaders\IrradianceShader.vert
+		Shaders\PrefilterShader.frag = Shaders\PrefilterShader.frag
+		Shaders\PrefilterShader.vert = Shaders\PrefilterShader.vert
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolShaders", "ToolShaders", "{5635239D-F4FB-418F-B78A-BB5B43C35257}"
+	ProjectSection(SolutionItems) = preProject
+		Shaders\AssetCreatorShader.frag = Shaders\AssetCreatorShader.frag
+		Shaders\AssetCreatorShader.vert = Shaders\AssetCreatorShader.vert
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolRenderPasses", "ToolRenderPasses", "{BBF5EA63-FFA3-47FD-BB2B-963FEE49CFA0}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\RenderPass\AssetCreatorRenderPass.json = Assets\RenderPass\AssetCreatorRenderPass.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorRenderPasses", "LevelEditorRenderPasses", "{9C8D5E92-47CF-41A5-871C-A70014A6CDC9}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\RenderPass\ObjectPickerRenderPass.json = Assets\RenderPass\ObjectPickerRenderPass.json
+		Assets\RenderPass\SelectedGameObjectPickerRenderPass.json = Assets\RenderPass\SelectedGameObjectPickerRenderPass.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPasses", "GameRenderPasses", "{E2B08794-FF4F-4047-9E5E-8E20C713C02A}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\RenderPass\BasicRenderPass.json = Assets\RenderPass\BasicRenderPass.json
+		Assets\RenderPass\BloomRenderPass.json = Assets\RenderPass\BloomRenderPass.json
+		Assets\RenderPass\BRDFRenderPass.json = Assets\RenderPass\BRDFRenderPass.json
+		Assets\RenderPass\DefaultRenderPass.json = Assets\RenderPass\DefaultRenderPass.json
+		Assets\RenderPass\EnvironmentToCubeMapRenderPass.json = Assets\RenderPass\EnvironmentToCubeMapRenderPass.json
+		Assets\RenderPass\FrameBufferRenderPass.json = Assets\RenderPass\FrameBufferRenderPass.json
+		Assets\RenderPass\GBufferRenderPass.json = Assets\RenderPass\GBufferRenderPass.json
+		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
+		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
+		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
+		Assets\RenderPass\LevelShader2DRenderPass.json = Assets\RenderPass\LevelShader2DRenderPass.json
+		Assets\RenderPass\LevelShader2DWireFrameRenderPass.json = Assets\RenderPass\LevelShader2DWireFrameRenderPass.json
+		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
+		Assets\RenderPass\ShadowDebugRenderPass.json = Assets\RenderPass\ShadowDebugRenderPass.json
+		Assets\RenderPass\SkyBoxRenderPass.json = Assets\RenderPass\SkyBoxRenderPass.json
+		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorPipelines", "LevelEditorPipelines", "{9BB7C5EA-EE89-4991-B910-1A4B3C49BF76}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Pipelines\LightPickerPipeline.json = Assets\Pipelines\LightPickerPipeline.json
+		Assets\Pipelines\ObjectPickerPipeline.json = Assets\Pipelines\ObjectPickerPipeline.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPipelines", "GameRenderPipelines", "{010E9608-7CC2-4356-B282-1EFFC55398DD}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Pipelines\BloomPipeline.json = Assets\Pipelines\BloomPipeline.json
+		Assets\Pipelines\BRDFPipeline.json = Assets\Pipelines\BRDFPipeline.json
+		Assets\Pipelines\EnvironmentToCubeMapPipeline.json = Assets\Pipelines\EnvironmentToCubeMapPipeline.json
+		Assets\Pipelines\FrameBufferPipeline.json = Assets\Pipelines\FrameBufferPipeline.json
+		Assets\Pipelines\GaussianBlurPipeline.json = Assets\Pipelines\GaussianBlurPipeline.json
+		Assets\Pipelines\GBufferLevelShader2DPipeline.json = Assets\Pipelines\GBufferLevelShader2DPipeline.json
+		Assets\Pipelines\GBufferLightingPipeline.json = Assets\Pipelines\GBufferLightingPipeline.json
+		Assets\Pipelines\GBufferSpriteInstancePipeline.json = Assets\Pipelines\GBufferSpriteInstancePipeline.json
+		Assets\Pipelines\HdrPipeline.json = Assets\Pipelines\HdrPipeline.json
+		Assets\Pipelines\IrradiancePipeline.json = Assets\Pipelines\IrradiancePipeline.json
+		Assets\Pipelines\LevelDirectionalShadowPipeline.json = Assets\Pipelines\LevelDirectionalShadowPipeline.json
+		Assets\Pipelines\LevelShader2DPipeline.json = Assets\Pipelines\LevelShader2DPipeline.json
+		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
+		Assets\Pipelines\PrefilterPipeline.json = Assets\Pipelines\PrefilterPipeline.json
+		Assets\Pipelines\SDFLevelShadowPipeline.json = Assets\Pipelines\SDFLevelShadowPipeline.json
+		Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json = Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json
+		Assets\Pipelines\SelectedObjectPickerPipeline.json = Assets\Pipelines\SelectedObjectPickerPipeline.json
+		Assets\Pipelines\ShadowDebugPipeline.json = Assets\Pipelines\ShadowDebugPipeline.json
+		Assets\Pipelines\SkyBoxPipeline.json = Assets\Pipelines\SkyBoxPipeline.json
+		Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json = Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json
+		Assets\Pipelines\SpriteInstancePipeline.json = Assets\Pipelines\SpriteInstancePipeline.json
+		Assets\Pipelines\SpriteInstanceWireFramePipeline.json = Assets\Pipelines\SpriteInstanceWireFramePipeline.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolPipelines", "ToolPipelines", "{8D34E3E3-CDD0-4AA9-B679-2DFA572C9BC4}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Pipelines\AssetCreatorPipeline.json = Assets\Pipelines\AssetCreatorPipeline.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -372,6 +408,16 @@ Global
 		{B82F64D6-6B26-4A25-9E5D-DDED581513ED} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{0E442112-3B0F-4DB3-B0D9-47D168D921CB} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{C7D801E5-42DD-46C1-ACF0-41A8C565DA2E} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{E7685364-290B-4B5E-AA46-71C9806F21F6} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
+		{CB921F9C-0640-4B3C-B4F0-4403F1FD58E1} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
+		{C8319AC3-B638-4E8F-8885-9C1B93547028} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
+		{5635239D-F4FB-418F-B78A-BB5B43C35257} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
+		{BBF5EA63-FFA3-47FD-BB2B-963FEE49CFA0} = {6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}
+		{9C8D5E92-47CF-41A5-871C-A70014A6CDC9} = {6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}
+		{E2B08794-FF4F-4047-9E5E-8E20C713C02A} = {6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48}
+		{9BB7C5EA-EE89-4991-B910-1A4B3C49BF76} = {0EDEA954-1D78-4E87-B6E9-6AD004194688}
+		{010E9608-7CC2-4356-B282-1EFFC55398DD} = {0EDEA954-1D78-4E87-B6E9-6AD004194688}
+		{8D34E3E3-CDD0-4AA9-B679-2DFA572C9BC4} = {0EDEA954-1D78-4E87-B6E9-6AD004194688}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F492211-3E89-431E-83CC-E65D5E8EBE55}

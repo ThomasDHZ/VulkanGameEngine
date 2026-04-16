@@ -3,10 +3,12 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
+using VulkanGameEngineLevelEditor.LevelEditor.Registries;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
@@ -168,6 +170,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         private void AddPropertyControlsForWrapper(DynamicComponentWrapper wrapper)
         {
+            if (wrapper == null) return;
+
             var members = wrapper.ComponentStructType
                 .GetMembers(BindingFlags.Public | BindingFlags.Instance)
                 .Where(m => m is FieldInfo || (m is PropertyInfo p && p.CanRead))
@@ -178,12 +182,47 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 if (ShouldIgnoreMember(member)) continue;
 
                 Type memberType = member is FieldInfo f ? f.FieldType : ((PropertyInfo)member).PropertyType;
-
-                if (memberType == typeof(ulong) || memberType.IsPointer || memberType == typeof(IntPtr))
-                    continue;
+                if (memberType == null) continue;
 
                 string displayName = member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? member.Name;
                 bool isReadOnly = member.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly ?? false;
+                object rawValue = GetCurrentMemberValue(wrapper, member);
+
+                var linkerAttr = member.GetCustomAttribute<ObjectLinkerAttribute>();
+                if (linkerAttr != null && rawValue != null)
+                {
+                    // Convert raw uint → Handle
+                    object handle = rawValue;
+                    if (linkerAttr.HandleType == typeof(PointLightHandle) && rawValue is uint pid)
+                        handle = new PointLightHandle(new IntPtr(pid));
+                    else if (linkerAttr.HandleType == typeof(DirectionalLightHandle) && rawValue is uint did)
+                        handle = new DirectionalLightHandle(new IntPtr(did));
+                    // Add TextureHandle / MaterialHandle here later
+
+                    // Resolve → this returns IntPtr from your registry
+                    object result = ObjectLinkerRegistry.Resolve(linkerAttr.HandleType, handle);
+
+                    if (result is IntPtr ptr && ptr != IntPtr.Zero)
+                    {
+                        // === KEY FIX: Unwrap IntPtr into real managed struct ===
+                        Type resolvedType = GetResolvedTypeFromHandle(linkerAttr.HandleType); // e.g. typeof(PointLight)
+
+                        object linkedObject = Marshal.PtrToStructure(ptr, resolvedType);
+
+                        if (linkedObject != null)
+                        {
+                            AddLinkedObjectHeader(displayName, linkedObject.GetType().Name);
+                            AddPropertyControlsForResolvedObject(linkedObject);
+                            continue;
+                        }
+                    }
+
+                    displayName += " (Not Found)";
+                }
+
+                // === Normal non-linked property ===
+                if (memberType == typeof(ulong) || memberType.IsPointer || memberType == typeof(IntPtr))
+                    continue;
 
                 int row = _propTable.RowCount++;
                 _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
@@ -218,6 +257,109 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                    member.Name == "GameObjectId" ||
                    member.Name == "ComponentType" ||
                    member.Name == "DisplayName";
+        }
+
+        private object GetCurrentMemberValue(DynamicComponentWrapper wrapper, MemberInfo member)
+        {
+            try
+            {
+                return wrapper.GetMemberValue(member);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void AddLinkedObjectHeader(string propertyName, string resolvedTypeName)
+        {
+            int row = _propTable.RowCount++;
+            _propTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+
+            var header = new Label
+            {
+                Text = $"→ {propertyName} ({resolvedTypeName})",
+                ForeColor = Color.Cyan,
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(8, 6, 4, 4),
+                BackColor = Color.FromArgb(50, 50, 70)
+            };
+
+            _propTable.Controls.Add(header, 0, row);
+            _propTable.SetColumnSpan(header, 2);
+        }
+
+        private void AddPropertyControlsForResolvedObject(object resolvedObject)
+        {
+            if (resolvedObject == null) return;
+
+            var members = resolvedObject.GetType()
+                .GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                .Where(m => m is FieldInfo || (m is PropertyInfo p && p.CanRead))
+                .OrderBy(m => m.Name);
+
+            foreach (var member in members)
+            {
+                // Skip internal or unwanted members
+                if (ShouldIgnoreResolvedMember(member))
+                    continue;
+
+                Type memberType = member is FieldInfo f ? f.FieldType
+                                : (member is PropertyInfo p ? p.PropertyType : null);
+
+                if (memberType == null) continue;
+
+                string displayName = member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? member.Name;
+                bool isReadOnly = true; // Linked objects are usually read-only in this context
+
+                int row = _propTable.RowCount++;
+                _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
+
+                var label = new Label
+                {
+                    Text = displayName,
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    ForeColor = Color.LightGray,
+                    Margin = new Padding(20, 4, 4, 4)   // Indent to show it's a sub-property
+                };
+                _propTable.Controls.Add(label, 0, row);
+
+                // Use the resolved object directly (not the wrapper)
+                var control = ControlRegistry.CreateControl(this, memberType, resolvedObject, member, RowHeight, isReadOnly);
+
+                if (control != null)
+                {
+                    control.Dock = DockStyle.Fill;
+                    control.Margin = new Padding(5);
+                    _propTable.Controls.Add(control, 1, row);
+                }
+                else
+                {
+                    Console.WriteLine($"[ObjectPanelView] No editor for resolved member {member.Name} ({memberType.Name})");
+                }
+            }
+        }
+
+        private static bool ShouldIgnoreResolvedMember(MemberInfo member)
+        {
+            if (member.Name == "GameObjectId") return true;
+            if (member.GetCustomAttribute<IgnorePropertyAttribute>() != null) return true;
+
+            // Add more rules if needed (e.g. skip certain internal fields)
+            return false;
+        }
+
+        private Type GetResolvedTypeFromHandle(Type handleType)
+        {
+            if (handleType == typeof(PointLightHandle)) return typeof(PointLight);
+            if (handleType == typeof(DirectionalLightHandle)) return typeof(DirectionalLight);
+            // Add more mappings as you create handles
+            // if (handleType == typeof(TextureHandle)) return typeof(Texture);
+
+            return typeof(object); // fallback
         }
     }
 }

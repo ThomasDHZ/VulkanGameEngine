@@ -12,6 +12,7 @@
 #endif
 #include <vk_mem_alloc.h>
 #include "BufferSystem.h"
+#include "MeshSystem.h"
 
 DebugSystem& debugSystem = DebugSystem::Get();
 
@@ -42,7 +43,6 @@ bool DebugSystem::TryLoadRenderDocAPI()
     UsingRenderDoc = false;
     return UsingRenderDoc;
 }
-
 
 bool DebugSystem::IsRenderDocInjected()
 {

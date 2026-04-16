@@ -32,6 +32,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LevelEditorForm));
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             VulkanLoggerBox = new RichTextBox();
@@ -42,6 +43,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             MaterialListView = new System.Windows.Forms.ListView();
             tabPage4 = new TabPage();
             TextureListView = new System.Windows.Forms.ListView();
+            tabPage5 = new TabPage();
+            SceneListView = new System.Windows.Forms.ListView();
+            tabPage6 = new TabPage();
+            LightListView = new System.Windows.Forms.ListView();
             panel1 = new Panel();
             propertiesPanel1 = new VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements.PropertiesPanel();
             RenderBox = new PictureBox();
@@ -50,15 +55,19 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             buildToolStripMenuItem = new ToolStripMenuItem();
             treeView1 = new LevelEditorTreeView();
             toolStrip1 = new ToolStrip();
+            SaveButton = new ToolStripButton();
             openFileDialog1 = new OpenFileDialog();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
             tabPage4.SuspendLayout();
+            tabPage5.SuspendLayout();
+            tabPage6.SuspendLayout();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)RenderBox).BeginInit();
             LevelEditorMenuStrip.SuspendLayout();
+            toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // tabControl1
@@ -67,6 +76,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage4);
+            tabControl1.Controls.Add(tabPage5);
+            tabControl1.Controls.Add(tabPage6);
             tabControl1.Dock = DockStyle.Bottom;
             tabControl1.Location = new System.Drawing.Point(0, 754);
             tabControl1.Name = "tabControl1";
@@ -171,6 +182,54 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             TextureListView.TabIndex = 0;
             TextureListView.UseCompatibleStateImageBehavior = false;
             // 
+            // tabPage5
+            // 
+            tabPage5.Controls.Add(SceneListView);
+            tabPage5.Location = new System.Drawing.Point(4, 34);
+            tabPage5.Name = "tabPage5";
+            tabPage5.Padding = new Padding(3);
+            tabPage5.Size = new System.Drawing.Size(1890, 232);
+            tabPage5.TabIndex = 4;
+            tabPage5.Text = "Scenes";
+            tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // SceneListView
+            // 
+            SceneListView.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            SceneListView.Dock = DockStyle.Fill;
+            SceneListView.ForeColor = System.Drawing.Color.White;
+            SceneListView.LargeImageList = imageList1;
+            SceneListView.Location = new System.Drawing.Point(3, 3);
+            SceneListView.Name = "SceneListView";
+            SceneListView.Size = new System.Drawing.Size(1884, 226);
+            SceneListView.TabIndex = 1;
+            SceneListView.UseCompatibleStateImageBehavior = false;
+            SceneListView.SelectedIndexChanged += listView1_SelectedIndexChanged;
+            // 
+            // tabPage6
+            // 
+            tabPage6.Controls.Add(LightListView);
+            tabPage6.Location = new System.Drawing.Point(4, 34);
+            tabPage6.Name = "tabPage6";
+            tabPage6.Padding = new Padding(3);
+            tabPage6.Size = new System.Drawing.Size(1890, 232);
+            tabPage6.TabIndex = 5;
+            tabPage6.Text = "Lights";
+            tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // LightListView
+            // 
+            LightListView.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            LightListView.Dock = DockStyle.Fill;
+            LightListView.ForeColor = System.Drawing.Color.White;
+            LightListView.LargeImageList = imageList1;
+            LightListView.Location = new System.Drawing.Point(3, 3);
+            LightListView.Name = "LightListView";
+            LightListView.Size = new System.Drawing.Size(1884, 226);
+            LightListView.TabIndex = 1;
+            LightListView.UseCompatibleStateImageBehavior = false;
+            LightListView.ItemDrag += LightListView_ItemDrag;
+            // 
             // panel1
             // 
             panel1.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
@@ -250,11 +309,22 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
+            toolStrip1.Items.AddRange(new ToolStripItem[] { SaveButton });
             toolStrip1.Location = new System.Drawing.Point(320, 33);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(1258, 25);
+            toolStrip1.Size = new System.Drawing.Size(1258, 33);
             toolStrip1.TabIndex = 1;
             toolStrip1.Text = "toolStrip1";
+            // 
+            // SaveButton
+            // 
+            SaveButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            SaveButton.Image = (System.Drawing.Image)resources.GetObject("SaveButton.Image");
+            SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            SaveButton.Name = "SaveButton";
+            SaveButton.Size = new System.Drawing.Size(34, 28);
+            SaveButton.Text = "toolStripButton1";
+            SaveButton.Click += SaveButton_Click;
             // 
             // openFileDialog1
             // 
@@ -280,10 +350,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             tabPage2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
             tabPage4.ResumeLayout(false);
+            tabPage5.ResumeLayout(false);
+            tabPage6.ResumeLayout(false);
             panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)RenderBox).EndInit();
             LevelEditorMenuStrip.ResumeLayout(false);
             LevelEditorMenuStrip.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -308,6 +382,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private System.Windows.Forms.ListView GameObjectListView;
         private System.Windows.Forms.ListView MaterialListView;
         private System.Windows.Forms.ListView TextureListView;
+        private System.Windows.Forms.ListView SceneListView;
+        private System.Windows.Forms.ListView LightListView;
         private EditorEnhancements.PropertiesPanel propertiesPanel1;
+        private ToolStripButton SaveButton;
+        private TabPage tabPage5;
+        private TabPage tabPage6;
     }
 }

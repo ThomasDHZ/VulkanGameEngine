@@ -11,6 +11,7 @@ enum MeshTypeEnum
 	kMesh_LevelMesh,
 	kMesh_SkyBoxMesh,
 	kMesh_LineMesh,
+	kMesh_LevelEditorIconMesh,
 	kMesh_Undefined
 };
 

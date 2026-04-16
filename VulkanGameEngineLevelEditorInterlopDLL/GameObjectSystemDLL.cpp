@@ -17,11 +17,13 @@ void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentType
 {
     switch (componentType)
     {
-        case kInputComponent:        levelSystem.CreateGameObjectComponent<InputComponent>(       gameObjectId, static_cast<InputComponent*>(componentData));
-        case kSpriteComponent:       levelSystem.CreateGameObjectComponent<SpriteComponent>(      gameObjectId, static_cast<SpriteComponent*>(componentData));
-        case kTransform2DComponent:  levelSystem.CreateGameObjectComponent<Transform2DComponent>( gameObjectId, static_cast<Transform2DComponent*>(componentData));
-        case kTransform3DComponent:  levelSystem.CreateGameObjectComponent<Transform3DComponent>( gameObjectId, static_cast<Transform3DComponent*>(componentData));
-        case kCameraFollowComponent: levelSystem.CreateGameObjectComponent<CameraFollowComponent>(gameObjectId, static_cast<CameraFollowComponent*>(componentData));
+        case kInputComponent:            levelSystem.CreateGameObjectComponent<InputComponent>(           gameObjectId, static_cast<InputComponent*>(componentData)); break;
+        case kSpriteComponent:           levelSystem.CreateGameObjectComponent<SpriteComponent>(          gameObjectId, static_cast<SpriteComponent*>(componentData)); break;
+        case kTransform2DComponent:      levelSystem.CreateGameObjectComponent<Transform2DComponent>(     gameObjectId, static_cast<Transform2DComponent*>(componentData)); break;
+        case kTransform3DComponent:      levelSystem.CreateGameObjectComponent<Transform3DComponent>(     gameObjectId, static_cast<Transform3DComponent*>(componentData)); break;
+        case kCameraFollowComponent:     levelSystem.CreateGameObjectComponent<CameraFollowComponent>(    gameObjectId, static_cast<CameraFollowComponent*>(componentData)); break;
+        case kDirectionalLightComponent: levelSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectId, static_cast<DirectionalLightComponent*>(componentData)); break;
+        case kPointLightComponent:       levelSystem.CreateGameObjectComponent<PointLightComponent>(      gameObjectId, static_cast<PointLightComponent*>(componentData)); break;
         default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");
     }
 }
@@ -40,11 +42,13 @@ void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTyp
 {
     switch (componentType)
     {
-        case kInputComponent: return levelSystem.GetGameObjectComponent<InputComponent>(gameObjectId);
-        case kSpriteComponent: return levelSystem.GetGameObjectComponent<SpriteComponent>(gameObjectId);
-        case kTransform2DComponent:  return levelSystem.GetGameObjectComponent<Transform2DComponent>(gameObjectId);
-        case kTransform3DComponent: return levelSystem.GetGameObjectComponent<Transform3DComponent>(gameObjectId);
-        case kCameraFollowComponent: return levelSystem.GetGameObjectComponent<CameraFollowComponent>(gameObjectId);
+        case kInputComponent:            return levelSystem.GetGameObjectComponent<InputComponent>(gameObjectId);
+        case kSpriteComponent:           return levelSystem.GetGameObjectComponent<SpriteComponent>(gameObjectId);
+        case kTransform2DComponent:      return levelSystem.GetGameObjectComponent<Transform2DComponent>(gameObjectId);
+        case kTransform3DComponent:      return levelSystem.GetGameObjectComponent<Transform3DComponent>(gameObjectId);
+        case kCameraFollowComponent:     return levelSystem.GetGameObjectComponent<CameraFollowComponent>(gameObjectId);
+        case kDirectionalLightComponent: return levelSystem.GetGameObjectComponent<DirectionalLightComponent>(gameObjectId);
+        case kPointLightComponent:       return levelSystem.GetGameObjectComponent<PointLightComponent>(gameObjectId);
         default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");
     }
 }

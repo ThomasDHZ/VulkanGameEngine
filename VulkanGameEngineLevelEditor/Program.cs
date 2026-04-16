@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.LevelEditor.Forms;
+using VulkanGameEngineLevelEditor.LevelEditor.Registries;
 
 namespace VulkanGameEngineLevelEditor
 {
@@ -17,6 +18,8 @@ namespace VulkanGameEngineLevelEditor
             try
             {
                 ComponentRegistry.Initialize();
+                LightRegistry.Initialize();
+                ObjectLinkerRegistry.Initialize();
                 DLLSystem.SetSharedDllDirectory();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);

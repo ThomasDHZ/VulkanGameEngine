@@ -44,6 +44,8 @@ public static class ComponentRegistry
         Register(ComponentTypeEnum.kSpriteComponent, typeof(SpriteComponent));
         Register(ComponentTypeEnum.kTransform2DComponent, typeof(Transform2DComponent));
         Register(ComponentTypeEnum.kTransform3DComponent, typeof(Transform3DComponent));
+        Register(ComponentTypeEnum.kDirectionalLightComponent, typeof(DirectionalLightComponent));
+        Register(ComponentTypeEnum.kPointLightComponent, typeof(PointLightComponent));
         Console.WriteLine($"ComponentRegistry initialized with {_typeMap.Count} components.");
     }
 }

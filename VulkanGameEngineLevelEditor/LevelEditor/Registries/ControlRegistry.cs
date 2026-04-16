@@ -5,8 +5,9 @@ using System.Reflection;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.Dialog;
+using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
-namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
+namespace VulkanGameEngineLevelEditor.LevelEditor.Registries
 {
     public static class ControlRegistry
     {
@@ -18,7 +19,8 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             { typeof(uint),   (obj, member, height, readOnly, parentPanel) => new TypeOfUintForm(parentPanel, obj, member, height, readOnly).CreateControl() },
             { typeof(bool),   (obj, member, height, readOnly, parentPanel) => new TypeOfBool(parentPanel, obj, member, height, readOnly).CreateControl() },
             { typeof(Guid),   (obj, member, height, readOnly, parentPanel) => new TypeOfGuidForm(parentPanel, obj, member, height, readOnly).CreateControl() },
-            { typeof(vec2),   (obj, member, height, readOnly, parentPanel) => new TypeOfVec2Form(parentPanel, obj, member, height, readOnly).CreateControl() }
+            { typeof(vec2),   (obj, member, height, readOnly, parentPanel) => new TypeOfVec2Form(parentPanel, obj, member, height, readOnly).CreateControl() },
+            { typeof(vec3),   (obj, member, height, readOnly, parentPanel) => new TypeOfVec3Form(parentPanel, obj, member, height, readOnly).CreateControl() }
         };
 
         public static Control CreateControl(ObjectPanelView parentPanel, Type type, object obj, MemberInfo member, int height, bool readOnly)

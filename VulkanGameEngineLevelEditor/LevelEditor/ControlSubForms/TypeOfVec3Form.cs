@@ -10,13 +10,13 @@ using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
-public unsafe class TypeOfVec2Form : PropertyEditorForm
+public unsafe class TypeOfVec3Form : PropertyEditorForm
 {
     private const int RowHeight = 32;
     private readonly DynamicComponentWrapper? _wrapper;
     private readonly MemberInfo _member;
 
-    public TypeOfVec2Form(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly)
+    public TypeOfVec3Form(ObjectPanelView rootPanel, object obj, MemberInfo member, int minimumPanelSize, bool readOnly) : base(rootPanel, obj, member, minimumPanelSize, readOnly)
     {
         _member = member;
         _wrapper = obj as DynamicComponentWrapper;
@@ -38,8 +38,8 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
 
         if (_wrapper == null || _wrapper.ComponentPtr == IntPtr.Zero) return table;
 
-        vec2 currentVec = GetCurrentVec2();
-        void AddAxis(string label, Func<vec2, float> getter, Action<float> directSetter)
+        vec3 currentVec = GetCurrentVec3();
+        void AddAxis(string label, Func<vec3, float> getter, Action<float> directSetter)
         {
             int row = table.RowCount++;
             table.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
@@ -61,7 +61,7 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
                 DecimalPlaces = 4,
                 Increment = 0.1m,
                 Minimum = -10000000m,
-                Maximum = 10000000m,    
+                Maximum = 10000000m,
                 Value = (decimal)Math.Clamp(currentValue, -10000000f, 10000000f),
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
@@ -79,25 +79,25 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
             table.Controls.Add(num, 1, row);
         }
 
-        AddAxis("X", v => v.x, val => { ref vec2 r = ref GetVec2Ref(); r.x = val; });
-        AddAxis("Y", v => v.y, val => { ref vec2 r = ref GetVec2Ref(); r.y = val; });
-
+        AddAxis("X", v => v.x, val => { ref vec3 r = ref GetVec3Ref(); r.x = val; });
+        AddAxis("Y", v => v.y, val => { ref vec3 r = ref GetVec3Ref(); r.y = val; });
+        AddAxis("Z", v => v.z, val => { ref vec3 r = ref GetVec3Ref(); r.z = val; });
         return table;
     }
 
-    private ref vec2 GetVec2Ref()
+    private ref vec3 GetVec3Ref()
     {
-        if (_wrapper == null || _wrapper.ComponentPtr == IntPtr.Zero || _member is not FieldInfo fieldInfo) return ref Unsafe.NullRef<vec2>();
+        if (_wrapper == null || _wrapper.ComponentPtr == IntPtr.Zero || _member is not FieldInfo fieldInfo) return ref Unsafe.NullRef<vec3>();
 
         int offset = Marshal.OffsetOf(_wrapper.ComponentStructType, fieldInfo.Name).ToInt32();
-        return ref Unsafe.AsRef<vec2>((byte*)_wrapper.ComponentPtr.ToPointer() + offset);
+        return ref Unsafe.AsRef<vec3>((byte*)_wrapper.ComponentPtr.ToPointer() + offset);
     }
 
-    private vec2 GetCurrentVec2()
+    private vec3 GetCurrentVec3()
     {
-        if (_wrapper == null) return vec2.Zero;
+        if (_wrapper == null) return vec3.Zero;
 
         var value = _wrapper.GetMemberValue(_member);
-        return value is vec2 vec ? vec : vec2.Zero;
+        return value is vec3 vec ? vec : vec3.Zero;
     }
 }

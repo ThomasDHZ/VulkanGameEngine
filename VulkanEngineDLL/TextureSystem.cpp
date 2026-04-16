@@ -39,47 +39,32 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 		String ext = fileSystem.GetFileExtention(textureLoader.TextureFilePath[x].c_str());
 		if (ext == "png" && textureLoader.TextureFilePath.size() == 1)
 		{
-			uint uWidth = 0;
-			uint uHeight = 0;
-			layerData = fileSystem.LoadPNG(textureLoader.TextureFilePath[x], uWidth, uHeight, bitsPerChannel, textureChannels);
-			width = static_cast<int>(uWidth);
-			height = static_cast<int>(uHeight);
-			texture = Texture
+			for (size_t x = 0; x < textureLoader.TextureFilePath.size(); x++)
 			{
-				.textureGuid = textureLoader.TextureId,
-				.textureIndex = TextureList.size(),
-				.width = width,
-				.height = height,
-				.depth = 1,
-				.mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
-				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-				.textureByteFormat = textureLoader.TextureByteFormat,
-				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-				.colorChannels = static_cast<ColorChannelUsed>(textureChannels),
-			//	.IsRenderPassAttachment = false
-			};
+				Vector<byte> layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
+				textureData.insert(textureData.end(), layerData.begin(), layerData.end());
+			}
 		}
 		else
 		{
 			bitsPerChannel = 8;
 			layerData = fileSystem.LoadImageFile(textureLoader.TextureFilePath[x], width, height, textureChannels);
-			texture = Texture
-			{
-				.textureGuid = textureLoader.TextureId,
-				.textureIndex = TextureList.size(),
-				.width = width,
-				.height = height,
-				.depth = 1,
-				.mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
-				.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
-				.textureByteFormat = textureLoader.TextureByteFormat,
-				.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-				.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-				.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
-			};
+			textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 		}
-		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
+		texture = Texture
+		{
+			.textureGuid = textureLoader.TextureId,
+			.textureIndex = TextureList.size(),
+			.width = width,
+			.height = height,
+			.depth = 1,
+			.mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
+			.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+			.textureByteFormat = textureLoader.TextureByteFormat,
+			.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.sampleCount = VK_SAMPLE_COUNT_1_BIT,
+			.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+		};
 	}
 
 	VkImageCreateInfo imageCreateInfo =
@@ -165,12 +150,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	}
 
 	ktxTexture* ktex = nullptr;
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(
-		path.c_str(),
-		KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
-		&ktex
-	);
-
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
 	if (result != KTX_SUCCESS)
 	{
 		std::cerr << "Failed to load KTX2: " << path << " - " << ktxErrorString(result) << std::endl;
@@ -1178,7 +1158,6 @@ bool TextureSystem::HasStencilComponent(VkFormat format)
 		format == VK_FORMAT_D24_UNORM_S8_UINT ||
 		format == VK_FORMAT_D32_SFLOAT_S8_UINT;
 }
-
 
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 {

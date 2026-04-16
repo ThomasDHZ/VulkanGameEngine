@@ -14,9 +14,9 @@ struct DirectionalLight
     vec3   LightColor = vec3(1.0f, 1.0f, 1.0f);
     vec3   LightDirection = vec3(0.3f, 0.3f, 1.0f);
     float  LightIntensity = 1.5f;
-    float ShadowStrength = 1.0f;
-    float ShadowBias = 0.012f;
-    float ShadowSoftness = 0.008f;
+    float  ShadowStrength = 1.0f;
+    float  ShadowBias = 0.012f;
+    float  ShadowSoftness = 0.008f;
 };
 
 struct PointLight
@@ -44,7 +44,10 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-    DLL_EXPORT void LoadSceneLights(const String& sceneLights);
+    DLL_EXPORT uint32                   LoadLight(const String& sceneLight);
+    DLL_EXPORT uint32                   AllocateLight(LightTypeEnum lightType);
+    DLL_EXPORT DirectionalLight&        GetDirectionalLight(uint directionalLightId);
+    DLL_EXPORT PointLight&              GetPointLight(uint pointLightId);
 };
 extern DLL_EXPORT LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()

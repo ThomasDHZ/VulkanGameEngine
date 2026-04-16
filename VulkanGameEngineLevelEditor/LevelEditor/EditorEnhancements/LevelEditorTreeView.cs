@@ -50,6 +50,42 @@ namespace VulkanGameEngineLevelEditor.LevelEditor
             this.Nodes.Add(node);
         }
 
+        public void AddDirectionalLightObject(uint directionalLightId, string customName = null)
+        {
+            if (directionalLightId == uint.MaxValue) return;
+
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action<uint, string>(AddDirectionalLightObject), directionalLightId, customName);
+                return;
+            }
+
+            string nodeText = customName ?? $"Directional Light [{directionalLightId}]";
+            var node = new TreeNode(nodeText)
+            {
+                Tag = directionalLightId
+            };
+            this.Nodes.Add(node);
+        }
+
+        public void AddPointLightObject(uint pointLightId, string customName = null)
+        {
+            if (pointLightId == uint.MaxValue) return;
+
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action<uint, string>(AddPointLightObject), pointLightId, customName);
+                return;
+            }
+
+            string nodeText = customName ?? $"Point Light [{pointLightId}]";
+            var node = new TreeNode(nodeText)
+            {
+                Tag = pointLightId
+            };
+            this.Nodes.Add(node);
+        }
+
         private void LevelEditorTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (e.Node?.Tag is uint gameObjectId && gameObjectId != uint.MaxValue)

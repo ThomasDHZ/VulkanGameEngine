@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Silk.NET.Core;
+using Silk.NET.Vulkan;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
+using VulkanGameEngineLevelEditor.LevelEditor.Registries;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {
@@ -34,7 +37,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             _selectedGameObject = GameObjectSystem.GetGameObject(gameObjectId);
             RefreshPanel();
         }
-
+     
         private void RefreshPanel()
         {
             _flowComponents.Controls.Clear();
@@ -55,23 +58,26 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             _flowComponents.Controls.Add(CreateAddComponentButton());
             var componentTypes = GameObjectSystem.GetGameObjectComponentList(_selectedGameObject->GameObjectId);
 
-            foreach (var componentType in componentTypes)
+            if (_selectedGameObject != null)
             {
-                IntPtr ptr = GameObjectSystem.GetGameObjectComponentPtr(_selectedGameObject->GameObjectId, componentType);
-                if (ptr == IntPtr.Zero) continue;
-
-                Type? structType = ComponentRegistry.GetTypeFor(componentType);
-                if (structType == null)
+                foreach (var componentType in componentTypes)
                 {
-                    var unknown = new GroupBox { Text = $"{componentType} (Unknown Type)" };
-                    unknown.Controls.Add(new Label { Text = "No managed type registered in ComponentRegistry", Padding = new Padding(10) });
-                    _flowComponents.Controls.Add(unknown);
-                    continue;
-                }
+                    IntPtr ptr = GameObjectSystem.GetGameObjectComponentPtr(_selectedGameObject->GameObjectId, componentType);
+                    if (ptr == IntPtr.Zero) continue;
 
-                var wrapper = new DynamicComponentWrapper(_selectedGameObject->GameObjectId,  componentType,  ptr, structType);
-                var panel = new ObjectPanelView(this, wrapper, _toolTip);
-                _flowComponents.Controls.Add(panel);
+                    Type? structType = ComponentRegistry.GetTypeFor(componentType);
+                    if (structType == null)
+                    {
+                        var unknown = new GroupBox { Text = $"{componentType} (Unknown Type)" };
+                        unknown.Controls.Add(new Label { Text = "No managed type registered in ComponentRegistry", Padding = new Padding(10) });
+                        _flowComponents.Controls.Add(unknown);
+                        continue;
+                    }
+
+                    var wrapper = new DynamicComponentWrapper(_selectedGameObject->GameObjectId, componentType, ptr, structType);
+                    var panel = new ObjectPanelView(this, wrapper, _toolTip);
+                    _flowComponents.Controls.Add(panel);
+                }
             }
         }
 

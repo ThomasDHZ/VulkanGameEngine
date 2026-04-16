@@ -10,7 +10,8 @@ enum GameObjectTypeEnum
 {
     kGameObjectNone,
     kGameObjectMegaMan,
-    kGameObjectMegaManShot
+    kGameObjectMegaManShot,
+    kGameObjectDebug
 };
 
 enum ComponentTypeEnum : uint
@@ -20,6 +21,8 @@ enum ComponentTypeEnum : uint
     kTransform2DComponent,
     kTransform3DComponent,
     kCameraFollowComponent,
+    kDirectionalLightComponent,
+    kPointLightComponent,
     kEndOfEnum
 };
 
@@ -36,6 +39,18 @@ struct GameObject
 struct GameObjectComponentLinker
 {
     uint32 GameObjectId = UINT32_MAX;
+};
+
+struct DirectionalLightComponent
+{
+    uint32 GameObjectId = UINT32_MAX;
+    uint32 DirectionalLightId = UINT32_MAX;
+};
+
+struct PointLightComponent
+{
+    uint32 GameObjectId = UINT32_MAX;
+    uint32 PointLightId = UINT32_MAX;
 };
 
 class LevelSystem;
@@ -58,8 +73,8 @@ private:
 public:
     Vector<GameObject> GameObjectList;
 
-    DLL_EXPORT void CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId);
-    DLL_EXPORT void CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
+    DLL_EXPORT uint CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId);
+    DLL_EXPORT uint CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT void DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void DestroyDeadGameObjects(); 

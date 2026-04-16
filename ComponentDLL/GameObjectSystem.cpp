@@ -17,7 +17,7 @@ uint32 GameObjectSystem::AllocateGameObject()
     return GameObjectList.size();
 }
 
-void GameObjectSystem::CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId)
+uint GameObjectSystem::CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
@@ -29,9 +29,10 @@ void GameObjectSystem::CreateGameObject(vec2 gameObjectPosition, uint32 parentGa
         {
             .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
         });
+    return gameObject.GameObjectId;
 }
 
-void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
+uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
     GameObject& gameObject = GameObjectList.emplace_back(GameObject
         {
@@ -49,6 +50,7 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
     {
         case kGameObjectMegaMan:     levelSystem.EntityRegistry.emplace<MegaManObject>(gameObject.GameObjectComponents, MegaManObject{ }); break;
         case kGameObjectMegaManShot: levelSystem.EntityRegistry.emplace<MegaManShot>(gameObject.GameObjectComponents, MegaManShot{ }); break;
+        case kGameObjectDebug:       levelSystem.EntityRegistry.emplace<DebugGameObject>(gameObject.GameObjectComponents, DebugGameObject{}); break;
     }
     for (const auto& componentJson : json["GameObjectComponentList"])
     {
@@ -75,8 +77,12 @@ void GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
                 break;
             }
             case kCameraFollowComponent: levelSystem.EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
+            case kDirectionalLightComponent: levelSystem.EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
+            case kPointLightComponent: levelSystem.EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;
+            default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
         }
     }
+    return gameObject.GameObjectId;
 }
 
 void GameObjectSystem::Update(const float& deltaTime)

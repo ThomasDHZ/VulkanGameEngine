@@ -16,6 +16,7 @@ using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
+using VulkanGameEngineLevelEditor.LevelEditor.Registries;
 
 namespace VulkanGameEngineLevelEditor.GameEngine
 {
@@ -23,7 +24,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine
     {
         kGameObjectNone,
         kGameObjectMegaMan,
-        kGameObjectMegaManShot
+        kGameObjectMegaManShot,
+        kGameObjectDebug
     };
 
     public enum ComponentTypeEnum : uint
@@ -33,6 +35,8 @@ namespace VulkanGameEngineLevelEditor.GameEngine
         kTransform2DComponent,
         kTransform3DComponent,
         kCameraFollowComponent,
+        kDirectionalLightComponent,
+        kPointLightComponent,
         kEndOfEnum
     }
 
@@ -81,6 +85,28 @@ namespace VulkanGameEngineLevelEditor.GameEngine
     {
         public ComponentTypeEnum ComponentType { get; set; }
         public IntPtr ComponentPtr { get; set; }
+    };
+
+    public unsafe struct DirectionalLightComponent
+    {
+        public uint GameObjectId { get; set; } = uint.MaxValue;
+        [ObjectLinker(typeof(DirectionalLightHandle))]
+        public uint DirectionalLightId { get; set; } = uint.MaxValue;
+        public IntPtr DirectionalLightPtr { get; set; }
+        public DirectionalLightComponent()
+        {
+        }
+    };
+
+    public unsafe struct PointLightComponent
+    {
+        public uint GameObjectId { get; set; } = uint.MaxValue;
+
+        [ObjectLinker(typeof(PointLightHandle))]
+        public uint PointLightId { get; set; } = uint.MaxValue;
+        public PointLightComponent()
+        {
+        }
     };
 
     public static unsafe class GameObjectSystem

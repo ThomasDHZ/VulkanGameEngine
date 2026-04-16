@@ -129,6 +129,16 @@ Vector<Animation2D> SpriteSystem::LoadSpriteAnimations(const char* spritePath)
         animationList.emplace_back(animation);
     }
 
+    if (animationList.empty())
+    {
+        Animation2D animation =
+        {
+            .AnimationId = 0,
+            .FrameList = Vector<ivec2>{ ivec2(0,0) },
+            .FrameHoldTime = 0.0f,
+        };
+        animationList.emplace_back(animation);
+    }
     return animationList;
 }
 
@@ -151,9 +161,10 @@ void SpriteSystem::Update(const float& deltaTime)
         spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.y), vec3(0.0f, 1.0f, 0.0f));
         spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
         spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale.x, transform.GameObjectScale.y, 1.0f));
+
         spriteInstance.SpritePosition = transform.GameObjectPosition;
         spriteInstance.InstanceTransform = spriteMatrix;
-
+        spriteInstance.MaterialId = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
         spriteInstance.SpriteSize = vram.SpriteSize;
         spriteInstance.FlipSprite = sprite.FlipSprite;
         //spriteInstance.Color = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);

@@ -1,0 +1,24 @@
+{
+  "GameObjectType": 3,
+  "GameObjectComponentList": [
+    {
+      "GameObjectPosition": [
+        0.0,
+        0.0
+      ],
+      "GameObjectRotation": [
+        0.0,
+        0.0
+      ],
+      "GameObjectScale": [
+        1.0,
+        1.0
+      ],
+      "ComponentType": 2
+    },
+    {
+      "ComponentType": 1,
+      "VramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+    }
+  ]
+}

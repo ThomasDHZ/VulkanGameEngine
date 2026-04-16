@@ -8,10 +8,12 @@
   "LoadMaterials": [
     "Materials/AnimeGirlMaterial.json",
     "Materials/SparkManTileSetMaterial.json",
-    "Materials/LavaCubeMapMaterial.json"
+    "Materials/LavaCubeMapMaterial.json",
+    "Materials/LightIconMaterial.json"
   ],
   "LoadSpriteVRAM": [
-    "Sprites/AnimeGirl.json"
+    "Sprites/AnimeGirl.json",
+    "Sprites/LightIconSprite.json"
   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"

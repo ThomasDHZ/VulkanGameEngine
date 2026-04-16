@@ -10,6 +10,11 @@ struct MegaManShot
 	uint MegaManShotDistanceTraveled = 0;
 };
 
+struct DebugGameObject
+{
+	int a = 0;
+};
+
 DLL_EXPORT void MegaManShot_CreateObject(const String& name, VkGuid vramId, vec2 objectPosition, uint parentGameObjectId);
 DLL_EXPORT void MegaManShot_Behaviors(GameObjectBehavior& componentBehavior);
 DLL_EXPORT void MegaManShot_Update(uint gameObjectId, const float& deltaTime);

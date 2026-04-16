@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Text;
@@ -33,7 +34,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         {
             kAssetTypeGameObject,
             kAssetTypeMaterial,
-            kAssetTypeTexture
+            kAssetTypeTexture,
+            kAssetTypeScene,
+            kAssetTypeLight
         };
 
         public class DragAssetData
@@ -107,7 +110,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             System.Threading.Thread.CurrentThread.Name = "LevelEditor";
 
             LogVulkanMessageDelegate callback = LogVulkanMessage;
-            _callbackHandle = GCHandle.Alloc(callback);       
+            _callbackHandle = GCHandle.Alloc(callback);
             VulkanSystem.CreateLogMessageCallback(callback);
 
             this.Text = "Vulkan Level Editor - RenderPassEditorView";
@@ -115,11 +118,28 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             List<System.String> gameObjectPrefabList = Directory.GetFiles(@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\GameObjects").ToList();
             foreach (var gameObjectPrefab in gameObjectPrefabList)
             {
-                AddListItem(gameObjectPrefab.GetFileName(), AssetDataTypeEnum.kAssetTypeGameObject, gameObjectPrefab);
+                AddListItem(GameObjectListView, gameObjectPrefab.GetFileName(), AssetDataTypeEnum.kAssetTypeGameObject, gameObjectPrefab);
+            }
+
+            List<System.String> sceneLevelList = Directory.GetFiles(@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\Levels").ToList();
+            foreach (var sceneLevel in sceneLevelList)
+            {
+                AddListItem(SceneListView, sceneLevel.GetFileName(), AssetDataTypeEnum.kAssetTypeScene, sceneLevel);
+            }
+
+            List<System.String> lightList = Directory.GetFiles(@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\Lights").ToList();
+            foreach (var light in lightList)
+            {
+                AddListItem(LightListView, light.GetFileName(), AssetDataTypeEnum.kAssetTypeLight, light);
             }
 
             RenderBox.KeyDown += RenderBox_KeyDown;
             RenderBox.KeyUp += RenderBox_KeyUp;
+
+            System.Drawing.Icon saveIcon = SystemIcons.GetStockIcon(StockIconId.Drive35);
+            SaveButton.Image = saveIcon.ToBitmap();
+            SaveButton.ImageAlign = ContentAlignment.MiddleCenter;
+            SaveButton.TextImageRelation = TextImageRelation.ImageBeforeText;
         }
 
         public void LevelEditorForm_Load(object sender, EventArgs e)
@@ -194,11 +214,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             float scaleY = (float)RenderResolution.y / RenderBox.ClientSize.Height;
 
             int sampleX = (int)(controlPos.X * scaleX);
-            int sampleY = (int)(controlPos.Y * scaleY);    
+            int sampleY = (int)(controlPos.Y * scaleY);
 
             uint pickedId = LevelEditorSystem.SampleRenderPassPixel(GameObjectIdTexture, new ivec2(sampleX, sampleY));
-
-            LogVulkanMessage($"[C#] Clicked at ({controlPos.X}, {controlPos.Y}) → Scaled ({sampleX}, {sampleY}) → Picked ID = {pickedId}", 1);
 
             if (pickedId != uint.MaxValue)
             {
@@ -221,8 +239,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RendererBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (SelectedSpriteIndex == uint.MaxValue)
-                return;
+            if (SelectedSpriteIndex == uint.MaxValue) return;
 
             Point currentPos = e.Location;
 
@@ -235,7 +252,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
                 transform.GameObjectPosition = new vec2(transform.GameObjectPosition.x + deltaX, transform.GameObjectPosition.y - deltaY);
 
-               // if (Math.Abs(deltaX) > 1 || Math.Abs(deltaY) > 1)
+                // if (Math.Abs(deltaX) > 1 || Math.Abs(deltaY) > 1)
             }
             else if (e.Button == MouseButtons.Right)
             {
@@ -243,14 +260,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
                 int deltaY = currentPos.Y - LastMousePosition.Y;
 
                 ref var cameraTransform = ref CameraSystem.UpdateActiveCamera();
-                cameraTransform.Position = new vec3(
-                    cameraTransform.Position.x - deltaX,
-                    cameraTransform.Position.y + deltaY,
-                    0.0f
-                );
+                cameraTransform.Position = new vec3(cameraTransform.Position.x - deltaX, cameraTransform.Position.y + deltaY, 0.0f);
             }
 
-            // Always update last position
             LastMousePosition = currentPos;
         }
 
@@ -267,9 +279,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             }
         }
 
-        private void AddListItem(string name, AssetDataTypeEnum assetType, System.String jsonPath)
+        private void AddListItem(ListView listView, string name, AssetDataTypeEnum assetType, System.String jsonPath, System.Drawing.Image icon = null)
         {
-            System.Drawing.Image displayIcon = SystemIcons.Application.ToBitmap();
+            System.Drawing.Image displayIcon = icon == null ? SystemIcons.Application.ToBitmap() : icon;
             int index = imageList1.Images.Add(displayIcon, System.Drawing.Color.Transparent);
             var item = new ListViewItem(name)
             {
@@ -280,7 +292,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
                     JsonPath = jsonPath
                 }
             };
-            GameObjectListView.Items.Add(item);
+            listView.Items.Add(item);
         }
 
         private void RenderBox_DragEnter(object sender, DragEventArgs e)
@@ -297,16 +309,32 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RenderBox_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData(typeof(DragAssetData)) is not DragAssetData asset || asset.AssetType != AssetDataTypeEnum.kAssetTypeGameObject) return;
+            if (e.Data.GetData(typeof(DragAssetData)) is not DragAssetData asset) return;
 
             Point clientPos = RenderBox.PointToClient(new Point(e.X, e.Y));
             ivec2 worldPos = ClientToWorld(clientPos);
             ivec2 dropPos = new ivec2(worldPos.x / 2, worldPos.y / 2);
-            uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, dropPos);
-            treeView1.AddGameObject(newGoId);
+            if (asset.AssetType == AssetDataTypeEnum.kAssetTypeGameObject)
+            {
+                uint newGoId = GameObjectSystem.CreateGameObject(asset.JsonPath, dropPos);
+                treeView1.AddGameObject(newGoId);
+            }
+            else if(asset.AssetType == AssetDataTypeEnum.kAssetTypeLight)
+            {
+                uint newLightId = LightSystem.LoadLight(asset.JsonPath);
+                treeView1.AddDirectionalLightObject(newLightId);
+            }
         }
 
         private void GameObjectListView_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            if (e.Item is ListViewItem item && item.Tag is DragAssetData asset)
+            {
+                GameObjectListView.DoDragDrop(asset, DragDropEffects.Copy);
+            }
+        }
+
+        private void LightListView_ItemDrag(object sender, ItemDragEventArgs e)
         {
             if (e.Item is ListViewItem item && item.Tag is DragAssetData asset)
             {
@@ -357,7 +385,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             if (e.KeyCode == Keys.A) cameraTransform.Position = new vec3(cameraTransform.Position.x - KeyBoardCameraSpeed, cameraTransform.Position.y, 0.0f);
             if (e.KeyCode == Keys.D) cameraTransform.Position = new vec3(cameraTransform.Position.x + KeyBoardCameraSpeed, cameraTransform.Position.y, 0.0f);
             if (e.KeyCode == Keys.S) cameraTransform.Position = new vec3(cameraTransform.Position.x, cameraTransform.Position.y - KeyBoardCameraSpeed, 0.0f);
-            if((e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back) &&
+            if ((e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back) &&
                 SelectedSpriteIndex != uint.MaxValue)
             {
                 GameObjectSystem.DestroyGameObject(SelectedSpriteIndex);
@@ -366,6 +394,16 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private void RenderBox_KeyUp(object sender, KeyEventArgs e)
         {
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
