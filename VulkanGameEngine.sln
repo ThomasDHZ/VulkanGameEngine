@@ -238,21 +238,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorRenderPasses", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPasses", "GameRenderPasses", "{E2B08794-FF4F-4047-9E5E-8E20C713C02A}"
 	ProjectSection(SolutionItems) = preProject
-		Assets\RenderPass\BasicRenderPass.json = Assets\RenderPass\BasicRenderPass.json
 		Assets\RenderPass\BloomRenderPass.json = Assets\RenderPass\BloomRenderPass.json
 		Assets\RenderPass\BRDFRenderPass.json = Assets\RenderPass\BRDFRenderPass.json
-		Assets\RenderPass\DefaultRenderPass.json = Assets\RenderPass\DefaultRenderPass.json
 		Assets\RenderPass\EnvironmentToCubeMapRenderPass.json = Assets\RenderPass\EnvironmentToCubeMapRenderPass.json
 		Assets\RenderPass\FrameBufferRenderPass.json = Assets\RenderPass\FrameBufferRenderPass.json
 		Assets\RenderPass\GBufferRenderPass.json = Assets\RenderPass\GBufferRenderPass.json
 		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
 		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
 		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
-		Assets\RenderPass\LevelShader2DRenderPass.json = Assets\RenderPass\LevelShader2DRenderPass.json
-		Assets\RenderPass\LevelShader2DWireFrameRenderPass.json = Assets\RenderPass\LevelShader2DWireFrameRenderPass.json
 		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
-		Assets\RenderPass\ShadowDebugRenderPass.json = Assets\RenderPass\ShadowDebugRenderPass.json
-		Assets\RenderPass\SkyBoxRenderPass.json = Assets\RenderPass\SkyBoxRenderPass.json
 		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
 	EndProjectSection
 EndProject

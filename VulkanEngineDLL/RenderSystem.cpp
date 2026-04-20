@@ -245,14 +245,14 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
     if (renderPassJsonLoader.UseCubeMapMultiView)
     {
-        const uint32 viewMask = 0b00111111;
-        const uint32 correlationMask = 0b00111111;
-        multiviewCreateInfo = VkRenderPassMultiviewCreateInfo{
+        const uint32 viewMask =     0b0000111111;  // bits 0-5 for 6 faces
+        multiviewCreateInfo = VkRenderPassMultiviewCreateInfo
+        {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
             .subpassCount = 1,
             .pViewMasks = &viewMask,
             .correlationMaskCount = 1,
-            .pCorrelationMasks = &correlationMask,
+            .pCorrelationMasks = &viewMask
         };
     }
 
