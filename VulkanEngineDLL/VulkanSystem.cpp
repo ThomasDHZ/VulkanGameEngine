@@ -222,15 +222,14 @@ Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()
                 }
             std::cout << "Extension not supported: " << ext << '\n';
         };
+
     AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
     AddExtensionIfSupported(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
 #if defined(_WIN32)
     AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-
 #elif defined(__linux__) && !defined(__ANDROID__)
     AddExtensionIfSupported("VK_KHR_xcb_surface");
     AddExtensionIfSupported("VK_KHR_wayland_surface");
-
 #elif defined(__ANDROID__)
     AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #endif
@@ -357,6 +356,11 @@ Vector<VkPresentModeKHR> VulkanSystem::GetSurfacePresentModes(VkPhysicalDevice p
 
 VkInstance VulkanSystem::CreateVulkanInstance()
 {
+#if defined(__linux__)
+    unsetenv("VK_INSTANCE_LAYERS");
+    unsetenv("VK_LAYER_PATH");
+#endif
+
     VkInstance instance = VK_NULL_HANDLE;
     VkDebugUtilsMessengerCreateInfoEXT debugInfo;
     Vector<VkValidationFeatureEnableEXT> enabledList;

@@ -23,9 +23,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 146,
-        "TextureFilePath": [
-            "../Assets/Textures\\SparkManTileSetMaterial_Albedo.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/SparkManTileSetMaterial_Albedo.ktx2"
+      ],
         "TextureId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
         "TextureType": 1
     },
@@ -56,9 +56,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 145,
-        "TextureFilePath": [
-            "../Assets/Textures\\SparkManTileSetMaterial_NormalHeight.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/SparkManTileSetMaterial_NormalHeight.ktx2"
+      ],
         "TextureId": "f2c1d36b-45ba-414a-a201-061d1707fff2",
         "TextureType": 1
     },
@@ -86,9 +86,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 145,
-        "TextureFilePath": [
-            "../Assets/Textures\\SparkManTileSetMaterial_MRO.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/SparkManTileSetMaterial_MRO.ktx2"
+      ],
         "TextureId": "c6425693-c2a1-476f-8e34-aa306dde4d14",
         "TextureType": 1
     },

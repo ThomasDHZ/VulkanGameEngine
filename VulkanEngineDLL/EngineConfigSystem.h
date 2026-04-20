@@ -7,6 +7,7 @@ class ConfigSystem
 private:
     ivec2 ParseWindowResolution(const nlohmann::json& j);
     ivec2 ParseRenderResolution(const nlohmann::json& j);
+
 public:
 #ifndef PLATFORM_ANDROID
     const ivec2 WindowResolution;
@@ -22,12 +23,12 @@ public:
     const String CompiledShaderOutputDirectory;
     const String NvidiaTextureTool;
 #else
-     ivec2 WindowResolution;
-     String EngineBasePath;
-     String ShaderSourceDirectory;
-     String CompilerLocation;
-     String CompilerBuildParams;
-     String CompiledShaderOutputDirectory;
+    ivec2 WindowResolution;
+    String EngineBasePath;
+    String ShaderSourceDirectory;
+    String CompilerLocation;
+    String CompilerBuildParams;
+    String CompiledShaderOutputDirectory;
 #endif
 
     ConfigSystem();
@@ -37,29 +38,21 @@ public:
     ~ConfigSystem();
 
 #ifndef PLATFORM_ANDROID
-    static ConfigSystem LoadConfig(const String& configPath) 
+    static ConfigSystem LoadConfig(const String& configPath = "../EngineConfig.json")
     {
         std::ifstream file(configPath);
-        if (!file.is_open()) {
-            throw std::runtime_error("Failed to open " + configPath);
+        if (!file.is_open()) 
+        {
+            throw std::runtime_error("Failed to open EngineConfig.json. Make sure it exists in the bin folder next to the executable.");
         }
+
         nlohmann::json j;
         file >> j;
         return ConfigSystem(j);
     }
 #else
-ConfigSystem LoadConfig(const String& configPath)
-    {
-        nlohmann::json jsonText = fileSystem.LoadConfig(configPath);
-        WindowResolution.x = ParseWindowResolution(jsonText).x;
-        WindowResolution.y = ParseWindowResolution(jsonText).y;
-        ShaderSourceDirectory = jsonText.at("ShaderSourceDirectory").get<String>();
-        CompilerLocation = jsonText.at("CompilerLocation").get<String>();
-        CompilerBuildParams = jsonText.at("CompilerBuildParams").get<String>();
-        CompiledShaderOutputDirectory = jsonText.at("CompiledShaderOutputDirectory").get<String>();
-        return *this;
-    }
+    ConfigSystem LoadConfig(const String& configPath);
 #endif
 };
-extern DLL_EXPORT ConfigSystem configSystem;
 
+extern DLL_EXPORT ConfigSystem configSystem;

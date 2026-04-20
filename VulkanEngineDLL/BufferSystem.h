@@ -99,13 +99,13 @@ public:
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, T& bufferData)
     {
-        UpdateDynamicBuffer(VulkanBufferMap[bufferId], static_cast<void*>(&bufferData), sizeof(T));
+        UpdateDynamicBuffer(bufferId, static_cast<void*>(&bufferData), sizeof(T));
     }
 
     template <typename T>
     void UpdateBufferMemory(uint32 bufferId, Vector<T>& bufferData)
     {
-        UpdateDynamicBuffer(VulkanBufferMap[bufferId], bufferData.data(), sizeof(T) * bufferData.size());
+        UpdateDynamicBuffer(bufferId, bufferData.data(), sizeof(T) * bufferData.size());
     }
 
     template <typename T>

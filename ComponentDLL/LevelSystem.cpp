@@ -28,7 +28,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     {
         nlohmann::json lightJson = fileSystem.LoadJsonFile(light);
         String s = lightJson.dump();
-        nlohmann::json json = fileSystem.LoadJsonFile("C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\Assets\\GameObjects\\LightGameObject.json");
+        nlohmann::json json = fileSystem.LoadJsonFile("GameObjects/LightGameObject.json");
 
         uint lightType = lightJson["LightType"];
         vec3 pos = vec3(0.0f);
@@ -37,7 +37,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
             pos = vec3(lightJson["LightPosition"][0], lightJson["LightPosition"][1], lightJson["LightPosition"][2]);
         }
         uint lightId = lightSystem.LoadLight(light);
-        uint gameObjectId = gameObjectSystem.CreateGameObject("C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\Assets\\GameObjects\\LightGameObject.json", pos);
+        uint gameObjectId = gameObjectSystem.CreateGameObject("GameObjects/LightGameObject.json", pos);
 
         if (lightType == kPointLight)
         {

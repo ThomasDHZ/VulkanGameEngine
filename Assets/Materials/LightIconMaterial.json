@@ -24,7 +24,7 @@
     },
     "TextureByteFormat": 43,
     "TextureFilePath": [
-      "../Assets/LevelEditorIcons/Lightbulb.png"
+      "LevelEditorIcons/Lightbulb.png"
     ],
     "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
     "TextureType": 1
@@ -54,7 +54,7 @@
     },
     "TextureByteFormat": 145,
     "TextureFilePath": [
-      "../Assets/LevelEditorIcons/Lightbulb.png"
+      "LevelEditorIcons/Lightbulb.png"
     ],
     "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
     "TextureType": 1
@@ -84,7 +84,7 @@
     },
     "TextureByteFormat": 145,
     "TextureFilePath": [
-      "../Assets/LevelEditorIcons/Lightbulb.png"
+      "LevelEditorIcons/Lightbulb.png"
     ],
     "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
     "TextureType": 1
@@ -114,7 +114,7 @@
     },
     "TextureByteFormat": 145,
     "TextureFilePath": [
-      "../Assets/LevelEditorIcons/Lightbulb.png"
+      "LevelEditorIcons/Lightbulb.png"
     ],
     "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
     "TextureType": 1

@@ -22,9 +22,10 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         public object PanelObject { get; private set; }
 
-        private Panel _headerPanel;
+        protected Panel _headerPanel;
         private Panel _contentPanel;
         private TableLayoutPanel _propTable;
+
         private bool _isExpanded = true;
 
         public ObjectPanelView(PropertiesPanel propertiesPanel, object component, ToolTip toolTip)
@@ -41,12 +42,14 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         private void InitializeLayout()
         {
+            this.SuspendLayout();
             this.AutoSize = true;
             this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             this.ColumnCount = 1;
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             this.BackColor = Color.FromArgb(32, 32, 35);
             this.Margin = new Padding(6, 5, 6, 8);
+            this.ResumeLayout(false);
         }
 
         private void CreateHeader()
@@ -86,7 +89,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 Text = "×",
                 Size = new Size(28, 28),
-                Location = new Point(_headerPanel.Width - 34, 3),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(190, 55, 55),
@@ -98,6 +100,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             _headerPanel.Controls.Add(foldBtn);
             _headerPanel.Controls.Add(nameLabel);
             _headerPanel.Controls.Add(removeBtn);
+
             this.Controls.Add(_headerPanel);
         }
 
@@ -151,21 +154,17 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         private void PopulateProperties()
         {
+            _propTable.SuspendLayout();
             _propTable.Controls.Clear();
             _propTable.RowCount = 0;
             _propTable.RowStyles.Clear();
 
-            Console.WriteLine($"[ObjectPanelView] Populating for type: {PanelObject.GetType().Name}");
-
             if (PanelObject is DynamicComponentWrapper wrapper)
-            {
-                Console.WriteLine($"[ObjectPanelView] → Using wrapper for component: {wrapper.ComponentType}");
                 AddPropertyControlsForWrapper(wrapper);
-            }
             else
-            {
-              //  AddPropertyControls(PanelObject, _propTable);
-            }
+                AddPropertyControlsForPlainObject(PanelObject);
+
+            _propTable.ResumeLayout(true);
         }
 
         private void AddPropertyControlsForWrapper(DynamicComponentWrapper wrapper)
@@ -175,67 +174,83 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             var members = wrapper.ComponentStructType
                 .GetMembers(BindingFlags.Public | BindingFlags.Instance)
                 .Where(m => m is FieldInfo || (m is PropertyInfo p && p.CanRead))
-                .OrderBy(m => m.Name);
+                .OrderBy(m => m.Name)
+                .ToList();
 
             foreach (var member in members)
             {
                 if (ShouldIgnoreMember(member)) continue;
 
-                Type memberType = member is FieldInfo f ? f.FieldType : ((PropertyInfo)member).PropertyType;
-                if (memberType == null) continue;
-
-                string displayName = member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? member.Name;
-                bool isReadOnly = member.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly ?? false;
-                object rawValue = GetCurrentMemberValue(wrapper, member);
-
                 var linkerAttr = member.GetCustomAttribute<ObjectLinkerAttribute>();
+                object rawValue = GetCurrentMemberValue(wrapper, member);
                 if (linkerAttr != null && rawValue != null)
                 {
-                    // Convert raw uint → Handle
                     object handle = rawValue;
-                    if (linkerAttr.HandleType == typeof(PointLightHandle) && rawValue is uint pid)
-                        handle = new PointLightHandle(new IntPtr(pid));
-                    else if (linkerAttr.HandleType == typeof(DirectionalLightHandle) && rawValue is uint did)
-                        handle = new DirectionalLightHandle(new IntPtr(did));
-                    // Add TextureHandle / MaterialHandle here later
+                    if (linkerAttr.HandleType == typeof(PointLightHandle) && rawValue is uint pid) handle = new PointLightHandle(new IntPtr(pid));
+                    else if (linkerAttr.HandleType == typeof(DirectionalLightHandle) && rawValue is uint did) handle = new DirectionalLightHandle(new IntPtr(did));
 
-                    // Resolve → this returns IntPtr from your registry
                     object result = ObjectLinkerRegistry.Resolve(linkerAttr.HandleType, handle);
-
                     if (result is IntPtr ptr && ptr != IntPtr.Zero)
                     {
-                        // === KEY FIX: Unwrap IntPtr into real managed struct ===
-                        Type resolvedType = GetResolvedTypeFromHandle(linkerAttr.HandleType); // e.g. typeof(PointLight)
-
+                        Type resolvedType = GetResolvedTypeFromHandle(linkerAttr.HandleType);
                         object linkedObject = Marshal.PtrToStructure(ptr, resolvedType);
 
                         if (linkedObject != null)
                         {
-                            AddLinkedObjectHeader(displayName, linkedObject.GetType().Name);
-                            AddPropertyControlsForResolvedObject(linkedObject);
+                            AddLinkedObjectHeader(resolvedType.Name);
+
+                            var linkedPanel = new ObjectPanelView(_propertiesPanel, linkedObject, _toolTip);
+
+                            if (linkedPanel._headerPanel != null)
+                                linkedPanel._headerPanel.Visible = false;
+
+                            int linkedRow = _propTable.RowCount++;
+                            _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                            linkedPanel.Dock = DockStyle.Fill;
+                            linkedPanel.Margin = new Padding(0, 6, 0, 12);
+                            _propTable.Controls.Add(linkedPanel, 0, linkedRow);
+                            _propTable.SetColumnSpan(linkedPanel, 2);
+
                             continue;
                         }
                     }
-
-                    displayName += " (Not Found)";
                 }
 
-                // === Normal non-linked property ===
-                if (memberType == typeof(ulong) || memberType.IsPointer || memberType == typeof(IntPtr))
+                Type memberType = member is FieldInfo f ? f.FieldType : ((PropertyInfo)member).PropertyType;
+
+                if (memberType == null || memberType == typeof(ulong) ||
+                    memberType.IsPointer || memberType == typeof(IntPtr))
+                {
                     continue;
+                }
+
+                if (IsDuplicateProperty(member.Name)) continue;
 
                 int row = _propTable.RowCount++;
                 _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
 
                 var label = new Label
                 {
-                    Text = displayName,
+                    Text = member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? FormatPropertyName(member.Name),
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleLeft,
                     ForeColor = Color.White,
                     Margin = new Padding(6, 4, 4, 4)
                 };
+
                 _propTable.Controls.Add(label, 0, row);
+
+                bool isReadOnly = true;
+
+                if (member is PropertyInfo pi)
+                {
+                    isReadOnly = pi.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly ?? !pi.CanWrite;
+                }
+                else if (member is FieldInfo)
+                {
+                    isReadOnly = member.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly ?? false;
+                }
 
                 var control = ControlRegistry.CreateControl(this, memberType, wrapper, member, RowHeight, isReadOnly);
                 if (control != null)
@@ -244,9 +259,78 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     control.Margin = new Padding(5);
                     _propTable.Controls.Add(control, 1, row);
                 }
-                else
+            }
+        }
+
+        private void AddLinkedObjectHeader(string resolvedTypeName)
+        {
+            int headerRow = _propTable.RowCount++;
+            _propTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+
+            var header = new Label
+            {
+                Text = $"→ {resolvedTypeName}",
+                ForeColor = Color.Cyan,
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(12, 6, 4, 4),
+                BackColor = Color.FromArgb(45, 45, 65)
+            };
+
+            _propTable.Controls.Add(header, 0, headerRow);
+            _propTable.SetColumnSpan(header, 2);
+        }
+
+        private bool IsDuplicateProperty(string name)
+        {
+            return _propTable.Controls.OfType<Label>()
+                .Any(l => string.Equals(l.Text, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private string FormatPropertyName(string name)
+        {
+            return name;
+        }
+
+        private void AddPropertyControlsForPlainObject(object targetObject)
+        {
+            if (targetObject == null) return;
+
+            var members = targetObject.GetType()
+                .GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                .Where(m => m is FieldInfo || (m is PropertyInfo p && p.CanRead))
+                .OrderBy(m => m.Name);
+
+            foreach (var member in members)
+            {
+                if (ShouldIgnoreResolvedMember(member)) continue;
+
+                Type memberType = member is FieldInfo f ? f.FieldType : (member is PropertyInfo p ? p.PropertyType : null);
+                if (memberType == null) continue;
+
+                string displayName = member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? member.Name;
+                bool isReadOnly = member.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly ?? false;
+
+                var control = ControlRegistry.CreateControl(this, memberType, targetObject, member, RowHeight, isReadOnly);
+                if (control != null)
                 {
-                    Console.WriteLine($"[ObjectPanelView] No editor for {member.Name} ({memberType.Name})");
+                    int row = _propTable.RowCount++;
+                    _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
+
+                    var label = new Label
+                    {
+                        Text = displayName,
+                        Dock = DockStyle.Fill,
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        ForeColor = Color.LightGray,
+                        Margin = new Padding(6, 4, 4, 4)
+                    };
+
+                    _propTable.Controls.Add(label, 0, row);
+                    control.Dock = DockStyle.Fill;
+                    control.Margin = new Padding(5);
+                    _propTable.Controls.Add(control, 1, row);
                 }
             }
         }
@@ -261,105 +345,21 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         private object GetCurrentMemberValue(DynamicComponentWrapper wrapper, MemberInfo member)
         {
-            try
-            {
-                return wrapper.GetMemberValue(member);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private void AddLinkedObjectHeader(string propertyName, string resolvedTypeName)
-        {
-            int row = _propTable.RowCount++;
-            _propTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-
-            var header = new Label
-            {
-                Text = $"→ {propertyName} ({resolvedTypeName})",
-                ForeColor = Color.Cyan,
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Margin = new Padding(8, 6, 4, 4),
-                BackColor = Color.FromArgb(50, 50, 70)
-            };
-
-            _propTable.Controls.Add(header, 0, row);
-            _propTable.SetColumnSpan(header, 2);
-        }
-
-        private void AddPropertyControlsForResolvedObject(object resolvedObject)
-        {
-            if (resolvedObject == null) return;
-
-            var members = resolvedObject.GetType()
-                .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                .Where(m => m is FieldInfo || (m is PropertyInfo p && p.CanRead))
-                .OrderBy(m => m.Name);
-
-            foreach (var member in members)
-            {
-                // Skip internal or unwanted members
-                if (ShouldIgnoreResolvedMember(member))
-                    continue;
-
-                Type memberType = member is FieldInfo f ? f.FieldType
-                                : (member is PropertyInfo p ? p.PropertyType : null);
-
-                if (memberType == null) continue;
-
-                string displayName = member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? member.Name;
-                bool isReadOnly = true; // Linked objects are usually read-only in this context
-
-                int row = _propTable.RowCount++;
-                _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize, RowHeight));
-
-                var label = new Label
-                {
-                    Text = displayName,
-                    Dock = DockStyle.Fill,
-                    TextAlign = ContentAlignment.MiddleLeft,
-                    ForeColor = Color.LightGray,
-                    Margin = new Padding(20, 4, 4, 4)   // Indent to show it's a sub-property
-                };
-                _propTable.Controls.Add(label, 0, row);
-
-                // Use the resolved object directly (not the wrapper)
-                var control = ControlRegistry.CreateControl(this, memberType, resolvedObject, member, RowHeight, isReadOnly);
-
-                if (control != null)
-                {
-                    control.Dock = DockStyle.Fill;
-                    control.Margin = new Padding(5);
-                    _propTable.Controls.Add(control, 1, row);
-                }
-                else
-                {
-                    Console.WriteLine($"[ObjectPanelView] No editor for resolved member {member.Name} ({memberType.Name})");
-                }
-            }
+            try { return wrapper.GetMemberValue(member); }
+            catch { return null; }
         }
 
         private static bool ShouldIgnoreResolvedMember(MemberInfo member)
         {
-            if (member.Name == "GameObjectId") return true;
-            if (member.GetCustomAttribute<IgnorePropertyAttribute>() != null) return true;
-
-            // Add more rules if needed (e.g. skip certain internal fields)
-            return false;
+            return member.Name == "GameObjectId" ||
+                   member.GetCustomAttribute<IgnorePropertyAttribute>() != null;
         }
 
         private Type GetResolvedTypeFromHandle(Type handleType)
         {
             if (handleType == typeof(PointLightHandle)) return typeof(PointLight);
             if (handleType == typeof(DirectionalLightHandle)) return typeof(DirectionalLight);
-            // Add more mappings as you create handles
-            // if (handleType == typeof(TextureHandle)) return typeof(Texture);
-
-            return typeof(object); // fallback
+            return typeof(object);
         }
     }
 }

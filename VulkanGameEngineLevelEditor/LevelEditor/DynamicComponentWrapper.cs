@@ -66,7 +66,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 if (member is FieldInfo field)
                 {
                     object boxed = Marshal.PtrToStructure(ComponentPtr, ComponentStructType);
-                    field.SetValue(boxed, value);
+                    field.SetValue(boxed, value); 
                     Marshal.StructureToPtr(boxed, ComponentPtr, false);
                 }
                 else if (member is PropertyInfo prop && prop.CanWrite)

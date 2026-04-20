@@ -23,9 +23,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 146,
-        "TextureFilePath": [
-            "../Assets/Textures\\AnimeGirlMaterial_Albedo.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/AnimeGirlMaterial_Albedo.ktx2"
+      ],
         "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
         "TextureType": 1
     },
@@ -57,7 +57,7 @@
         },
         "TextureByteFormat": 145,
         "TextureFilePath": [
-            "../Assets/Textures\\AnimeGirlMaterial_NormalHeight.ktx2"
+            "Textures/AnimeGirlMaterial_NormalHeight.ktx2"
         ],
         "TextureId": "36d7e265-8ee9-4bbe-b974-6907532459a7",
         "TextureType": 1
@@ -87,7 +87,7 @@
         },
         "TextureByteFormat": 145,
         "TextureFilePath": [
-            "../Assets/Textures\\AnimeGirlMaterial_MRO.ktx2"
+            "Textures/AnimeGirlMaterial_MRO.ktx2"
         ],
         "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
         "TextureType": 1
@@ -117,7 +117,7 @@
         },
         "TextureByteFormat": 145,
         "TextureFilePath": [
-            "../Assets/Textures\\AnimeGirlMaterial_SheenSSS.ktx2"
+            "Textures/AnimeGirlMaterial_SheenSSS.ktx2"
         ],
         "TextureId": "ffcd6590-6f56-406e-b187-cf7f30e9317e",
         "TextureType": 1

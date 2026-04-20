@@ -9,12 +9,12 @@
 class GameEngineWindow
 {
 public:
-    WindowType  WindowType;
-    void*       WindowHandle;
-    uint        Width;
-    uint        Height;
-    bool        FrameBufferResized;
-    bool        ShouldClose;
+    WindowTypeEnum  WindowType;
+    void*           WindowHandle;
+    uint            Width;
+    uint            Height;
+    bool            FrameBufferResized;
+    bool            ShouldClose;
 
     GameEngineWindow();
     ~GameEngineWindow();

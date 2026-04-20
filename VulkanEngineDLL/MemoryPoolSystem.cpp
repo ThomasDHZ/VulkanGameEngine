@@ -8,15 +8,16 @@ MemoryPoolSystem& memoryPoolSystem = MemoryPoolSystem::Get();
 
 void MemoryPoolSystem::StartUp()
 {
+    std::cout << "MemoryPoolSystem::StartUp() started\n";
+
+    // Initialize all sub-pools first
     for (int x = 0; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
     {
         MemoryPoolTypes type = (MemoryPoolTypes)x;
         switch (x)
         {
         case MemoryPoolTypes::kMeshBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = MeshInitialCapacity,
                 .Size = sizeof(MeshPropertiesStruct),
@@ -25,11 +26,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
+
         case MemoryPoolTypes::kMaterialBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = MaterialInitialCapacity,
                 .Size = sizeof(GPUMaterial),
@@ -38,12 +37,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
-        case MemoryPoolTypes::kDirectionalLightBuffer:
-        {
 
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+        case MemoryPoolTypes::kDirectionalLightBuffer:
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = DirectionalLightInitialCapacity,
                 .Size = sizeof(DirectionalLight),
@@ -52,11 +48,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
+
         case MemoryPoolTypes::kPointLightBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = PointLightInitialCapacity,
                 .Size = sizeof(PointLight),
@@ -65,11 +59,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
+
         case MemoryPoolTypes::kTexture2DMetadataBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = Texture2DInitialCapacity,
                 .Size = sizeof(TextureMetadataHeader),
@@ -78,11 +70,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
+
         case MemoryPoolTypes::kTexture3DMetadataBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = Texture3DInitialCapacity,
                 .Size = sizeof(TextureMetadataHeader),
@@ -91,11 +81,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
+
         case MemoryPoolTypes::kTextureCubeMapMetadataBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = TextureCubeMapInitialCapacity,
                 .Size = sizeof(TextureMetadataHeader),
@@ -104,11 +92,9 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        }
+
         case MemoryPoolTypes::kSpriteInstanceBuffer:
-        {
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader
-            {
+            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = SpriteInstanceInitialCapacity,
                 .Size = sizeof(SpriteInstance),
@@ -118,25 +104,37 @@ void MemoryPoolSystem::StartUp()
             };
             break;
         }
-        }
     }
-    UpdateMemoryPoolHeader(kMeshBuffer, MeshInitialCapacity);
 
-    Vector<byte> GpuDataBufferMemoryPool2 = Vector<byte>(sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize, 0xFF);
-    memcpy(GpuDataBufferMemoryPool2.data(), &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-    GpuDataBufferIndex = bufferSystem.CreateDynamicBuffer(GpuDataBufferMemoryPool2.data(), GpuDataBufferMemoryPool2.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    // Now update headers and calculate total size
+    UpdateMemoryPoolHeader(MemoryPoolTypes::kMeshBuffer, MeshInitialCapacity);
+
+    // Create the big GPU data buffer
+    size_t totalGpuBufferSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
+
+    std::cout << "Creating GPU data buffer with size: " << totalGpuBufferSize << " bytes\n";
+
+    GpuDataBufferIndex = bufferSystem.CreateDynamicBuffer(nullptr, totalGpuBufferSize,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
     VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     MappedBufferPtr = buffer.BufferData;
 
-    SceneDataBuffer sceneData = SceneDataBuffer();
-    SceneDataBufferIndex = bufferSystem.CreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    // Initialize scene data buffer
+    SceneDataBuffer sceneData = {};
+    SceneDataBufferIndex = bufferSystem.CreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer),
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
     VulkanBuffer& sceneDataBuffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex);
     SceneDataPtr = sceneDataBuffer.BufferData;
 
-    vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, GpuDataBufferMemoryPool2.size());
-    vmaFlushAllocation(bufferSystem.vmaAllocator, sceneDataBuffer.Allocation, 0, GpuDataBufferMemoryPool2.size());
+    // Flush initial data
+    vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, totalGpuBufferSize);
+    vmaFlushAllocation(bufferSystem.vmaAllocator, sceneDataBuffer.Allocation, 0, sizeof(SceneDataBuffer));
 
     CreateGlobalBindlessDescriptorSet();
+
+    std::cout << "MemoryPoolSystem::StartUp() completed successfully\n";
 }
 
 void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount)

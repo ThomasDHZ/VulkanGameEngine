@@ -124,7 +124,7 @@ private:
 	static constexpr size_t									 MaterialInitialCapacity = 4;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
 	static constexpr size_t									 PointLightInitialCapacity = 4;
-	static constexpr size_t									 SpriteInstanceInitialCapacity = 16384;
+	static constexpr size_t									 SpriteInstanceInitialCapacity = 1024;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
@@ -139,7 +139,7 @@ public:
 	static constexpr uint									 Texture2DBinding = 3;
 	static constexpr uint									 Texture3DBinding = 4;
 
-	static constexpr size_t									 Texture2DInitialCapacity = 32768;
+	static constexpr size_t									 Texture2DInitialCapacity = 4096;
 	static constexpr uint32									 Texture3DInitialCapacity = 128; 
 	static constexpr uint32									 TextureCubeMapInitialCapacity = 128;
 

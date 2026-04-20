@@ -2,12 +2,12 @@
 #define MAXMOUSEKEY 3
 #define MAXKEYBOARDKEY 350
 
-typedef enum WindowType
+typedef enum WindowTypeEnum
 {
     Win32,
     SDL,
     GLFW
-} WindowType;
+} WindowTypeEnum;
 
 typedef enum KeyboardKeyCode {
     KEY_UNKNOWN = -1,

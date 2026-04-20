@@ -10,7 +10,7 @@
 #include <ktx/include/ktx.h>
 
 #ifndef __ANDROID__
-int main()
+int main(int argc, char** argv)
 {
     SystemClock systemClock = SystemClock();
     FrameTimer deltaTime = FrameTimer();
@@ -22,7 +22,27 @@ int main()
         debugSystem.SetRootDirectory("../Assets");
     }
 #else
-    debugSystem.SetRootDirectory("Assets");
+#if defined(__linux__) && !defined(__ANDROID__)
+    try {
+        if (argc > 0) {
+            std::filesystem::path exePath(argv[0]);
+            std::filesystem::current_path(exePath.parent_path());
+            std::filesystem::current_path("/home/dothackzero/.vs/VulkanGameEngine/e1b0b856-3aa4-4eb9-8b0f-d95bd32353e2/out/build/Linux-Debug/bin/Assets");
+            std::cout << "Base Directory: " << std::filesystem::current_path().string() << std::endl;
+            std::cout << "Base Directory: " << std::filesystem::current_path().string() << std::endl;
+        }
+        else {
+            // Fallback to bin folder
+            std::filesystem::current_path("/home/dothackzero/.vs/VulkanGameEngine/e1b0b856-3aa4-4eb9-8b0f-d95bd32353e2/out/build/Linux-Debug/bin/Assets");
+        }
+        std::cout << "FORCED Base Directory: " << std::filesystem::current_path().string() << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Failed to force directory: " << e.what() << std::endl;
+    }
+#endif
+
+    std::cout << "Base Directory: " << std::filesystem::current_path().string() << std::endl;
 #endif
 
     try
@@ -50,7 +70,7 @@ int main()
         bufferSystem.DestroyAllBuffers();
 
         memorySystem.ReportLeaks();
-        debugSystem.DumpVMAStats();
+     //   debugSystem.DumpVMAStats();
 
         vulkanSystem.DestroyRenderer();
         vulkanWindow->DestroyWindow(vulkanWindow);

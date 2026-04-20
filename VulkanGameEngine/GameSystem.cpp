@@ -7,8 +7,12 @@
 #include "MeshSystem.h"
 #include "Mouse.h"
 #include "GameController.h"
-#include <MaterialBakerSystem.h>
 #include <LevelSystem.h>
+
+#if !defined(__linux__) && !defined(__ANDROID__)
+#include <MaterialBakerSystem.h>
+#endif
+
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
 #endif

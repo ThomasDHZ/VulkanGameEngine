@@ -3,6 +3,7 @@
 #include "MemorySystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
+#include <cctype>
 #include <ranges>
 
 ShaderSystem& shaderSystem = ShaderSystem::Get();
@@ -539,8 +540,11 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      const String baseCmd = glslc + " --target-env=vulkan1.3" + " --target-spv=spv1.6" + " -g -O0";
      for (const auto& srcPath : shaderFiles)
      {
+         String extention = fileSystem.GetFileExtention(srcPath.c_str());
+         extention[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(extention[0])));
+
          std::filesystem::path src = srcPath;
-         std::filesystem::path dst = outDir / (src.filename().stem().string() + fileSystem.GetFileExtention(srcPath.c_str()) + ".spv");
+         std::filesystem::path dst = outDir / (src.filename().stem().string() + extention + ".spv");
          if (std::filesystem::exists(dst) &&
              std::filesystem::last_write_time(dst) >= std::filesystem::last_write_time(src))
          {

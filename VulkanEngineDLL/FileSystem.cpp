@@ -537,6 +537,7 @@ nlohmann::json FileSystem::LoadConfig(const String& configPath)
 
 Vector<byte> FileSystem::LoadAssetFile(const String& filePath)
 {
+    Vector<byte> buffer;
 #if defined(__ANDROID__)
     if (!g_AssetManager)
     {
@@ -550,20 +551,38 @@ Vector<byte> FileSystem::LoadAssetFile(const String& filePath)
     }
 
     size_t size = AAsset_getLength(asset);
-    Vector<byte> buffer(size);
+    buffer.resize(size);
     AAsset_read(asset, buffer.data(), size);
     AAsset_close(asset);
+
 #else
-    std::ifstream file(std::filesystem::current_path() / filePath, std::ios::binary | std::ios::ate);
+    // Use current working directory (should be the bin folder)
+    std::filesystem::path fullPath = std::filesystem::current_path() / filePath;
+
+    std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Failed to open asset file: " + fullPath.string()
+            + "\nCurrent working directory: " + std::filesystem::current_path().string()
+            + "\nMake sure the Assets folder is copied to the bin directory.");
+    }
+
     size_t size = file.tellg();
+    if (size == static_cast<size_t>(-1) || size == 0)
+    {
+        throw std::runtime_error("Failed to get valid file size for: " + fullPath.string());
+    }
+
     file.seekg(0);
-    Vector<byte> buffer(size);
+    buffer.resize(size);
     file.read(reinterpret_cast<char*>(buffer.data()), size);
+
     if (!file)
     {
-        std::cerr << "ERROR: Failed to read full shader file: " << filePath << std::endl;
+        std::cerr << "WARNING: Failed to read full file: " << fullPath << std::endl;
     }
 #endif
+
     return buffer;
 }
 

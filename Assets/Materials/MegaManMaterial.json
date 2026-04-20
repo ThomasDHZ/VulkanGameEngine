@@ -23,9 +23,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 146,
-        "TextureFilePath": [
-            "../Assets/Textures\\MegaManMaterial_Albedo.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/MegaManMaterial_Albedo.ktx2"
+      ],
         "TextureId": "401ced2d-39a6-4541-98f9-1c975167e167",
         "TextureType": 1
     },
@@ -56,9 +56,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 145,
-        "TextureFilePath": [
-            "../Assets/Textures\\MegaManMaterial_NormalHeight.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/MegaManMaterial_NormalHeight.ktx2"
+      ],
         "TextureId": "cc39d149-63fa-454e-803c-50f9fd1cbd45",
         "TextureType": 1
     },
@@ -86,9 +86,9 @@
             "UnnormalizedCoordinates": false
         },
         "TextureByteFormat": 145,
-        "TextureFilePath": [
-            "../Assets/Textures\\MegaManMaterial_MRO.ktx2"
-        ],
+      "TextureFilePath": [
+        "Textures/MegaManMaterial_MRO.ktx2"
+      ],
         "TextureId": "d0e8f652-1ae0-43b4-8562-9b6f68b026c3",
         "TextureType": 1
     },

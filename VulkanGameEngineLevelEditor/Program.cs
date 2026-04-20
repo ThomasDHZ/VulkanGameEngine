@@ -17,6 +17,9 @@ namespace VulkanGameEngineLevelEditor
         {
             try
             {
+                string binPath = AppDomain.CurrentDomain.BaseDirectory;
+                Directory.SetCurrentDirectory(Path.Combine(binPath, "..//..//..//..//Assets"));
+
                 ComponentRegistry.Initialize();
                 LightRegistry.Initialize();
                 ObjectLinkerRegistry.Initialize();
