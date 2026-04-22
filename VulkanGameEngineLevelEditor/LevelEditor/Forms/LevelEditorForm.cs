@@ -12,6 +12,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Text;
@@ -58,15 +59,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         private bool IsDragging { get; set; } = false;
         private uint SelectedSpriteIndex { get; set; } = uint.MaxValue;
         public static Guid GameObjectIdTexture { get; private set; } = new Guid("7047804f-d32e-4cb5-ba95-90783b28d1df");
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool AllocConsole();
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetStdHandle(int nStdHandle);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
 
         private const int STD_OUTPUT_HANDLE = -11;
         private const int STD_ERROR_HANDLE = -12;
@@ -237,6 +229,16 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
             //cameraTransform.Zoom += scrollDelta;
         }
 
+        public static ref T ConvertPtrToObject<T>(IntPtr ptr) where T : unmanaged
+        {
+            if (ptr == IntPtr.Zero)
+            {
+                Debug.WriteLine($"Warning: {typeof(T).Name} not found (null pointer)");
+                return ref Unsafe.NullRef<T>();
+            }
+            return ref Unsafe.AsRef<T>(ptr.ToPointer());
+        }
+
         private void RendererBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (SelectedSpriteIndex == uint.MaxValue) return;
@@ -248,10 +250,24 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
                 int deltaX = currentPos.X - LastMousePosition.X;
                 int deltaY = currentPos.Y - LastMousePosition.Y;
 
-                ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform2DComponent>(SelectedSpriteIndex, ComponentTypeEnum.kTransform2DComponent);
 
-                transform.GameObjectPosition = new vec2(transform.GameObjectPosition.x + deltaX, transform.GameObjectPosition.y - deltaY);
-
+                List<ComponentTypeEnum> gameObjectComponents = GameObjectSystem.GetGameObjectComponentList(SelectedSpriteIndex);
+                if(gameObjectComponents.Contains(ComponentTypeEnum.kPointLightComponent))
+                {
+                    ref var pointLightComponent = ref GameObjectSystem.UpdateGameObjectComponent<PointLightComponent>(SelectedSpriteIndex, ComponentTypeEnum.kPointLightComponent);
+                    ref var pointLight = ref ConvertPtrToObject<PointLight>(LightSystem.GetPointLight(pointLightComponent.PointLightId));
+                    pointLight.LightPosition = new vec3(pointLight.LightPosition.x + deltaX, pointLight.LightPosition.y - deltaY, pointLight.LightPosition.z);
+                }
+                if (gameObjectComponents.Contains(ComponentTypeEnum.kTransform2DComponent))
+                {
+                    ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform2DComponent>(SelectedSpriteIndex, ComponentTypeEnum.kTransform2DComponent);
+                    transform.GameObjectPosition = new vec2(transform.GameObjectPosition.x + deltaX, transform.GameObjectPosition.y - deltaY);
+                }
+                if (gameObjectComponents.Contains(ComponentTypeEnum.kTransform3DComponent))
+                {
+                    ref var transform = ref GameObjectSystem.UpdateGameObjectComponent<Transform3DComponent>(SelectedSpriteIndex, ComponentTypeEnum.kTransform3DComponent);
+                    transform.GameObjectPosition = new vec3(transform.GameObjectPosition.x + deltaX, transform.GameObjectPosition.y - deltaY, 0.0f);
+                }
                 // if (Math.Abs(deltaX) > 1 || Math.Abs(deltaY) > 1)
             }
             else if (e.Button == MouseButtons.Right)
@@ -405,5 +421,9 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
         {
 
         }
+
+        [DllImport("kernel32.dll", SetLastError = true)] private static extern bool AllocConsole();
+        [DllImport("kernel32.dll", SetLastError = true)] private static extern IntPtr GetStdHandle(int nStdHandle);
+        [DllImport("kernel32.dll", SetLastError = true)] private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
     }
 }

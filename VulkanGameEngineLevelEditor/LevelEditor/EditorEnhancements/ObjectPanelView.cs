@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GlmSharp;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -38,6 +39,20 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             CreateHeader();
             CreateContent();
             PopulateProperties();
+        }
+
+        public void RefreshValues()
+        {
+            if (PanelObject == null) return;
+            for (int row = 0; row < _propTable.RowCount; row++)
+            {
+                Control? valueControl = _propTable.GetControlFromPosition(1, row);
+                if (valueControl == null) continue;
+                if (valueControl.Tag is not MemberInfo member) continue;
+                object? newValue = GetCurrentValue(member);
+                if (newValue == null) continue;
+                UpdateControlValue(valueControl, newValue);
+            }
         }
 
         private void InitializeLayout()
@@ -200,9 +215,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                             AddLinkedObjectHeader(resolvedType.Name);
 
                             var linkedPanel = new ObjectPanelView(_propertiesPanel, linkedObject, _toolTip);
-
-                            if (linkedPanel._headerPanel != null)
-                                linkedPanel._headerPanel.Visible = false;
+                            if (linkedPanel._headerPanel != null) linkedPanel._headerPanel.Visible = false;
 
                             int linkedRow = _propTable.RowCount++;
                             _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -255,6 +268,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 var control = ControlRegistry.CreateControl(this, memberType, wrapper, member, RowHeight, isReadOnly);
                 if (control != null)
                 {
+                    control.Tag = member;
                     control.Dock = DockStyle.Fill;
                     control.Margin = new Padding(5);
                     _propTable.Controls.Add(control, 1, row);
@@ -328,6 +342,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     };
 
                     _propTable.Controls.Add(label, 0, row);
+                    control.Tag = member;
                     control.Dock = DockStyle.Fill;
                     control.Margin = new Padding(5);
                     _propTable.Controls.Add(control, 1, row);
@@ -360,6 +375,69 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             if (handleType == typeof(PointLightHandle)) return typeof(PointLight);
             if (handleType == typeof(DirectionalLightHandle)) return typeof(DirectionalLight);
             return typeof(object);
+        }
+
+        private object? GetCurrentValue(MemberInfo member)
+        {
+            try
+            {
+                if (PanelObject is DynamicComponentWrapper wrapper) return wrapper.GetMemberValue(member);
+                if (member is FieldInfo field) return field.GetValue(PanelObject);
+                if (member is PropertyInfo prop && prop.CanRead) return prop.GetValue(PanelObject);
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void UpdateControlValue(Control control, object value)
+        {
+            if (control is NumericUpDown num)
+            {
+                if (value is float f) num.Value = (decimal)Math.Clamp(f, (double)num.Minimum, (double)num.Maximum);
+                else if (value is double d) num.Value = (decimal)Math.Clamp(d, (double)num.Minimum, (double)num.Maximum);
+                else if (value is int i) num.Value = i;
+                else if (value is uint u) num.Value = u;
+                return;
+            }
+
+            if (control is TableLayoutPanel table)
+            {
+                var nums = table.Controls.OfType<NumericUpDown>().ToList();
+                if (value is vec2 vec2Value)
+                {
+                    if (nums.Count >= 2)
+                    {
+                        nums[0].Value = (decimal)vec2Value.x; 
+                        nums[1].Value = (decimal)vec2Value.y;
+                    }
+                }
+                else if (value is vec3 vec3Value)
+                {
+                    if (nums.Count >= 3)
+                    {
+                        nums[0].Value = (decimal)vec3Value.x; 
+                        nums[1].Value = (decimal)vec3Value.y;
+                        nums[2].Value = (decimal)vec3Value.z;
+                    }
+                }
+                return;
+            }
+
+            if (control is CheckBox chk)
+            {
+                if (value is bool b)
+                    chk.Checked = b;
+                return;
+            }
+
+            if (control is TextBox txt)
+            {
+                txt.Text = value?.ToString() ?? "";
+                return;
+            }
         }
     }
 }

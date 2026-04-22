@@ -15,6 +15,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
         private GameObject* _selectedGameObject;
         private readonly FlowLayoutPanel _flowComponents;
         private readonly ToolTip _toolTip = new ToolTip();
+        private Timer _refreshTimer;
 
         public PropertiesPanel()
         {
@@ -30,6 +31,11 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 Padding = new Padding(6)
             };
             Controls.Add(_flowComponents);
+
+            _refreshTimer = new Timer();
+            _refreshTimer.Interval = 120;
+            _refreshTimer.Tick += RefreshTimer_Tick;
+            _refreshTimer.Start();
         }
 
         public void SetSelectedEntity(uint gameObjectId)
@@ -144,6 +150,34 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             }
 
             RefreshPanel();
+        }
+
+        private void RefreshTimer_Tick(object? sender, EventArgs e)
+        {
+            RefreshAllPanels();
+        }
+
+        public void RefreshAllPanels()
+        {
+            if (_selectedGameObject == null) return;
+
+            foreach (Control ctrl in _flowComponents.Controls)
+            {
+                if (ctrl is ObjectPanelView panelView)
+                {
+                    panelView.RefreshValues();
+                }
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _refreshTimer?.Stop();
+                _refreshTimer?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         public void RefreshLayout() => _flowComponents.PerformLayout();

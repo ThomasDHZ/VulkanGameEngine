@@ -59,9 +59,13 @@ namespace VulkanGameEngineLevelEditor.GameEngine
 
     public struct Transform3DComponent
     {
+        [EditorDisplayName("Position 3D")]
         public vec3 GameObjectPosition { get; set; } = new vec3(0.0f);
+        [EditorDisplayName("Rotation 3D")]
         public vec3 GameObjectRotation { get; set; } = new vec3(0.0f);
+        [EditorDisplayName("Scale 3D")]
         public vec3 GameObjectScale { get; set; } = new vec3(1.0f);
+        [IgnoreProperty]
         public bool Dirty { get; set; } = true;
 
         public Transform3DComponent()

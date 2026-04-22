@@ -1,12 +1,15 @@
-﻿using GlmSharp;
+﻿using AutoMapper.Execution;
+using GlmSharp;
 using System;
 using System.ComponentModel;
+using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
 using VulkanGameEngineLevelEditor.LevelEditor.ControlSubForms;
 using VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements;
 
@@ -55,14 +58,14 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
             table.Controls.Add(lbl, 0, row);
 
             float currentValue = getter(currentVec);
-
+            var memberLimits = _member.GetCustomAttribute<NumericUpDownLimitsAttribute>();
             var num = new NumericUpDown
             {
-                DecimalPlaces = 4,
-                Increment = 0.1m,
-                Minimum = -10000000m,
-                Maximum = 10000000m,    
-                Value = (decimal)Math.Clamp(currentValue, -10000000f, 10000000f),
+                DecimalPlaces = memberLimits != null ? memberLimits.DecimalPlaces : 4,
+                Increment = memberLimits != null ? Convert.ToDecimal(memberLimits.Increment) : 0.1m,
+                Minimum = memberLimits != null ? Convert.ToDecimal(memberLimits.Minimum) : -10000000m,
+                Maximum = memberLimits != null ? Convert.ToDecimal(memberLimits.Maximum) : 10000000m,    
+                Value = (decimal)Math.Clamp(currentValue, memberLimits != null ? memberLimits.Minimum : -10000000f, memberLimits != null ? memberLimits.Maximum : 10000000f),
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(60, 60, 60),
                 ForeColor = Color.White,
@@ -71,6 +74,12 @@ public unsafe class TypeOfVec2Form : PropertyEditorForm
             };
 
             num.ValueChanged += (s, e) =>
+            {
+                if (_readOnly) return;
+                directSetter((float)num.Value);
+            };
+
+            num.TextChanged += (s, e) =>
             {
                 if (_readOnly) return;
                 directSetter((float)num.Value);
