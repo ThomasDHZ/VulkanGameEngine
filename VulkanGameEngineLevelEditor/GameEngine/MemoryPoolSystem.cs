@@ -30,11 +30,21 @@ namespace VulkanGameEngineLevelEditor.GameEngine
     public struct DirectionalLight
     {
         [NumericUpDownLimitsAttribute(0.01f, 0.0f, 1.0f)]
-        public vec3 LightColor { get; set; } = new vec3(1.0f, 1.0f, 1.0f);
+        public vec3 LightColor = new vec3(1.0f, 1.0f, 1.0f);
+
+        [NumericUpDownLimitsAttribute(0.01f, -1.0f, 1.0f)]
         public vec3 LightDirection = new vec3(0.3f, 0.3f, 1.0f);
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float LightIntensity = 1.5f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowStrength = 1.0f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowBias = 0.012f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowSoftness = 0.008f;
 
         public DirectionalLight()
@@ -46,12 +56,23 @@ namespace VulkanGameEngineLevelEditor.GameEngine
     {
         [NumericUpDownLimitsAttribute(10.0f)]
         public vec3 LightPosition;
+
         [NumericUpDownLimitsAttribute(0.01f, 0.0f, 1.0f)]
         public vec3 LightColor = new vec3(1.0f, 0.95f, 0.8f);
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float LightRadius = 200.0f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float LightIntensity = 2.0f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowStrength = 1.0f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowBias = 0.012f;
+
+        [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowSoftness = 0.008f;
 
         public PointLight()

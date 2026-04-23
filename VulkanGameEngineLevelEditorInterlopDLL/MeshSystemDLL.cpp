@@ -8,15 +8,15 @@
 
  void MeshSystem_Update(const float& deltaTime)
 {
-    return  void();
+     meshSystem.Update(deltaTime);
 }
 
  void MeshSystem_Destroy(uint meshId)
 {
-    return  void();
+     meshSystem.Destroy(meshId);
 }
 
  void MeshSystem_DestroyAllGameObjects()
 {
-    return  void();
+     meshSystem.DestroyAllGameObjects();
 }

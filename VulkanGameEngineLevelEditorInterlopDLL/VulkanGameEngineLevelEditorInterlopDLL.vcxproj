@@ -145,7 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
+    <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
     <ClInclude Include="BufferSystemDLL.h" />
     <ClInclude Include="CameraSystemDLL.h" />
     <ClInclude Include="DebugSystemDLL.h" />

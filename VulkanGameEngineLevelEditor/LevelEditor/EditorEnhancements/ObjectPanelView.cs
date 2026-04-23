@@ -32,7 +32,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 
         public ObjectPanelView(PropertiesPanel propertiesPanel, object component, ToolTip toolTip) : this(propertiesPanel, component, IntPtr.Zero, toolTip) 
         { 
-        
         }
 
         public ObjectPanelView(PropertiesPanel propertiesPanel, object component, IntPtr nativePtr, ToolTip toolTip)
@@ -64,7 +63,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 Type resolvedType = GetResolvedTypeFromHandle(attr.HandleType);
                 object resolvedObj = Marshal.PtrToStructure(ptr, resolvedType);
-                return (resolvedObj, ptr);   // Return both the struct and the native pointer
+                return (resolvedObj, ptr);
             }
 
             return (null, IntPtr.Zero);
@@ -230,7 +229,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                 {
                     uint currentId = GetCurrentLinkId(wrapper, member);
 
-                    // Create the link editor (the dropdown to change which object is linked)
                     int linkRow = _propTable.RowCount++;
                     _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
@@ -240,16 +238,13 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                     _propTable.Controls.Add(linkControl, 0, linkRow);
                     _propTable.SetColumnSpan(linkControl, 2);
 
-                    // Resolve and show nested inspector with native pointer
                     var resolvedInfo = ResolveLinkedObjectWithPtr(wrapper, member, linkerAttr, currentId);
                     if (resolvedInfo.ResolvedObject != null && resolvedInfo.NativePtr != IntPtr.Zero)
                     {
                         AddLinkedObjectHeader(resolvedInfo.ResolvedObject.GetType().Name);
 
-                        // Pass BOTH the resolved struct AND its native pointer
                         var linkedPanel = new ObjectPanelView(_propertiesPanel, resolvedInfo.ResolvedObject, resolvedInfo.NativePtr, _toolTip);
-                        if (linkedPanel._headerPanel != null)
-                            linkedPanel._headerPanel.Visible = false;
+                        if (linkedPanel._headerPanel != null) linkedPanel._headerPanel.Visible = false;
 
                         int linkedRow = _propTable.RowCount++;
                         _propTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -392,12 +387,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
                    member.Name == "DisplayName";
         }
 
-        private object GetCurrentMemberValue(DynamicComponentWrapper wrapper, MemberInfo member)
-        {
-            try { return wrapper.GetMemberValue(member); }
-            catch { return null; }
-        }
-
         private static bool ShouldIgnoreResolvedMember(MemberInfo member)
         {
             return member.Name == "GameObjectId" ||
@@ -485,28 +474,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
             {
                 return uint.MaxValue;
             }
-        }
-
-        private object? ResolveLinkedObject(DynamicComponentWrapper wrapper, MemberInfo member,
-                                            LinkObjectAttribute attr, uint currentId)
-        {
-            if (currentId == uint.MaxValue) return null;
-
-            object handle = currentId;
-            if (attr.HandleType == typeof(PointLightHandle))
-                handle = new PointLightHandle(new IntPtr(currentId));
-            else if (attr.HandleType == typeof(DirectionalLightHandle))
-                handle = new DirectionalLightHandle(new IntPtr(currentId));
-            // add TextureHandle / MaterialHandle when ready
-
-            object result = LinkObjectRegistry.Resolve(attr.HandleType, handle);
-            if (result is IntPtr ptr && ptr != IntPtr.Zero)
-            {
-                Type resolvedType = GetResolvedTypeFromHandle(attr.HandleType);
-                return Marshal.PtrToStructure(ptr, resolvedType);
-            }
-
-            return null;
         }
 
         private Control? CreateEditorControl(Type memberType, object targetObject, MemberInfo member, int height, bool readOnly)

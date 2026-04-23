@@ -2,7 +2,7 @@
 
 void LevelSystem_LoadLevel(const char* levelPath)
 {
-	levelSystem.LoadLevel(levelPath);
+    levelSystem.LoadLevel(levelPath);
 }
 
 void LevelSystem_Update(const float& deltaTime)
