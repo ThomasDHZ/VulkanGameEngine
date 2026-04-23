@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Cryptography.Xml;
 using VulkanGameEngineLevelEditor.GameEngine;
+using VulkanGameEngineLevelEditor.GameEngine.Components;
 
 public static class ComponentRegistry
 {
-    [DisplayName("Input Component")]
-    public class InputComponent 
-    { 
-    };
-
     private static readonly Dictionary<ComponentTypeEnum, Type> _typeMap = new();
 
     public static void Register(ComponentTypeEnum enumValue, Type structType)

@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using VulkanGameEngineLevelEditor.GameEngine;
+using VulkanGameEngineLevelEditor.GameEngine.Components;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.EditorEnhancements
 {

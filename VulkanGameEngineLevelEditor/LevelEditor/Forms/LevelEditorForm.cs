@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using VulkanGameEngineLevelEditor.GameEngine;
+using VulkanGameEngineLevelEditor.GameEngine.Components;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;

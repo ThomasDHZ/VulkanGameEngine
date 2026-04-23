@@ -3,11 +3,11 @@
 namespace VulkanGameEngineLevelEditor.LevelEditor.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public class ObjectLinkerAttribute : Attribute
+    public class LinkObjectAttribute : Attribute
     {
         public Type HandleType { get; }
 
-        public ObjectLinkerAttribute(Type handleType)
+        public LinkObjectAttribute(Type handleType)
         {
             HandleType = handleType ?? throw new ArgumentNullException(nameof(handleType));
         }

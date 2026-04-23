@@ -40,7 +40,7 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Registries
         public static explicit operator PointLightHandle(IntPtr value) => new(value);
     }
 
-    public static class ObjectLinkerRegistry
+    public static class LinkObjectRegistry
     {
         private static readonly Dictionary<Type, Delegate> _resolvers = new();
 
@@ -56,7 +56,6 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Registries
             _resolvers[key] = resolver;
         }
 
-        // New: Non-generic resolve method (Option A)
         public static object Resolve(Type handleType, object handleValue)
         {
             if (handleType == null || handleValue == null || !_resolvers.TryGetValue(handleType, out var del))

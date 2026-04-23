@@ -24,7 +24,22 @@
       ]
     },
     {
-      "ComponentType": 3
+      "ComponentType": 3,
+      "GameObjectPosition": [
+        1450.0,
+        200.0,
+        0.0
+      ],
+      "GameObjectRotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "GameObjectScale": [
+        1.0,
+        1.0,
+        1.0
+      ]
     }
   ]
 }

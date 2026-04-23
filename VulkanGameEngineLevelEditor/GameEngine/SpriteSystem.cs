@@ -56,22 +56,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine
         }
     };
 
-    public struct SpriteComponent
-    {
-
-        public Guid spriteVramId { get; set; }
-        public uint currentAnimationId { get; set; } = 0;
-        public uint currentFrame { get; set; } = 0;
-        public float frameTimeAccumulator { get; set; } = 0.0f;
-        public bool flipX { get; set; } = false;
-        public bool flipY { get; set; } = false;
-        public int layer { get; set; } = 0;
-        public vec4 tint { get; set; } = new vec4(1.0f);
-        public SpriteComponent()
-        {
-        }
-    };
-
     public struct Animation2D
     {
         public uint AnimationId { get; set; }

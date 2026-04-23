@@ -22,7 +22,7 @@ namespace VulkanGameEngineLevelEditor
 
                 ComponentRegistry.Initialize();
                 LightRegistry.Initialize();
-                ObjectLinkerRegistry.Initialize();
+                LinkObjectRegistry.Initialize();
                 DLLSystem.SetSharedDllDirectory();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);

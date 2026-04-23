@@ -76,6 +76,17 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
                     });
                 break;
             }
+            case kTransform3DComponent:
+            {
+                nlohmann::json json = json.parse(componentJson.dump().c_str());
+                levelSystem.EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
+                    {
+                        .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
+                        .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
+                        .GameObjectScale = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
+                    });
+                break;
+            }
             case kCameraFollowComponent: levelSystem.EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
             case kDirectionalLightComponent: levelSystem.EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
             case kPointLightComponent: levelSystem.EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;

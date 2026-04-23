@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VulkanGameEngineLevelEditor.GameEngine;
+using VulkanGameEngineLevelEditor.GameEngine.Components;
 
 namespace VulkanGameEngineLevelEditor.LevelEditor.Attributes
 {

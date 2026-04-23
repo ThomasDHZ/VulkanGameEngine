@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VulkanGameEngineLevelEditor.GameEngine.Components;
 using VulkanGameEngineLevelEditor.GameEngine.Structs;
 using VulkanGameEngineLevelEditor.GameEngineAPI;
 using VulkanGameEngineLevelEditor.LevelEditor.Attributes;
@@ -26,51 +27,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine
         kGameObjectMegaMan,
         kGameObjectMegaManShot,
         kGameObjectDebug
-    };
-
-    public enum ComponentTypeEnum : uint
-    {
-        kInputComponent,
-        kSpriteComponent,
-        kTransform2DComponent,
-        kTransform3DComponent,
-        kCameraFollowComponent,
-        kDirectionalLightComponent,
-        kPointLightComponent,
-        kEndOfEnum
-    }
-
-
-    [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Transform2DComponent
-    {
-        [EditorDisplayName("Position 2D")]
-        public vec2 GameObjectPosition;
-
-        [EditorDisplayName("Rotation 2D")]
-        public vec2 GameObjectRotation;
-
-        [EditorDisplayName("Scale 2D")]
-        public vec2 GameObjectScale;
-
-        [IgnoreProperty]
-        public bool Dirty;
-    }
-
-    public struct Transform3DComponent
-    {
-        [EditorDisplayName("Position 3D")]
-        public vec3 GameObjectPosition { get; set; } = new vec3(0.0f);
-        [EditorDisplayName("Rotation 3D")]
-        public vec3 GameObjectRotation { get; set; } = new vec3(0.0f);
-        [EditorDisplayName("Scale 3D")]
-        public vec3 GameObjectScale { get; set; } = new vec3(1.0f);
-        [IgnoreProperty]
-        public bool Dirty { get; set; } = true;
-
-        public Transform3DComponent()
-        {
-        }
     };
 
     public struct GameObject
@@ -89,28 +45,6 @@ namespace VulkanGameEngineLevelEditor.GameEngine
     {
         public ComponentTypeEnum ComponentType { get; set; }
         public IntPtr ComponentPtr { get; set; }
-    };
-
-    public unsafe struct DirectionalLightComponent
-    {
-        public uint GameObjectId { get; set; } = uint.MaxValue;
-        [ObjectLinker(typeof(DirectionalLightHandle))]
-        public uint DirectionalLightId { get; set; } = uint.MaxValue;
-        public IntPtr DirectionalLightPtr { get; set; }
-        public DirectionalLightComponent()
-        {
-        }
-    };
-
-    public unsafe struct PointLightComponent
-    {
-        public uint GameObjectId { get; set; } = uint.MaxValue;
-
-        [ObjectLinker(typeof(PointLightHandle))]
-        public uint PointLightId { get; set; } = uint.MaxValue;
-        public PointLightComponent()
-        {
-        }
     };
 
     public static unsafe class GameObjectSystem
