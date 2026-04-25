@@ -6,32 +6,7 @@ SpriteSystem& spriteSystem = SpriteSystem::Get();
 
 void SpriteSystem::AddSpriteBatchLayer()
 {
-    if (SpriteMeshId != UINT32_MAX)
-    {
-        Vector<Vertex2DLayout> spriteVertexList =
-        {
-            Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
-            Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
-            Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
-            Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
-        };
-
-        Vector<uint32> spriteIndexList =
-        {
-            0, 3, 1,
-            1, 3, 2
-        };
-
-        VertexLayout vertexData =
-        {
-            .VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
-            .VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
-            .VertexData = spriteVertexList.data(),
-        };
-
-        SpriteMeshId = meshSystem.CreateMesh("__SpriteMesh__", kMesh_SpriteMesh, vertexData, spriteIndexList);
-    }
-
+    meshSystem.CreateSpriteLayer(SpriteMeshId);
     SpriteLayerList.emplace_back(SpriteLayer
         {
             .InstanceCount = 0,

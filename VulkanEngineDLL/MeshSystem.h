@@ -21,6 +21,7 @@ enum VertexLayoutEnum
 	kVertexLayout_Vertex2D,
 	kVertexLayout_SpriteInstanceVertex,
 	kVertexLayout_SkyBoxVertex,
+	kVertexLayout_LineVertex,
 	kVertexLayout_Undefined
 };
 
@@ -42,6 +43,42 @@ struct Vertex2DLayout
 	{
 		Position = position;
 		UV = uv;
+	}
+};
+
+struct LineVertex2DLayout
+{
+	vec2 Position = vec2(0.0f);
+	vec4 Color = vec4(0.0f);
+
+	LineVertex2DLayout()
+	{
+		Position = vec2(0.0f);
+		Color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+	
+	LineVertex2DLayout(vec2 position, vec4 color)
+	{
+		Position = position;
+		Color = color;
+	}
+};
+
+struct LineVertex3DLayout
+{
+	vec3 Position = vec3(0.0f);
+	vec4 Color = vec4(0.0f);
+
+	LineVertex3DLayout()
+	{
+		Position = vec3(0.0f);
+		Color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	LineVertex3DLayout(vec3 position, vec4 color)
+	{
+		Position = position;
+		Color = color;
 	}
 };
 
@@ -119,6 +156,15 @@ public:
 	Vector<Mesh> MeshList;
 
 	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	DLL_EXPORT uint CreateSpriteLayer(uint32 spriteMeshId);
+	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
+	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);
+	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor);
+	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor);
+	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color);
+	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
+	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
+	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
 	DLL_EXPORT void Update(const float& deltaTime);
 	DLL_EXPORT void Destroy(uint meshId);
 	DLL_EXPORT void DestroyAllGameObjects();

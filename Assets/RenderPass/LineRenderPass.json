@@ -1,0 +1,71 @@
+{
+  "Name": "HdrRenderPass",
+  "RenderPassId": "6c9bdaa0-7baf-4cc1-be25-341601be2c51",
+  "RenderPipelineList": [
+    "Pipelines/HdrPipeline.json"
+  ],
+  "RenderPassResolution": [ 0, 0 ],
+  "SubPassCount": 1,
+  "UseDefaultRenderResolution": true,
+  "UseCubeMapMultiView": false,
+  "IsRenderedToSwapchain": false,
+  "IsCubeMapRenderPass": false,
+  "InputTextureList": [],
+  "RenderAttachmentList": [
+    {
+      "RenderedTextureId": "2ab5e178-e630-4131-9815-826b6d3ea493",
+      "MipMapCount": 1,
+      "RenderTextureType": 1,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 43,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1,
+      "DstStageMask": 128,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 1280,
+      "DependencyFlags": 1
+    }
+  ],
+  "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      },
+      "DepthStencil": {
+        "depth": 1.0,
+        "stencil": 0
+      }
+    }
+  ]
+}

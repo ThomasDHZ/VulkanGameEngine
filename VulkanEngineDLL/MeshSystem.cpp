@@ -58,6 +58,228 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 	return meshId;
 }
 
+uint MeshSystem::CreateSpriteLayer(uint32 spriteMeshId)
+{
+	if (spriteMeshId != UINT32_MAX)
+	{
+		Vector<Vertex2DLayout> spriteVertexList =
+		{
+			Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
+			Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
+			Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
+			Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
+		};
+
+		Vector<uint32> spriteIndexList =
+		{
+			0, 3, 1,
+			1, 3, 2
+		};
+
+		VertexLayout vertexData =
+		{
+			.VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
+			.VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
+			.VertexData = spriteVertexList.data(),
+		};
+
+		return meshSystem.CreateMesh("__SpriteMesh__", kMesh_SpriteMesh, vertexData, spriteIndexList);
+	}
+	return UINT32_MAX;
+}
+
+uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color)
+{
+	Vector<LineVertex2DLayout> lineVertexList =
+	{
+		{startPoint, vec4(color.x, color.y, color.z, 1.0f)},
+		{endPoint  , vec4(color.x, color.y, color.z, 1.0f)}
+	};
+	
+	Vector<uint32> lineIndexList = 
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color)
+{
+	Vector<LineVertex2DLayout> lineVertexList =
+	{
+		{startPoint, color},
+		{endPoint  , color}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor)
+{
+	Vector<LineVertex2DLayout> lineVertexList =
+	{
+		{startPoint, vec4(startColor.x, startColor.y, startColor.z, 1.0f)},
+		{endPoint  , vec4(endColor.x, endColor.y, endColor.z, 1.0f)}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor)
+{
+	Vector<LineVertex2DLayout> lineVertexList =
+	{
+		{startPoint, startColor},
+		{endPoint  , endColor}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color)
+{
+	Vector<LineVertex3DLayout> lineVertexList =
+	{
+		{startPoint, vec4(color.x, color.y, color.z, 1.0f)},
+		{endPoint  , vec4(color.x, color.y, color.z, 1.0f)}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color)
+{
+	Vector<LineVertex3DLayout> lineVertexList =
+	{
+		{startPoint, color},
+		{endPoint  , color}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor)
+{
+	Vector<LineVertex3DLayout> lineVertexList =
+	{
+		{startPoint, vec4(startColor.x, startColor.y, startColor.z, 1.0f)},
+		{endPoint  , vec4(endColor.x, endColor.y, endColor.z, 1.0f)}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
+uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor)
+{
+	Vector<LineVertex3DLayout> lineVertexList =
+	{
+		{startPoint, startColor},
+		{endPoint  , endColor}
+	};
+
+	Vector<uint32> lineIndexList =
+	{
+		0, 1,
+		1, 0
+	};
+
+	VertexLayout vertexData =
+	{
+		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
+		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
+		.VertexData = lineVertexList.data(),
+	};
+
+	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+}
+
 void MeshSystem::Update(const float& deltaTime)
 {
 	for (size_t x = 0; x < MeshList.size(); ++x)
