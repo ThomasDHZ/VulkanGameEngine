@@ -4,6 +4,25 @@
 #include "VulkanSystem.h"
 #include "TextureSystem.h"
 
+enum class ResourceType { Texture, Buffer };
+
+struct RenderPassResource 
+{
+    VkGuid RenderPassGuid;
+    ResourceType Type;
+    VkAccessFlags Access;           // e.g. VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+    VkImageLayout Layout;           // final layout after this pass
+    VkPipelineStageFlags Stage;     // stage that uses it
+};
+
+struct RenderPassNode
+{
+    VkGuid RenderPassGuid;
+    Vector<RenderPassResource> RenderPassInputs;
+    Vector<RenderPassResource> RenderPassOutputs;
+    std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> Command;
+};
+
 class RenderSystem
 {
 public:
@@ -18,8 +37,8 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
-    UnorderedMap<RenderPassGuid, VulkanRenderPass>                     RenderPassMap;
-    UnorderedMap<RenderPassGuid, String>                               RenderPassLoaderJsonMap;
+    Vector<VulkanRenderPass>                                           RenderPassNodes;
+    UnorderedMap<VkGuid, uint32>                                       GuidToRenderPassNodeIndex;
 
     DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     DLL_EXPORT void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
@@ -29,6 +48,8 @@ private:
     DLL_EXPORT Vector<VkAttachmentDescription>                         BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT Vector<Texture>                                         BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass);
     DLL_EXPORT void                                                    BuildFrameBuffer(VulkanRenderPass& renderPass);
+    DLL_EXPORT void                                                    AddRenderPass(const VulkanRenderPass& vulkanRenderPass);
+
 public:
 
     bool                                                               UsingMaterialBaker = false;
@@ -55,6 +76,7 @@ public:
     Vector<VkDescriptorImageInfo>                                      GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>                                      GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>                                      GetCubeMapTextureBuffer();
+    Vector<VulkanRenderPass>&                                    RenderPassList();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

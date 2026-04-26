@@ -2,7 +2,7 @@
   "Name": "HdrRenderPass",
   "RenderPassId": "6c9bdaa0-7baf-4cc1-be25-341601be2c51",
   "RenderPipelineList": [
-    "Pipelines/HdrPipeline.json"
+    "Pipelines/LinePipeline.json"
   ],
   "RenderPassResolution": [ 0, 0 ],
   "SubPassCount": 1,

@@ -66,10 +66,10 @@ layout(push_constant) uniform SceneDataBuffer
 } sceneData;
 
 layout (location = 0)  in vec2  VS_Position;
-layout (location = 1)  in vec2  VS_UV;
+layout (location = 1)  in vec4  VS_Color;
 
 layout (location = 0) out vec3  PS_Position;
-layout (location = 1) out vec2  PS_UV;
+layout (location = 1) out vec4  PS_Color;
 
 
 #include "BindlessHelpers.glsl"
@@ -91,7 +91,7 @@ void main()
     PackedMaterial material = GetMaterial(mesh.MaterialIndex);
 
     PS_Position = vec3(mesh.MeshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
-	PS_UV = VS_UV.xy;
+	PS_Color = VS_Color;
 
     gl_Position = sceneDataBuffer.Projection * 
                   sceneDataBuffer.View *  

@@ -98,8 +98,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 	
 	Vector<uint32> lineIndexList = 
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -122,8 +121,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -146,8 +144,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -170,8 +167,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -194,8 +190,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -218,8 +213,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -242,8 +236,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =
@@ -266,8 +259,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	Vector<uint32> lineIndexList =
 	{
-		0, 1,
-		1, 0
+		0, 1
 	};
 
 	VertexLayout vertexData =

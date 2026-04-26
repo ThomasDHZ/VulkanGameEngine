@@ -1,9 +1,9 @@
 {
-  "Name": "SkyBoxPipeline",
-  "PipelineId": "69460750-fbe5-4e3a-825d-c7467363f883",
+  "Name": "LinePipeline",
+  "PipelineId": "06f656eb-86ed-409d-83d7-9a89387ec37c",
   "ShaderList": [
-    "Shaders/IrradianceShaderVert.spv",
-    "Shaders/IrradianceShaderFrag.spv"
+    "Shaders/LineShader2DVert.spv",
+    "Shaders/LineShader2DFrag.spv"
   ],
   "VertexType": 0,
   "SubPassId": 0,
@@ -33,7 +33,7 @@
     "sType": 23,
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
-    "polygonMode": 0,
+    "polygonMode": 1,
     "cullMode": 0,
     "frontFace": 0,
     "depthBiasEnable": 0,
@@ -83,7 +83,7 @@
   },
   "PipelineInputAssemblyStateCreateInfo": {
     "sType": 20,
-    "topology": 3,
+    "topology": 1,
     "primitiveRestartEnable": 0
   }
 }

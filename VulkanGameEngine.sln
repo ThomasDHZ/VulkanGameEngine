@@ -215,6 +215,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameShaders", "GameShaders"
 		Shaders\HdrShader.vert = Shaders\HdrShader.vert
 		Shaders\IrradianceShader.frag = Shaders\IrradianceShader.frag
 		Shaders\IrradianceShader.vert = Shaders\IrradianceShader.vert
+		Shaders\LineShader2D.frag = Shaders\LineShader2D.frag
+		Shaders\LineShader2D.vert = Shaders\LineShader2D.vert
 		Shaders\PrefilterShader.frag = Shaders\PrefilterShader.frag
 		Shaders\PrefilterShader.vert = Shaders\PrefilterShader.vert
 	EndProjectSection
@@ -246,6 +248,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPasses", "GameRen
 		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
 		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
 		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
+		Assets\RenderPass\LineRenderPass.json = Assets\RenderPass\LineRenderPass.json
 		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
 		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
 	EndProjectSection
@@ -271,6 +274,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPipelines", "Game
 		Assets\Pipelines\LevelDirectionalShadowPipeline.json = Assets\Pipelines\LevelDirectionalShadowPipeline.json
 		Assets\Pipelines\LevelShader2DPipeline.json = Assets\Pipelines\LevelShader2DPipeline.json
 		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
+		Assets\Pipelines\LinePipeline.json = Assets\Pipelines\LinePipeline.json
 		Assets\Pipelines\PrefilterPipeline.json = Assets\Pipelines\PrefilterPipeline.json
 		Assets\Pipelines\SDFLevelShadowPipeline.json = Assets\Pipelines\SDFLevelShadowPipeline.json
 		Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json = Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json
