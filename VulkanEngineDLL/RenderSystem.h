@@ -23,6 +23,24 @@ struct RenderPassNode
     std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> Command;
 };
 
+struct VulkanBindVertexBuffer
+{
+    VkDeviceSize offsets = 0;
+    VkBuffer vertexBuffer = VK_NULL_HANDLE;
+};
+
+struct VulkanDrawMessage
+{
+    Vector<VulkanBindVertexBuffer> VertexBufferList;
+    VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
+    uint32                         FirstVertexBinding = 0;
+    uint32                         IndexCount = 0;
+    uint32                         InstanceCount = 1;
+    uint32                         FirstIndex = 0;
+    int32                          VertexOffset = 0;
+    uint32                         FirstInstance = 0;
+};
+
 class RenderSystem
 {
 public:
@@ -64,6 +82,15 @@ public:
     DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
+    DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
+    DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
+    DLL_EXPORT void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, const ShaderPushConstant& pushConstant, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    DLL_EXPORT void                                                    BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet = 0);
+    DLL_EXPORT void                                                    DrawVertexMesh(VkCommandBuffer& commandBuffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance);
+    DLL_EXPORT void                                                    DrawIndexedMesh(VkCommandBuffer& commandBuffer, Vector<VulkanDrawMessage>& vulkanDrawMessageList);
+    DLL_EXPORT void                                                    NextSubpass(VkCommandBuffer& commandBuffer);
+    DLL_EXPORT void                                                    EndRenderPass(VkCommandBuffer& commandBuffer);
+
     DLL_EXPORT void                                                    Destroy();
     DLL_EXPORT void                                                    DestroyRenderPass(VulkanRenderPass& renderPass);
     DLL_EXPORT void                                                    DestroyRenderPasses();
@@ -76,7 +103,7 @@ public:
     Vector<VkDescriptorImageInfo>                                      GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>                                      GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>                                      GetCubeMapTextureBuffer();
-    Vector<VulkanRenderPass>&                                    RenderPassList();
+    Vector<VulkanRenderPass>&                                          RenderPassList();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

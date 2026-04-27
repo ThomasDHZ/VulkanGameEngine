@@ -8,6 +8,7 @@
 #include "RenderSystem.h"
 #include "from_json.h"
 #include <unordered_set>
+#include <algorithm>
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -849,4 +850,107 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 
     return pickedId;
+}
+
+void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint32 mipLevel)
+{
+    const uint32 renderPassWidth  = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
+    const uint32 renderPassHeight = std::max(1, renderPass.RenderPassResolution.y >> mipLevel);
+    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = renderPass.RenderPass,
+        .framebuffer = renderPass.FrameBufferList[mipLevel],
+        .renderArea = VkRect2D
+        {
+           .offset = VkOffset2D 
+            {
+                .x = 0, 
+                .y = 0 
+            },
+           .extent = VkExtent2D 
+            {
+                .width = renderPassWidth, 
+                .height = renderPassHeight
+            }
+        },
+        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+        .pClearValues = renderPass.ClearValueList.data()
+    };
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel)
+{
+    if (renderPass.UseDefaultRenderResolution)
+    {
+        return;
+    }
+
+    const uint32 renderPassWidth = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
+    const uint32 renderPassHeight = std::max(1, renderPass.RenderPassResolution.y >> mipLevel);
+
+    VkViewport viewport
+    {
+        .x = 0.0f,
+        .y = 0.0f,
+        .width = static_cast<float>(renderPassWidth),
+        .height = static_cast<float>(renderPassHeight),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+
+    VkRect2D rect2D = VkRect2D
+    {
+       .offset = VkOffset2D {.x = 0, .y = 0 },
+       .extent = VkExtent2D {.width = renderPassWidth, .height = renderPassHeight }
+    };
+
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &rect2D);
+}
+
+void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, const ShaderPushConstant& pushConstant, VkShaderStageFlags stages)
+{
+    vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, stages, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+}
+
+void RenderSystem::BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet)
+{
+    if (pipeline.Pipeline == nullptr)
+    {
+        std::cout << "Pipeline not set" << std::endl;
+        return;
+    }
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, firstSet, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
+}
+
+void RenderSystem::DrawVertexMesh(VkCommandBuffer& commandBuffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance)
+{
+    vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+void RenderSystem::DrawIndexedMesh(VkCommandBuffer& commandBuffer, Vector<VulkanDrawMessage>& vulkanDrawMessageList)
+{
+    for (auto drawMessage : vulkanDrawMessageList)
+    {
+        for (auto vertexDraw : drawMessage.VertexBufferList)
+        {
+            vkCmdBindVertexBuffers(commandBuffer, drawMessage.FirstVertexBinding, drawMessage.VertexBufferList.size() - drawMessage.FirstVertexBinding, &vertexDraw.vertexBuffer, &vertexDraw.offsets);
+        }
+        vkCmdBindIndexBuffer(commandBuffer, drawMessage.IndexBuffer, drawMessage.FirstIndex * sizeof(uint32_t), VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(commandBuffer, drawMessage.IndexCount, drawMessage.InstanceCount, 0, drawMessage.VertexOffset, drawMessage.FirstInstance);
+    }
+}
+
+void RenderSystem::NextSubpass(VkCommandBuffer& commandBuffer)
+{
+    vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void RenderSystem::EndRenderPass(VkCommandBuffer& commandBuffer)
+{
+    vkCmdEndRenderPass(commandBuffer);
 }
