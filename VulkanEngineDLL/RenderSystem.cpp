@@ -770,6 +770,16 @@ const Vector<VulkanPipeline> RenderSystem::FindRenderPipelineList(const RenderPa
     return RenderPipelineMap.at(renderPassGuid);
 }
 
+VulkanPipeline RenderSystem::FindRenderPipeline(const RenderPassGuid& renderPassGuid, const VkGuid& pipelineGuid)
+{
+    Vector<VulkanPipeline> pipelineList = FindRenderPipelineList(renderPassGuid);
+    for (const auto& pipeline : pipelineList)
+    {
+        if (pipeline.RenderPipelineId == pipelineGuid) return pipeline;
+    }
+    return VulkanPipeline();
+}
+
 uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
     Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
@@ -852,9 +862,14 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     return pickedId;
 }
 
-void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint32 mipLevel)
+void RenderSystem::AddRenderNode(RenderPassNode renderPassNode)
 {
-    const uint32 renderPassWidth  = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
+    RenderPassNodess.emplace_back(renderPassNode);
+}
+
+void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel)
+{
+    const uint32 renderPassWidth = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
     const uint32 renderPassHeight = std::max(1, renderPass.RenderPassResolution.y >> mipLevel);
     VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
     {
@@ -863,14 +878,14 @@ void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanR
         .framebuffer = renderPass.FrameBufferList[mipLevel],
         .renderArea = VkRect2D
         {
-           .offset = VkOffset2D 
+           .offset = VkOffset2D
             {
-                .x = 0, 
-                .y = 0 
+                .x = 0,
+                .y = 0
             },
-           .extent = VkExtent2D 
+           .extent = VkExtent2D
             {
-                .width = renderPassWidth, 
+                .width = renderPassWidth,
                 .height = renderPassHeight
             }
         },
@@ -953,4 +968,41 @@ void RenderSystem::NextSubpass(VkCommandBuffer& commandBuffer)
 void RenderSystem::EndRenderPass(VkCommandBuffer& commandBuffer)
 {
     vkCmdEndRenderPass(commandBuffer);
+}
+
+void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
+{
+    for (int x = 0; x < RenderPassNodess.size(); x++)
+    {
+        const VulkanRenderPass& renderPass = FindRenderPass(RenderPassNodess[x].RenderPassGuid);
+
+        BeginRenderPass(commandBuffer, renderPass);
+        renderSystem.BindViewPort(commandBuffer, renderPass);
+        if (RenderPassNodess[x].CustomCommand)
+        {
+            RenderPassNodess[x].CustomCommand(commandBuffer, renderPass);
+        }
+        else
+        {
+            for (auto& pipelineGuid : RenderPassNodess[x].RenderPassPipelineList)
+            {
+                const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, pipelineGuid);
+
+                BindRenderPassPipeline(commandBuffer, pipeline);
+                for (auto& drawLayer : RenderPassNodess[x].RenderPassDrawMessage)
+                {
+                    //renderSystem.BindPushConstants(commandBuffer, pipeline, pushConstant);
+                    if (drawLayer.IndexBuffer)
+                    {
+                        renderSystem.DrawIndexedMesh(commandBuffer, RenderPassNodess[x].RenderPassDrawMessage);
+                    }
+                    else
+                    {
+                        renderSystem.DrawVertexMesh(commandBuffer, drawLayer.VertexCount, drawLayer.InstanceCount, drawLayer.FirstIndex, drawLayer.FirstInstance);
+                    }
+                }
+            }
+        }
+        renderSystem.EndRenderPass(commandBuffer);
+    }
 }

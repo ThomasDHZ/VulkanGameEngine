@@ -117,6 +117,7 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
     RenderHdrPass(commandBuffer, hdrRenderPassId);
     RenderGameObjectPickerRenderPass(commandBuffer, objectPickerRenderPassId);
     RenderSelectedGameObjectPickerRenderPass(commandBuffer, selectedObjectPickerRenderPassId);
+    renderSystem.Draw(commandBuffer);
     RenderFrameBuffer(commandBuffer, frameBufferId);
 }
 
@@ -317,8 +318,6 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
     auto pipelineList = renderSystem.FindRenderPipelineList(renderPassId);
     memoryPoolSystem.UpdateMemoryPool(pipelineList);
 
-    VkDeviceSize offsets[] = { 0 };
-    VkDeviceSize vertexOffset = 0;
     VkDeviceSize instanceOffset = memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).Offset;
     for (auto& levelLayer : levelLayerList)
     {
@@ -498,13 +497,32 @@ void LevelSystem::RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid&
 void LevelSystem::RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
 {
     const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-    VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
     Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
-    renderSystem.BeginRenderPass(commandBuffer, renderPass);
-    renderSystem.BindRenderPassPipeline(commandBuffer, pipeline);
-    renderSystem.DrawVertexMesh(commandBuffer, 3, 1, 0, 0);
-    renderSystem.EndRenderPass(commandBuffer);
+    renderSystem.AddRenderNode(RenderPassNode
+        {
+            .RenderPassCount = 1,
+            .RenderPassGuid = renderPassId,
+            .RenderPassInputs = Vector<RenderPassResource>
+            {
+                RenderPassResource
+                {
+                    .TextureGuid = renderPassTexture.front().textureGuid
+                }
+            },
+            .RenderPassDrawMessage = Vector<VulkanDrawMessage>
+            {
+                VulkanDrawMessage
+                {
+                    .VertexCount = 3
+                }
+            },
+            .RenderPassPipelineList = Vector<VkGuid>
+            {
+                renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId
+            },
+            .CustomCommand = nullptr,
+        });
 }
 
 void LevelSystem::RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
@@ -574,43 +592,44 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
 
 void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId)
 {
-    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
-    VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+    const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
+    Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
-    VkDeviceSize offsets[] = { 0 };
-    VkDeviceSize instanceOffset[] = { 0 };
-    renderSystem.BeginRenderPass(commandBuffer, renderPass);
-    renderSystem.BindRenderPassPipeline(commandBuffer, pipeline);
     for (const auto& layer : spriteSystem.SpriteLayerList)
     {
-        if (layer.InstanceCount == 0) continue;
-
         const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
         const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
         const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
         const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
-
-        Vector<VulkanDrawMessage> vulkanDrawMessage =
-        {
-            VulkanDrawMessage
+        renderSystem.AddRenderNode(RenderPassNode
             {
-                .VertexBufferList =
+                .RenderPassCount = 1,
+                .RenderPassGuid = renderPassId,
+                .RenderPassDrawMessage = Vector<VulkanDrawMessage>
                 {
-                    VulkanBindVertexBuffer
+                    VulkanDrawMessage
                     {
-                        .offsets = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-                        .vertexBuffer = instanceBuffer.Buffer
+                        .VertexBufferList =
+                        {
+                            VulkanBindVertexBuffer
+                            {
+                                .offsets = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+                                .vertexBuffer = instanceBuffer.Buffer
+                            }
+                        },
+                        .IndexBuffer = indexBuffer,
+                        .IndexCount = meshAsset.IndexCount,
+                        .InstanceCount = layer.InstanceCount,
+                        .FirstIndex = layer.StartInstanceIndex
                     }
                 },
-                .IndexBuffer = indexBuffer,
-                .IndexCount = meshAsset.IndexCount,
-                .InstanceCount = layer.InstanceCount,
-                .FirstIndex = layer.StartInstanceIndex
-            }
-        };
-        renderSystem.DrawIndexedMesh(commandBuffer, vulkanDrawMessage);
+                .RenderPassPipelineList = Vector<VkGuid>
+                {
+                    renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId
+                },
+                .CustomCommand = nullptr,
+            });
     }
-    renderSystem.EndRenderPass(commandBuffer);
 }
 
 void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId)

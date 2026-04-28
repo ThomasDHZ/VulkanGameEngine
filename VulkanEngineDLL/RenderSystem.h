@@ -8,19 +8,11 @@ enum class ResourceType { Texture, Buffer };
 
 struct RenderPassResource 
 {
-    VkGuid RenderPassGuid;
+    VkGuid TextureGuid;
     ResourceType Type;
     VkAccessFlags Access;           // e.g. VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
     VkImageLayout Layout;           // final layout after this pass
     VkPipelineStageFlags Stage;     // stage that uses it
-};
-
-struct RenderPassNode
-{
-    VkGuid RenderPassGuid;
-    Vector<RenderPassResource> RenderPassInputs;
-    Vector<RenderPassResource> RenderPassOutputs;
-    std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> Command;
 };
 
 struct VulkanBindVertexBuffer
@@ -34,12 +26,25 @@ struct VulkanDrawMessage
     Vector<VulkanBindVertexBuffer> VertexBufferList;
     VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
     uint32                         FirstVertexBinding = 0;
+    uint32                         VertexCount = 0;
     uint32                         IndexCount = 0;
     uint32                         InstanceCount = 1;
     uint32                         FirstIndex = 0;
     int32                          VertexOffset = 0;
     uint32                         FirstInstance = 0;
 };
+
+struct RenderPassNode
+{
+    uint32                                                                                 RenderPassCount;
+    VkGuid                                                                                 RenderPassGuid;
+    Vector<RenderPassResource>                                                             RenderPassInputs;
+    Vector<RenderPassResource>                                                             RenderPassOutputs;
+    Vector<VulkanDrawMessage>                                                              RenderPassDrawMessage;
+    Vector<VkGuid>                                                                         RenderPassPipelineList;
+    std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> CustomCommand;
+};
+
 
 class RenderSystem
 {
@@ -55,6 +60,7 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
+    Vector<RenderPassNode>                                             RenderPassNodess;
     Vector<VulkanRenderPass>                                           RenderPassNodes;
     UnorderedMap<VkGuid, uint32>                                       GuidToRenderPassNodeIndex;
 
@@ -79,8 +85,11 @@ public:
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
     DLL_EXPORT VulkanRenderPass                                        FindRenderPass(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT VulkanPipeline                                          FindRenderPipeline(const RenderPassGuid& renderPassGuid, const VkGuid& pipelineGuid);
     DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
+
+    DLL_EXPORT void                                                    AddRenderNode(RenderPassNode renderPassNode);
 
     DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
     DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
@@ -90,6 +99,7 @@ public:
     DLL_EXPORT void                                                    DrawIndexedMesh(VkCommandBuffer& commandBuffer, Vector<VulkanDrawMessage>& vulkanDrawMessageList);
     DLL_EXPORT void                                                    NextSubpass(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    EndRenderPass(VkCommandBuffer& commandBuffer);
+    DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer);
 
     DLL_EXPORT void                                                    Destroy();
     DLL_EXPORT void                                                    DestroyRenderPass(VulkanRenderPass& renderPass);

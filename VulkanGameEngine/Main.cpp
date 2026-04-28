@@ -50,7 +50,7 @@ int main(int argc, char** argv)
         vulkanWindow = new GameEngineWindow();
         vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
         gameSystem.StartUp(vulkanWindow);
-       // imGuiRenderer = ImGui_StartUp();
+        imGuiRenderer = ImGui_StartUp();
         while (!vulkanWindow->WindowShouldClose(vulkanWindow))
         {
             const float frameTime = deltaTime.GetFrameTime();
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
             deltaTime.EndFrameTime();
         }
         vkDeviceWaitIdle(vulkanSystem.Device);
-     //   ImGui_Destroy(imGuiRenderer);
+        ImGui_Destroy(imGuiRenderer);
 
         renderSystem.Destroy();
         textureSystem.DestroyAllTextures();
