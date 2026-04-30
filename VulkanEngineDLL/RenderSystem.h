@@ -23,8 +23,13 @@ struct VulkanBindVertexBuffer
 
 struct VulkanDrawMessage
 {
+    uint32                         SubPassIndex = 0;
     Vector<VulkanBindVertexBuffer> VertexBufferList;
     VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
+    ShaderPushConstant             pushConstant;
+    Vector<RenderPassResource>     RenderPassInputs;
+    Vector<RenderPassResource>     RenderPassOutputs;
+    uint32                         MipCount = 0;
     uint32                         FirstVertexBinding = 0;
     uint32                         VertexCount = 0;
     uint32                         IndexCount = 0;
@@ -32,16 +37,14 @@ struct VulkanDrawMessage
     uint32                         FirstIndex = 0;
     int32                          VertexOffset = 0;
     uint32                         FirstInstance = 0;
+    VkGuid                         RenderPassPipelineId;
+    std::function<void(VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)> CustomUpdatePushConstantsCmd;
 };
 
 struct RenderPassNode
 {
-    uint32                                                                                 RenderPassCount;
     VkGuid                                                                                 RenderPassGuid;
-    Vector<RenderPassResource>                                                             RenderPassInputs;
-    Vector<RenderPassResource>                                                             RenderPassOutputs;
-    Vector<VulkanDrawMessage>                                                              RenderPassDrawMessage;
-    Vector<VkGuid>                                                                         RenderPassPipelineList;
+    Vector<Vector<VulkanDrawMessage>>                                                      RenderPassDrawMessage;
     std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> CustomCommand;
 };
 
@@ -60,7 +63,6 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
-    Vector<RenderPassNode>                                             RenderPassNodess;
     Vector<VulkanRenderPass>                                           RenderPassNodes;
     UnorderedMap<VkGuid, uint32>                                       GuidToRenderPassNodeIndex;
 
@@ -76,6 +78,7 @@ private:
 
 public:
 
+    Vector<RenderPassNode>                                             RenderPassNodess;
     bool                                                               UsingMaterialBaker = false;
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
@@ -96,6 +99,7 @@ public:
     DLL_EXPORT void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, const ShaderPushConstant& pushConstant, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     DLL_EXPORT void                                                    BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet = 0);
     DLL_EXPORT void                                                    DrawVertexMesh(VkCommandBuffer& commandBuffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance);
+    DLL_EXPORT void                                                    DrawIndexedMesh(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage);
     DLL_EXPORT void                                                    DrawIndexedMesh(VkCommandBuffer& commandBuffer, Vector<VulkanDrawMessage>& vulkanDrawMessageList);
     DLL_EXPORT void                                                    NextSubpass(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    EndRenderPass(VkCommandBuffer& commandBuffer);

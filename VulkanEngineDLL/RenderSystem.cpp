@@ -792,8 +792,6 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     int x = std::clamp(mousePosition.x, 0, texture->width - 1);
     int y = std::clamp(mousePosition.y, 0, texture->height - 1);
 
-    std::cout << "[SamplePixel] Sampling R32_UINT at (" << x << ", " << y << ") on texture " << textureGuid.ToString() << std::endl;
-
     VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
 
     VkImageMemoryBarrier barrier = {
@@ -844,18 +842,16 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .bufferImageHeight = 0,
         .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 },
         .imageOffset = { 0, 0, 0 },
-        .imageExtent = { static_cast<uint32_t>(texture->width), static_cast<uint32_t>(texture->height), 1 }
+        .imageExtent = { static_cast<uint32>(texture->width), static_cast<uint32>(texture->height), 1 }
     };
 
     vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
     vulkanSystem.EndSingleUseCommand(cmd);
-    vkDeviceWaitIdle(vulkanSystem.Device);   // Safe for debugging
+    vkDeviceWaitIdle(vulkanSystem.Device);
 
-    const uint32_t* pData = static_cast<const uint32_t*>(allocOut.pMappedData);
-    uint32_t pickedId = pData[y * texture->width + x];
-
-    std::cout << "[SamplePixel] Picked ID = " << pickedId << " at (" << x << ", " << y << ")" << std::endl;
+    const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
+    uint32 pickedId = pData[y * texture->width + x];
 
     vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 
@@ -947,6 +943,16 @@ void RenderSystem::DrawVertexMesh(VkCommandBuffer& commandBuffer, uint32 vertexC
     vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
+void RenderSystem::DrawIndexedMesh(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage)
+{
+    for (auto vertexDraw : drawMessage.VertexBufferList)
+    {
+        vkCmdBindVertexBuffers(commandBuffer, drawMessage.FirstVertexBinding, drawMessage.VertexBufferList.size() - drawMessage.FirstVertexBinding, &vertexDraw.vertexBuffer, &vertexDraw.offsets);
+    }
+    vkCmdBindIndexBuffer(commandBuffer, drawMessage.IndexBuffer, drawMessage.FirstIndex * sizeof(uint32_t), VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(commandBuffer, drawMessage.IndexCount, drawMessage.InstanceCount, 0, drawMessage.VertexOffset, drawMessage.FirstInstance);
+}
+
 void RenderSystem::DrawIndexedMesh(VkCommandBuffer& commandBuffer, Vector<VulkanDrawMessage>& vulkanDrawMessageList)
 {
     for (auto drawMessage : vulkanDrawMessageList)
@@ -976,33 +982,57 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
     {
         const VulkanRenderPass& renderPass = FindRenderPass(RenderPassNodess[x].RenderPassGuid);
 
-        BeginRenderPass(commandBuffer, renderPass);
-        renderSystem.BindViewPort(commandBuffer, renderPass);
         if (RenderPassNodess[x].CustomCommand)
         {
+            BeginRenderPass(commandBuffer, renderPass);
+            BindViewPort(commandBuffer, renderPass);
             RenderPassNodess[x].CustomCommand(commandBuffer, renderPass);
+            EndRenderPass(commandBuffer);
         }
         else
         {
-            for (auto& pipelineGuid : RenderPassNodess[x].RenderPassPipelineList)
+            BeginRenderPass(commandBuffer, renderPass);
+            for (int y = 0; y < RenderPassNodess[x].RenderPassDrawMessage.size(); y++)
             {
-                const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, pipelineGuid);
-
-                BindRenderPassPipeline(commandBuffer, pipeline);
-                for (auto& drawLayer : RenderPassNodess[x].RenderPassDrawMessage)
+                Vector<VulkanDrawMessage> subPass = RenderPassNodess[x].RenderPassDrawMessage[y];
+                if (y > 0)
                 {
-                    //renderSystem.BindPushConstants(commandBuffer, pipeline, pushConstant);
-                    if (drawLayer.IndexBuffer)
+                    NextSubpass(commandBuffer);
+                }
+
+                for (auto& renderPassLayer : subPass)
+                {
+                    Texture inputTexture;
+                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
+
+                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.RenderPassPipelineId);
+                    for (int x = 0; x <= renderPassLayer.MipCount; x++)
                     {
-                        renderSystem.DrawIndexedMesh(commandBuffer, RenderPassNodess[x].RenderPassDrawMessage);
-                    }
-                    else
-                    {
-                        renderSystem.DrawVertexMesh(commandBuffer, drawLayer.VertexCount, drawLayer.InstanceCount, drawLayer.FirstIndex, drawLayer.FirstInstance);
+                        BindRenderPassPipeline(commandBuffer, pipeline);
+                        BindViewPort(commandBuffer, renderPass, x);
+
+                        if (renderPassLayer.CustomUpdatePushConstantsCmd)
+                        {
+                            renderPassLayer.CustomUpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x);
+                        }
+
+                        if (renderPassLayer.pushConstant.GlobalPushContsant)
+                        {
+                            BindPushConstants(commandBuffer, pipeline, renderPassLayer.pushConstant);
+                        }
+
+                        if (renderPassLayer.IndexBuffer)
+                        {
+                            renderSystem.DrawIndexedMesh(commandBuffer, renderPassLayer);
+                        }
+                        else
+                        {
+                            renderSystem.DrawVertexMesh(commandBuffer, renderPassLayer.VertexCount, renderPassLayer.InstanceCount, renderPassLayer.FirstIndex, renderPassLayer.FirstInstance);
+                        }
                     }
                 }
             }
+            EndRenderPass(commandBuffer);
         }
-        renderSystem.EndRenderPass(commandBuffer);
     }
 }
