@@ -174,10 +174,11 @@ void GameSystem::DebugUpdate(float deltaTime)
 void GameSystem::Draw(float deltaTime)
 {
     vulkanSystem.StartFrame();
-    VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+    commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+   // materialBakerSystem.Draw(commandBuffer);
     levelSystem.Draw(commandBuffer, deltaTime);
     renderSystem.Draw(commandBuffer);
-   // materialBakerSystem.Draw(commandBuffer);
+    levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
     ImGui_Draw(commandBuffer, imGuiRenderer);
     vulkanSystem.EndFrame(commandBuffer);
 }

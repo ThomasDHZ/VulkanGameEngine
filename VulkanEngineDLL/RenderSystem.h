@@ -23,6 +23,8 @@ struct VulkanBindVertexBuffer
 
 struct VulkanDrawMessage
 {
+    VkGuid                                                                                 RenderPassGuid;
+
     uint32                         SubPassIndex = 0;
     Vector<VulkanBindVertexBuffer> VertexBufferList;
     VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
@@ -38,14 +40,19 @@ struct VulkanDrawMessage
     int32                          VertexOffset = 0;
     uint32                         FirstInstance = 0;
     VkGuid                         RenderPassPipelineId;
+    std::function<void(VkCommandBuffer commandBuffer, VulkanDrawMessage self)> PreDrawLayerCmd;
     std::function<void(VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)> CustomUpdatePushConstantsCmd;
+    std::function<void(VkCommandBuffer commandBuffer, VulkanDrawMessage self)> PostDrawLayerCmd;
 };
 
 struct RenderPassNode
 {
     VkGuid                                                                                 RenderPassGuid;
     Vector<Vector<VulkanDrawMessage>>                                                      RenderPassDrawMessage;
-    std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> CustomCommand;
+    std::function<void(VkCommandBuffer commandBuffer, RenderPassNode& self)> PreRenderPassCmd;
+    std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> CustomDrawCmd;
+    std::function<void(VkCommandBuffer commandBuffer, RenderPassNode& self)> PrepairSubpassCmd;
+    std::function<void(VkCommandBuffer commandBuffer, RenderPassNode& self)> PostRenderPassCmd;
 };
 
 

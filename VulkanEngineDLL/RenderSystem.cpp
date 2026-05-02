@@ -256,6 +256,45 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     }
 
     Vector<VkSubpassDependency> subpassDependencies = renderPassJsonLoader.SubpassDependencyModelList;
+    //if (renderPassJsonLoader.RenderPassId == VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"))
+    //{
+    //    subpassDependencies =
+    //    {
+    //        // EXTERNAL → Subpass 0
+    //        {
+    //            .srcSubpass = VK_SUBPASS_EXTERNAL,
+    //            .dstSubpass = 0,
+    //            .srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+    //            .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+    //            .srcAccessMask = 0,
+    //            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+    //            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+    //        },
+
+    //        // Subpass 0 → Subpass 1
+    //        {
+    //            .srcSubpass = 0,
+    //            .dstSubpass = 1,
+    //            .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+    //            .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+    //            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+    //            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+    //            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+    //        },
+
+    //        // Subpass 1 → EXTERNAL (final)
+    //        {
+    //            .srcSubpass = 1,
+    //            .dstSubpass = VK_SUBPASS_EXTERNAL,
+    //            .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+    //            .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+    //            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+    //            .dstAccessMask = 0,
+    //            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+    //        }
+    //    };
+    //}
+
     VkRenderPassCreateInfo renderPassInfo =
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
@@ -283,7 +322,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         {
             case RenderType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
             case RenderType_OffscreenColorTexture: initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-            case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+            case RenderType_DepthBufferTexture:    initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
             case RenderType_GBufferTexture:        initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             case RenderType_IrradianceTexture:     initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;                        finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
             case RenderType_PrefilterTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
@@ -978,61 +1017,56 @@ void RenderSystem::EndRenderPass(VkCommandBuffer& commandBuffer)
 
 void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
 {
-    for (int x = 0; x < RenderPassNodess.size(); x++)
+    for (auto& renderPassNode : RenderPassNodess)
     {
-        const VulkanRenderPass& renderPass = FindRenderPass(RenderPassNodess[x].RenderPassGuid);
+        const VulkanRenderPass& renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
-        if (RenderPassNodess[x].CustomCommand)
+        if (renderPassNode.PreRenderPassCmd) renderPassNode.PreRenderPassCmd(commandBuffer, renderPassNode);
+        BeginRenderPass(commandBuffer, renderPass);
+        for (int x = 0; x < renderPassNode.RenderPassDrawMessage.size(); x++)
         {
-            BeginRenderPass(commandBuffer, renderPass);
-            BindViewPort(commandBuffer, renderPass);
-            RenderPassNodess[x].CustomCommand(commandBuffer, renderPass);
-            EndRenderPass(commandBuffer);
-        }
-        else
-        {
-            BeginRenderPass(commandBuffer, renderPass);
-            for (int y = 0; y < RenderPassNodess[x].RenderPassDrawMessage.size(); y++)
+            Vector<VulkanDrawMessage> subPass = renderPassNode.RenderPassDrawMessage[x];
+            if (x > 0)
             {
-                Vector<VulkanDrawMessage> subPass = RenderPassNodess[x].RenderPassDrawMessage[y];
-                if (y > 0)
-                {
-                    NextSubpass(commandBuffer);
-                }
+                NextSubpass(commandBuffer);
+                if (renderPassNode.PrepairSubpassCmd != nullptr) renderPassNode.PrepairSubpassCmd(commandBuffer, renderPassNode);
+            }
 
-                for (auto& renderPassLayer : subPass)
-                {
-                    Texture inputTexture;
-                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
+            for (auto& renderPassLayer : subPass)
+            {
+                Texture inputTexture;
+                if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
 
-                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.RenderPassPipelineId);
-                    for (int x = 0; x <= renderPassLayer.MipCount; x++)
+                const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.RenderPassPipelineId);
+                if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
+                for (int y = 0; y <= renderPassLayer.MipCount; y++)
+                {
+                    BindRenderPassPipeline(commandBuffer, pipeline);
+                    BindViewPort(commandBuffer, renderPass, y);
+
+                    if (renderPassLayer.CustomUpdatePushConstantsCmd)
                     {
-                        BindRenderPassPipeline(commandBuffer, pipeline);
-                        BindViewPort(commandBuffer, renderPass, x);
-
-                        if (renderPassLayer.CustomUpdatePushConstantsCmd)
-                        {
-                            renderPassLayer.CustomUpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x);
-                        }
-
-                        if (renderPassLayer.pushConstant.GlobalPushContsant)
-                        {
-                            BindPushConstants(commandBuffer, pipeline, renderPassLayer.pushConstant);
-                        }
-
-                        if (renderPassLayer.IndexBuffer)
-                        {
-                            renderSystem.DrawIndexedMesh(commandBuffer, renderPassLayer);
-                        }
-                        else
-                        {
-                            renderSystem.DrawVertexMesh(commandBuffer, renderPassLayer.VertexCount, renderPassLayer.InstanceCount, renderPassLayer.FirstIndex, renderPassLayer.FirstInstance);
-                        }
+                        renderPassLayer.CustomUpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), y);
                     }
+
+                    if (renderPassLayer.pushConstant.GlobalPushContsant)
+                    {
+                        BindPushConstants(commandBuffer, pipeline, renderPassLayer.pushConstant);
+                    }
+
+                    if (renderPassLayer.IndexBuffer)
+                    {
+                        renderSystem.DrawIndexedMesh(commandBuffer, renderPassLayer);
+                    }
+                    else
+                    {
+                        renderSystem.DrawVertexMesh(commandBuffer, renderPassLayer.VertexCount, renderPassLayer.InstanceCount, renderPassLayer.FirstIndex, renderPassLayer.FirstInstance);
+                    }
+                    if (renderPassLayer.PostDrawLayerCmd) renderPassLayer.PostDrawLayerCmd(commandBuffer, renderPassLayer);
                 }
             }
-            EndRenderPass(commandBuffer);
         }
+        if (renderPassNode.PostRenderPassCmd) renderPassNode.PostRenderPassCmd(commandBuffer, renderPassNode);
+        EndRenderPass(commandBuffer);
     }
 }
