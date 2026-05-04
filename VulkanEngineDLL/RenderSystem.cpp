@@ -1022,31 +1022,31 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
         const VulkanRenderPass& renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
         if (renderPassNode.PreRenderPassCmd) renderPassNode.PreRenderPassCmd(commandBuffer, renderPassNode);
-        BeginRenderPass(commandBuffer, renderPass);
-        for (int x = 0; x < renderPassNode.RenderPassDrawMessage.size(); x++)
+        for (int x = 0; x <= renderPassNode.MipCount; x++)
         {
-            Vector<VulkanDrawMessage> subPass = renderPassNode.RenderPassDrawMessage[x];
-            if (x > 0)
+            bool firstSubPass = true;
+            BeginRenderPass(commandBuffer, renderPass);
+            BindViewPort(commandBuffer, renderPass, x);
+            for (auto& subPass : renderPassNode.RenderPassDrawMessage)
             {
-                NextSubpass(commandBuffer);
-                if (renderPassNode.PrepairSubpassCmd != nullptr) renderPassNode.PrepairSubpassCmd(commandBuffer, renderPassNode);
-            }
-
-            for (auto& renderPassLayer : subPass)
-            {
-                Texture inputTexture;
-                if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
-
-                const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.PipelineGuid);
-                if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
-                for (int y = 0; y <= renderPassLayer.MipCount; y++)
+                if (!firstSubPass)
                 {
+                    NextSubpass(commandBuffer);
+                    if (renderPassNode.PrepairSubpassCmd != nullptr) renderPassNode.PrepairSubpassCmd(commandBuffer, renderPassNode);
+                }
+
+                for (auto& renderPassLayer : subPass)
+                {
+                    Texture inputTexture;
+                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
+
+                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.PipelineGuid);
+                    if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
                     BindRenderPassPipeline(commandBuffer, pipeline);
-                    BindViewPort(commandBuffer, renderPass, y);
 
                     if (renderPassLayer.UpdatePushConstantsCmd)
                     {
-                        renderPassLayer.UpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), y);
+                        renderPassLayer.UpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x);
                     }
 
                     if (renderPassLayer.PushConstant)
@@ -1064,9 +1064,11 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                     }
                     if (renderPassLayer.PostDrawLayerCmd) renderPassLayer.PostDrawLayerCmd(commandBuffer, renderPassLayer);
                 }
+
+                firstSubPass = false;
             }
+            if (renderPassNode.PostRenderPassCmd) renderPassNode.PostRenderPassCmd(commandBuffer, renderPassNode);
+            EndRenderPass(commandBuffer);
         }
-        if (renderPassNode.PostRenderPassCmd) renderPassNode.PostRenderPassCmd(commandBuffer, renderPassNode);
-        EndRenderPass(commandBuffer);
     }
 }

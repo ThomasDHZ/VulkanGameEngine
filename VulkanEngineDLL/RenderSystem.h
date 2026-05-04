@@ -52,6 +52,7 @@ struct VulkanDrawMessage
 
 struct RenderPassNode
 {
+    uint32                                                        MipCount = 0;
     VkGuid                                                        RenderPassGuid;
     Vector<Vector<VulkanDrawMessage>>                             RenderPassDrawMessage;
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PreRenderPassCmd;
