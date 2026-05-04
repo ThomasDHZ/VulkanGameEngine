@@ -43,9 +43,9 @@ struct VulkanDrawMessage
     uint32                         FirstIndex = 0;
     int32                          VertexOffset = 0;
     uint32                         FirstInstance = 0;
-
+    
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawLayerCmd;
-    std::function<void(VkCommandBuffer, VulkanDrawMessage&, ivec2 baseRenderPassSize, uint32 mipLevel)> UpdatePushConstantsCmd;
+    std::function<void(VkCommandBuffer, VulkanDrawMessage&, ivec2 baseRenderPassSize, uint32 mipLevel)> PushConstantsCmd;
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> PostDrawLayerCmd;
 
 };
@@ -55,8 +55,8 @@ struct RenderPassNode
     uint32                                                        MipCount = 0;
     VkGuid                                                        RenderPassGuid;
     Vector<Vector<VulkanDrawMessage>>                             RenderPassDrawMessage;
+
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PreRenderPassCmd;
-    std::function<void(VkCommandBuffer, const VulkanRenderPass&)> CustomDrawCmd;
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PrepairSubpassCmd;
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PostRenderPassCmd;
 };
@@ -107,8 +107,10 @@ public:
 
     DLL_EXPORT void                                                    AddRenderNode(RenderPassNode renderPassNode);
 
+    DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, ivec2 renderPassResolution, uint mipLevel = 0);
     DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
     DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
+    DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPassResolution, uint mipLevel = 0);
     DLL_EXPORT void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, const ShaderPushConstant& pushConstant, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     DLL_EXPORT void                                                    BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet = 0);
     DLL_EXPORT void                                                    DrawVertexMesh(VkCommandBuffer& commandBuffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance);

@@ -326,7 +326,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                 .IndexBuffer = meshIndexBuffer,
                 .MeshId = levelLayer.MeshId,
                 .IndexCount = meshAsset.IndexCount,
-                .UpdatePushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)
+                .PushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)
                         {
                             if (self.PushConstant.has_value())
                             {
@@ -640,8 +640,7 @@ void LevelSystem::RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                         .VertexCount = 3,
                     }
                 },
-            },
-            .CustomDrawCmd = nullptr,
+            }
         });
 }
 
@@ -742,8 +741,7 @@ void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffe
                             .FirstIndex = layer.StartInstanceIndex,
                         }
                     }
-                },
-                .CustomDrawCmd = nullptr,
+                }
             });
     }
 }
@@ -781,8 +779,7 @@ void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& comm
                             .FirstIndex = layer.StartInstanceIndex,
                         }
                     }
-                },
-                .CustomDrawCmd = nullptr,
+                }
             });
     }
 }

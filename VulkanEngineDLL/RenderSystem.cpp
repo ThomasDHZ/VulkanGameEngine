@@ -902,6 +902,33 @@ void RenderSystem::AddRenderNode(RenderPassNode renderPassNode)
     RenderPassNodess.emplace_back(renderPassNode);
 }
 
+void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, ivec2 renderPassResolution, uint mipLevel)
+{
+
+    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = renderPass.RenderPass,
+        .framebuffer = renderPass.FrameBufferList[mipLevel],
+        .renderArea = VkRect2D
+        {
+           .offset = VkOffset2D
+            {
+                .x = 0,
+                .y = 0
+            },
+           .extent = VkExtent2D
+            {
+                .width = static_cast<uint32>(renderPassResolution.x),
+                .height = static_cast<uint32>(renderPassResolution.y)
+            }
+        },
+        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
+        .pClearValues = renderPass.ClearValueList.data()
+    };
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
 void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel)
 {
     const uint32 renderPassWidth = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
@@ -954,6 +981,28 @@ void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRend
     {
        .offset = VkOffset2D {.x = 0, .y = 0 },
        .extent = VkExtent2D {.width = renderPassWidth, .height = renderPassHeight }
+    };
+
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &rect2D);
+}
+
+void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPassResolution, uint mipLevel)
+{
+    VkViewport viewport
+    {
+        .x = 0.0f,
+        .y = 0.0f,
+        .width = static_cast<float>(renderPassResolution.x),
+        .height = static_cast<float>(renderPassResolution.y),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+
+    VkRect2D rect2D = VkRect2D
+    {
+       .offset = VkOffset2D {.x = 0, .y = 0 },
+       .extent = VkExtent2D {.width = static_cast<uint32>(renderPassResolution.x), .height = static_cast<uint32>(renderPassResolution.y) }
     };
 
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -1025,8 +1074,11 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
         for (int x = 0; x <= renderPassNode.MipCount; x++)
         {
             bool firstSubPass = true;
-            BeginRenderPass(commandBuffer, renderPass);
-            BindViewPort(commandBuffer, renderPass, x);
+            const ivec2 renderPassResolution =  ivec2(std::max(1, renderPass.RenderPassResolution.x >> x),
+                                                      std::max(1, renderPass.RenderPassResolution.y >> x));
+
+            BeginRenderPass(commandBuffer, renderPass, renderPassResolution, x);
+            BindViewPort(commandBuffer, renderPassResolution, x);
             for (auto& subPass : renderPassNode.RenderPassDrawMessage)
             {
                 if (!firstSubPass)
@@ -1044,13 +1096,16 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                     if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
                     BindRenderPassPipeline(commandBuffer, pipeline);
 
-                    if (renderPassLayer.UpdatePushConstantsCmd)
+
+                    if (renderPassLayer.PushConstantsCmd)
                     {
-                        renderPassLayer.UpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x);
+                        renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x);
                     }
+
 
                     if (renderPassLayer.PushConstant)
                     {
+                       // if(renderPassLayer.PushConstantsCmd) renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x)
                         BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
                     }
 
