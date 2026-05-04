@@ -297,228 +297,87 @@ void LevelSystem::LoadSkyBox()
 
 void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
 {
-    VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-    VulkanPipeline spritePipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-    VulkanPipeline levelPipeline = renderSystem.FindRenderPipelineList(renderPassId)[1];
-    VulkanPipeline lightingPipeline = renderSystem.FindRenderPipelineList(renderPassId)[2];
-
-
-    const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
-
     ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
-        shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
+    shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
     shaderSystem.UpdatePushConstantValue<float>(sceneDataPushConstant, "HeightScale", HeightScale);
 
+    Vector<VulkanDrawMessage> firstSubpassDrawMessageList;
+    Vector<Vector<VulkanDrawMessage>> vulkanDrawMessage;
+    const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
+    for (auto& levelLayer : levelLayerList)
+    {
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
-    renderSystem.BeginRenderPass(commandBuffer, renderPass);
-    renderSystem.BindRenderPassPipeline(commandBuffer, levelPipeline);
+        firstSubpassDrawMessageList.push_back(VulkanDrawMessage
+            {
+                .RenderPassGuid = renderPassId,
+                .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[1].RenderPipelineId,
+                .PushConstant = sceneDataPushConstant,
+                .VertexBufferList =
+                {
+                    VulkanBindVertexBuffer
+                    {
+                        .offsets = 0,
+                        .vertexBuffer = meshVertexBuffer
+                    }
+                },
+                .IndexBuffer = meshIndexBuffer,
+                .MeshId = levelLayer.MeshId,
+                .IndexCount = meshAsset.IndexCount,
+                .UpdatePushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)
+                        {
+                            shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", self.MeshId);
+                            shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
+                        }
+            });
+    }
 
-    auto pipelineList = renderSystem.FindRenderPipelineList(renderPassId);
-    memoryPoolSystem.UpdateMemoryPool(pipelineList);
+    for (const auto& layer : spriteSystem.SpriteLayerList)
+    {
+        if (layer.InstanceCount == 0) continue;
 
-      VkDeviceSize instanceOffset = memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).Offset;
-      for (auto& levelLayer : levelLayerList)
-      {
-          const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);
-          const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-          const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+        const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+        const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
 
-          Vector<VulkanDrawMessage> vulkanDrawMessage =
-          {
-              VulkanDrawMessage
-              {
-                  .VertexBufferList =
-                  {
-                      VulkanBindVertexBuffer
-                      {
-                          .offsets = 0,
-                          .vertexBuffer = meshVertexBuffer
-                      }
-                  },
-                  .IndexBuffer = meshIndexBuffer,
-                  .IndexCount = meshAsset.IndexCount
-              }
-          };
+        firstSubpassDrawMessageList.push_back(VulkanDrawMessage
+            {
+                .RenderPassGuid = renderPassId,
+                .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
+                .VertexBufferList =
+                {
+                    VulkanBindVertexBuffer
+                    {
+                        .offsets = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+                        .vertexBuffer = instanceBuffer.Buffer
+                    }
+                },
+                .IndexBuffer = indexBuffer,
+                .IndexCount = meshAsset.IndexCount,
+                .InstanceCount = layer.InstanceCount,
+                .FirstIndex = layer.StartInstanceIndex
+            });
+    }
+    vulkanDrawMessage.push_back(firstSubpassDrawMessageList);
 
-          shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
-          shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
-          renderSystem.BindPushConstants(commandBuffer, levelPipeline, sceneDataPushConstant);
-          renderSystem.DrawIndexedMesh(commandBuffer, vulkanDrawMessage);
-      }
-      renderSystem.BindRenderPassPipeline(commandBuffer, spritePipeline);
-      for (const auto& layer : spriteSystem.SpriteLayerList)
-      {
-          if (layer.InstanceCount == 0) continue;
+    vulkanDrawMessage.push_back(Vector<VulkanDrawMessage>
+    {
+        VulkanDrawMessage
+        {
+            .RenderPassGuid = renderPassId,
+            .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[2].RenderPipelineId,
+            .VertexCount = 3,
+        }
+    });
 
-          const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
-          const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-          const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
-          const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
-
-          Vector<VulkanDrawMessage> vulkanDrawMessage =
-          {
-              VulkanDrawMessage
-              {
-                  .VertexBufferList =
-                  {
-                      VulkanBindVertexBuffer
-                      {
-                          .offsets = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-                          .vertexBuffer = instanceBuffer.Buffer
-                      }
-                  },
-                  .IndexBuffer = indexBuffer,
-                  .IndexCount = meshAsset.IndexCount,
-                  .InstanceCount = layer.InstanceCount,
-                  .FirstIndex = layer.StartInstanceIndex
-              }
-          };
-          renderSystem.DrawIndexedMesh(commandBuffer, vulkanDrawMessage);
-      }
-      renderSystem.NextSubpass(commandBuffer);
-      renderSystem.BindRenderPassPipeline(commandBuffer, lightingPipeline);
-      renderSystem.DrawVertexMesh(commandBuffer, 3, 1, 0, 0);
-      renderSystem.EndRenderPass(commandBuffer);
-
-    //VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-
-
-    //const Vector<Mesh>& levelLayerList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_LevelMesh);
-
-    //SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    //sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
-
-    //ShaderPushConstant& sceneDataPushConstant = shaderSystem.FindShaderPushConstant("sceneData");
-    //shaderSystem.UpdatePushConstantValue<int>(sceneDataPushConstant, "UseHeightMap", UseHeightMap);
-    //shaderSystem.UpdatePushConstantValue<float>(sceneDataPushConstant, "HeightScale", HeightScale);
-
-    //Vector<VulkanDrawMessage> vulkanDrawMessageList;
-    //Vector<Vector<VulkanDrawMessage>> vulkanDrawMessage;
-    //for (auto& levelLayer : levelLayerList)
-    //{
-    //    const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(levelLayer.SharedAssetId);
-    //    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-    //    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
-
-    //    vulkanDrawMessageList.emplace_back(VulkanDrawMessage
-    //        {
-    //            .RenderPassGuid = renderPassId, 
-    //            .SubPassIndex = 0,
-    //            .VertexBufferList =
-    //            {
-    //                VulkanBindVertexBuffer
-    //                {
-    //                    .offsets = 0,
-    //                    .vertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer
-    //                }
-    //            },
-    //            .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
-    //            .IndexCount = meshAsset.IndexCount,
-    //            .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[1].RenderPipelineId,
-    //            .CustomUpdatePushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)
-    //            {
-    //                VulkanPipeline levelPipeline = renderSystem.FindRenderPipeline(self.RenderPassGuid, self.RenderPassPipelineId);
-    //                shaderSystem.UpdatePushConstantValue<uint>(sceneDataPushConstant, "MeshBufferIndex", levelLayer.MeshId);
-    //                shaderSystem.UpdatePushConstantBuffer(sceneDataPushConstant);
-    //                renderSystem.BindPushConstants(commandBuffer, levelPipeline, sceneDataPushConstant);
-    //            }
-    //        });
-    //}
-
-    //for (const auto& layer : spriteSystem.SpriteLayerList)
-    //{
-    //    if (layer.InstanceCount == 0) continue;
-
-    //    const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
-    //    const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-    //    const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
-    //    const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
-    //    vulkanDrawMessageList.emplace_back(VulkanDrawMessage
-    //        {
-    //              .SubPassIndex = 0,
-    //               .VertexBufferList =
-    //               {
-    //                   VulkanBindVertexBuffer
-    //                   {
-    //                       .offsets = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-    //                       .vertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer
-    //                   }
-    //               },
-    //               .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
-    //               .IndexCount = meshAsset.IndexCount,
-    //               .InstanceCount = layer.InstanceCount,
-    //               .FirstIndex = layer.StartInstanceIndex,
-    //               .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId
-    //        });
-    //}
-    //vulkanDrawMessage.emplace_back(vulkanDrawMessageList);
-
-    //vulkanDrawMessage.emplace_back(Vector<VulkanDrawMessage>
-    //{
-    //    VulkanDrawMessage
-    //    {
-    //        .SubPassIndex = 1,
-    //        .RenderPassInputs = Vector<RenderPassResource>
-    //        {
-    //            RenderPassResource
-    //            {
-    //                .TextureGuid = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].textureGuid
-    //            }
-    //        },
-    //        .VertexCount = 3,
-    //        .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[2].RenderPipelineId
-    //    }
-    //});
-
-    //renderSystem.AddRenderNode(RenderPassNode
-    //    {
-    //        .RenderPassGuid = renderPassId,
-    //        .RenderPassDrawMessage = vulkanDrawMessage,
-
-    //        // ===================================================================
-    //        // 1. Pre-frame reset (run BEFORE BeginRenderPass - this fixes the depth CLEAR hazard)
-    //        // ===================================================================
-    //      .PrepairSubpassCmd =
-    //        {
-    //            //[&](VkCommandBuffer commandBuffer, RenderPassNode& self)
-    //            //{
-    //            //    Vector<Texture> attachments = textureSystem.FindRenderedTextureList(self.RenderPassGuid);
-
-    //            //    Vector<VkImageMemoryBarrier> barriers;
-
-    //            //    for (uint32_t i = 0; i < 8; ++i)
-    //            //    {
-    //            //        barriers.emplace_back(VkImageMemoryBarrier{
-    //            //            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-    //            //            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    //            //            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-    //            //            .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    //            //            .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,   // SAME layout - no transition
-    //            //            .image = attachments[i].textureImage,
-    //            //            .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
-    //            //        });
-    //            //    }
-
-    //            //    // Depth (optional - often not needed)
-    //            //    barriers.emplace_back(VkImageMemoryBarrier{
-    //            //        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-    //            //        .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-    //            //        .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-    //            //        .oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-    //            //        .newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,   // SAME layout
-    //            //        .image = attachments[8].textureImage,
-    //            //        .subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 }
-    //            //    });
-
-    //            //    vkCmdPipelineBarrier(commandBuffer,
-    //            //        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-    //            //        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-    //            //        0,
-    //            //        0, nullptr, 0, nullptr,
-    //            //        static_cast<uint32_t>(barriers.size()), barriers.data());
-    //            //}
-    //        },
-    //    });
+    renderSystem.AddRenderNode(RenderPassNode
+        {
+          .RenderPassGuid = renderPassId,
+          .RenderPassDrawMessage = vulkanDrawMessage,
+        });
 }
 
 void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
@@ -611,34 +470,30 @@ void LevelSystem::RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, 
 void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime)
 {
     VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-    VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
-    const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
     ShaderPushConstant& pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties");
-
-    const Mesh& skyboxMesh = skyBoxList[0];
-    const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
-    const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-    const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
     const SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 
-    VkDeviceSize offsets[] = { 0 };
-    uint32 baseSize = renderPass.RenderPassResolution.x;
-    uint32 prefilterMipmapCount = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].mipMapLevels;
-    for (uint32 mip = 0; mip < prefilterMipmapCount; ++mip)
+    Vector<VulkanDrawMessage> firstSubpassDrawMessageList;
+    Vector<Vector<VulkanDrawMessage>> vulkanDrawMessage;
+    const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
+    for (auto& skybox : skyBoxList)
     {
-        uint32 mipWidth = baseSize >> mip;
-        uint32 mipHeight = baseSize >> mip;
-        float roughness = static_cast<float>(mip) / static_cast<float>(prefilterMipmapCount - 1);
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skybox.SharedAssetId);
+        const VkBuffer& meshVertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+        const VkBuffer& meshIndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 
-        shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", baseSize);
-        shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", roughness);
-        shaderSystem.UpdatePushConstantBuffer(pushConstant);
-
-
-        Vector<VulkanDrawMessage> vulkanDrawMessage =
-        {
-            VulkanDrawMessage
+        firstSubpassDrawMessageList.push_back(VulkanDrawMessage
             {
+                .RenderPassGuid = renderPassId,
+                .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
+                .PushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties"),
+                .RenderPassInputs = Vector<RenderPassResource>
+                {
+                    RenderPassResource
+                    {
+                        .TextureGuid = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].textureGuid
+                    }
+                },
                 .VertexBufferList =
                 {
                     VulkanBindVertexBuffer
@@ -648,68 +503,30 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
                     }
                 },
                 .IndexBuffer = meshIndexBuffer,
-                .IndexCount = meshAsset.IndexCount
-            }
-        };
+                .MeshId = skybox.MeshId,
+                .MipCount = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].mipMapLevels,
+                .IndexCount = meshAsset.IndexCount,
+                .UpdatePushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)
+                        {
+                                const VulkanPipeline pipeline = renderSystem.FindRenderPipeline(self.RenderPassGuid, self.PipelineGuid);
+                                const SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+                                const uint32 renderPassWidth = std::max(1, baseRenderPassSize.x >> mipLevel);
+                                float roughness = static_cast<float>(mipLevel) / static_cast<float>(self.MipCount - 1);
 
-        renderSystem.BeginRenderPass(commandBuffer, renderPass, mip);
-        renderSystem.BindViewPort(commandBuffer, renderPass, mip);
-        renderSystem.BindPushConstants(commandBuffer, skyboxPipeline, pushConstant);
-        renderSystem.BindRenderPassPipeline(commandBuffer, skyboxPipeline);
-        renderSystem.DrawIndexedMesh(commandBuffer, vulkanDrawMessage);
-        renderSystem.EndRenderPass(commandBuffer);
+                                shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", renderPassWidth);
+                                shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", roughness);
+                                shaderSystem.UpdatePushConstantBuffer(pushConstant);
+                                renderSystem.BindPushConstants(commandBuffer, pipeline, pushConstant);
+                        }
+            });
     }
-
-    /*VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-    const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-    const Mesh& skyboxMesh = skyBoxList[0];
-    const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyboxMesh.SharedAssetId);
-    const SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    vulkanDrawMessage.push_back(firstSubpassDrawMessageList);
 
     renderSystem.AddRenderNode(RenderPassNode
         {
-            .RenderPassGuid = renderPassId,
-            .RenderPassDrawMessage = Vector<Vector<VulkanDrawMessage>>
-                {
-                    Vector<VulkanDrawMessage>
-                    {
-                        VulkanDrawMessage
-                        {
-                            .VertexBufferList =
-                            {
-                                VulkanBindVertexBuffer
-                                {
-                                    .offsets = 0,
-                                    .vertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer
-                                }
-                            },
-                            .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
-                            .pushConstant = shaderSystem.FindShaderPushConstant("prefilterSamplerProperties"),
-                            .RenderPassInputs = Vector<RenderPassResource>
-                            {
-                                RenderPassResource
-                                {
-                                    .TextureGuid = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].textureGuid
-                                }
-                            },
-                            .MipCount = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].mipMapLevels,
-                            .IndexCount = meshAsset.IndexCount,
-                            .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
-                            .CustomUpdatePushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)
-                            {
-                                uint32 mipWidth = baseRenderPassSize.x >> mipLevel;
-                                uint32 mipHeight = baseRenderPassSize.x >> mipLevel;
-                                float roughness = static_cast<float>(mipLevel) / static_cast<float>(self.MipCount - 1);
-
-                                shaderSystem.UpdatePushConstantValue<uint>(self.pushConstant, "CubeMapResolution", static_cast<uint>(baseRenderPassSize.x));
-                                shaderSystem.UpdatePushConstantValue<float>(self.pushConstant, "Roughness", roughness);
-                                shaderSystem.UpdatePushConstantBuffer(self.pushConstant);
-                            }
-                        }
-                    }
-            },
-            .CustomCommand = nullptr,
-        });*/
+          .RenderPassGuid = renderPassId,
+          .RenderPassDrawMessage = vulkanDrawMessage,
+        });
 }
 
 void LevelSystem::RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection)
@@ -743,6 +560,7 @@ void LevelSystem::RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                 {
                     VulkanDrawMessage
                     {
+                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
                         .RenderPassInputs = Vector<RenderPassResource>
                         {
                             RenderPassResource
@@ -751,7 +569,6 @@ void LevelSystem::RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                             }
                         },
                         .VertexCount = 3,
-                        .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId
                     }
                 },
             },
@@ -841,6 +658,7 @@ void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffe
                     {
                         VulkanDrawMessage
                         {
+                            .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
                             .VertexBufferList =
                             {
                                 VulkanBindVertexBuffer
@@ -853,7 +671,6 @@ void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffe
                             .IndexCount = meshAsset.IndexCount,
                             .InstanceCount = layer.InstanceCount,
                             .FirstIndex = layer.StartInstanceIndex,
-                            .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId
                         }
                     }
                 },
@@ -880,6 +697,7 @@ void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& comm
                         VulkanDrawMessage
 
                         {
+                            .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
                             .VertexBufferList =
                             {
                                 VulkanBindVertexBuffer
@@ -892,7 +710,6 @@ void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& comm
                             .IndexCount = meshAsset.IndexCount,
                             .InstanceCount = layer.InstanceCount,
                             .FirstIndex = layer.StartInstanceIndex,
-                            .RenderPassPipelineId = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId
                         }
                     }
                 },

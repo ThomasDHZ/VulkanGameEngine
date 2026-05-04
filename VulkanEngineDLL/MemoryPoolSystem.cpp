@@ -307,7 +307,7 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
     return index;
 }
 
-void MemoryPoolSystem::UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
+void MemoryPoolSystem::UpdateMemoryPool()
 {
     if (IsSceneBufferDirty)
     {

@@ -150,7 +150,7 @@ struct ShaderPushConstant
     VkShaderStageFlags              ShaderStageFlags;
     Vector<ShaderVariable>          PushConstantVariableList;
     Vector<byte>                    PushConstantBuffer;
-    bool			                GlobalPushContsant = false;
+    bool			                GlobalPushConstant = false;
 };
 
 struct ShaderPipelineData

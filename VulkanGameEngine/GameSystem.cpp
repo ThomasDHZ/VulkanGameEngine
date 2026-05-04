@@ -73,6 +73,7 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     levelSystem.Update(deltaTime);
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
+    memoryPoolSystem.UpdateMemoryPool();
     auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
   //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
    // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);

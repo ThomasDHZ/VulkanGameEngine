@@ -1037,21 +1037,21 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                 Texture inputTexture;
                 if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
 
-                const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.RenderPassPipelineId);
+                const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.PipelineGuid);
                 if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
                 for (int y = 0; y <= renderPassLayer.MipCount; y++)
                 {
                     BindRenderPassPipeline(commandBuffer, pipeline);
                     BindViewPort(commandBuffer, renderPass, y);
 
-                    if (renderPassLayer.CustomUpdatePushConstantsCmd)
+                    if (renderPassLayer.UpdatePushConstantsCmd)
                     {
-                        renderPassLayer.CustomUpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), y);
+                        renderPassLayer.UpdatePushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), y);
                     }
 
-                    if (renderPassLayer.pushConstant.GlobalPushContsant)
+                    if (renderPassLayer.PushConstant)
                     {
-                        BindPushConstants(commandBuffer, pipeline, renderPassLayer.pushConstant);
+                        BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
                     }
 
                     if (renderPassLayer.IndexBuffer)

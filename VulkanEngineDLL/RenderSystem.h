@@ -3,6 +3,7 @@
 #include "JsonStruct.h"
 #include "VulkanSystem.h"
 #include "TextureSystem.h"
+#include <optional>
 
 enum class ResourceType { Texture, Buffer };
 
@@ -15,6 +16,8 @@ struct RenderPassResource
     VkPipelineStageFlags Stage;     // stage that uses it
 };
 
+
+
 struct VulkanBindVertexBuffer
 {
     VkDeviceSize offsets = 0;
@@ -23,14 +26,15 @@ struct VulkanBindVertexBuffer
 
 struct VulkanDrawMessage
 {
-    VkGuid                                                                                 RenderPassGuid;
-
-    uint32                         SubPassIndex = 0;
-    Vector<VulkanBindVertexBuffer> VertexBufferList;
-    VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
-    ShaderPushConstant             pushConstant;
+    VkGuid                         RenderPassGuid;
+    VkGuid                         PipelineGuid;
+    std::optional<ShaderPushConstant> PushConstant;
     Vector<RenderPassResource>     RenderPassInputs;
     Vector<RenderPassResource>     RenderPassOutputs;
+    Vector<VulkanBindVertexBuffer> VertexBufferList;
+    VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
+
+    uint32                         MeshId = UINT32_MAX;
     uint32                         MipCount = 0;
     uint32                         FirstVertexBinding = 0;
     uint32                         VertexCount = 0;
@@ -39,20 +43,21 @@ struct VulkanDrawMessage
     uint32                         FirstIndex = 0;
     int32                          VertexOffset = 0;
     uint32                         FirstInstance = 0;
-    VkGuid                         RenderPassPipelineId;
-    std::function<void(VkCommandBuffer commandBuffer, VulkanDrawMessage self)> PreDrawLayerCmd;
-    std::function<void(VkCommandBuffer cmd, VulkanDrawMessage& self, ivec2 baseRenderPassSize, uint32 mipLevel)> CustomUpdatePushConstantsCmd;
-    std::function<void(VkCommandBuffer commandBuffer, VulkanDrawMessage self)> PostDrawLayerCmd;
+
+    std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawLayerCmd;
+    std::function<void(VkCommandBuffer, VulkanDrawMessage&, ivec2 baseRenderPassSize, uint32 mipLevel)> UpdatePushConstantsCmd;
+    std::function<void(VkCommandBuffer, VulkanDrawMessage)> PostDrawLayerCmd;
+
 };
 
 struct RenderPassNode
 {
-    VkGuid                                                                                 RenderPassGuid;
-    Vector<Vector<VulkanDrawMessage>>                                                      RenderPassDrawMessage;
-    std::function<void(VkCommandBuffer commandBuffer, RenderPassNode& self)> PreRenderPassCmd;
-    std::function<void(VkCommandBuffer commandBuffer, const VulkanRenderPass& renderPass)> CustomDrawCmd;
-    std::function<void(VkCommandBuffer commandBuffer, RenderPassNode& self)> PrepairSubpassCmd;
-    std::function<void(VkCommandBuffer commandBuffer, RenderPassNode& self)> PostRenderPassCmd;
+    VkGuid                                                        RenderPassGuid;
+    Vector<Vector<VulkanDrawMessage>>                             RenderPassDrawMessage;
+    std::function<void(VkCommandBuffer, RenderPassNode&)>         PreRenderPassCmd;
+    std::function<void(VkCommandBuffer, const VulkanRenderPass&)> CustomDrawCmd;
+    std::function<void(VkCommandBuffer, RenderPassNode&)>         PrepairSubpassCmd;
+    std::function<void(VkCommandBuffer, RenderPassNode&)>         PostRenderPassCmd;
 };
 
 

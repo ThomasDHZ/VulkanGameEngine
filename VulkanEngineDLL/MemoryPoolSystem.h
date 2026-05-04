@@ -161,7 +161,7 @@ public:
 
 	DLL_EXPORT void											 StartUp();
 	DLL_EXPORT uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
-	DLL_EXPORT void											 UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList);
+	DLL_EXPORT void											 UpdateMemoryPool();
 	DLL_EXPORT void											 UpdateTextureDescriptorSet(Texture& texture, uint binding);
 	DLL_EXPORT void											 UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
 	DLL_EXPORT MeshPropertiesStruct&						 UpdateMesh(uint32 index);
