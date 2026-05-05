@@ -1070,49 +1070,48 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
     {
         const VulkanRenderPass& renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
+        uint32 mipCount = std::max(1u, renderPassNode.MipCount);
         if (renderPassNode.PreRenderPassCmd) renderPassNode.PreRenderPassCmd(commandBuffer, renderPassNode);
-        for (int x = 0; x <= renderPassNode.MipCount; ++x)
+        for (uint32 mip = 0; mip < mipCount; mip++)
         {
-            int mip = x;
-            if(x != 0) mip -= 1;
             bool firstSubPass = true;
             const ivec2 renderPassResolution =  ivec2(std::max(1, renderPass.RenderPassResolution.x >> mip),
                                                       std::max(1, renderPass.RenderPassResolution.y >> mip));
 
             BeginRenderPass(commandBuffer, renderPass, renderPassResolution, mip);
             BindViewPort(commandBuffer, renderPassResolution, mip);
-            for (auto& subPass : renderPassNode.RenderPassDrawMessage)
+            for (auto& subPass : renderPassNode.SubPassDrawMessage)
             {
                 if (!firstSubPass)
                 {
                     NextSubpass(commandBuffer);
-                    if (renderPassNode.PrepairSubpassCmd != nullptr) renderPassNode.PrepairSubpassCmd(commandBuffer, renderPassNode);
                 }
 
                 for (auto& renderPassLayer : subPass)
                 {
                     Texture inputTexture;
-                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0].TextureGuid);
+                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
 
-                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.PipelineGuid);
-                    if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
-                    BindRenderPassPipeline(commandBuffer, pipeline);
+                        const VulkanPipeline& pipeline = FindRenderPipeline(renderPass.RenderPassId, renderPassLayer.PipelineGuid);
+                        if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
+                        BindRenderPassPipeline(commandBuffer, pipeline);
 
-                    if (renderPassLayer.PushConstant)
-                    {
-                        if (renderPassLayer.PushConstantsCmd) renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), mip);
-                        BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
-                    }
+                        if (renderPassLayer.PushConstant)
+                        {
+                            if (renderPassLayer.PushConstantsCmd) renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), mip);
+                            BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
+                        }
 
-                    if (renderPassLayer.IndexBuffer)
-                    {
-                        renderSystem.DrawIndexedMesh(commandBuffer, renderPassLayer);
-                    }
-                    else
-                    {
-                        renderSystem.DrawVertexMesh(commandBuffer, renderPassLayer.VertexCount, renderPassLayer.InstanceCount, renderPassLayer.FirstIndex, renderPassLayer.FirstInstance);
-                    }
-                    if (renderPassLayer.PostDrawLayerCmd) renderPassLayer.PostDrawLayerCmd(commandBuffer, renderPassLayer);
+                        if (renderPassLayer.IndexBuffer)
+                        {
+                            renderSystem.DrawIndexedMesh(commandBuffer, renderPassLayer);
+                        }
+                        else
+                        {
+                            renderSystem.DrawVertexMesh(commandBuffer, renderPassLayer.VertexCount, renderPassLayer.InstanceCount, renderPassLayer.FirstIndex, renderPassLayer.FirstInstance);
+                        }
+                    
+                    if (renderPassLayer.PostDrawCmd) renderPassLayer.PostDrawCmd(commandBuffer, renderPassLayer);
                 }
 
                 firstSubPass = false;

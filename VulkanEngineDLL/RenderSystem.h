@@ -26,13 +26,6 @@ struct VulkanBindVertexBuffer
 
 struct VulkanDrawMessage
 {
-    VkGuid                         RenderPassGuid;
-    VkGuid                         PipelineGuid;
-    std::optional<ShaderPushConstant> PushConstant;
-    Vector<RenderPassResource>     RenderPassInputs;
-    Vector<RenderPassResource>     RenderPassOutputs;
-    Vector<VulkanBindVertexBuffer> VertexBufferList;
-    VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
 
     uint32                         MeshId = UINT32_MAX;
     uint32                         MipCount = 1;
@@ -44,20 +37,26 @@ struct VulkanDrawMessage
     int32                          VertexOffset = 0;
     uint32                         FirstInstance = 0;
     
-    std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawLayerCmd;
+    VkGuid                            RenderPassGuid;
+    VkGuid                            PipelineGuid;
+    Vector<VulkanBindVertexBuffer>    VertexBufferList;
+    VkBuffer                          IndexBuffer = VK_NULL_HANDLE;
+    Vector<VkGuid>                    RenderPassInputs;
+    Vector<VkGuid>                    RenderPassOutputs;
+    std::optional<ShaderPushConstant> PushConstant;
     std::function<void(VkCommandBuffer, VulkanDrawMessage&, ivec2 baseRenderPassSize, uint32 mipLevel)> PushConstantsCmd;
-    std::function<void(VkCommandBuffer, VulkanDrawMessage)> PostDrawLayerCmd;
-
+    std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawCmd;
+    std::function<void(VkCommandBuffer, VulkanDrawMessage)> CustomDrawCmd;
+    std::function<void(VkCommandBuffer, VulkanDrawMessage)> PostDrawCmd;
 };
 
 struct RenderPassNode
 {
-    uint32                                                        MipCount = 0;
     VkGuid                                                        RenderPassGuid;
-    Vector<Vector<VulkanDrawMessage>>                             RenderPassDrawMessage;
+    uint32                                                        MipCount = 0;
+    Vector<Vector<VulkanDrawMessage>>                             SubPassDrawMessage;
 
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PreRenderPassCmd;
-    std::function<void(VkCommandBuffer, RenderPassNode&)>         PrepairSubpassCmd;
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PostRenderPassCmd;
 };
 
