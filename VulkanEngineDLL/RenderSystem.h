@@ -35,7 +35,7 @@ struct VulkanDrawMessage
     VkBuffer                       IndexBuffer = VK_NULL_HANDLE;
 
     uint32                         MeshId = UINT32_MAX;
-    uint32                         MipCount = 0;
+    uint32                         MipCount = 1;
     uint32                         FirstVertexBinding = 0;
     uint32                         VertexCount = 0;
     uint32                         IndexCount = 0;

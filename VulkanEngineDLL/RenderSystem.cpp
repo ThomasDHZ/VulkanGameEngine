@@ -1071,14 +1071,16 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
         const VulkanRenderPass& renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
         if (renderPassNode.PreRenderPassCmd) renderPassNode.PreRenderPassCmd(commandBuffer, renderPassNode);
-        for (int x = 0; x <= renderPassNode.MipCount; x++)
+        for (int x = 0; x <= renderPassNode.MipCount; ++x)
         {
+            int mip = x;
+            if(x != 0) mip -= 1;
             bool firstSubPass = true;
-            const ivec2 renderPassResolution =  ivec2(std::max(1, renderPass.RenderPassResolution.x >> x),
-                                                      std::max(1, renderPass.RenderPassResolution.y >> x));
+            const ivec2 renderPassResolution =  ivec2(std::max(1, renderPass.RenderPassResolution.x >> mip),
+                                                      std::max(1, renderPass.RenderPassResolution.y >> mip));
 
-            BeginRenderPass(commandBuffer, renderPass, renderPassResolution, x);
-            BindViewPort(commandBuffer, renderPassResolution, x);
+            BeginRenderPass(commandBuffer, renderPass, renderPassResolution, mip);
+            BindViewPort(commandBuffer, renderPassResolution, mip);
             for (auto& subPass : renderPassNode.RenderPassDrawMessage)
             {
                 if (!firstSubPass)
@@ -1096,16 +1098,9 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                     if (renderPassLayer.PreDrawLayerCmd) renderPassLayer.PreDrawLayerCmd(commandBuffer, renderPassLayer);
                     BindRenderPassPipeline(commandBuffer, pipeline);
 
-
-                    if (renderPassLayer.PushConstantsCmd)
-                    {
-                        renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x);
-                    }
-
-
                     if (renderPassLayer.PushConstant)
                     {
-                       // if(renderPassLayer.PushConstantsCmd) renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), x)
+                        if (renderPassLayer.PushConstantsCmd) renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, ivec2(inputTexture.width), mip);
                         BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
                     }
 
