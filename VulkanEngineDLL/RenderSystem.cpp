@@ -256,45 +256,6 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     }
 
     Vector<VkSubpassDependency> subpassDependencies = renderPassJsonLoader.SubpassDependencyModelList;
-    //if (renderPassJsonLoader.RenderPassId == VkGuid("d5b5ad49-d004-4d5e-8260-4ba9e248f863"))
-    //{
-    //    subpassDependencies =
-    //    {
-    //        // EXTERNAL → Subpass 0
-    //        {
-    //            .srcSubpass = VK_SUBPASS_EXTERNAL,
-    //            .dstSubpass = 0,
-    //            .srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-    //            .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-    //            .srcAccessMask = 0,
-    //            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-    //            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
-    //        },
-
-    //        // Subpass 0 → Subpass 1
-    //        {
-    //            .srcSubpass = 0,
-    //            .dstSubpass = 1,
-    //            .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-    //            .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-    //            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-    //            .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-    //            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
-    //        },
-
-    //        // Subpass 1 → EXTERNAL (final)
-    //        {
-    //            .srcSubpass = 1,
-    //            .dstSubpass = VK_SUBPASS_EXTERNAL,
-    //            .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-    //            .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-    //            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-    //            .dstAccessMask = 0,
-    //            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
-    //        }
-    //    };
-    //}
-
     VkRenderPassCreateInfo renderPassInfo =
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
@@ -1087,15 +1048,15 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                                 BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
                             }
 
-                            vkCmdBindVertexBuffers(commandBuffer, mesh.FirstVertexBinding, 1, &mesh.VertexBuffer, &mesh.VertexOffset);
+                            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.VertexBuffer, &mesh.VertexOffset);
                             if (mesh.IndexBuffer)
                             {
                                 vkCmdBindIndexBuffer(commandBuffer, mesh.IndexBuffer, mesh.FirstIndex * sizeof(uint32_t), VK_INDEX_TYPE_UINT32);
-                                vkCmdDrawIndexed(commandBuffer, mesh.IndexCount, mesh.InstanceCount, mesh.FirstIndex, mesh.VertexOffset, mesh.FirstInstance);
+                                vkCmdDrawIndexed(commandBuffer, mesh.IndexCount, mesh.InstanceCount, mesh.FirstIndex, mesh.VertexOffset, mesh.StartInstanceIndex);
                             }
                             else
                             {
-                                vkCmdDraw(commandBuffer, mesh.VertexCount, mesh.InstanceCount, mesh.FirstVertex, mesh.FirstInstance);
+                                vkCmdDraw(commandBuffer, mesh.VertexCount, mesh.InstanceCount, mesh.FirstVertex, mesh.StartInstanceIndex);
                             }
                         }
                     }

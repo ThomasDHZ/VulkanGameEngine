@@ -371,9 +371,8 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
 				.VertexCount = meshAsset.VertexCount,
 				.IndexCount = meshAsset.IndexCount,
 				.InstanceCount = 1,
-				.FirstVertexBinding = 0,
 				.FirstIndex = 0,
-				.FirstInstance = 0,
+				.StartInstanceIndex = 0,
 				.VertexOffset = 0,
 				.VertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer,
 				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
@@ -384,26 +383,29 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
 
 const Vector<MeshDrawMessage> MeshSystem::DrawInsancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList)
 {
-	const Mesh& spriteMeshAsset = meshSystem.FindMesh(instanceMeshId);
-	const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMeshAsset.SharedAssetId);
-
 	Vector<MeshDrawMessage> meshDrawMessageList;
 	for (auto& spriteInstanceLayer : spriteLayerList)
 	{
 		if (spriteInstanceLayer.InstanceCount == 0) continue;
+
+		const Mesh& spriteMesh = meshSystem.FindMesh(instanceMeshId);
+		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+		const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+		const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
 		meshDrawMessageList.emplace_back(MeshDrawMessage
 			{
-				.MeshId = spriteMeshAsset.MeshId,
+				.MeshId = spriteMesh.MeshId,
 				.Drawlayer = spriteInstanceLayer.SpriteDrawLayer,
+				.VertexBufferBinding = 0,
 				.VertexCount = meshAsset.VertexCount,
 				.IndexCount = meshAsset.IndexCount,
 				.InstanceCount = spriteInstanceLayer.InstanceCount,
-				.FirstVertexBinding = 0,
 				.FirstIndex = 0,
-				.FirstInstance = spriteInstanceLayer.StartInstanceIndex,
+				.StartInstanceIndex = spriteInstanceLayer.StartInstanceIndex,
 				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-				.VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
-				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer
+				.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+				.VertexBuffer = instanceBuffer.Buffer,
+				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
 			});
 	}
 	return meshDrawMessageList;

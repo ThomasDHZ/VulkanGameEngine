@@ -15,16 +15,18 @@ struct MeshDrawMessage
 {
     uint32		   MeshId = UINT32_MAX;
     uint32	       Drawlayer = UINT32_MAX;
+    uint32         VertexBufferBinding = 0;
     uint32		   VertexCount = 0;
     uint32		   IndexCount = 0;
     uint32		   InstanceCount = 1;
-    uint32		   FirstVertexBinding = 0;
     uint32         FirstVertex = 0;
     uint32	       FirstIndex = 0;
-    uint32	       FirstInstance = 0;
+    uint32	       StartInstanceIndex = 0;
     VkDeviceSize   VertexOffset = 0;
+    VkDeviceSize   InstanceOffset = 0;
     VkBuffer	   VertexBuffer = VK_NULL_HANDLE;
     VkBuffer	   IndexBuffer = VK_NULL_HANDLE;
+    VkBuffer       InstanceBuffer = VK_NULL_HANDLE;
 };
 
 struct VulkanDrawMessage

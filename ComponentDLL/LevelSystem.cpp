@@ -311,9 +311,8 @@ const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
 				.VertexCount = meshAsset.VertexCount,
 				.IndexCount = meshAsset.IndexCount,
 				.InstanceCount = layer.InstanceCount,
-				.FirstVertexBinding = 0,
 				.FirstIndex = 0,
-				.FirstInstance = 0,
+				.StartInstanceIndex = 0,
 				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
 				.VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
 				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
@@ -324,49 +323,79 @@ const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
 
 void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
 {
-    renderSystem.AddRenderNode(RenderPassNode
-        {
-           .RenderPassGuid = renderPassId,
-           .SubPassDrawMessage = Vector<Vector<VulkanDrawMessage>>
-            {
-                Vector<VulkanDrawMessage>
-                {
-                    VulkanDrawMessage
-                    {
-                        .RenderPassGuid = renderPassId,
-                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[1].RenderPipelineId,
-                        .PushConstant = shaderSystem.FindShaderPushConstant("sceneData"),
-                        .DrawMeshList = meshSystem.DrawMesh(MeshTypeEnum::kMesh_LevelMesh),
-                        .PushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, uint32 drawMessageIndex, ivec2 baseRenderPassSize, uint32 mipLevel)
-                        {
-                            if (self.PushConstant.has_value())
-                            {
-                                VulkanRenderPass renderPass = renderSystem.FindRenderPass(self.RenderPassGuid);
-                                SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-                                sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
+    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
 
-                                shaderSystem.UpdatePushConstantValue<uint>(self.PushConstant.value(), "MeshBufferIndex", self.DrawMeshList[drawMessageIndex].MeshId);
-                                shaderSystem.UpdatePushConstantBuffer(self.PushConstant.value());
-                            }
-                        }
-                    },
-                    VulkanDrawMessage
-                    {
-                        .RenderPassGuid = renderPassId,
-                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
-                        .DrawMeshList = meshSystem.DrawInsancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
-                    }
-                },
-                Vector<VulkanDrawMessage>
+    // Prepare common push constant
+    SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
+    sceneData.InvertResolution = vec2(1.0f / renderPass.RenderPassResolution.x,
+        1.0f / renderPass.RenderPassResolution.y);
+
+    ShaderPushConstant& scenePc = shaderSystem.FindShaderPushConstant("sceneData");
+    shaderSystem.UpdatePushConstantValue<int>(scenePc, "UseHeightMap", UseHeightMap);
+    shaderSystem.UpdatePushConstantValue<float>(scenePc, "HeightScale", HeightScale);
+
+    // ===================================================================
+    // Subpass 0 - Geometry
+    // ===================================================================
+    Vector<VulkanDrawMessage> geometryCommands;
+
+    // Level meshes (non-instanced)
+    {
+        auto levelDraws = meshSystem.DrawMesh(MeshTypeEnum::kMesh_LevelMesh);
+
+        VulkanDrawMessage levelCmd
+        {
+            .RenderPassGuid = renderPassId,
+            .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[1].RenderPipelineId, // level pipeline
+            .PushConstant = scenePc,
+            .DrawMeshList = std::move(levelDraws),
+            .PushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, uint32_t drawIndex, ivec2, uint32_t)
+            {
+                if (self.PushConstant.has_value() && drawIndex < self.DrawMeshList.size())
                 {
-                    VulkanDrawMessage
-                    {
-                        .RenderPassGuid = renderPassId,
-                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[2].RenderPipelineId,
-                        .DrawToFrameBuffer = true
-                    }   
+                    uint32_t meshId = self.DrawMeshList[drawIndex].MeshId;
+                    shaderSystem.UpdatePushConstantValue<uint>(self.PushConstant.value(), "MeshBufferIndex", meshId);
+                    shaderSystem.UpdatePushConstantBuffer(self.PushConstant.value());
                 }
             }
+        };
+
+        geometryCommands.push_back(std::move(levelCmd));
+    }
+
+    // Instanced Sprites
+    {
+        auto spriteDraws = meshSystem.DrawInsancedMesh(
+            spriteSystem.SpriteMeshId,
+            spriteSystem.SpriteLayerList);
+
+        VulkanDrawMessage spriteCmd{
+            .RenderPassGuid = renderPassId,
+            .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId, // sprite pipeline
+            .DrawMeshList = std::move(spriteDraws)
+            // No push constants needed for sprites in this case
+        };
+
+        geometryCommands.push_back(std::move(spriteCmd));
+    }
+
+    // ===================================================================
+    // Subpass 1 - Lighting (fullscreen triangle)
+    // ===================================================================
+    Vector<VulkanDrawMessage> lightingCommands;
+    lightingCommands.push_back(VulkanDrawMessage{
+        .RenderPassGuid = renderPassId,
+        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[2].RenderPipelineId, // lighting pipeline
+        .DrawToFrameBuffer = true   // fullscreen triangle
+        });
+
+    // ===================================================================
+    // Register the RenderPassNode
+    // ===================================================================
+    renderSystem.AddRenderNode(RenderPassNode{
+        .RenderPassGuid = renderPassId,
+        .MipCount = 1,
+        .SubPassDrawMessage = { geometryCommands, lightingCommands }
         });
 }
 
@@ -406,12 +435,14 @@ void LevelSystem::RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, V
     renderSystem.AddRenderNode(RenderPassNode
         {
           .RenderPassGuid = renderPassId,
+          .MipCount = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].mipMapLevels,
           .SubPassDrawMessage = Vector<Vector<VulkanDrawMessage>>
             {
                 Vector<VulkanDrawMessage>
                 {
                     VulkanDrawMessage
                     {
+                        .MipCount = textureSystem.CubeMapTextureList[sceneDataBuffer.PrefilterMapId].mipMapLevels,
                         .RenderPassGuid = renderPassId,
                         .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
                         .RenderPassInputs = Vector<VkGuid>
