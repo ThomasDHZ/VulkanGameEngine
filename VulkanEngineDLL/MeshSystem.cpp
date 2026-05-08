@@ -358,6 +358,57 @@ const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
 	return result;
 }
 
+const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
+{
+	Vector<MeshDrawMessage> meshDrawMessageList;
+	const Vector<Mesh>& meshList = meshSystem.FindMeshByMeshType(meshType);
+	for (auto& mesh : meshList)
+	{
+		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(mesh.SharedAssetId);
+		meshDrawMessageList.emplace_back(MeshDrawMessage
+			{
+				.MeshId = mesh.MeshId,
+				.VertexCount = meshAsset.VertexCount,
+				.IndexCount = meshAsset.IndexCount,
+				.InstanceCount = 1,
+				.FirstVertexBinding = 0,
+				.FirstIndex = 0,
+				.FirstInstance = 0,
+				.VertexOffset = 0,
+				.VertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer,
+				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
+			});
+	}
+	return meshDrawMessageList;
+}
+
+const Vector<MeshDrawMessage> MeshSystem::DrawInsancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList)
+{
+	const Mesh& spriteMeshAsset = meshSystem.FindMesh(instanceMeshId);
+	const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMeshAsset.SharedAssetId);
+
+	Vector<MeshDrawMessage> meshDrawMessageList;
+	for (auto& spriteInstanceLayer : spriteLayerList)
+	{
+		if (spriteInstanceLayer.InstanceCount == 0) continue;
+		meshDrawMessageList.emplace_back(MeshDrawMessage
+			{
+				.MeshId = spriteMeshAsset.MeshId,
+				.Drawlayer = spriteInstanceLayer.SpriteDrawLayer,
+				.VertexCount = meshAsset.VertexCount,
+				.IndexCount = meshAsset.IndexCount,
+				.InstanceCount = spriteInstanceLayer.InstanceCount,
+				.FirstVertexBinding = 0,
+				.FirstIndex = 0,
+				.FirstInstance = spriteInstanceLayer.StartInstanceIndex,
+				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+				.VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
+				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer
+			});
+	}
+	return meshDrawMessageList;
+}
+
 MeshAssetData& MeshSystem::FindMeshAssetData(const uint64& meshAssetId)
 {
 	uint32 listId = MeshAssetLookup.find(meshAssetId)->second;

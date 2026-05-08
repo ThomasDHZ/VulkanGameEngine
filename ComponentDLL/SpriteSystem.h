@@ -2,17 +2,9 @@
 #include "pch.h"
 #include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
-#include <MemoryPoolSystem.h>
 
 typedef uint32 SpriteLayerId;
 typedef Vector<ivec2> AnimationFrames;
-
-struct SpriteLayer
-{
-    uint32 InstanceCount = 0;
-    uint32 StartInstanceIndex = 0;
-    uint32 SpriteDrawLayer = UINT32_MAX;
-};
 
 struct SpriteVram
 {

@@ -118,6 +118,16 @@ GameObject& GameObjectSystem::FindGameObject(uint gameObjectId)
     return *it;
 }
 
+//const Vector<GameObject>& GameObjectSystem::FindGameObjectWithComponent()
+//{
+//    return;
+//}
+//
+//const Vector<GameObject>& GameObjectSystem::FindGameObjectByMeshType(MeshTypeEnum meshType)
+//{
+//    return;
+//}
+
 void GameObjectSystem::DestroyGameObject(uint gameObjectId)
 {
     GameObject& gameObject = GameObjectList[gameObjectId];

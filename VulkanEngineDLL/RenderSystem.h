@@ -5,46 +5,40 @@
 #include "TextureSystem.h"
 #include <optional>
 
-enum class ResourceType { Texture, Buffer };
-
-struct RenderPassResource 
-{
-    VkGuid TextureGuid;
-    ResourceType Type;
-    VkAccessFlags Access;           // e.g. VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-    VkImageLayout Layout;           // final layout after this pass
-    VkPipelineStageFlags Stage;     // stage that uses it
-};
-
-
-
 struct VulkanBindVertexBuffer
 {
     VkDeviceSize offsets = 0;
     VkBuffer vertexBuffer = VK_NULL_HANDLE;
 };
 
+struct MeshDrawMessage
+{
+    uint32		   MeshId = UINT32_MAX;
+    uint32	       Drawlayer = UINT32_MAX;
+    uint32		   VertexCount = 0;
+    uint32		   IndexCount = 0;
+    uint32		   InstanceCount = 1;
+    uint32		   FirstVertexBinding = 0;
+    uint32         FirstVertex = 0;
+    uint32	       FirstIndex = 0;
+    uint32	       FirstInstance = 0;
+    VkDeviceSize   VertexOffset = 0;
+    VkBuffer	   VertexBuffer = VK_NULL_HANDLE;
+    VkBuffer	   IndexBuffer = VK_NULL_HANDLE;
+};
+
 struct VulkanDrawMessage
 {
-
-    uint32                         MeshId = UINT32_MAX;
-    uint32                         MipCount = 1;
-    uint32                         FirstVertexBinding = 0;
-    uint32                         VertexCount = 0;
-    uint32                         IndexCount = 0;
-    uint32                         InstanceCount = 1;
-    uint32                         FirstIndex = 0;
-    int32                          VertexOffset = 0;
-    uint32                         FirstInstance = 0;
-    
+    uint32                            MipCount = 1;
     VkGuid                            RenderPassGuid;
     VkGuid                            PipelineGuid;
-    Vector<VulkanBindVertexBuffer>    VertexBufferList;
-    VkBuffer                          IndexBuffer = VK_NULL_HANDLE;
     Vector<VkGuid>                    RenderPassInputs;
     Vector<VkGuid>                    RenderPassOutputs;
     std::optional<ShaderPushConstant> PushConstant;
-    std::function<void(VkCommandBuffer, VulkanDrawMessage&, ivec2 baseRenderPassSize, uint32 mipLevel)> PushConstantsCmd;
+    Vector<MeshDrawMessage>           DrawMeshList;
+    bool                              DrawToFrameBuffer = false;
+
+    std::function<void(VkCommandBuffer, VulkanDrawMessage&, uint32, ivec2 baseRenderPassSize, uint32 mipLevel)> PushConstantsCmd;
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawCmd;
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> CustomDrawCmd;
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> PostDrawCmd;
@@ -75,7 +69,7 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
-    Vector<VulkanRenderPass>                                           RenderPassNodes;
+    Vector<VulkanRenderPass>                                           VulkanRenderPassList;
     UnorderedMap<VkGuid, uint32>                                       GuidToRenderPassNodeIndex;
 
     DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
@@ -90,7 +84,7 @@ private:
 
 public:
 
-    Vector<RenderPassNode>                                             RenderPassNodess;
+    Vector<RenderPassNode>                                             RenderPassNodeList;
     bool                                                               UsingMaterialBaker = false;
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
     UnorderedMap<RenderPassGuid, Vector<VulkanPipeline>>               RenderPipelineMap;
@@ -112,9 +106,7 @@ public:
     DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPassResolution, uint mipLevel = 0);
     DLL_EXPORT void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, const ShaderPushConstant& pushConstant, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     DLL_EXPORT void                                                    BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet = 0);
-    DLL_EXPORT void                                                    DrawVertexMesh(VkCommandBuffer& commandBuffer, uint32 vertexCount, uint32 instanceCount, uint32 firstVertex, uint32 firstInstance);
-    DLL_EXPORT void                                                    DrawIndexedMesh(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage);
-    DLL_EXPORT void                                                    DrawIndexedMesh(VkCommandBuffer& commandBuffer, Vector<VulkanDrawMessage>& vulkanDrawMessageList);
+
     DLL_EXPORT void                                                    NextSubpass(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    EndRenderPass(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer);

@@ -79,6 +79,8 @@ public:
     DLL_EXPORT void DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void DestroyDeadGameObjects(); 
     DLL_EXPORT GameObject& FindGameObject(uint gameObjectId);
+    DLL_EXPORT const Vector<GameObject>& FindGameObjectWithComponent();
+    DLL_EXPORT const Vector<GameObject>& FindGameObjectByMeshType(MeshTypeEnum meshType);
 };
 extern DLL_EXPORT GameObjectSystem& gameObjectSystem;
 inline GameObjectSystem& GameObjectSystem::Get()

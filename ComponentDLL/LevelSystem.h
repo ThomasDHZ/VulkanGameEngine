@@ -149,6 +149,7 @@ public:
     DLL_EXPORT void                            RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId);
     DLL_EXPORT void                            RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId);
 
+    DLL_EXPORT const Vector<MeshDrawMessage>   DrawSpriteMesh();
     DLL_EXPORT void                            Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
     DLL_EXPORT LevelLayout                     GetLevelLayout();
     DLL_EXPORT Vector<LevelLayer>              GetLevelLayerList();
@@ -158,7 +159,7 @@ public:
     template <typename T>
     T* GetGameObjectComponent(uint gameObjectId)
     {
-        if(gameObjectId == UINT32_MAX) return nullptr;
+        if (gameObjectId == UINT32_MAX) return nullptr;
 
         GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
         auto view = EntityRegistry.view<GameObjectComponentLinker, T>();

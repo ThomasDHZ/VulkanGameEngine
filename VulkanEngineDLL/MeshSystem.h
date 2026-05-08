@@ -2,6 +2,7 @@
 #include "Platform.h"
 #include "ShaderSystem.h"
 #include "MemoryPoolSystem.h"
+#include "RenderSystem.h"
 #include <xxhash.h>
 #include <entt/entt.hpp>
 
@@ -92,6 +93,7 @@ struct MeshAssetData
 	Vector<uint32> MeshIdUsageList = Vector<uint32>();
 	uint32 VertexBufferId = UINT32_MAX;
 	uint32 IndexBufferId = UINT32_MAX;
+	uint32 VertexCount = UINT32_MAX;
 	uint32 IndexCount = UINT32_MAX;
 	VertexLayoutEnum Layout = VertexLayoutEnum::kVertexLayout_Undefined;
 };
@@ -114,6 +116,13 @@ struct MeshPropertiesStruct
 {
 	uint   MaterialIndex;
 	mat4   MeshTransform;
+};
+
+struct SpriteLayer
+{
+	uint32 InstanceCount = 0;
+	uint32 StartInstanceIndex = 0;
+	uint32 SpriteDrawLayer = UINT32_MAX;
 };
 
 struct Mesh
@@ -165,12 +174,15 @@ public:
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
+	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
+	DLL_EXPORT const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
+	DLL_EXPORT const Vector<MeshDrawMessage> DrawInsancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
+
 	DLL_EXPORT void Update(const float& deltaTime);
 	DLL_EXPORT void Destroy(uint meshId);
 	DLL_EXPORT void DestroyAllGameObjects();
 	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
 	DLL_EXPORT MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
-	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
 };
 extern DLL_EXPORT MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()
