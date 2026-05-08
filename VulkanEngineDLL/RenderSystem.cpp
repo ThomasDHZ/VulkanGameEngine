@@ -1033,7 +1033,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
 
                     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout, 0, pipeline.DescriptorSetList.size(), pipeline.DescriptorSetList.data(), 0, nullptr);
-                    if (renderPassLayer.DrawToFrameBuffer)
+                    if (renderPassLayer.OffScreenRenderPass)
                     {
                         vkCmdDraw(commandBuffer, 3, 1, 0, 0);
                     }
@@ -1052,7 +1052,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                             if (mesh.IndexBuffer)
                             {
                                 vkCmdBindIndexBuffer(commandBuffer, mesh.IndexBuffer, mesh.FirstIndex * sizeof(uint32_t), VK_INDEX_TYPE_UINT32);
-                                vkCmdDrawIndexed(commandBuffer, mesh.IndexCount, mesh.InstanceCount, mesh.FirstIndex, mesh.VertexOffset, mesh.StartInstanceIndex);
+                                vkCmdDrawIndexed(commandBuffer, mesh.IndexCount, mesh.InstanceCount, mesh.FirstIndex, 0, mesh.StartInstanceIndex);
                             }
                             else
                             {

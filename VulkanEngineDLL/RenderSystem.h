@@ -38,7 +38,7 @@ struct VulkanDrawMessage
     Vector<VkGuid>                    RenderPassOutputs;
     std::optional<ShaderPushConstant> PushConstant;
     Vector<MeshDrawMessage>           DrawMeshList;
-    bool                              DrawToFrameBuffer = false;
+    bool                              OffScreenRenderPass = false;
 
     std::function<void(VkCommandBuffer, VulkanDrawMessage&, uint32, ivec2 baseRenderPassSize, uint32 mipLevel)> PushConstantsCmd;
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawCmd;
