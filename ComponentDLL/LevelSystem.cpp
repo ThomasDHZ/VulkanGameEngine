@@ -89,7 +89,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json");
     objectPickerRenderPassId           = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/ObjectPickerRenderPass.json");
     selectedObjectPickerRenderPassId   = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/SelectedGameObjectPickerRenderPass.json");
-//    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json");
 
     sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().bindlessTextureIndex - 1;
     sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().bindlessTextureIndex;
@@ -121,7 +120,6 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
     RenderHdrPass(commandBuffer, hdrRenderPassId);
     RenderGameObjectPickerRenderPass(commandBuffer, objectPickerRenderPassId);
     RenderSelectedGameObjectPickerRenderPass(commandBuffer, selectedObjectPickerRenderPassId);
-   
 }
 
 LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)
@@ -333,7 +331,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                     VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassId,
-                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[1].RenderPipelineId,
+                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
                         .PushConstant = shaderSystem.FindShaderPushConstant("sceneData"),
                         .DrawMeshList = meshSystem.DrawMesh(MeshTypeEnum::kMesh_LevelMesh),
                         .PushConstantsCmd = [&](VkCommandBuffer cmd, VulkanDrawMessage& self, uint32 drawMessageIndex, ivec2 baseRenderPassSize, uint32 mipLevel)
@@ -352,7 +350,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                     VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassId,
-                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
+                        .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[1].RenderPipelineId,
                         .DrawMeshList = meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
                     }
                 },

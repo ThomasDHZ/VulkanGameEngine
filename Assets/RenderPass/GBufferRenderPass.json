@@ -6,7 +6,7 @@
     [
       {
         "Pipeline": "Pipelines/GBufferLevelShader2DPipeline.json",
-        "MeshType": 2,
+        "MeshType": 1,
         "ShaderPushConstant": "sceneData",
         "PushConstantUpdates": [
           {
@@ -31,7 +31,7 @@
       },
       {
         "Pipeline": "Pipelines/GBufferSpriteInstancePipeline.json",
-        "MeshType": 1,
+        "MeshType": 2,
         "ShaderPushConstant": null,
         "InputTextureList": [],
         "OutputTextureList": [],
