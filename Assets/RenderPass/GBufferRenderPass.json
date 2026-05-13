@@ -12,17 +12,20 @@
           {
             "Variable": "MeshBufferIndex",
             "Source": "MeshId",
-            "ConstValue": ""
+            "Value": "",
+            "ConstValue": false
           },
           {
             "Variable": "UseHeightMap",
             "Source": "",
-            "ConstValue": "true"
+            "Value": "true",
+            "ConstValue": true
           },
           {
             "Variable": "HeightScale",
             "Source": "",
-            "ConstValue": "0.15"
+            "Value": "0.15",
+            "ConstValue": true
           }
         ],
         "InputTextureList": [],

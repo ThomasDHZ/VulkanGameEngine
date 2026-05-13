@@ -71,7 +71,8 @@ struct PushConstantUpdateRule
 {
     String                               Variable;
     String                               SourceId;
-    String                               ConstValue;
+    String                               Value;
+    bool                                 ConstValue;
 };
 
 struct VulkanSubPass
@@ -80,7 +81,6 @@ struct VulkanSubPass
     VkGuid                               PipelineGuid;
     MeshTypeEnum                         MeshType;
     std::optional<String>                ShaderPushConstant;
-    Vector<PushConstantUpdateRule>       PushConstantUpdates;
     Vector<VkGuid>                       InputTextureList;
     Vector<VkGuid>                       OutputTextureList;
     bool                                 OffScreenFrameBuffer = false;
@@ -148,6 +148,7 @@ struct ShaderVariable
     size_t                          ByteAlignment = 0;
     Vector<byte>                    Value;
     ShaderMemberType                MemberTypeEnum = shaderUnknown;
+    bool                            ConstVariable = false;
 };
 
 struct ShaderStruct

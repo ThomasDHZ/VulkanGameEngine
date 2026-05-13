@@ -321,6 +321,23 @@ const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
 
 void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime)
 {
+    Vector<Vector<VulkanDrawMessage>> vulkanDrawMessageList;
+    const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassId);
+    for (auto& renderPassList : renderPass.VulkanSubPassList)
+    {
+        Vector<VulkanDrawMessage> vulkanSubPassMessageList;
+        for (auto& subPass : renderPassList)
+        {
+            vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
+                {
+                        .RenderPassGuid = renderPassId,
+                        .PipelineGuid = subPass.PipelineGuid,
+                        //.PushConstant = subPass.ShaderPushConstant,
+                       // .
+                });
+        }
+    }
+
     renderSystem.AddRenderNode(RenderPassNode
         {
            .RenderPassGuid = renderPassId,

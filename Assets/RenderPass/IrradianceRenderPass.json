@@ -12,7 +12,8 @@
           {
             "Variable": "sampleDelta",
             "Source": "",
-            "ConstValue": "0.1"
+            "Value": "0.1",
+            "ConstValue": true
           }
         ],
         "InputTextureList": [],

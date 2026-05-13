@@ -69,7 +69,6 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          nlohmann::json renderPassJson = fileSystem.LoadJsonFile(shaderPathList[x].c_str());
          for (size_t y = 0; y < renderPassJson["RenderPipelineList"].size(); ++y)
          {
-             auto asdf = renderPassJson["RenderPipelineList"][y].get<String>();
              nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassJson["RenderPipelineList"][y].get<String>().c_str());
              Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
              Vector<ShaderStruct> shaderStructList = LoadProtoTypeStructs(shaderJsonList);
@@ -603,6 +602,61 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      bufferSystem.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
  }
 
+ void ShaderSystem::UpdateShaderVariableValue(ShaderVariable& shaderVariable, const String& newShaderVariableValue)
+ {
+     if (newShaderVariableValue.empty()) return;
+
+     const char* first = newShaderVariableValue.data();
+     const char* last = first + newShaderVariableValue.size();
+     auto parse_and_copy = [&](auto& value)
+         {
+             auto res = std::from_chars(first, last, value);
+             if (res.ec == std::errc{}) memcpy(shaderVariable.Value.data(), &value, sizeof(value));
+             else std::cerr << "Failed to parse: " << shaderVariable.Name << std::endl;
+         };
+
+     switch (shaderVariable.MemberTypeEnum)
+     {
+         case shaderInt:
+         {
+             int   data;
+             parse_and_copy(data);
+             break;
+         }
+         case shaderUint: 
+         {
+             uint  data; 
+             parse_and_copy(data); 
+             break;
+         }
+         case shaderFloat: 
+         {
+             float data; 
+             parse_and_copy(data); 
+             break;
+         }
+         case shaderIvec2: ParseVector<2, int>(shaderVariable, newShaderVariableValue); break;
+         case shaderIvec3: ParseVector<3, int>(shaderVariable, newShaderVariableValue); break;
+         case shaderIvec4: ParseVector<4, int>(shaderVariable, newShaderVariableValue); break;
+         case shaderVec2:  ParseVector<2, float>(shaderVariable, newShaderVariableValue); break;
+         case shaderVec3:  ParseVector<3, float>(shaderVariable, newShaderVariableValue); break;
+         case shaderVec4:  ParseVector<4, float>(shaderVariable, newShaderVariableValue); break;
+         case shaderMat2:  ParseMatrix<2, 2, float>(shaderVariable, newShaderVariableValue); break;
+         case shaderMat3:  ParseMatrix<3, 3, float>(shaderVariable, newShaderVariableValue); break;
+         case shaderMat4:  ParseMatrix<4, 4, float>(shaderVariable, newShaderVariableValue); break;
+         case shaderbool: 
+         {
+             bool data = false;
+             if (newShaderVariableValue == "true" || newShaderVariableValue == "1") data = true;
+             else if (newShaderVariableValue == "false" || newShaderVariableValue == "0") data = false;
+             else std::cerr << "Failed to parse bool: " << newShaderVariableValue << "\n";
+
+             memcpy(shaderVariable.Value.data(), &data, sizeof(bool));
+             break;
+         }
+     }
+ }
+
  ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)
  {
      ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName);
@@ -651,9 +705,9 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      return shaderSystem.ShaderModuleMap.at(shaderFile);
  }
 
- ShaderPushConstant& ShaderSystem::FindShaderPushConstant(const String& shaderFile)
+ ShaderPushConstant& ShaderSystem::FindShaderPushConstant(const String& pushConstantName)
  {
-     return shaderSystem.ShaderPushConstantMap.at(shaderFile);
+     return shaderSystem.ShaderPushConstantMap.at(pushConstantName);
  }
 
  ShaderStruct ShaderSystem::FindShaderProtoTypeStruct(const String& shaderKey)

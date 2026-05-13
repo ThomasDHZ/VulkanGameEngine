@@ -347,6 +347,7 @@ namespace nlohmann
     {
         j.at("Variable").get_to(model.Variable);
         j.at("Source").get_to(model.SourceId);
+        j.at("Value").get_to(model.Value);
         j.at("ConstValue").get_to(model.ConstValue);
     }
 

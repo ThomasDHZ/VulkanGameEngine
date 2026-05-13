@@ -167,13 +167,31 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
 
 VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader)
 {
+    ShaderPushConstant shaderPushConstant;
+    if (subPassLoader.ShaderPushConstant)
+    {
+        shaderPushConstant = shaderSystem.FindShaderPushConstant(subPassLoader.ShaderPushConstant.value());
+        for (const auto& pushConstantVariable : subPassLoader.PushConstantUpdates)
+        {
+            ShaderVariable& variable = shaderSystem.FindShaderPushConstantStructVariable(shaderPushConstant, pushConstantVariable.Variable);
+            variable.ConstVariable = pushConstantVariable.ConstValue;
+            if (variable.ConstVariable)
+            {
+                shaderSystem.UpdateShaderVariableValue(variable, pushConstantVariable.Value);
+            }
+            else
+            {
+
+            }
+        }
+    }
+
     return VulkanSubPass
     {
         .RenderPassGuid = renderPassId,
         .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<RenderPipelineLoader>().PipelineId,
         .MeshType = subPassLoader.MeshType,
         .ShaderPushConstant = subPassLoader.ShaderPushConstant,
-        .PushConstantUpdates = subPassLoader.PushConstantUpdates,
         .InputTextureList = subPassLoader.InputTextureList,
         .OutputTextureList = subPassLoader.OutputTextureList,
         .OffScreenFrameBuffer = subPassLoader.OffScreenRenderPass,

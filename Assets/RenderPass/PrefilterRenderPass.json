@@ -12,12 +12,14 @@
           {
             "Variable": "CubeMapResolution",
             "Source": "",
-            "ConstValue": "0.1"
+            "Value": "0.1",
+            "ConstValue": false
           },
           {
             "Variable": "Roughness",
             "Source": "",
-            "ConstValue": "0.1"
+            "Value": "0.1",
+            "ConstValue": false
           }
         ],
         "InputTextureList": [ "1d68f22f-77a7-4c53-9650-edec72bb6687" ],
