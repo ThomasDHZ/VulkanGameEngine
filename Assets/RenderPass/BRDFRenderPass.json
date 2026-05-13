@@ -1,14 +1,23 @@
 {
   "Name": "BRDFRenderPass",
   "RenderPassId": "1c8acdab-f34f-41a1-977b-597ee9bd17ed",
-  "RenderPipelineList": [ "Pipelines/BRDFPipeline.json" ],
   "RenderPassResolution": [ 256, 256 ],
-  "SubPassCount": 1,
-  "UseDefaultRenderResolution": false,
+  "SubPasses": [
+    [
+      {
+        "Pipeline": "Pipelines/BRDFPipeline.json",
+        "MeshType": 6,
+        "ShaderPushConstant": null,
+        "PushConstantUpdates": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      }
+    ]
+  ],
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": false,
-  "InputTextureList": [],
   "SampleCount": 1,
   "RenderAttachmentList": [
     {

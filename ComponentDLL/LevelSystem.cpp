@@ -89,7 +89,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json");
     objectPickerRenderPassId           = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/ObjectPickerRenderPass.json");
     selectedObjectPickerRenderPassId   = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/SelectedGameObjectPickerRenderPass.json");
-    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json");
+//    frameBufferId                      = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/FrameBufferRenderPass.json");
 
     sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().bindlessTextureIndex - 1;
     sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().bindlessTextureIndex;
@@ -353,7 +353,7 @@ void LevelSystem::RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPa
                     {
                         .RenderPassGuid = renderPassId,
                         .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
-                        .DrawMeshList = meshSystem.DrawInsancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
+                        .DrawMeshList = meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
                     }
                 },
                 Vector<VulkanDrawMessage>
@@ -559,7 +559,7 @@ void LevelSystem::RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffe
                     {
                         .RenderPassGuid = renderPassId,
                         .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
-                        .DrawMeshList = meshSystem.DrawInsancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
+                        .DrawMeshList = meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
                     }
                 }
             }
@@ -579,7 +579,7 @@ void LevelSystem::RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& comm
                     {
                         .RenderPassGuid = renderPassId,
                         .PipelineGuid = renderSystem.FindRenderPipelineList(renderPassId)[0].RenderPipelineId,
-                        .DrawMeshList = meshSystem.DrawInsancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
+                        .DrawMeshList = meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList)
                     }
                 }
             }

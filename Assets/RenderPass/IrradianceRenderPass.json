@@ -1,16 +1,30 @@
 {
   "Name": "IrradiancePipeline",
   "RenderPassId": "62504413-f55d-4a4f-9afe-71c915bf8e8b",
-  "RenderPipelineList": [
-    "Pipelines/IrradiancePipeline.json"
-  ],
   "RenderPassResolution": [ 128, 128 ],
-  "SubPassCount": 1,
-  "UseDefaultRenderResolution": false,
+  "SubPasses": [
+    [
+      {
+        "Pipeline": "Pipelines/IrradiancePipeline.json",
+        "MeshType": 3,
+        "ShaderPushConstant": "irradianceShaderConstants",
+        "PushConstantUpdates": [
+          {
+            "Variable": "sampleDelta",
+            "Source": "",
+            "ConstValue": "0.1"
+          }
+        ],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      }
+    ]
+  ],
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": true,
-  "InputTextureList": [],
+  "SampleCount": 1,
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "ffc7c231-b3b8-4f47-98ad-147d45ca6dc0",
@@ -45,12 +59,12 @@
   ],
   "SubpassDependencyList": [
     {
-      "SrcSubpass": 4294967295, 
+      "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1, 
+      "SrcStageMask": 1,
       "DstStageMask": 1024,
       "SrcAccessMask": 0,
-      "DstAccessMask": 256, 
+      "DstAccessMask": 256,
       "DependencyFlags": 1
     },
     {

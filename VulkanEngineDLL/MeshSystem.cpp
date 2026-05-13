@@ -381,7 +381,7 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
 	return meshDrawMessageList;
 }
 
-const Vector<MeshDrawMessage> MeshSystem::DrawInsancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList)
+const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList)
 {
 	Vector<MeshDrawMessage> meshDrawMessageList;
 	for (auto& spriteInstanceLayer : spriteLayerList)

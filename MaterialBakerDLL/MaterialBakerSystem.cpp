@@ -316,14 +316,12 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
-        .SubPassCount = renderPassLoader.SubPassCount,
-        .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
+        .RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == renderPassLoader.RenderPassResolution ? vulkanSystem.DefaultRenderPassResolution : renderPassLoader.RenderPassResolution,
         .RenderPass = VK_NULL_HANDLE,
-        .InputTextureIdList = renderPassLoader.InputTextureList,
         .FrameBufferList = Vector<VkFramebuffer>(),
+       // .VulkanSubPassList = renderPassLoader.SubPassList,
         .ClearValueList = renderPassLoader.ClearValueList,
-        .RenderPassResolution = renderPassLoader.UseDefaultRenderResolution ? vulkanSystem.DefaultRenderPassResolution : renderPassLoader.RenderPassResolution,
-        .MaxPushConstantSize = 0,
+        .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
         .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
         .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
@@ -353,11 +351,11 @@ void MaterialBakerSystem::BuildRenderPass(ivec2 renderPassResolution)
     vulkanRenderPipeline = VulkanPipeline
     {
         .RenderPipelineId = renderPipelineLoader.PipelineId,
+        .Pipeline = pipeline,
+        .PipelineCache = pipelineCache,
+        .PipelineLayout = pipelineLayout,
         .DescriptorSetLayoutList = descriptorSetLayoutList,
         .DescriptorSetList = descriptorSetList,
-        .Pipeline = pipeline,
-        .PipelineLayout = pipelineLayout,
-        .PipelineCache = pipelineCache
     };
 }
 

@@ -1,16 +1,23 @@
 {
   "Name": "GameObjectPickerRenderPass",
   "RenderPassId": "40183518-063f-449b-8a0a-4cef7938958c",
-  "RenderPipelineList": [
-    "Pipelines/ObjectPickerPipeline.json"
-  ],
   "RenderPassResolution": [ 0, 0 ],
-  "SubPassCount": 1,
-  "UseDefaultRenderResolution": true,
+  "SubPasses": [
+    [
+      {
+        "Pipeline": "Pipelines/ObjectPickerPipeline.json",
+        "MeshType": 6,
+        "ShaderPushConstant": null,
+        "PushConstantUpdates": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      }
+    ]
+  ],
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": false,
-  "InputTextureList": [],
   "SampleCount": 1,
   "RenderAttachmentList": [
     {

@@ -200,7 +200,6 @@
     <ClCompile Include="VulkanError.cpp" />
     <ClCompile Include="VulkanSystem.cpp" />
     <ClCompile Include="from_json.cpp" />
-    <ClCompile Include="JsonLoader.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="MemorySystem.cpp" />
     <ClCompile Include="MeshSystem.cpp" />

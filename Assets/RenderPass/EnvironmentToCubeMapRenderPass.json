@@ -1,16 +1,24 @@
 {
   "Name": "IrradiancePipeline",
   "RenderPassId": "05b2b809-c7f9-4000-bf96-1ca970d88a45",
-  "RenderPipelineList": [
-    "Pipelines/EnvironmentToCubeMapPipeline.json"
-  ],
   "RenderPassResolution": [ 256, 256 ],
-  "SubPassCount": 1,
-  "UseDefaultRenderResolution": false,
+  "SubPasses": [
+    [
+      {
+        "Pipeline": "Pipelines/EnvironmentToCubeMapPipeline.json",
+        "MeshType": 6,
+        "ShaderPushConstant": null,
+        "PushConstantUpdates": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      }
+    ]
+  ],
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": true,
-  "InputTextureList": [],
+  "SampleCount": 1,
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "08e2c754-78d3-4066-b4f0-b6883dcbfec7",

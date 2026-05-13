@@ -342,34 +342,57 @@ namespace nlohmann
         j.at("descriptorCount").get_to(model.descriptorCount);
         j.at("stageFlags").get_to(model.stageFlags);
     }
+
+    void from_json(const json& j, PushConstantUpdateRule& model)
+    {
+        j.at("Variable").get_to(model.Variable);
+        j.at("Source").get_to(model.SourceId);
+        j.at("ConstValue").get_to(model.ConstValue);
+    }
+
+    void from_json(const json& j, VulkanSubPassLoader& model)
+    {
+        j.at("Pipeline").get_to(model.Pipeline);
+        j.at("MeshType").get_to(model.MeshType);
+        j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
+        j.at("InputTextureList").get_to(model.InputTextureList);
+        j.at("OutputTextureList").get_to(model.OutputTextureList);
+        j.at("OffScreenRenderPass").get_to(model.OffScreenRenderPass);
+
+        if (j.contains("PushConstantUpdates") &&
+            j["PushConstantUpdates"].is_array())
+        {
+            for (const auto& pushConstantUpdateRules : j["PushConstantUpdates"])
+            {
+                j.at("PushConstantUpdates").get_to(model.PushConstantUpdates);
+            }
+        }
+    }
     
     void from_json(const json& j, RenderPassLoader& model)
     {
         j.at("RenderPassId").get_to(model.RenderPassId);
-        j.at("SubPassCount").get_to(model.SubPassCount);
-        j.at("IsRenderedToSwapchain").get_to(model.IsRenderedToSwapchain);
-        j.at("RenderPipelineList").get_to(model.RenderPipelineList);
+        model.RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]) ? vulkanSystem.DefaultRenderPassResolution : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);
-        j.at("SubpassDependencyList").get_to(model.SubpassDependencyModelList);
+        j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);
         j.at("ClearValueList").get_to(model.ClearValueList);
-        j.at("UseDefaultRenderResolution").get_to(model.UseDefaultRenderResolution);
+        j.at("SampleCount").get_to(model.SampleCount);
         j.at("UseCubeMapMultiView").get_to(model.UseCubeMapMultiView);
         j.at("IsCubeMapRenderPass").get_to(model.IsCubeMapRenderPass);
 
-        if (model.UseDefaultRenderResolution)
+        if (j.contains("SubPasses") && j["SubPasses"].is_array()) 
         {
-            model.RenderPassResolution = vulkanSystem.DefaultRenderPassResolution;
-        }
-        else
-        {
-            model.RenderPassResolution = ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
-        }
-
-        if (j.contains("InputTextureList"))
-        {
-            for (int x = 0; x < j.at("InputTextureList").size(); x++)
+            for (const auto& subPass : j["SubPasses"]) 
             {
-                model.InputTextureList.emplace_back(VkGuid(j["InputTextureList"][x].get<String>().c_str()));
+                Vector<VulkanSubPassLoader> subPassLoader;
+                if (subPass.is_array()) 
+                {
+                    for (const auto& item : subPass) 
+                    {
+                        subPassLoader.push_back(item.get<VulkanSubPassLoader>());
+                    }
+                }
+                model.SubPassList.push_back(subPassLoader);
             }
         }
     }

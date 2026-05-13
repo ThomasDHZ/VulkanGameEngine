@@ -1,18 +1,57 @@
 {
   "Name": "GBufferRenderPass",
   "RenderPassId": "d5b5ad49-d004-4d5e-8260-4ba9e248f863",
-  "RenderPipelineList": [
-    "Pipelines/GBufferSpriteInstancePipeline.json",
-    "Pipelines/GBufferLevelShader2DPipeline.json",
-    "Pipelines/GBufferLightingPipeline.json"
-  ],
   "RenderPassResolution": [ 0, 0 ],
-  "SubPassCount": 2,
-  "UseDefaultRenderResolution": true,
+  "SubPasses": [
+    [
+      {
+        "Pipeline": "Pipelines/GBufferLevelShader2DPipeline.json",
+        "MeshType": 2,
+        "ShaderPushConstant": "sceneData",
+        "PushConstantUpdates": [
+          {
+            "Variable": "MeshBufferIndex",
+            "Source": "MeshId",
+            "ConstValue": ""
+          },
+          {
+            "Variable": "UseHeightMap",
+            "Source": "",
+            "ConstValue": "true"
+          },
+          {
+            "Variable": "HeightScale",
+            "Source": "",
+            "ConstValue": "0.15"
+          }
+        ],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      },
+      {
+        "Pipeline": "Pipelines/GBufferSpriteInstancePipeline.json",
+        "MeshType": 1,
+        "ShaderPushConstant": null,
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      }
+    ],
+    [
+      {
+        "Pipeline": "Pipelines/GBufferLightingPipeline.json",
+        "MeshType": 0,
+        "ShaderPushConstant": null,
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": true
+      }
+    ]
+  ],
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": false,
-  "InputTextureList": [],
   "SampleCount": 1,
   "RenderAttachmentList": [
     {

@@ -143,9 +143,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="JsonLoader.cpp">
-      <Filter>Source Files\Json</Filter>
-    </ClCompile>
     <ClCompile Include="from_json.cpp">
       <Filter>Source Files\Json</Filter>
     </ClCompile>

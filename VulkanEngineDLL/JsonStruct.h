@@ -3,6 +3,18 @@
 #include "TextureSystem.h"
 #include "enum.h"
 
+enum MeshTypeEnum
+{
+    kMesh_None,
+    kMesh_SpriteMesh,
+    kMesh_LevelMesh,
+    kMesh_SkyBoxMesh,
+    kMesh_LineMesh,
+    kMesh_LevelEditorIconMesh,
+    kMesh_FrameBuffer,
+    kMesh_Undefined
+};
+
 struct RenderedTextureInfoModel
 {
     String RenderedTextureInfoName;
@@ -40,21 +52,6 @@ struct BlendConstantsModel
     float Alpha;
 };
 
-struct VulkanRenderPass
-{
-    RenderPassGuid                       RenderPassId = VkGuid();
-    uint32                               SubPassCount = UINT32_MAX;
-    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkRenderPass                         RenderPass = VK_NULL_HANDLE;
-    Vector<VkGuid>                       InputTextureIdList;
-    Vector<VkFramebuffer>                FrameBufferList;
-    Vector<VkClearValue>                 ClearValueList;
-    ivec2                                RenderPassResolution = ivec2();
-    uint                                 MaxPushConstantSize = 0;
-    bool                                 UseDefaultRenderResolution = true;
-    bool                                 UseCubeMapMultiView = false;
-    bool                                 IsCubeMapRenderPass = false;
-};
 
 struct RenderPassAttachmentTexture
 {
@@ -70,21 +67,61 @@ struct RenderPassAttachmentTexture
     bool                                 UseMipMaps = false;
 };
 
+struct PushConstantUpdateRule
+{
+    String                               Variable;
+    String                               SourceId;
+    String                               ConstValue;
+};
+
+struct VulkanSubPass
+{
+    VkGuid                               RenderPassGuid;
+    VkGuid                               PipelineGuid;
+    MeshTypeEnum                         MeshType;
+    std::optional<String>                ShaderPushConstant;
+    Vector<PushConstantUpdateRule>       PushConstantUpdates;
+    Vector<VkGuid>                       InputTextureList;
+    Vector<VkGuid>                       OutputTextureList;
+    bool                                 OffScreenFrameBuffer = false;
+};
+
+struct VulkanRenderPass
+{
+    RenderPassGuid                       RenderPassId = VkGuid();
+    ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
+    VkRenderPass                         RenderPass = VK_NULL_HANDLE;
+    Vector<VkFramebuffer>                FrameBufferList;
+    Vector<Vector<VulkanSubPass>>        VulkanSubPassList;
+    Vector<VkClearValue>                 ClearValueList;
+    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    bool                                 UseCubeMapMultiView = false;
+    bool                                 IsCubeMapRenderPass = false;
+};
+
+struct VulkanSubPassLoader
+{
+    String                               Pipeline;
+    MeshTypeEnum                         MeshType;
+    std::optional<String>                ShaderPushConstant;
+    Vector<PushConstantUpdateRule>       PushConstantUpdates;
+    Vector<VkGuid>                       InputTextureList;
+    Vector<VkGuid>                       OutputTextureList;
+    bool                                 OffScreenRenderPass = false;
+};
+
 struct RenderPassLoader
 {
-    VkGuid                               RenderPassId;
-    uint32                               SubPassCount = UINT32_MAX;
-    ivec2                                RenderPassResolution = ivec2();
-    bool                                 UseDefaultRenderResolution = true;
-    bool                                 UseCubeMapMultiView = false;
-    bool                                 IsRenderedToSwapchain = false;
-    bool                                 IsCubeMapRenderPass = false;
-    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkGuid                               RenderPassId = VkGuid();
+    ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
+    Vector<Vector<VulkanSubPassLoader>>  SubPassList;
     Vector<String>                       RenderPipelineList;
-    Vector<VkGuid>                       InputTextureList;
     Vector<RenderPassAttachmentTexture>  RenderAttachmentList;
-    Vector<VkSubpassDependency>          SubpassDependencyModelList;
+    Vector<VkSubpassDependency>          SubpassDependencyList;
     Vector<VkClearValue>                 ClearValueList;
+    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    bool                                 UseCubeMapMultiView = false;
+    bool                                 IsCubeMapRenderPass = false;
 };
 
 struct RenderPassAttachementTextures
@@ -97,11 +134,11 @@ struct RenderPassAttachementTextures
 struct VulkanPipeline
 {
     VkGuid RenderPipelineId;
+    VkPipeline Pipeline = VK_NULL_HANDLE;
+    VkPipelineCache PipelineCache = VK_NULL_HANDLE;
+    VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
     Vector<VkDescriptorSetLayout> DescriptorSetLayoutList = Vector<VkDescriptorSetLayout>();
     Vector<VkDescriptorSet> DescriptorSetList = Vector<VkDescriptorSet>();
-    VkPipeline Pipeline = VK_NULL_HANDLE;
-    VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-    VkPipelineCache PipelineCache = VK_NULL_HANDLE;
 };
 
 struct ShaderVariable

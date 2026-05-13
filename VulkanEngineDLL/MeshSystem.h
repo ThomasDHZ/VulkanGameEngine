@@ -6,16 +6,6 @@
 #include <xxhash.h>
 #include <entt/entt.hpp>
 
-enum MeshTypeEnum
-{
-	kMesh_SpriteMesh,
-	kMesh_LevelMesh,
-	kMesh_SkyBoxMesh,
-	kMesh_LineMesh,
-	kMesh_LevelEditorIconMesh,
-	kMesh_Undefined
-};
-
 enum VertexLayoutEnum
 {
 	kVertexLayout_NullVertex,
@@ -25,7 +15,6 @@ enum VertexLayoutEnum
 	kVertexLayout_LineVertex,
 	kVertexLayout_Undefined
 };
-
 
 struct NullVertexLayout
 {
@@ -176,7 +165,7 @@ public:
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
 	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
 	DLL_EXPORT const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
-	DLL_EXPORT const Vector<MeshDrawMessage> DrawInsancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
+	DLL_EXPORT const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
 
 	DLL_EXPORT void Update(const float& deltaTime);
 	DLL_EXPORT void Destroy(uint meshId);
