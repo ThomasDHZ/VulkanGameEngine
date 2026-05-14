@@ -160,6 +160,7 @@
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="PushConstantRegistry.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="SkyBox.h" />
@@ -193,6 +194,7 @@
     <ClCompile Include="MemoryPoolSystem.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="PushConstantRegistry.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="SkyBox.cpp" />

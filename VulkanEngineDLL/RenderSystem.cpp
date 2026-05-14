@@ -9,6 +9,7 @@
 #include "from_json.h"
 #include <unordered_set>
 #include <algorithm>
+#include "PushConstantRegistry.h"
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -54,8 +55,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         Vector<VulkanSubPass> subPassList;
         for (auto& subPass : renderPass)
         {
-            subPassList.emplace_back(BuildSubpasses(renderPassLoader.RenderPassId, subPass));
             BuildPipelines(vulkanRenderPass, subPass);
+            subPassList.emplace_back(BuildSubpasses(renderPassLoader.RenderPassId, subPass));
         }
         vulkanRenderPass.VulkanSubPassList.emplace_back(subPassList);
     }
@@ -167,31 +168,13 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
 
 VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader)
 {
-    ShaderPushConstant shaderPushConstant;
-    if (subPassLoader.ShaderPushConstant)
-    {
-        shaderPushConstant = shaderSystem.FindShaderPushConstant(subPassLoader.ShaderPushConstant.value());
-        for (const auto& pushConstantVariable : subPassLoader.PushConstantUpdates)
-        {
-            ShaderVariable& variable = shaderSystem.FindShaderPushConstantStructVariable(shaderPushConstant, pushConstantVariable.Variable);
-            variable.ConstVariable = pushConstantVariable.ConstValue;
-            if (variable.ConstVariable)
-            {
-                shaderSystem.UpdateShaderVariableValue(variable, pushConstantVariable.Value);
-            }
-            else
-            {
-
-            }
-        }
-    }
-
     return VulkanSubPass
     {
         .RenderPassGuid = renderPassId,
         .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<RenderPipelineLoader>().PipelineId,
         .MeshType = subPassLoader.MeshType,
         .ShaderPushConstant = subPassLoader.ShaderPushConstant,
+        .PushConstantUpdates = subPassLoader.PushConstantUpdates,
         .InputTextureList = subPassLoader.InputTextureList,
         .OutputTextureList = subPassLoader.OutputTextureList,
         .OffScreenFrameBuffer = subPassLoader.OffScreenRenderPass,
@@ -988,9 +971,24 @@ void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPass
     vkCmdSetScissor(commandBuffer, 0, 1, &rect2D);
 }
 
-void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, const ShaderPushConstant& pushConstant, VkShaderStageFlags stages)
+void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, VkShaderStageFlags stages)
 {
-    vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, stages, 0, pushConstant.PushConstantSize, pushConstant.PushConstantBuffer.data());
+    if (drawMessage.PushConstant.has_value())
+    {
+        const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(drawMessage.RenderPassGuid);
+        const VulkanPipeline&   pipeline = renderSystem.FindRenderPipeline(drawMessage.RenderPassGuid, drawMessage.PipelineGuid);
+        PushConstantContext pushConstantContext = PushConstantContext
+        {
+            .MeshId = drawMessage.DrawMeshList[drawIndex].MeshId,
+            .DrawIndex = static_cast<uint32>(drawIndex),
+            .MipLevel = mip,
+            .RenderPassResolution = renderPass.RenderPassResolution
+        };
+
+        ShaderPushConstant shaderPushConstant = shaderSystem.FindShaderPushConstant(drawMessage.PushConstant.value());
+        pushConstantRegistry.ApplyPushConstantRules(shaderPushConstant, pushConstantContext, drawMessage.PushConstantUpdateRules);
+        vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, stages, 0, shaderPushConstant.PushConstantSize, shaderPushConstant.PushConstantBuffer.data());
+    }
 }
 
 void RenderSystem::BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet)
@@ -1060,16 +1058,12 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
                             const MeshDrawMessage mesh = renderPassLayer.DrawMeshList[x];
-                            if (renderPassLayer.PushConstant)
-                            {
-                                if (renderPassLayer.PushConstantsCmd) renderPassLayer.PushConstantsCmd(commandBuffer, renderPassLayer, x, ivec2(inputTexture.width), mip);
-                                BindPushConstants(commandBuffer, pipeline, renderPassLayer.PushConstant.value());
-                            }
-
+                     
+                            BindPushConstants(commandBuffer, renderPassLayer, x, mip);
                             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.VertexBuffer, &mesh.VertexOffset);
                             if (mesh.IndexBuffer)
                             {
-                                vkCmdBindIndexBuffer(commandBuffer, mesh.IndexBuffer, mesh.FirstIndex * sizeof(uint32_t), VK_INDEX_TYPE_UINT32);
+                                vkCmdBindIndexBuffer(commandBuffer, mesh.IndexBuffer, mesh.FirstIndex * sizeof(uint32), VK_INDEX_TYPE_UINT32);
                                 vkCmdDrawIndexed(commandBuffer, mesh.IndexCount, mesh.InstanceCount, mesh.FirstIndex, 0, mesh.StartInstanceIndex);
                             }
                             else

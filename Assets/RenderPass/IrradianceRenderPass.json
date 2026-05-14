@@ -11,7 +11,7 @@
         "PushConstantUpdates": [
           {
             "Variable": "sampleDelta",
-            "Source": "",
+            "Source": 4,
             "Value": "0.1",
             "ConstValue": true
           }

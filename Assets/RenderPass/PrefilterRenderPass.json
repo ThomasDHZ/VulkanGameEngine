@@ -11,13 +11,13 @@
         "PushConstantUpdates": [
           {
             "Variable": "CubeMapResolution",
-            "Source": "",
+            "Source": 2,
             "Value": "0.1",
             "ConstValue": false
           },
           {
             "Variable": "Roughness",
-            "Source": "",
+            "Source": 3,
             "Value": "0.1",
             "ConstValue": false
           }

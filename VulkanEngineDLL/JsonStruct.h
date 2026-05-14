@@ -3,6 +3,15 @@
 #include "TextureSystem.h"
 #include "enum.h"
 
+enum PushConstantResolverEnum
+{
+    kPushConst_None,
+    kPushConst_MeshId,
+    kPushConst_RenderPassResolution,
+    kPushConst_Roughness,
+    kPushConst_SampleDelta
+};
+
 enum MeshTypeEnum
 {
     kMesh_None,
@@ -70,7 +79,7 @@ struct RenderPassAttachmentTexture
 struct PushConstantUpdateRule
 {
     String                               Variable;
-    String                               SourceId;
+    PushConstantResolverEnum             SourceId;
     String                               Value;
     bool                                 ConstValue;
 };
@@ -81,6 +90,7 @@ struct VulkanSubPass
     VkGuid                               PipelineGuid;
     MeshTypeEnum                         MeshType;
     std::optional<String>                ShaderPushConstant;
+    Vector<PushConstantUpdateRule>       PushConstantUpdates;
     Vector<VkGuid>                       InputTextureList;
     Vector<VkGuid>                       OutputTextureList;
     bool                                 OffScreenFrameBuffer = false;

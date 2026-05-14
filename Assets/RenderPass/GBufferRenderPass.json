@@ -11,19 +11,19 @@
         "PushConstantUpdates": [
           {
             "Variable": "MeshBufferIndex",
-            "Source": "MeshId",
+            "Source": 1,
             "Value": "",
             "ConstValue": false
           },
           {
             "Variable": "UseHeightMap",
-            "Source": "",
+            "Source": 0,
             "Value": "true",
             "ConstValue": true
           },
           {
             "Variable": "HeightScale",
-            "Source": "",
+            "Source": 0,
             "Value": "0.15",
             "ConstValue": true
           }
