@@ -8,7 +8,7 @@ enum PushConstantResolverEnum
     kPushConst_None,
     kPushConst_MeshId,
     kPushConst_RenderPassResolution,
-    kPushConst_Roughness,
+    kPushConst_PrefilterRoughness,
     kPushConst_SampleDelta
 };
 

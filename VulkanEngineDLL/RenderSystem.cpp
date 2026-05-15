@@ -982,6 +982,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
             .MeshId = drawMessage.DrawMeshList[drawIndex].MeshId,
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
+            .MipCount = drawMessage.MipCount,
             .RenderPassResolution = renderPass.RenderPassResolution
         };
 

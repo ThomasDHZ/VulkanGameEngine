@@ -8,6 +8,7 @@ struct PushConstantContext
     uint32                MeshId = UINT32_MAX;
     uint32                DrawIndex = 0;
     uint32                MipLevel = 0;
+    uint32                MipCount = 0;
     ivec2                 RenderPassResolution = { 0, 0 };     // base resolution before mip
 };
 

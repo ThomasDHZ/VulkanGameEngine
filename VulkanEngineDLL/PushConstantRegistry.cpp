@@ -36,6 +36,13 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
             uint32 width = std::max(1, context.RenderPassResolution.x >> context.MipLevel);
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, shaderVariable, width);
         });
+
+    RegisterPushConstantValue(kPushConst_PrefilterRoughness, [&](ShaderPushConstant& pushConstant, const PushConstantContext& context, const String& shaderVariable)
+        {
+            uint32 width = std::max(1, context.RenderPassResolution.x >> context.MipLevel);
+            float roughness = static_cast<float>(context.MipLevel) / static_cast<float>(context.MipCount - 1);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, shaderVariable, roughness);
+        });
 }
 
 void PushConstantRegistry::HandleSimplePushConstant(ShaderPushConstant& pushConstant, const PushConstantUpdateRule& pushConstantRule)
