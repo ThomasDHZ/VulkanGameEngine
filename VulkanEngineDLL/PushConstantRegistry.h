@@ -41,7 +41,7 @@ private:
         }
         else
         {
-            std::cerr << "Failed to parse scalar value: " << rule.Value << std::endl;
+          //  std::cerr << "Failed to parse scalar value: " << rule.Value << std::endl;
         }
     }
 
@@ -55,7 +55,7 @@ private:
             iss >> vector[x];
             if (iss.fail())
             {
-                std::cerr << "Failed to parse " << N << "D vector: " << pushConstantRule.Value << "\n";
+            //    std::cerr << "Failed to parse " << N << "D vector: " << pushConstantRule.Value << "\n";
                 return;
             }
             if (iss.peek() == ',') iss.ignore();
@@ -73,7 +73,7 @@ private:
             iss >> matrix[x / C][x % C];
             if (iss.fail()) 
             {
-                std::cerr << "Failed to parse " << C << "x" << R << " matrix\n";
+             //   std::cerr << "Failed to parse " << C << "x" << R << " matrix\n";
                 return;
             }
             if (iss.peek() == ',') iss.ignore();

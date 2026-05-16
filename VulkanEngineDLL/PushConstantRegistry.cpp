@@ -71,6 +71,6 @@ void PushConstantRegistry::HandleSimplePushConstant(ShaderPushConstant& pushCons
             shaderSystem.UpdatePushConstantValue<bool>(pushConstant, pushConstantRule.Variable, value);
             break;
         }
-        default: std::cerr << "Unsupported push constant type for: " << pushConstantRule.Variable << std::endl; break;
+        //default: std::cerr << "Unsupported push constant type for: " << pushConstantRule.Variable << std::endl; break;
     }
 }

@@ -759,7 +759,7 @@ Vector<VulkanRenderPass>& RenderSystem::RenderPassList()
     return VulkanRenderPassList;
 }
 
-VulkanRenderPass RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
+const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
 {
     auto it = GuidToRenderPassNodeIndex.find(renderPassGuid);
     uint32 index = it != GuidToRenderPassNodeIndex.end() ? it->second : UINT32_MAX;
@@ -971,7 +971,7 @@ void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPass
     vkCmdSetScissor(commandBuffer, 0, 1, &rect2D);
 }
 
-void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, VkShaderStageFlags stages)
+void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
 {
     if (drawMessage.PushConstant.has_value())
     {
@@ -982,7 +982,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
             .MeshId = drawMessage.DrawMeshList[drawIndex].MeshId,
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
-            .MipCount = drawMessage.MipCount,
+            .MipCount = mipCount,
             .RenderPassResolution = renderPass.RenderPassResolution
         };
 
@@ -1059,8 +1059,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
                             const MeshDrawMessage mesh = renderPassLayer.DrawMeshList[x];
-                     
-                            BindPushConstants(commandBuffer, renderPassLayer, x, mip);
+                            BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount);
                             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.VertexBuffer, &mesh.VertexOffset);
                             if (mesh.IndexBuffer)
                             {
