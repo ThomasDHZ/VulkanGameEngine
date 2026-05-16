@@ -82,6 +82,7 @@ struct PushConstantUpdateRule
     PushConstantResolverEnum             SourceId;
     String                               Value;
     bool                                 ConstValue;
+    bool                                 DirtyFlag = true;
 };
 
 struct VulkanSubPass

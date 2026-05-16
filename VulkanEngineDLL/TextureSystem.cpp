@@ -1162,7 +1162,7 @@ bool TextureSystem::HasStencilComponent(VkFormat format)
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	VulkanPipeline pipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+	VulkanPipeline pipeline = renderSystem.FindRenderPipeline(renderPass.VulkanSubPassList[0][0].PipelineGuid);
 	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
 	if (renderPassTexture.empty())
@@ -1306,7 +1306,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipelineList(renderPassId)[0];
+	VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipeline(renderPass.VulkanSubPassList[0][0].PipelineGuid);
 	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
 	if (renderPassTexture.empty() || renderPassTexture[0].textureImage == VK_NULL_HANDLE)
