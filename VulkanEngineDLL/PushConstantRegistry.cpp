@@ -1,76 +1,50 @@
 #include "PushConstantRegistry.h"
 #include "ShaderSystem.h"
 #include <algorithm>
+#include "MemoryPoolSystem.h"
+#include "RenderSystem.h"
 
 PushConstantRegistry& pushConstantRegistry = PushConstantRegistry::Get();
 
-void PushConstantRegistry::RegisterPushConstantValue(const PushConstantResolverEnum& sourceName, UpdateFunc func)
+void PushConstantRegistry::RegisterPushConstantValue(const String& sourceName, UpdateFunc func)
 {
 	registry[sourceName] = std::move(func);
 }
 
-void PushConstantRegistry::ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext, const Vector<PushConstantUpdateRule>& pushConstantRuleList)
+void PushConstantRegistry::ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext)
 {
-	for (const auto& pushConstantRule : pushConstantRuleList)
-	{
-		auto it = registry.find(pushConstantRule.SourceId);
+		auto it = registry.find(pushConstant.PushConstantName);
 		if (it != registry.end())
 		{
-            if(it->second) it->second(pushConstant, pushConstantContext, pushConstantRule.Variable);
-            else std::cerr << "Push Constant variable not handled: " << pushConstantRule.Variable << "\n";
+            it->second(pushConstant, pushConstantContext);
 		}
-        else HandleSimplePushConstant(pushConstant, pushConstantRule);
-	}
-    shaderSystem.UpdatePushConstantBuffer(pushConstant);
 }
 
 void PushConstantRegistry::RegisterDefaultPushConstantRules()
 {
-    RegisterPushConstantValue(kPushConst_MeshId, [&](ShaderPushConstant& pushConstant, const PushConstantContext& context, const String& shaderVariable)
+    RegisterPushConstantValue("sceneData", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
         {
-            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, shaderVariable, context.MeshId);
+            VulkanRenderPass renderPass = renderSystem.FindRenderPass(context.RenderPassGuid);
+            SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+            sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
+
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", context.MeshId);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 
-    RegisterPushConstantValue(kPushConst_RenderPassResolution, [&](ShaderPushConstant& pushConstant, const PushConstantContext& context, const String& shaderVariable)
+    RegisterPushConstantValue("irradianceShaderConstants", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
         {
-            uint32 width = std::max(1, context.RenderPassResolution.x >> context.MipLevel);
-            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, shaderVariable, width);
+            shaderSystem.UpdatePushConstantValue<float>(pushConstant, "sampleDelta", 0.1f);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 
-    RegisterPushConstantValue(kPushConst_PrefilterRoughness, [&](ShaderPushConstant& pushConstant, const PushConstantContext& context, const String& shaderVariable)
+    RegisterPushConstantValue("prefilterSamplerProperties", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
         {
             uint32 width = std::max(1, context.RenderPassResolution.x >> context.MipLevel);
             float roughness = static_cast<float>(context.MipLevel) / static_cast<float>(context.MipCount - 1);
-            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, shaderVariable, roughness);
+
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "CubeMapResolution", context.RenderPassResolution.x);
+            shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", roughness);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
-}
-
-void PushConstantRegistry::HandleSimplePushConstant(ShaderPushConstant& pushConstant, const PushConstantUpdateRule& pushConstantRule)
-{
-    switch (pushConstantRule.SourceId)
-    {
-        case shaderInt:   UpdatePushConstantVector<1,    int>  (pushConstant, pushConstantRule); break;
-        case shaderUint:  UpdatePushConstantVector<1,    uint> (pushConstant, pushConstantRule); break;
-        case shaderFloat: UpdatePushConstantVector<1,    float>(pushConstant, pushConstantRule); break;
-        case shaderIvec2: UpdatePushConstantVector<2,    int>  (pushConstant, pushConstantRule); break;
-        case shaderIvec3: UpdatePushConstantVector<2,    int>  (pushConstant, pushConstantRule); break;
-        case shaderIvec4: UpdatePushConstantVector<4,    int>  (pushConstant, pushConstantRule); break;
-        case shaderVec2:  UpdatePushConstantVector<2,    float>(pushConstant, pushConstantRule); break;
-        case shaderVec3:  UpdatePushConstantVector<3,    float>(pushConstant, pushConstantRule); break;
-        case shaderVec4:  UpdatePushConstantVector<4,    float>(pushConstant, pushConstantRule); break;
-        case shaderMat2:  UpdatePushConstantMatrix<2, 2, float>(pushConstant, pushConstantRule); break;
-        case shaderMat3:  UpdatePushConstantMatrix<3, 3, float>(pushConstant, pushConstantRule); break;
-        case shaderMat4:  UpdatePushConstantMatrix<4, 4, float>(pushConstant, pushConstantRule); break;
-        case shaderbool:  
-        {
-            bool value = false;
-            if (pushConstantRule.Value == "true" || pushConstantRule.Value == "1") value = true;
-            else if (pushConstantRule.Value == "false" || pushConstantRule.Value == "0") value = false;
-            else std::cerr << "Failed to parse bool: " << pushConstantRule.Value << "\n";
-
-            shaderSystem.UpdatePushConstantValue<bool>(pushConstant, pushConstantRule.Variable, value);
-            break;
-        }
-        //default: std::cerr << "Unsupported push constant type for: " << pushConstantRule.Variable << std::endl; break;
-    }
 }

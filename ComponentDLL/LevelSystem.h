@@ -139,15 +139,7 @@ public:
 
     DLL_EXPORT void                            LoadLevel(const char* levelPath);
     DLL_EXPORT void                            Update(const float& deltaTime);
-    DLL_EXPORT void                            RenderIrradianceMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
-    DLL_EXPORT void                            RenderPrefilterMapRenderPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, float deltaTime);
-    DLL_EXPORT void                            RenderGBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, VkGuid& levelId, const float deltaTime);
-    DLL_EXPORT void                            RenderGaussianBlurPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId, uint blurDirection);
-    DLL_EXPORT void                            RenderBloomPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
-    DLL_EXPORT void                            RenderHdrPass(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
     DLL_EXPORT void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
-    DLL_EXPORT void                            RenderGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId);
-    DLL_EXPORT void                            RenderSelectedGameObjectPickerRenderPass(VkCommandBuffer& commandBuffer, VkGuid renderPassId);
 
     DLL_EXPORT const Vector<MeshDrawMessage>   DrawSpriteMesh();
     DLL_EXPORT void                            Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);

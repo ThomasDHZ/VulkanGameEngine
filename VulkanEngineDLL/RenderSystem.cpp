@@ -173,7 +173,6 @@ VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSub
         .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<RenderPipelineLoader>().PipelineId,
         .MeshType = subPassLoader.MeshType,
         .ShaderPushConstant = subPassLoader.ShaderPushConstant,
-        .PushConstantUpdates = subPassLoader.PushConstantUpdates,
         .InputTextureList = subPassLoader.InputTextureList,
         .OutputTextureList = subPassLoader.OutputTextureList,
         .OffScreenFrameBuffer = subPassLoader.OffScreenRenderPass,
@@ -976,6 +975,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
         const VulkanPipeline&   pipeline = renderSystem.FindRenderPipeline(drawMessage.PipelineGuid);
         PushConstantContext pushConstantContext = PushConstantContext
         {
+            .RenderPassGuid = drawMessage.RenderPassGuid,
             .MeshId = drawMessage.DrawMeshList[drawIndex].MeshId,
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
@@ -984,7 +984,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
         };
 
         ShaderPushConstant shaderPushConstant = shaderSystem.FindShaderPushConstant(drawMessage.PushConstant.value());
-        pushConstantRegistry.ApplyPushConstantRules(shaderPushConstant, pushConstantContext, drawMessage.PushConstantUpdateRules);
+        pushConstantRegistry.ApplyPushConstantRules(shaderPushConstant, pushConstantContext);
         vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout, stages, 0, shaderPushConstant.PushConstantSize, shaderPushConstant.PushConstantBuffer.data());
     }
 }

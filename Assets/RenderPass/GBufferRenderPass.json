@@ -8,26 +8,6 @@
         "Pipeline": "Pipelines/GBufferLevelShader2DPipeline.json",
         "MeshType": 2,
         "ShaderPushConstant": "sceneData",
-        "PushConstantUpdates": [
-          {
-            "Variable": "MeshBufferIndex",
-            "Source": 1,
-            "Value": "",
-            "ConstValue": false
-          },
-          {
-            "Variable": "UseHeightMap",
-            "Source": 0,
-            "Value": "true",
-            "ConstValue": true
-          },
-          {
-            "Variable": "HeightScale",
-            "Source": 0,
-            "Value": "0.15",
-            "ConstValue": true
-          }
-        ],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false

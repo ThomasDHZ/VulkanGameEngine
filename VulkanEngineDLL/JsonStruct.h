@@ -79,7 +79,7 @@ struct RenderPassAttachmentTexture
 struct PushConstantUpdateRule
 {
     String                               Variable;
-    PushConstantResolverEnum             SourceId;
+    String                               SourceId;
     String                               Value;
     bool                                 ConstValue;
     bool                                 DirtyFlag = true;
@@ -91,7 +91,6 @@ struct VulkanSubPass
     VkGuid                               PipelineGuid;
     MeshTypeEnum                         MeshType;
     std::optional<String>                ShaderPushConstant;
-    Vector<PushConstantUpdateRule>       PushConstantUpdates;
     Vector<VkGuid>                       InputTextureList;
     Vector<VkGuid>                       OutputTextureList;
     bool                                 OffScreenFrameBuffer = false;

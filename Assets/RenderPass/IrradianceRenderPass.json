@@ -8,14 +8,6 @@
         "Pipeline": "Pipelines/IrradiancePipeline.json",
         "MeshType": 3,
         "ShaderPushConstant": "irradianceShaderConstants",
-        "PushConstantUpdates": [
-          {
-            "Variable": "sampleDelta",
-            "Source": 4,
-            "Value": "0.1",
-            "ConstValue": true
-          }
-        ],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false

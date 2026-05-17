@@ -1,27 +1,13 @@
 {
   "Name": "PrefilterRenderPass",
   "RenderPassId": "0abf1fc3-d3a1-4de0-89dd-92f699f8f340",
-  "RenderPassResolution": [ 256, 256 ],
+  "RenderPassResolution": [ 32, 32 ],
   "SubPasses": [
     [
       {
         "Pipeline": "Pipelines/PrefilterPipeline.json",
         "MeshType": 3,
         "ShaderPushConstant": "prefilterSamplerProperties",
-        "PushConstantUpdates": [
-          {
-            "Variable": "CubeMapResolution",
-            "Source": 2,
-            "Value": "0.1",
-            "ConstValue": false
-          },
-          {
-            "Variable": "Roughness",
-            "Source": 3,
-            "Value": "0.1",
-            "ConstValue": false
-          }
-        ],
         "InputTextureList": [ "1d68f22f-77a7-4c53-9650-edec72bb6687" ],
         "OutputTextureList": [],
         "OffScreenRenderPass": false
@@ -35,7 +21,7 @@
   "RenderAttachmentList": [
     {
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
-      "MipMapCount": 7,
+      "MipMapCount": 3,
       "RenderTextureType": 6,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 109,

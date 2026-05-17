@@ -146,7 +146,6 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
                             .RenderPassGuid = renderPassGuid,
                             .PipelineGuid = subPass.PipelineGuid,
                             .PushConstant = subPass.ShaderPushConstant,
-                            .PushConstantUpdateRules = subPass.PushConstantUpdates,
                             .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_SpriteMesh ? meshSystem.DrawMesh(subPass.MeshType) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                             .RenderPassInputs = subPass.InputTextureList,
                             .RenderPassOutputs = subPass.OutputTextureList,
