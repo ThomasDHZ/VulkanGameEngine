@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "GameObjectSystem.h"
+#include <sol/sol.hpp>
 
 struct MegaManShot
 {

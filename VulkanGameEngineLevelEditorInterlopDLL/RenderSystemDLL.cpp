@@ -62,6 +62,8 @@
 	 VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
 	 // materialBakerSystem.Draw(commandBuffer);
 	 levelSystem.Draw(commandBuffer, deltaTime);
-	// ImGui_Draw(commandBuffer, imGuiRenderer);
+	 levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
+	 renderSystem.Draw(commandBuffer);
+	 //ImGui_Draw(commandBuffer, imGuiRenderer);
 	 vulkanSystem.EndFrame(commandBuffer);
  }

@@ -46,12 +46,6 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         });
 
     nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
-    switch (json["GameObjectType"].get<GameObjectTypeEnum>())
-    {
-        case kGameObjectMegaMan:     levelSystem.EntityRegistry.emplace<MegaManObject>(gameObject.GameObjectComponents, MegaManObject{ }); break;
-        case kGameObjectMegaManShot: levelSystem.EntityRegistry.emplace<MegaManShot>(gameObject.GameObjectComponents, MegaManShot{ }); break;
-        case kGameObjectDebug:       levelSystem.EntityRegistry.emplace<DebugGameObject>(gameObject.GameObjectComponents, DebugGameObject{}); break;
-    }
     for (const auto& componentJson : json["GameObjectComponentList"])
     {
         uint64 componentType = componentJson["ComponentType"].get<uint64>();
@@ -118,16 +112,6 @@ GameObject& GameObjectSystem::FindGameObject(uint gameObjectId)
     return *it;
 }
 
-//const Vector<GameObject>& GameObjectSystem::FindGameObjectWithComponent()
-//{
-//    return;
-//}
-//
-//const Vector<GameObject>& GameObjectSystem::FindGameObjectByMeshType(MeshTypeEnum meshType)
-//{
-//    return;
-//}
-
 void GameObjectSystem::DestroyGameObject(uint gameObjectId)
 {
     GameObject& gameObject = GameObjectList[gameObjectId];
@@ -143,27 +127,5 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
             GameObjectList[x].ParentGameObjectId--;
         }
         GameObjectList[x].GameObjectId--;
-    }
-}
-
-void GameObjectSystem::DestroyDeadGameObjects()
-{
-    if (GameObjectList.empty())
-    {
-        return;
-    }
-
-    Vector<SharedPtr<GameObject>> deadGameObjects;
-    for (auto& gameObject : GameObjectList)
-    {
-        if (!gameObject.GameObjectAlive)
-        {
-            deadGameObjects.push_back(std::make_shared<GameObject>(gameObject));
-        }
-    }
-    while (!deadGameObjects.empty())
-    {
-        DestroyGameObject(deadGameObjects[0]->GameObjectId);
-        deadGameObjects.erase(deadGameObjects.begin());
     }
 }

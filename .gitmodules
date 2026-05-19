@@ -64,3 +64,6 @@
 [submodule "External/json"]
 	path = External/json
 	url = https://github.com/nlohmann/json.git
+[submodule "External/sol2"]
+	path = External/sol2
+	url = https://github.com/ThePhD/sol2.git

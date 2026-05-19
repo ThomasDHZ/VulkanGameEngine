@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Systems">
       <UniqueIdentifier>{1442de37-efdf-4cc5-841a-2c622b231bd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{0ae6ed51-efa0-4541-8345-6a6d611f1fc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{a1d6e5bb-3594-4903-bae1-77e882612d94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLL.h">
@@ -144,6 +150,9 @@
     <ClInclude Include="PushConstantRegistry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LuaScriptingSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -225,6 +234,12 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="PushConstantRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScriptingSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform2DComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

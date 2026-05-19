@@ -77,10 +77,7 @@ public:
     DLL_EXPORT uint CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT void DestroyGameObject(uint gameObjectId);
-    DLL_EXPORT void DestroyDeadGameObjects(); 
     DLL_EXPORT GameObject& FindGameObject(uint gameObjectId);
-    DLL_EXPORT const Vector<GameObject>& FindGameObjectWithComponent();
-    DLL_EXPORT const Vector<GameObject>& FindGameObjectByMeshType(MeshTypeEnum meshType);
 };
 extern DLL_EXPORT GameObjectSystem& gameObjectSystem;
 inline GameObjectSystem& GameObjectSystem::Get()

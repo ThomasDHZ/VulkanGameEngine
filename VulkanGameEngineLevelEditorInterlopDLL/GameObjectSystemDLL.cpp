@@ -58,11 +58,6 @@ void GameObjectSystem_DestroyGameObject(uint gameObjectId)
 	gameObjectSystem.DestroyGameObject(gameObjectId);
 }
 
-void GameObjectSystem_DestroyDeadGameObjects()
-{
-	gameObjectSystem.DestroyDeadGameObjects();
-}
-
 GameObject* GameObjectSystem_GetGameObject(size_t gameObjectId)
 {
     return &gameObjectSystem.FindGameObject(gameObjectId);
