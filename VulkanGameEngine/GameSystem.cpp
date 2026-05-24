@@ -8,6 +8,7 @@
 #include "Mouse.h"
 #include "GameController.h"
 #include <LevelSystem.h>
+#include <CSharpScriptSystem.h>
 
 #if !defined(__linux__) && !defined(__ANDROID__)
 #include <MaterialBakerSystem.h>
@@ -16,6 +17,7 @@
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
 #endif
+#include <LuaScriptingSystem.h>
 
 #ifndef __ANDROID__
 GameSystem gameSystem = GameSystem();
@@ -55,8 +57,13 @@ void GameSystem::StartUp(void* windowHandle)
 #else
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
+    string_t runtimeConfig = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0\\GameScriptLibraryDLL.runtimeconfig.json";
+    string_t assembly = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0\\GameScriptLibraryDLL.dll";
+
     renderSystem.StartUp(windowHandle, instance, surface);
     memoryPoolSystem.StartUp();
+    luaScriptingSystem.StartUp();
+    CSharpScriptSystem::Initialize(runtimeConfig, assembly);
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
    // materialBakerSystem.Run();
@@ -74,6 +81,40 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
     memoryPoolSystem.UpdateMemoryPool();
+    luaScriptingSystem.Update(deltaTime);
+
+    auto& scriptSys = CSharpScriptSystem::GetInstance();
+
+    PlayerCreateFn  create = scriptSys.GetCreateFn();
+    PlayerStartUpFn startup = scriptSys.GetStartUpFn();
+    PlayerUpdateFn  update = scriptSys.GetUpdateFn();
+    PlayerDestroyFn destroy = scriptSys.GetDestroyFn();
+
+    if (create && startup && update && destroy)
+    {
+        // Create Player instance
+        const char_t* playerType = L"Player";
+        intptr_t handle = create();
+
+        if (handle != 0)
+        {
+            std::cout << "[C++] Player created successfully (handle = " << handle << ")" << std::endl;
+
+            // Test calls
+            startup(handle);                    // StartUp
+            update(handle, 0.016f);                      // Update once
+            update(handle, 0.016f);                      // Update again
+
+            // Clean up
+            destroy(handle);
+            std::cout << "[C++] Player destroyed." << std::endl;
+        }
+        else
+        {
+            std::cerr << "[C++] Failed to create Player (null handle)" << std::endl;
+        }
+    }
+    //cSharpScriptSystem.Update(deltaTime);
     auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
   //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
    // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);

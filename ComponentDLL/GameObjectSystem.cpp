@@ -3,6 +3,8 @@
 #include "SpriteSystem.h"
 #include "MegaManObject.h"
 #include "LevelSystem.h"
+#include "LuaScriptingSystem.h"
+#include "CSharpScriptSystem.h"
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
@@ -45,12 +47,14 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
             .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
         });
 
-    nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
-    for (const auto& componentJson : json["GameObjectComponentList"])
+    if (gameObjectJson != "GameScripts/Player.lua")
     {
-        uint64 componentType = componentJson["ComponentType"].get<uint64>();
-        switch (componentType)
+        nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
+        for (const auto& componentJson : json["GameObjectComponentList"])
         {
+            uint64 componentType = componentJson["ComponentType"].get<uint64>();
+            switch (componentType)
+            {
             case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
             case kSpriteComponent:
             {
@@ -85,7 +89,14 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
             case kDirectionalLightComponent: levelSystem.EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
             case kPointLightComponent: levelSystem.EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;
             default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
+            }
         }
+    }
+    else
+    {
+        ManagedPlayer player1(L"Player");
+        player1.StartUp(0, 0, 0);
+        //luaScriptingSystem.CreateEntityFromScript(gameObjectJson);
     }
     return gameObject.GameObjectId;
 }

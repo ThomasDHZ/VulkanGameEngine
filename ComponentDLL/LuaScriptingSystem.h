@@ -1,6 +1,13 @@
 #pragma once
+#include "pch.h"
 #include "Platform.h"
 #include <sol/sol.hpp>
+
+struct LuaScriptComponent
+{
+    sol::table scriptTable;
+    std::string entityName;
+};
 
 class LuaScriptingSystem
 {
@@ -27,7 +34,7 @@ public:
     DLL_EXPORT void Update(float deltaTime);
     DLL_EXPORT void ShutDown();
 
-    DLL_EXPORT entt::entity CreateEntityFromScript(const String& scriptPath, const String& entityName = "LuaEntity");
+    DLL_EXPORT entt::entity CreateEntityFromScript(const String& scriptPath, const String& entityName = "LuaEntity", vec2 startPos = vec2(), float startRot = 0);
     DLL_EXPORT sol::state& GetLuaState() { return lua; }
 };
 extern DLL_EXPORT LuaScriptingSystem& luaScriptingSystem;
