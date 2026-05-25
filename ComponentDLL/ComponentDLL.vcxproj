@@ -157,7 +157,6 @@
     <ClInclude Include="GameObjectSystem.h" />
     <ClInclude Include="InputComponent.h" />
     <ClInclude Include="LevelSystem.h" />
-    <ClInclude Include="LuaScriptingSystem.h" />
     <ClInclude Include="MegaManObject.h" />
     <ClInclude Include="MegaManShot.h" />
     <ClInclude Include="Camera.h" />
@@ -168,7 +167,6 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
     <ClCompile Include="LevelSystem.cpp" />
-    <ClCompile Include="LuaScriptingSystem.cpp" />
     <ClCompile Include="MegaManObject.cpp" />
     <ClCompile Include="MegaManShot.cpp" />
     <ClCompile Include="Camera.cpp" />
