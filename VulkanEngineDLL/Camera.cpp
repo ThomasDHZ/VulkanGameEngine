@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Camera.h"
 
 Camera Camera_CreatePixelPerfectOrthographic(const glm::ivec2& renderResolution, const glm::vec2& worldPosition)

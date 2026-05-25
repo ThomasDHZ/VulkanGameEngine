@@ -1,8 +1,10 @@
 #pragma once
-#include "pch.h"
-#include "Camera.h"
+#include "Platform.h"
 #include "SpriteSystem.h"
+#include "MeshSystem.h"
 #include <entt/entt.hpp>
+#include "MaterialSystem.h"
+#include "CameraSystem.h"
 
 #ifndef PLATFORM_ANDROID
 #pragma comment(lib, "vulkan-1.lib")
@@ -57,7 +59,7 @@ struct LevelTileSet
     ivec2			  TileSetBounds = ivec2();
     vec2			  TileScale = vec2(5.0f);
     vec2			  TileUVSize = vec2();
-    Tile*             LevelTileListPtr = nullptr;
+    Tile* LevelTileListPtr = nullptr;
     size_t            LevelTileCount = 0;
 };
 

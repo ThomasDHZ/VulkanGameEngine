@@ -1,10 +1,13 @@
 #pragma once
-#include "pch.h"
-#include "InputComponent.h"
+#include "Platform.h"
 #include "Transform2DComponent.h"
-#include "MegaManShot.h"
 #include "VulkanSystem.h"
 #include <entt/entt.hpp>
+
+struct InputComponent
+{
+    byte a = 0x00;
+};
 
 enum GameObjectTypeEnum
 {
@@ -58,7 +61,7 @@ class GameObjectSystem
 {
 public:
     static GameObjectSystem& Get();
-    
+
 private:
     GameObjectSystem() = default;
     ~GameObjectSystem() = default;

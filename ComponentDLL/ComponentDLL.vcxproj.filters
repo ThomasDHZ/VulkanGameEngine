@@ -30,29 +30,11 @@
     <ClInclude Include="MegaManShot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameObjectBehavior.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObjectSystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteSystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelSystem.h">
-      <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -67,18 +49,6 @@
     </ClCompile>
     <ClCompile Include="Component.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObjectSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="LevelSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

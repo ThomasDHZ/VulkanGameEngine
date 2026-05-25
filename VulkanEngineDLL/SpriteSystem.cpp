@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "SpriteSystem.h"
 #include "LevelSystem.h"
 
@@ -163,7 +162,7 @@ void SpriteSystem::Update(const float& deltaTime)
 
 void SpriteSystem::SortSpriteLayers()
 {
-    struct SpriteSortStruct 
+    struct SpriteSortStruct
     {
         entt::entity entity;
         uint32       layer;

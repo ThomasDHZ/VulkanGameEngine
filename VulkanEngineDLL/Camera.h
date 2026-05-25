@@ -1,6 +1,6 @@
 #pragma once
-#include "pch.h"
-#include <CameraSystem.h>
+#include "Platform.h"
+#include "CameraSystem.h"
 
 DLL_EXPORT Camera Camera_CreatePixelPerfectOrthographic(const glm::ivec2& renderResolution, const glm::vec2& worldPosition = glm::vec2(0.0f));
 DLL_EXPORT void Camera_UpdateOrthographicPixelPerfect(Camera& camera);

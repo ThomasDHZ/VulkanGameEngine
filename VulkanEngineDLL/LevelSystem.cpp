@@ -1,11 +1,13 @@
-#include "pch.h"
 #include "LevelSystem.h"
+#include "EngineConfigSystem.h"
 #include "GameObjectSystem.h"
-#include <MeshSystem.h>
-#include <RenderSystem.h>
-#include <CameraSystem.h>
+#include "MeshSystem.h"
+#include "RenderSystem.h"
+#include "CameraSystem.h"
+#include "LightSystem.h"
+#include "PushConstantRegistry.h"
+#include "Camera.h"
 #include <algorithm>
-#include <PushConstantRegistry.h>
 
 LevelSystem& levelSystem = LevelSystem::Get();
 
@@ -23,10 +25,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
-    for (auto& texture     : json["LoadTextures"])    textureSystem.CreateTexture(texture);
-    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
-    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& texture : json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
     for (auto& light : json["LoadSceneLights"])
     {
@@ -62,7 +64,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
             CreateGameObjectComponent<DirectionalLightComponent>(gameObjectId, &directionalLightComponent);
         }
     }
-    for (size_t x = 0; x <   json["GameObjectList"].size(); x++)
+    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];
         vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
@@ -81,15 +83,15 @@ void LevelSystem::LoadLevel(const char* levelPath)
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
     textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
 
-    irradianceMapRenderPassId          = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
-    prefilterMapRenderPassId           = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
-    gBufferRenderPassId                = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
+    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
+    prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
+    gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
     /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId                    = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json");
-    objectPickerRenderPassId           = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/ObjectPickerRenderPass.json");
-    selectedObjectPickerRenderPassId   = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/SelectedGameObjectPickerRenderPass.json");
+    hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
+    objectPickerRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/ObjectPickerRenderPass.json");
+    selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/SelectedGameObjectPickerRenderPass.json");
 
     sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().bindlessTextureIndex - 1;
     sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().bindlessTextureIndex;
@@ -97,7 +99,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
 void LevelSystem::Update(const float& deltaTime)
 {
-   Camera_PerspectiveUpdate(*PerspectiveCamera.get());
+    Camera_PerspectiveUpdate(*PerspectiveCamera.get());
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     sceneDataBuffer.Projection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
@@ -125,7 +127,7 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     for (auto& renderPassGuid : renderPassesToDraw)
     {
-        const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassGuid); 
+        const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassGuid);
         sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
 
         uint32 maxMipLevelCount = 1;
@@ -339,25 +341,25 @@ void LevelSystem::LoadSkyBox()
 
 const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
 {
-	Vector<MeshDrawMessage> meshDrawMessageList;
-	for (const auto& layer : spriteSystem.SpriteLayerList)
-	{
-		const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
-		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-		meshDrawMessageList.emplace_back(MeshDrawMessage
-			{
-				.MeshId = spriteSystem.SpriteMeshId,
-				.VertexCount = meshAsset.VertexCount,
-				.IndexCount = meshAsset.IndexCount,
-				.InstanceCount = layer.InstanceCount,
-				.FirstIndex = 0,
-				.StartInstanceIndex = 0,
-				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-				.VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
-				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
-			});
-	}
-	return meshDrawMessageList;
+    Vector<MeshDrawMessage> meshDrawMessageList;
+    for (const auto& layer : spriteSystem.SpriteLayerList)
+    {
+        const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
+        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+        meshDrawMessageList.emplace_back(MeshDrawMessage
+            {
+                .MeshId = spriteSystem.SpriteMeshId,
+                .VertexCount = meshAsset.VertexCount,
+                .IndexCount = meshAsset.IndexCount,
+                .InstanceCount = layer.InstanceCount,
+                .FirstIndex = 0,
+                .StartInstanceIndex = 0,
+                .VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+                .VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
+                .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
+            });
+    }
+    return meshDrawMessageList;
 }
 
 void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
@@ -485,4 +487,3 @@ Vector<LevelTileSet> LevelSystem::GetLevelTileSetList()
     }
     return levelTileSetList;
 }
-

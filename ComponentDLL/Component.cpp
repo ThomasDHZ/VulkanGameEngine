@@ -37,3 +37,8 @@
 //    spriteArchive.SpriteList.erase(spriteArchive.SpriteList.begin() + removeIndex);
 //    return removeIndex;
 //}
+
+int sdf()
+{
+	return 32;
+}

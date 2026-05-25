@@ -1,7 +1,9 @@
 #pragma once
-#include "pch.h"
+#include "platform.h"
 #include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
+#include "MeshSystem.h"
+#include "MaterialSystem.h"
 
 typedef uint32 SpriteLayerId;
 typedef Vector<ivec2> AnimationFrames;
@@ -20,6 +22,12 @@ struct SpriteVram
     uint AnimationListID = 0;
 };
 
+//struct Animation2D
+//{
+//    uint  AnimationId;
+//    float FrameHoldTime;
+//};
+
 struct Sprite
 {
     uint32 GameObjectId = UINT32_MAX;
@@ -32,7 +40,7 @@ struct Sprite
     float  CurrentFrameTime = 0.0f;
 };
 
-struct SpriteComponent 
+struct SpriteComponent
 {
     VkGuid spriteVramId;
     uint32 currentAnimationId = 0;
@@ -101,8 +109,8 @@ public:
     DLL_EXPORT VkGuid                                 LoadSpriteVRAM(const String& spriteVramPath);
     DLL_EXPORT void                                   Update(const float& deltaTime);
     DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-    DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
-    DLL_EXPORT Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+    DLL_EXPORT SpriteVram& FindSpriteVram(VramSpriteGuid vramSpriteId);
+    DLL_EXPORT Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
     DLL_EXPORT bool                                   SpriteVramExists(const VkGuid& vramId);
     DLL_EXPORT void                                   Destroy(Sprite& sprite);
 };
