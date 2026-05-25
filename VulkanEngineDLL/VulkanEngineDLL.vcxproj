@@ -151,6 +151,7 @@
     <ClInclude Include="..\External\xxHash\xxhash.h" />
     <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h" />
     <ClInclude Include="CameraSystem.h" />
+    <ClInclude Include="CSharpScriptSystem.h" />
     <ClInclude Include="DebugSystem.h" />
     <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="enum.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="InputEnum.h" />
     <ClInclude Include="LightSystem.h" />
+    <ClInclude Include="LuaScriptingSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PushConstantRegistry.h" />
@@ -186,11 +188,13 @@
     <ClCompile Include="..\External\xxHash\xxhash.c" />
     <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c" />
     <ClCompile Include="CameraSystem.cpp" />
+    <ClCompile Include="CSharpScriptSystem.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="LightSystem.cpp" />
+    <ClCompile Include="LuaScriptingSystem.cpp" />
     <ClCompile Include="MemoryPoolSystem.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="Platform.cpp" />

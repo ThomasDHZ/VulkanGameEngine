@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "CSharpScriptSystem.h"
 
 #include <windows.h>
@@ -41,62 +40,87 @@ bool CSharpScriptSystem::LoadHostFxr()
 
 bool CSharpScriptSystem::InitializeRuntime(const string_t& runtimeConfigPath, const string_t& assemblyPath)
 {
-    if (!fs::exists(runtimeConfigPath))
-    {
-        std::cerr << "[GameSystem] ❌ runtimeconfig.json NOT FOUND!" << std::endl;
-    }
+    std::cout << "[GameSystem] Looking for runtimeconfig: " << std::string(runtimeConfigPath.begin(), runtimeConfigPath.end()) << std::endl;
+    std::cout << "[GameSystem] Looking for assembly: " << std::string(assemblyPath.begin(), assemblyPath.end()) << std::endl;
 
+    if (!fs::exists(runtimeConfigPath))
+        std::cerr << "[GameSystem] ❌ runtimeconfig.json NOT FOUND!" << std::endl;
     if (!fs::exists(assemblyPath))
-    {
         std::cerr << "[GameSystem] ❌ DLL NOT FOUND!" << std::endl;
-    }
 
     if (!LoadHostFxr())
-    {
         return false;
-    }
 
     hostfxr_handle context = nullptr;
     int rc = m_initFn(runtimeConfigPath.c_str(), nullptr, &context);
+
+    std::cout << "[CSharpScriptSystem] hostfxr_initialize_for_runtime_config returned: " << rc << std::endl;
+
     if (rc != 0 || !context)
     {
         std::cerr << "[CSharpScriptSystem] ❌ hostfxr_initialize failed with code: " << rc << std::endl;
         return false;
     }
 
-    rc = m_getDelegateFn(context, hdt_load_assembly_and_get_function_pointer, (void**)&m_loadAssemblyAndGetFnPtr);
+    rc = m_getDelegateFn(context, hdt_load_assembly_and_get_function_pointer,
+        (void**)&m_loadAssemblyAndGetFnPtr);
+    m_closeFn(context);
+
     if (rc != 0 || !m_loadAssemblyAndGetFnPtr)
     {
         std::cerr << "[CSharpScriptSystem] ❌ Failed to get load_assembly delegate. Code: " << rc << std::endl;
         return false;
     }
-    m_closeFn(context);
+
+    std::cout << "[CSharpScriptSystem] ✅ Successfully got load_assembly delegate!" << std::endl;
 
     const char_t* typeName = L"GameScriptLibraryDLL.Player, GameScriptLibraryDLL";
-    auto getFn = [&](const char_t* method, void** outFn) -> bool 
+
+    auto getFn = [&](const char_t* method, void** outFn) -> bool
         {
-            int rc = m_loadAssemblyAndGetFnPtr(assemblyPath.c_str(), typeName, method, UNMANAGEDCALLERSONLY_METHOD, nullptr, outFn);
+            std::wcout << L"[CSharpScriptSystem] Trying: " << method << std::endl;
+
+            int rc = m_loadAssemblyAndGetFnPtr(
+                assemblyPath.c_str(),
+                typeName,
+                method,
+                UNMANAGEDCALLERSONLY_METHOD,   // Important
+                nullptr,
+                outFn);
+
             if (rc != 0)
             {
-                std::wcerr << L"[CSharpScriptSystem] FAILED '" << method << L"' → 0x" << std::hex << rc << std::dec << std::endl;
+                std::wcerr << L"[CSharpScriptSystem] ❌ FAILED '" << method
+                    << L"' → 0x" << std::hex << rc << std::dec << std::endl;
                 return false;
             }
+
+            std::wcout << L"[CSharpScriptSystem] ✅ SUCCESS: " << method << std::endl;
             return true;
         };
 
+    // ←←← ACTUALLY LOAD THE FUNCTIONS HERE
+    bool allGood = true;
+    allGood &= getFn(L"Create", (void**)&m_createFn);
+    allGood &= getFn(L"StartUp", (void**)&m_startupFn);
+    allGood &= getFn(L"Update", (void**)&m_updateFn);
+    allGood &= getFn(L"Destroy", (void**)&m_destroyFn);
 
-    auto& scriptSys = CSharpScriptSystem::GetInstance();
+    if (!allGood)
+    {
+        std::cerr << "[CSharpScriptSystem] ❌ Failed to load one or more C# functions!" << std::endl;
+        return false;
+    }
 
-    PlayerCreateFn  create = scriptSys.GetCreateFn();
-    PlayerStartUpFn startup = scriptSys.GetStartUpFn();
-    PlayerUpdateFn  update = scriptSys.GetUpdateFn();
-    PlayerDestroyFn destroy = scriptSys.GetDestroyFn();
+    std::cout << "[CSharpScriptSystem] .NET runtime initialized successfully!" << std::endl;
+    std::cout << "[GameSystem] ✅ C# runtime initialized. Testing Player..." << std::endl;
 
-    const char_t* playerType = L"Player";
-    intptr_t handle = create();
-    startup(handle);
-    update(handle, 1.4f);
-    update(handle, 1.7);
+    // Test the functions
+    intptr_t handle = m_createFn();
+    m_startupFn(handle);
+    m_updateFn(handle, 1.4f);
+    m_updateFn(handle, 1.7f);
+    // m_destroyFn(handle); // optional for testing
 
     return true;
 }

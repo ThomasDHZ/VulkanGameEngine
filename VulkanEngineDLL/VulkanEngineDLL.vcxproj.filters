@@ -150,6 +150,12 @@
     <ClInclude Include="PushConstantRegistry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CSharpScriptSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaScriptingSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -235,6 +241,12 @@
     </ClCompile>
     <ClCompile Include="Transform2DComponent.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CSharpScriptSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScriptingSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

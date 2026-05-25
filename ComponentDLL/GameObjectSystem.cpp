@@ -94,8 +94,8 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
     }
     else
     {
-        ManagedPlayer player1(L"Player");
-        player1.StartUp(0, 0, 0);
+       // ManagedPlayer player1(L"Player");
+    //    player1.StartUp(0, 0, 0);
         //luaScriptingSystem.CreateEntityFromScript(gameObjectJson);
     }
     return gameObject.GameObjectId;

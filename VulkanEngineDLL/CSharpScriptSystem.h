@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Platform.h"
 #include <string>
 #include <filesystem>
 #include <cstdint>
@@ -41,14 +41,14 @@ private:
     CSharpScriptSystem& operator=(const CSharpScriptSystem&) = delete;
 
 public:
-   DLL_EXPORT static CSharpScriptSystem& GetInstance();
+    DLL_EXPORT static CSharpScriptSystem& GetInstance();
 
-   DLL_EXPORT static bool Initialize(const string_t& runtimeConfigPath, const string_t& assemblyPath);
+    DLL_EXPORT static bool Initialize(const string_t& runtimeConfigPath, const string_t& assemblyPath);
 
     PlayerCreateFn  GetCreateFn()  const { return m_createFn; }
-     PlayerStartUpFn GetStartUpFn() const { return m_startupFn; }
+    PlayerStartUpFn GetStartUpFn() const { return m_startupFn; }
     PlayerUpdateFn  GetUpdateFn()  const { return m_updateFn; }
-     PlayerDestroyFn GetDestroyFn() const { return m_destroyFn; }
+    PlayerDestroyFn GetDestroyFn() const { return m_destroyFn; }
 };
 
 class ManagedPlayer
