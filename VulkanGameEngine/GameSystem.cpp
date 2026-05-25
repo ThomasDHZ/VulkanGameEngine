@@ -63,7 +63,7 @@ void GameSystem::StartUp(void* windowHandle)
     renderSystem.StartUp(windowHandle, instance, surface);
     memoryPoolSystem.StartUp();
     luaScriptingSystem.StartUp();
-    CSharpScriptSystem::Initialize(runtimeConfig, assembly);
+    cSharpScriptSystem.Initialize(runtimeConfig, assembly);
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
    // materialBakerSystem.Run();
@@ -83,37 +83,6 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     memoryPoolSystem.UpdateMemoryPool();
     luaScriptingSystem.Update(deltaTime);
 
-    auto& scriptSys = CSharpScriptSystem::GetInstance();
-
-    PlayerCreateFn  create = scriptSys.GetCreateFn();
-    PlayerStartUpFn startup = scriptSys.GetStartUpFn();
-    PlayerUpdateFn  update = scriptSys.GetUpdateFn();
-    PlayerDestroyFn destroy = scriptSys.GetDestroyFn();
-
-    if (create && startup && update && destroy)
-    {
-        // Create Player instance
-        const char_t* playerType = L"Player";
-        intptr_t handle = create();
-
-        if (handle != 0)
-        {
-            std::cout << "[C++] Player created successfully (handle = " << handle << ")" << std::endl;
-
-            // Test calls
-            startup(handle);                    // StartUp
-            update(handle, 0.016f);                      // Update once
-            update(handle, 0.016f);                      // Update again
-
-            // Clean up
-            destroy(handle);
-            std::cout << "[C++] Player destroyed." << std::endl;
-        }
-        else
-        {
-            std::cerr << "[C++] Failed to create Player (null handle)" << std::endl;
-        }
-    }
     //cSharpScriptSystem.Update(deltaTime);
     auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
   //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));

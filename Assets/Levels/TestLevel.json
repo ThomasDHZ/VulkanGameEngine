@@ -37,7 +37,7 @@
   ],
   "GameObjectList": [
     {
-      "GameObjectPath": "GameScripts/Player.lua",
+      "GameObjectPath": "GameObjects/TestGameObject.json",
       "GameObjectPositionOverride": [
         1450.0,
         400.0

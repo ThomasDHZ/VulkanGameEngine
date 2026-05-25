@@ -1,23 +1,39 @@
 #include "CSharpScriptSystem.h"
-
+#include "GameObjectSystem.h"
 #include <windows.h>
 #include <iostream>
 
-CSharpScriptSystem* CSharpScriptSystem::s_instance = nullptr;
-bool CSharpScriptSystem::s_initialized = false;
+CSharpScriptSystem& cSharpScriptSystem = CSharpScriptSystem::Get();
+bool CSharpScriptSystem::CSharpScriptSystemInitialized = false;
 
-CSharpScriptSystem& CSharpScriptSystem::GetInstance()
+bool CSharpScriptSystem::InitializeRuntime(const string_t& runtimeConfigPath, const string_t& assemblyPath)
 {
-    if (!s_instance)
-        s_instance = new CSharpScriptSystem();
-    return *s_instance;
+    if (!LoadHostFxr()) return false;
+    if (!std::filesystem::exists(runtimeConfigPath)) std::cerr << "[CSharpScriptSystem] runtimeconfig.json NOT FOUND!" << std::endl;
+    if (!std::filesystem::exists(assemblyPath)) std::cerr << "[GameSystem] DLL NOT FOUND!" << std::endl;
+
+    hostfxr_handle context = nullptr;
+    int rc = m_initFn(runtimeConfigPath.c_str(), nullptr, &context);
+    if (rc != 0 || !context)
+    {
+        std::cerr << "[CSharpScriptSystem] hostfxr_initialize failed with code: " << rc << std::endl;
+        return false;
+    }
+
+    rc = m_getDelegateFn(context, hdt_load_assembly_and_get_function_pointer, (void**)&m_loadAssemblyAndGetFnPtr); 
+    if (rc != 0 || !m_loadAssemblyAndGetFnPtr)
+    {
+        std::cerr << "[CSharpScriptSystem] Failed to get load_assembly delegate. Code: " << rc << std::endl;
+        return false;
+    }
+    m_closeFn(context);
+    return true;
 }
 
 bool CSharpScriptSystem::LoadHostFxr()
 {
     char_t hostfxrPath[MAX_PATH] = {};
     size_t bufferSize = sizeof(hostfxrPath) / sizeof(char_t);
-
     if (get_hostfxr_path(hostfxrPath, &bufferSize, nullptr) != 0)
     {
         std::cerr << "[CSharpScriptSystem] Failed to locate hostfxr.dll" << std::endl;
@@ -38,171 +54,50 @@ bool CSharpScriptSystem::LoadHostFxr()
     return m_initFn && m_getDelegateFn && m_closeFn;
 }
 
-bool CSharpScriptSystem::InitializeRuntime(const string_t& runtimeConfigPath, const string_t& assemblyPath)
-{
-    std::cout << "[GameSystem] Looking for runtimeconfig: " << std::string(runtimeConfigPath.begin(), runtimeConfigPath.end()) << std::endl;
-    std::cout << "[GameSystem] Looking for assembly: " << std::string(assemblyPath.begin(), assemblyPath.end()) << std::endl;
-
-    if (!fs::exists(runtimeConfigPath))
-        std::cerr << "[GameSystem] ❌ runtimeconfig.json NOT FOUND!" << std::endl;
-    if (!fs::exists(assemblyPath))
-        std::cerr << "[GameSystem] ❌ DLL NOT FOUND!" << std::endl;
-
-    if (!LoadHostFxr())
-        return false;
-
-    hostfxr_handle context = nullptr;
-    int rc = m_initFn(runtimeConfigPath.c_str(), nullptr, &context);
-
-    std::cout << "[CSharpScriptSystem] hostfxr_initialize_for_runtime_config returned: " << rc << std::endl;
-
-    if (rc != 0 || !context)
-    {
-        std::cerr << "[CSharpScriptSystem] ❌ hostfxr_initialize failed with code: " << rc << std::endl;
-        return false;
-    }
-
-    rc = m_getDelegateFn(context, hdt_load_assembly_and_get_function_pointer,
-        (void**)&m_loadAssemblyAndGetFnPtr);
-    m_closeFn(context);
-
-    if (rc != 0 || !m_loadAssemblyAndGetFnPtr)
-    {
-        std::cerr << "[CSharpScriptSystem] ❌ Failed to get load_assembly delegate. Code: " << rc << std::endl;
-        return false;
-    }
-
-    std::cout << "[CSharpScriptSystem] ✅ Successfully got load_assembly delegate!" << std::endl;
-
-    const char_t* typeName = L"GameScriptLibraryDLL.Player, GameScriptLibraryDLL";
-
-    auto getFn = [&](const char_t* method, void** outFn) -> bool
-        {
-            std::wcout << L"[CSharpScriptSystem] Trying: " << method << std::endl;
-
-            int rc = m_loadAssemblyAndGetFnPtr(
-                assemblyPath.c_str(),
-                typeName,
-                method,
-                UNMANAGEDCALLERSONLY_METHOD,   // Important
-                nullptr,
-                outFn);
-
-            if (rc != 0)
-            {
-                std::wcerr << L"[CSharpScriptSystem] ❌ FAILED '" << method
-                    << L"' → 0x" << std::hex << rc << std::dec << std::endl;
-                return false;
-            }
-
-            std::wcout << L"[CSharpScriptSystem] ✅ SUCCESS: " << method << std::endl;
-            return true;
-        };
-
-    // ←←← ACTUALLY LOAD THE FUNCTIONS HERE
-    bool allGood = true;
-    allGood &= getFn(L"Create", (void**)&m_createFn);
-    allGood &= getFn(L"StartUp", (void**)&m_startupFn);
-    allGood &= getFn(L"Update", (void**)&m_updateFn);
-    allGood &= getFn(L"Destroy", (void**)&m_destroyFn);
-
-    if (!allGood)
-    {
-        std::cerr << "[CSharpScriptSystem] ❌ Failed to load one or more C# functions!" << std::endl;
-        return false;
-    }
-
-    std::cout << "[CSharpScriptSystem] .NET runtime initialized successfully!" << std::endl;
-    std::cout << "[GameSystem] ✅ C# runtime initialized. Testing Player..." << std::endl;
-
-    // Test the functions
-    intptr_t handle = m_createFn();
-    m_startupFn(handle);
-    m_updateFn(handle, 1.4f);
-    m_updateFn(handle, 1.7f);
-    // m_destroyFn(handle); // optional for testing
-
-    return true;
-}
-
 bool CSharpScriptSystem::Initialize(const string_t& runtimeConfigPath, const string_t& assemblyPath)
 {
-    if (s_initialized) return true;
+    if (CSharpScriptSystemInitialized) return true;
 
-    bool success = GetInstance().InitializeRuntime(runtimeConfigPath, assemblyPath);
-    if (success)
-        s_initialized = true;
-
+    bool success = InitializeRuntime(runtimeConfigPath, assemblyPath);
+    if (success) CSharpScriptSystemInitialized = true;
     return success;
 }
 
-ManagedPlayer::ManagedPlayer(const char_t* typeName)
+void CSharpScriptSystem::LoadGameObjectScript(const String& assemblyPath, const String& typeNameString)
 {
-    auto& runtime = CSharpScriptSystem::GetInstance();
-    PlayerCreateFn createFn = runtime.GetCreateFn();
-
-    if (createFn)
+    if(gameObjectSystem.GameObjectBehaviorExists(typeNameString))
     {
-        m_handle = createFn();
-        if (m_handle != 0)
-            std::cout << "[C++] Player created (handle = " << m_handle << ")" << std::endl;
-        else
-            std::cerr << "[C++] Failed to create C# Player instance" << std::endl;
+        return;
     }
-    else
-    {
-        std::cerr << "[C++] Runtime not initialized before creating ManagedPlayer!" << std::endl;
-    }
-}
 
-ManagedPlayer::~ManagedPlayer()
-{
-    if (m_handle != 0)
-    {
-        auto& runtime = CSharpScriptSystem::GetInstance();
-        PlayerDestroyFn destroyFn = runtime.GetDestroyFn();
-        if (destroyFn)
-            destroyFn(m_handle);
-
-        m_handle = 0;
-    }
-}
-
-ManagedPlayer::ManagedPlayer(ManagedPlayer&& other) noexcept
-    : m_handle(other.m_handle)
-{
-    other.m_handle = 0;
-}
-
-ManagedPlayer& ManagedPlayer::operator=(ManagedPlayer&& other) noexcept
-{
-    if (this != &other)
-    {
-        if (m_handle != 0)
+    std::wstring assemblyW = ToWString(assemblyPath);
+    std::wstring typeNameW = ToWString(typeNameString);
+    auto GetDLLFunction = [&](const char_t* method, void** outFn) -> bool
         {
-            auto& runtime = CSharpScriptSystem::GetInstance();
-            if (PlayerDestroyFn destroyFn = runtime.GetDestroyFn())
-                destroyFn(m_handle);
-        }
+            int rc = m_loadAssemblyAndGetFnPtr(assemblyW.c_str(), typeNameW.c_str(), method, UNMANAGEDCALLERSONLY_METHOD, nullptr, outFn);
+            if (rc != 0)
+            {
+                std::wcerr << L"[CSharpScriptSystem] FAILED '" << method << L"' → 0x" << std::hex << rc << std::dec << std::endl;
+                return false;
+            }
+            return true;
+        };
 
-        m_handle = other.m_handle;
-        other.m_handle = 0;
-    }
-    return *this;
+    GameObjectBehavior gameObjectBehavior;
+    GetDLLFunction(L"Create" , (void**)&gameObjectBehavior.CreateObject);
+    GetDLLFunction(L"StartUp", (void**)&gameObjectBehavior.Startup);
+    GetDLLFunction(L"Update" , (void**)&gameObjectBehavior.Update);
+    GetDLLFunction(L"Destroy", (void**)&gameObjectBehavior.Destroy);
+    gameObjectSystem.GameObjectBehaviorMap[typeNameString] = gameObjectBehavior;
 }
 
-void ManagedPlayer::StartUp(intptr_t entity, intptr_t startPos, intptr_t rotation)
+std::wstring CSharpScriptSystem::ToWString(const std::string& str)
 {
-    if (m_handle == 0) return;
-    auto& runtime = CSharpScriptSystem::GetInstance();
-    if (PlayerStartUpFn fn = runtime.GetStartUpFn())
-        fn(m_handle);
-}
+    if (str.empty()) return L"";
 
-void ManagedPlayer::Update(float dt)
-{
-    if (m_handle == 0) return;
-    auto& runtime = CSharpScriptSystem::GetInstance();
-    if (PlayerUpdateFn fn = runtime.GetUpdateFn())
-        fn(m_handle, dt);
+    int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+    std::wstring wstr(size, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wstr.data(), size);
+
+    return wstr;
 }
