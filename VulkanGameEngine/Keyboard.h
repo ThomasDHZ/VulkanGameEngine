@@ -7,9 +7,9 @@
 class Keyboard
 {
 private:
-	KeyState KeyPressed[MAXKEYBOARDKEY];
 
 public:
+	KeyState KeyPressed[MAXKEYBOARDKEY];
 	Keyboard();
 	~Keyboard();
 	 static void KeyboardKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);

@@ -7,7 +7,7 @@
 
 struct InputComponent
 {
-    byte a = 0x00;
+    Vector<KeyState> KeyPressed;
 };
 
 enum GameObjectTypeEnum
@@ -65,7 +65,7 @@ using PlayerDestroyFn = void(*)(intptr_t instance);
 struct GameObjectBehavior
 {
     intptr_t (*CreateObject)() = nullptr;
-    void (*Startup)(intptr_t instance) = nullptr;
+    void (*Startup)(intptr_t instance, uint32 gameObjectId) = nullptr;
     //void (*KeyBoardInput)(uint gameObjectId, const float& deltaTime, const KeyState* keyBoardStateArray) = nullptr;
    // void (*ControllerInput)(uint gameObjectId, const float& deltaTime, const GLFWgamepadstate& controlelrState) = nullptr;
     void (*Update)(intptr_t instance, float deltaTime) = nullptr;

@@ -80,7 +80,7 @@ private:
     ComponentTypeEnum GetComponentEnum()
     {
         if constexpr (std::is_same_v<T, InputComponent>)         return kInputComponent;
-        if constexpr (std::is_same_v<T, SpriteComponent>)        return kSpriteComponent;
+        if constexpr (std::is_same_v<T, Sprite>)        return kSpriteComponent;
         if constexpr (std::is_same_v<T, Transform2DComponent>)   return kTransform2DComponent;
         if constexpr (std::is_same_v<T, Transform3DComponent>)   return kTransform3DComponent;
         if constexpr (std::is_same_v<T, CameraFollowComponent>)  return kCameraFollowComponent;

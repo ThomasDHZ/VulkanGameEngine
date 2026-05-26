@@ -58,6 +58,7 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
 
             gameObject.GameObjectBehaviorKey = dllType;
             gameObject.ObjectPtr = behavior.CreateObject();
+            behavior.Startup(gameObject.ObjectPtr, gameObject.GameObjectId);
         }
         else
         {
@@ -84,50 +85,49 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
             .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
         });
 
-    //for (const auto& componentJson : json["GameObjectComponentList"])
-    //{
-    //    uint64 componentType = componentJson["ComponentType"].get<uint64>();
-    //    switch (componentType)
-    //    {
-    //    case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
-    //    case kSpriteComponent:
-    //    {
-    //        nlohmann::json json = json.parse(componentJson.dump().c_str());
-    //        VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
-    //        spriteSystem.CreateSprite(gameObject, vramId);
-    //        break;
-    //    }
-    //    case kTransform2DComponent:
-    //    {
-    //        nlohmann::json json = json.parse(componentJson.dump().c_str());
-    //        levelSystem.EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
-    //            {
-    //                .GameObjectPosition = gameObjectPosition,
-    //                .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
-    //                .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
-    //            });
-    //        break;
-    //    }
-    //    case kTransform3DComponent:
-    //    {
-    //        nlohmann::json json = json.parse(componentJson.dump().c_str());
-    //        levelSystem.EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
-    //            {
-    //                .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
-    //                .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
-    //                .GameObjectScale = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
-    //            });
-    //        break;
-    //    }
-    //    case kCameraFollowComponent: levelSystem.EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
-    //    case kDirectionalLightComponent: levelSystem.EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
-    //    case kPointLightComponent: levelSystem.EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;
-    //    default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
-    //    }
-    //}
+    for (const auto& componentJson : json["GameObjectComponentList"])
+    {
+        uint64 componentType = componentJson["ComponentType"].get<uint64>();
+        switch (componentType)
+        {
+        case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
+        case kSpriteComponent:
+        {
+            nlohmann::json json = json.parse(componentJson.dump().c_str());
+            VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
+            spriteSystem.CreateSprite(gameObject, vramId);
+            break;
+        }
+        case kTransform2DComponent:
+        {
+            nlohmann::json json = json.parse(componentJson.dump().c_str());
+            levelSystem.EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
+                {
+                    .GameObjectPosition = gameObjectPosition,
+                    .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
+                    .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
+                });
+            break;
+        }
+        case kTransform3DComponent:
+        {
+            nlohmann::json json = json.parse(componentJson.dump().c_str());
+            levelSystem.EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
+                {
+                    .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
+                    .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
+                    .GameObjectScale = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
+                });
+            break;
+        }
+        case kCameraFollowComponent: levelSystem.EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
+        case kDirectionalLightComponent: levelSystem.EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
+        case kPointLightComponent: levelSystem.EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;
+        default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
+        }
+    }
 
-   // gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectBehaviorKey].Startup(gameObject.ObjectPtr);
-
+    auto a = levelSystem.GetGameObjectComponent<Sprite>(gameObject.GameObjectId);
     return gameObject.GameObjectId;
 }
 

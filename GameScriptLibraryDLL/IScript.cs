@@ -1,4 +1,4 @@
-﻿using GlmSharp;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace GameScriptLibraryDLL
 {
     public interface IScript
     {
-        void StartUp(EntityHandle entity, vec2 startPosition, vec2 rotation);
-        void Update(float deltaTime);
+       // void StartUp(EntityHandle entity, vec2 startPosition, vec2 rotation);
+       // void Update(float deltaTime);
     }
 }

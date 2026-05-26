@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+	<TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>  
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GlmSharp" Version="0.9.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 {
   "GameObjectType": 1,
-  "GameObjectRuntimeConfig": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0\\GameScriptLibraryDLL.runtimeconfig.json",
-  "GameObjectDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0\\GameScriptLibraryDLL.dll",
+  "GameObjectRuntimeConfig": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.runtimeconfig.json",
+  "GameObjectDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll",
   "GameObjectDLLType": "GameScriptLibraryDLL.Player, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
   "GameObjectComponentList": [

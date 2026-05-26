@@ -40,18 +40,6 @@ struct Sprite
     float  CurrentFrameTime = 0.0f;
 };
 
-struct SpriteComponent
-{
-    VkGuid spriteVramId;
-    uint32 currentAnimationId = 0;
-    uint32 currentFrame = 0;
-    float frameTimeAccumulator = 0.0f;
-    bool flipX = false;
-    bool flipY = false;
-    int layer = 0;
-    glm::vec4 tint{ 1.0f };
-};
-
 struct Animation2D
 {
     uint          AnimationId;

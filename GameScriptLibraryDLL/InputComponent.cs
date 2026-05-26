@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL
 {
-    public static class Input
+    public class InputComponent
     {
-        public static bool IsKeyDown(string key) { /* C++ will implement */ return false; }
+        public const uint MAXKEYBOARDKEY = 350;
+        public KeyState[] KeyBoardState { get; set; } = new KeyState[MAXKEYBOARDKEY];
     }
 }

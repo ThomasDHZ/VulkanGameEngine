@@ -57,8 +57,8 @@ void GameSystem::StartUp(void* windowHandle)
 #else
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
-    string_t runtimeConfig = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0\\GameScriptLibraryDLL.runtimeconfig.json";
-    string_t assembly = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0\\GameScriptLibraryDLL.dll";
+    string_t runtimeConfig = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.runtimeconfig.json";
+    string_t assembly = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll";
 
     renderSystem.StartUp(windowHandle, instance, surface);
     memoryPoolSystem.StartUp();

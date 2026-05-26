@@ -18,7 +18,7 @@ void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentType
     switch (componentType)
     {
         case kInputComponent:            levelSystem.CreateGameObjectComponent<InputComponent>(           gameObjectId, static_cast<InputComponent*>(componentData)); break;
-        case kSpriteComponent:           levelSystem.CreateGameObjectComponent<SpriteComponent>(          gameObjectId, static_cast<SpriteComponent*>(componentData)); break;
+        case kSpriteComponent:           levelSystem.CreateGameObjectComponent<Sprite>(          gameObjectId, static_cast<Sprite*>(componentData)); break;
         case kTransform2DComponent:      levelSystem.CreateGameObjectComponent<Transform2DComponent>(     gameObjectId, static_cast<Transform2DComponent*>(componentData)); break;
         case kTransform3DComponent:      levelSystem.CreateGameObjectComponent<Transform3DComponent>(     gameObjectId, static_cast<Transform3DComponent*>(componentData)); break;
         case kCameraFollowComponent:     levelSystem.CreateGameObjectComponent<CameraFollowComponent>(    gameObjectId, static_cast<CameraFollowComponent*>(componentData)); break;
@@ -43,7 +43,7 @@ void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTyp
     switch (componentType)
     {
         case kInputComponent:            return levelSystem.GetGameObjectComponent<InputComponent>(gameObjectId);
-        case kSpriteComponent:           return levelSystem.GetGameObjectComponent<SpriteComponent>(gameObjectId);
+        case kSpriteComponent:           return levelSystem.GetGameObjectComponent<Sprite>(gameObjectId);
         case kTransform2DComponent:      return levelSystem.GetGameObjectComponent<Transform2DComponent>(gameObjectId);
         case kTransform3DComponent:      return levelSystem.GetGameObjectComponent<Transform3DComponent>(gameObjectId);
         case kCameraFollowComponent:     return levelSystem.GetGameObjectComponent<CameraFollowComponent>(gameObjectId);
