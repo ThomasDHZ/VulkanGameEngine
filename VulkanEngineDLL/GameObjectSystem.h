@@ -1,5 +1,6 @@
 #pragma once
 #include "Platform.h"
+#include "MemorySystem.h"
 #include "Transform2DComponent.h"
 #include "VulkanSystem.h"
 #include <entt/entt.hpp>
@@ -7,7 +8,26 @@
 
 struct InputComponent
 {
-    Vector<KeyState> KeyPressed;
+    KeyState* KeyPressed;
+    size_t size;
+
+    InputComponent()
+    {
+        KeyPressed = memorySystem.AddPtrBuffer<KeyState>(MAXKEYBOARDKEY, __FILE__, __LINE__, __func__);
+        size = MAXKEYBOARDKEY;
+    }
+
+    // Copy constructor
+    InputComponent(const InputComponent& other)
+    {
+        size = other.size;
+        KeyPressed = memorySystem.AddPtrBuffer<KeyState>(size, __FILE__, __LINE__, __func__);
+        std::memcpy(KeyPressed, other.KeyPressed, sizeof(KeyState) * size);
+    }
+
+    ~InputComponent()
+    {
+    }
 };
 
 enum GameObjectTypeEnum

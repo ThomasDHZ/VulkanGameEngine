@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL
 {
-    public class SpriteComponent : Component
+    public struct SpriteComponent
     {
         public uint GameObjectId { get; set; } = uint.MaxValue;
         public uint SpriteInstanceId { get; set; } = 0;
@@ -18,5 +18,8 @@ namespace GameScriptLibraryDLL
         public ivec2 FlipSprite { get; set; } = new ivec2(0);
         public Guid SpriteVramId { get; set; } = new Guid();
         public float CurrentFrameTime { get; set; } = 0.0f;
+        public SpriteComponent()
+        {
+        }
     }
 }

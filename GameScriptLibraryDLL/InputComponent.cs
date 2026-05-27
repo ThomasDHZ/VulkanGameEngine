@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL
 {
-    public class InputComponent
+    public unsafe struct InputComponent
     {
         public const uint MAXKEYBOARDKEY = 350;
-        public KeyState[] KeyBoardState { get; set; } = new KeyState[MAXKEYBOARDKEY];
+        public KeyState* KeyBoardState { get; set; }
+        public size_t KeyBoardSize { get; set; }
+
+        public InputComponent()
+        {
+        }
+
     }
 }
