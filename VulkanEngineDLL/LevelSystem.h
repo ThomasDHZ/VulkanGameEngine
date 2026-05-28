@@ -108,8 +108,6 @@ private:
     void                                       LoadSkyBox();
 
 public:
-
-    entt::registry                             EntityRegistry;
     LevelLayout                                levelLayout;
     Vector<LevelLayer>                         LevelLayerList;
     Vector<Vector<uint>>                       LevelTileMapList;
@@ -149,30 +147,6 @@ public:
     DLL_EXPORT Vector<LevelLayer>              GetLevelLayerList();
     DLL_EXPORT Vector<Vector<uint>>            GetLevelTileMapList();
     DLL_EXPORT Vector<LevelTileSet>            GetLevelTileSetList();
-
-    template <typename T>
-    T* GetGameObjectComponent(uint gameObjectId)
-    {
-        if (gameObjectId == UINT32_MAX) return nullptr;
-
-        GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
-        auto view = EntityRegistry.view<GameObjectComponentLinker, T>();
-        for (auto [entity, linker, component] : view.each())
-        {
-            if (linker.GameObjectId == gameObjectId)
-            {
-                return &component;
-            }
-        }
-        return nullptr;
-    }
-
-    template <typename T>
-    void CreateGameObjectComponent(uint32 gameObjectId, T* gameObjectComponent)
-    {
-        GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectId];
-        EntityRegistry.emplace<T>(gameObject.GameObjectComponents, *gameObjectComponent);
-    }
 };
 extern DLL_EXPORT LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()

@@ -1,8 +1,8 @@
-#pragma once
-#include "pch.h"
-#include "GameObjectSystem.h"
-#include <sol/sol.hpp>
-
+//#pragma once
+//#include "pch.h"
+//#include "GameObjectSystem.h"
+//#include <sol/sol.hpp>
+//
 //struct MegaManShot
 //{
 //	//static constexpr GameObjectTypeEnum GameObjectType = GameObjectTypeEnum::kGameObjectMegaManShot;

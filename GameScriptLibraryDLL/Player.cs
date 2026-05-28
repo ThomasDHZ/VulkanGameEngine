@@ -21,11 +21,6 @@ namespace GameScriptLibraryDLL
             kClimbShoot
         };
 
-        public delegate IntPtr CreateDelegate();
-        public delegate void StartUpDelegate(IntPtr instance);
-        public delegate void UpdateDelegate(IntPtr instance, float deltaTime);
-        public delegate void DestroyDelegate(IntPtr instance);
-
         public uint GameObjectId { get; private set; }
 
         [UnmanagedCallersOnly]
@@ -51,9 +46,9 @@ namespace GameScriptLibraryDLL
             if (instancePtr == IntPtr.Zero) return;
 
             var instance = (Player)GCHandle.FromIntPtr(instancePtr).Target;
-            InputComponent* input = Component.Get<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
-            SpriteComponent* sprite = Component.Get<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
-            Transform2DComponent* transform = Component.Get<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
+            InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
+            SpriteComponent* sprite = Component.GetGameObjectComponent<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
+            Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
 
             bool leftPressed =  input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_PRESSED ||
                                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_HELD;
@@ -79,6 +74,7 @@ namespace GameScriptLibraryDLL
 
             if (upPressed) transform->Position = new(transform->Position.x, transform->Position.y - 200.0f * deltaTime);
             if (downPressed) transform->Position = new(transform->Position.x, transform->Position.y - 200.0f * deltaTime);
+            if (shootPressed) Component.CreateGameObject<PlayerShot>();
             transform->Dirty = true;
         }
 

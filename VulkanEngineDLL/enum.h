@@ -19,6 +19,23 @@ enum ShaderMemberType
     shaderbool
 };
 
+enum GameObjectMemberType
+{
+   GameObjectVarUnknown,
+   GameObjectVarInt,
+   GameObjectVarUint,
+   GameObjectVarFloat,
+   GameObjectVarIvec2,
+   GameObjectVarIvec3,
+   GameObjectVarIvec4,
+   GameObjectVarVec2,
+   GameObjectVarVec3,
+   GameObjectVarVec4,
+   GameObjectVarMat2,
+   GameObjectVarMat3,
+   GameObjectVarMat4,
+   GameObjectVarbool
+};
 
 enum ColorChannelUsed
 {

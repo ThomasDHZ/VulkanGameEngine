@@ -21,7 +21,7 @@ void SpriteSystem::CreateSprite(uint32 gameObjectId, VkGuid& spriteVramId)
 
 void SpriteSystem::CreateSprite(GameObject& gameObject, VkGuid& spriteVramId)
 {
-    Sprite sprite = levelSystem.EntityRegistry.emplace<Sprite>(gameObject.GameObjectComponents, Sprite
+    Sprite sprite = gameObjectSystem.EntityRegistry.emplace<Sprite>(gameObject.GameObjectComponents, Sprite
         {
             .GameObjectId = gameObject.GameObjectId,
             .SpriteInstanceId = memoryPoolSystem.AllocateObject(kSpriteInstanceBuffer),
@@ -121,7 +121,7 @@ void SpriteSystem::Update(const float& deltaTime)
 {
     // DestroyDeadSprites();
     SortSpriteLayers();
-    auto view = levelSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent>();
+    auto view = gameObjectSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent>();
     for (auto [entity, gameObjectId, sprite, transform] : view.each())
     {
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
@@ -167,7 +167,7 @@ void SpriteSystem::SortSpriteLayers()
         entt::entity entity;
         uint32       layer;
     };
-    auto view = levelSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
+    auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
 
     Vector<SpriteSortStruct> entries;
     entries.reserve(view.size_hint());
@@ -191,7 +191,7 @@ void SpriteSystem::SortSpriteLayers()
     for (const auto& entry : entries)
     {
         bool spriteLayerExists = false;
-        auto [sprite, transform] = levelSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entry.entity);
+        auto [sprite, transform] = gameObjectSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entry.entity);
         for (auto& layer : SpriteLayerList)
         {
             if (layer.SpriteDrawLayer == sprite.SpriteLayer)

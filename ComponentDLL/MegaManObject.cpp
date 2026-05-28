@@ -121,9 +121,9 @@
 //    }
 //    else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
 //    {
-//        MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
-//        spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShoot);
-//        MegaManShot_CreateObject("Shot", VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset, gameObject.GameObjectId);
+        //MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
+        //spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShoot);
+        //MegaManShot_CreateObject("Shot", VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset, gameObject.GameObjectId);
 //    }
 //    else
 //    {

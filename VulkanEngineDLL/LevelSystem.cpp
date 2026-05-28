@@ -52,7 +52,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
                 .GameObjectId = gameObjectId,
                 .PointLightId = lightId
             };
-            CreateGameObjectComponent<PointLightComponent>(gameObjectId, &pointLightComponent);
+            gameObjectSystem.CreateGameObjectComponent<PointLightComponent>(gameObjectId, &pointLightComponent);
         }
         else
         {
@@ -61,7 +61,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
                 .GameObjectId = gameObjectId,
                 .DirectionalLightId = lightId
             };
-            CreateGameObjectComponent<DirectionalLightComponent>(gameObjectId, &directionalLightComponent);
+            gameObjectSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectId, &directionalLightComponent);
         }
     }
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)

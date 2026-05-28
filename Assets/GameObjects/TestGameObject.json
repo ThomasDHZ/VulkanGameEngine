@@ -4,6 +4,15 @@
   "GameObjectDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll",
   "GameObjectDLLType": "GameScriptLibraryDLL.Player, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
+  "GameObjectVariableStruct": [
+    {
+      "VariableName": "PlayerSpeed",
+      "Value": 600,
+      "ConstVariable": true,
+      "VariableByteSize": 4,
+      "MemberTypeEnum": 3
+    }
+  ],
   "GameObjectComponentList": [
     {
       "ComponentType": 0

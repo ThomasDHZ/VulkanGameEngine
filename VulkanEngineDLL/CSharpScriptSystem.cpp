@@ -63,13 +63,8 @@ bool CSharpScriptSystem::Initialize(const string_t& runtimeConfigPath, const str
     return success;
 }
 
-void CSharpScriptSystem::LoadGameObjectScript(const String& assemblyPath, const String& typeNameString)
+GameObjectBehavior CSharpScriptSystem::LoadGameObjectScript(const String& assemblyPath, const String& typeNameString)
 {
-    if(gameObjectSystem.GameObjectBehaviorExists(typeNameString))
-    {
-        return;
-    }
-
     std::wstring assemblyW = ToWString(assemblyPath);
     std::wstring typeNameW = ToWString(typeNameString);
     auto GetDLLFunction = [&](const char_t* method, void** outFn) -> bool
@@ -88,7 +83,7 @@ void CSharpScriptSystem::LoadGameObjectScript(const String& assemblyPath, const 
     GetDLLFunction(L"StartUp", (void**)&gameObjectBehavior.Startup);
     GetDLLFunction(L"Update" , (void**)&gameObjectBehavior.Update);
     GetDLLFunction(L"Destroy", (void**)&gameObjectBehavior.Destroy);
-    gameObjectSystem.GameObjectBehaviorMap[typeNameString] = gameObjectBehavior;
+    return gameObjectBehavior;
 }
 
 std::wstring CSharpScriptSystem::ToWString(const std::string& str)

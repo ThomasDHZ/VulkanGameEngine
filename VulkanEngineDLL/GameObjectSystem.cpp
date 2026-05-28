@@ -23,9 +23,9 @@ uint GameObjectSystem::CreateGameObject(vec2 gameObjectPosition, uint32 parentGa
         {
             .GameObjectId = AllocateGameObject(),
             .ParentGameObjectId = parentGameObjectId,
-            .GameObjectComponents = levelSystem.EntityRegistry.create(),
+            .GameObjectComponents = EntityRegistry.create(),
         });
-    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(gameObject.GameObjectComponents, GameObjectComponentLinker
+    EntityRegistry.emplace<GameObjectComponentLinker>(gameObject.GameObjectComponents, GameObjectComponentLinker
         {
             .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
         });
@@ -39,31 +39,51 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         {
             .GameObjectId = AllocateGameObject(),
             .ParentGameObjectId = parentGameObjectId,
-            .GameObjectComponents = levelSystem.EntityRegistry.create(),
+            .GameObjectType = json["GameObjectType"],
+            .GameObjectComponents = EntityRegistry.create(),
         });
 
     if (json.contains("GameObjectDLL") && json.contains("GameObjectDLLType"))
     {
         String dllPath = json["GameObjectDLL"].get<String>();
         String dllType = json["GameObjectDLLType"].get<String>();
-
-        if (!GameObjectBehaviorExists(dllType))
+        if (!GameObjectBehaviorExists(gameObject.GameObjectType))
         {
-            cSharpScriptSystem.LoadGameObjectScript(dllPath, dllType);
+            gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(dllPath, dllType);
         }
 
-        if (GameObjectBehaviorExists(dllType))
+        if (GameObjectBehaviorExists(gameObject.GameObjectType))
         {
-            auto& behavior = gameObjectSystem.GameObjectBehaviorMap[dllType];
-
-            gameObject.GameObjectBehaviorKey = dllType;
-            gameObject.ObjectPtr = behavior.CreateObject();
-            behavior.Startup(gameObject.ObjectPtr, gameObject.GameObjectId);
+            gameObject.ObjectPtr = gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject();
+            gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Startup(gameObject.ObjectPtr, gameObject.GameObjectId);
         }
         else
         {
             std::cerr << "[GameObject] Failed to load C# behavior: " << dllType << std::endl;
         }
+
+        GameObjectStruct gameObjectStruct;
+        if (json.contains("GameObjectVariableStruct"))
+        {
+            for (auto& gameObjectVar : json["GameObjectVariableStruct"])
+            {
+                gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]] = GameObjectVariable
+                {
+                    .VariableName = gameObjectVar["VariableName"],
+                    .MemberTypeEnum = gameObjectVar["MemberTypeEnum"],
+                    .VariableByteSize = gameObjectVar["VariableByteSize"].get<size_t>(),
+                    .ConstVariable = gameObjectVar["ConstVariable"]
+                };
+
+                if (!gameObjectVar.is_null())
+                {
+                    float value = gameObjectVar["ConstVariable"].get<float>();
+                    gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].Value.resize(gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].VariableByteSize);
+                    std::memcpy(gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].Value.data(), &value, sizeof(float));
+                }
+            }
+        }
+        GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
     }
     else if (json.contains("GameObjectLuaScript"))
     {
@@ -71,7 +91,7 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
 
         if (fileSystem.GetFileExtention(luaPath.c_str()) == "lua")
         {
-            gameObject.GameObjectBehaviorKey = luaPath;  // Store lua path as key
+         //   gameObject.GameObjectTypeNameString = luaPath;  // Store lua path as key
 
             // TODO: Load Lua script and store table in ScriptComponent
             // luaScriptingSystem.CreateEntityFromScript(luaPath, gameObject.GameObjectId);
@@ -80,7 +100,7 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         }
     }
     GameObjectList.emplace_back(gameObject);
-    levelSystem.EntityRegistry.emplace<GameObjectComponentLinker>(gameObject.GameObjectComponents, GameObjectComponentLinker
+    EntityRegistry.emplace<GameObjectComponentLinker>(gameObject.GameObjectComponents, GameObjectComponentLinker
         {
             .GameObjectId = static_cast<uint32>(gameObject.GameObjectId)
         });
@@ -90,7 +110,7 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         uint64 componentType = componentJson["ComponentType"].get<uint64>();
         switch (componentType)
         {
-        case kInputComponent: levelSystem.EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
+        case kInputComponent: EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
         case kSpriteComponent:
         {
             nlohmann::json json = json.parse(componentJson.dump().c_str());
@@ -101,7 +121,7 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         case kTransform2DComponent:
         {
             nlohmann::json json = json.parse(componentJson.dump().c_str());
-            levelSystem.EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
+            EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
                 {
                     .GameObjectPosition = gameObjectPosition,
                     .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
@@ -112,7 +132,7 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
         case kTransform3DComponent:
         {
             nlohmann::json json = json.parse(componentJson.dump().c_str());
-            levelSystem.EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
+            EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
                 {
                     .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
                     .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
@@ -120,14 +140,12 @@ uint GameObjectSystem::CreateGameObject(const String& gameObjectJson, vec2 gameO
                 });
             break;
         }
-        case kCameraFollowComponent: levelSystem.EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
-        case kDirectionalLightComponent: levelSystem.EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
-        case kPointLightComponent: levelSystem.EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;
+        case kCameraFollowComponent: EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
+        case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, DirectionalLightComponent{ }); break;
+        case kPointLightComponent: EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, PointLightComponent{ }); break;
         default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
         }
     }
-
-    auto a = levelSystem.GetGameObjectComponent<Sprite>(gameObject.GameObjectId);
     return gameObject.GameObjectId;
 }
 
@@ -135,8 +153,8 @@ void GameObjectSystem::Update(const float& deltaTime)
 {
     for (auto& gameObject : GameObjectList)
     {
-        if(gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectBehaviorKey].Update)
-        gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectBehaviorKey].Update(gameObject.ObjectPtr, deltaTime);
+        if(gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update)
+        gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update(gameObject.ObjectPtr, deltaTime);
     }
 }
 
@@ -150,9 +168,9 @@ GameObject& GameObjectSystem::FindGameObject(uint gameObjectId)
     return *it;
 }
 
-const GameObjectBehavior GameObjectSystem::FindGameObjectBehavior(const String& gameObjectClass)
+const GameObjectBehavior GameObjectSystem::FindGameObjectBehavior(GameObjectTypeEnum gameObjectType)
 {
-    auto it = GameObjectBehaviorMap.find(gameObjectClass);
+    auto it = GameObjectBehaviorMap.find(gameObjectType);
     if (it == GameObjectBehaviorMap.end())
     {
         throw std::runtime_error("Game object behavior not found");
@@ -160,9 +178,9 @@ const GameObjectBehavior GameObjectSystem::FindGameObjectBehavior(const String& 
     return it->second;
 }
 
-bool GameObjectSystem::GameObjectBehaviorExists(const String& gameObjectClass)
+bool GameObjectSystem::GameObjectBehaviorExists(GameObjectTypeEnum gameObjectType)
 {
-    return GameObjectBehaviorMap.contains(gameObjectClass);
+    return GameObjectBehaviorMap.contains(gameObjectType);
 }
 
 void GameObjectSystem::DestroyGameObject(uint gameObjectId)
@@ -170,7 +188,7 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
     GameObject& gameObject = GameObjectList[gameObjectId];
     FreeGameObjectIndex.push_back(gameObjectId);
 
-    if (levelSystem.EntityRegistry.all_of<Sprite>(gameObject.GameObjectComponents)) spriteSystem.Destroy(levelSystem.EntityRegistry.get<Sprite>(gameObject.GameObjectComponents));
+    if (EntityRegistry.all_of<Sprite>(gameObject.GameObjectComponents)) spriteSystem.Destroy(EntityRegistry.get<Sprite>(gameObject.GameObjectComponents));
 
     GameObjectList.erase(GameObjectList.begin() + gameObjectId);
     for (int x = gameObjectId; x < GameObjectList.size(); x++)

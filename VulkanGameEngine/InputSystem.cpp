@@ -12,7 +12,7 @@ void InputSystem::Update(const float& deltaTime)
 {
 #ifndef PLATFORM_ANDROID
     int joy = GLFW_JOYSTICK_1;
-    auto view = levelSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent, InputComponent>();
+    auto view = gameObjectSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent, InputComponent>();
     for (auto [entity, gameObjectLinker, sprite, transform, input] : view.each())
     {
         int joy = GLFW_JOYSTICK_1;

@@ -1,9 +1,11 @@
 #pragma once
 #include "Platform.h"
+#include "GameObjectSystem.h"
 #include <string>
 #include <filesystem>
 #include <cstdint>
 
+#include "enum.h"
 #include "nethost.h"
 #include "hostfxr.h"
 #include "coreclr_delegates.h"
@@ -38,7 +40,7 @@ private:
 
 public:
     DLL_EXPORT bool Initialize(const string_t& runtimeConfigPath, const string_t& assemblyPath);
-    DLL_EXPORT void LoadGameObjectScript(const String& assemblyPath, const String& typeNameString);
+    DLL_EXPORT GameObjectBehavior LoadGameObjectScript(const String& assemblyPath, const String& typeNameString);
 };
 extern DLL_EXPORT CSharpScriptSystem& cSharpScriptSystem;
 inline CSharpScriptSystem& CSharpScriptSystem::Get()
