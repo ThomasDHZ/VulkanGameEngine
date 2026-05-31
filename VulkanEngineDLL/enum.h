@@ -34,7 +34,7 @@ enum GameObjectMemberType
    GameObjectVarMat2,
    GameObjectVarMat3,
    GameObjectVarMat4,
-   GameObjectVarbool
+   GameObjectVarBool
 };
 
 enum ColorChannelUsed

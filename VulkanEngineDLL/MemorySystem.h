@@ -103,6 +103,19 @@ public:
     }
 
     template <typename T>
+    T* AddPtrBuffer(const T* src, size_t count, const char* file, int line, const char* func, const char* notes = "")
+    {
+        if (count == 0) return nullptr;
+        T* ptr = AddPtrBuffer<T>(count, file, line, func, notes);
+        if (ptr && src)
+        {
+            memcpy(ptr, src, count * sizeof(T));
+        }
+
+        return ptr;
+    }
+
+    template <typename T>
     T* ReplacePtrBuffer(T*& oldPtr, size_t count, const char* file, int line, const char* func, const char* notes = "") 
     {
         T* newPtr = AddPtrBuffer<T>(count, file, line, func, notes);

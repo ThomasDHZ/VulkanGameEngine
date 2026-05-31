@@ -7,6 +7,15 @@ struct GameObjectComponentContainer
     void*             ComponentPtr;
 };
 
+struct GameObjectVariableDLL
+{
+    const char*          VariableName;
+    byte*                Value;
+    size_t               VariableByteSize = 0;
+    GameObjectMemberType MemberTypeEnum;
+    bool                 ConstVariable = false;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,6 +28,7 @@ extern "C" {
     DLL_EXPORT void                               GameObjectSystem_DestroyGameObject(uint gameObjectId);
     DLL_EXPORT GameObject*                        GameObjectSystem_GetGameObject(size_t gameGameObjectId);
     DLL_EXPORT GameObject*                        GameObjectSystem_GetGameObjectList(size_t& returnCount);
+    DLL_EXPORT GameObjectVariableDLL*             GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
     DLL_EXPORT ComponentTypeEnum*                 GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, size_t& returnCount);
 #ifdef __cplusplus
 }

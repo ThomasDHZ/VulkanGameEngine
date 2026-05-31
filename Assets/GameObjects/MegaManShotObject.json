@@ -1,4 +1,18 @@
 {
+  "GameObjectType": 2,
+  "GameObjectRuntimeConfig": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.runtimeconfig.json",
+  "GameObjectDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll",
+  "GameObjectDLLType": "GameScriptLibraryDLL.PlayerShot, GameScriptLibraryDLL",
+  "GameObjectLuaScript": null,
+  "GameObjectVariableStruct": [
+    {
+      "VariableName": "ShotSpeed",
+      "Value": 600,
+      "ConstVariable": true,
+      "VariableByteSize": 4,
+      "MemberTypeEnum": 3
+    }
+  ],
   "GameObjectComponentList": [
     {
       "GameObjectPosition": [

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static GameScriptLibraryDLL.GameObjectVariableDLL;
 
 namespace GameScriptLibraryDLL
 {
@@ -45,6 +46,46 @@ namespace GameScriptLibraryDLL
             }
         }
 
+        public static Dictionary<string, GameObjectVariable<T>> GetGameObjectVariables<T>(uint gameObjectId) 
+        {
+            try
+            {
+                var gameObjectVariableMap = new Dictionary<string, GameObjectVariable<T>>();
+                GameObjectVariableDLL* listPtr = GameObjectSystem_GetGameObjectVariables(gameObjectId, out nuint count);
+
+                if (listPtr == null || count == 0) return gameObjectVariableMap;
+                for (nuint x = 0; x < count; x++)
+                {
+                    GameObjectVariableDLL raw = listPtr[x];
+                    string name = Marshal.PtrToStringAnsi(raw.VariableName);
+                    if (string.IsNullOrEmpty(name)) continue;
+
+                    var variable = new GameObjectVariable<T>
+                    {
+                        VariableName = name,
+                        Value = *raw.GetAs<T>(), // Your method to convert raw to T
+                        ValueByteSize = raw.ValueByteSize,
+                        MemberTypeEnum = raw.MemberTypeEnum,
+                        ConstVariable = raw.ConstVariable
+                    };
+                    gameObjectVariableMap[name] = variable;
+                    MemorySystem.RemovePtrBuffer((IntPtr)raw.ValuePtr);
+                    MemorySystem.RemovePtrBuffer((IntPtr)raw.VariableName);
+                }
+                MemorySystem.RemovePtrBuffer((IntPtr)listPtr);
+                return gameObjectVariableMap;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
+        }
+
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)]
+        private static extern GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(
+            uint gameObjectId,
+            out nuint returnCount);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObjectBase(vec2 gameObjectPosition, uint parentGameObjectId);

@@ -64,6 +64,14 @@ void LevelSystem::LoadLevel(const char* levelPath)
             gameObjectSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectId, &directionalLightComponent);
         }
     }
+
+    Vector<String> gameObjectTempleteList;
+    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
+    {
+        gameObjectTempleteList.emplace_back(json["GameObjectList"][x]["GameObjectPath"]);
+    }
+
+    gameObjectSystem.LoadGameObjectTempletes(gameObjectTempleteList);
     for (size_t x = 0; x < json["GameObjectList"].size(); x++)
     {
         String objectJson = json["GameObjectList"][x]["GameObjectPath"];

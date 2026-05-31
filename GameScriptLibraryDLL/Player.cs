@@ -1,6 +1,7 @@
 ﻿using GlmSharp;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using static GameScriptLibraryDLL.GameObjectVariableDLL;
 
 namespace GameScriptLibraryDLL
 {
@@ -46,9 +47,12 @@ namespace GameScriptLibraryDLL
             if (instancePtr == IntPtr.Zero) return;
 
             var instance = (Player)GCHandle.FromIntPtr(instancePtr).Target;
+            Dictionary<String, GameObjectVariable<float>> gameObjectVariableList = Component.GetGameObjectVariables<float>(instance.GameObjectId);
             InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
             SpriteComponent* sprite = Component.GetGameObjectComponent<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
             Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
+
+            float playerSpeed = gameObjectVariableList["PlayerSpeed"].Value;
 
             bool leftPressed =  input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_PRESSED ||
                                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_HELD;
@@ -64,17 +68,17 @@ namespace GameScriptLibraryDLL
             if (leftPressed)
             {
                 sprite->FlipSprite = new ivec2(1, sprite->FlipSprite.y);
-                transform->Position = new(transform->Position.x - 200.0f * deltaTime, transform->Position.y);
+                transform->Position = new(transform->Position.x - playerSpeed * deltaTime, transform->Position.y);
             }
             else if (rightPressed)
             {
                 sprite->FlipSprite = new ivec2(0, sprite->FlipSprite.y);
-                transform->Position = new(transform->Position.x + 200.0f * deltaTime, transform->Position.y);
+                transform->Position = new(transform->Position.x + playerSpeed * deltaTime, transform->Position.y);
             }
 
-            if (upPressed) transform->Position = new(transform->Position.x, transform->Position.y - 200.0f * deltaTime);
-            if (downPressed) transform->Position = new(transform->Position.x, transform->Position.y - 200.0f * deltaTime);
-            if (shootPressed) Component.CreateGameObject<PlayerShot>();
+            if (upPressed) transform->Position = new(transform->Position.x, transform->Position.y - playerSpeed * deltaTime);
+            if (downPressed) transform->Position = new(transform->Position.x, transform->Position.y - playerSpeed * deltaTime);
+          //  if (shootPressed) Component.CreateGameObject<PlayerShot>();
             transform->Dirty = true;
         }
 
