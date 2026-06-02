@@ -1,9 +1,10 @@
-﻿using GlmSharp;
+﻿using GameScriptLibraryDLL.Components;
+using GlmSharp;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using static GameScriptLibraryDLL.GameObjectVariableDLL;
+using static GameScriptLibraryDLL.GameObjects.GameObjectVariableDLL;
 
-namespace GameScriptLibraryDLL
+namespace GameScriptLibraryDLL.GameObjects
 {
     public unsafe class Player
     {
@@ -48,22 +49,25 @@ namespace GameScriptLibraryDLL
 
             var instance = (Player)GCHandle.FromIntPtr(instancePtr).Target;
             Dictionary<String, GameObjectVariable<float>> gameObjectVariableList = Component.GetGameObjectVariables<float>(instance.GameObjectId);
-            InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
-            SpriteComponent* sprite = Component.GetGameObjectComponent<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
             Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
+            SpriteComponent* sprite = Component.GetGameObjectComponent<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
+            InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
 
+            if (transform == null) return;
             float playerSpeed = gameObjectVariableList["PlayerSpeed"].Value;
 
-            bool leftPressed =  input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_PRESSED ||
-                                input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_HELD;
-            bool rightPressed = input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_PRESSED ||
-                                input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_HELD;
-            bool upPressed =    input->KeyBoardState[(int)KeyboardKeyCode.KEY_W] == KeyState.KS_PRESSED ||
-                                input->KeyBoardState[(int)KeyboardKeyCode.KEY_W] == KeyState.KS_HELD;
-            bool downPressed =  input->KeyBoardState[(int)KeyboardKeyCode.KEY_S] == KeyState.KS_PRESSED ||
-                                input->KeyBoardState[(int)KeyboardKeyCode.KEY_S] == KeyState.KS_HELD;
-            bool shootPressed = input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_PRESSED ||
-                                input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_HELD;
+            bool leftPressed = input != null &&
+                (input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_PRESSED ||
+                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_HELD);
+
+            bool rightPressed = input != null &&
+                (input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_PRESSED ||
+                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_HELD);
+
+            bool shootPressed = input != null &&
+                (input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_PRESSED ||
+                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_HELD);
+
 
             if (leftPressed)
             {
@@ -76,10 +80,14 @@ namespace GameScriptLibraryDLL
                 transform->Position = new(transform->Position.x + playerSpeed * deltaTime, transform->Position.y);
             }
 
-            if (upPressed) transform->Position = new(transform->Position.x, transform->Position.y - playerSpeed * deltaTime);
-            if (downPressed) transform->Position = new(transform->Position.x, transform->Position.y - playerSpeed * deltaTime);
-          //  if (shootPressed) Component.CreateGameObject<PlayerShot>();
+            if (shootPressed)
+            {
+                Component.CreateGameObject(GameObjectTypeEnum.kGameObjectMegaManShot, transform->Position, instance.GameObjectId);
+            }
+
             transform->Dirty = true;
+
+            Console.WriteLine($"[C#] Player Update - Pos: ({transform->Position.x:F1}, {transform->Position.y:F1})");
         }
 
         [UnmanagedCallersOnly]

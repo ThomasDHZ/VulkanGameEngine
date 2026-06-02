@@ -1,4 +1,5 @@
-﻿using GlmSharp;
+﻿using GameScriptLibraryDLL.Components;
+using GlmSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameScriptLibraryDLL
+namespace GameScriptLibraryDLL.GameObjects
 {
     public unsafe class PlayerShot
     {
@@ -17,7 +18,7 @@ namespace GameScriptLibraryDLL
         [UnmanagedCallersOnly]
         public static IntPtr Create()
         {
-            var instance = new Player();
+            var instance = new PlayerShot();
             GCHandle handle = GCHandle.Alloc(instance, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
@@ -26,8 +27,8 @@ namespace GameScriptLibraryDLL
         public static void StartUp(IntPtr instancePtr, uint gameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
-            ComponentRegistery.Create(gameObjectId, ComponentTypeEnum.kTransform2DComponent);
-            ComponentRegistery.Create(gameObjectId, ComponentTypeEnum.kSpriteComponent);
+            ComponentRegistery.Create(gameObjectId, ComponentTypeEnum.kTransform2DComponent, new Transform2DComponent());
+            ComponentRegistery.Create(gameObjectId, ComponentTypeEnum.kSpriteComponent, new SpriteComponent());
         }
 
         [UnmanagedCallersOnly]

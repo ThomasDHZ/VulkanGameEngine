@@ -31,6 +31,9 @@ void InputSystem::Update(const float& deltaTime)
                 if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) keyboard.KeyPressed[KEY_D] = KeyState::KS_PRESSED;
                 else keyboard.KeyPressed[KEY_D] = KeyState::KS_RELEASED;
 
+                if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE]) keyboard.KeyPressed[KEY_E] = KeyState::KS_PRESSED;
+                else keyboard.KeyPressed[KEY_E] = KeyState::KS_RELEASED;
+
                 std::copy(keyboard.KeyPressed, keyboard.KeyPressed + MAXKEYBOARDKEY, input.KeyPressed);
 
                 //if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&

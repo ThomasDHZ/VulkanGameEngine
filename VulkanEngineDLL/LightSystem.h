@@ -2,14 +2,9 @@
 #include "Platform.h"
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
+#include "GameObjectSystem.h"
 
-enum LightTypeEnum
-{
-    kDirectionalLight,
-    kPointLight
-};
-
-struct DirectionalLight
+struct DirectionalLightComponent
 {
     vec3   LightColor = vec3(1.0f, 1.0f, 1.0f);
     vec3   LightDirection = vec3(0.3f, 0.3f, 1.0f);
@@ -19,7 +14,7 @@ struct DirectionalLight
     float  ShadowSoftness = 0.008f;
 };
 
-struct PointLight
+struct PointLightComponent
 {
     vec3   LightPosition = vec3(0.0f);
     vec3   LightColor = vec3(1.0f, 0.95f, 0.8f);
@@ -44,10 +39,10 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-    DLL_EXPORT uint32                   LoadLight(const String& sceneLight);
-    DLL_EXPORT uint32                   AllocateLight(LightTypeEnum lightType);
-    DLL_EXPORT DirectionalLight&        GetDirectionalLight(uint directionalLightId);
-    DLL_EXPORT PointLight&              GetPointLight(uint pointLightId);
+    DLL_EXPORT uint32                            LoadLight(const nlohmann::json& json);
+    DLL_EXPORT uint32                            AllocateLight(GameObjectTypeEnum lightType);
+    DLL_EXPORT DirectionalLightComponent&        GetDirectionalLight(uint directionalLightId);
+    DLL_EXPORT PointLightComponent&              GetPointLight(uint pointLightId);
 };
 extern DLL_EXPORT LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()

@@ -42,7 +42,7 @@ void MemoryPoolSystem::StartUp()
             MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = DirectionalLightInitialCapacity,
-                .Size = sizeof(DirectionalLight),
+                .Size = sizeof(PointLightComponent),
                 .IsActive = Vector<byte>(DirectionalLightInitialCapacity, 0x00),
                 .FreeIndices = Vector<uint32>(),
                 .IsDirty = true
@@ -53,7 +53,7 @@ void MemoryPoolSystem::StartUp()
             MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = PointLightInitialCapacity,
-                .Size = sizeof(PointLight),
+                .Size = sizeof(PointLightComponent),
                 .IsActive = Vector<byte>(PointLightInitialCapacity, 0x00),
                 .FreeIndices = Vector<uint32>(),
                 .IsDirty = true
@@ -422,26 +422,26 @@ GPUMaterial& MemoryPoolSystem::UpdateMaterial(uint32 index)
     return *reinterpret_cast<GPUMaterial*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
-DirectionalLight& MemoryPoolSystem::UpdateDirectionalLight(uint32 index)
+DirectionalLightComponent& MemoryPoolSystem::UpdateDirectionalLight(uint32 index)
 {
     MemoryPoolSubBufferHeader& directionalLightSubPool = MemorySubPoolHeader[kDirectionalLightBuffer];
     if (index >= directionalLightSubPool.Count) throw std::out_of_range("Directional Light index out of range: " + std::to_string(index) + " >= " + std::to_string(directionalLightSubPool.Count));
     if (index >= directionalLightSubPool.IsActive.size() || !directionalLightSubPool.IsActive[index]) throw std::runtime_error("Directional Light slot inactive at index " + std::to_string(index));
 
-    uint32 offset = directionalLightSubPool.Offset + (index * sizeof(DirectionalLight));
+    uint32 offset = directionalLightSubPool.Offset + (index * sizeof(DirectionalLightComponent));
     directionalLightSubPool.IsDirty = true;
-    return *reinterpret_cast<DirectionalLight*>(static_cast<byte*>(MappedBufferPtr) + offset);
+    return *reinterpret_cast<DirectionalLightComponent*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
-PointLight& MemoryPoolSystem::UpdatePointLight(uint32 index)
+PointLightComponent& MemoryPoolSystem::UpdatePointLight(uint32 index)
 {
     MemoryPoolSubBufferHeader& pointLightSubPool = MemorySubPoolHeader[kPointLightBuffer];
     if (index >= pointLightSubPool.Count) throw std::out_of_range("Point Light index out of range: " + std::to_string(index) + " >= " + std::to_string(pointLightSubPool.Count));
     if (index >= pointLightSubPool.IsActive.size() || !pointLightSubPool.IsActive[index]) throw std::runtime_error("Point Light slot inactive at index " + std::to_string(index));
 
-    uint32 offset = pointLightSubPool.Offset + (index * sizeof(PointLight));
+    uint32 offset = pointLightSubPool.Offset + (index * sizeof(PointLightComponent));
     pointLightSubPool.IsDirty = true;
-    return *reinterpret_cast<PointLight*>(static_cast<byte*>(MappedBufferPtr) + offset);
+    return *reinterpret_cast<PointLightComponent*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
 TextureMetadataHeader& MemoryPoolSystem::UpdateTexture2DMetadataHeader(uint32 index)
@@ -548,7 +548,7 @@ Vector<GPUMaterial> MemoryPoolSystem::MaterialBufferList()
     return result;
 }
 
-Vector<DirectionalLight> MemoryPoolSystem::DirectionalLightBufferList()
+Vector<DirectionalLightComponent> MemoryPoolSystem::DirectionalLightBufferList()
 {
     const auto& sub = MemorySubPoolHeader[kDirectionalLightBuffer];
     if (sub.ActiveCount == 0 || !MappedBufferPtr)
@@ -556,13 +556,13 @@ Vector<DirectionalLight> MemoryPoolSystem::DirectionalLightBufferList()
         return {};
     }
 
-    Vector<DirectionalLight> result(sub.ActiveCount);
+    Vector<DirectionalLightComponent> result(sub.ActiveCount);
     const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
-    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(DirectionalLight));
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(DirectionalLightComponent));
     return result;
 }
 
-Vector<PointLight> MemoryPoolSystem::PointLightBufferList()
+Vector<PointLightComponent> MemoryPoolSystem::PointLightBufferList()
 {
     const auto& sub = MemorySubPoolHeader[kPointLightBuffer];
     if (sub.ActiveCount == 0 || !MappedBufferPtr)
@@ -570,9 +570,9 @@ Vector<PointLight> MemoryPoolSystem::PointLightBufferList()
         return {};
     }
 
-    Vector<PointLight> result(sub.ActiveCount);
+    Vector<PointLightComponent> result(sub.ActiveCount);
     const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
-    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(PointLight));
+    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(PointLightComponent));
     return result;
 }
 

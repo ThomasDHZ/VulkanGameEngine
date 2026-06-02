@@ -1,15 +1,10 @@
 #include "GameObjectSystemDLL.h"
+#include <LightSystem.h>
 #include <SpriteSystem.h>
 
-uint32 GameObjectSystem_CreateGameObjectBase(vec2 gameObjectPosition, uint32 parentGameObjectId)
+uint32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
-    gameObjectSystem.CreateGameObject(gameObjectPosition, parentGameObjectId);
-    return gameObjectSystem.GameObjectList.back().GameObjectId;
-}
-
-uint32 GameObjectSystem_CreateGameObject(const char* gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
-{
-	gameObjectSystem.CreateGameObject(gameObjectJson, gameObjectPosition, parentGameObjectId);
+	gameObjectSystem.CreateGameObject(gameObjectType, gameObjectPosition, parentGameObjectId);
     return gameObjectSystem.GameObjectList.back().GameObjectId;
 }
 
@@ -18,7 +13,7 @@ void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentType
     switch (componentType)
     {
         case kInputComponent:            gameObjectSystem.CreateGameObjectComponent<InputComponent>(           gameObjectId, static_cast<InputComponent*>(componentData)); break;
-        case kSpriteComponent:           gameObjectSystem.CreateGameObjectComponent<Sprite>(          gameObjectId, static_cast<Sprite*>(componentData)); break;
+        case kSpriteComponent:           gameObjectSystem.CreateGameObjectComponent<Sprite>(                   gameObjectId, static_cast<Sprite*>(componentData)); break;
         case kTransform2DComponent:      gameObjectSystem.CreateGameObjectComponent<Transform2DComponent>(     gameObjectId, static_cast<Transform2DComponent*>(componentData)); break;
         case kTransform3DComponent:      gameObjectSystem.CreateGameObjectComponent<Transform3DComponent>(     gameObjectId, static_cast<Transform3DComponent*>(componentData)); break;
         case kCameraFollowComponent:     gameObjectSystem.CreateGameObjectComponent<CameraFollowComponent>(    gameObjectId, static_cast<CameraFollowComponent*>(componentData)); break;

@@ -20,12 +20,12 @@ uint32 MemoryPoolSystem_AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
      return  &memoryPoolSystem.UpdateMaterial(index);
  }
 
- DirectionalLight* MemoryPoolSystem_UpdateDirectionalLight(uint32 index)
+ DirectionalLightComponent* MemoryPoolSystem_UpdateDirectionalLight(uint32 index)
  {
      return  &memoryPoolSystem.UpdateDirectionalLight(index);
  }
 
- PointLight* MemoryPoolSystem_UpdatePointLight(uint32 index)
+ PointLightComponent* MemoryPoolSystem_UpdatePointLight(uint32 index)
  {
      return  &memoryPoolSystem.UpdatePointLight(index);
  }

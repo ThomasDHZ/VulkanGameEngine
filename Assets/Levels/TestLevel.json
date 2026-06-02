@@ -35,12 +35,32 @@
     "RenderPass/FrameBufferRenderPass.json",
     "RenderPass/SelectedGameObjectPickerRenderPass.json"
   ],
+  "LoadGameObjects": [
+    "GameObjects/TestGameObject.json",
+    "GameObjects/MegaManShotObject.json",
+    "GameObjects/DirectionalLightGameObject.json",
+    "GameObjects/PointLightGameObject.json"
+  ],
   "GameObjectList": [
     {
-      "GameObjectPath": "GameObjects/TestGameObject.json",
+      "GameObjectType": 1,
       "GameObjectPositionOverride": [
         1450.0,
         400.0
+      ]
+    },
+    {
+      "GameObjectType": 3,
+      "GameObjectPositionOverride": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        960.0,
+        540.0
       ]
     }
   ],

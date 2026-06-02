@@ -110,8 +110,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelMapLevelLayout", "Leve
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects", "{21F6500D-6E92-4717-815C-AB3C6E100B64}"
 	ProjectSection(SolutionItems) = preProject
-		Assets\GameObjects\LightGameObject.json = Assets\GameObjects\LightGameObject.json
+		Assets\GameObjects\DirectionalLightGameObject.json = Assets\GameObjects\DirectionalLightGameObject.json
 		Assets\GameObjects\MegaManShotObject.json = Assets\GameObjects\MegaManShotObject.json
+		Assets\GameObjects\PointLightGameObject.json = Assets\GameObjects\PointLightGameObject.json
 		Assets\GameObjects\TestGameObject.json = Assets\GameObjects\TestGameObject.json
 	EndProjectSection
 EndProject

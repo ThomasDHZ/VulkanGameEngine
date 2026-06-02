@@ -3,20 +3,20 @@
 #include "BufferSystem.h"
 #include "ShaderSystem.h"
 #include "RenderSystem.h"
+#include "GameObjectSystem.h"
 
 LightSystem& lightSystem = LightSystem::Get();
 
-uint32 LightSystem::LoadLight(const String& sceneLight)
+uint32 LightSystem::LoadLight(const nlohmann::json& json)
 {
-    nlohmann::json json = fileSystem.LoadJsonFile(sceneLight.c_str());
-    uint lightType = json["LightType"];
+    uint lightType = json["ComponentType"];
     switch (lightType)
     {
-        case kDirectionalLight:
+        case kDirectionalLightComponent:
         {
             uint32 poolIndex = memoryPoolSystem.AllocateObject(kDirectionalLightBuffer);
-            DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(poolIndex);
-            directionalLight = DirectionalLight
+            DirectionalLightComponent& directionalLight = memoryPoolSystem.UpdateDirectionalLight(poolIndex);
+            directionalLight = DirectionalLightComponent
             {
                 .LightColor = vec3(json["LightColor"][0], json["LightColor"][1], json["LightColor"][2]),
                 .LightDirection = vec3(json["LightDirection"][0], json["LightDirection"][1], json["LightDirection"][2]),
@@ -27,11 +27,11 @@ uint32 LightSystem::LoadLight(const String& sceneLight)
             };
             return poolIndex;
         }
-        case kPointLight:
+        case kPointLightComponent:
         {
             uint32 poolIndex = memoryPoolSystem.AllocateObject(kPointLightBuffer);
-            PointLight& pointLight = memoryPoolSystem.UpdatePointLight(poolIndex);
-            pointLight = PointLight
+            PointLightComponent& pointLight = memoryPoolSystem.UpdatePointLight(poolIndex);
+            pointLight = PointLightComponent
             {
                 .LightPosition = vec3(json["LightPosition"][0], json["LightPosition"][1], json["LightPosition"][2]),
                 .LightColor = vec3(json["LightColor"][0], json["LightColor"][1], json["LightColor"][2]),
@@ -48,22 +48,23 @@ uint32 LightSystem::LoadLight(const String& sceneLight)
     return UINT32_MAX;
 }
 
-uint LightSystem::AllocateLight(LightTypeEnum lightType)
+uint LightSystem::AllocateLight(GameObjectTypeEnum lightType)
 {
     switch (lightType)
     {
-        case kDirectionalLight: return memoryPoolSystem.AllocateObject(kDirectionalLightBuffer); break;
-        case kPointLight:       return memoryPoolSystem.AllocateObject(kPointLightBuffer);  break;
+        case kDirectionalLightComponent: return memoryPoolSystem.AllocateObject(kDirectionalLightBuffer); break;
+        case kPointLightComponent:       return memoryPoolSystem.AllocateObject(kPointLightBuffer);  break;
+        default: std::cerr << "Not a Light Component" << std::endl;
     }
     return UINT32_MAX;
 }
 
-DirectionalLight& LightSystem::GetDirectionalLight(uint directionalLightId)
+DirectionalLightComponent& LightSystem::GetDirectionalLight(uint directionalLightId)
 {
     return memoryPoolSystem.UpdateDirectionalLight(directionalLightId);
 }
 
-PointLight& LightSystem::GetPointLight(uint pointLightId)
+PointLightComponent& LightSystem::GetPointLight(uint pointLightId)
 {
     return memoryPoolSystem.UpdatePointLight(pointLightId);
 }

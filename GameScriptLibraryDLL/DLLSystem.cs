@@ -12,11 +12,30 @@ namespace GameScriptLibraryDLL
     {
         private static bool _sharedDirSet = false;
         public const string GameEngineDLL = @"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\x64\Debug\VulkanGameEngineLevelEditorInterlopDLL.dll";
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)] private static extern IntPtr LoadLibrary(string lpFileName);
+        public static void SetSharedDllDirectory()
+        {
+            if (_sharedDirSet) return;
+
+            string dllDir = Path.GetDirectoryName(GameEngineDLL)!;
+            if (!Directory.Exists(dllDir))
+            {
+                throw new DirectoryNotFoundException($"DLL folder missing: {dllDir}");
+            }
+
+            IntPtr gameEngineDLLPtr = LoadLibrary(GameEngineDLL);
+            if (gameEngineDLLPtr == IntPtr.Zero)
+            {
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            }
+            _sharedDirSet = true;
+        }
+
         public static void CallDLLFunc(Action action)
         {
             if (!_sharedDirSet)
             {
-                throw new InvalidOperationException("Call SetSharedDllDirectory() first!");
+                SetSharedDllDirectory();
             }
 
             try
@@ -33,7 +52,7 @@ namespace GameScriptLibraryDLL
         {
             if (!_sharedDirSet)
             {
-                throw new InvalidOperationException("Call SetSharedDllDirectory() first!");
+                SetSharedDllDirectory();
             }
 
             try

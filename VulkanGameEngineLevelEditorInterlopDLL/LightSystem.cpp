@@ -5,17 +5,17 @@ uint32 LightSystem_LoadLight(const char* sceneLight)
     return lightSystem.LoadLight(sceneLight);
 }
 
-uint32 LightSystem_AllocateLight(LightTypeEnum lightType)
+uint32 LightSystem_AllocateLight(GameObjectTypeEnum lightType)
 {
     return lightSystem.AllocateLight(lightType);
 }
 
-DirectionalLight& LightSystem_GetDirectionalLight(uint directionalLightId)
+DirectionalLightComponent& LightSystem_GetDirectionalLight(uint directionalLightId)
 {
     return lightSystem.GetDirectionalLight(directionalLightId);
 }
 
-PointLight& LightSystem_GetPointLight(uint pointLightId)
+PointLightComponent& LightSystem_GetPointLight(uint pointLightId)
 {
     return lightSystem.GetPointLight(pointLightId);
 }

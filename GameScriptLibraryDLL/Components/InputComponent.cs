@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameScriptLibraryDLL
+namespace GameScriptLibraryDLL.Components
 {
     public unsafe struct InputComponent
     {

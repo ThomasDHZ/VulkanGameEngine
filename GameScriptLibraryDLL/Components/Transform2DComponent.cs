@@ -1,5 +1,4 @@
-﻿
-using GlmSharp;
+﻿using GlmSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameScriptLibraryDLL
+namespace GameScriptLibraryDLL.Components
 {
     public struct Transform2DComponent
     {

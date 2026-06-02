@@ -105,8 +105,8 @@ struct MemoryPoolBufferHeader
 
 struct MeshPropertiesStruct;
 struct GPUMaterial;
-struct DirectionalLight;
-struct PointLight;
+struct DirectionalLightComponent;
+struct PointLightComponent;
 class MemoryPoolSystem
 {
 public:
@@ -166,8 +166,8 @@ public:
 	DLL_EXPORT void											 UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
 	DLL_EXPORT MeshPropertiesStruct&						 UpdateMesh(uint32 index);
 	DLL_EXPORT GPUMaterial&									 UpdateMaterial(uint32 index);
-	DLL_EXPORT DirectionalLight&							 UpdateDirectionalLight(uint32 index);
-	DLL_EXPORT PointLight&									 UpdatePointLight(uint32 index);
+	DLL_EXPORT DirectionalLightComponent&					 UpdateDirectionalLight(uint32 index);
+	DLL_EXPORT PointLightComponent&							 UpdatePointLight(uint32 index);
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture2DMetadataHeader(uint32 index);
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
 	DLL_EXPORT TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
@@ -178,8 +178,8 @@ public:
 
 	DLL_EXPORT Vector<MeshPropertiesStruct>					 MeshBufferList();
 	DLL_EXPORT Vector<GPUMaterial>							 MaterialBufferList();
-	DLL_EXPORT Vector<DirectionalLight>						 DirectionalLightBufferList();
-	DLL_EXPORT Vector<PointLight>							 PointLightBufferList();
+	DLL_EXPORT Vector<DirectionalLightComponent>			 DirectionalLightBufferList();
+	DLL_EXPORT Vector<PointLightComponent>					 PointLightBufferList();
 	DLL_EXPORT Vector<SpriteInstance>						 SpriteInstanceBufferList();
 
 	DLL_EXPORT void											 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);

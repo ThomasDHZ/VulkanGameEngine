@@ -2,7 +2,7 @@
   "GameObjectType": 2,
   "GameObjectRuntimeConfig": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.runtimeconfig.json",
   "GameObjectDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll",
-  "GameObjectDLLType": "GameScriptLibraryDLL.PlayerShot, GameScriptLibraryDLL",
+  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerShot, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
   "GameObjectVariableStruct": [
     {

@@ -1,4 +1,5 @@
-﻿using GlmSharp;
+﻿using GameScriptLibraryDLL.GameObjects;
+using GlmSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using static GameScriptLibraryDLL.GameObjectVariableDLL;
+using static GameScriptLibraryDLL.GameObjects.GameObjectVariableDLL;
 
-namespace GameScriptLibraryDLL
+namespace GameScriptLibraryDLL.Components
 {
     public enum ComponentTypeEnum : uint
     {
@@ -24,9 +25,9 @@ namespace GameScriptLibraryDLL
 
     public unsafe class Component
     {
-        public static UInt32 CreateGameObject(String gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
+        public static UInt32 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
         {
-            return DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(gameObjectJson, gameObjectPosition, parentGameObjectId));
+            return DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(gameObjectType, gameObjectPosition, parentGameObjectId));
         }
 
         public static T* GetGameObjectComponent<T>(uint gameObjectId, ComponentTypeEnum componentType) where T : struct
@@ -63,7 +64,7 @@ namespace GameScriptLibraryDLL
                     var variable = new GameObjectVariable<T>
                     {
                         VariableName = name,
-                        Value = *raw.GetAs<T>(), // Your method to convert raw to T
+                        Value = *raw.GetAs<T>(),
                         ValueByteSize = raw.ValueByteSize,
                         MemberTypeEnum = raw.MemberTypeEnum,
                         ConstVariable = raw.ConstVariable
@@ -82,14 +83,11 @@ namespace GameScriptLibraryDLL
             }
         }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)]
-        private static extern GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(
-            uint gameObjectId,
-            out nuint returnCount);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, out nuint returnCount);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObjectBase(vec2 gameObjectPosition, uint parentGameObjectId);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObject([MarshalAs(UnmanagedType.LPStr)] String gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId);
 
     }
 }

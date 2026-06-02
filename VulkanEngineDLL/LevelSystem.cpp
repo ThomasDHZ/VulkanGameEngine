@@ -30,54 +30,15 @@ void LevelSystem::LoadLevel(const char* levelPath)
     for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
     for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
-    for (auto& light : json["LoadSceneLights"])
-    {
-        nlohmann::json lightJson = fileSystem.LoadJsonFile(light);
-        String s = lightJson.dump();
-        nlohmann::json json = fileSystem.LoadJsonFile("GameObjects/LightGameObject.json");
-
-        uint lightType = lightJson["LightType"];
-        vec3 pos = vec3(0.0f);
-        if (lightType == kPointLight)
-        {
-            pos = vec3(lightJson["LightPosition"][0], lightJson["LightPosition"][1], lightJson["LightPosition"][2]);
-        }
-        uint lightId = lightSystem.LoadLight(light);
-        uint gameObjectId = gameObjectSystem.CreateGameObject("GameObjects/LightGameObject.json", pos);
-
-        if (lightType == kPointLight)
-        {
-            PointLightComponent pointLightComponent = PointLightComponent
-            {
-                .GameObjectId = gameObjectId,
-                .PointLightId = lightId
-            };
-            gameObjectSystem.CreateGameObjectComponent<PointLightComponent>(gameObjectId, &pointLightComponent);
-        }
-        else
-        {
-            DirectionalLightComponent directionalLightComponent = DirectionalLightComponent
-            {
-                .GameObjectId = gameObjectId,
-                .DirectionalLightId = lightId
-            };
-            gameObjectSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectId, &directionalLightComponent);
-        }
-    }
 
     Vector<String> gameObjectTempleteList;
-    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
+    for (size_t x = 0; x < json["LoadGameObjects"].size(); x++)
     {
-        gameObjectTempleteList.emplace_back(json["GameObjectList"][x]["GameObjectPath"]);
+        gameObjectTempleteList.emplace_back(json["LoadGameObjects"][x]);
     }
-
     gameObjectSystem.LoadGameObjectTempletes(gameObjectTempleteList);
-    for (size_t x = 0; x < json["GameObjectList"].size(); x++)
-    {
-        String objectJson = json["GameObjectList"][x]["GameObjectPath"];
-        vec2 positionOverride(json["GameObjectList"][x]["GameObjectPositionOverride"][0], json["GameObjectList"][x]["GameObjectPositionOverride"][1]);
-        gameObjectSystem.CreateGameObject(objectJson, positionOverride);
-    }
+    gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
+
     LoadSkyBox();
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);

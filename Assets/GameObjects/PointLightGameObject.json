@@ -1,0 +1,34 @@
+{
+  "GameObjectType": 4,
+  "GameObjectComponentList": [
+    {
+      "ComponentType": 6,
+      "LightPosition": [ 960, 540, 0.0 ],
+      "LightColor": [ 0.0, 0.55, 0.9 ],
+      "LightRadius": 2000.0,
+      "LightIntensity": 5.0,
+      "ShadowStrength": 0.70,
+      "ShadowBias": 0.015,
+      "ShadowSoftness": 0.30
+    },
+    {
+      "GameObjectPosition": [
+        0.0,
+        0.0
+      ],
+      "GameObjectRotation": [
+        0.0,
+        0.0
+      ],
+      "GameObjectScale": [
+        1.0,
+        1.0
+      ],
+      "ComponentType": 2
+    },
+    {
+      "ComponentType": 1,
+      "VramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+    }
+  ]
+}

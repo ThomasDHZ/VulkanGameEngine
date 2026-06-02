@@ -35,7 +35,8 @@ enum GameObjectTypeEnum
     kGameObjectNone,
     kGameObjectMegaMan,
     kGameObjectMegaManShot,
-    kGameObjectDebug
+    kGameObjectDirectionalLight,
+    kGameObjectPointLight
 };
 
 enum ComponentTypeEnum : uint
@@ -56,18 +57,6 @@ struct CameraFollowComponent { int a = 0; };
 struct GameObjectComponentLinker
 {
     uint32 GameObjectId = UINT32_MAX;
-};
-
-struct DirectionalLightComponent
-{
-    uint32 GameObjectId = UINT32_MAX;
-    uint32 DirectionalLightId = UINT32_MAX;
-};
-
-struct PointLightComponent
-{
-    uint32 GameObjectId = UINT32_MAX;
-    uint32 PointLightId = UINT32_MAX;
 };
 
 struct GameObject
@@ -129,8 +118,7 @@ public:
 
 
     DLL_EXPORT void                                         LoadGameObjectTempletes(Vector<String>& gameObjectJson);
-    //DLL_EXPORT uint                                         CreateGameObject(vec2 gameObjectPosition, uint32 parentGameObjectId);
-    //DLL_EXPORT uint                                         CreateGameObject(const String& gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
+    DLL_EXPORT void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
     DLL_EXPORT uint                                         CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
 
     DLL_EXPORT void                                         Update(const float& deltaTime);
