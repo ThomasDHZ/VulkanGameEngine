@@ -663,7 +663,7 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId)
 			return texture;
 		}
 	}
-	throw std::out_of_range("Texture with given ID not found");
+	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
 }
 
 void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList)

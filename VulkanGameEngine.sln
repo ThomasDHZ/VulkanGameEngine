@@ -54,42 +54,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{77A09C
 		Assets\TextureLoader\OceanSkyBoxTexture.json = Assets\TextureLoader\OceanSkyBoxTexture.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Texture", "Texture", "{877021B2-F222-4B9F-BEBF-7C9A223DD6B0}"
-	ProjectSection(SolutionItems) = preProject
-		Assets\Textures\AnimeGirlImportMaterialjson.json0.png = Assets\Textures\AnimeGirlImportMaterialjson.json0.png
-		Assets\Textures\AnimeGirlImportMaterialjson.json1.png = Assets\Textures\AnimeGirlImportMaterialjson.json1.png
-		Assets\Textures\AnimeGirlImportMaterialjson.json2.png = Assets\Textures\AnimeGirlImportMaterialjson.json2.png
-		Assets\Textures\AnimeGirlImportMaterialjson.json3.png = Assets\Textures\AnimeGirlImportMaterialjson.json3.png
-		Assets\Textures\AnimeGirlImportMaterialjson.json4.png = Assets\Textures\AnimeGirlImportMaterialjson.json4.png
-		Assets\Textures\back.jpg = Assets\Textures\back.jpg
-		Assets\Textures\bottom.jpg = Assets\Textures\bottom.jpg
-		Assets\Textures\front.jpg = Assets\Textures\front.jpg
-		Assets\Textures\hot_bk.png = Assets\Textures\hot_bk.png
-		Assets\Textures\hot_dn.png = Assets\Textures\hot_dn.png
-		Assets\Textures\hot_ft.png = Assets\Textures\hot_ft.png
-		Assets\Textures\hot_lf.png = Assets\Textures\hot_lf.png
-		Assets\Textures\hot_rt.png = Assets\Textures\hot_rt.png
-		Assets\Textures\hot_up.png = Assets\Textures\hot_up.png
-		Assets\Textures\left.jpg = Assets\Textures\left.jpg
-		Assets\Textures\MegaManImportMaterialjson.json0.png = Assets\Textures\MegaManImportMaterialjson.json0.png
-		Assets\Textures\MegaManImportMaterialjson.json1.png = Assets\Textures\MegaManImportMaterialjson.json1.png
-		Assets\Textures\MegaManImportMaterialjson.json2.png = Assets\Textures\MegaManImportMaterialjson.json2.png
-		Assets\Textures\MegaManImportMaterialjson.json3.png = Assets\Textures\MegaManImportMaterialjson.json3.png
-		Assets\Textures\MegaManImportMaterialjson.json4.png = Assets\Textures\MegaManImportMaterialjson.json4.png
-		Assets\Textures\MegaManShotImportMaterialjson.json0.png = Assets\Textures\MegaManShotImportMaterialjson.json0.png
-		Assets\Textures\MegaManShotImportMaterialjson.json1.png = Assets\Textures\MegaManShotImportMaterialjson.json1.png
-		Assets\Textures\MegaManShotImportMaterialjson.json2.png = Assets\Textures\MegaManShotImportMaterialjson.json2.png
-		Assets\Textures\MegaManShotImportMaterialjson.json3.png = Assets\Textures\MegaManShotImportMaterialjson.json3.png
-		Assets\Textures\MegaManShotImportMaterialjson.json4.png = Assets\Textures\MegaManShotImportMaterialjson.json4.png
-		Assets\Textures\right.jpg = Assets\Textures\right.jpg
-		Assets\Textures\SparkManTileSetImportMaterialjson.json0.png = Assets\Textures\SparkManTileSetImportMaterialjson.json0.png
-		Assets\Textures\SparkManTileSetImportMaterialjson.json1.png = Assets\Textures\SparkManTileSetImportMaterialjson.json1.png
-		Assets\Textures\SparkManTileSetImportMaterialjson.json2.png = Assets\Textures\SparkManTileSetImportMaterialjson.json2.png
-		Assets\Textures\SparkManTileSetImportMaterialjson.json3.png = Assets\Textures\SparkManTileSetImportMaterialjson.json3.png
-		Assets\Textures\SparkManTileSetImportMaterialjson.json4.png = Assets\Textures\SparkManTileSetImportMaterialjson.json4.png
-		Assets\Textures\top.jpg = Assets\Textures\top.jpg
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
@@ -429,7 +393,6 @@ Global
 		{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{9352A260-EB46-4E2B-AD94-08F0665C8B63} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
-		{877021B2-F222-4B9F-BEBF-7C9A223DD6B0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
 		{12565B15-EF6B-4DAF-8552-844EE28936D7} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{740E1C1F-320C-4A8F-A58D-B46058521506} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{21F6500D-6E92-4717-815C-AB3C6E100B64} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}

@@ -11,6 +11,7 @@ namespace GameScriptLibraryDLL.GameObjects
 {
     public unsafe class PlayerShot
     {
+        public uint GameObjectId { get; set; }
         public Guid VrameId { get; } = new Guid("623e5b6b-b1f8-4e69-8dca-237069a373e2");
         public uint ComponentType { get; } = (uint)(ComponentTypeEnum.kTransform2DComponent | ComponentTypeEnum.kSpriteComponent);
         public float Speed { get; } = 200.0f;
@@ -27,8 +28,9 @@ namespace GameScriptLibraryDLL.GameObjects
         public static void StartUp(IntPtr instancePtr, uint gameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
-            ComponentRegistery.Create(gameObjectId, ComponentTypeEnum.kTransform2DComponent, new Transform2DComponent());
-            ComponentRegistery.Create(gameObjectId, ComponentTypeEnum.kSpriteComponent, new SpriteComponent());
+
+            var instance = (PlayerShot)GCHandle.FromIntPtr(instancePtr).Target;
+            instance.GameObjectId = gameObjectId;
         }
 
         [UnmanagedCallersOnly]
@@ -36,7 +38,7 @@ namespace GameScriptLibraryDLL.GameObjects
         {
             if (instancePtr == IntPtr.Zero) return;
 
-            var instance = (Player)GCHandle.FromIntPtr(instancePtr).Target;
+            var instance = (PlayerShot)GCHandle.FromIntPtr(instancePtr).Target;
             Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
             transform->Position = new(transform->Position.x + 200.0f * deltaTime, transform->Position.y);
         }

@@ -15,11 +15,11 @@ namespace GameScriptLibraryDLL.Components
             _creators[type] = (id, data) => creator(id, (T)data);
         }
 
-        public static void Create(uint gameObjectId, ComponentTypeEnum type)
+        public static void Create(uint gameObjectId, ComponentTypeEnum type, object data = null)
         {
             if (_creators.TryGetValue(type, out var creator))
             {
-                creator(gameObjectId);
+                creator(gameObjectId, data);
             }
         }
 

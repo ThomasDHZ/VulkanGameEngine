@@ -51,6 +51,7 @@ Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
     auto it = GuidToPoolIndex.find(materialGuid);
     if (it == GuidToPoolIndex.end())
     {
+        std::cerr << "Couldn't find Material Id:" + materialGuid.ToString() << std::endl;
         static Material invalid{};
         return invalid;
     }
