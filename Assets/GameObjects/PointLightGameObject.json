@@ -28,7 +28,155 @@
     },
     {
       "ComponentType": 1,
-      "VramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+      "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+    },
+    {
+      "ComponentType": 7
     }
-  ]
+  ],
+  "GameObjectMaterial": {
+    "AlbedoData": {
+      "ImageType": 1,
+      "IsSkyBox": false,
+      "MipMapCount": 1,
+      "SampleCount": 1,
+      "SamplerCreateInfo": {
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "AnisotropyEnable": true,
+        "BorderColor": 2,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MagFilter": 1,
+        "MaxAnisotropy": 16.0,
+        "MaxLod": 1000.0,
+        "MinFilter": 1,
+        "MinLod": 0.0,
+        "MipLodBias": 0.0,
+        "MipmapMode": 1,
+        "SType": 31,
+        "UnnormalizedCoordinates": false
+      },
+      "TextureByteFormat": 43,
+      "TextureFilePath": [
+        "LevelEditorIcons/Lightbulb.png"
+      ],
+      "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
+      "TextureType": 1
+    },
+    "NormalData": {
+      "ImageType": 1,
+      "IsSkyBox": false,
+      "MipMapCount": 1,
+      "SampleCount": 1,
+      "SamplerCreateInfo": {
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "AnisotropyEnable": true,
+        "BorderColor": 2,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MagFilter": 1,
+        "MaxAnisotropy": 8.0,
+        "MaxLod": 1000.0,
+        "MinFilter": 1,
+        "MinLod": 0.0,
+        "MipLodBias": 0.0,
+        "MipmapMode": 1,
+        "SType": 31,
+        "UnnormalizedCoordinates": false
+      },
+      "TextureByteFormat": 145,
+      "TextureFilePath": [
+        "LevelEditorIcons/Lightbulb.png"
+      ],
+      "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
+      "TextureType": 1
+    },
+    "PackedMROData": {
+      "ImageType": 1,
+      "IsSkyBox": false,
+      "MipMapCount": 1,
+      "SampleCount": 1,
+      "SamplerCreateInfo": {
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "AnisotropyEnable": false,
+        "BorderColor": 2,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MagFilter": 0,
+        "MaxAnisotropy": 1.0,
+        "MaxLod": 1000.0,
+        "MinFilter": 0,
+        "MinLod": 0.0,
+        "MipLodBias": 0.0,
+        "MipmapMode": 0,
+        "SType": 31,
+        "UnnormalizedCoordinates": false
+      },
+      "TextureByteFormat": 145,
+      "TextureFilePath": [
+        "LevelEditorIcons/Lightbulb.png"
+      ],
+      "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
+      "TextureType": 1
+    },
+    "PackedSheenSSSData": {
+      "ImageType": 1,
+      "IsSkyBox": false,
+      "MipMapCount": 1,
+      "SampleCount": 1,
+      "SamplerCreateInfo": {
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "AnisotropyEnable": false,
+        "BorderColor": 2,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MagFilter": 0,
+        "MaxAnisotropy": 1.0,
+        "MaxLod": 1000.0,
+        "MinFilter": 0,
+        "MinLod": 0.0,
+        "MipLodBias": 0.0,
+        "MipmapMode": 0,
+        "SType": 31,
+        "UnnormalizedCoordinates": false
+      },
+      "TextureByteFormat": 145,
+      "TextureFilePath": [
+        "LevelEditorIcons/Lightbulb.png"
+      ],
+      "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
+      "TextureType": 1
+    },
+    "MaterialId": "6a222a9b-1aae-4b44-bdf8-2069f88190c1"
+  },
+  "GameObjectSprite": {
+    "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380",
+    "SpriteLayer": 0,
+    "SpriteScale": [ 2.0, 2.0 ],
+    "SpritePixelSize": [
+      128,
+      128
+    ],
+    "SpriteColor": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "AnimationList": [
+      {
+        "AnimationId": 0,
+        "FrameHoldTime": 0.0,
+        "FrameList": [ [ 0, 0 ] ]
+      }
+    ]
+  }
 }

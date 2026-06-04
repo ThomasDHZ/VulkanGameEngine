@@ -39,6 +39,8 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
                 .GameObjectType = json["GameObjectType"]
             };
 
+        if (json.contains("GameObjectMaterial")) materialSystem.LoadMaterial(json["GameObjectMaterial"]);
+        if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
         if (json.contains("GameObjectDLL") && json.contains("GameObjectDLLType"))
         {
             String dllPath = json["GameObjectDLL"].get<String>();
@@ -82,6 +84,7 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
                 std::cout << "[GameObject] Created Lua object: " << luaPath << std::endl;
             }
         }
+
         const auto& componentList = json["GameObjectComponentList"];
         if (componentList.is_array())
         {
@@ -131,7 +134,7 @@ uint GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 
             case kInputComponent: EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
             case kSpriteComponent:
             {
-                VkGuid vramId = VkGuid(json["VramId"].get<String>().c_str());
+                VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
                 spriteSystem.CreateSprite(gameObject, vramId);
                 break;
             }
@@ -158,6 +161,7 @@ uint GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 
             case kCameraFollowComponent:     EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
             case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, lightSystem.GetDirectionalLight(lightSystem.LoadLight(json))); break;            
             case kPointLightComponent:       EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, lightSystem.GetPointLight(lightSystem.LoadLight(json))); break;
+            case kDebugObjectComponent:      EntityRegistry.emplace<DebugObjectComponent>(gameObject.GameObjectComponents); break;
             default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
         }
     }

@@ -48,6 +48,7 @@ enum ComponentTypeEnum : uint
     kCameraFollowComponent,
     kDirectionalLightComponent,
     kPointLightComponent,
+    kDebugObjectComponent,
     kEndOfEnum
 };
 
@@ -89,6 +90,10 @@ struct GameObjectVariable
 struct GameObjectStruct
 {
      UnorderedMap<String, GameObjectVariable>      GameObjectVariableMap;
+};
+
+struct DebugObjectComponent
+{
 };
 
 class GameObjectSystem

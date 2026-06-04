@@ -6,23 +6,11 @@
     "TextureLoader/HDRITexture.json"
   ],
   "LoadMaterials": [
-    "Materials/AnimeGirlMaterial.json",
     "Materials/SparkManTileSetMaterial.json",
-    "Materials/MegaManShotMaterial.json",
-    "Materials/LavaCubeMapMaterial.json",
-    "Materials/LightIconMaterial.json"
-  ],
-  "LoadSpriteVRAM": [
-    "Sprites/AnimeGirl.json",
-    "Sprites/MegaManShotSprite.json",
-    "Sprites/LightIconSprite.json"
+    "Materials/LavaCubeMapMaterial.json"
   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
-  ],
-  "LoadSceneLights": [
-    "Lights/DirectionalLight.json",
-    "Lights/PointLight.json"
   ],
   "LoadRenderPasses": [
     "RenderPass/BRDFRenderPass.json",

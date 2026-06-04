@@ -25,9 +25,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
-    for (auto& texture : json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& texture :    json["LoadTextures"])    textureSystem.CreateTexture(texture);
     for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material);
+    for (auto& material :   json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
     for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
 

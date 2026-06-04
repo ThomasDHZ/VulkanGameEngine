@@ -39,48 +39,41 @@ void SpriteSystem::CreateSprite(GameObject& gameObject, VkGuid& spriteVramId)
     SpriteListDirty = true;
 }
 
-VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const String& spriteVramPath)
+VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
 {
-    nlohmann::json json = fileSystem.LoadJsonFile(spriteVramPath.c_str());
-    VramSpriteGuid vramId = VramSpriteGuid(json["VramSpriteId"].get<String>().c_str());
+    VkGuid materialId = VkGuid(json["GameObjectMaterial"]["MaterialId"].get<String>());
+    nlohmann::json gameObjectSpriteJson = json["GameObjectSprite"];
+    VramSpriteGuid vramId = VramSpriteGuid(gameObjectSpriteJson["VramSpriteId"].get<String>().c_str());
     if (SpriteVramExists(vramId))
     {
         return vramId;
     }
 
-    VramSpriteGuid materialId = VramSpriteGuid(json["MaterialId"].get<String>().c_str());
-    const Material& material = materialSystem.FindMaterial(materialId);
-    const Texture& texture = textureSystem.FindTexture(material.AlbedoDataId);
-    spriteSystem.SpriteAnimationMap[vramId] = LoadSpriteAnimations(spriteVramPath.c_str());
-    spriteSystem.SpriteVramList.emplace_back(LoadSpriteVRAM(spriteVramPath.c_str(), material, texture));
-    return vramId;
-}
+    const Material& material  = materialSystem.FindMaterial(materialId);
+    const Texture& texture    = textureSystem.FindTexture(material.AlbedoDataId);
 
-SpriteVram SpriteSystem::LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture)
-{
-    nlohmann::json json = fileSystem.LoadJsonFile(spritePath);
-    ivec2 spritePixelSize = ivec2{ json["SpritePixelSize"][0], json["SpritePixelSize"][1] };
-    ivec2 spriteCells = ivec2(texture.width / spritePixelSize.x, texture.height / spritePixelSize.y);
-    ivec2 spriteScale = ivec2{ json["SpriteScale"][0], json["SpriteScale"][1] };
+    ivec2 spritePixelSize = ivec2{ gameObjectSpriteJson["SpritePixelSize"][0], gameObjectSpriteJson["SpritePixelSize"][1] };
+    ivec2 spriteCells     = ivec2(texture.width / spritePixelSize.x, texture.height / spritePixelSize.y);
+    ivec2 spriteScale     = ivec2{ gameObjectSpriteJson["SpriteScale"][0], gameObjectSpriteJson["SpriteScale"][1] };
 
-    return SpriteVram
+    if(gameObjectSpriteJson.contains("AnimationList")) SpriteAnimationMap[vramId] = LoadSpriteAnimations(gameObjectSpriteJson);
+    SpriteVramList.emplace_back(SpriteVram
     {
-        .VramSpriteID = VkGuid(json["VramSpriteId"].get<String>().c_str()),
+        .VramSpriteID = VkGuid(gameObjectSpriteJson["VramSpriteId"].get<String>().c_str()),
         .SpriteMaterialID = material.MaterialGuid,
-        .SpriteLayer = json["SpriteLayer"],
-        .SpriteColor = vec4{ json["SpriteColor"][0], json["SpriteColor"][1], json["SpriteColor"][2], json["SpriteColor"][3] },
-        .SpritePixelSize = ivec2{ json["SpritePixelSize"][0], json["SpritePixelSize"][1] },
-        .SpriteScale = ivec2{ json["SpriteScale"][0], json["SpriteScale"][1] },
+        .SpriteLayer = gameObjectSpriteJson["SpriteLayer"],
+        .SpriteColor = vec4{ gameObjectSpriteJson["SpriteColor"][0], gameObjectSpriteJson["SpriteColor"][1], gameObjectSpriteJson["SpriteColor"][2], gameObjectSpriteJson["SpriteColor"][3] },
+        .SpritePixelSize = ivec2{ gameObjectSpriteJson["SpritePixelSize"][0], gameObjectSpriteJson["SpritePixelSize"][1] },
+        .SpriteScale = ivec2{ gameObjectSpriteJson["SpriteScale"][0], gameObjectSpriteJson["SpriteScale"][1] },
         .SpriteCells = ivec2(texture.width / spritePixelSize.x, texture.height / spritePixelSize.y),
         .SpriteUVSize = vec2(1.0f / (float)spriteCells.x, 1.0f / (float)spriteCells.y),
         .SpriteSize = vec2(spritePixelSize.x * spriteScale.x, spritePixelSize.y * spriteScale.y),
-    };
+    });
 }
 
-Vector<Animation2D> SpriteSystem::LoadSpriteAnimations(const char* spritePath)
+Vector<Animation2D> SpriteSystem::LoadSpriteAnimations(const nlohmann::json& json)
 {
     Vector<Animation2D> animationList;
-    nlohmann::json json = fileSystem.LoadJsonFile(spritePath);
     for (size_t x = 0; x < json["AnimationList"].size(); ++x)
     {
         Vector<ivec2> spriteFrameList;

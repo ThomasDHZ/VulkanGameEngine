@@ -50,6 +50,7 @@ private:
     public:
 
         DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
+        DLL_EXPORT VkGuid LoadMaterial(const nlohmann::json& json);
         DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
         DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
         DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);

@@ -28,21 +28,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{4CCF9A80-6215-4938-8BF7-38F42B25CDFB}"
 	ProjectSection(SolutionItems) = preProject
-		Assets\Materials\AnimeGirlMaterial.json = Assets\Materials\AnimeGirlMaterial.json
 		Assets\Materials\LavaCubeMapMaterial.json = Assets\Materials\LavaCubeMapMaterial.json
 		Assets\Materials\LightIconMaterial.json = Assets\Materials\LightIconMaterial.json
-		Assets\Materials\MegaManMaterial.json = Assets\Materials\MegaManMaterial.json
-		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
 		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sprites", "Sprites", "{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A}"
-	ProjectSection(SolutionItems) = preProject
-		Assets\Sprites\AnimeGirl.json = Assets\Sprites\AnimeGirl.json
-		Assets\Sprites\LightIconSprite.json = Assets\Sprites\LightIconSprite.json
-		Assets\Sprites\MegaManShot.json = Assets\Sprites\MegaManShot.json
-		Assets\Sprites\MegaManShotSprite.json = Assets\Sprites\MegaManShotSprite.json
-		Assets\Sprites\MegaManSprite.json = Assets\Sprites\MegaManSprite.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{9352A260-EB46-4E2B-AD94-08F0665C8B63}"
@@ -91,12 +79,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics2DDLL", "Physics2DDLL\Physics2DDLL.vcxproj", "{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lights", "Lights", "{B8D8D055-4050-4D06-A97F-90C0F814802B}"
-	ProjectSection(SolutionItems) = preProject
-		Assets\Lights\DirectionalLight.json = Assets\Lights\DirectionalLight.json
-		Assets\Lights\PointLight.json = Assets\Lights\PointLight.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SkyBoxes", "SkyBoxes", "{B82F64D6-6B26-4A25-9E5D-DDED581513ED}"
@@ -390,13 +372,11 @@ Global
 		{6553F8D0-FC4F-4C55-A633-B3F3CBE2CD48} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{23E8B804-7274-445A-AF83-A71B1E9AAFC5} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{4CCF9A80-6215-4938-8BF7-38F42B25CDFB} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
-		{93D4EF0C-42F1-4FB6-8F6C-60CBB26A242A} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{9352A260-EB46-4E2B-AD94-08F0665C8B63} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0} = {9352A260-EB46-4E2B-AD94-08F0665C8B63}
 		{12565B15-EF6B-4DAF-8552-844EE28936D7} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{740E1C1F-320C-4A8F-A58D-B46058521506} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{21F6500D-6E92-4717-815C-AB3C6E100B64} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
-		{B8D8D055-4050-4D06-A97F-90C0F814802B} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{B82F64D6-6B26-4A25-9E5D-DDED581513ED} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{0E442112-3B0F-4DB3-B0D9-47D168D921CB} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{C7D801E5-42DD-46C1-ACF0-41A8C565DA2E} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}

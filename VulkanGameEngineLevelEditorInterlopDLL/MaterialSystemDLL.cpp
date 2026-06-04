@@ -1,9 +1,9 @@
 #include "MaterialSystemDLL.h"
 
-VkGuid MaterialSystem_LoadMaterial(const char* materialPath)
-{
-	return materialSystem.LoadMaterial(materialPath);
-}
+//VkGuid MaterialSystem_LoadMaterial(const char* materialPath)
+//{
+//	return materialSystem.LoadMaterial(materialPath);
+//}
 
 bool MaterialSystem_MaterialExists(VkGuid materialGuid)
 {

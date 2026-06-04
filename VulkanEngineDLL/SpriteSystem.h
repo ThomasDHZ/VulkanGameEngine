@@ -81,8 +81,7 @@ private:
     Vector<uint32>				                      FreeSpriteIndicesList;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
-    SpriteVram                                        LoadSpriteVRAM(const char* spritePath, const Material& material, const Texture& texture);
-    Vector<Animation2D>                               LoadSpriteAnimations(const char* spritePath);
+    Vector<Animation2D>                               LoadSpriteAnimations(const nlohmann::json& json);
     void                                              AddSpriteBatchLayer();
     void                                              SortSpriteLayers();
 
@@ -92,13 +91,13 @@ public:
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
 
+    DLL_EXPORT VramSpriteGuid                         LoadSpriteVRAM(const nlohmann::json& json);
     DLL_EXPORT void                                   CreateSprite(uint32 gameObjectId, VkGuid& spriteVramId);
     DLL_EXPORT void                                   CreateSprite(GameObject& gameObject, VkGuid& spriteVramId);
-    DLL_EXPORT VkGuid                                 LoadSpriteVRAM(const String& spriteVramPath);
     DLL_EXPORT void                                   Update(const float& deltaTime);
     DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-    DLL_EXPORT SpriteVram& FindSpriteVram(VramSpriteGuid vramSpriteId);
-    DLL_EXPORT Animation2D& FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+    DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
+    DLL_EXPORT Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
     DLL_EXPORT bool                                   SpriteVramExists(const VkGuid& vramId);
     DLL_EXPORT void                                   Destroy(Sprite& sprite);
 };
