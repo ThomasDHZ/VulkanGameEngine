@@ -9,11 +9,8 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public unsafe class PlayerShot
+    public unsafe class PlayerShot : GameObject
     {
-        public uint GameObjectId { get; set; }
-        public Guid VrameId { get; } = new Guid("623e5b6b-b1f8-4e69-8dca-237069a373e2");
-        public uint ComponentType { get; } = (uint)(ComponentTypeEnum.kTransform2DComponent | ComponentTypeEnum.kSpriteComponent);
         public float Speed { get; } = 200.0f;
 
         [UnmanagedCallersOnly]
@@ -25,12 +22,16 @@ namespace GameScriptLibraryDLL.GameObjects
         }
 
         [UnmanagedCallersOnly]
-        public static void StartUp(IntPtr instancePtr, uint gameObjectId)
+        public static void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
 
-            var instance = (PlayerShot)GCHandle.FromIntPtr(instancePtr).Target;
+            var instance = GameObject.GetFromPtr<PlayerShot>(instancePtr);
+            instance.ParentGameObjectId = parentGameObjectId;
             instance.GameObjectId = gameObjectId;
+
+            Player player = GameObject.GetById<Player>(instance.ParentGameObjectId);
+            player.PlayerShotCount++;
         }
 
         [UnmanagedCallersOnly]
@@ -41,6 +42,7 @@ namespace GameScriptLibraryDLL.GameObjects
             var instance = (PlayerShot)GCHandle.FromIntPtr(instancePtr).Target;
             Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
             transform->Position = new(transform->Position.x + 200.0f * deltaTime, transform->Position.y);
+
         }
 
         [UnmanagedCallersOnly]

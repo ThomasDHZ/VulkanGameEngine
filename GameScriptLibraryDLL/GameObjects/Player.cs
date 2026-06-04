@@ -6,7 +6,7 @@ using static GameScriptLibraryDLL.GameObjects.GameObjectVariableDLL;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public unsafe class Player
+    public unsafe class Player : GameObject
     {
         public enum MegaManAnimationEnum
         {
@@ -23,7 +23,8 @@ namespace GameScriptLibraryDLL.GameObjects
             kClimbShoot
         };
 
-        public uint GameObjectId { get; private set; }
+        public const uint PlayerShotMaximum = 5;
+        public uint PlayerShotCount { get; set; }
 
         [UnmanagedCallersOnly]
         public static IntPtr Create()
@@ -34,11 +35,12 @@ namespace GameScriptLibraryDLL.GameObjects
         }
 
         [UnmanagedCallersOnly]
-        public static void StartUp(IntPtr instancePtr, uint gameObjectId)
+        public static void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
 
-            var instance = (Player)GCHandle.FromIntPtr(instancePtr).Target;
+            var instance = GameObject.GetFromPtr<Player>(instancePtr);
+            instance.ParentGameObjectId = parentGameObjectId;
             instance.GameObjectId = gameObjectId;
         }
 
@@ -47,8 +49,8 @@ namespace GameScriptLibraryDLL.GameObjects
         {
             if (instancePtr == IntPtr.Zero) return;
 
-            var instance = (Player)GCHandle.FromIntPtr(instancePtr).Target;
-            Dictionary<String, GameObjectVariable<float>> gameObjectVariableList = Component.GetGameObjectVariables<float>(instance.GameObjectId);
+            var instance = GameObject.GetFromPtr<Player>(instancePtr);
+            Dictionary<String, GameObjectVariable<float>> gameObjectVariableList = GameObject.GetGameObjectVariables<float>(instance.GameObjectId);
             Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
             SpriteComponent* sprite = Component.GetGameObjectComponent<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
             InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
@@ -80,9 +82,11 @@ namespace GameScriptLibraryDLL.GameObjects
                 transform->Position = new(transform->Position.x + playerSpeed * deltaTime, transform->Position.y);
             }
 
-            if (shootPressed)
+            if (shootPressed &&
+                PlayerShotMaximum > instance.PlayerShotCount)
+
             {
-                Component.CreateGameObject(GameObjectTypeEnum.kGameObjectMegaManShot, transform->Position, instance.GameObjectId);
+                GameObject.CreateGameObject(GameObjectTypeEnum.kGameObjectMegaManShot, transform->Position, instance.GameObjectId);
             }
 
             transform->Dirty = true;

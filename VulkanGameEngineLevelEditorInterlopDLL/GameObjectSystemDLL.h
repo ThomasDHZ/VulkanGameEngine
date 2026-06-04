@@ -29,6 +29,7 @@ extern "C" {
     DLL_EXPORT GameObject*                        GameObjectSystem_GetGameObjectList(size_t& returnCount);
     DLL_EXPORT GameObjectVariableDLL*             GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
     DLL_EXPORT ComponentTypeEnum*                 GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, size_t& returnCount);
+    DLL_EXPORT intptr_t                           GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
 #ifdef __cplusplus
 }
 #endif

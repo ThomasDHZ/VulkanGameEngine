@@ -106,7 +106,6 @@
     <Folder Include="Vulkan\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ComponentDLL\ComponentDLL.vcxproj" />
     <ProjectReference Include="..\Physics2DDLL\Physics2DDLL.vcxproj" />
     <ProjectReference Include="..\VulkanEngineDLL\VulkanEngineDLL.vcxproj" />
     <ProjectReference Include="..\VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj" />

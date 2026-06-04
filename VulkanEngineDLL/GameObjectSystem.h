@@ -73,7 +73,7 @@ struct GameObject
 struct GameObjectBehavior
 {
     intptr_t (*CreateObject)() = nullptr;
-    void (*Startup)(intptr_t instance, uint32 gameObjectId) = nullptr;
+    void (*Startup)(intptr_t instance, uint32 gameObjectId, uint32 parentGameObject) = nullptr;
     void (*Update)(intptr_t instance, float deltaTime) = nullptr;
     void (*Destroy)(intptr_t instance) = nullptr;
 };

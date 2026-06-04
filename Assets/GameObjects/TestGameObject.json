@@ -11,6 +11,13 @@
       "ConstVariable": true,
       "VariableByteSize": 4,
       "MemberTypeEnum": 3
+    },
+    {
+      "VariableName": "PlayerShotMaximum",
+      "Value": 5,
+      "ConstVariable": true,
+      "VariableByteSize": 4,
+      "MemberTypeEnum": 2
     }
   ],
   "GameObjectComponentList": [

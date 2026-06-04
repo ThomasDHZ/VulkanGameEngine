@@ -119,3 +119,8 @@ ComponentTypeEnum* GameObjectSystem_GetGameObjectComponentList(size_t gameObject
     returnCount = componentList.size();
     return memorySystem.AddPtrBuffer(componentList.data(), componentList.size(), __FILE__, __LINE__, __func__);
 }
+
+intptr_t GameObjectSystem_GetGameObjectPtr(uint gameObjectId)
+{
+    return gameObjectSystem.FindGameObject(gameObjectId).ObjectPtr;
+}

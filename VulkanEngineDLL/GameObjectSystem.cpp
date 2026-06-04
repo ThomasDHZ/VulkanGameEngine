@@ -73,7 +73,6 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
         else if (json.contains("GameObjectLuaScript"))
         {
             String luaPath = json["GameObjectLuaScript"].get<String>();
-
             if (fileSystem.GetFileExtention(luaPath.c_str()) == "lua")
             {
                 //   gameObject.GameObjectTypeNameString = luaPath;  // Store lua path as key
@@ -169,7 +168,7 @@ uint GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 
         gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject)
     {
         if (gameObject.ObjectPtr) gameObject.ObjectPtr = gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject();
-        GameObjectBehaviorMap[gameObject.GameObjectType].Startup(gameObject.ObjectPtr, gameObject.GameObjectId);
+        GameObjectBehaviorMap[gameObject.GameObjectType].Startup(gameObject.ObjectPtr, gameObject.GameObjectId, parentGameObjectId);
     }
     if (GameObjectVarTemplateMap.contains(gameObject.GameObjectType))
     {

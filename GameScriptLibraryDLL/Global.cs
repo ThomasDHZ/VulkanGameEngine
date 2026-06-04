@@ -35,3 +35,4 @@ global using VkWin32SurfaceCreateFlagsKHR = uint;
 global using HINSTANCE = nint;
 global using HWND = nint;
 global using VkSampleMask = uint;
+global using intptr_t = System.IntPtr;

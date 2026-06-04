@@ -6,7 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor", "VulkanGameEngineLevelEditor\VulkanGameEngineLevelEditor.csproj", "{44233629-8998-416F-B8FB-E454D1A0CDCA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
@@ -46,7 +45,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanG
 	ProjectSection(ProjectDependencies) = postProject
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
 		{6B063291-FC4A-47D6-94FA-3047179B26A4} = {6B063291-FC4A-47D6-94FA-3047179B26A4}
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
@@ -70,12 +68,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEngineDLL\VulkanEngineDLL.vcxproj", "{D22B29FB-1F02-471C-81AC-A352862F6951}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComponentDLL", "ComponentDLL\ComponentDLL.vcxproj", "{7A95B5E9-9F85-4981-A621-FEF118C3A650}"
-	ProjectSection(ProjectDependencies) = postProject
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
-		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics2DDLL", "Physics2DDLL\Physics2DDLL.vcxproj", "{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
@@ -94,33 +86,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImportMaterial", "ImportMat
 		Assets\ImportMaterials\SparkManTileSetImportMaterial.json = Assets\ImportMaterials\SparkManTileSetImportMaterial.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TextureSamplers", "TextureSamplers", "{C7D801E5-42DD-46C1-ACF0-41A8C565DA2E}"
-	ProjectSection(SolutionItems) = preProject
-		Assets\TextureSamplers\BloomBlurResultSampler.json = Assets\TextureSamplers\BloomBlurResultSampler.json
-		Assets\TextureSamplers\BloomSampler.json = Assets\TextureSamplers\BloomSampler.json
-		Assets\TextureSamplers\BRDFSampler.json = Assets\TextureSamplers\BRDFSampler.json
-		Assets\TextureSamplers\CubeMapSampler.json = Assets\TextureSamplers\CubeMapSampler.json
-		Assets\TextureSamplers\DataTextureSampler.json = Assets\TextureSamplers\DataTextureSampler.json
-		Assets\TextureSamplers\FinalBloomSampler.json = Assets\TextureSamplers\FinalBloomSampler.json
-		Assets\TextureSamplers\GBufferAlbedo.json = Assets\TextureSamplers\GBufferAlbedo.json
-		Assets\TextureSamplers\GBufferEmission.json = Assets\TextureSamplers\GBufferEmission.json
-		Assets\TextureSamplers\GBufferMRO.json = Assets\TextureSamplers\GBufferMRO.json
-		Assets\TextureSamplers\GBufferNormal.json = Assets\TextureSamplers\GBufferNormal.json
-		Assets\TextureSamplers\GBufferPosition.json = Assets\TextureSamplers\GBufferPosition.json
-		Assets\TextureSamplers\MaterialAlbedoSampler2D.json = Assets\TextureSamplers\MaterialAlbedoSampler2D.json
-		Assets\TextureSamplers\MaterialEmissionSampler2D.json = Assets\TextureSamplers\MaterialEmissionSampler2D.json
-		Assets\TextureSamplers\MaterialNormalSampler2D.json = Assets\TextureSamplers\MaterialNormalSampler2D.json
-		Assets\TextureSamplers\MaterialPackedMROSampler2D.json = Assets\TextureSamplers\MaterialPackedMROSampler2D.json
-		Assets\TextureSamplers\MaterialPackedSheenSSSSampler2D.json = Assets\TextureSamplers\MaterialPackedSheenSSSSampler2D.json
-		Assets\TextureSamplers\OffscreenRenderPassSampler.json = Assets\TextureSamplers\OffscreenRenderPassSampler.json
-		Assets\TextureSamplers\TileSampler.json = Assets\TextureSamplers\TileSampler.json
-		Assets\TextureSamplers\UnusedDataSampler2D.json = Assets\TextureSamplers\UnusedDataSampler2D.json
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaterialBakerDLL", "MaterialBakerDLL\MaterialBakerDLL.vcxproj", "{6B063291-FC4A-47D6-94FA-3047179B26A4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
@@ -129,7 +97,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngineLevelEditor
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
 		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA} = {59F6607D-4EFF-4042-8D44-7DFF6D1968CA}
 		{6B063291-FC4A-47D6-94FA-3047179B26A4} = {6B063291-FC4A-47D6-94FA-3047179B26A4}
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650} = {7A95B5E9-9F85-4981-A621-FEF118C3A650}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
@@ -302,18 +269,6 @@ Global
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x64.Build.0 = Release|x64
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.ActiveCfg = Release|Win32
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.Build.0 = Release|Win32
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|Any CPU.Build.0 = Debug|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x64.ActiveCfg = Debug|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x64.Build.0 = Debug|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x86.ActiveCfg = Debug|Win32
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Debug|x86.Build.0 = Debug|Win32
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|Any CPU.ActiveCfg = Release|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|Any CPU.Build.0 = Release|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x64.ActiveCfg = Release|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x64.Build.0 = Release|x64
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x86.ActiveCfg = Release|Win32
-		{7A95B5E9-9F85-4981-A621-FEF118C3A650}.Release|x86.Build.0 = Release|Win32
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.Build.0 = Debug|x64
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x64.ActiveCfg = Debug|x64
@@ -379,7 +334,6 @@ Global
 		{21F6500D-6E92-4717-815C-AB3C6E100B64} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{B82F64D6-6B26-4A25-9E5D-DDED581513ED} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{0E442112-3B0F-4DB3-B0D9-47D168D921CB} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
-		{C7D801E5-42DD-46C1-ACF0-41A8C565DA2E} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 		{E7685364-290B-4B5E-AA46-71C9806F21F6} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
 		{CB921F9C-0640-4B3C-B4F0-4403F1FD58E1} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
 		{C8319AC3-B638-4E8F-8885-9C1B93547028} = {D6D5958C-19B6-4B6E-BA4B-28E99E6BE703}
