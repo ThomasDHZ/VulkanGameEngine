@@ -4,6 +4,7 @@
 #include "LightSystem.h"
 #include "LuaScriptingSystem.h"
 #include "CSharpScriptSystem.h"
+#include "EngineConfigSystem.h"
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
@@ -35,17 +36,9 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
     {
         nlohmann::json json = fileSystem.LoadJsonFile(jsonString.c_str());
         GameObject gameObject = GameObject
-            {
-                .GameObjectType = json["GameObjectType"]
-            };
-
-        if (json.contains("GameObjectMaterial")) materialSystem.LoadMaterial(json["GameObjectMaterial"]);
-        if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
-        if (json.contains("GameObjectDLL") && json.contains("GameObjectDLLType"))
         {
-            String dllPath = json["GameObjectDLL"].get<String>();
-            String dllType = json["GameObjectDLLType"].get<String>();
-            if (!GameObjectBehaviorExists(gameObject.GameObjectType)) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(dllPath, dllType);
+            .GameObjectType = json["GameObjectType"]
+        };
 
             GameObjectStruct gameObjectStruct;
             if (json.contains("GameObjectVariableStruct"))
@@ -69,18 +62,21 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
                 }
             }
             GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
+
+        if (json.contains("GameObjectMaterial")) materialSystem.LoadMaterial(json["GameObjectMaterial"]);
+        if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
+        if (json.contains("GameObjectDLLType"))
+        {
+            String dllType = json["GameObjectDLLType"].get<String>();
+            if (!GameObjectBehaviorExists(gameObject.GameObjectType)) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(configSystem.GameScriptLibraryDLL, dllType);
+
         }
         else if (json.contains("GameObjectLuaScript"))
         {
             String luaPath = json["GameObjectLuaScript"].get<String>();
             if (fileSystem.GetFileExtention(luaPath.c_str()) == "lua")
             {
-                //   gameObject.GameObjectTypeNameString = luaPath;  // Store lua path as key
-
-                   // TODO: Load Lua script and store table in ScriptComponent
-                   // luaScriptingSystem.CreateEntityFromScript(luaPath, gameObject.GameObjectId);
-
-                std::cout << "[GameObject] Created Lua object: " << luaPath << std::endl;
+                luaScriptingSystem.CreateEntityFromScript(luaPath, "asdfad");
             }
         }
 
@@ -182,8 +178,8 @@ void GameObjectSystem::Update(const float& deltaTime)
 {
     for (auto& gameObject : GameObjectList)
     {
-        if(gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update)
-        gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update(gameObject.ObjectPtr, deltaTime);
+        if(gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update(gameObject.ObjectPtr, deltaTime);
+        luaScriptingSystem.Update(deltaTime);
     }
 }
 

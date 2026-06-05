@@ -1,14 +1,16 @@
 #include "LuaScriptingSystem.h"
-#include "Transform2DComponent.h"
-#include <entt/entt.hpp>
-//#include "LevelSystem.h"
-#include <sol/sol.hpp>
+#include "LevelSystem.h"
 
 LuaScriptingSystem& luaScriptingSystem = LuaScriptingSystem::Get();
 
 void LuaScriptingSystem::BindCoreAPI()
 {
     lua.set_function("print", [](const std::string& msg) {
+        std::cout << "[Lua] " << msg << std::endl;
+        });
+
+    // Alias for people who prefer Print()
+    lua.set_function("Print", [](const std::string& msg) {
         std::cout << "[Lua] " << msg << std::endl;
         });
 }
@@ -22,104 +24,61 @@ void LuaScriptingSystem::BindEnTTAPI()
 
     lua.new_usertype<Transform2DComponent>("Transform",
         sol::constructors<Transform2DComponent()>(),
-
         "Position", sol::property(
-            [](const Transform2DComponent& t) -> glm::vec2 { return t.GameObjectPosition; },
+            [](const Transform2DComponent& t) { return t.GameObjectPosition; },
             [](Transform2DComponent& t, const glm::vec2& v) { t.GameObjectPosition = v; t.Dirty = true; }
         ),
-
         "Rotation", sol::property(
-            [](const Transform2DComponent& t) -> glm::vec2 { return t.GameObjectRotation; },
+            [](const Transform2DComponent& t) { return t.GameObjectRotation; },
             [](Transform2DComponent& t, const glm::vec2& v) { t.GameObjectRotation = v; t.Dirty = true; }
         ),
-
         "Scale", sol::property(
-            [](const Transform2DComponent& t) -> glm::vec2 { return t.GameObjectScale; },
+            [](const Transform2DComponent& t) { return t.GameObjectScale; },
             [](Transform2DComponent& t, const glm::vec2& v) { t.GameObjectScale = v; t.Dirty = true; }
         ),
-
         "Move", sol::overload(
             sol::resolve<void(float, float)>(&Transform2DComponent::Move),
             sol::resolve<void(const glm::vec2&)>(&Transform2DComponent::Move)
-        ),
-
-        "Rotate", sol::overload(
-            sol::resolve<void(float, float)>(&Transform2DComponent::Rotate),
-            sol::resolve<void(const glm::vec2&)>(&Transform2DComponent::Rotate)
-        ),
-
-        "SetPosition", sol::overload(
-            sol::resolve<void(float, float)>(&Transform2DComponent::SetPosition),
-            sol::resolve<void(const glm::vec2&)>(&Transform2DComponent::SetPosition)
         )
     );
 
-    //lua.set_function("GetTransform", [&](entt::entity e) -> Transform2DComponent& {
-    //    return levelSystem.EntityRegistry.get<Transform2DComponent>(e);
-    //    });
-
-    std::cout << "[Lua] EnTT bindings registered.\n";
-}
-
-void LuaScriptingSystem::BindInputAPI()
-{
+    lua.set_function("GetTransform", [&](entt::entity e) -> Transform2DComponent& {
+        return gameObjectSystem.EntityRegistry.get<Transform2DComponent>(e);
+        });
 }
 
 void LuaScriptingSystem::StartUp()
 {
     lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
 
-    lua.set_function("Print", [](const std::string& msg) {
-        std::cout << "[Lua] " << msg << std::endl;
-        });
-
-    lua.set_function("print", [](const std::string& msg) {
-        std::cout << "[Lua] " << msg << std::endl;
-        });
-
     BindCoreAPI();
     BindEnTTAPI();
 
     std::cout << "[Lua] Scripting system initialized.\n";
-    lua.script(R"(
-    print("[Lua] Test print from C++ - if you see this, printing works!")
-)");
 }
 
-entt::entity LuaScriptingSystem::CreateEntityFromScript(
-    const std::string& scriptPath,
-    const std::string& entityName,
-    glm::vec2 startPos,
-    float startRot)
+entt::entity LuaScriptingSystem::CreateEntityFromScript(const std::string& scriptPath, const std::string& entityName)
 {
     try
     {
-        std::cout << "[Lua] Loading script: " << scriptPath << std::endl;
-
         sol::table scriptTable = lua.script_file(scriptPath);
-        std::cout << "[Lua] Script file loaded successfully, table valid = "
-            << (scriptTable.valid() ? "true" : "false") << std::endl;
 
-        entt::entity entity = entt::entity(); // = levelSystem.EntityRegistry.create();
-
-     /*   auto& luaScript = levelSystem.EntityRegistry.emplace<LuaScriptComponent>(entity);
-        luaScript.scriptTable = scriptTable;
-        luaScript.entityName = entityName;
-
-        std::cout << "[Lua] Table contents:" << std::endl;
-        for (auto& kv : scriptTable) {
-            std::cout << "   " << kv.first.as<std::string>() << std::endl;
+        if (!scriptTable.valid())
+        {
+            std::cerr << "[Lua Error] Failed to load script: " << scriptPath << std::endl;
+            return entt::null;
         }
 
-        sol::function onSpawn = scriptTable["OnSpawn"];
-        std::cout << "[Lua] OnSpawn function valid = " << (onSpawn.valid() ? "YES" : "NO") << std::endl;
+        entt::entity entity = gameObjectSystem.EntityRegistry.create();
+        gameObjectSystem.EntityRegistry.emplace<LuaScriptComponent>(entity, scriptTable, scriptPath);
 
+        // Call OnSpawn if it exists
+        sol::function onSpawn = scriptTable["OnSpawn"];
         if (onSpawn.valid())
         {
-            std::cout << "[Lua] Calling OnSpawn..." << std::endl;
-            onSpawn(entity, startPos, startRot);
-            std::cout << "[Lua] OnSpawn call finished" << std::endl;
-        }*/
+            onSpawn(entity, glm::vec2(0.0f, 0.0f));
+            std::cout << "[Lua] OnSpawn called for " << entityName << std::endl;
+        }
 
         return entity;
     }
@@ -132,33 +91,15 @@ entt::entity LuaScriptingSystem::CreateEntityFromScript(
 
 void LuaScriptingSystem::Update(float deltaTime)
 {
-    //auto view = levelSystem.EntityRegistry.view<LuaScriptComponent>();
-    //for (auto entity : view)
-    //{
-    //    auto& script = view.get<LuaScriptComponent>(entity);
+    auto view = gameObjectSystem.EntityRegistry.view<LuaScriptComponent>();
+    for (auto entity : view)
+    {
+        auto& script = view.get<LuaScriptComponent>(entity);
+        sol::function onUpdate = script.scriptTable["OnUpdate"];
 
-    //    sol::function onUpdate = script.scriptTable["OnUpdate"];
-    //    if (onUpdate.valid())
-    //    {
-    //        if (onUpdate.is<bool>())
-    //        {
-    //            bool shouldDestroy = onUpdate.as<bool>();
-    //            if (shouldDestroy)
-    //            {
-    //                levelSystem.EntityRegistry.destroy(entity);
-    //                continue;
-    //            }
-    //        }
-    //        else if (onUpdate.is<sol::table>())
-    //        {
-    //            sol::table events = onUpdate.as<sol::table>();
-    //            // ProcessLuaEvents(entity, events);
-    //        }
-    //    }
-    //}
+        if (onUpdate.valid())
+        {
+            onUpdate(deltaTime);
+        }
+    }
 }
-
-void LuaScriptingSystem::ShutDown()
-{
-}
-

@@ -57,13 +57,10 @@ void GameSystem::StartUp(void* windowHandle)
 #else
     glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
 #endif
-    string_t runtimeConfig = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.runtimeconfig.json";
-    string_t assembly = L"C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll";
-
     renderSystem.StartUp(windowHandle, instance, surface);
     memoryPoolSystem.StartUp();
     luaScriptingSystem.StartUp();
-    cSharpScriptSystem.Initialize(runtimeConfig, assembly);
+    cSharpScriptSystem.Initialize();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
    // materialBakerSystem.Run();

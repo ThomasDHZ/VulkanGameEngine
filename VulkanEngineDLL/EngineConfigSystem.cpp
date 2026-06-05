@@ -21,6 +21,8 @@ ConfigSystem::ConfigSystem() :
     CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
     CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
     CompiledShaderOutputDirectory("../Assets/Shaders/"),
+    GameScriptLibraryDLL("../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll"),
+    NetworkingDLL("../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\NetworkingDLL.dll"),
     NvidiaTextureTool("C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe")
 {
 }
@@ -35,6 +37,8 @@ ConfigSystem::ConfigSystem(const nlohmann::json& j) :
     TextureAssetRenderer(j.at("TextureAssetRenderer").get<String>()),
     CompilerLocation(j.at("CompilerLocation").get<String>()),
     CompilerBuildParams(j.at("CompilerBuildParams").get<String>()),
+    GameScriptLibraryDLL(j.at("GameScriptLibraryDLL").get<String>()),
+    NetworkingDLL(j.at("NetworkingDLL").get<String>()),
     CompiledShaderOutputDirectory(j.at("CompiledShaderOutputDirectory").get<String>()),
     NvidiaTextureTool(j.at("NvidiaTextureTool").get<String>())
 {

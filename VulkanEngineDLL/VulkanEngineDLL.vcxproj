@@ -154,6 +154,7 @@
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="CSharpScriptSystem.h" />
     <ClInclude Include="DebugSystem.h" />
+    <ClInclude Include="DLLSystem.h" />
     <ClInclude Include="EngineConfigSystem.h" />
     <ClInclude Include="enum.h" />
     <ClInclude Include="FileSystem.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="LuaScriptingSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
+    <ClInclude Include="NetworkingSystem.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PushConstantRegistry.h" />
     <ClInclude Include="RenderSystem.h" />
@@ -195,6 +197,7 @@
     <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="CSharpScriptSystem.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
+    <ClCompile Include="DLLSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
@@ -203,6 +206,7 @@
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="LuaScriptingSystem.cpp" />
     <ClCompile Include="MemoryPoolSystem.cpp" />
+    <ClCompile Include="NetworkingSystem.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="PushConstantRegistry.cpp" />

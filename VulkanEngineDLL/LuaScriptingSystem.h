@@ -33,7 +33,7 @@ public:
     DLL_EXPORT void Update(float deltaTime);
     DLL_EXPORT void ShutDown();
 
-    DLL_EXPORT entt::entity CreateEntityFromScript(const String& scriptPath, const String& entityName = "LuaEntity", vec2 startPos = vec2(), float startRot = 0);
+    DLL_EXPORT entt::entity CreateEntityFromScript(const std::string& scriptPath, const std::string& entityName);
     DLL_EXPORT sol::state& GetLuaState() { return lua; }
 };
 extern DLL_EXPORT LuaScriptingSystem& luaScriptingSystem;

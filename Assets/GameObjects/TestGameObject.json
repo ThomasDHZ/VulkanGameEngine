@@ -1,9 +1,7 @@
 {
   "GameObjectType": 1,
-  "GameObjectRuntimeConfig": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.runtimeconfig.json",
-  "GameObjectDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll",
   "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.Player, GameScriptLibraryDLL",
-  "GameObjectLuaScript": null,
+  "GameObjectLuaScript": "GameScripts\\Player.lua",
   "GameObjectVariableStruct": [
     {
       "VariableName": "PlayerSpeed",

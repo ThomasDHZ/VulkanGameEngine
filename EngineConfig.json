@@ -9,5 +9,7 @@
   "CompilerLocation": "C:/VulkanSDK/1.4.313.0/Bin/glslc.exe",
   "CompilerBuildParams": "--target-env=vulkan1.4 --target-spv=spv1.6",
   "CompiledShaderOutputDirectory": "../Assets/Shaders/",
+  "GameScriptLibraryDLL": "../GameScriptLibraryDLL\\bin\\Debug\\net8.0-windows\\GameScriptLibraryDLL.dll",
+  "NetworkingDLL": "../NetworkingDLL\\bin\\Debug\\net8.0-windows\\NetworkingDLL.dll",
   "NvidiaTextureTool": "C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe"
 }
