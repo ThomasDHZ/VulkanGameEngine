@@ -153,6 +153,11 @@ uint GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 
                     });
                 break;
             }
+            case kCollisionComponent:        EntityRegistry.emplace<Collider2DComponent>(gameObject.GameObjectComponents, Collider2DComponent
+                {
+                    .Size = vec2()
+                }); break;
+
             case kCameraFollowComponent:     EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
             case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, lightSystem.GetDirectionalLight(lightSystem.LoadLight(json))); break;            
             case kPointLightComponent:       EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, lightSystem.GetPointLight(lightSystem.LoadLight(json))); break;

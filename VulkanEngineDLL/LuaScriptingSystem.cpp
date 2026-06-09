@@ -9,7 +9,6 @@ void LuaScriptingSystem::BindCoreAPI()
         std::cout << "[Lua] " << msg << std::endl;
         });
 
-    // Alias for people who prefer Print()
     lua.set_function("Print", [](const std::string& msg) {
         std::cout << "[Lua] " << msg << std::endl;
         });

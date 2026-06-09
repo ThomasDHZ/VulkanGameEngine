@@ -7,6 +7,14 @@
 #include "nethost.h"
 #include "enum.h"
 
+struct Collider2DComponent
+{
+    ivec2 Size = ivec2(32, 32);
+    ivec2 Offset = ivec2(0, 0);
+    bool Enabled = true;
+    bool IsTrigger = false;
+};
+
 struct InputComponent
 {
     KeyState* KeyPressed;
@@ -48,6 +56,7 @@ enum ComponentTypeEnum : uint
     kCameraFollowComponent,
     kDirectionalLightComponent,
     kPointLightComponent,
+    kCollisionComponent,
     kDebugObjectComponent,
     kEndOfEnum
 };
@@ -74,6 +83,9 @@ struct GameObjectBehavior
 {
     intptr_t (*CreateObject)() = nullptr;
     void (*Startup)(intptr_t instance, uint32 gameObjectId, uint32 parentGameObject) = nullptr;
+    void (*OnCollisionEnter)(intptr_t instance, uint gameObjectId, uint collidingGameObjectId) = nullptr;
+    void (*OnCollisionStay)(intptr_t instance, uint gameObjectId, uint collidingGameObjectId) = nullptr;
+    void (*OnCollisionExit)(intptr_t instance, uint gameObjectId, uint collidingGameObjectId) = nullptr;
     void (*Update)(intptr_t instance, float deltaTime) = nullptr;
     void (*Destroy)(intptr_t instance) = nullptr;
 };

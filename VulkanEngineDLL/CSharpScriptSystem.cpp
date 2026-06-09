@@ -18,10 +18,13 @@ bool CSharpScriptSystem::Initialize()
 GameObjectBehavior CSharpScriptSystem::LoadGameObjectScript(const String& assemblyPath, const String& typeNameString)
 {
     GameObjectBehavior gameObjectBehavior;
-    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"Create" , (void**)&gameObjectBehavior.CreateObject);
-    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"StartUp", (void**)&gameObjectBehavior.Startup);
-    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"Update" , (void**)&gameObjectBehavior.Update);
-    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"Destroy", (void**)&gameObjectBehavior.Destroy);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"Create"          , (void**)&gameObjectBehavior.CreateObject);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"StartUp"         , (void**)&gameObjectBehavior.Startup);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"OnCollisionEnter", (void**)&gameObjectBehavior.OnCollisionEnter);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"OnCollisionStay" , (void**)&gameObjectBehavior.OnCollisionStay);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"OnCollisionExit" , (void**)&gameObjectBehavior.OnCollisionExit);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"Update"          , (void**)&gameObjectBehavior.Update);
+    dllSystem.GetDLLFunctionPtr(assemblyPath, typeNameString, L"Destroy"         , (void**)&gameObjectBehavior.Destroy);
     return gameObjectBehavior;
 }
 

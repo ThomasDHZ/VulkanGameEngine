@@ -20,6 +20,7 @@ namespace GameScriptLibraryDLL.Components
         kCameraFollowComponent,
         kDirectionalLightComponent,
         kPointLightComponent,
+        kDebugObjectComponent,
         kEndOfEnum
     }
 

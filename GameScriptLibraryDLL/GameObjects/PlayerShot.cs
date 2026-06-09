@@ -35,6 +35,24 @@ namespace GameScriptLibraryDLL.GameObjects
         }
 
         [UnmanagedCallersOnly]
+        public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        {
+
+        }
+
+        [UnmanagedCallersOnly]
+        public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        {
+
+        }
+
+        [UnmanagedCallersOnly]
+        public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        {
+
+        }
+
+        [UnmanagedCallersOnly]
         public static void Update(IntPtr instancePtr, float deltaTime)
         {
             if (instancePtr == IntPtr.Zero) return;

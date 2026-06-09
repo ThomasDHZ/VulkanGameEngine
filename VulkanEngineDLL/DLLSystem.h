@@ -1,10 +1,8 @@
 #pragma once
-#include "DLL.h"
-#include "Typedef.h"
+#include "Platform.h"
 #include "nethost.h"
 #include "hostfxr.h"
 #include "coreclr_delegates.h"
-#include <string>
 
 using string_t = std::basic_string<char_t>;
 class DLLSystem

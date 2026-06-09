@@ -152,6 +152,7 @@
     <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraSystem.h" />
+    <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="CSharpScriptSystem.h" />
     <ClInclude Include="DebugSystem.h" />
     <ClInclude Include="DLLSystem.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraSystem.cpp" />
+    <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="CSharpScriptSystem.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
     <ClCompile Include="DLLSystem.cpp" />
