@@ -61,6 +61,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects", "{21F6500D-6E92-4717-815C-AB3C6E100B64}"
 	ProjectSection(SolutionItems) = preProject
 		Assets\GameObjects\DirectionalLightGameObject.json = Assets\GameObjects\DirectionalLightGameObject.json
+		Assets\GameObjects\MegaManObject.json = Assets\GameObjects\MegaManObject.json
 		Assets\GameObjects\MegaManShotObject.json = Assets\GameObjects\MegaManShotObject.json
 		Assets\GameObjects\PointLightGameObject.json = Assets\GameObjects\PointLightGameObject.json
 		Assets\GameObjects\TestGameObject.json = Assets\GameObjects\TestGameObject.json
@@ -230,6 +231,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LuaScripts", "LuaScripts", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkingDLL", "NetworkingDLL\NetworkingDLL.csproj", "{20F49CB4-34DB-4355-82FA-30B4B16B6F00}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaterialBaker", "MaterialBaker\MaterialBaker.csproj", "{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -336,6 +339,18 @@ Global
 		{20F49CB4-34DB-4355-82FA-30B4B16B6F00}.Release|x64.Build.0 = Release|Any CPU
 		{20F49CB4-34DB-4355-82FA-30B4B16B6F00}.Release|x86.ActiveCfg = Release|Any CPU
 		{20F49CB4-34DB-4355-82FA-30B4B16B6F00}.Release|x86.Build.0 = Release|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Debug|x64.Build.0 = Debug|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Debug|x86.Build.0 = Debug|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Release|x64.ActiveCfg = Release|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Release|x64.Build.0 = Release|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Release|x86.ActiveCfg = Release|Any CPU
+		{DFA3D15D-AB8F-4763-923D-4AC7F3FA7630}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

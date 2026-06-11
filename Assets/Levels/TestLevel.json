@@ -27,6 +27,8 @@
   ],
   "LoadGameObjects": [
     "GameObjects/TestGameObject.json",
+    "GameObjects/MegaManObject.json",
+    "GameObjects/MegaManShotObject.json",
     "GameObjects/DirectionalLightGameObject.json",
     "GameObjects/PointLightGameObject.json"
   ],
@@ -35,7 +37,14 @@
       "GameObjectType": 1,
       "GameObjectPositionOverride": [
         1450.0,
-        400.0
+        100.0
+      ]
+    },
+    {
+      "GameObjectType": 5,
+      "GameObjectPositionOverride": [
+        1425.0,
+        600.0
       ]
     },
     {

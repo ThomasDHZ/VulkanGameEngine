@@ -437,5 +437,20 @@ namespace nlohmann
         j.at("IsSkyBox").get_to(model.IsSkyBox);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
     }
+    
+    void from_json(const json& j, Collider2DComponent& model)
+    {
+        model.Size = ivec2(j.at("ColliderSize")[0], j.at("ColliderSize")[1]);
+        model.Offset = ivec2(j.at("ColliderOffset")[0], j.at("ColliderOffset")[1]);
+        j.at("ColliderEnabled").get_to(model.Enabled);
+        j.at("IsTrigger").get_to(model.IsTrigger);
+    }
+
+    void from_json(const json& j, Transform2DComponent& model)
+    {
+        model.GameObjectPosition = ivec2(j.at("GameObjectPosition")[0], j.at("GameObjectPosition")[1]);
+        model.GameObjectRotation = ivec2(j.at("GameObjectRotation")[0], j.at("GameObjectRotation")[1]);
+        model.GameObjectScale = ivec2(j.at("GameObjectScale")[0], j.at("GameObjectScale")[1]);
+    }
 }
 

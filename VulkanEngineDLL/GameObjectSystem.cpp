@@ -5,6 +5,8 @@
 #include "LuaScriptingSystem.h"
 #include "CSharpScriptSystem.h"
 #include "EngineConfigSystem.h"
+#include "CollisionSystem.h"
+#include "ComponentSystem.h"
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
@@ -126,43 +128,50 @@ uint GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 
         uint64 componentType = json["ComponentType"].get<uint64>();
         switch (componentType)
         {
-            case kInputComponent: EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
-            case kSpriteComponent:
-            {
-                VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
-                spriteSystem.CreateSprite(gameObject, vramId);
-                break;
-            }
-            case kTransform2DComponent:
-            {
-                EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
-                    {
-                        .GameObjectPosition = gameObjectPosition,
-                        .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
-                        .GameObjectScale    = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
-                    });
-                break;
-            }
-            case kTransform3DComponent:
-            {
-                EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
-                    {
-                        .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
-                        .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
-                        .GameObjectScale    = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
-                    });
-                break;
-            }
-            case kCollisionComponent:        EntityRegistry.emplace<Collider2DComponent>(gameObject.GameObjectComponents, Collider2DComponent
+        case kInputComponent: EntityRegistry.emplace<InputComponent>(gameObject.GameObjectComponents, InputComponent{ }); break;
+        case kSpriteComponent:
+        {
+            VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
+            spriteSystem.CreateSprite(gameObject, vramId);
+            break;
+        }
+        case kTransform2DComponent:
+        {
+            EntityRegistry.emplace<Transform2DComponent>(gameObject.GameObjectComponents, Transform2DComponent
                 {
-                    .Size = vec2()
-                }); break;
-
-            case kCameraFollowComponent:     EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
-            case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, lightSystem.GetDirectionalLight(lightSystem.LoadLight(json))); break;            
-            case kPointLightComponent:       EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, lightSystem.GetPointLight(lightSystem.LoadLight(json))); break;
-            case kDebugObjectComponent:      EntityRegistry.emplace<DebugObjectComponent>(gameObject.GameObjectComponents); break;
-            default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
+                    .GameObjectPosition = gameObjectPosition,
+                    .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
+                    .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
+                });
+            break;
+        }
+        case kTransform3DComponent:
+        {
+            EntityRegistry.emplace<Transform3DComponent>(gameObject.GameObjectComponents, Transform3DComponent
+                {
+                    .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
+                    .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
+                    .GameObjectScale = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
+                });
+            break;
+        }
+        case kCollisionComponent:
+        {
+            Collider2DComponent collider{
+                    .Size = ivec2{ json["ColliderSize"][0], json["ColliderSize"][1] },
+                    .Offset = ivec2{ json["ColliderOffset"][0], json["ColliderOffset"][1] },
+                    .Enabled = json.value("Enabled", true),
+                    .IsTrigger = json.value("IsTrigger", false)
+            };
+            EntityRegistry.emplace<Collider2DComponent>(gameObject.GameObjectComponents, collider);
+            collisionSystem.AddListener(gameObject.GameObjectComponents, collider);
+            break;
+        }
+        case kCameraFollowComponent:     EntityRegistry.emplace<CameraFollowComponent>(gameObject.GameObjectComponents, CameraFollowComponent{ }); break;
+        case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObject.GameObjectComponents, lightSystem.GetDirectionalLight(lightSystem.LoadLight(json))); break;
+        case kPointLightComponent:       EntityRegistry.emplace<PointLightComponent>(gameObject.GameObjectComponents, lightSystem.GetPointLight(lightSystem.LoadLight(json))); break;
+        case kDebugObjectComponent:      EntityRegistry.emplace<DebugObjectComponent>(gameObject.GameObjectComponents); break;
+        default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
         }
     }
     if (GameObjectBehaviorMap.contains(gameObject.GameObjectType) &&
@@ -218,6 +227,7 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
     GameObject& gameObject = GameObjectList[gameObjectId];
     FreeGameObjectIndex.push_back(gameObjectId);
 
+    if (gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Destroy) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Destroy(gameObject.ObjectPtr);
     if (EntityRegistry.all_of<Sprite>(gameObject.GameObjectComponents)) spriteSystem.Destroy(EntityRegistry.get<Sprite>(gameObject.GameObjectComponents));
 
     GameObjectList.erase(GameObjectList.begin() + gameObjectId);
@@ -229,4 +239,5 @@ void GameObjectSystem::DestroyGameObject(uint gameObjectId)
         }
         GameObjectList[x].GameObjectId--;
     }
+
 }

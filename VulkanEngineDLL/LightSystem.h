@@ -3,6 +3,7 @@
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
 #include "GameObjectSystem.h"
+#include "ComponentSystem.h"
 
 struct DirectionalLightComponent
 {

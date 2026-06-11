@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "SpriteSystem.h"
+#include "ComponentSystem.h"
 #include "MeshSystem.h"
 #include <entt/entt.hpp>
 #include "MaterialSystem.h"

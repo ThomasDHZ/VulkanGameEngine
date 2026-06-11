@@ -2,18 +2,12 @@
 #include "Platform.h"
 #include "MemorySystem.h"
 #include "Transform2DComponent.h"
+#include "ComponentSystem.h"
 #include "VulkanSystem.h"
 #include <entt/entt.hpp>
 #include "nethost.h"
 #include "enum.h"
 
-struct Collider2DComponent
-{
-    ivec2 Size = ivec2(32, 32);
-    ivec2 Offset = ivec2(0, 0);
-    bool Enabled = true;
-    bool IsTrigger = false;
-};
 
 struct InputComponent
 {
@@ -44,22 +38,10 @@ enum GameObjectTypeEnum
     kGameObjectMegaMan,
     kGameObjectMegaManShot,
     kGameObjectDirectionalLight,
-    kGameObjectPointLight
+    kGameObjectPointLight,
+    kGameObjectEnemy
 };
 
-enum ComponentTypeEnum : uint
-{
-    kInputComponent,
-    kSpriteComponent,
-    kTransform2DComponent,
-    kTransform3DComponent,
-    kCameraFollowComponent,
-    kDirectionalLightComponent,
-    kPointLightComponent,
-    kCollisionComponent,
-    kDebugObjectComponent,
-    kEndOfEnum
-};
 
 struct CameraFollowComponent { int a = 0; };
 

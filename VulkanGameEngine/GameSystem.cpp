@@ -22,6 +22,7 @@
 #ifndef __ANDROID__
 GameSystem gameSystem = GameSystem();
 #endif
+#include <CollisionSystem.h>
 
 GameSystem::GameSystem()
 {
@@ -75,6 +76,7 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     inputSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
+    collisionSystem.Update();
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
     memoryPoolSystem.UpdateMemoryPool();

@@ -23,6 +23,7 @@ namespace GameScriptLibraryDLL.GameObjects
     {
         public uint ParentGameObjectId { get; protected set; } = uint.MaxValue;
         public uint GameObjectId { get; protected set; } = uint.MaxValue;
+        public virtual GameObjectTypeEnum ObjectType { get; protected set; } = GameObjectTypeEnum.kGameObjectNone;
 
         public GameObject() { }
 
@@ -67,6 +68,11 @@ namespace GameScriptLibraryDLL.GameObjects
         //    //}
         //}
 
+        public static void DestroyGameObject(uint gameObjectId)
+        {
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_DestroyGameObject(gameObjectId));
+        }
+
         public static T? GetFromPtr<T>(IntPtr instancePtr) where T : class
         {
             if (instancePtr == IntPtr.Zero) return null;
@@ -84,5 +90,6 @@ namespace GameScriptLibraryDLL.GameObjects
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObjectBase(vec2 gameObjectPosition, uint parentGameObjectId);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId);
         [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern intptr_t GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
+        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
     }
 }

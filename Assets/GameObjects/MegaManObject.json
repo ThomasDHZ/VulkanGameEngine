@@ -1,7 +1,7 @@
 {
-  "GameObjectType": 1,
-  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.Player, GameScriptLibraryDLL",
-  "GameObjectLuaScript": "GameScripts\\Player.lua",
+  "GameObjectType": 5,
+  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.GameEnemy, GameScriptLibraryDLL",
+  "GameObjectLuaScript": null,
   "GameObjectVariableStruct": [
     {
       "VariableName": "PlayerSpeed",
@@ -20,17 +20,14 @@
   ],
   "GameObjectComponentList": [
     {
-      "ComponentType": 0
-    },
-    {
       "ComponentType": 1,
-      "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e"
+      "VramSpriteId": "d29d44a2-e7e8-4688-862b-9688f5cfd99c"
     },
     {
       "ComponentType": 2,
       "GameObjectPosition": [
-        1450.0,
-        200.0
+        32.0,
+        32.0
       ],
       "GameObjectRotation": [
         0.0,
@@ -44,8 +41,8 @@
     {
       "ComponentType": 8,
       "ColliderSize": [
-        464.0,
-        688.0
+        32.0,
+        32.0
       ],
       "ColliderOffset": [
         0.0,
@@ -56,7 +53,7 @@
     }
   ],
   "GameObjectSprite": {
-    "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
+    "VramSpriteId": "d29d44a2-e7e8-4688-862b-9688f5cfd99c",
     "SpriteLayer": 0,
     "SpriteScale": [ 1.0, 1.0 ],
     "SpritePixelSize": [
@@ -74,13 +71,10 @@
         "AnimationId": 0,
         "FrameHoldTime": 0.2,
         "FrameList": [
-          [ 0, 0 ],
-          [ 1, 0 ],
-          [ 2, 0 ],
           [ 3, 0 ],
           [ 4, 0 ],
           [ 5, 0 ],
-          [ 6, 0 ]
+          [ 4, 0 ]
         ]
       }
     ]
@@ -111,9 +105,9 @@
       },
       "TextureByteFormat": 146,
       "TextureFilePath": [
-        "Textures/AnimeGirlMaterial_Albedo.ktx2"
+        "Textures/MegaManMaterial_Albedo.ktx2"
       ],
-      "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
+      "TextureId": "fa43dc13-5ce0-47a5-b58a-60d7146d71f5",
       "TextureType": 1
     },
     "MaterialId": "192a11d5-d0dc-4ead-a257-0feb60d50ff0",
@@ -142,9 +136,9 @@
       },
       "TextureByteFormat": 145,
       "TextureFilePath": [
-        "Textures/AnimeGirlMaterial_NormalHeight.ktx2"
+        "Textures/MegaManMaterial_NormalHeight.ktx2"
       ],
-      "TextureId": "36d7e265-8ee9-4bbe-b974-6907532459a7",
+      "TextureId": "3b5161b6-7172-4949-bf64-07b38a8b8fb6",
       "TextureType": 1
     },
     "PackedMROData": {
@@ -172,9 +166,9 @@
       },
       "TextureByteFormat": 145,
       "TextureFilePath": [
-        "Textures/AnimeGirlMaterial_MRO.ktx2"
+        "Textures/MegaManMaterial_MRO.ktx2"
       ],
-      "TextureId": "37529ee5-465b-425b-8d69-e6b1f94d0cfd",
+      "TextureId": "7be62fb7-dafe-459f-a349-60e08a1ae3c5",
       "TextureType": 1
     },
     "PackedSheenSSSData": {
@@ -202,9 +196,9 @@
       },
       "TextureByteFormat": 145,
       "TextureFilePath": [
-        "Textures/AnimeGirlMaterial_SheenSSS.ktx2"
+        "Textures/MegaManMaterial_SheenSSS.ktx2"
       ],
-      "TextureId": "ffcd6590-6f56-406e-b187-cf7f30e9317e",
+      "TextureId": "019612f6-69b0-44f0-b611-9fd8c93378f2",
       "TextureType": 1
     }
   }

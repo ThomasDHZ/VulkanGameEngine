@@ -3,9 +3,9 @@
 
 CollisionSystem& collisionSystem = CollisionSystem::Get();
 
-void CollisionSystem::Update(entt::registry& registry)
+void CollisionSystem::Update()
 {
-	auto view = registry.view<Transform2DComponent, Collider2DComponent>();
+	auto view = gameObjectSystem.EntityRegistry.view<Transform2DComponent, Collider2DComponent>();
 	for (auto [entityA, transformA, colliderA] : view.each())
 	{
 		if (!colliderA.Enabled) continue;
@@ -45,24 +45,25 @@ void CollisionSystem::HandleCollision(const CollisionEvent& event)
 {
 	entt::registry& registry = gameObjectSystem.EntityRegistry;
 	GameObjectComponentLinker* gameObjectLinkerA = registry.try_get<GameObjectComponentLinker>(event.EntityA);
+	GameObjectComponentLinker* gameObjectLinkerB = registry.try_get<GameObjectComponentLinker>(event.EntityB);
+
 	if(gameObjectLinkerA);
 	{
 		GameObject gameObject = gameObjectSystem.FindGameObject(gameObjectLinkerA->GameObjectId);
 		const GameObjectBehavior gameObjectBehavior = gameObjectSystem.FindGameObjectBehavior(gameObject.GameObjectType);
 		if (gameObjectBehavior.OnCollisionEnter)
 		{
-			gameObjectBehavior.OnCollisionEnter(gameObject.ObjectPtr, gameObjectLinkerA->GameObjectId, 0);
+			gameObjectBehavior.OnCollisionEnter(gameObject.ObjectPtr, gameObjectLinkerA->GameObjectId, gameObjectLinkerB->GameObjectId);
 		};
 	}
 	
-	GameObjectComponentLinker* gameObjectLinkerB = registry.try_get<GameObjectComponentLinker>(event.EntityB);
 	if (gameObjectLinkerB);
 	{
 		GameObject gameObject = gameObjectSystem.FindGameObject(gameObjectLinkerA->GameObjectId);
 		const GameObjectBehavior gameObjectBehavior = gameObjectSystem.FindGameObjectBehavior(gameObject.GameObjectType);
 		if (gameObjectBehavior.OnCollisionEnter)
 		{
-			gameObjectBehavior.OnCollisionEnter(gameObject.ObjectPtr, gameObjectLinkerB->GameObjectId, 0);
+			gameObjectBehavior.OnCollisionEnter(gameObject.ObjectPtr, gameObjectLinkerB->GameObjectId, gameObjectLinkerA->GameObjectId);
 		};
 	};
 }

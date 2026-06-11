@@ -76,7 +76,6 @@ private:
 public:
     DLL_EXPORT void BakeTexture(const String& materialLoader, const String& baseFilePath, VkGuid renderPassId);
 };
-
 extern DLL_EXPORT TextureBakerSystem& textureBakerSystem;
 inline TextureBakerSystem& TextureBakerSystem::Get()
 {

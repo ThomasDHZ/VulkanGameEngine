@@ -658,3 +658,13 @@ Texture MaterialBakerSystem::LoadTexture(TextureLoader textureLoader, VkSampler 
     texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     return texture;
 }
+
+void MaterialBakerSystem_Run()
+{
+    materialBakerSystem.Run();
+}
+
+void MaterialBakerSystem_Draw(VkCommandBuffer& commandBuffer)
+{
+    return DLL_EXPORT void();
+}

@@ -23,8 +23,11 @@ namespace GameScriptLibraryDLL.GameObjects
             kClimbShoot
         };
         public const uint PlayerSpeed = 600;
+        public const float CoolDownTimer = 2.0f;
         public const uint PlayerShotMaximum = 5;
+        public override GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaMan;
         public uint PlayerShotCount { get; set; }
+        public float CoolDownTime { get; set; } = 0;
 
         [UnmanagedCallersOnly]
         public static IntPtr Create()
@@ -48,19 +51,19 @@ namespace GameScriptLibraryDLL.GameObjects
         [UnmanagedCallersOnly]
         public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-
+            Console.WriteLine("[Player Object] Object has entered collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-
+            Console.WriteLine("[Player Object] Object is still in collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-
+            Console.WriteLine("[Player Object] Object has exited collision zone.");
         }
 
         [UnmanagedCallersOnly]
@@ -75,7 +78,6 @@ namespace GameScriptLibraryDLL.GameObjects
             InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
 
             if (transform == null) return;
-
             bool leftPressed = input != null &&
                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_PRESSED ||
                  input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_HELD);
@@ -83,6 +85,14 @@ namespace GameScriptLibraryDLL.GameObjects
             bool rightPressed = input != null &&
                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_PRESSED ||
                  input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_HELD);
+
+            bool upPressed = input != null &&
+                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_W] == KeyState.KS_PRESSED ||
+                  input->KeyBoardState[(int)KeyboardKeyCode.KEY_W] == KeyState.KS_HELD);
+
+            bool downPressed = input != null &&
+                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_S] == KeyState.KS_PRESSED ||
+                  input->KeyBoardState[(int)KeyboardKeyCode.KEY_S] == KeyState.KS_HELD);
 
             bool shootPressed = input != null &&
                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_PRESSED ||
@@ -100,11 +110,24 @@ namespace GameScriptLibraryDLL.GameObjects
                 transform->Position = new(transform->Position.x + PlayerSpeed * deltaTime, transform->Position.y);
             }
 
+            if (upPressed)
+            {
+                sprite->FlipSprite = new ivec2(1, sprite->FlipSprite.y);
+                transform->Position = new(transform->Position.x, transform->Position.y + PlayerSpeed * deltaTime);
+            }
+            else if (downPressed)
+            {
+                sprite->FlipSprite = new ivec2(0, sprite->FlipSprite.y);
+                transform->Position = new(transform->Position.x, transform->Position.y - PlayerSpeed * deltaTime);
+            }
+
             if (shootPressed &&
-                PlayerShotMaximum > instance.PlayerShotCount)
+                PlayerShotMaximum > instance.PlayerShotCount &&
+                (instance.CoolDownTime += deltaTime) > CoolDownTimer)
 
             {
                 GameObject.CreateGameObject(GameObjectTypeEnum.kGameObjectMegaManShot, transform->Position, instance.GameObjectId);
+                instance.CoolDownTime = 0.0f;
             }
             transform->Dirty = true;
         }

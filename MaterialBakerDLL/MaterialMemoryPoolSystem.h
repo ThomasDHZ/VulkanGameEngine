@@ -122,3 +122,18 @@ inline MaterialMemoryPoolSystem& MaterialMemoryPoolSystem::Get()
     static MaterialMemoryPoolSystem instance;
     return instance;
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    DLL_EXPORT void											              MaterialMemoryPoolSystem_StartUp();
+    DLL_EXPORT uint32										              MaterialMemoryPoolSystem_AllocateObject(MaterialBakerMemoryPoolTypes memoryPoolToUpdate);
+    DLL_EXPORT void											              MaterialMemoryPoolSystem_UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList);
+    DLL_EXPORT ImportMaterialShader&                                      MaterialMemoryPoolSystem_UpdateMaterial(uint32 index);
+    DLL_EXPORT void											              MaterialMemoryPoolSystem_UpdateTextureDescriptorSet(Texture& texture, uint binding);
+    DLL_EXPORT void											              MaterialMemoryPoolSystem_UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
+    DLL_EXPORT void											              MaterialMemoryPoolSystem_FreeObject(MaterialBakerMemoryPoolTypes memoryPoolToUpdate, uint32 index);
+    DLL_EXPORT void                                                       MaterialMemoryPoolSystem_BakerResetMemoryPool();
+#ifdef __cplusplus
+}
+#endif

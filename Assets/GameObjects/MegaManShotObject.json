@@ -30,6 +30,19 @@
     {
       "ComponentType": 1,
       "VramSpriteId": "623e5b6b-b1f8-4e69-8dca-237069a373e2"
+    },
+    {
+      "ComponentType": 8,
+      "ColliderSize": [
+        8.0,
+        8.0
+      ],
+      "ColliderOffset": [
+        0.0,
+        0.0
+      ],
+      "ColliderEnabled": true,
+      "IsTrigger": false
     }
   ],
   "GameObjectMaterial": {

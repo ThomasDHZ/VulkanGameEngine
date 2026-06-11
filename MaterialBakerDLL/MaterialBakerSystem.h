@@ -40,10 +40,18 @@ public:
     DLL_EXPORT void Run();
     DLL_EXPORT void Draw(VkCommandBuffer& commandBuffer);
 };
-
 extern DLL_EXPORT MaterialBakerSystem& materialBakerSystem;
 inline MaterialBakerSystem& MaterialBakerSystem::Get()
 {
     static MaterialBakerSystem instance;
     return instance;
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    DLL_EXPORT void MaterialBakerSystem_Run();
+    DLL_EXPORT void MaterialBakerSystem_Draw(VkCommandBuffer& commandBuffer);
+#ifdef __cplusplus
+}
+#endif

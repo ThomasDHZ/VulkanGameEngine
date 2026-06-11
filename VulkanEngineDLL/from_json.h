@@ -1,5 +1,7 @@
 #pragma once
 #include "JsonStruct.h"
+#include "Collider2DComponent.h"
+#include "Transform2DComponent.h"
 
 namespace nlohmann
 {
@@ -34,4 +36,6 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, RenderPipelineLoader& model);
     DLL_EXPORT void from_json(const json& j, BlendConstantsModel& model);
     DLL_EXPORT void from_json(const json& j, TextureLoader& model);
+    DLL_EXPORT void from_json(const json& j, Collider2DComponent& model);
+    DLL_EXPORT void from_json(const json& j, Transform2DComponent& model);
 }

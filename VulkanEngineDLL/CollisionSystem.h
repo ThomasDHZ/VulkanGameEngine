@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.h"
 #include "GameObjectSystem.h"
+#include "ComponentSystem.h"
 #include <entt/entt.hpp>
 
 struct CollisionEvent
@@ -31,10 +32,10 @@ private:
 
 public:
 
-    void Update(entt::registry& registry);
-    void AddListener(entt::entity entity, Collider2DComponent listener);
-    bool FindListener(entt::entity entity);
-    void RemoveListener(entt::entity entity);
+    DLL_EXPORT void Update();
+    DLL_EXPORT void AddListener(entt::entity entity, Collider2DComponent listener);
+    DLL_EXPORT bool FindListener(entt::entity entity);
+    DLL_EXPORT void RemoveListener(entt::entity entity);
 };
 extern DLL_EXPORT CollisionSystem& collisionSystem;
 inline CollisionSystem& CollisionSystem::Get()

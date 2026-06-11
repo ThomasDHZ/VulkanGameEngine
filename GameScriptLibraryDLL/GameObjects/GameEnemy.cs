@@ -9,15 +9,30 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public unsafe class PlayerShot : GameObject
+    public class GameEnemy : GameObject
     {
-        public float Speed { get; } = 200.0f;
-        public override GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaManShot;
+        public enum MegaManAnimationEnum
+        {
+            kStanding,
+            kWalking,
+            kSlide,
+            kJump,
+            kClimb,
+            kClimbEnd,
+            kDamage,
+            kShoot,
+            kShootWalk,
+            kShootJump,
+            kClimbShoot
+        };
+
+        public override GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectEnemy;
+
 
         [UnmanagedCallersOnly]
         public static IntPtr Create()
         {
-            var instance = new PlayerShot();
+            var instance = new GameEnemy();
             GCHandle handle = GCHandle.Alloc(instance, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
@@ -27,36 +42,34 @@ namespace GameScriptLibraryDLL.GameObjects
         {
             if (instancePtr == IntPtr.Zero) return;
 
-            var instance = GameObject.GetFromPtr<PlayerShot>(instancePtr);
+            var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
             instance.ParentGameObjectId = parentGameObjectId;
             instance.GameObjectId = gameObjectId;
-
-            Player player = GameObject.GetById<Player>(instance.ParentGameObjectId);
-            player.PlayerShotCount++;
         }
+
 
         [UnmanagedCallersOnly]
         public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
-            var instance = GameObject.GetFromPtr<PlayerShot>(instancePtr);
+            var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
             var parentGameObject = GameObject.GetById<GameObject>(gameObjectId);
             var hitGameObject = GameObject.GetById<GameObject>(collidingGameObjectId);
-            if (parentGameObject.ObjectType == hitGameObject.ObjectType) return;
+            DestroyGameObject(instance.GameObjectId);
 
-            Console.WriteLine("[Player Shot Object] Object has entered collision zone.");
+            Console.WriteLine("[Player Object] Object has entered collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-            Console.WriteLine("[Player Shot Object] Object is still in collision zone.");
+            Console.WriteLine("[Player Object] Object is still in collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-            Console.WriteLine("[Player Shot Object] Object has exited collision zone.");
+            Console.WriteLine("[Player Object] Object has exited collision zone.");
         }
 
         [UnmanagedCallersOnly]
@@ -64,10 +77,7 @@ namespace GameScriptLibraryDLL.GameObjects
         {
             if (instancePtr == IntPtr.Zero) return;
 
-            var instance = (PlayerShot)GCHandle.FromIntPtr(instancePtr).Target;
-            Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
-            transform->Position = new(transform->Position.x, transform->Position.y + 200.0f * deltaTime);
-
+            var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
         }
 
         [UnmanagedCallersOnly]

@@ -391,3 +391,43 @@ void MaterialMemoryPoolSystem::CreateMaterialBakerBindlessDescriptorSet()
 
     vkUpdateDescriptorSets(vulkanSystem.Device, 1, &materialWrite, 0, nullptr);
 }
+
+void MaterialMemoryPoolSystem_StartUp()
+{
+    materialMemoryPoolSystem.StartUp();
+}
+
+uint32 MaterialMemoryPoolSystem_AllocateObject(MaterialBakerMemoryPoolTypes memoryPoolToUpdate)
+{
+    return uint32();
+}
+
+void MaterialMemoryPoolSystem_UpdateMemoryPool(Vector<VulkanPipeline>& pipelineList)
+{
+    return void();
+}
+
+ImportMaterialShader& MaterialMemoryPoolSystem_UpdateMaterial(uint32 index)
+{
+    return materialMemoryPoolSystem.UpdateMaterial(index);
+}
+
+void MaterialMemoryPoolSystem_UpdateTextureDescriptorSet(Texture& texture, uint binding)
+{
+
+}
+
+void MaterialMemoryPoolSystem_UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding)
+{
+
+}
+
+void MaterialMemoryPoolSystem_FreeObject(MaterialBakerMemoryPoolTypes memoryPoolToUpdate, uint32 index)
+{
+
+}
+
+void MaterialMemoryPoolSystem_BakerResetMemoryPool()
+{
+
+}

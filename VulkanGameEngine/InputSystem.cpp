@@ -31,6 +31,12 @@ void InputSystem::Update(const float& deltaTime)
                 if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) keyboard.KeyPressed[KEY_D] = KeyState::KS_PRESSED;
                 else keyboard.KeyPressed[KEY_D] = KeyState::KS_RELEASED;
 
+                if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP]) keyboard.KeyPressed[KEY_W] = KeyState::KS_PRESSED;
+                else keyboard.KeyPressed[KEY_W] = KeyState::KS_RELEASED;
+
+                if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN]) keyboard.KeyPressed[KEY_S] = KeyState::KS_PRESSED;
+                else keyboard.KeyPressed[KEY_S] = KeyState::KS_RELEASED;
+
                 if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE]) keyboard.KeyPressed[KEY_E] = KeyState::KS_PRESSED;
                 else keyboard.KeyPressed[KEY_E] = KeyState::KS_RELEASED;
 
