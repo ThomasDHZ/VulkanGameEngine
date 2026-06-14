@@ -7,7 +7,6 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 #include "VkGuid.h"
-#include <entt/entt.hpp>
 
 typedef uint32_t uint;
 typedef uint8_t  uint8;
@@ -18,6 +17,8 @@ typedef int8_t  int8;
 typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
+typedef intptr_t IntPtr;
+
 typedef glm::vec1 vec1;
 typedef glm::vec2 vec2;
 typedef glm::vec3 vec3;

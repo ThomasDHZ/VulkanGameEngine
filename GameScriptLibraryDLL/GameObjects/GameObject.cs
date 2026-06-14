@@ -21,9 +21,11 @@ namespace GameScriptLibraryDLL.GameObjects
 
     public unsafe class GameObject
     {
-        public uint ParentGameObjectId { get; protected set; } = uint.MaxValue;
-        public uint GameObjectId { get; protected set; } = uint.MaxValue;
+        public uint ParentGameObjectId;
+        public uint GameObjectId;
+        public IntPtr GameObjectPtr = IntPtr.Zero;
         public virtual GameObjectTypeEnum ObjectType { get; protected set; } = GameObjectTypeEnum.kGameObjectNone;
+        public bool GameObjectAlive = true;
 
         public GameObject() { }
 

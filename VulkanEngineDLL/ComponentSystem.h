@@ -2,6 +2,7 @@
 #include "Platform.h"
 #include "Transform2DComponent.h"
 #include "Collider2DComponent.h"
+#include <entt/entt.hpp>
 
 enum ComponentTypeEnum : uint64
 {

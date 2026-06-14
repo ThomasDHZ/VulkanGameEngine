@@ -2,7 +2,8 @@
 
 void SpriteSystem_CreateSprite(uint32 gameObjectId, VkGuid spriteVramId)
 {
-	spriteSystem.CreateSprite(gameObjectId, spriteVramId);
+	entt::entity gameObjectEntity = static_cast<entt::entity>(gameObjectId);
+	spriteSystem.CreateSprite(gameObjectEntity, spriteVramId);
 }
 
 VkGuid SpriteSystem_LoadSpriteVRAM(const char* spriteVramPath)

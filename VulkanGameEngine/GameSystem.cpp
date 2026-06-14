@@ -60,7 +60,7 @@ void GameSystem::StartUp(void* windowHandle)
 #endif
     renderSystem.StartUp(windowHandle, instance, surface);
     memoryPoolSystem.StartUp();
-    luaScriptingSystem.StartUp();
+    //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
@@ -72,15 +72,15 @@ void GameSystem::StartUp(void* windowHandle)
 #ifndef __ANDROID__
 void GameSystem::Update(void* windowHandle, float deltaTime)
 {
-    renderSystem.Update(windowHandle, deltaTime);
     inputSystem.Update(deltaTime);
+    //luaScriptingSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
     collisionSystem.Update();
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
     memoryPoolSystem.UpdateMemoryPool();
-    luaScriptingSystem.Update(deltaTime);
+    renderSystem.Update(windowHandle, deltaTime);
 
     //cSharpScriptSystem.Update(deltaTime);
     auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");

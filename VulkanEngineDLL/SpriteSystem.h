@@ -30,7 +30,7 @@ struct SpriteVram
 
 struct Sprite
 {
-    uint32 GameObjectId = UINT32_MAX;
+    entt::entity GameObjectId = entt::null;
     uint32 SpriteInstanceId = 0;
     uint32 CurrentAnimationId = 0;
     uint32 CurrentFrame = 0;
@@ -92,8 +92,7 @@ public:
     bool                                              SpriteListDirty = true;
 
     DLL_EXPORT VramSpriteGuid                         LoadSpriteVRAM(const nlohmann::json& json);
-    DLL_EXPORT void                                   CreateSprite(uint32 gameObjectId, VkGuid& spriteVramId);
-    DLL_EXPORT void                                   CreateSprite(GameObject& gameObject, VkGuid& spriteVramId);
+    DLL_EXPORT void                                   CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId);
     DLL_EXPORT void                                   Update(const float& deltaTime);
     DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
     DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);

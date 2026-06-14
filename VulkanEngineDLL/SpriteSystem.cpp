@@ -14,16 +14,11 @@ void SpriteSystem::AddSpriteBatchLayer()
         });
 }
 
-void SpriteSystem::CreateSprite(uint32 gameObjectId, VkGuid& spriteVramId)
+void SpriteSystem::CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId)
 {
-    CreateSprite(gameObjectSystem.GameObjectList[gameObjectId], spriteVramId);
-}
-
-void SpriteSystem::CreateSprite(GameObject& gameObject, VkGuid& spriteVramId)
-{
-    Sprite sprite = gameObjectSystem.EntityRegistry.emplace<Sprite>(gameObject.GameObjectComponents, Sprite
+    Sprite sprite = gameObjectSystem.EntityRegistry.emplace<Sprite>(gameObjectId, Sprite
         {
-            .GameObjectId = gameObject.GameObjectId,
+            .GameObjectId = gameObjectId,
             .SpriteInstanceId = memoryPoolSystem.AllocateObject(kSpriteInstanceBuffer),
             .CurrentAnimationId = 0,
             .CurrentFrame = 0,
@@ -114,13 +109,11 @@ void SpriteSystem::Update(const float& deltaTime)
 {
     // DestroyDeadSprites();
     SortSpriteLayers();
-    auto view = gameObjectSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent>();
-    for (auto [entity, gameObjectId, sprite, transform] : view.each())
+    auto view = gameObjectSystem.EntityRegistry.view<GameObject, Sprite, Transform2DComponent>();
+    for (auto [entity, gameObject, sprite, transform] : view.each())
     {
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
         SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
-
-        GameObject& gameObject = gameObjectSystem.FindGameObject(sprite.GameObjectId);
 
         mat4 spriteMatrix = mat4(1.0f);
         spriteMatrix = glm::translate(spriteMatrix, vec3(transform.GameObjectPosition.x, transform.GameObjectPosition.y, 0.0f));
@@ -135,7 +128,7 @@ void SpriteSystem::Update(const float& deltaTime)
         spriteInstance.SpriteSize = vram.SpriteSize;
         spriteInstance.FlipSprite = sprite.FlipSprite;
         //spriteInstance.Color = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
-        spriteInstance.SpriteId = gameObjectId.GameObjectId;
+        spriteInstance.SpriteId = static_cast<uint>(entity);
 
         sprite.CurrentFrameTime += deltaTime;
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationId);

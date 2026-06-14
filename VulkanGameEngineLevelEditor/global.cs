@@ -1,4 +1,8 @@
-﻿global using VkInstance = nint;
+﻿global using size_t = nint;
+global using HINSTANCE = nint;
+global using HWND = nint;
+
+global using VkInstance = nint;
 global using VkDebugUtilsMessengerEXT = nint;
 global using VkQueue = nint;
 global using VkFence = nint;
@@ -23,7 +27,6 @@ global using VkDescriptorSetLayout = nint;
 global using VkPipelineCache = nint;
 global using VkSubpassDescriptionFlags = uint;
 global using VkShaderModule = nint;
-global using size_t = nint;
 global using VkDeviceSize = System.UInt64;
 global using VkBuffer = nint;
 global using VkDeviceMemory = nint;
@@ -32,6 +35,4 @@ global using VkCommandPool = nint;
 global using VkBufferView = nint;
 global using VkSampler = nint;
 global using VkWin32SurfaceCreateFlagsKHR = uint;
-global using HINSTANCE = nint;
-global using HWND = nint;
 global using VkSampleMask = uint;

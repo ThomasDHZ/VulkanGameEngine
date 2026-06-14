@@ -51,25 +51,40 @@ struct GameObjectComponentLinker
     uint32 GameObjectId = UINT32_MAX;
 };
 
+//struct GameObject
+//{
+//    uint32                    GameObjectId = UINT32_MAX;
+//    uint32                    ParentGameObjectId = UINT32_MAX;
+//    GameObjectTypeEnum        GameObjectType;
+//    entt::entity              GameObjectComponents; //Not accessible directly in level editor side
+//    intptr_t                  ObjectPtr;
+//    bool                      GameObjectAlive = true;
+//};
+
 struct GameObject
 {
-    uint32                    GameObjectId = UINT32_MAX;
-    uint32                    ParentGameObjectId = UINT32_MAX;
+    uint                      ParentGameObjectId;
+    uint                      GameObjectId;
+    IntPtr                    GameObjectPtr;
     GameObjectTypeEnum        GameObjectType;
-    entt::entity              GameObjectComponents; //Not accessible directly in level editor side
-    intptr_t                  ObjectPtr;
     bool                      GameObjectAlive = true;
+};
+
+struct GameObjectHierarchy
+{
+    entt::entity Parent = entt::null;
+    Vector<entt::entity> Children;
 };
 
 struct GameObjectBehavior
 {
-    intptr_t (*CreateObject)() = nullptr;
-    void (*Startup)(intptr_t instance, uint32 gameObjectId, uint32 parentGameObject) = nullptr;
-    void (*OnCollisionEnter)(intptr_t instance, uint gameObjectId, uint collidingGameObjectId) = nullptr;
-    void (*OnCollisionStay)(intptr_t instance, uint gameObjectId, uint collidingGameObjectId) = nullptr;
-    void (*OnCollisionExit)(intptr_t instance, uint gameObjectId, uint collidingGameObjectId) = nullptr;
-    void (*Update)(intptr_t instance, float deltaTime) = nullptr;
-    void (*Destroy)(intptr_t instance) = nullptr;
+    IntPtr (*CreateObject)     ()                                                                               = nullptr;
+    void   (*Startup)          (IntPtr instance, entt::entity gameObjectId, entt::entity parentGameObject)      = nullptr;
+    void   (*OnCollisionEnter) (IntPtr instance, entt::entity gameObjectId, entt::entity collidingGameObjectId) = nullptr;
+    void   (*OnCollisionStay)  (IntPtr instance, entt::entity gameObjectId, entt::entity collidingGameObjectId) = nullptr;
+    void   (*OnCollisionExit)  (IntPtr instance, entt::entity gameObjectId, entt::entity collidingGameObjectId) = nullptr;
+    void   (*Update)           (IntPtr instance, float deltaTime)                                               = nullptr;
+    void   (*Destroy)          (IntPtr instance)                                                                = nullptr;
 };
 
 struct GameObjectVariable
@@ -90,6 +105,8 @@ struct DebugObjectComponent
 {
 };
 
+typedef entt::registry GameObjectRegistry;
+typedef entt::entity   Entity;
 class GameObjectSystem
 {
 public:
@@ -107,35 +124,34 @@ private:
     UnorderedMap<GameObjectTypeEnum, GameObjectBehavior>    GameObjectBehaviorMap;
     UnorderedMap<GameObjectTypeEnum, GameObjectStruct>      GameObjectVarTemplateMap;
     UnorderedMap<GameObjectTypeEnum, nlohmann::json>        GameObjectComponentTempleteMap;
-
+ 
     Vector<uint32>                                          FreeGameObjectIndex;
     uint32                                                  AllocateGameObject();
 
 public:
-    entt::registry                                          EntityRegistry;
+    GameObjectRegistry                                      EntityRegistry;
     Vector<GameObject>                                      GameObjectList;
 
 
     DLL_EXPORT void                                         LoadGameObjectTempletes(Vector<String>& gameObjectJson);
     DLL_EXPORT void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
-    DLL_EXPORT uint                                         CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
+    DLL_EXPORT entt::entity                                 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
 
     DLL_EXPORT void                                         Update(const float& deltaTime);
-    DLL_EXPORT void                                         DestroyGameObject(uint gameObjectId);
-    DLL_EXPORT GameObject&                                  FindGameObject(uint gameObjectId);
+    DLL_EXPORT void                                         DestroyGameObject(entt::entity gameObjectId);
+    DLL_EXPORT entt::entity                                 FindGameObject(uint gameObjectId);
     DLL_EXPORT const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
     DLL_EXPORT bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);
 
     template <typename T>
-    T* GetGameObjectComponent(uint gameObjectId)
+    T* GetGameObjectComponent(entt::entity gameObjectId)
     {
-        if (gameObjectId == UINT32_MAX) return nullptr;
+        if (gameObjectId == entt::null) return nullptr;
 
-        GameObject& gameObject = GameObjectList[gameObjectId];
-        auto view = EntityRegistry.view<GameObjectComponentLinker, T>();
-        for (auto [entity, linker, component] : view.each())
+        auto view = EntityRegistry.view<T>();
+        for (auto [entity, component] : view.each())
         {
-            if (linker.GameObjectId == gameObjectId)
+            if (entity == gameObjectId)
             {
                 return &component;
             }
@@ -144,10 +160,9 @@ public:
     }
 
     template <typename T>
-    void CreateGameObjectComponent(uint32 gameObjectId, T* gameObjectComponent)
+    void CreateGameObjectComponent(entt::entity gameObjectId, T* gameObjectComponent)
     {
-        GameObject& gameObject = GameObjectList[gameObjectId];
-        EntityRegistry.emplace<T>(gameObject.GameObjectComponents, *gameObjectComponent);
+        EntityRegistry.emplace<T>(gameObjectId, *gameObjectComponent);
     }
 };
 extern DLL_EXPORT GameObjectSystem& gameObjectSystem;
