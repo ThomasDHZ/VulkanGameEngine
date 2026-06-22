@@ -12,19 +12,16 @@ void InputSystem::Update(const float& deltaTime)
 {
 #ifndef PLATFORM_ANDROID
     int joy = GLFW_JOYSTICK_1;
-    auto view = gameObjectSystem.EntityRegistry.view<GameObjectComponentLinker, Sprite, Transform2DComponent, InputComponent>();
-    for (auto [entity, gameObjectLinker, sprite, transform, input] : view.each())
+    auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent, InputComponent>();
+    for (auto [entity, sprite, transform, input] : view.each())
     {
         int joy = GLFW_JOYSTICK_1;
-        const GameObject& gameObject = gameObjectSystem.GameObjectList[gameObjectLinker.GameObjectId];
         if (glfwJoystickPresent(GLFW_JOYSTICK_1))
         {
             if (glfwJoystickIsGamepad(joy))
             {
-
                 GLFWgamepadstate controllerState;
                 glfwGetGamepadState(joy, &controllerState);
-
                 if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]) keyboard.KeyPressed[KEY_A] = KeyState::KS_PRESSED;
                 else keyboard.KeyPressed[KEY_A] = KeyState::KS_RELEASED;
                 

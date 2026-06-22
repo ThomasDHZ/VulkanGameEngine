@@ -42,24 +42,7 @@ enum GameObjectTypeEnum
     kGameObjectEnemy
 };
 
-
 struct CameraFollowComponent { int a = 0; };
-
-
-struct GameObjectComponentLinker
-{
-    uint32 GameObjectId = UINT32_MAX;
-};
-
-//struct GameObject
-//{
-//    uint32                    GameObjectId = UINT32_MAX;
-//    uint32                    ParentGameObjectId = UINT32_MAX;
-//    GameObjectTypeEnum        GameObjectType;
-//    entt::entity              GameObjectComponents; //Not accessible directly in level editor side
-//    intptr_t                  ObjectPtr;
-//    bool                      GameObjectAlive = true;
-//};
 
 struct GameObject
 {
@@ -120,18 +103,12 @@ private:
     GameObjectSystem(GameObjectSystem&&) = delete;
     GameObjectSystem& operator=(GameObjectSystem&&) = delete;
 
-    UnorderedMap<GameObjectTypeEnum, GameObject>            GameObjectTempleteMap;
     UnorderedMap<GameObjectTypeEnum, GameObjectBehavior>    GameObjectBehaviorMap;
     UnorderedMap<GameObjectTypeEnum, GameObjectStruct>      GameObjectVarTemplateMap;
     UnorderedMap<GameObjectTypeEnum, nlohmann::json>        GameObjectComponentTempleteMap;
- 
-    Vector<uint32>                                          FreeGameObjectIndex;
-    uint32                                                  AllocateGameObject();
 
 public:
     GameObjectRegistry                                      EntityRegistry;
-    Vector<GameObject>                                      GameObjectList;
-
 
     DLL_EXPORT void                                         LoadGameObjectTempletes(Vector<String>& gameObjectJson);
     DLL_EXPORT void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
@@ -143,20 +120,12 @@ public:
     DLL_EXPORT const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
     DLL_EXPORT bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);
 
-    template <typename T>
-    T* GetGameObjectComponent(entt::entity gameObjectId)
-    {
-        if (gameObjectId == entt::null) return nullptr;
 
-        auto view = EntityRegistry.view<T>();
-        for (auto [entity, component] : view.each())
-        {
-            if (entity == gameObjectId)
-            {
-                return &component;
-            }
-        }
-        return nullptr;
+    template<typename T>
+    T* GetGameObjectComponent(entt::entity entity)
+    {
+        if (!EntityRegistry.valid(entity)) return nullptr;
+        return EntityRegistry.try_get<T>(entity);
     }
 
     template <typename T>

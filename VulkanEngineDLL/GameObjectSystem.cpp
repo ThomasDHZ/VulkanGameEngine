@@ -82,7 +82,6 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
             wrappedArray.push_back(componentList);
             GameObjectComponentTempleteMap[gameObject.GameObjectType] = wrappedArray;
         }
-        GameObjectTempleteMap[gameObject.GameObjectType] = gameObject;
     }
 }
 
@@ -102,12 +101,19 @@ void GameObjectSystem::CreateGameObjects(nlohmann::json& gameObjectJson)
 entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId)
 {
     entt::entity gameObjectEntity = EntityRegistry.create();
-    GameObject gameObject = EntityRegistry.emplace<GameObject>(gameObjectEntity, GameObject
+    GameObject& gameObject = EntityRegistry.emplace<GameObject>(gameObjectEntity, GameObject
         {
-            .GameObjectPtr = gameObjectSystem.GameObjectBehaviorMap[gameObjectType].CreateObject ? gameObjectSystem.GameObjectBehaviorMap[gameObjectType].CreateObject() : 0,
+            .GameObjectPtr = 0,
             .GameObjectType = gameObjectType,
             .GameObjectAlive = true
         });
+    
+    auto it = GameObjectBehaviorMap.find(gameObjectType);
+    if (it != GameObjectBehaviorMap.end() && it->second.CreateObject)
+    {
+        gameObject.GameObjectPtr = FindGameObjectBehavior(gameObjectType).CreateObject();
+    }
+
     if (parentGameObjectId != entt::null)
     {
         EntityRegistry.emplace<GameObjectHierarchy>(gameObjectEntity, GameObjectHierarchy
@@ -214,21 +220,28 @@ bool GameObjectSystem::GameObjectBehaviorExists(GameObjectTypeEnum gameObjectTyp
     return GameObjectBehaviorMap.contains(gameObjectType);
 }
 
-void GameObjectSystem::DestroyGameObject(entt::entity gameObjectId)
+void GameObjectSystem::DestroyGameObject(entt::entity entity)
 {
-    //GameObject& gameObject = GameObjectList[gameObjectId];
-    //FreeGameObjectIndex.push_back(gameObjectId);
+    if (!EntityRegistry.valid(entity)) return;
 
-    //if (gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Destroy) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Destroy(gameObject.ObjectPtr);
-    //if (EntityRegistry.all_of<Sprite>(gameObject.GameObjectComponents)) spriteSystem.Destroy(EntityRegistry.get<Sprite>(gameObject.GameObjectComponents));
+    auto* gameObject = EntityRegistry.try_get<GameObject>(entity);
+    if (!gameObject)
+    {
+        return;
+    }
 
-    //GameObjectList.erase(GameObjectList.begin() + gameObjectId);
-    //for (int x = gameObjectId; x < GameObjectList.size(); x++)
-    //{
-    //    if (GameObjectList[x].ParentGameObjectId > gameObjectId)
-    //    {
-    //        GameObjectList[x].ParentGameObjectId--;
-    //    }
-    //    GameObjectList[x].GameObjectId--;
-    //}
+    auto it = GameObjectBehaviorMap.find(gameObject->GameObjectType);
+    if (it != GameObjectBehaviorMap.end() && it->second.Destroy)
+    {
+        it->second.Destroy(gameObject->GameObjectPtr);
+    }
+
+    if (auto* hierarchy = EntityRegistry.try_get<GameObjectHierarchy>(entity))
+    {
+        for (entt::entity child : hierarchy->Children)
+        {
+            DestroyGameObject(child); 
+        }
+    }
+    EntityRegistry.destroy(entity);
 }

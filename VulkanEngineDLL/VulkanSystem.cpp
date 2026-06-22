@@ -72,17 +72,13 @@ void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSur
 VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
 {
 #ifndef PLATFORM_ANDROID
-    int width;
-    int height;
-    glfwGetFramebufferSize((GLFWwindow*)windowHandle, &width, &height);
-
     surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
     if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
     {
         return surfaceCapabilities.currentExtent;
     }
 
-    VkExtent2D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+    VkExtent2D extent = { static_cast<uint32_t>(surfaceCapabilities.currentExtent.width), static_cast<uint32_t>(surfaceCapabilities.currentExtent.height) };
 #else
     VkExtent2D extent = {
             surfaceCapabilities.currentExtent.width,
@@ -154,7 +150,7 @@ void VulkanSystem::DestroyRenderer()
 
 VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
 {
-    if (!windowHandle || instance == VK_NULL_HANDLE)  // note: compare to VK_NULL_HANDLE, not just !instance
+    if (!windowHandle || instance == VK_NULL_HANDLE)
     {
         fprintf(stderr, "Invalid window handle (%p) or instance (%p)\n", windowHandle, (void*)instance);
         return VK_NULL_HANDLE;
@@ -174,9 +170,7 @@ VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance in
             result,
             (result == VK_ERROR_EXTENSION_NOT_PRESENT) ? "VK_ERROR_EXTENSION_NOT_PRESENT" :
             (result == VK_ERROR_INITIALIZATION_FAILED) ? "VK_ERROR_INITIALIZATION_FAILED" :
-            /* add more if needed */ "unknown");
-
-        // Optional: VulkanSystem_LogVulkanMessage if you have a formatted string helper
+                                                         "unknown");
         return VK_NULL_HANDLE;
     }
 
@@ -198,8 +192,6 @@ VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance in
         return VK_NULL_HANDLE;
     }
 #endif
-
-    fprintf(stdout, "Surface created successfully: %p\n", (void*)surface);  // debug success
     return surface;
 }
 

@@ -22,11 +22,11 @@ extern "C" {
     DLL_EXPORT uint                               GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT void                               GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
     DLL_EXPORT void                               GameObjectSystem_Update(float deltaTime);
-    DLL_EXPORT GameObject*                        GameObjectSystem_UpdateGameObject(uint gameObjectIndex);
+   // DLL_EXPORT GameObject*                        GameObjectSystem_UpdateGameObject(uint gameObjectIndex);
     DLL_EXPORT void*                              GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
     DLL_EXPORT void                               GameObjectSystem_DestroyGameObject(uint gameObjectId);
     //DLL_EXPORT GameObject*                        GameObjectSystem_GetGameObject(size_t gameGameObjectId);
-    DLL_EXPORT GameObject*                        GameObjectSystem_GetGameObjectList(size_t& returnCount);
+    //DLL_EXPORT GameObject*                        GameObjectSystem_GetGameObjectList(size_t& returnCount);
     DLL_EXPORT GameObjectVariableDLL*             GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
     DLL_EXPORT ComponentTypeEnum*                 GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, size_t& returnCount);
     DLL_EXPORT intptr_t                           GameObjectSystem_GetGameObjectPtr(uint gameObjectId);

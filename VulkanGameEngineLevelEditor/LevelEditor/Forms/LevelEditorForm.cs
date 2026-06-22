@@ -66,11 +66,12 @@ namespace VulkanGameEngineLevelEditor.LevelEditor.Forms
 
         private static void InitializeConsole()
         {
+#if DEBUG
             if (!AllocConsole())
             {
                 return;
             }
-
+#endif
             try
             {
                 IntPtr outHandle = GetStdHandle(STD_OUTPUT_HANDLE);

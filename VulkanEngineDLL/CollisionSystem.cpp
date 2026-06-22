@@ -44,28 +44,25 @@ void CollisionSystem::RemoveListener(entt::entity entity)
 void CollisionSystem::HandleCollision(const CollisionEvent& event)
 {
 	entt::registry& registry = gameObjectSystem.EntityRegistry;
-	GameObjectComponentLinker* gameObjectLinkerA = registry.try_get<GameObjectComponentLinker>(event.EntityA);
-	GameObjectComponentLinker* gameObjectLinkerB = registry.try_get<GameObjectComponentLinker>(event.EntityB);
-
-	//if(gameObjectLinkerA);
-	//{
-	//	GameObject gameObject = gameObjectSystem.FindGameObject(gameObjectLinkerA->GameObjectId);
-	//	const GameObjectBehavior gameObjectBehavior = gameObjectSystem.FindGameObjectBehavior(gameObject.GameObjectType);
-	//	if (gameObjectBehavior.OnCollisionEnter)
-	//	{
-	//		gameObjectBehavior.OnCollisionEnter(gameObject.ObjectPtr, gameObjectLinkerA->GameObjectId, gameObjectLinkerB->GameObjectId);
-	//	};
-	//}
-	//
-	//if (gameObjectLinkerB);
-	//{
-	//	GameObject gameObject = gameObjectSystem.FindGameObject(gameObjectLinkerA->GameObjectId);
-	//	const GameObjectBehavior gameObjectBehavior = gameObjectSystem.FindGameObjectBehavior(gameObject.GameObjectType);
-	//	if (gameObjectBehavior.OnCollisionEnter)
-	//	{
-	//		gameObjectBehavior.OnCollisionEnter(gameObject.ObjectPtr, gameObjectLinkerB->GameObjectId, gameObjectLinkerA->GameObjectId);
-	//	};
-	//};
+	if(event.EntityA != entt::null);
+	{
+		const GameObject* gameObject = gameObjectSystem.GetGameObjectComponent<GameObject>(event.EntityA);
+		const GameObjectBehavior gameObjectBehavior = gameObjectSystem.FindGameObjectBehavior(gameObject->GameObjectType);
+		if (gameObjectBehavior.OnCollisionEnter)
+		{
+			gameObjectBehavior.OnCollisionEnter(gameObject->GameObjectPtr, event.EntityA, event.EntityB);
+		};
+	}
+	
+	if (event.EntityB != entt::null);
+	{
+		const GameObject* gameObject = gameObjectSystem.GetGameObjectComponent<GameObject>(event.EntityB);
+		const GameObjectBehavior gameObjectBehavior = gameObjectSystem.FindGameObjectBehavior(gameObject->GameObjectType);
+		if (gameObjectBehavior.OnCollisionEnter)
+		{
+			gameObjectBehavior.OnCollisionEnter(gameObject->GameObjectPtr, event.EntityB, event.EntityA);
+		};
+	};
 }
 
 bool CollisionSystem::AABBIntersect(const Transform2DComponent& t1, const Collider2DComponent& c1, const Transform2DComponent& t2, const Collider2DComponent& c2)

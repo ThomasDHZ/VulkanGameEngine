@@ -71,7 +71,6 @@ private:
     struct SpritesToUpdate
     {
         entt::entity              entity;
-        GameObjectComponentLinker gameObject;
         Sprite                    sprite;
         Transform2DComponent      transform2D;
     };

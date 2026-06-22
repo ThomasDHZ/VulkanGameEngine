@@ -107,7 +107,6 @@ Vector<Animation2D> SpriteSystem::LoadSpriteAnimations(const nlohmann::json& jso
 
 void SpriteSystem::Update(const float& deltaTime)
 {
-    // DestroyDeadSprites();
     SortSpriteLayers();
     auto view = gameObjectSystem.EntityRegistry.view<GameObject, Sprite, Transform2DComponent>();
     for (auto [entity, gameObject, sprite, transform] : view.each())
@@ -212,10 +211,7 @@ SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
 
 void SpriteSystem::SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum)
 {
-    if (sprite->CurrentAnimationId == spriteAnimationEnum)
-    {
-        return;
-    }
+    if (sprite->CurrentAnimationId == spriteAnimationEnum) return;
 
     sprite->CurrentAnimationId = spriteAnimationEnum;
     sprite->CurrentFrame = 0;

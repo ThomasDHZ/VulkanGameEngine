@@ -30,10 +30,10 @@ void GameObjectSystem_Update(float deltaTime)
 	gameObjectSystem.Update(deltaTime);
 }
 
-GameObject* GameObjectSystem_UpdateGameObject(uint gameObjectIndex)
-{
-	return &gameObjectSystem.GameObjectList[gameObjectIndex];
-}
+//GameObject* GameObjectSystem_UpdateGameObject(uint gameObjectIndex)
+//{
+//	return &gameObjectSystem.GameObjectList[gameObjectIndex];
+//}
 
 void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType)
 {
@@ -57,11 +57,11 @@ void GameObjectSystem_DestroyGameObject(uint gameObjectId)
 	gameObjectSystem.DestroyGameObject(gameObjectEntity);
 }
 
-GameObject* GameObjectSystem_GetGameObjectList(size_t& returnCount)
-{
-    returnCount = gameObjectSystem.GameObjectList.size();
-    return gameObjectSystem.GameObjectList.data();
-}
+//GameObject* GameObjectSystem_GetGameObjectList(size_t& returnCount)
+//{
+//    returnCount = gameObjectSystem.GameObjectList.size();
+//    return gameObjectSystem.GameObjectList.data();
+//}
 
 GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount)
 {
