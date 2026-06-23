@@ -373,7 +373,7 @@ namespace nlohmann
     void from_json(const json& j, RenderPassLoader& model)
     {
         j.at("RenderPassId").get_to(model.RenderPassId);
-        model.RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]) ? vulkanSystem.DefaultRenderPassResolution : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
+        model.RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]) ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);
         j.at("ClearValueList").get_to(model.ClearValueList);

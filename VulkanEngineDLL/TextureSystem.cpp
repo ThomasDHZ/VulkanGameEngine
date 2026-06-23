@@ -91,7 +91,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 
 	CreateTextureImage(texture, imageCreateInfo, textureData, textureLoader.TextureFilePath.size());
 	CreateTextureView(texture, false, textureLoader.ImageType);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkan.LogicalDevice(), &textureLoader.SamplerCreateInfo, NULL, &texture.textureSampler));
 
 	if (textureLoader.IsSkyBox)
 	{
@@ -189,7 +189,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		for (const auto& candidate : candidates)
 		{
 			VkFormatProperties props{};
-			vkGetPhysicalDeviceFormatProperties(vulkanSystem.PhysicalDevice, candidate.vkFmt, &props);
+			vkGetPhysicalDeviceFormatProperties(vulkan.PhysicalDevice(), candidate.vkFmt, &props);
 			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
 			{
 				targetFmt = candidate.ktxFmt;
@@ -242,7 +242,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.usage = VMA_MEMORY_USAGE_AUTO
 	};
 
-	if (vmaCreateImage(bufferSystem.vmaAllocator, &imageCI, &vmaAllocCI, &image, &allocation, nullptr) != VK_SUCCESS)
+	if (vmaCreateImage(bufferSystemInstance.vmaAllocator, &imageCI, &vmaAllocCI, &image, &allocation, nullptr) != VK_SUCCESS)
 	{
 		std::cerr << "vmaCreateImage failed for " << path << std::endl;
 		ktxTexture_Destroy(ktex);
@@ -265,17 +265,17 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	VmaAllocationInfo mappedInfo{};
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-	if (vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &mappedInfo) != VK_SUCCESS)
+	if (vmaCreateBuffer(bufferSystemInstance.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &mappedInfo) != VK_SUCCESS)
 	{
 		std::cerr << "Staging buffer creation failed for " << path << std::endl;
-		vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
+		vmaDestroyImage(bufferSystemInstance.vmaAllocator, image, allocation);
 		ktxTexture_Destroy(ktex);
 		return {};
 	}
 	memcpy(mappedInfo.pMappedData, ktex->pData, dataSize);
-	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, dataSize);
+	vmaFlushAllocation(bufferSystemInstance.vmaAllocator, stagingAlloc, 0, dataSize);
 
-	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 	VkImageMemoryBarrier barrierToDst{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		.srcAccessMask = 0,
@@ -320,15 +320,15 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.subresourceRange = { aspectMask, 0, mipLevels, 0, arrayLayers }
 	};
 	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthFormat ? VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToFinal);
-	vulkanSystem.EndSingleUseCommand(cmd);
-	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
+	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
+	vmaDestroyBuffer(bufferSystemInstance.vmaAllocator, stagingBuffer, stagingAlloc);
 	ktxTexture_Destroy(ktex);
 
 	VkSampler sampler = VK_NULL_HANDLE;
-	if (vkCreateSampler(vulkanSystem.Device, &textureLoader.SamplerCreateInfo, nullptr, &sampler) != VK_SUCCESS)
+	if (vkCreateSampler(vulkan.LogicalDevice(), &textureLoader.SamplerCreateInfo, nullptr, &sampler) != VK_SUCCESS)
 	{
 		std::cerr << "Failed to create sampler for " << path << std::endl;
-		vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
+		vmaDestroyImage(bufferSystemInstance.vmaAllocator, image, allocation);
 		return {};
 	}
 
@@ -348,12 +348,12 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		};
 
 		VkImageView view = VK_NULL_HANDLE;
-		if (vkCreateImageView(vulkanSystem.Device, &viewCI, nullptr, &view) != VK_SUCCESS)
+		if (vkCreateImageView(vulkan.LogicalDevice(), &viewCI, nullptr, &view) != VK_SUCCESS)
 		{
 			std::cerr << "Failed to create mip " << mip << " view for " << path << std::endl;
-			for (auto v : views) vkDestroyImageView(vulkanSystem.Device, v, nullptr);
-			vkDestroySampler(vulkanSystem.Device, sampler, nullptr);
-			vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
+			for (auto v : views) vkDestroyImageView(vulkan.LogicalDevice(), v, nullptr);
+			vkDestroySampler(vulkan.LogicalDevice(), sampler, nullptr);
+			vmaDestroyImage(bufferSystemInstance.vmaAllocator, image, allocation);
 			return {};
 		}
 		views.push_back(view);
@@ -547,7 +547,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	};
 
 	VmaAllocation allocation = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystemInstance.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	assert(allocation != VK_NULL_HANDLE);
 
 	VkImageAspectFlags aspectMask;
@@ -565,7 +565,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	}
 
 	CreateTextureView(texture, vulkanRenderPass.UseCubeMapMultiView, aspectMask);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkanSystem.Device, &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkan.LogicalDevice(), &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
 
 	if (vulkanRenderPass.IsCubeMapRenderPass)
 	{
@@ -666,12 +666,12 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId)
 	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
 }
 
-void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
+void TextureSystem::AddRenderedTexture(VkGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
 {
 	RenderedTextureListMap[renderPassGuid] = renderedTextureList;
 }
 
-void TextureSystem::AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture)
+void TextureSystem::AddDepthTexture(VkGuid& renderPassGuid, Texture& depthTexture)
 {
 	DepthTextureMap[renderPassGuid] = depthTexture;
 }
@@ -697,7 +697,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	}
 
 	VmaAllocation allocation = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystemInstance.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	texture.TextureAllocation = allocation;
 	if (textureData.empty())
 	{
@@ -717,12 +717,12 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
 	VmaAllocationInfo allocInfoOut{};
-	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &allocInfoOut));
+	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystemInstance.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &allocInfoOut));
 
 	memcpy(allocInfoOut.pMappedData, textureData.data(), textureData.size());
-	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, textureData.size());
+	vmaFlushAllocation(bufferSystemInstance.vmaAllocator, stagingAlloc, 0, textureData.size());
 
-	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 	TransitionImageLayout(cmd, texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS, 0, imageCreateInfo.arrayLayers);
 
 	std::vector<VkBufferImageCopy> copyRegions;
@@ -755,8 +755,8 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	if (texture.mipMapLevels > 1) GenerateMipmaps(texture);
 	else TransitionImageLayout(cmd, texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS, 0, imageCreateInfo.arrayLayers);
 
-	vulkanSystem.EndSingleUseCommand(cmd);
-	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
+	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
+	vmaDestroyBuffer(bufferSystemInstance.vmaAllocator, stagingBuffer, stagingAlloc);
 }
 
 void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkImageAspectFlags imageAspectFlags)
@@ -810,7 +810,7 @@ void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkI
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = usingMultiView ? 6u : 1u;
 
-		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkanSystem.Device, &viewInfo, nullptr, &imageView));
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkan.LogicalDevice(), &viewInfo, nullptr, &imageView));
 		texture.textureViewList.emplace_back(imageView);
 	}
 }
@@ -825,12 +825,12 @@ void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkI
 //	return *it;
 //}
 
-Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& renderPassGuid)
+Texture& TextureSystem::FindDepthTexture(const VkGuid& renderPassGuid)
 {
 	return DepthTextureMap.at(renderPassGuid);
 }
 
-Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
+Texture& TextureSystem::FindRenderedTexture(const VkGuid& textureGuid)
 {
 	for (auto& pair : RenderedTextureListMap)
 	{
@@ -846,17 +846,17 @@ Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 	throw std::out_of_range("Texture with given ID not found");
 }
 
-Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
+Vector<Texture>& TextureSystem::FindRenderedTextureList(const VkGuid& renderPassGuid)
 {
 	return RenderedTextureListMap.at(renderPassGuid);
 }
 
-const bool TextureSystem::DepthTextureExists(const RenderPassGuid& renderPassGuid) const
+const bool TextureSystem::DepthTextureExists(const VkGuid& renderPassGuid) const
 {
 	return DepthTextureMap.contains(renderPassGuid);
 }
 
-const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
+const bool TextureSystem::TextureExists(const VkGuid& textureGuid) const
 {
 	auto it = std::find_if(TextureList.begin(), TextureList.end(),
 		[&textureGuid](const Texture& texture)
@@ -866,7 +866,7 @@ const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
 	return it != TextureList.end();
 }
 
-const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const
+const bool TextureSystem::RenderedTextureExists(const VkGuid& renderPassGuid, const VkGuid& textureGuid) const
 {
 	auto it = RenderedTextureListMap.find(renderPassGuid);
 	if (it != RenderedTextureListMap.end())
@@ -877,7 +877,7 @@ const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPass
 	return RenderedTextureListMap.contains(textureGuid);
 }
 
-const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const
+const bool TextureSystem::RenderedTextureListExists(const VkGuid& renderPassGuid) const
 {
 	return RenderedTextureListMap.find(renderPassGuid) != RenderedTextureListMap.end();
 }
@@ -886,7 +886,7 @@ void TextureSystem::DestroyTexture(Texture& texture)
 {
 	if (texture.textureSampler != VK_NULL_HANDLE)
 	{
-		vkDestroySampler(vulkanSystem.Device, texture.textureSampler, nullptr);
+		vkDestroySampler(vulkan.LogicalDevice(), texture.textureSampler, nullptr);
 		texture.textureSampler = VK_NULL_HANDLE;
 	}
 
@@ -894,20 +894,20 @@ void TextureSystem::DestroyTexture(Texture& texture)
 	{
 		if (view != VK_NULL_HANDLE)
 		{
-			vkDestroyImageView(vulkanSystem.Device, view, nullptr);
+			vkDestroyImageView(vulkan.LogicalDevice(), view, nullptr);
 		}
 	}
 	texture.textureViewList.clear();
 
 	if (texture.RenderedCubeMapView != VK_NULL_HANDLE)
 	{
-		vkDestroyImageView(vulkanSystem.Device, texture.RenderedCubeMapView, nullptr);
+		vkDestroyImageView(vulkan.LogicalDevice(), texture.RenderedCubeMapView, nullptr);
 		texture.RenderedCubeMapView = VK_NULL_HANDLE;
 	}
 
 	if (texture.AttachmentArrayView != VK_NULL_HANDLE)
 	{
-		vkDestroyImageView(vulkanSystem.Device, texture.AttachmentArrayView, nullptr);
+		vkDestroyImageView(vulkan.LogicalDevice(), texture.AttachmentArrayView, nullptr);
 		texture.AttachmentArrayView = VK_NULL_HANDLE;
 	}
 
@@ -916,12 +916,12 @@ void TextureSystem::DestroyTexture(Texture& texture)
 		if (texture.TextureAllocation != VK_NULL_HANDLE)
 		{
 			std::cout << "[VMA] Destroying image + allocation for " << texture.textureGuid.ToString() << "\n";
-			vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
+			vmaDestroyImage(bufferSystemInstance.vmaAllocator, texture.textureImage, texture.TextureAllocation);
 			texture.TextureAllocation = VK_NULL_HANDLE;
 		}
 		else
 		{
-			vkDestroyImage(vulkanSystem.Device, texture.textureImage, nullptr);
+			vkDestroyImage(vulkan.LogicalDevice(), texture.textureImage, nullptr);
 		}
 		texture.textureImage = VK_NULL_HANDLE;
 	}
@@ -965,7 +965,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	}
 
 	VkFormatProperties props{};
-	vkGetPhysicalDeviceFormatProperties(vulkanSystem.PhysicalDevice, texture.textureByteFormat, &props);
+	vkGetPhysicalDeviceFormatProperties(vulkan.PhysicalDevice(), texture.textureByteFormat, &props);
 	bool supportsLinear = (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
 	if (!supportsLinear)
 	{
@@ -973,7 +973,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 			<< " does not support linear filtering → mipmaps will use nearest or be incorrect\n";
 	}
 
-	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
 	VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 	if (IsDepthFormat(texture.textureByteFormat))
@@ -1046,14 +1046,14 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	vulkanSystem.EndSingleUseCommand(cmd);
+	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
 }
 
 void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
 {
-	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer commandBuffer = vulkan.CommandBuffer().BeginSingleUseCommand();
 	TransitionImageLayout(commandBuffer, texture, newLayout);
-	vulkanSystem.EndSingleUseCommand(commandBuffer);
+	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer);
 	texture.textureImageLayout = newLayout;
 }
 
@@ -1178,11 +1178,11 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 
 	auto cleanup = [&]() {
 		if (commandBuffer != VK_NULL_HANDLE) {
-			vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+			vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
 			commandBuffer = VK_NULL_HANDLE;
 		}
 		if (fence != VK_NULL_HANDLE) {
-			vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+			vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
 			fence = VK_NULL_HANDLE;
 		}
 		};
@@ -1190,12 +1190,12 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	VkCommandBufferAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = vulkanSystem.CommandPool,
+		.commandPool = vulkan.CommandPool(),
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};
 
-	if (vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(vulkan.LogicalDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
 		std::cerr << "[GenerateTexture] Failed to allocate command buffer" << std::endl;
 		cleanup();
 		return;
@@ -1269,7 +1269,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 		.flags = 0
 	};
 
-	if (vkCreateFence(vulkanSystem.Device, &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)
+	if (vkCreateFence(vulkan.LogicalDevice(), &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)
 	{
 		std::cerr << "[GenerateTexture] Failed to create fence" << std::endl;
 		cleanup();
@@ -1283,22 +1283,22 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 		.pCommandBuffers = &commandBuffer
 	};
 
-	if (vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
+	if (vkQueueSubmit(vulkan.GraphicsQueue(), 1, &submitInfo, fence) != VK_SUCCESS)
 	{
 		std::cerr << "[GenerateTexture] Failed to submit queue" << std::endl;
 		cleanup();
 		return;
 	}
 
-	if (vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (vkWaitForFences(vulkan.LogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 	{
 		std::cerr << "[GenerateTexture] Failed to wait for fence" << std::endl;
 		cleanup();
 		return;
 	}
 
-	vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
-	vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+	vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
+	vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
 	commandBuffer = VK_NULL_HANDLE;
 	fence = VK_NULL_HANDLE;
 }
@@ -1322,21 +1322,21 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	auto cleanup = [&]()
 		{
 			if (commandBuffer != VK_NULL_HANDLE) {
-				vkFreeCommandBuffers(vulkanSystem.Device, vulkanSystem.CommandPool, 1, &commandBuffer);
+				vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
 			}
 			if (fence != VK_NULL_HANDLE) {
-				vkDestroyFence(vulkanSystem.Device, fence, nullptr);
+				vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
 			}
 		};
 
 	VkCommandBufferAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = vulkanSystem.CommandPool,
+		.commandPool = vulkan.CommandPool(),
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};
-	VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkanSystem.Device, &allocInfo, &commandBuffer));
+	VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkan.LogicalDevice(), &allocInfo, &commandBuffer));
 
 	VkCommandBufferBeginInfo beginInfo
 	{
@@ -1378,8 +1378,8 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	if (!skyBoxList.empty())
 	{
 		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyBoxList.front().SharedAssetId);
-		const VkBuffer& vb = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-		const VkBuffer& ib = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+		const VkBuffer& vb = bufferSystemInstance.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+		const VkBuffer& ib = bufferSystemInstance.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 		VkDeviceSize offsets[] = { 0 };
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vb, offsets);
@@ -1390,7 +1390,7 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
 
 	VkFenceCreateInfo fenceInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-	VULKAN_THROW_IF_FAIL(vkCreateFence(vulkanSystem.Device, &fenceInfo, nullptr, &fence));
+	VULKAN_THROW_IF_FAIL(vkCreateFence(vulkan.LogicalDevice(), &fenceInfo, nullptr, &fence));
 
 	VkSubmitInfo submitInfo
 	{
@@ -1398,15 +1398,15 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 		.commandBufferCount = 1,
 		.pCommandBuffers = &commandBuffer
 	};
-	VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, fence));
-	VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &fence, VK_TRUE, UINT64_MAX));
+	VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkan.GraphicsQueue(), 1, &submitInfo, fence));
+	VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkan.LogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX));
 	cleanup();
 
 	Vector<Texture>& cubeMapList = textureSystem.FindRenderedTextureList(renderPassId);
-	VkCommandBuffer commandBuffer2 = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer commandBuffer2 = vulkan.CommandBuffer().BeginSingleUseCommand();
 	for (auto& cubeMap : cubeMapList)
 	{
 		textureSystem.TransitionImageLayout(commandBuffer2, cubeMap, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, cubeMap.mipMapLevels, 0, 6);
 	}
-	vulkanSystem.EndSingleUseCommand(commandBuffer2);
+	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer2);
 }

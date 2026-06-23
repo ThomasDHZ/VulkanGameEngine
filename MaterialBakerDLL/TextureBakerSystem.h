@@ -28,8 +28,8 @@ struct RawMipReadback
 
 struct ImportTexture
 {
-    TextureGuid              textureGuid = TextureGuid();
-    RenderPassGuid           renderPassGuid = RenderPassGuid();
+    VkGuid                   textureGuid = VkGuid();
+    VkGuid                   renderPassGuid = VkGuid();
     size_t                   textureIndex = SIZE_MAX;
 
     int                      width = 1;

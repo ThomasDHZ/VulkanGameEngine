@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "GameObjectSystem.h"
 #include "ComponentSystem.h"
 #include <entt/entt.hpp>

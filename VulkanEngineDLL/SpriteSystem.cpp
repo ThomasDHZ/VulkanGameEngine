@@ -34,11 +34,11 @@ void SpriteSystem::CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId
     SpriteListDirty = true;
 }
 
-VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
+VkGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
 {
     VkGuid materialId = VkGuid(json["GameObjectMaterial"]["MaterialId"].get<String>());
     nlohmann::json gameObjectSpriteJson = json["GameObjectSprite"];
-    VramSpriteGuid vramId = VramSpriteGuid(gameObjectSpriteJson["VramSpriteId"].get<String>().c_str());
+    VkGuid vramId = VkGuid(gameObjectSpriteJson["VramSpriteId"].get<String>().c_str());
     if (SpriteVramExists(vramId))
     {
         return vramId;
@@ -199,12 +199,12 @@ void SpriteSystem::SortSpriteLayers()
     }
 }
 
-Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
+Animation2D& SpriteSystem::FindSpriteAnimation(const VkGuid& vramId, const AnimationListId& animationId)
 {
     return spriteSystem.SpriteAnimationMap.at(vramId)[animationId];
 }
 
-SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
+SpriteVram& SpriteSystem::FindSpriteVram(VkGuid vramSpriteId)
 {
     return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });
 }

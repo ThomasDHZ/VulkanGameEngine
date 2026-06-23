@@ -1,3 +1,6 @@
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_NO_SIMD
+#define STB_IMAGE_IMPLEMENTATION
 #include "FileSystem.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,16 +9,15 @@
 #include "from_json.h"
 #include <sys/stat.h>
 #include <stdbool.h>
-
-#define STB_IMAGE_IMPLEMENTATION
 #ifdef __ANDROID__
 #define STBI_NO_STDIO
 #endif
 #include "stb_image.h"
 #include <stb_image_write.h>
-#include "VulkanSystem.h"
+#include <VulkanSystem.h>
 #include "BufferSystem.h"
 #include <lodepng.h>
+#include "BufferSystem.h"
 
 FileSystem& fileSystem = FileSystem::Get();
 
@@ -212,7 +214,7 @@ ktxVulkanTexture FileSystem::LoadKTX2File(const String& filePath)
         std::cerr << "Failed to load KTX: " << ktxErrorString(result) << std::endl;
     }
     ktxVulkanDeviceInfo vdi{};
-    result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
+    result = ktxVulkanDeviceInfo_Construct(&vdi, vulkan.PhysicalDevice(), vulkan.LogicalDevice(), vulkan.GraphicsQueue(), vulkan.CommandPool(), nullptr);
     if (result != KTX_SUCCESS) 
     {
         ktxTexture_Destroy(kTexture);
@@ -233,7 +235,7 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
     for (int x = 0; x < attachmentTextureList.size(); x++)
     {
         Texture texture = attachmentTextureList[x];
-        VmaAllocator allocator = bufferSystem.vmaAllocator;
+        VmaAllocator allocator = bufferSystemInstance.vmaAllocator;
         VkImageMemoryBarrier barrier =
         {
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -312,7 +314,7 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
         VmaAllocationInfo allocOut{};
         VkBuffer stagingBuffer = VK_NULL_HANDLE;
         VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-        VkCommandBuffer command = vulkanSystem.BeginSingleUseCommand();
+        VkCommandBuffer command = vulkan.CommandBuffer().BeginSingleUseCommand();
         vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr,  1, &barrier);
         VULKAN_THROW_IF_FAIL(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut));
 
@@ -324,7 +326,7 @@ void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)
             needsUnmap = true;
         }
         vkCmdCopyImageToBuffer(command, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
-        vulkanSystem.EndSingleUseCommand(command);
+        vulkan.CommandBuffer().EndSingleUseCommand(command);
 
         Vector<byte> png;
         String fileName = filePath + std::to_string(x) + (is16BitFormat ? "_16bit.png" : "_8bit.png");

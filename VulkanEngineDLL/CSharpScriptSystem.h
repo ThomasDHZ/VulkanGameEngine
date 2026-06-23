@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "DLLSystem.h"
 #include "GameObjectSystem.h"
 #include <string>

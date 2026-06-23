@@ -1,6 +1,6 @@
 #pragma once
-#include "Platform.h"
-#include "VulkanSystem.h"
+#include <Platform.h>
+#include <VulkanSystem.h>
 #include <vk_mem_alloc.h>
 
 
@@ -134,6 +134,7 @@ public:
         return DataList;
     }
 
+    DLL_EXPORT void                        SetUpVmaAllocation();
     DLL_EXPORT uint32                      CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags shaderUsageFlags, VkDeviceSize offset = 0);
     DLL_EXPORT uint32                      CreateDynamicBuffer(const void* srcData, VkDeviceSize size, VkBufferUsageFlags usageFlags);
     DLL_EXPORT void                        UpdateDynamicBuffer(uint32 bufferId, const void* data, VkDeviceSize size, VkDeviceSize offset = 0);
@@ -143,7 +144,7 @@ public:
     DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);
     DLL_EXPORT const Vector<VulkanBuffer>& VulkanBufferList();
 };
-extern DLL_EXPORT VulkanBufferSystem& bufferSystem;
+extern DLL_EXPORT VulkanBufferSystem& bufferSystemInstance;
 inline VulkanBufferSystem& VulkanBufferSystem::Get()
 {
     static VulkanBufferSystem instance;

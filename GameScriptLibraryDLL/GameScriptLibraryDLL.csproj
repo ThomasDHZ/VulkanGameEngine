@@ -11,7 +11,4 @@
     <PackageReference Include="GlmSharp" Version="0.9.8" />
     <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj" />
-  </ItemGroup>
 </Project>

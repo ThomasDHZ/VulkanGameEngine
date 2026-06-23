@@ -1,7 +1,6 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "JsonStruct.h"
-#include "MemorySystem.h"
 #include "BufferSystem.h"
 #include <cstdlib>
 

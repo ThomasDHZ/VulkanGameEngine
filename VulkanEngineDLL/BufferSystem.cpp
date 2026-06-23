@@ -6,7 +6,7 @@
 #include <vk_mem_alloc.h>
 #include <iostream>
 
-VulkanBufferSystem& bufferSystem = VulkanBufferSystem::Get();
+VulkanBufferSystem& bufferSystemInstance = VulkanBufferSystem::Get();
 int NextBufferId = 0;
 
 VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
@@ -40,6 +40,31 @@ void VulkanBufferSystem::DestroyAllBuffers()
         DestroyBuffer(pair.second);
     }
     VulkanBufferMap.clear();
+}
+
+void VulkanBufferSystem::SetUpVmaAllocation()
+{
+    VmaVulkanFunctions vulkanFunctions = {
+      .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+      .vkGetDeviceProcAddr = vkGetDeviceProcAddr
+    };
+
+    VmaAllocatorCreateInfo allocatorCreateInfo = {
+        .physicalDevice = vulkan.PhysicalDevice(),
+        .device = vulkan.LogicalDevice(),
+        .preferredLargeHeapBlockSize = 64ull << 20,   // 64 MB
+        .pVulkanFunctions = &vulkanFunctions,
+        .instance = vulkan.InstanceHandle(),
+        .vulkanApiVersion = vulkan.ApiVersion(),
+    };
+
+    VmaAllocator allocator = VK_NULL_HANDLE;
+    VkResult result = vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+
+    if (result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create VMA allocator: " << result << std::endl;
+    }
 }
 
 uint32 VulkanBufferSystem::CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size,
@@ -238,7 +263,7 @@ void VulkanBufferSystem::UpdateDynamicBuffer(uint32 bufferId, const void* data, 
 void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size,
     VkBufferUsageFlags usageFlags, VkDeviceSize offset)
 {
-    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+    VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
     VkBufferCopy copyRegion = {
         .srcOffset = offset,
@@ -265,7 +290,7 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
         VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
         0, 0, nullptr, 1, &barrier, 0, nullptr);
 
-    vulkanSystem.EndSingleUseCommand(cmd);
+    vulkan.CommandBuffer().EndSingleUseCommand(cmd);
 }
 
 void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
@@ -278,7 +303,7 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
         }
         else
         {
-            vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.Buffer, nullptr);
+            vkDestroyBuffer(vulkan.LogicalDevice(), vulkanBuffer.Buffer, nullptr);
         }
         vulkanBuffer.Buffer = VK_NULL_HANDLE;
         vulkanBuffer.Allocation = VK_NULL_HANDLE;
@@ -286,7 +311,7 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
 
     if (vulkanBuffer.StagingBuffer != VK_NULL_HANDLE)
     {
-        vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.StagingBuffer, nullptr);
+        vkDestroyBuffer(vulkan.LogicalDevice(), vulkanBuffer.StagingBuffer, nullptr);
         vulkanBuffer.StagingBuffer = VK_NULL_HANDLE;
     }
 

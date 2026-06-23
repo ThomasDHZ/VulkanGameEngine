@@ -1,6 +1,5 @@
 #include "MaterialSystem.h"
 #include "FileSystem.h"
-#include "RenderSystem.h"
 #include "BufferSystem.h"
 #include "MemoryPoolSystem.h"
 #include "from_json.h"
@@ -45,13 +44,13 @@ VkGuid MaterialSystem::LoadMaterial(const nlohmann::json& json)
     return materialGuid;
 }
 
-const bool MaterialSystem::MaterialExists(const MaterialGuid& materialGuid) const
+const bool MaterialSystem::MaterialExists(const VkGuid& materialGuid) const
 {
     auto it = GuidToPoolIndex.find(materialGuid);
     return it != GuidToPoolIndex.end();
 }
 
-Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
+Material& MaterialSystem::FindMaterial(const VkGuid& materialGuid)
 {
     auto it = GuidToPoolIndex.find(materialGuid);
     if (it == GuidToPoolIndex.end())
@@ -63,13 +62,13 @@ Material& MaterialSystem::FindMaterial(const MaterialGuid& materialGuid)
     return MaterialList[it->second];
 }
 
-uint MaterialSystem::FindMaterialPoolIndex(const MaterialGuid& materialGuid)
+uint MaterialSystem::FindMaterialPoolIndex(const VkGuid& materialGuid)
 {
     auto it = GuidToPoolIndex.find(materialGuid);
     return it != GuidToPoolIndex.end() ? it->second : UINT32_MAX;
 }
 
-void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
+void MaterialSystem::Destroy(const VkGuid& materialGuid)
 {
     //auto it = GuidToPoolIndex.find(materialGuid);
     //if (it == GuidToPoolIndex.end()) return;

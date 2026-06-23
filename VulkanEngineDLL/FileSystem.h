@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "MemorySystem.h"
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>

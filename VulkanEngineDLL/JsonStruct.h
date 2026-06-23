@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "TextureSystem.h"
 #include "enum.h"
 
@@ -98,7 +98,7 @@ struct VulkanSubPass
 
 struct VulkanRenderPass
 {
-    RenderPassGuid                       RenderPassId = VkGuid();
+    VkGuid                               RenderPassId = VkGuid();
     ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
     VkRenderPass                         RenderPass = VK_NULL_HANDLE;
     Vector<VkFramebuffer>                FrameBufferList;

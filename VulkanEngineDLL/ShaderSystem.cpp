@@ -1,5 +1,5 @@
 #include "ShaderSystem.h"
-#include "Platform.h"
+#include <Platform.h>
 #include "MemorySystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"
@@ -19,7 +19,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      };
 
      VkShaderModule shaderModule = VK_NULL_HANDLE;
-     VULKAN_THROW_IF_FAIL(vkCreateShaderModule(vulkanSystem.Device, &shaderModuleCreateInfo, NULL, &shaderModule));
+     VULKAN_THROW_IF_FAIL(vkCreateShaderModule(vulkan.LogicalDevice(), &shaderModuleCreateInfo, NULL, &shaderModule));
 
      return VkPipelineShaderStageCreateInfo
      {
@@ -591,7 +591,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      }
 
      size_t offset = 0;
-     VulkanBuffer vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
+     VulkanBuffer vulkanBuffer = bufferSystemInstance.FindVulkanBuffer(vulkanBufferId);
      for (const auto& shaderStrucVar : shaderStruct.ShaderBufferVariableList)
      {
          offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
@@ -599,7 +599,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
          offset += shaderStrucVar.Size;
      }
-     bufferSystem.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
+     bufferSystemInstance.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
  }
 
  ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)

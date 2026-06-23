@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 
 struct MemoryLeakPtr {
     void* PtrAddress = nullptr;
