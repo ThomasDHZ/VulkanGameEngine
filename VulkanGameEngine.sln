@@ -35,12 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{77A09C
 		Assets\TextureLoader\OceanSkyBoxTexture.json = Assets\TextureLoader\OceanSkyBoxTexture.json
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
-		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TileSets", "TileSets", "{12565B15-EF6B-4DAF-8552-844EE28936D7}"
 	ProjectSection(SolutionItems) = preProject
 		Assets\TileSets\SparkManTileSet.json = Assets\TileSets\SparkManTileSet.json
@@ -208,6 +202,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineCore", "..\Vulk
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEngineDLL\VulkanEngineDLL.vcxproj", "{D22B29FB-1F02-471C-81AC-A352862F6951}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGame", "VulkanGame\VulkanGame.vcxproj", "{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{20F49CB4-34DB-4355-82FA-30B4B16B6F00} = {20F49CB4-34DB-4355-82FA-30B4B16B6F00}
+		{27B62C4A-F1F6-4546-BC4F-C8AE19A27754} = {27B62C4A-F1F6-4546-BC4F-C8AE19A27754}
+		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
+		{526BFF96-6C33-482D-9BEC-29A6D553F16A} = {526BFF96-6C33-482D-9BEC-29A6D553F16A}
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -218,18 +221,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|Any CPU.Build.0 = Debug|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x64.ActiveCfg = Debug|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x64.Build.0 = Debug|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x86.ActiveCfg = Debug|Win32
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Debug|x86.Build.0 = Debug|Win32
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|Any CPU.ActiveCfg = Release|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|Any CPU.Build.0 = Release|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x64.ActiveCfg = Release|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x64.Build.0 = Release|x64
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x86.ActiveCfg = Release|Win32
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}.Release|x86.Build.0 = Release|Win32
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.Build.0 = Debug|x64
 		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x64.ActiveCfg = Debug|x64
@@ -290,6 +281,18 @@ Global
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x64.Build.0 = Release|x64
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.ActiveCfg = Release|Win32
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.Build.0 = Release|Win32
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Debug|Any CPU.Build.0 = Debug|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Debug|x64.ActiveCfg = Debug|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Debug|x64.Build.0 = Debug|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Debug|x86.ActiveCfg = Debug|Win32
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Debug|x86.Build.0 = Debug|Win32
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Release|Any CPU.ActiveCfg = Release|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Release|Any CPU.Build.0 = Release|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Release|x64.ActiveCfg = Release|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Release|x64.Build.0 = Release|x64
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Release|x86.ActiveCfg = Release|Win32
+		{916CB717-AEC3-4FF5-A55F-285EBFCE02B2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

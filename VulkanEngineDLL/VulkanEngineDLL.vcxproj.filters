@@ -51,9 +51,6 @@
     <ClInclude Include="CHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputEnum.h">
-      <Filter>Header Files\Json</Filter>
-    </ClInclude>
     <ClInclude Include="enum.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>

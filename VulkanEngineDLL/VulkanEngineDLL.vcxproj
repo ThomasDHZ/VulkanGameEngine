@@ -164,7 +164,6 @@
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GameObjectSystem.h" />
-    <ClInclude Include="InputEnum.h" />
     <ClInclude Include="LevelSystem.h" />
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="LuaScriptingSystem.h" />

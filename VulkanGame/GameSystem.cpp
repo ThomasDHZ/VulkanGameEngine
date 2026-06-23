@@ -5,8 +5,8 @@
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
-#include "Mouse.h"
-#include "GameController.h"
+#include <Mouse.h>
+#include <GameController.h>
 #include <LevelSystem.h>
 #include <CSharpScriptSystem.h>
 
@@ -18,6 +18,7 @@
 #include <android/native_window.h>
 #endif
 #include <LuaScriptingSystem.h>
+#include <EngineConfigSystem.h>
 
 #ifndef __ANDROID__
 GameSystem gameSystem = GameSystem();

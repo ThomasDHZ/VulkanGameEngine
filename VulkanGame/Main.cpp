@@ -1,4 +1,4 @@
-#include "VulkanWindow.h"
+#include <VulkanWindow.h>
 #include "SystemClock.h"
 #include <iostream>
 #include "FrameTimer.h"
@@ -47,15 +47,14 @@ int main(int argc, char** argv)
 
     try
     {
-        vulkanWindow = new GameEngineWindow();
-        vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-        gameSystem.StartUp(vulkanWindow);
+        VulkanWindow::Get().Create("Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
+        gameSystem.StartUp((GLFWwindow*)VulkanWindow::Get().GetHandle());
         //imGuiRenderer = ImGui_StartUp();
-        while (!vulkanWindow->WindowShouldClose(vulkanWindow))
+        while (!VulkanWindow::Get().ShouldClose())
         {
             const float frameTime = deltaTime.GetFrameTime();
-            vulkanWindow->PollEventHandler(vulkanWindow);
-            gameSystem.Update(vulkanWindow, frameTime);
+            VulkanWindow::Get().PollEvents();
+            gameSystem.Update(VulkanWindow::Get().GetHandle(), frameTime);
             gameSystem.DebugUpdate(frameTime);
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();
@@ -73,7 +72,7 @@ int main(int argc, char** argv)
      //   debugSystem.DumpVMAStats();
 
         //vulkan.DestroyRenderer();
-        vulkanWindow->DestroyWindow(vulkanWindow);
+        VulkanWindow::Get().Close();
     }
     catch (const VulkanError& e)
     {
@@ -96,7 +95,7 @@ int main(int argc, char** argv)
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_android.h>
 
-static GameEngineWindow* g_vulkanWindow = nullptr;
+static VulkanWindow* g_vulkanWindow = nullptr;
 
 void handle_cmd(android_app* app, int32_t cmd)
 {
@@ -149,7 +148,7 @@ void android_main(struct android_app* app)
     int32 height = ANativeWindow_getHeight(app->window);
     __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "WINDOW READY: %dx%d", width, height);
 
-    g_vulkanWindow = new GameEngineWindow();
+    g_vulkanWindow = new VulkanWindow();
     g_vulkanWindow->CreateGraphicsWindow(g_vulkanWindow, "Vulkan Game Engine", width, height);
     g_vulkanWindow->WindowHandle = (void*)app->window;
 
