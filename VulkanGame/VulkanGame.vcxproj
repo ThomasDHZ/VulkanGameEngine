@@ -119,7 +119,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;dxcompiler.lib;ktx.lib;ktx_read.lib;ole32.lib;lua.lib;nethost.lib</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;Physics2DDLL.lib;VulkanEngineDLL.lib;VulkanEngineCore.lib;dxcompiler.lib;ktx.lib;ktx_read.lib;ole32.lib;lua.lib;nethost.lib</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>

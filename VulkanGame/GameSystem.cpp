@@ -35,9 +35,9 @@ GameSystem::~GameSystem()
 
 }
 
-void GameSystem::StartUp(void* windowHandle)
+void GameSystem::StartUp()
 {
-    renderSystem.StartUp(windowHandle, configSystem.WindowResolution, configSystem.RenderResolution);
+    renderSystem.StartUp(configSystem.WindowResolution, configSystem.RenderResolution);
     memoryPoolSystem.StartUp();
     //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();

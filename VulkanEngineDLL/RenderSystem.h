@@ -100,7 +100,7 @@ public:
     bool                                                               UsingMaterialBaker = false;
     UnorderedMap<VkGuid, Vector<RenderPassAttachmentTexture>>          RenderPassAttachmentTextureInfoMap;
 
-    DLL_EXPORT void                                                    StartUp(void* windowHandle, ivec2 windowSize, ivec2 renderResolution);
+    DLL_EXPORT void                                                    StartUp(ivec2 windowSize, ivec2 renderResolution);
     DLL_EXPORT VkGuid                                                  LoadRenderPass(VkGuid& levelGuid, const String& jsonPath);
     DLL_EXPORT VkGuid                                                  LoadRenderPass(VkGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);

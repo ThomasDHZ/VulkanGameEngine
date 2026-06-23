@@ -13,9 +13,9 @@
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
-void RenderSystem::StartUp(void* windowHandle, ivec2 windowSize, ivec2 renderResolution)
+void RenderSystem::StartUp(ivec2 windowSize, ivec2 renderResolution)
 {
-    vulkan.RendererSetUp(windowHandle, windowSize, renderResolution);
+    vulkan.VulkanSetUp(windowSize, renderResolution);
 }
 
 void RenderSystem::Update(void* windowHandle, const float& deltaTime)
