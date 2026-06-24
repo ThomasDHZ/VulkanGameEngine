@@ -41,9 +41,9 @@ struct GraphicsSystem
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT VkInstance				   VulkanSystem_CreateVulkanInstance();
-	DLL_EXPORT VkSurfaceKHR				   VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
-	DLL_EXPORT GraphicsSystem			   VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
+	//DLL_EXPORT VkInstance				   VulkanSystem_CreateVulkanInstance();
+	//DLL_EXPORT VkSurfaceKHR				   VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance);
+	//DLL_EXPORT GraphicsSystem			   VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
 	DLL_EXPORT VkCommandBuffer			   VulkanSystem_BeginSingleUseCommand();
 	DLL_EXPORT void						   VulkanSystem_EndSingleUseCommand(VkCommandBuffer commandBuffer);
 	DLL_EXPORT VkPresentModeKHR*		   VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount);

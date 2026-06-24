@@ -1,5 +1,5 @@
 #include "ShaderSystem.h"
-#include "Platform.h"
+#include <Platform.h>
 #include "MemorySystem.h"
 #include "FileSystem.h"
 #include "BufferSystem.h"

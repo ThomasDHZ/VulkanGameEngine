@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "ShaderSystem.h"
 #include "MemoryPoolSystem.h"
 #include "RenderSystem.h"

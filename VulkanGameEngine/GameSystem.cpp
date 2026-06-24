@@ -34,39 +34,33 @@ GameSystem::~GameSystem()
 
 }
 
-void GameSystem::StartUp(void* windowHandle)
+void GameSystem::StartUp()
 {
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkInstance instance = vulkanSystem.CreateVulkanInstance();
-#ifdef PLATFORM_ANDROID
-    ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
-
-    VkAndroidSurfaceCreateInfoKHR surfaceInfo = { VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR };
-    surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-    surfaceInfo.pNext = nullptr;
-    surfaceInfo.flags = 0;
-    surfaceInfo.window = nativeWindow;
-
-    VkResult result = vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
-    if (result != VK_SUCCESS || surface == VK_NULL_HANDLE)
-    {
-        __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "FATAL: vkCreateAndroidSurfaceKHR failed! Result: %d", result);
-        return;
-    }
-
-    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
-#else
-    glfwCreateWindowSurface(instance, (GLFWwindow*)vulkanWindow->WindowHandle, NULL, &surface);
-#endif
-    renderSystem.StartUp(windowHandle, instance, surface);
+    vulkanSystem.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
     memoryPoolSystem.StartUp();
     //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-   // materialBakerSystem.Run();
+    // materialBakerSystem.Run();
 #endif
     levelSystem.LoadLevel("Levels/TestLevel.json");
+}
+
+#ifndef __ANDROID__
+void GameSystem::Update(void* windowHandle, float deltaTime)
+{
+    inputSystem.Update(deltaTime);
+    //luaScriptingSystem.Update(deltaTime);
+    gameObjectSystem.Update(deltaTime);
+    levelSystem.Update(deltaTime);
+    collisionSystem.Update();
+    spriteSystem.Update(deltaTime);
+    meshSystem.Update(deltaTime);
+    memoryPoolSystem.UpdateMemoryPool();
+    renderSystem.Update(windowHandle, deltaTime);
+
+    //cSharpScriptSystem.Update(deltaTime);
 }
 
 #ifndef __ANDROID__

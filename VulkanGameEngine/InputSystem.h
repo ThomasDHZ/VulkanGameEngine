@@ -1,7 +1,7 @@
 #pragma once
 #include <MegaManObject.h>
 #include <imgui_impl_vulkan.h>
-#include "VulkanWindow.h"
+#include <VulkanWindow.h>
 class InputSystem
 {
 public:

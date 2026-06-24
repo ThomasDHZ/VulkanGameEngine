@@ -1,55 +1,46 @@
 #include "VulkanSystemDLL.h"
 #include <RenderSystem.h>
 
- VkInstance VulkanSystem_CreateVulkanInstance()
-{
-	 return vulkanSystem.CreateVulkanInstance();
-}
 
-VkSurfaceKHR VulkanSystem_CreateVulkanSurface(void* windowHandle, VkInstance instance)
-{
-	return vulkanSystem.CreateVulkanSurface(windowHandle, instance);
-}
-
-GraphicsSystem VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
-{
-	vulkanSystem.RendererSetUp(windowHandle, instance, surface);
-	return GraphicsSystem
-	{
-		.ApiVersion = vulkanSystem.ApiVersion,
-		.Instance = vulkanSystem.Instance,
-		.Device = vulkanSystem.Device,
-		.PhysicalDevice = vulkanSystem.PhysicalDevice,
-		.Surface = vulkanSystem.Surface,
-		.CommandPool = vulkanSystem.CommandPool,
-		.DebugMessenger = vulkanSystem.DebugMessenger,
-		.Swapchain = vulkanSystem.Swapchain,
-		.GraphicsQueue = vulkanSystem.GraphicsQueue,
-		.PresentQueue = vulkanSystem.PresentQueue,
-		.InFlightFencesPtr = vulkanSystem.InFlightFences.data(),
-		.SwapChainImagesPtr = vulkanSystem.SwapChainImages.data(),
-		.CommandBuffersPtr = vulkanSystem.CommandBuffers.data(),
-		.SwapChainImageViewsPtr = vulkanSystem.SwapChainImageViews.data(),
-		.AcquireImageSemaphoresPtr = vulkanSystem.AcquireImageSemaphores.data(),
-		.PresentImageSemaphoresPtr = vulkanSystem.PresentImageSemaphores.data(),
-		.InFlightFencesCount = vulkanSystem.InFlightFences.size(),
-		.CommandBufferCount = vulkanSystem.CommandBuffers.size(),
-		.SwapChainImageViewCount = vulkanSystem.SwapChainImageViews.size(),
-		.AcquireImageSemaphoreCount = vulkanSystem.AcquireImageSemaphores.size(),
-		.PresentImageSemaphoreCount = vulkanSystem.PresentImageSemaphores.size(),
-		.SwapChainImageCount = vulkanSystem.SwapChainImageCount,
-		.ImageIndex = vulkanSystem.ImageIndex,
-		.CommandIndex = vulkanSystem.CommandIndex,
-		.GraphicsFamily = vulkanSystem.GraphicsFamily,
-		.PresentFamily = vulkanSystem.PresentFamily,
-		.MaxFramesInFlight = vulkanSystem.MaxFramesInFlight,
-		.SwapChainResolution = vulkanSystem.SwapChainResolution,
-		.Format = vulkanSystem.Format,
-		.ColorSpace = vulkanSystem.ColorSpace,
-		.PresentMode = vulkanSystem.PresentMode,
-		.MaxSampleCount = vulkanSystem.MaxSampleCount
-	};
-}
+//GraphicsSystem VulkanSystem_RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
+//{
+//	//vulkanSystem.RendererSetUp(windowHandle, instance, surface);
+//	//return GraphicsSystem
+//	//{
+//	//	.ApiVersion = vulkanSystem.ApiVersion,
+//	//	.Instance = vulkanSystem.Instance,
+//	//	.Device = vulkanSystem.Device,
+//	//	.PhysicalDevice = vulkanSystem.PhysicalDevice,
+//	//	.Surface = vulkanSystem.Surface,
+//	//	.CommandPool = vulkanSystem.CommandPool,
+//	//	.DebugMessenger = vulkanSystem.DebugMessenger,
+//	//	.Swapchain = vulkanSystem.Swapchain,
+//	//	.GraphicsQueue = vulkanSystem.GraphicsQueue,
+//	//	.PresentQueue = vulkanSystem.PresentQueue,
+//	//	.InFlightFencesPtr = vulkanSystem.InFlightFences.data(),
+//	//	.SwapChainImagesPtr = vulkanSystem.SwapChainImages.data(),
+//	//	.CommandBuffersPtr = vulkanSystem.CommandBuffers.data(),
+//	//	.SwapChainImageViewsPtr = vulkanSystem.SwapChainImageViews.data(),
+//	//	.AcquireImageSemaphoresPtr = vulkanSystem.AcquireImageSemaphores.data(),
+//	//	.PresentImageSemaphoresPtr = vulkanSystem.PresentImageSemaphores.data(),
+//	//	.InFlightFencesCount = vulkanSystem.InFlightFences.size(),
+//	//	.CommandBufferCount = vulkanSystem.CommandBuffers.size(),
+//	//	.SwapChainImageViewCount = vulkanSystem.SwapChainImageViews.size(),
+//	//	.AcquireImageSemaphoreCount = vulkanSystem.AcquireImageSemaphores.size(),
+//	//	.PresentImageSemaphoreCount = vulkanSystem.PresentImageSemaphores.size(),
+//	//	.SwapChainImageCount = vulkanSystem.SwapChainImageCount,
+//	//	.ImageIndex = vulkanSystem.ImageIndex,
+//	//	.CommandIndex = vulkanSystem.CommandIndex,
+//	//	.GraphicsFamily = vulkanSystem.GraphicsFamily,
+//	//	.PresentFamily = vulkanSystem.PresentFamily,
+//	//	.MaxFramesInFlight = vulkanSystem.MaxFramesInFlight,
+//	//	.SwapChainResolution = vulkanSystem.SwapChainResolution,
+//	//	.Format = vulkanSystem.Format,
+//	//	.ColorSpace = vulkanSystem.ColorSpace,
+//	//	.PresentMode = vulkanSystem.PresentMode,
+//	//	.MaxSampleCount = vulkanSystem.MaxSampleCount
+//	//};
+//}
 
  VkCommandBuffer VulkanSystem_BeginSingleUseCommand()
 {

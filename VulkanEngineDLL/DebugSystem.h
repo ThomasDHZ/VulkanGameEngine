@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #if defined(_WIN32)
 #include <C:\Program Files\RenderDoc\renderdoc_app.h>
 #endif

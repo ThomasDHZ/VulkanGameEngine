@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include "Platform.h"
+#include <Platform.h>
+#include <VulkanWindow.h>
 #include "InputEnum.h"
 #include <vk_mem_alloc.h>
 #ifdef __ANDROID__
@@ -25,6 +26,8 @@ private:
 	VulkanSystem& operator=(const VulkanSystem&) = delete;
 	VulkanSystem(VulkanSystem&&) = delete;
 	VulkanSystem& operator=(VulkanSystem&&) = delete;
+
+	bool m_usingCustomSurface = false;
 
 	uint32								   FindMaxApiVersion(VkPhysicalDevice physicalDevice);
 	static VkBool32 VKAPI_CALL			   DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* pUserData);
@@ -105,9 +108,11 @@ public:
 #endif
 
 	DLL_EXPORT VkInstance				   CreateVulkanInstance();
-	DLL_EXPORT VkSurfaceKHR				   CreateVulkanSurface(void* windowHandle, VkInstance instance);
+	DLL_EXPORT VkSurfaceKHR				   CreateVulkanSurface(void* windowHandle);
 
-	DLL_EXPORT void						   RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
+	DLL_EXPORT void						   VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution);
+	DLL_EXPORT void						   VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec2 renderResolution);
+	DLL_EXPORT void						   RendererSetUp(void* windowHandle, ivec2 renderResolution);
 	DLL_EXPORT void						   SetUpSwapChain();
 	DLL_EXPORT void						   SetUpSwapChain(void* windowHandle);
 	DLL_EXPORT void						   RebuildSwapChain(void* windowHandle);

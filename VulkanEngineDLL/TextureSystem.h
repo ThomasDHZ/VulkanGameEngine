@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "Pixel.h"
 #include "enum.h"
 #include "FileSystem.h"

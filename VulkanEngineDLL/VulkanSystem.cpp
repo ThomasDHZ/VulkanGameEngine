@@ -6,7 +6,7 @@
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include "MemorySystem.h"
-#include "Platform.h"
+#include <Platform.h>
 #include "EngineConfigSystem.h"
 #include "BufferSystem.h"
 #if defined(__ANDROID__)
@@ -39,16 +39,34 @@ uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
     if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 2)) return VK_API_VERSION_1_2;
     if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 1)) return VK_API_VERSION_1_1;
 }
+    VkInstance instance = vulkanSystem.CreateVulkanInstance();
+void VulkanSystem::VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution)
+{
+    vulkanWindow.Create("Game", windowResolution.x, windowResolution.y);
 
-void VulkanSystem::RendererSetUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
+    m_usingCustomSurface = false;
+    WindowHandle = vulkanWindow.m_window;
+    DefaultRenderPassResolution = windowResolution;
+    RendererSetUp(WindowHandle, DefaultRenderPassResolution);
+}
+
+void VulkanSystem::VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec2 renderResolution)
+{
+    m_usingCustomSurface = true;
+    WindowHandle = windowHandle;
+    DefaultRenderPassResolution = windowResolution;
+    RendererSetUp(WindowHandle, DefaultRenderPassResolution);
+}
+
+void VulkanSystem::RendererSetUp(void* windowHandle, ivec2 renderResolution)
 {
     DefaultRenderPassResolution = configSystem.RenderResolution;
 
     vulkanSystem.ImageIndex = 0;
     vulkanSystem.CommandIndex = 0;
     vulkanSystem.RebuildRendererFlag = false;
-    vulkanSystem.Instance = instance;
-    vulkanSystem.Surface = surface;
+    vulkanSystem.Instance = CreateVulkanInstance();
+    vulkanSystem.Surface = CreateVulkanSurface(windowHandle);
     //GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
     vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
@@ -148,30 +166,23 @@ void VulkanSystem::DestroyRenderer()
     DestroyInstance(&vulkanSystem.Instance);
 }
 
-VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance instance)
+VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle)
 {
-    if (!windowHandle || instance == VK_NULL_HANDLE)
-    {
-        fprintf(stderr, "Invalid window handle (%p) or instance (%p)\n", windowHandle, (void*)instance);
-        return VK_NULL_HANDLE;
-    }
 
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
 #if defined(_WIN32)
-    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
-    surfaceCreateInfo.hwnd = (HWND)windowHandle;
-
-    VkResult result = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-    if (result != VK_SUCCESS)
+    if (m_usingCustomSurface)
     {
-        fprintf(stderr, "vkCreateWin32SurfaceKHR failed: %d (%s)\n",
-            result,
-            (result == VK_ERROR_EXTENSION_NOT_PRESENT) ? "VK_ERROR_EXTENSION_NOT_PRESENT" :
-            (result == VK_ERROR_INITIALIZATION_FAILED) ? "VK_ERROR_INITIALIZATION_FAILED" :
-                                                         "unknown");
-        return VK_NULL_HANDLE;
+        VkWin32SurfaceCreateInfoKHR surfaceCreateInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+            .hinstance = GetModuleHandle(nullptr),
+            .hwnd = (HWND)vulkanWindow.GetHandle()
+        };
+        VkResult result = vkCreateWin32SurfaceKHR(Instance, &surfaceCreateInfo, nullptr, &Surface);
+    }
+    else
+    {
+        vulkanWindow.CreateSurface(Instance, Surface);
     }
 
 #elif defined(__linux__) && !defined(__ANDROID__)
@@ -179,20 +190,23 @@ VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle, VkInstance in
     glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
 #elif defined(__ANDROID__)
-    VkAndroidSurfaceCreateInfoKHR surfaceInfo =
-    {
-            .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-            .pNext = nullptr,
-            .window = (ANativeWindow*)windowHandle
-    };
+    ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
 
-    if (vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface) != VK_SUCCESS)
+    VkAndroidSurfaceCreateInfoKHR surfaceInfo = { VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR };
+    surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    surfaceInfo.pNext = nullptr;
+    surfaceInfo.flags = 0;
+    surfaceInfo.window = nativeWindow;
+
+    VkResult result = vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
+    if (result != VK_SUCCESS || surface == VK_NULL_HANDLE)
     {
-        __android_log_print(ANDROID_LOG_ERROR, "Vulkan", "Failed to create Android surface!");
-        return VK_NULL_HANDLE;
+        __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "FATAL: vkCreateAndroidSurfaceKHR failed! Result: %d", result);
+        return;
     }
+    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
 #endif
-    return surface;
+    return Surface;
 }
 
 Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()

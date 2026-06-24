@@ -1,5 +1,5 @@
 #pragma once
-#include "platform.h"
+#include <Platform.h>
 #include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
 #include "MeshSystem.h"

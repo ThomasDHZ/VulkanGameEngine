@@ -13,9 +13,9 @@
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
-void RenderSystem::StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface)
+void RenderSystem::StartUp(void* windowHandle, ivec2 renderResolution)
 {
-    vulkanSystem.RendererSetUp(windowHandle, instance, surface);
+    vulkanSystem.RendererSetUp(windowHandle, renderResolution);
 }
 
 void RenderSystem::Update(void* windowHandle, const float& deltaTime)

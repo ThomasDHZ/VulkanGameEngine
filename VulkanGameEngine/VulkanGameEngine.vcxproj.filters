@@ -31,12 +31,6 @@
     <Filter Include="Header Files\ImGui">
       <UniqueIdentifier>{ba4ad052-7076-4736-b5a6-e38b5fe5ecda}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Input">
-      <UniqueIdentifier>{e2ba77be-5f27-4cd9-8ee2-3921dcfbc915}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Input">
-      <UniqueIdentifier>{4bb26132-3fa7-4917-bb64-ba9239a35432}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\GameObjects">
       <UniqueIdentifier>{9116ac1e-b4fe-41e4-9910-31a647c7dc34}</UniqueIdentifier>
     </Filter>
@@ -53,9 +47,6 @@
     </ClCompile>
     <ClCompile Include="SystemClock.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiRenderer.cpp">
       <Filter>Source Files</Filter>
@@ -81,20 +72,8 @@
     <ClCompile Include="..\External\imgui\imgui_widgets.cpp">
       <Filter>Header Files\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Mouse.cpp">
-      <Filter>Source Files\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Keyboard.cpp">
-      <Filter>Source Files\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="GameController.cpp">
-      <Filter>Source Files\Input</Filter>
-    </ClCompile>
     <ClCompile Include="GameSystem.cpp">
       <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanWindow.cpp">
-      <Filter>Source Files\Input</Filter>
     </ClCompile>
     <ClCompile Include="TimeSystem.cpp">
       <Filter>Source Files</Filter>
@@ -121,18 +100,6 @@
     </ClInclude>
     <ClInclude Include="ImGuiRenderer.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanWindow.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Keyboard.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="GameController.h">
-      <Filter>Header Files\Input</Filter>
     </ClInclude>
     <ClInclude Include="TimeSystem.h">
       <Filter>Header Files</Filter>

@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "JsonStruct.h"
 #include "VulkanSystem.h"
 #include "TextureSystem.h"
@@ -100,7 +100,7 @@ public:
     bool                                                               UsingMaterialBaker = false;
     UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
-    DLL_EXPORT void                                                    StartUp(void* windowHandle, VkInstance& instance, VkSurfaceKHR& surface);
+    DLL_EXPORT void                                                    StartUp(void* windowHandle, ivec2 renderResolution);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);

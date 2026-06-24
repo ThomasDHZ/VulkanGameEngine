@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "SpriteSystem.h"
 #include "ComponentSystem.h"
 #include "MeshSystem.h"

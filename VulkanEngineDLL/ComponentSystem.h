@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "Transform2DComponent.h"
 #include "Collider2DComponent.h"
 #include <entt/entt.hpp>

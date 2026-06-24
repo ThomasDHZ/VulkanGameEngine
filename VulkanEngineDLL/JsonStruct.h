@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "TextureSystem.h"
 #include "enum.h"
 

@@ -24,7 +24,7 @@ public:
     }
 #endif
     VkCommandBuffer commandBuffer;
-    void StartUp(void* windowHandle);
+    void StartUp();
 
 #ifndef __ANDROID__
     void Update(void* windowHandle, float deltaTime);

@@ -12,8 +12,8 @@ public:
 	KeyState KeyPressed[MAXKEYBOARDKEY];
 	Keyboard();
 	~Keyboard();
-	 static void KeyboardKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
-	 const KeyState* GetKeyBoardState() const { return KeyPressed; }
+	static void KeyboardKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
+	const KeyState* GetKeyBoardState() const { return KeyPressed; }
 };
 extern Keyboard keyboard;
 

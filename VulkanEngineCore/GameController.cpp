@@ -27,7 +27,7 @@ vec2 GameController::LeftJoyStickMoved(int controllerId)
     if (glfwJoystickPresent(controllerId) &&
         glfwJoystickIsGamepad(controllerId))
     {
-        glfwGetGamepadState(controllerId, &GamePadState[controllerId]);        
+        glfwGetGamepadState(controllerId, &GamePadState[controllerId]);
         joyStickMovement.x = GamePadState[controllerId].axes[GLFW_GAMEPAD_AXIS_LEFT_X] > Sensitivity || GamePadState[controllerId].axes[GLFW_GAMEPAD_AXIS_LEFT_X] < -Sensitivity ? GamePadState[controllerId].axes[GLFW_GAMEPAD_AXIS_LEFT_X] : 0;
         joyStickMovement.y = GamePadState[controllerId].axes[GLFW_GAMEPAD_AXIS_LEFT_Y] > Sensitivity || GamePadState[controllerId].axes[GLFW_GAMEPAD_AXIS_LEFT_Y] < -Sensitivity ? GamePadState[controllerId].axes[GLFW_GAMEPAD_AXIS_LEFT_Y] : 0;
     }

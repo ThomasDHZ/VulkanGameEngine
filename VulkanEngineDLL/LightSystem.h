@@ -1,5 +1,5 @@
 #pragma once
-#include "Platform.h"
+#include <Platform.h>
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
 #include "GameObjectSystem.h"
