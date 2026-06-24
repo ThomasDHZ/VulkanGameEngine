@@ -61,22 +61,6 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     renderSystem.Update(windowHandle, deltaTime);
 
     //cSharpScriptSystem.Update(deltaTime);
-}
-
-#ifndef __ANDROID__
-void GameSystem::Update(void* windowHandle, float deltaTime)
-{
-    inputSystem.Update(deltaTime);
-    //luaScriptingSystem.Update(deltaTime);
-    gameObjectSystem.Update(deltaTime);
-    levelSystem.Update(deltaTime);
-    collisionSystem.Update();
-    spriteSystem.Update(deltaTime);
-    meshSystem.Update(deltaTime);
-    memoryPoolSystem.UpdateMemoryPool();
-    renderSystem.Update(windowHandle, deltaTime);
-
-    //cSharpScriptSystem.Update(deltaTime);
     auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
   //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
    // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);

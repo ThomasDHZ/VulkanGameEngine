@@ -31,7 +31,7 @@ public:
     DLL_EXPORT ivec2 GetSize() const;
     DLL_EXPORT ivec2 GetFramebufferSize() const;
 
-    GLFWwindow* m_window3 = nullptr;
+    GLFWwindow* m_window = nullptr;
 };
 extern DLL_EXPORT VulkanWindow& vulkanWindow;
 inline VulkanWindow& VulkanWindow::Get()

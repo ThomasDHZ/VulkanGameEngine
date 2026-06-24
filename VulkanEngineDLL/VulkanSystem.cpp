@@ -206,51 +206,10 @@ VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle)
     }
     __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
 #endif
+
     return Surface;
 }
 
-Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()
-{
-    uint32 count = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
-    Vector<VkExtensionProperties> availableExtensionList(count);
-    vkEnumerateInstanceExtensionProperties(nullptr, &count, availableExtensionList.data());
-
-    Vector<const char*> extensions;
-    auto AddExtensionIfSupported = [&](const char* ext)
-        {
-            for (const auto& extension : availableExtensionList)
-                if (strcmp(extension.extensionName, ext) == 0)
-                {
-                    extensions.push_back(ext);
-                    std::cout << "Enabling instance extension: " << ext << '\n';
-                    return;
-                }
-            std::cout << "Extension not supported: " << ext << '\n';
-        };
-
-    AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
-    AddExtensionIfSupported(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
-#if defined(_WIN32)
-    AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(__linux__) && !defined(__ANDROID__)
-    AddExtensionIfSupported("VK_KHR_xcb_surface");
-    AddExtensionIfSupported("VK_KHR_wayland_surface");
-#elif defined(__ANDROID__)
-    AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#endif
-
-#if !defined(NDEBUG) && !defined(__ANDROID__)
-    AddExtensionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-
-    if (extensions.empty() ||
-        (extensions.size() == 1 && extensions[0] == VK_KHR_SURFACE_EXTENSION_NAME))
-    {
-        throw std::runtime_error("No platform surface extension available — cannot create window.");
-    }
-    return extensions;
-}
 
 Vector<const char*> VulkanSystem::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
 {
@@ -450,6 +409,49 @@ VkInstance VulkanSystem::CreateVulkanInstance()
 #endif
 
     return instance;
+}
+
+Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()
+{
+    uint32 count = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+    Vector<VkExtensionProperties> availableExtensionList(count);
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, availableExtensionList.data());
+
+    Vector<const char*> extensions;
+    auto AddExtensionIfSupported = [&](const char* ext)
+        {
+            for (const auto& extension : availableExtensionList)
+                if (strcmp(extension.extensionName, ext) == 0)
+                {
+                    extensions.push_back(ext);
+                    std::cout << "Enabling instance extension: " << ext << '\n';
+                    return;
+                }
+            std::cout << "Extension not supported: " << ext << '\n';
+        };
+
+    AddExtensionIfSupported(VK_KHR_SURFACE_EXTENSION_NAME);
+    AddExtensionIfSupported(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
+#if defined(_WIN32)
+    AddExtensionIfSupported(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif defined(__linux__) && !defined(__ANDROID__)
+    AddExtensionIfSupported("VK_KHR_xcb_surface");
+    AddExtensionIfSupported("VK_KHR_wayland_surface");
+#elif defined(__ANDROID__)
+    AddExtensionIfSupported(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#endif
+
+#if !defined(NDEBUG) && !defined(__ANDROID__)
+    AddExtensionIfSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
+    if (extensions.empty() ||
+        (extensions.size() == 1 && extensions[0] == VK_KHR_SURFACE_EXTENSION_NAME))
+    {
+        throw std::runtime_error("No platform surface extension available — cannot create window.");
+    }
+    return extensions;
 }
 
 VkPhysicalDeviceFeatures VulkanSystem::GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice)
