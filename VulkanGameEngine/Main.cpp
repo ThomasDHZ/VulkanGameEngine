@@ -59,7 +59,7 @@ int main(int argc, char** argv)
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();
         }
-        vkDeviceWaitIdle(vulkanSystem.Device);
+        vkDeviceWaitIdle(vulkan.LogicalDevice());
         //ImGui_Destroy(imGuiRenderer);
 
         renderSystem.Destroy();

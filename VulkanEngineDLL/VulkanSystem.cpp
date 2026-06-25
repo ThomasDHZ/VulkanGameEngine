@@ -42,40 +42,36 @@ uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 
 void VulkanSystem::VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution)
 {
-    vulkanWindow.Create("Game", windowResolution.x, windowResolution.y);
+   // vulkanWindow.Create("Game", windowResolution.x, windowResolution.y);
 
     m_usingCustomSurface = false;
-    WindowHandle = vulkanWindow.GetHandle();
     DefaultRenderPassResolution = windowResolution;
-    RendererSetUp(WindowHandle, DefaultRenderPassResolution);
+    vulkan.VulkanSetUp(windowResolution, renderResolution);
+    RendererSetUp(vulkan.WindowHandle(), DefaultRenderPassResolution);
 }
 
 void VulkanSystem::VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec2 renderResolution)
 {
     m_usingCustomSurface = true;
-    WindowHandle = windowHandle;
     DefaultRenderPassResolution = windowResolution;
-    RendererSetUp(WindowHandle, DefaultRenderPassResolution);
+    vulkan.VulkanSetUp(windowResolution, renderResolution);
+    RendererSetUp(vulkan.WindowHandle(), DefaultRenderPassResolution);
 }
 
-void VulkanSystem::RendererSetUp(void* windowHandle, ivec2 renderResolution)
+void VulkanSystem::RendererSetUp(const void* windowHandle, ivec2 renderResolution)
 {
     DefaultRenderPassResolution = configSystem.RenderResolution;
 
     vulkanSystem.ImageIndex = 0;
     vulkanSystem.CommandIndex = 0;
     vulkanSystem.RebuildRendererFlag = false;
-    m_instance.Initialize();
-    //GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
-    vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(m_instance.InstanceHandle(), m_instance.Surface(), vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
-    vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+
+
     bufferSystem.vmaAllocator = SetUpVmaAllocation();
-    vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
     SetUpSwapChain(windowHandle);
-    vulkanSystem.CommandPool = SetUpCommandPool(vulkanSystem.Device, vulkanSystem.GraphicsFamily);
+    vulkanSystem.CommandPool = SetUpCommandPool(vulkan.LogicalDevice(), vulkan.Device().GraphicsFamily());
     SetUpCommandBuffers();
     SetUpSemaphores();
-    GetDeviceQueue(vulkanSystem.Device, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily, vulkanSystem.GraphicsQueue, vulkanSystem.PresentQueue);
 
 #if defined(__ANDROID__)
     vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)vkGetDeviceProcAddr(Device, "vkGetBufferDeviceAddress");
@@ -86,10 +82,10 @@ void VulkanSystem::RendererSetUp(void* windowHandle, ivec2 renderResolution)
 
 }
 
-VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
+VkExtent2D VulkanSystem::SetUpSwapChainExtent(const void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
 {
 #ifndef PLATFORM_ANDROID
-    surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, m_instance.Surface());
+    surfaceCapabilities = GetSurfaceCapabilities(vulkan.PhysicalDevice(), vulkan.Surface());
     if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
     {
         return surfaceCapabilities.currentExtent;
@@ -110,16 +106,15 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
     return extent;
 }
 
-void VulkanSystem::SetUpSwapChain(void* windowHandle)
+void VulkanSystem::SetUpSwapChain(const void* windowHandle)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, m_instance.Surface());
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkan.PhysicalDevice(), vulkan.Surface());
     VkExtent2D extent = SetUpSwapChainExtent(windowHandle, surfaceCapabilities);
-    GetQueueFamilies(vulkanSystem.PhysicalDevice, m_instance.Surface(), vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, m_instance.Surface());
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkan.PhysicalDevice(), vulkan.Surface());
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
-
+    
     SetUpSwapChain();
     SetUpSwapChainImages();
     SetUpSwapChainImageViews(swapChainImageFormat);
@@ -133,12 +128,12 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
     };
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {
-        .physicalDevice = PhysicalDevice,
-        .device = Device,
+        .physicalDevice = vulkan.PhysicalDevice(),
+        .device = vulkan.LogicalDevice(),
         .preferredLargeHeapBlockSize = 64ull << 20,   // 64 MB
         .pVulkanFunctions = &vulkanFunctions,
-        .instance = m_instance.InstanceHandle(),
-        .vulkanApiVersion = m_instance.ApiVersion(),
+        .instance = vulkan.InstanceHandle(),
+        .vulkanApiVersion = vulkan.ApiVersion(),
     };
 
     VmaAllocator allocator = VK_NULL_HANDLE;
@@ -154,12 +149,12 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
 
 void VulkanSystem::DestroyRenderer()
 {
-    DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.SwapChainImageViews);
-    DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
-    DestroyFences(vulkanSystem.Device, vulkanSystem.AcquireImageSemaphores, vulkanSystem.PresentImageSemaphores, vulkanSystem.InFlightFences);
-    DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
+    DestroySwapChainImageView(vulkan.LogicalDevice(), vulkanSystem.SwapChainImageViews);
+    DestroySwapChain(vulkan.LogicalDevice(), &vulkanSystem.Swapchain);
+    DestroyFences(vulkan.LogicalDevice(), vulkanSystem.AcquireImageSemaphores, vulkanSystem.PresentImageSemaphores, vulkanSystem.InFlightFences);
+    DestroyCommandPool(vulkan.LogicalDevice(), &vulkanSystem.CommandPool);
     vmaDestroyAllocator(bufferSystem.vmaAllocator); 
-    DestroyDevice(vulkanSystem.Device);
+    DestroyDevice(vulkan.LogicalDevice());
     //DestroyDebugger(m_instance.InstanceHandle(), vulkanSystem.DebugMessenger);
     //DestroySurface(m_instance.InstanceHandle(), &m_instance.Surface());
     //DestroyInstance(m_instance.InstanceHandle());
@@ -340,162 +335,6 @@ Vector<VkPhysicalDevice> VulkanSystem::GetPhysicalDeviceList(VkInstance& instanc
     return physicalDeviceList;
 }
 
-VkPhysicalDevice VulkanSystem::SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily)
-{
-    Vector<VkPhysicalDevice> physicalDeviceList = GetPhysicalDeviceList(instance);
-    for (auto& physicalDevice : physicalDeviceList)
-    {
-        VkPhysicalDeviceProperties physicalDeviceProperties = GetPhysicalDeviceProperties(physicalDevice);
-        VkPhysicalDeviceFeatures physicalDeviceFeatures = GetPhysicalDeviceFeatures(physicalDevice);
-        GetQueueFamilies(physicalDevice, surface, graphicsFamily, presentFamily);
-        Vector<VkSurfaceFormatKHR> surfaceFormatList = GetSurfaceFormats(physicalDevice, surface);
-        Vector<VkPresentModeKHR> presentModeList = GetSurfacePresentModes(physicalDevice, surface);
-
-        if (graphicsFamily != UINT32_MAX &&
-            presentFamily != UINT32_MAX &&
-            surfaceFormatList.size() > 0 &&
-            presentModeList.size() > 0 &&
-            physicalDeviceFeatures.samplerAnisotropy)
-        {
-            return physicalDevice;
-        }
-    }
-
-    return VK_NULL_HANDLE;
-}
-
-VkDevice VulkanSystem::SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily)
-{
-    float queuePriority = 1.0f;
-    VkDevice device = VK_NULL_HANDLE;
-    Vector<VkDeviceQueueCreateInfo> queueCreateInfoList;
-    if (graphicsFamily != UINT32_MAX)
-    {
-        queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .queueFamilyIndex = graphicsFamily,
-            .queueCount = 1,
-            .pQueuePriorities = &queuePriority
-            });
-    }
-    if (presentFamily != UINT32_MAX && presentFamily != graphicsFamily)
-    {
-        queueCreateInfoList.emplace_back(VkDeviceQueueCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .queueFamilyIndex = presentFamily,
-            .queueCount = 1,
-            .pQueuePriorities = &queuePriority
-            });
-    }
-
-    Vector<const char*> DeviceExtensionList = GetRequiredDeviceExtensions(physicalDevice);
-    VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures =
-    {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
-        .shaderInputAttachmentArrayDynamicIndexing = VK_TRUE,
-        .shaderStorageTexelBufferArrayDynamicIndexing = VK_TRUE,
-        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
-        .shaderStorageBufferArrayNonUniformIndexing = VK_TRUE,
-        .shaderStorageImageArrayNonUniformIndexing = VK_TRUE,
-        .descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE,
-        .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
-        .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
-        .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
-        .descriptorBindingPartiallyBound = VK_TRUE,
-        .descriptorBindingVariableDescriptorCount = VK_TRUE,
-        .runtimeDescriptorArray = VK_TRUE,
-    };
-
-    VkPhysicalDeviceColorWriteEnableFeaturesEXT colorWriteFeatures
-    {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
-        .pNext = &indexingFeatures,
-        .colorWriteEnable = VK_TRUE
-    };
-
-
-    VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        .pNext = &colorWriteFeatures,
-        .features =
-        {
-            .geometryShader = VK_FALSE,
-            .vertexPipelineStoresAndAtomics = VK_TRUE,
-            .fragmentStoresAndAtomics = VK_TRUE,
-            .shaderFloat64 = VK_TRUE,
-            .shaderInt64 = VK_TRUE,
-            .shaderInt16 = VK_TRUE,
-        },
-    };
-
-    VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .pNext = &physicalDeviceFeatures2,
-        .storageBuffer8BitAccess = VK_TRUE,
-        .uniformAndStorageBuffer8BitAccess = VK_TRUE,
-        .descriptorIndexing = VK_TRUE,
-        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
-        .descriptorBindingUpdateUnusedWhilePending = VK_TRUE,
-        .descriptorBindingVariableDescriptorCount = VK_TRUE,
-        .runtimeDescriptorArray = VK_TRUE,
-        .scalarBlockLayout = VK_TRUE,
-        .separateDepthStencilLayouts = VK_TRUE,
-        .timelineSemaphore = VK_TRUE,
-        .bufferDeviceAddress = VK_TRUE,
-        .vulkanMemoryModel = VK_TRUE,
-        .vulkanMemoryModelDeviceScope = VK_TRUE
-    };
-
-    VkPhysicalDeviceRobustness2FeaturesEXT physicalDeviceRobustness2Features = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
-        .pNext = &physicalDeviceVulkan12Features,
-        .nullDescriptor = VK_TRUE,
-    };
-
-    VkPhysicalDeviceVulkan13Features physicalDeviceVulkan13Features = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .pNext = &physicalDeviceRobustness2Features,
-        .shaderDemoteToHelperInvocation = VK_TRUE,
-    };
-
-    VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT divisorFeatures = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
-        .pNext = &physicalDeviceVulkan13Features,
-        .vertexAttributeInstanceRateDivisor = VK_TRUE
-    };
-
-    VkPhysicalDeviceVulkan11Features physicalDeviceVulkan11Features = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-        .pNext = &divisorFeatures,
-        .multiview = VK_TRUE
-    };
-
-    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-        .pNext = &physicalDeviceVulkan11Features,
-        .bufferDeviceAddress = VK_TRUE,
-    };
-
-    VkDeviceCreateInfo deviceCreateInfo = {
-        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &bufferDeviceAddressFeatures,
-        .queueCreateInfoCount = static_cast<uint32>(queueCreateInfoList.size()),
-        .pQueueCreateInfos = queueCreateInfoList.data(),
-        .enabledExtensionCount = static_cast<uint32>(DeviceExtensionList.size()),
-        .ppEnabledExtensionNames = DeviceExtensionList.data(),
-        .pEnabledFeatures = nullptr
-    };
-
-#ifndef NDEBUG
-    Vector<const char*> validationLayers = GetValidationLayerProperties();
-    deviceCreateInfo.enabledLayerCount = static_cast<uint32>(validationLayers.size());
-    deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
-#endif
-
-    VULKAN_THROW_IF_FAIL(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
-    return device;
-}
-
 VkCommandPool VulkanSystem::SetUpCommandPool(VkDevice device, uint32 graphicsFamily)
 {
     VkCommandPool commandPool = VK_NULL_HANDLE;
@@ -618,7 +457,7 @@ void VulkanSystem::GetRayTracingCapability(VkPhysicalDevice gpuDevice, Vector<St
 
 VkSampleCountFlagBits VulkanSystem::GetMaxSampleCount(VkPhysicalDevice gpuDevice)
 {
-    VkPhysicalDeviceLimits physicalDeviceProperties = GetPhysicalDeviceProperties(PhysicalDevice).limits;
+    VkPhysicalDeviceLimits physicalDeviceProperties = GetPhysicalDeviceProperties(vulkan.PhysicalDevice()).limits;
     VkSampleCountFlags counts = physicalDeviceProperties.framebufferColorSampleCounts & physicalDeviceProperties.framebufferDepthSampleCounts;
     if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
     if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
@@ -691,9 +530,9 @@ Vector<VkPresentModeKHR> VulkanSystem::GetPhysicalDevicePresentModes(VkPhysicalD
 
 void VulkanSystem::SetUpSwapChain()
 {
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, m_instance.Surface());
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, m_instance.Surface());
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, m_instance.Surface());
+    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(vulkan.PhysicalDevice(), vulkan.Surface());
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkan.PhysicalDevice(), vulkan.Surface());
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkan.PhysicalDevice(), vulkan.Surface());
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
@@ -718,7 +557,7 @@ void VulkanSystem::SetUpSwapChain()
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = m_instance.Surface(),
+        .surface = vulkan.Surface(),
         .minImageCount = static_cast<uint32>(vulkanSystem.SwapChainImageCount),
         .imageFormat = swapChainImageFormat.format,
         .imageColorSpace = swapChainImageFormat.colorSpace,
@@ -732,12 +571,12 @@ void VulkanSystem::SetUpSwapChain()
         .oldSwapchain = vulkanSystem.Swapchain
     };
 
-    if (vulkanSystem.GraphicsFamily != vulkanSystem.PresentFamily)
+    if (vulkan.Device().GraphicsFamily() != vulkan.Device().PresentFamily())
     {
         Vector<uint32> queueFamilyIndices =
         {
-            vulkanSystem.GraphicsFamily,
-            vulkanSystem.PresentFamily
+            vulkan.Device().GraphicsFamily(),
+            vulkan.Device().PresentFamily()
         };
 
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -748,19 +587,19 @@ void VulkanSystem::SetUpSwapChain()
     {
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
-    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(vulkanSystem.Device, &SwapChainCreateInfo, nullptr, &vulkanSystem.Swapchain));
+    VULKAN_THROW_IF_FAIL(vkCreateSwapchainKHR(vulkan.LogicalDevice(), &SwapChainCreateInfo, nullptr, &vulkanSystem.Swapchain));
 }
 
-void VulkanSystem::RebuildSwapChain(void* windowHandle)
+void VulkanSystem::RebuildSwapChain(const void* windowHandle)
 {
 }
 
 void VulkanSystem::SetUpSwapChainImages()
 {
     uint32 swapChainImageCount = UINT32_MAX;
-    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(Device, Swapchain, &swapChainImageCount, nullptr));
+    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(vulkan.LogicalDevice(), Swapchain, &swapChainImageCount, nullptr));
     SwapChainImages.resize(swapChainImageCount);
-    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(Device, Swapchain, &swapChainImageCount, SwapChainImages.data()));
+    VULKAN_THROW_IF_FAIL(vkGetSwapchainImagesKHR(vulkan.LogicalDevice(), Swapchain, &swapChainImageCount, SwapChainImages.data()));
 }
 
 void VulkanSystem::SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat)
@@ -783,7 +622,7 @@ void VulkanSystem::SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFor
                 .layerCount = 1
             }
         };
-        VULKAN_THROW_IF_FAIL(vkCreateImageView(Device, &swapChainViewInfo, nullptr, &SwapChainImageViews[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkan.LogicalDevice(), &swapChainViewInfo, nullptr, &SwapChainImageViews[x]));
     }
 }
 
@@ -812,9 +651,9 @@ void VulkanSystem::SetUpSemaphores()
     PresentImageSemaphores.resize(MaxFramesInFlight, VK_NULL_HANDLE);
     for (int x = 0; x < MaxFramesInFlight; x++)
     {
-        VULKAN_THROW_IF_FAIL(vkCreateFence(Device, &fenceInfo, NULL, &InFlightFences[x]));
-        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(Device, &semaphoreCreateInfo, NULL, &AcquireImageSemaphores[x]));
-        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(Device, &semaphoreCreateInfo, NULL, &PresentImageSemaphores[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateFence(vulkan.LogicalDevice(), &fenceInfo, NULL, &InFlightFences[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(vulkan.LogicalDevice(), &semaphoreCreateInfo, NULL, &AcquireImageSemaphores[x]));
+        VULKAN_THROW_IF_FAIL(vkCreateSemaphore(vulkan.LogicalDevice(), &semaphoreCreateInfo, NULL, &PresentImageSemaphores[x]));
     }
 }
 
@@ -831,7 +670,7 @@ void VulkanSystem::SetUpCommandBuffers()
             .commandBufferCount = static_cast<uint32>(SwapChainImageCount)
         };
 
-        vkAllocateCommandBuffers(vulkanSystem.Device, &commandBufferAllocateInfo, &CommandBuffers[x]);
+        vkAllocateCommandBuffers(vulkan.LogicalDevice(), &commandBufferAllocateInfo, &CommandBuffers[x]);
     }
 }
 
@@ -862,7 +701,7 @@ VkCommandBuffer VulkanSystem::BeginSingleUseCommand()
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1
     };
-    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(Device, &allocInfo, &commandBuffer));
+    VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkan.LogicalDevice(), &allocInfo, &commandBuffer));
 
     VkCommandBufferBeginInfo beginInfo =
     {
@@ -882,10 +721,10 @@ void VulkanSystem::EndSingleUseCommand(VkCommandBuffer commandBuffer)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    VULKAN_THROW_IF_FAIL(vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
-    VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(GraphicsQueue));
+    VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkan.GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE));
+    VULKAN_THROW_IF_FAIL(vkQueueWaitIdle(vulkan.GraphicsQueue()));
 
-    vkFreeCommandBuffers(Device, CommandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(vulkan.LogicalDevice(), CommandPool, 1, &commandBuffer);
 }
 
 void VulkanSystem::StartFrame()
@@ -897,11 +736,11 @@ void VulkanSystem::StartFrame()
     };
     vulkanSystem.CommandIndex = (vulkanSystem.CommandIndex + 1) % vulkanSystem.SwapChainImageCount;
 
-    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
-    VULKAN_THROW_IF_FAIL(vkResetFences(vulkanSystem.Device, 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
+    VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkan.LogicalDevice(), 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex], VK_TRUE, UINT64_MAX));
+    VULKAN_THROW_IF_FAIL(vkResetFences(vulkan.LogicalDevice(), 1, &vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]));
     VULKAN_THROW_IF_FAIL(vkResetCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], 0));
     VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex], &commandBufferBeginInfo));
-    VkResult result = vkAcquireNextImageKHR(vulkanSystem.Device, vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
+    VkResult result = vkAcquireNextImageKHR(vulkan.LogicalDevice(), vulkanSystem.Swapchain, UINT64_MAX, vulkanSystem.AcquireImageSemaphores[vulkanSystem.CommandIndex], VK_NULL_HANDLE, &vulkanSystem.ImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         vulkanSystem.RebuildRendererFlag = true;
@@ -932,7 +771,7 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
     };
 
     VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex]));
-    VkResult submitResult = vkQueueSubmit(vulkanSystem.GraphicsQueue, 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
+    VkResult submitResult = vkQueueSubmit(vulkan.GraphicsQueue(), 1, &submitInfo, vulkanSystem.InFlightFences[vulkanSystem.CommandIndex]);
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
         submitResult == VK_SUBOPTIMAL_KHR)
     {
@@ -954,7 +793,7 @@ void VulkanSystem::EndFrame(VkCommandBuffer& commandBufferSubmit)
         .pImageIndices = &vulkanSystem.ImageIndex
     };
 
-    VkResult result = vkQueuePresentKHR(vulkanSystem.PresentQueue, &presentInfo);
+    VkResult result = vkQueuePresentKHR(vulkan.PresentQueue(), &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR ||
         result == VK_SUBOPTIMAL_KHR)
     {

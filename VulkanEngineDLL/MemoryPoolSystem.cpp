@@ -230,7 +230,7 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
         .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
         .pPoolSizes = poolSizes.data()
     };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkanSystem.Device, &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkan.LogicalDevice(), &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = 
     {
@@ -240,7 +240,7 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
         .bindingCount = static_cast<uint32_t>(bindings.size()),
         .pBindings = bindings.data()
     };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
+    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkan.LogicalDevice(), &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
 
     VkDescriptorSetAllocateInfo allocInfo = 
     {
@@ -249,7 +249,7 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
         .descriptorSetCount = 1,
         .pSetLayouts = &memoryPoolSystem.GlobalBindlessDescriptorSetLayout
     };
-    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
+    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkan.LogicalDevice(), &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
 
     Vector<VkWriteDescriptorSet> writeDescriptorSetList = Vector<VkWriteDescriptorSet>
     {
@@ -275,7 +275,7 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
                 .pBufferInfo = &bindlessDataBuffer,
             }
     };
-    vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSetList.size()), writeDescriptorSetList.data(), 0, nullptr);
+    vkUpdateDescriptorSets(vulkan.LogicalDevice(), static_cast<uint32>(writeDescriptorSetList.size()), writeDescriptorSetList.data(), 0, nullptr);
 }
 
 uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
@@ -626,7 +626,7 @@ void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .pImageInfo = &textureUpdate,
     };
-    vkUpdateDescriptorSets(vulkanSystem.Device, 1, &descriptorUpdate, 0, nullptr);
+    vkUpdateDescriptorSets(vulkan.LogicalDevice(), 1, &descriptorUpdate, 0, nullptr);
 }
 
 void MemoryPoolSystem::UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding)
@@ -648,7 +648,7 @@ void MemoryPoolSystem::UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, u
         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
         .pBufferInfo = &bufferUpdate,
     };
-    vkUpdateDescriptorSets(vulkanSystem.Device, 1, &descriptorUpdate, 0, nullptr);
+    vkUpdateDescriptorSets(vulkan.LogicalDevice(), 1, &descriptorUpdate, 0, nullptr);
 }
 
 const MemoryPoolSubBufferHeader MemoryPoolSystem::MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType)

@@ -278,7 +278,7 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
         }
         else
         {
-            vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.Buffer, nullptr);
+            vkDestroyBuffer(vulkan.LogicalDevice(), vulkanBuffer.Buffer, nullptr);
         }
         vulkanBuffer.Buffer = VK_NULL_HANDLE;
         vulkanBuffer.Allocation = VK_NULL_HANDLE;
@@ -286,7 +286,7 @@ void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)
 
     if (vulkanBuffer.StagingBuffer != VK_NULL_HANDLE)
     {
-        vkDestroyBuffer(vulkanSystem.Device, vulkanBuffer.StagingBuffer, nullptr);
+        vkDestroyBuffer(vulkan.LogicalDevice(), vulkanBuffer.StagingBuffer, nullptr);
         vulkanBuffer.StagingBuffer = VK_NULL_HANDLE;
     }
 

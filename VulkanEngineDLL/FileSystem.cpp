@@ -212,7 +212,7 @@ ktxVulkanTexture FileSystem::LoadKTX2File(const String& filePath)
         std::cerr << "Failed to load KTX: " << ktxErrorString(result) << std::endl;
     }
     ktxVulkanDeviceInfo vdi{};
-    result = ktxVulkanDeviceInfo_Construct(&vdi, vulkanSystem.PhysicalDevice, vulkanSystem.Device, vulkanSystem.GraphicsQueue, vulkanSystem.CommandPool, nullptr);
+    result = ktxVulkanDeviceInfo_Construct(&vdi, vulkan.PhysicalDevice(), vulkan.LogicalDevice(), vulkan.GraphicsQueue(), vulkanSystem.CommandPool, nullptr);
     if (result != KTX_SUCCESS) 
     {
         ktxTexture_Destroy(kTexture);

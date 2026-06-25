@@ -43,7 +43,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         .FrameBufferList = Vector<VkFramebuffer>(),
         .VulkanSubPassList = Vector<Vector<VulkanSubPass>>(),
         .ClearValueList = renderPassLoader.ClearValueList,
-        .SampleCount = renderPassLoader.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : renderPassLoader.SampleCount,
+        .SampleCount = renderPassLoader.SampleCount >= vulkan.MaxSampleCount() ? vulkan.MaxSampleCount() : renderPassLoader.SampleCount,
         .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
         .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
@@ -68,10 +68,10 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
-    //vkDeviceWaitIdle(vulkanSystem.Device);
-    //for (auto& renderPass : renderSystem.RenderPassList()) vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, renderPass.FrameBufferList);
-    //vulkanSystem.DestroySwapChainImageView(vulkanSystem.Device, vulkanSystem.SwapChainImageViews);
-    //vulkanSystem.DestroySwapChain(vulkanSystem.Device, &vulkanSystem.Swapchain);
+    //vkDeviceWaitIdle(vulkan.LogicalDevice());
+    //for (auto& renderPass : renderSystem.RenderPassList()) vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
+    //vulkanSystem.DestroySwapChainImageView(vulkan.LogicalDevice(), vulkanSystem.SwapChainImageViews);
+    //vulkanSystem.DestroySwapChain(vulkan.LogicalDevice(), &vulkanSystem.Swapchain);
 
     //vulkanSystem.SetUpSwapChain(windowHandle);
     //for (auto& renderPass : renderSystem.RenderPassList())
@@ -162,7 +162,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
         .dependencyCount = static_cast<uint32>(subpassDependencies.size()),
         .pDependencies = subpassDependencies.data(),
     };
-    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
+    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkan.LogicalDevice(), &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
 }
 
 VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader)
@@ -237,7 +237,7 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
                 .bindingCount = static_cast<uint32>(descriptorSetBindingList.size()),
                 .pBindings = descriptorSetBindingList.data()
             };
-            VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkanSystem.Device, &layoutInfo, nullptr, &descriptorSetLayout));
+            VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkan.LogicalDevice(), &layoutInfo, nullptr, &descriptorSetLayout));
 
             VkDescriptorSetAllocateInfo allocInfo =
             {
@@ -247,7 +247,7 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
                 .descriptorSetCount = 1,
                 .pSetLayouts = &descriptorSetLayout
             };
-            VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkanSystem.Device, &allocInfo, &descriptorSet));
+            VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkan.LogicalDevice(), &allocInfo, &descriptorSet));
 
             Vector<VkDescriptorImageInfo> subpassInputInfo = memoryPoolSystem.GetSubPassInputTextureDescriptor(renderPass.RenderPassId);
             if (subpassInputInfo.size() > descriptorSetBindingList.size()) subpassInputInfo.resize(descriptorSetBindingList.size());
@@ -269,7 +269,7 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
                         .pTexelBufferView = nullptr
                     });
             }
-            vkUpdateDescriptorSets(vulkanSystem.Device, static_cast<uint32>(writeDescriptorSetList.size()), writeDescriptorSetList.data(), 0, nullptr);
+            vkUpdateDescriptorSets(vulkan.LogicalDevice(), static_cast<uint32>(writeDescriptorSetList.size()), writeDescriptorSetList.data(), 0, nullptr);
             descriptorSetList.emplace_back(descriptorSet);
             descriptorSetLayoutList.emplace_back(descriptorSetLayout);
         }
@@ -314,7 +314,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
             {
             .format = renderAttachment.Format,
-            .samples = vulkanRenderPass.SampleCount >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : vulkanRenderPass.SampleCount,
+            .samples = vulkanRenderPass.SampleCount >= vulkan.MaxSampleCount() ? vulkan.MaxSampleCount() : vulkanRenderPass.SampleCount,
             .loadOp = renderAttachment.LoadOp,
             .storeOp = renderAttachment.StoreOp,
             .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -389,7 +389,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
                 .height = mipHeight,
                 .layers = vulkanRenderPass.UseCubeMapMultiView ? 1u : 6u
             };
-            VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &vulkanRenderPass.FrameBufferList[mip]));
+            VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &info, nullptr, &vulkanRenderPass.FrameBufferList[mip]));
         }
     }
     else
@@ -409,7 +409,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
             .height = static_cast<uint32_t>(vulkanRenderPass.RenderPassResolution.y),
             .layers = 1
         };
-        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &info, nullptr, &vulkanRenderPass.FrameBufferList[0]));
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &info, nullptr, &vulkanRenderPass.FrameBufferList[0]));
     }
 }
 
@@ -437,7 +437,7 @@ VkPipelineLayout RenderSystem::CreatePipelineLayout(RenderPipelineLoader& render
         .pushConstantRangeCount = static_cast<uint32>(pushConstantRangeList.size()),
         .pPushConstantRanges = pushConstantRangeList.data()
     };
-    VULKAN_THROW_IF_FAIL(vkCreatePipelineLayout(vulkanSystem.Device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+    VULKAN_THROW_IF_FAIL(vkCreatePipelineLayout(vulkan.LogicalDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
     return pipelineLayout;
 }
 
@@ -503,7 +503,7 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
     pipelineColorBlendStateCreateInfoModel.pAttachments = renderPipelineLoader.PipelineColorBlendAttachmentStateList.data();
 
     VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = renderPipelineLoader.PipelineMultisampleStateCreateInfo;
-    pipelineMultisampleStateCreateInfo.rasterizationSamples = pipelineMultisampleStateCreateInfo.rasterizationSamples >= vulkanSystem.MaxSampleCount ? vulkanSystem.MaxSampleCount : pipelineMultisampleStateCreateInfo.rasterizationSamples;
+    pipelineMultisampleStateCreateInfo.rasterizationSamples = pipelineMultisampleStateCreateInfo.rasterizationSamples >= vulkan.MaxSampleCount() ? vulkan.MaxSampleCount() : pipelineMultisampleStateCreateInfo.rasterizationSamples;
     pipelineMultisampleStateCreateInfo.sampleShadingEnable = pipelineMultisampleStateCreateInfo.rasterizationSamples > VK_SAMPLE_COUNT_1_BIT ? VK_TRUE : VK_FALSE;
     pipelineMultisampleStateCreateInfo.pSampleMask = nullptr;
 
@@ -530,10 +530,10 @@ VkPipeline RenderSystem::CreatePipeline(RenderPipelineLoader& renderPipelineLoad
         .basePipelineIndex = 0
     };
 
-    VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(vulkanSystem.Device, pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
+    VULKAN_THROW_IF_FAIL(vkCreateGraphicsPipelines(vulkan.LogicalDevice(), pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &pipeline));
     for (auto& shader : pipelineShaderStageCreateInfoList)
     {
-        vkDestroyShaderModule(vulkanSystem.Device, shader.module, nullptr);
+        vkDestroyShaderModule(vulkan.LogicalDevice(), shader.module, nullptr);
     }
 
     return pipeline;
@@ -553,9 +553,9 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
 
 void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 {
-    vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &renderPass.RenderPass);
-//    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, &renderPass.com, 1);
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, renderPass.FrameBufferList);
+    vulkanSystem.DestroyRenderPass(vulkan.LogicalDevice(), &renderPass.RenderPass);
+//    vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, &renderPass.com, 1);
+    vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
     renderPass = VulkanRenderPass();
 }
 
@@ -589,24 +589,24 @@ void RenderSystem::DestroyRenderPipelines()
 void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
 {
     vulkanPipeline.RenderPipelineId = VkGuid();
-    vulkanSystem.DestroyPipeline(vulkanSystem.Device, &vulkanPipeline.Pipeline);
-    vulkanSystem.DestroyPipelineLayout(vulkanSystem.Device, &vulkanPipeline.PipelineLayout);
-    vulkanSystem.DestroyPipelineCache(vulkanSystem.Device, &vulkanPipeline.PipelineCache);
+    vulkanSystem.DestroyPipeline(vulkan.LogicalDevice(), &vulkanPipeline.Pipeline);
+    vulkanSystem.DestroyPipelineLayout(vulkan.LogicalDevice(), &vulkanPipeline.PipelineLayout);
+    vulkanSystem.DestroyPipelineCache(vulkan.LogicalDevice(), &vulkanPipeline.PipelineCache);
 }
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, frameBufferList);
+    vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), frameBufferList);
 }
 
 void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
-    vulkanSystem.DestroyCommandBuffers(vulkanSystem.Device, &vulkanSystem.CommandPool, commandBuffer);
+    vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, commandBuffer);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
-    vulkanSystem.DestroyBuffer(vulkanSystem.Device, &buffer);
+    vulkanSystem.DestroyBuffer(vulkan.LogicalDevice(), &buffer);
 }
 
 Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid)
@@ -656,7 +656,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
         };
 
         VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        if (vkCreateSampler(vulkan.LogicalDevice(), &NullSamplerInfo, nullptr, &nullSampler))
         {
             throw std::runtime_error("Failed to create Sampler.");
         }
@@ -712,7 +712,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexture3DPropertiesBuffer(const R
         };
 
         VkSampler nullSampler = VK_NULL_HANDLE;
-        if (vkCreateSampler(vulkanSystem.Device, &NullSamplerInfo, nullptr, &nullSampler))
+        if (vkCreateSampler(vulkan.LogicalDevice(), &NullSamplerInfo, nullptr, &nullSampler))
         {
             throw std::runtime_error("Failed to create Sampler.");
         }
@@ -845,7 +845,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
     vulkanSystem.EndSingleUseCommand(cmd);
-    vkDeviceWaitIdle(vulkanSystem.Device);
+    vkDeviceWaitIdle(vulkan.LogicalDevice());
 
     const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
     uint32 pickedId = pData[y * texture->width + x];

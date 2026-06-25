@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <Platform.h>
+#include <VulkanSystem2.h>
 #include <VulkanWindow.h>
 #include "InputEnum.h"
 #include <vk_mem_alloc.h>
@@ -33,9 +34,7 @@ private:
 	uint32								   FindMaxApiVersion(VkPhysicalDevice physicalDevice);
 	static VkBool32 VKAPI_CALL			   DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* pUserData);
 
-	VkExtent2D							   SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
-	VkDevice							   SetUpDevice(VkPhysicalDevice physicalDevice, uint32 graphicsFamily, uint32 presentFamily);
-	VkPhysicalDevice					   SetUpPhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
+	VkExtent2D							   SetUpSwapChainExtent(const void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	void								   SetUpSwapChainImages();
 	void								   SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat);
 	VkCommandPool						   SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
@@ -66,15 +65,8 @@ private:
 public:
 	static VulkanSystem& Get();
 
-	void*								   WindowHandle = nullptr;
-
-	VulkanInstance						   m_instance;
-	VkDevice							   Device = VK_NULL_HANDLE;
-	VkPhysicalDevice					   PhysicalDevice = VK_NULL_HANDLE;
 	VkCommandPool						   CommandPool = VK_NULL_HANDLE;
 	VkSwapchainKHR						   Swapchain = VK_NULL_HANDLE;
-	VkQueue								   GraphicsQueue = VK_NULL_HANDLE;
-	VkQueue								   PresentQueue = VK_NULL_HANDLE;
 
 	Vector<VkFence>						   InFlightFences = Vector<VkFence>();
 	Vector<VkImage>						   SwapChainImages = Vector<VkImage>();
@@ -89,14 +81,11 @@ public:
 	ivec2								   DefaultRenderPassResolution;
 	uint32								   ImageIndex = UINT32_MAX;
 	uint32								   CommandIndex = UINT32_MAX;
-	uint32								   GraphicsFamily = UINT32_MAX;
-	uint32								   PresentFamily = UINT32_MAX;
 	uint32								   MaxFramesInFlight = UINT32_MAX;
 
 	VkFormat							   Format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR						   ColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	VkPresentModeKHR					   PresentMode = VK_PRESENT_MODE_FIFO_KHR;
-	VkSampleCountFlagBits				   MaxSampleCount = VK_SAMPLE_COUNT_1_BIT;
 	bool								   RequestRayTracingSupport = true;
 	bool								   RayTracingSupported = false;
 	bool								   RebuildRendererFlag = false;
@@ -107,10 +96,10 @@ public:
 
 	DLL_EXPORT void						   VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution);
 	DLL_EXPORT void						   VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec2 renderResolution);
-	DLL_EXPORT void						   RendererSetUp(void* windowHandle, ivec2 renderResolution);
+	DLL_EXPORT void						   RendererSetUp(const void* windowHandle, ivec2 renderResolution);
 	DLL_EXPORT void						   SetUpSwapChain();
-	DLL_EXPORT void						   SetUpSwapChain(void* windowHandle);
-	DLL_EXPORT void						   RebuildSwapChain(void* windowHandle);
+	DLL_EXPORT void						   SetUpSwapChain(const void* windowHandle);
+	DLL_EXPORT void						   RebuildSwapChain(const void* windowHandle);
 	DLL_EXPORT void						   StartFrame();
 	DLL_EXPORT void						   EndFrame(VkCommandBuffer& commandBufferSubmit);
 

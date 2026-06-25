@@ -1,4 +1,4 @@
-#include "VulkanSystem.h"
+#include "VulkanSystem2.h"
 #include "VulkanDebugger.h"
 #include "VulkanDevice.h"
 #include "VulkanWindow.h"
@@ -25,7 +25,7 @@ void VulkanSystem2::VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec
 void VulkanSystem2::RendererSetUp(void* windowHandle, ivec2 renderResolution)
 {
     m_instance.Initialize();
-    //m_device.Initialize();
+    m_device.Initialize();
    // m_swapChain.Initialize(renderResolution);
    // m_commandBuffer.Initialize();
 
@@ -58,9 +58,18 @@ void VulkanSystem2::Shutdown()
 {
 }
 
-bool					  VulkanSystem2::CustomSurface()			const { return m_usingCustomSurface; }
+
+VulkanInstance			  VulkanSystem2::Instance()                   { return m_instance; }
+VulkanDebugger			  VulkanSystem2::Debug()                      { return m_debug; }
+VulkanDevice			  VulkanSystem2::Device()                     { return m_device; }
+bool					  VulkanSystem2::CustomSurface()		const { return m_usingCustomSurface; }
 const void*               VulkanSystem2::WindowHandle()			const { return m_windowHandle; }
 ivec2					  VulkanSystem2::WindowResolution()		const { return m_windowResolution; }
-uint32					  VulkanSystem2::ApiVersion()				const { return m_instance.ApiVersion(); }
-VkInstance				  VulkanSystem2::InstanceHandle()			const { return m_instance.InstanceHandle(); }
-VkSurfaceKHR			  VulkanSystem2::Surface()					const { return m_instance.Surface(); }
+uint32					  VulkanSystem2::ApiVersion()			const { return m_instance.ApiVersion(); }
+VkInstance				  VulkanSystem2::InstanceHandle()		const { return m_instance.InstanceHandle(); }
+VkSurfaceKHR			  VulkanSystem2::Surface()				const { return m_instance.Surface(); }
+VkPhysicalDevice		  VulkanSystem2::PhysicalDevice()		const { return m_device.PhysicalDevice(); }
+VkDevice				  VulkanSystem2::LogicalDevice()		const { return m_device.LogicalDevice(); }
+VkQueue                   VulkanSystem2::GraphicsQueue()		const { return m_device.GraphicsQueue(); }
+VkQueue                   VulkanSystem2::PresentQueue()			const { return m_device.PresentQueue(); }
+VkSampleCountFlagBits     VulkanSystem2::MaxSampleCount()		const { return m_device.MaxSampleCount(); }
