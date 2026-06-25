@@ -18,11 +18,10 @@ public:
     VulkanInstance();
     ~VulkanInstance();
 
-     void                                   Initialize();
-     Vector<const char*>                    GetValidationLayerProperties();
+    void                                   Initialize();
+    Vector<const char*>                    GetValidationLayerProperties();
 
-     [[nodiscard]] uint32            ApiVersion()     const;
-     [[nodiscard]] VkInstance        InstanceHandle() const;
-     [[nodiscard]] VkSurfaceKHR      Surface()        const;
+    [[nodiscard]] uint32            ApiVersion()     const;
+    [[nodiscard]] VkInstance        InstanceHandle() const;
+    [[nodiscard]] VkSurfaceKHR      Surface()        const;
 };
-

@@ -13,8 +13,8 @@ LevelSystem& levelSystem = LevelSystem::Get();
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
-    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkanSystem.DefaultRenderPassResolution.x, (float)vulkanSystem.DefaultRenderPassResolution.y), vec2(0.0f, 0.0f));
-    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkanSystem.DefaultRenderPassResolution.x, (float)vulkanSystem.DefaultRenderPassResolution.y), vec3(0.0f, 0.0f, 0.0f)));
+    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.SwapChainResolution().width, (float)vulkan.SwapChainResolution().height), vec2(0.0f, 0.0f));
+    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.SwapChainResolution().width, (float)vulkan.SwapChainResolution().height), vec3(0.0f, 0.0f, 0.0f)));
     pushConstantRegistry.RegisterDefaultPushConstantRules();
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
@@ -375,13 +375,13 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             },
             VkOffset3D
             {
-                .x = static_cast<int>(vulkanSystem.SwapChainResolution.width),
-                .y = static_cast<int>(vulkanSystem.SwapChainResolution.height),
+                .x = static_cast<int>(vulkan.SwapChainResolution().width),
+                .y = static_cast<int>(vulkan.SwapChainResolution().height),
                 .z = 1
             }
         }
     };
-    vkCmdBlitImage(commandBuffer, srcTexture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanSystem.SwapChainImages[vulkanSystem.ImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
+    vkCmdBlitImage(commandBuffer, srcTexture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().m_ImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
 }
 
 LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)

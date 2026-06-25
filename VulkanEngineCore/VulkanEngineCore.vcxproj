@@ -150,6 +150,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="VulkanCommandBuffer.h" />
     <ClInclude Include="VulkanDebugger.h" />
     <ClInclude Include="VulkanDevice.h" />
     <ClInclude Include="VulkanInstance.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="VulkanCommandBuffer.cpp" />
     <ClCompile Include="VulkanDebugger.cpp" />
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />

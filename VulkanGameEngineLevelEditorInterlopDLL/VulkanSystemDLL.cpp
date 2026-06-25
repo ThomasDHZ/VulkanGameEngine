@@ -52,53 +52,53 @@
 	 return vulkanSystem.EndSingleUseCommand(commandBuffer);
 }
 
- VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
-{
-	 Vector<VkPresentModeKHR> presentModeList = vulkanSystem.GetSurfacePresentModes(physicalDevice, surface);
-	 *outCount = presentModeList.size();
-	 return presentModeList.data();
-}
-
- VkSurfaceCapabilitiesKHR VulkanSystem_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
-{
-	 return vulkanSystem.GetSurfaceCapabilities(physicalDevice, surface);
-}
-
- VkPhysicalDeviceProperties VulkanSystem_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice)
-{
-	 return vulkanSystem.GetPhysicalDeviceProperties(physicalDevice);
-}
-
- VkPhysicalDeviceFeatures VulkanSystem_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice)
-{
-	 return vulkanSystem.GetPhysicalDeviceFeatures(physicalDevice);
-}
-
- VkPhysicalDeviceFeatures2 VulkanSystem_GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice)
-{
-	 return vulkanSystem.GetPhysicalDeviceFeatures2(physicalDevice);
-}
-
- VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, size_t* outCount)
-{
-	 Vector<VkPhysicalDevice> presentModeList = vulkanSystem.GetPhysicalDeviceList(instance);
-	 *outCount = presentModeList.size();
-	 return presentModeList.data();
-}
-
- VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
-{
-	 Vector<VkSurfaceFormatKHR> physicalDeviceList = vulkanSystem.GetPhysicalDeviceFormats(physicalDevice, surface);
-	 *outCount = physicalDeviceList.size();
-	 return physicalDeviceList.data();
-}
-
- VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
-{
-	 Vector<VkPresentModeKHR> physicalDevicePresentList = vulkanSystem.GetPhysicalDevicePresentModes(physicalDevice, surface);
-	 *outCount = physicalDevicePresentList.size();
-	 return physicalDevicePresentList.data();
-}
+// VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
+//{
+//	 Vector<VkPresentModeKHR> presentModeList = vulkanSystem.GetSurfacePresentModes(physicalDevice, surface);
+//	 *outCount = presentModeList.size();
+//	 return presentModeList.data();
+//}
+//
+// VkSurfaceCapabilitiesKHR VulkanSystem_GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
+//{
+//	 return vulkanSystem.GetSurfaceCapabilities(physicalDevice, surface);
+//}
+//
+// VkPhysicalDeviceProperties VulkanSystem_GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice)
+//{
+//	 return vulkanSystem.GetPhysicalDeviceProperties(physicalDevice);
+//}
+//
+// VkPhysicalDeviceFeatures VulkanSystem_GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice)
+//{
+//	 return vulkanSystem.GetPhysicalDeviceFeatures(physicalDevice);
+//}
+//
+// VkPhysicalDeviceFeatures2 VulkanSystem_GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice)
+//{
+//	 return vulkanSystem.GetPhysicalDeviceFeatures2(physicalDevice);
+//}
+//
+// VkPhysicalDevice* VulkanSystem_GetPhysicalDeviceList(VkInstance instance, size_t* outCount)
+//{
+//	 Vector<VkPhysicalDevice> presentModeList = vulkanSystem.GetPhysicalDeviceList(instance);
+//	 *outCount = presentModeList.size();
+//	 return presentModeList.data();
+//}
+//
+// VkSurfaceFormatKHR* VulkanSystem_GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
+//{
+//	 Vector<VkSurfaceFormatKHR> physicalDeviceList = vulkanSystem.GetPhysicalDeviceFormats(physicalDevice, surface);
+//	 *outCount = physicalDeviceList.size();
+//	 return physicalDeviceList.data();
+//}
+//
+// VkPresentModeKHR* VulkanSystem_GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
+//{
+//	 Vector<VkPresentModeKHR> physicalDevicePresentList = vulkanSystem.GetPhysicalDevicePresentModes(physicalDevice, surface);
+//	 *outCount = physicalDevicePresentList.size();
+//	 return physicalDevicePresentList.data();
+//}
 
 
  void VulkanSystem_DestroyRenderer()

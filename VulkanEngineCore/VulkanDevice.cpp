@@ -148,24 +148,6 @@ void VulkanDevice::SetUpLogicalDevice()
     VULKAN_THROW_IF_FAIL(vkCreateDevice(m_physicalDevice, &deviceCreateInfo, nullptr, &m_logicalDevice));
 }
 
-Vector<VkSurfaceFormatKHR> VulkanDevice::GetSurfaceFormats(VkPhysicalDevice physicalDevice)
-{
-    uint32 surfaceFormatCount = 0;
-    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, vulkan.Surface(), &surfaceFormatCount, nullptr));
-    Vector<VkSurfaceFormatKHR>  surfaceFormatList = Vector<VkSurfaceFormatKHR>(surfaceFormatCount);
-    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, vulkan.Surface(), &surfaceFormatCount, surfaceFormatList.data()));
-    return surfaceFormatList;
-}
-
-Vector<VkPresentModeKHR> VulkanDevice::GetSurfacePresentModes(VkPhysicalDevice physicalDevice)
-{
-    uint32_t presentModeCount = 0;
-    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, vulkan.Surface(), &presentModeCount, NULL));
-    Vector<VkPresentModeKHR> presentModeList = Vector<VkPresentModeKHR>(presentModeCount);
-    VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, vulkan.Surface(), &presentModeCount, presentModeList.data()));
-    return presentModeList;
-}
-
 void VulkanDevice::SetUpPhysicalDevice()
 {
     Vector<VkPhysicalDevice> physicalDeviceList = GetPhysicalDeviceList(vulkan.InstanceHandle());
@@ -174,8 +156,8 @@ void VulkanDevice::SetUpPhysicalDevice()
         VkPhysicalDeviceProperties physicalDeviceProperties = GetPhysicalDeviceProperties(physicalDevice);
         VkPhysicalDeviceFeatures physicalDeviceFeatures = GetPhysicalDeviceFeatures(physicalDevice);
         GetQueueFamilies(physicalDevice);
-        Vector<VkSurfaceFormatKHR> surfaceFormatList = GetSurfaceFormats(physicalDevice); //
-        Vector<VkPresentModeKHR> presentModeList = GetSurfacePresentModes(physicalDevice); //
+        Vector<VkSurfaceFormatKHR> surfaceFormatList = vulkan.Swapchain().GetSurfaceFormats(physicalDevice);
+        Vector<VkPresentModeKHR> presentModeList = vulkan.Swapchain().GetSurfacePresentModes(physicalDevice);
 
         if (m_graphicsFamily != UINT32_MAX &&
             m_presentFamily != UINT32_MAX &&
@@ -363,10 +345,10 @@ void VulkanDevice::Shutdown()
 {
 }
 
-VkPhysicalDevice         VulkanDevice::PhysicalDevice() const { return m_physicalDevice; }
-VkDevice                 VulkanDevice::LogicalDevice()  const { return m_logicalDevice; }
-VkQueue                  VulkanDevice::GraphicsQueue()  const { return m_graphicsQueue; }
-VkQueue                  VulkanDevice::PresentQueue()   const { return m_presentQueue; }
-uint32                   VulkanDevice::GraphicsFamily() const { return m_graphicsFamily; }
-uint32                   VulkanDevice::PresentFamily()  const { return m_presentFamily; }
-VkSampleCountFlagBits    VulkanDevice::MaxSampleCount() const { return m_MaxSampleCount; }
+VkPhysicalDevice VulkanDevice::PhysicalDevice() const { return m_physicalDevice; }
+VkDevice         VulkanDevice::LogicalDevice()  const { return m_logicalDevice; }
+VkQueue          VulkanDevice::GraphicsQueue()  const { return m_graphicsQueue; }
+VkQueue          VulkanDevice::PresentQueue()   const { return m_presentQueue; }
+uint32           VulkanDevice::GraphicsFamily() const { return m_graphicsFamily; }
+uint32           VulkanDevice::PresentFamily()  const { return m_presentFamily; }
+VkSampleCountFlagBits VulkanDevice::MaxSampleCount() const { return m_MaxSampleCount; }

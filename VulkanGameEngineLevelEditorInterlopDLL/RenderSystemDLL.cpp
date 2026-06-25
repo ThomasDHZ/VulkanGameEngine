@@ -1,4 +1,5 @@
 #include "RenderSystemDLL.h"
+#include <VulkanSystem2.h>
 #include "../VulkanGameEngine/GameSystem.h"
 
  RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath)
@@ -58,12 +59,12 @@
 
  void RenderSystem_RenderTest(float deltaTime)
  {
-	 vulkanSystem.StartFrame();
-	 VkCommandBuffer commandBuffer = vulkanSystem.CommandBuffers[vulkanSystem.CommandIndex];
+	 vulkan.Swapchain().StartFrame();
+	 VkCommandBuffer commandBuffer = vulkan.CommandBufferList()[vulkan.Swapchain().CommandIndex()];
 	 // materialBakerSystem.Draw(commandBuffer);
 	 levelSystem.Draw(commandBuffer, deltaTime);
 	 levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
 	 renderSystem.Draw(commandBuffer);
 	 //ImGui_Draw(commandBuffer, imGuiRenderer);
-	 vulkanSystem.EndFrame(commandBuffer);
+	 vulkan.Swapchain().EndFrame(commandBuffer);
  }

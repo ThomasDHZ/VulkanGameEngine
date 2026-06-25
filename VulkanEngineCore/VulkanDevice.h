@@ -27,9 +27,6 @@ public:
     ~VulkanDevice();
 
     void                                   Initialize();
-    Vector<VkSurfaceFormatKHR>			    GetSurfaceFormats(VkPhysicalDevice physicalDevice);//
-    Vector<VkPresentModeKHR>			    GetSurfacePresentModes(VkPhysicalDevice physicalDevice);//
-
     Vector<VkPhysicalDevice>               GetPhysicalDeviceList(VkInstance instance);
     VkPhysicalDeviceProperties             GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
     VkPhysicalDeviceFeatures               GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);

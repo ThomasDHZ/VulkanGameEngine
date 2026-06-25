@@ -1178,7 +1178,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 
 	auto cleanup = [&]() {
 		if (commandBuffer != VK_NULL_HANDLE) {
-			vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkanSystem.CommandPool, 1, &commandBuffer);
+			vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
 			commandBuffer = VK_NULL_HANDLE;
 		}
 		if (fence != VK_NULL_HANDLE) {
@@ -1190,7 +1190,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	VkCommandBufferAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = vulkanSystem.CommandPool,
+		.commandPool = vulkan.CommandPool(),
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};
@@ -1297,7 +1297,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 		return;
 	}
 
-	vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkanSystem.CommandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
 	vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
 	commandBuffer = VK_NULL_HANDLE;
 	fence = VK_NULL_HANDLE;
@@ -1322,7 +1322,7 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	auto cleanup = [&]()
 		{
 			if (commandBuffer != VK_NULL_HANDLE) {
-				vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkanSystem.CommandPool, 1, &commandBuffer);
+				vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
 			}
 			if (fence != VK_NULL_HANDLE) {
 				vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
@@ -1332,7 +1332,7 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	VkCommandBufferAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = vulkanSystem.CommandPool,
+		.commandPool = vulkan.CommandPool(),
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};

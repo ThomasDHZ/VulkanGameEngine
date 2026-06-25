@@ -3,8 +3,8 @@
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
 #include "VulkanDebugger.h"
-//#include "VulkanSwapchain.h"
-//#include "VulkanCommandBuffer.h"
+#include "VulkanSwapchain.h"
+#include "VulkanCommandBuffer.h"
 
 class VulkanSystem2
 {
@@ -24,8 +24,8 @@ private:
 	VulkanInstance									  m_instance;
 	VulkanDebugger									  m_debug;
 	VulkanDevice									  m_device;
-	//VulkanSwapchain									  m_swapChain;
-	//VulkanCommandBuffer								  m_commandBuffer;
+	VulkanSwapchain									  m_swapChain;
+	VulkanCommandBuffer								  m_commandBuffer;
 	bool											  m_usingCustomSurface = false;
 
 	void											  RendererSetUp(void* windowHandle, ivec2 renderResolution);
@@ -39,26 +39,25 @@ public:
 	DLL_EXPORT VulkanInstance						  Instance();
 	DLL_EXPORT VulkanDebugger						  Debug();
 	DLL_EXPORT VulkanDevice							  Device();
-	//// VulkanSwapchain						  Swapchain() { return m_swapChain; }
-	//DLL_EXPORT VulkanCommandBuffer					  CommandBuffer() { return m_commandBuffer; }
+	DLL_EXPORT VulkanSwapchain						  Swapchain();
+	DLL_EXPORT VulkanCommandBuffer					  CommandBuffer();
 
-	DLL_EXPORT [[nodiscard]] bool					  CustomSurface()			const;
-	DLL_EXPORT [[nodiscard]] const void*			  WindowHandle()			const;
-	DLL_EXPORT [[nodiscard]] ivec2					  WindowResolution()		const;
-	DLL_EXPORT [[nodiscard]] uint32					  ApiVersion()				const;
-	DLL_EXPORT [[nodiscard]] VkInstance				  InstanceHandle()			const;
-	DLL_EXPORT [[nodiscard]] VkSurfaceKHR			  Surface()					const;
-	DLL_EXPORT [[nodiscard]] VkPhysicalDevice		  PhysicalDevice()			const;
-	DLL_EXPORT [[nodiscard]] VkDevice				  LogicalDevice()			const;
-	DLL_EXPORT [[nodiscard]] VkQueue                  GraphicsQueue()			const;
-	DLL_EXPORT [[nodiscard]] VkQueue                  PresentQueue()			const;
-	DLL_EXPORT [[nodiscard]] VkSampleCountFlagBits    MaxSampleCount()			const;
-	//DLL_EXPORT [[nodiscard]] uint32					  SwapChainImageCount()		const { return m_swapChain.ImageIndex(); }
-	//DLL_EXPORT [[nodiscard]] VkExtent2D				  SwapChainResolution()		const { return m_swapChain.SwapChainResolution(); }
-	//DLL_EXPORT [[nodiscard]] ivec2					  RenderPassResolution()	const { return m_swapChain.RenderPassResolution(); }
-	//DLL_EXPORT [[nodiscard]] VkCommandPool            CommandPool()				const { return m_commandBuffer.CommandPool(); }
-	//DLL_EXPORT [[nodiscard]] Vector<VkCommandBuffer>  CommandBufferList()		const { return m_commandBuffer.CommandBufferList(); }
-
+	DLL_EXPORT [[nodiscard]] bool					  CustomSurface()			;
+	DLL_EXPORT [[nodiscard]] const void*			  WindowHandle()			;
+	DLL_EXPORT [[nodiscard]] ivec2					  WindowResolution()		;
+	DLL_EXPORT [[nodiscard]] uint32					  ApiVersion()				;
+	DLL_EXPORT [[nodiscard]] VkInstance				  InstanceHandle()			;
+	DLL_EXPORT [[nodiscard]] VkSurfaceKHR			  Surface()					;
+	DLL_EXPORT [[nodiscard]] VkPhysicalDevice		  PhysicalDevice()			;
+	DLL_EXPORT [[nodiscard]] VkDevice				  LogicalDevice()			;
+	DLL_EXPORT [[nodiscard]] VkQueue                  GraphicsQueue()			;
+	DLL_EXPORT [[nodiscard]] VkQueue                  PresentQueue()			;
+	DLL_EXPORT [[nodiscard]] VkSampleCountFlagBits    MaxSampleCount()			;
+	DLL_EXPORT [[nodiscard]] uint32					  SwapChainImageCount()		;
+	DLL_EXPORT [[nodiscard]] VkExtent2D				  SwapChainResolution()		;
+	DLL_EXPORT [[nodiscard]] ivec2					  RenderPassResolution()	;
+	DLL_EXPORT [[nodiscard]] VkCommandPool            CommandPool()				;
+	DLL_EXPORT [[nodiscard]] Vector<VkCommandBuffer>  CommandBufferList()		;
 };
 extern DLL_EXPORT VulkanSystem2& vulkan;
 inline VulkanSystem2& VulkanSystem2::Get()

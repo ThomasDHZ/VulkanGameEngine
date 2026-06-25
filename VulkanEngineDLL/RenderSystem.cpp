@@ -38,7 +38,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
         .RenderPassId = renderPassLoader.RenderPassId,
-        .RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == renderPassLoader.RenderPassResolution  || ivec2(0) == renderPassLoader.RenderPassResolution ? vulkanSystem.DefaultRenderPassResolution : renderPassLoader.RenderPassResolution,
+        .RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == renderPassLoader.RenderPassResolution  || ivec2(0) == renderPassLoader.RenderPassResolution ? vulkan.RenderPassResolution() : renderPassLoader.RenderPassResolution,
         .RenderPass = VK_NULL_HANDLE,
         .FrameBufferList = Vector<VkFramebuffer>(),
         .VulkanSubPassList = Vector<Vector<VulkanSubPass>>(),
@@ -601,7 +601,7 @@ void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 
 void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
-    vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, commandBuffer);
+ //   vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, commandBuffer);
 }
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)

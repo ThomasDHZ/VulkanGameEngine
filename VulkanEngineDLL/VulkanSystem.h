@@ -30,29 +30,8 @@ private:
 	VulkanSystem& operator=(VulkanSystem&&) = delete;
 
 	bool m_usingCustomSurface = false;
-
-	uint32								   FindMaxApiVersion(VkPhysicalDevice physicalDevice);
-	static VkBool32 VKAPI_CALL			   DebugCallBack(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallBackData, void* pUserData);
-
-	VkExtent2D							   SetUpSwapChainExtent(const void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities);
-	void								   SetUpSwapChainImages();
-	void								   SetUpSwapChainImageViews(VkSurfaceFormatKHR swapChainImageFormat);
-	VkCommandPool						   SetUpCommandPool(VkDevice device, uint32 graphicsFamily);
-	void								   SetUpSemaphores();
-	void								   SetUpCommandBuffers();
 	VmaAllocator						   SetUpVmaAllocation();
-
-	void								   GetDeviceQueue(VkDevice device, uint32 graphicsFamily, uint32 presentFamily, VkQueue& graphicsQueue, VkQueue& presentQueue);
-	void								   GetQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32& graphicsFamily, uint32& presentFamily);
-	void								   GetRayTracingCapability(VkPhysicalDevice gpuDevice, Vector<String>& featureList, Vector<const char*>& deviceExtensionList);
-	Vector<const char*>					   GetRequiredInstanceExtensions();
-	Vector<const char*>					   GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice);
 	Vector<const char*>					   GetValidationLayerProperties();
-	Vector<VkSurfaceFormatKHR>			   GetSurfaceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	VkSampleCountFlagBits				   GetMaxSampleCount(VkPhysicalDevice gpuDevice);
-	VkSurfaceFormatKHR					   FindSwapSurfaceFormat(Vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR					   FindSwapPresentMode(Vector<VkPresentModeKHR>& availablePresentModes);
-
 
 	void								   DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugUtilsMessengerEXT, const VkAllocationCallbacks* pAllocator);
 	void								   DestroyFences(VkDevice device, Vector<VkSemaphore>& acquireImageSemaphores, Vector<VkSemaphore>& presentImageSemaphores, Vector<VkFence>& fences);
@@ -64,24 +43,6 @@ private:
 
 public:
 	static VulkanSystem& Get();
-
-	VkCommandPool						   CommandPool = VK_NULL_HANDLE;
-	VkSwapchainKHR						   Swapchain = VK_NULL_HANDLE;
-
-	Vector<VkFence>						   InFlightFences = Vector<VkFence>();
-	Vector<VkImage>						   SwapChainImages = Vector<VkImage>();
-	Vector<VkCommandBuffer>				   CommandBuffers = Vector<VkCommandBuffer>();
-	Vector<VkImageView>					   SwapChainImageViews = Vector<VkImageView>();
-	Vector<VkSemaphore>					   AcquireImageSemaphores = Vector<VkSemaphore>();
-	Vector<VkSemaphore>					   PresentImageSemaphores = Vector<VkSemaphore>();
-
-
-	VkExtent2D							   SwapChainResolution{};
-	uint32								   SwapChainImageCount = UINT32_MAX;
-	ivec2								   DefaultRenderPassResolution;
-	uint32								   ImageIndex = UINT32_MAX;
-	uint32								   CommandIndex = UINT32_MAX;
-	uint32								   MaxFramesInFlight = UINT32_MAX;
 
 	VkFormat							   Format = VK_FORMAT_UNDEFINED;
 	VkColorSpaceKHR						   ColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
@@ -97,24 +58,11 @@ public:
 	DLL_EXPORT void						   VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution);
 	DLL_EXPORT void						   VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec2 renderResolution);
 	DLL_EXPORT void						   RendererSetUp(const void* windowHandle, ivec2 renderResolution);
-	DLL_EXPORT void						   SetUpSwapChain();
-	DLL_EXPORT void						   SetUpSwapChain(const void* windowHandle);
-	DLL_EXPORT void						   RebuildSwapChain(const void* windowHandle);
-	DLL_EXPORT void						   StartFrame();
-	DLL_EXPORT void						   EndFrame(VkCommandBuffer& commandBufferSubmit);
 
 	DLL_EXPORT VkCommandBuffer			   BeginSingleUseCommand();
 	DLL_EXPORT void						   EndSingleUseCommand(VkCommandBuffer commandBuffer);
 	DLL_EXPORT uint32					   GetMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-	DLL_EXPORT Vector<VkPresentModeKHR>    GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	DLL_EXPORT VkSurfaceCapabilitiesKHR    GetSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	DLL_EXPORT VkPhysicalDeviceProperties  GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice);
-	DLL_EXPORT VkPhysicalDeviceFeatures    GetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice);
-	DLL_EXPORT VkPhysicalDeviceFeatures2   GetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice);
-	DLL_EXPORT Vector<VkPhysicalDevice>    GetPhysicalDeviceList(VkInstance& instance);
-	DLL_EXPORT Vector<VkSurfaceFormatKHR>  GetPhysicalDeviceFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	DLL_EXPORT Vector<VkPresentModeKHR>    GetPhysicalDevicePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
 	DLL_EXPORT void						   DestroyRenderer();
 	DLL_EXPORT void						   DestroySwapChainImageView(VkDevice device, Vector<VkImageView>& pSwapChainImageViewList);

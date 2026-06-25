@@ -155,14 +155,13 @@ void VulkanInstance::SetUpVulkanSurface()
 
 uint32 VulkanInstance::GetMaxApiVersion(VkPhysicalDevice physicalDevice)
 {
-    return 0;
-//    uint32 version = vulkan.Device().GetPhysicalDeviceProperties(physicalDevice).apiVersion;
-//#ifndef __ANDROID__
-//    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 4)) return VK_API_VERSION_1_4;
-//#endif
-//    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 3)) return VK_API_VERSION_1_3;
-//    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 2)) return VK_API_VERSION_1_2;
-//    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 1)) return VK_API_VERSION_1_1;
+    uint32 version = vulkan.Device().GetPhysicalDeviceProperties(physicalDevice).apiVersion;
+#ifndef __ANDROID__
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 4)) return VK_API_VERSION_1_4;
+#endif
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 3)) return VK_API_VERSION_1_3;
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 2)) return VK_API_VERSION_1_2;
+    if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 1)) return VK_API_VERSION_1_1;
 }
 
 Vector<const char*> VulkanInstance::GetRequiredInstanceExtensions()
