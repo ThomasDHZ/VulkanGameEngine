@@ -6,16 +6,17 @@
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif
+#include <VulkanInstance.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-	typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
-	DLL_EXPORT void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
-	DLL_EXPORT void VulkanSystem_LogVulkanMessage(const char* message, int severity);
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+//	typedef void (*LogVulkanMessageCallback)(const char* message, int severity);
+//	DLL_EXPORT void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback);
+//	DLL_EXPORT void VulkanSystem_LogVulkanMessage(const char* message, int severity);
+//#ifdef __cplusplus
+//}
+//#endif
 
 class VulkanSystem
 {
@@ -67,13 +68,10 @@ public:
 
 	void*								   WindowHandle = nullptr;
 
-	uint32								   ApiVersion = VK_API_VERSION_1_1;
-	VkInstance							   Instance = VK_NULL_HANDLE;
+	VulkanInstance						   m_instance;
 	VkDevice							   Device = VK_NULL_HANDLE;
 	VkPhysicalDevice					   PhysicalDevice = VK_NULL_HANDLE;
-	VkSurfaceKHR						   Surface = VK_NULL_HANDLE;
 	VkCommandPool						   CommandPool = VK_NULL_HANDLE;
-	VkDebugUtilsMessengerEXT			   DebugMessenger = VK_NULL_HANDLE;
 	VkSwapchainKHR						   Swapchain = VK_NULL_HANDLE;
 	VkQueue								   GraphicsQueue = VK_NULL_HANDLE;
 	VkQueue								   PresentQueue = VK_NULL_HANDLE;
@@ -106,9 +104,6 @@ public:
 #if defined(__ANDROID__)
 	PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress;
 #endif
-
-	DLL_EXPORT VkInstance				   CreateVulkanInstance();
-	DLL_EXPORT VkSurfaceKHR				   CreateVulkanSurface(void* windowHandle);
 
 	DLL_EXPORT void						   VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution);
 	DLL_EXPORT void						   VulkanSetUp(void* windowHandle, ivec2 windowResolution, ivec2 renderResolution);

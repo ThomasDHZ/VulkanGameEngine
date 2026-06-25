@@ -115,6 +115,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,6 +150,10 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="VulkanDebugger.h" />
+    <ClInclude Include="VulkanDevice.h" />
+    <ClInclude Include="VulkanInstance.h" />
+    <ClInclude Include="VulkanSystem.h" />
     <ClInclude Include="VulkanWindow.h" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +161,10 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="VulkanDebugger.cpp" />
+    <ClCompile Include="VulkanDevice.cpp" />
+    <ClCompile Include="VulkanInstance.cpp" />
+    <ClCompile Include="VulkanSystem.cpp" />
     <ClCompile Include="VulkanWindow.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -15,6 +15,6 @@ public:
 	static void KeyboardKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
 	const KeyState* GetKeyBoardState() const { return KeyPressed; }
 };
-extern Keyboard keyboard;
+extern DLL_EXPORT Keyboard keyboard;
 
 #endif

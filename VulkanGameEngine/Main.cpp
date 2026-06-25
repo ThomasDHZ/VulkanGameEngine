@@ -47,21 +47,20 @@ int main(int argc, char** argv)
 
     try
     {
-        vulkanWindow = new GameEngineWindow();
-        vulkanWindow->CreateGraphicsWindow(vulkanWindow, "Game", configSystem.WindowResolution.x, configSystem.WindowResolution.y);
-        gameSystem.StartUp(vulkanWindow);
-        imGuiRenderer = ImGui_StartUp();
-        while (!vulkanWindow->WindowShouldClose(vulkanWindow))
+
+        gameSystem.StartUp();
+        //imGuiRenderer = ImGui_StartUp();
+        while (!vulkanWindow.ShouldClose())
         {
             const float frameTime = deltaTime.GetFrameTime();
-            vulkanWindow->PollEventHandler(vulkanWindow);
-            gameSystem.Update(vulkanWindow, frameTime);
+            vulkanWindow.PollEvents();
+            gameSystem.Update(vulkanWindow.GetHandle(), frameTime);
             gameSystem.DebugUpdate(frameTime);
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();
         }
         vkDeviceWaitIdle(vulkanSystem.Device);
-        ImGui_Destroy(imGuiRenderer);
+        //ImGui_Destroy(imGuiRenderer);
 
         renderSystem.Destroy();
         textureSystem.DestroyAllTextures();
@@ -73,7 +72,7 @@ int main(int argc, char** argv)
      //   debugSystem.DumpVMAStats();
 
         vulkanSystem.DestroyRenderer();
-        vulkanWindow->DestroyWindow(vulkanWindow);
+        vulkanWindow.Close();
     }
     catch (const VulkanError& e)
     {

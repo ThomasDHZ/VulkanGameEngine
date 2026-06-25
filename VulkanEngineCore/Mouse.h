@@ -26,6 +26,6 @@ public:
 	static void MouseButtonPressedEvent(GLFWwindow* window, int button, int action, int mods);
 	static void MouseWheelEvent(GLFWwindow* window, double xpos, double ypos);
 };
-extern Mouse mouse;
+extern DLL_EXPORT Mouse mouse;
 
 #endif

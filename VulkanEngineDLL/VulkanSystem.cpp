@@ -14,20 +14,20 @@
 #endif
 
 VulkanSystem& vulkanSystem = VulkanSystem::Get();
-LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
-
-void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback)
-{
-    g_logVulkanMessageCallback = callback;
-}
-
-void VulkanSystem_LogVulkanMessage(const char* message, int severity)
-{
-    if (g_logVulkanMessageCallback)
-    {
-        g_logVulkanMessageCallback(message, severity);
-    }
-}
+//LogVulkanMessageCallback g_logVulkanMessageCallback = nullptr;
+//
+//void VulkanSystem_CreateLogMessageCallback(LogVulkanMessageCallback callback)
+//{
+//    g_logVulkanMessageCallback = callback;
+//}
+//
+//void VulkanSystem_LogVulkanMessage(const char* message, int severity)
+//{
+//    if (g_logVulkanMessageCallback)
+//    {
+//        g_logVulkanMessageCallback(message, severity);
+//    }
+//}
 
 uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
 {
@@ -39,13 +39,13 @@ uint32 VulkanSystem::FindMaxApiVersion(VkPhysicalDevice physicalDevice)
     if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 2)) return VK_API_VERSION_1_2;
     if ((VK_VERSION_MAJOR(version) == 1 && VK_VERSION_MINOR(version) == 1)) return VK_API_VERSION_1_1;
 }
-    VkInstance instance = vulkanSystem.CreateVulkanInstance();
+
 void VulkanSystem::VulkanSetUp(ivec2 windowResolution, ivec2 renderResolution)
 {
     vulkanWindow.Create("Game", windowResolution.x, windowResolution.y);
 
     m_usingCustomSurface = false;
-    WindowHandle = vulkanWindow.m_window;
+    WindowHandle = vulkanWindow.GetHandle();
     DefaultRenderPassResolution = windowResolution;
     RendererSetUp(WindowHandle, DefaultRenderPassResolution);
 }
@@ -65,10 +65,9 @@ void VulkanSystem::RendererSetUp(void* windowHandle, ivec2 renderResolution)
     vulkanSystem.ImageIndex = 0;
     vulkanSystem.CommandIndex = 0;
     vulkanSystem.RebuildRendererFlag = false;
-    vulkanSystem.Instance = CreateVulkanInstance();
-    vulkanSystem.Surface = CreateVulkanSurface(windowHandle);
+    m_instance.Initialize();
     //GetRayTracingCapability(vulkanSystem.PhysicalDevice, vulkanSystem.FeatureList, vulkanSystem.DeviceExtensionList);
-    vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(vulkanSystem.Instance, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+    vulkanSystem.PhysicalDevice = SetUpPhysicalDevice(m_instance.InstanceHandle(), m_instance.Surface(), vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     vulkanSystem.Device = SetUpDevice(vulkanSystem.PhysicalDevice, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
     bufferSystem.vmaAllocator = SetUpVmaAllocation();
     vulkanSystem.MaxSampleCount = GetMaxSampleCount(vulkanSystem.PhysicalDevice);
@@ -90,7 +89,7 @@ void VulkanSystem::RendererSetUp(void* windowHandle, ivec2 renderResolution)
 VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapabilitiesKHR& surfaceCapabilities)
 {
 #ifndef PLATFORM_ANDROID
-    surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
+    surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, m_instance.Surface());
     if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
     {
         return surfaceCapabilities.currentExtent;
@@ -114,10 +113,10 @@ VkExtent2D VulkanSystem::SetUpSwapChainExtent(void* windowHandle, VkSurfaceCapab
 void VulkanSystem::SetUpSwapChain(void* windowHandle)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, m_instance.Surface());
     VkExtent2D extent = SetUpSwapChainExtent(windowHandle, surfaceCapabilities);
-    GetQueueFamilies(vulkanSystem.PhysicalDevice, vulkanSystem.Surface, vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
+    GetQueueFamilies(vulkanSystem.PhysicalDevice, m_instance.Surface(), vulkanSystem.GraphicsFamily, vulkanSystem.PresentFamily);
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, m_instance.Surface());
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
@@ -138,8 +137,8 @@ VmaAllocator VulkanSystem::SetUpVmaAllocation()
         .device = Device,
         .preferredLargeHeapBlockSize = 64ull << 20,   // 64 MB
         .pVulkanFunctions = &vulkanFunctions,
-        .instance = Instance,
-        .vulkanApiVersion = ApiVersion,
+        .instance = m_instance.InstanceHandle(),
+        .vulkanApiVersion = m_instance.ApiVersion(),
     };
 
     VmaAllocator allocator = VK_NULL_HANDLE;
@@ -161,55 +160,10 @@ void VulkanSystem::DestroyRenderer()
     DestroyCommandPool(vulkanSystem.Device, &vulkanSystem.CommandPool);
     vmaDestroyAllocator(bufferSystem.vmaAllocator); 
     DestroyDevice(vulkanSystem.Device);
-    DestroyDebugger(&vulkanSystem.Instance, vulkanSystem.DebugMessenger);
-    DestroySurface(vulkanSystem.Instance, &vulkanSystem.Surface);
-    DestroyInstance(&vulkanSystem.Instance);
+    //DestroyDebugger(m_instance.InstanceHandle(), vulkanSystem.DebugMessenger);
+    //DestroySurface(m_instance.InstanceHandle(), &m_instance.Surface());
+    //DestroyInstance(m_instance.InstanceHandle());
 }
-
-VkSurfaceKHR VulkanSystem::CreateVulkanSurface(void* windowHandle)
-{
-
-#if defined(_WIN32)
-    if (m_usingCustomSurface)
-    {
-        VkWin32SurfaceCreateInfoKHR surfaceCreateInfo =
-        {
-            .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-            .hinstance = GetModuleHandle(nullptr),
-            .hwnd = (HWND)vulkanWindow.GetHandle()
-        };
-        VkResult result = vkCreateWin32SurfaceKHR(Instance, &surfaceCreateInfo, nullptr, &Surface);
-    }
-    else
-    {
-        vulkanWindow.CreateSurface(Instance, Surface);
-    }
-
-#elif defined(__linux__) && !defined(__ANDROID__)
-    GLFWwindow* window = (GLFWwindow*)windowHandle;
-    glfwCreateWindowSurface(instance, window, nullptr, &surface);
-
-#elif defined(__ANDROID__)
-    ANativeWindow* nativeWindow = (ANativeWindow*)windowHandle;
-
-    VkAndroidSurfaceCreateInfoKHR surfaceInfo = { VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR };
-    surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-    surfaceInfo.pNext = nullptr;
-    surfaceInfo.flags = 0;
-    surfaceInfo.window = nativeWindow;
-
-    VkResult result = vkCreateAndroidSurfaceKHR(instance, &surfaceInfo, nullptr, &surface);
-    if (result != VK_SUCCESS || surface == VK_NULL_HANDLE)
-    {
-        __android_log_print(ANDROID_LOG_ERROR, "VulkanEngine", "FATAL: vkCreateAndroidSurfaceKHR failed! Result: %d", result);
-        return;
-    }
-    __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "Android surface created successfully: %p", surface);
-#endif
-
-    return Surface;
-}
-
 
 Vector<const char*> VulkanSystem::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
 {
@@ -297,7 +251,7 @@ VkBool32 VKAPI_CALL VulkanSystem::DebugCallBack(
     // Linux / macOS: ANSI escape codes (works in every terminal)
     fprintf(stderr, "%s%s: \033[0m%s\n", colorCode, severityStr, CallBackData->pMessage);
 #endif
-    VulkanSystem_LogVulkanMessage(CallBackData->pMessage, static_cast<int>(MessageSeverity));
+    //VulkanSystem_LogVulkanMessage(CallBackData->pMessage, static_cast<int>(MessageSeverity));
     return VK_FALSE;
 }
 
@@ -317,98 +271,6 @@ Vector<VkPresentModeKHR> VulkanSystem::GetSurfacePresentModes(VkPhysicalDevice p
     Vector<VkPresentModeKHR> presentModeList = Vector<VkPresentModeKHR>(presentModeCount);
     VULKAN_THROW_IF_FAIL(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModeList.data()));
     return presentModeList;
-}
-
-VkInstance VulkanSystem::CreateVulkanInstance()
-{
-#if defined(__linux__)
-    unsetenv("VK_INSTANCE_LAYERS");
-    unsetenv("VK_LAYER_PATH");
-#endif
-
-    VkInstance instance = VK_NULL_HANDLE;
-    VkDebugUtilsMessengerCreateInfoEXT debugInfo;
-    Vector<VkValidationFeatureEnableEXT> enabledList;
-    Vector<VkValidationFeatureDisableEXT> disabledList;
-
-#ifndef NDEBUG
-    enabledList =
-    {
-        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
-        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT
-    };
-
-    disabledList =
-    {
-        VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT,
-        VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT
-    };
-
-    debugInfo =
-    {
-       .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-       .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-       .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-       .pfnUserCallback = DebugCallBack
-    };
-#endif
-
-    VkValidationFeaturesEXT validationFeatures = {
-          .sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
-          .pNext = nullptr,
-          .enabledValidationFeatureCount = static_cast<uint32_t>(enabledList.size()),
-          .pEnabledValidationFeatures = enabledList.data(),
-          .disabledValidationFeatureCount = static_cast<uint32_t>(disabledList.size()),
-          .pDisabledValidationFeatures = disabledList.data()
-    };
-
-#ifndef NDEBUG
-    validationFeatures.pNext = &debugInfo;
-#endif
-
-    Vector<const char*> extensionNames = GetRequiredInstanceExtensions();
-    VkApplicationInfo applicationInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName = "Vulkan Application",
-        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-        .pEngineName = "No Engine",
-        .engineVersion = VK_MAKE_VERSION(1, 0, 0),
-        #if defined(__ANDROID__)
-            .apiVersion = VK_API_VERSION_1_3
-        #else
-            .apiVersion = VK_API_VERSION_1_4
-        #endif
-    };
-
-
-    Vector<const char*> validationLayers = GetValidationLayerProperties();
-    VkInstanceCreateInfo createInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pNext = &validationFeatures,
-        .pApplicationInfo = &applicationInfo,
-        .enabledLayerCount = static_cast<uint32_t>(validationLayers.size()),
-        .ppEnabledLayerNames = validationLayers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(extensionNames.size()),
-        .ppEnabledExtensionNames = extensionNames.data()
-    };
-    VULKAN_THROW_IF_FAIL(vkCreateInstance(&createInfo, nullptr, &instance));
-
-#ifndef NDEBUG
-    PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func)
-    {
-        func(instance, &debugInfo, nullptr, &vulkanSystem.DebugMessenger);
-    }
-#endif
-
-    return instance;
 }
 
 Vector<const char*> VulkanSystem::GetRequiredInstanceExtensions()
@@ -829,9 +691,9 @@ Vector<VkPresentModeKHR> VulkanSystem::GetPhysicalDevicePresentModes(VkPhysicalD
 
 void VulkanSystem::SetUpSwapChain()
 {
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
-    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
-    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, vulkanSystem.Surface);
+    VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities(vulkanSystem.PhysicalDevice, m_instance.Surface());
+    Vector<VkSurfaceFormatKHR> compatibleSwapChainFormatList = GetPhysicalDeviceFormats(vulkanSystem.PhysicalDevice, m_instance.Surface());
+    Vector<VkPresentModeKHR> compatiblePresentModesList = GetPhysicalDevicePresentModes(vulkanSystem.PhysicalDevice, m_instance.Surface());
     VkSurfaceFormatKHR swapChainImageFormat = FindSwapSurfaceFormat(compatibleSwapChainFormatList);
     VkPresentModeKHR swapChainPresentMode = FindSwapPresentMode(compatiblePresentModesList);
 
@@ -856,7 +718,7 @@ void VulkanSystem::SetUpSwapChain()
     VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = vulkanSystem.Surface,
+        .surface = m_instance.Surface(),
         .minImageCount = static_cast<uint32>(vulkanSystem.SwapChainImageCount),
         .imageFormat = swapChainImageFormat.format,
         .imageColorSpace = swapChainImageFormat.colorSpace,

@@ -13,10 +13,10 @@ public:
 	GameController();
 	~GameController();
 
-	bool ButtonPressed(int controllerId, int button);
-	vec2 LeftJoyStickMoved(int controllerId);
-	vec2 RightJoyStickMoved(int controllerId);
-	vec2 R2L2Pressed(int controllerId);
+	DLL_EXPORT bool ButtonPressed(int controllerId, int button);
+	DLL_EXPORT vec2 LeftJoyStickMoved(int controllerId);
+	DLL_EXPORT vec2 RightJoyStickMoved(int controllerId);
+	DLL_EXPORT vec2 R2L2Pressed(int controllerId);
 };
-extern GameController gameController;
+extern DLL_EXPORT GameController gameController;
 #endif
