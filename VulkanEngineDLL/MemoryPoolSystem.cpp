@@ -114,23 +114,23 @@ void MemoryPoolSystem::StartUp()
 
     std::cout << "Creating GPU data buffer with size: " << totalGpuBufferSize << " bytes\n";
 
-    GpuDataBufferIndex = bufferSystemInstance.CreateDynamicBuffer(nullptr, totalGpuBufferSize,
+    GpuDataBufferIndex = bufferSystem.CreateDynamicBuffer(nullptr, totalGpuBufferSize,
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VulkanBuffer& buffer = bufferSystemInstance.FindVulkanBuffer(GpuDataBufferIndex);
+    VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     MappedBufferPtr = buffer.BufferData;
 
     // Initialize scene data buffer
     SceneDataBuffer sceneData = {};
-    SceneDataBufferIndex = bufferSystemInstance.CreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer),
+    SceneDataBufferIndex = bufferSystem.CreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer),
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VulkanBuffer& sceneDataBuffer = bufferSystemInstance.FindVulkanBuffer(SceneDataBufferIndex);
+    VulkanBuffer& sceneDataBuffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex);
     SceneDataPtr = sceneDataBuffer.BufferData;
 
     // Flush initial data
-    vmaFlushAllocation(bufferSystemInstance.vmaAllocator, buffer.Allocation, 0, totalGpuBufferSize);
-    vmaFlushAllocation(bufferSystemInstance.vmaAllocator, sceneDataBuffer.Allocation, 0, sizeof(SceneDataBuffer));
+    vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, totalGpuBufferSize);
+    vmaFlushAllocation(bufferSystem.vmaAllocator, sceneDataBuffer.Allocation, 0, sizeof(SceneDataBuffer));
 
     CreateGlobalBindlessDescriptorSet();
 
@@ -145,8 +145,8 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
 
     UpdateMemoryPoolHeader(memoryPoolToUpdate, resizeCount);
     size_t newTotalSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
-    uint32 newBufferId = bufferSystemInstance.CreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    VulkanBuffer& newBuf = bufferSystemInstance.FindVulkanBuffer(newBufferId);
+    uint32 newBufferId = bufferSystem.CreateDynamicBuffer(nullptr, newTotalSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    VulkanBuffer& newBuf = bufferSystem.FindVulkanBuffer(newBufferId);
     MappedBufferPtr = newBuf.BufferData;
 
     std::memset(static_cast<byte*>(MappedBufferPtr), 0xFF, newTotalSize);
@@ -163,10 +163,10 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
             memcpy(dst, src, bytesToCopy);
         }
     }
-    vmaFlushAllocation(bufferSystemInstance.vmaAllocator, newBuf.Allocation, 0, newTotalSize);
+    vmaFlushAllocation(bufferSystem.vmaAllocator, newBuf.Allocation, 0, newTotalSize);
     if (oldBufferId != UINT32_MAX)
     {
-        bufferSystemInstance.DestroyBuffer(bufferSystemInstance.FindVulkanBuffer(oldBufferId));
+        bufferSystem.DestroyBuffer(bufferSystem.FindVulkanBuffer(oldBufferId));
     }
 
     GpuDataBufferIndex = newBufferId;
@@ -178,14 +178,14 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
 {
     VkDescriptorBufferInfo  sceneDataBuffer = VkDescriptorBufferInfo
     {
-        .buffer = bufferSystemInstance.FindVulkanBuffer(memoryPoolSystem.SceneDataBufferIndex).Buffer,
+        .buffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.SceneDataBufferIndex).Buffer,
         .offset = 0,
         .range = VK_WHOLE_SIZE
     };
 
     VkDescriptorBufferInfo  bindlessDataBuffer = VkDescriptorBufferInfo
     {
-        .buffer = bufferSystemInstance.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
+        .buffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
         .offset = 0,
         .range = VK_WHOLE_SIZE
     };
@@ -311,7 +311,7 @@ void MemoryPoolSystem::UpdateMemoryPool()
 {
     if (IsSceneBufferDirty)
     {
-        vmaFlushAllocation(bufferSystemInstance.vmaAllocator, bufferSystemInstance.FindVulkanBuffer(SceneDataBufferIndex).Allocation, 0, sizeof(SceneDataBuffer));
+        vmaFlushAllocation(bufferSystem.vmaAllocator, bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).Allocation, 0, sizeof(SceneDataBuffer));
         IsSceneBufferDirty = false;
     }
 
@@ -320,7 +320,7 @@ void MemoryPoolSystem::UpdateMemoryPool()
         return;
     }
 
-    VulkanBuffer& buffer = bufferSystemInstance.FindVulkanBuffer(GpuDataBufferIndex);
+    VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     for (auto& [type, sub] : MemorySubPoolHeader)
     {
         if (sub.IsDirty)
@@ -329,7 +329,7 @@ void MemoryPoolSystem::UpdateMemoryPool()
             size_t len = sub.ActiveCount * sub.Size;
             if (len > 0)
             {
-                vmaFlushAllocation(bufferSystemInstance.vmaAllocator, buffer.Allocation, start, len);
+                vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, start, len);
             }
             sub.IsDirty = false;
         }
@@ -338,7 +338,7 @@ void MemoryPoolSystem::UpdateMemoryPool()
     if (IsHeaderDirty)
     {
         memcpy(MappedBufferPtr, &GpuDataMemoryPoolHeader, sizeof(MemoryPoolBufferHeader));
-        vmaFlushAllocation(bufferSystemInstance.vmaAllocator, buffer.Allocation, 0, sizeof(MemoryPoolBufferHeader));
+        vmaFlushAllocation(bufferSystem.vmaAllocator, buffer.Allocation, 0, sizeof(MemoryPoolBufferHeader));
         IsHeaderDirty = false;
     }
 
@@ -633,7 +633,7 @@ void MemoryPoolSystem::UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, u
 {
     VkDescriptorBufferInfo bufferUpdate = VkDescriptorBufferInfo
     {
-        .buffer = bufferSystemInstance.FindVulkanBuffer(vulkanBufferIndex).Buffer,
+        .buffer = bufferSystem.FindVulkanBuffer(vulkanBufferIndex).Buffer,
         .offset = 0,
         .range = VK_WHOLE_SIZE
     };
@@ -662,7 +662,7 @@ const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetSceneDataBufferDescrip
     {
         VkDescriptorBufferInfo
         {
-            .buffer = bufferSystemInstance.FindVulkanBuffer(SceneDataBufferIndex).Buffer,
+            .buffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).Buffer,
             .offset = 0,
             .range = VK_WHOLE_SIZE
         }
@@ -675,7 +675,7 @@ const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetBindlessDataBufferDesc
     {
         VkDescriptorBufferInfo
         {
-            .buffer = bufferSystemInstance.FindVulkanBuffer(GpuDataBufferIndex).Buffer,
+            .buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex).Buffer,
             .offset = 0,
             .range = VK_WHOLE_SIZE
         }

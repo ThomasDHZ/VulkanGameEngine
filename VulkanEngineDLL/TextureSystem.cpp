@@ -242,7 +242,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.usage = VMA_MEMORY_USAGE_AUTO
 	};
 
-	if (vmaCreateImage(bufferSystemInstance.vmaAllocator, &imageCI, &vmaAllocCI, &image, &allocation, nullptr) != VK_SUCCESS)
+	if (vmaCreateImage(bufferSystem.vmaAllocator, &imageCI, &vmaAllocCI, &image, &allocation, nullptr) != VK_SUCCESS)
 	{
 		std::cerr << "vmaCreateImage failed for " << path << std::endl;
 		ktxTexture_Destroy(ktex);
@@ -265,15 +265,15 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	VmaAllocationInfo mappedInfo{};
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-	if (vmaCreateBuffer(bufferSystemInstance.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &mappedInfo) != VK_SUCCESS)
+	if (vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &mappedInfo) != VK_SUCCESS)
 	{
 		std::cerr << "Staging buffer creation failed for " << path << std::endl;
-		vmaDestroyImage(bufferSystemInstance.vmaAllocator, image, allocation);
+		vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
 		ktxTexture_Destroy(ktex);
 		return {};
 	}
 	memcpy(mappedInfo.pMappedData, ktex->pData, dataSize);
-	vmaFlushAllocation(bufferSystemInstance.vmaAllocator, stagingAlloc, 0, dataSize);
+	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, dataSize);
 
 	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 	VkImageMemoryBarrier barrierToDst{
@@ -321,14 +321,14 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	};
 	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthFormat ? VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToFinal);
 	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
-	vmaDestroyBuffer(bufferSystemInstance.vmaAllocator, stagingBuffer, stagingAlloc);
+	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 	ktxTexture_Destroy(ktex);
 
 	VkSampler sampler = VK_NULL_HANDLE;
 	if (vkCreateSampler(vulkan.LogicalDevice(), &textureLoader.SamplerCreateInfo, nullptr, &sampler) != VK_SUCCESS)
 	{
 		std::cerr << "Failed to create sampler for " << path << std::endl;
-		vmaDestroyImage(bufferSystemInstance.vmaAllocator, image, allocation);
+		vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
 		return {};
 	}
 
@@ -353,7 +353,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 			std::cerr << "Failed to create mip " << mip << " view for " << path << std::endl;
 			for (auto v : views) vkDestroyImageView(vulkan.LogicalDevice(), v, nullptr);
 			vkDestroySampler(vulkan.LogicalDevice(), sampler, nullptr);
-			vmaDestroyImage(bufferSystemInstance.vmaAllocator, image, allocation);
+			vmaDestroyImage(bufferSystem.vmaAllocator, image, allocation);
 			return {};
 		}
 		views.push_back(view);
@@ -547,7 +547,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	};
 
 	VmaAllocation allocation = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystemInstance.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	assert(allocation != VK_NULL_HANDLE);
 
 	VkImageAspectFlags aspectMask;
@@ -666,12 +666,12 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId)
 	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
 }
 
-void TextureSystem::AddRenderedTexture(VkGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
+void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
 {
 	RenderedTextureListMap[renderPassGuid] = renderedTextureList;
 }
 
-void TextureSystem::AddDepthTexture(VkGuid& renderPassGuid, Texture& depthTexture)
+void TextureSystem::AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture)
 {
 	DepthTextureMap[renderPassGuid] = depthTexture;
 }
@@ -697,7 +697,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	}
 
 	VmaAllocation allocation = VK_NULL_HANDLE;
-	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystemInstance.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
+	VULKAN_THROW_IF_FAIL(vmaCreateImage(bufferSystem.vmaAllocator, &imageCreateInfo, &allocInfo, &texture.textureImage, &allocation, nullptr));
 	texture.TextureAllocation = allocation;
 	if (textureData.empty())
 	{
@@ -717,10 +717,10 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VmaAllocation stagingAlloc = VK_NULL_HANDLE;
 	VmaAllocationInfo allocInfoOut{};
-	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystemInstance.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &allocInfoOut));
+	VULKAN_THROW_IF_FAIL(vmaCreateBuffer(bufferSystem.vmaAllocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, &allocInfoOut));
 
 	memcpy(allocInfoOut.pMappedData, textureData.data(), textureData.size());
-	vmaFlushAllocation(bufferSystemInstance.vmaAllocator, stagingAlloc, 0, textureData.size());
+	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, textureData.size());
 
 	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 	TransitionImageLayout(cmd, texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS, 0, imageCreateInfo.arrayLayers);
@@ -756,7 +756,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	else TransitionImageLayout(cmd, texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS, 0, imageCreateInfo.arrayLayers);
 
 	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
-	vmaDestroyBuffer(bufferSystemInstance.vmaAllocator, stagingBuffer, stagingAlloc);
+	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 }
 
 void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkImageAspectFlags imageAspectFlags)
@@ -825,12 +825,12 @@ void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkI
 //	return *it;
 //}
 
-Texture& TextureSystem::FindDepthTexture(const VkGuid& renderPassGuid)
+Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& renderPassGuid)
 {
 	return DepthTextureMap.at(renderPassGuid);
 }
 
-Texture& TextureSystem::FindRenderedTexture(const VkGuid& textureGuid)
+Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 {
 	for (auto& pair : RenderedTextureListMap)
 	{
@@ -846,17 +846,17 @@ Texture& TextureSystem::FindRenderedTexture(const VkGuid& textureGuid)
 	throw std::out_of_range("Texture with given ID not found");
 }
 
-Vector<Texture>& TextureSystem::FindRenderedTextureList(const VkGuid& renderPassGuid)
+Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
 {
 	return RenderedTextureListMap.at(renderPassGuid);
 }
 
-const bool TextureSystem::DepthTextureExists(const VkGuid& renderPassGuid) const
+const bool TextureSystem::DepthTextureExists(const RenderPassGuid& renderPassGuid) const
 {
 	return DepthTextureMap.contains(renderPassGuid);
 }
 
-const bool TextureSystem::TextureExists(const VkGuid& textureGuid) const
+const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
 {
 	auto it = std::find_if(TextureList.begin(), TextureList.end(),
 		[&textureGuid](const Texture& texture)
@@ -866,7 +866,7 @@ const bool TextureSystem::TextureExists(const VkGuid& textureGuid) const
 	return it != TextureList.end();
 }
 
-const bool TextureSystem::RenderedTextureExists(const VkGuid& renderPassGuid, const VkGuid& textureGuid) const
+const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const
 {
 	auto it = RenderedTextureListMap.find(renderPassGuid);
 	if (it != RenderedTextureListMap.end())
@@ -877,7 +877,7 @@ const bool TextureSystem::RenderedTextureExists(const VkGuid& renderPassGuid, co
 	return RenderedTextureListMap.contains(textureGuid);
 }
 
-const bool TextureSystem::RenderedTextureListExists(const VkGuid& renderPassGuid) const
+const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const
 {
 	return RenderedTextureListMap.find(renderPassGuid) != RenderedTextureListMap.end();
 }
@@ -916,7 +916,7 @@ void TextureSystem::DestroyTexture(Texture& texture)
 		if (texture.TextureAllocation != VK_NULL_HANDLE)
 		{
 			std::cout << "[VMA] Destroying image + allocation for " << texture.textureGuid.ToString() << "\n";
-			vmaDestroyImage(bufferSystemInstance.vmaAllocator, texture.textureImage, texture.TextureAllocation);
+			vmaDestroyImage(bufferSystem.vmaAllocator, texture.textureImage, texture.TextureAllocation);
 			texture.TextureAllocation = VK_NULL_HANDLE;
 		}
 		else
@@ -1378,8 +1378,8 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	if (!skyBoxList.empty())
 	{
 		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyBoxList.front().SharedAssetId);
-		const VkBuffer& vb = bufferSystemInstance.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
-		const VkBuffer& ib = bufferSystemInstance.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
+		const VkBuffer& vb = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer;
+		const VkBuffer& ib = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer;
 		VkDeviceSize offsets[] = { 0 };
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vb, offsets);

@@ -13,8 +13,8 @@ LevelSystem& levelSystem = LevelSystem::Get();
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
-    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec2(0.0f, 0.0f));
-    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec3(0.0f, 0.0f, 0.0f)));
+    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.SwapChainResolution().width, (float)vulkan.SwapChainResolution().height), vec2(0.0f, 0.0f));
+    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.SwapChainResolution().width, (float)vulkan.SwapChainResolution().height), vec3(0.0f, 0.0f, 0.0f)));
     pushConstantRegistry.RegisterDefaultPushConstantRules();
     VkGuid dummyGuid = VkGuid();
     VkGuid tileSetId = VkGuid();
@@ -324,8 +324,8 @@ const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
                 .FirstIndex = 0,
                 .StartInstanceIndex = 0,
                 .VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-                .VertexBuffer = bufferSystemInstance.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
-                .IndexBuffer = bufferSystemInstance.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
+                .VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
+                .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
             });
     }
     return meshDrawMessageList;

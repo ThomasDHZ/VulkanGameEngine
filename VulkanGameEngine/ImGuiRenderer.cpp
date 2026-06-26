@@ -1,6 +1,6 @@
 //#include "VulkanWindow.h"
 //#include "ImGuiRenderer.h"
-//#include "Platform.h"
+//#include <Platform.h>
 //
 //#ifndef PLATFORM_ANDROID
 //ImGuiRenderer imGuiRenderer = ImGuiRenderer();
@@ -12,7 +12,7 @@
 //    IMGUI_CHECKVERSION();
 //    ImGui::CreateContext();
 //    ImGuiIO& io = ImGui::GetIO(); (void)io;
-//    ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)vulkanWindow->WindowHandle, true);
+//    ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)vulkanWindow.GetHandle(), true);
 //
 //    imGui.RenderPass = ImGui_CreateRenderPass();
 //    imGui.SwapChainFramebuffers = ImGui_CreateRendererFramebuffers(imGui.RenderPass);
@@ -39,18 +39,18 @@
 //        .poolSizeCount = (uint32)IM_ARRAYSIZE(poolSizes),
 //        .pPoolSizes = poolSizes
 //    };
-//    vkCreateDescriptorPool(vulkan.LogicalDevice(), &pool_info, nullptr, &imGui.ImGuiDescriptorPool);
+//    vkCreateDescriptorPool(vulkanSystem.Device, &pool_info, nullptr, &imGui.ImGuiDescriptorPool);
 //
 //    ImGui_ImplVulkan_InitInfo init_info =
 //    {
-//        .Instance = vulkan.InstanceHandle(),
-//        .PhysicalDevice = vulkan.PhysicalDevice(),
-//        .Device = vulkan.LogicalDevice(),
-//        .QueueFamily = vulkan.Device().GraphicsFamily(),
-//        .Queue = vulkan.GraphicsQueue(),
+//        .Instance = vulkanSystem.Instance,
+//        .PhysicalDevice = vulkanSystem.PhysicalDevice,
+//        .Device = vulkanSystem.Device,
+//        .QueueFamily = vulkanSystem.GraphicsFamily,
+//        .Queue = vulkanSystem.GraphicsQueue,
 //        .DescriptorPool = imGui.ImGuiDescriptorPool,
-//        .MinImageCount = static_cast<uint32>(vulkan.SwapChainImageCount()),
-//        .ImageCount = static_cast<uint32>(vulkan.SwapChainImageCount()),
+//        .MinImageCount = static_cast<uint32>(vulkanSystem.SwapChainImageCount),
+//        .ImageCount = static_cast<uint32>(vulkanSystem.SwapChainImageCount),
 //        .PipelineCache = VK_NULL_HANDLE,
 //        .PipelineInfoMain = ImGui_ImplVulkan_PipelineInfo
 //        {
@@ -90,11 +90,11 @@
 //    {
 //        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 //        .renderPass = imGuiRenderer.RenderPass,
-//        .framebuffer = imGuiRenderer.SwapChainFramebuffers[vulkan.Swapchain().ImageIndex()],
+//        .framebuffer = imGuiRenderer.SwapChainFramebuffers[vulkanSystem.ImageIndex],
 //        .renderArea
 //        {
 //            .offset = { 0, 0 },
-//            .extent = vulkan.Swapchain().SwapChainResolution(),
+//            .extent = vulkanSystem.SwapChainResolution,
 //        },
 //.clearValueCount = 0,
 //.pClearValues = nullptr
@@ -107,20 +107,20 @@
 //
 //void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer)
 //{
-//    //vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
-//    //vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
-//    //imGuiRenderer.RenderPass = ImGui_CreateRenderPass();
-//    //imGuiRenderer.SwapChainFramebuffers = ImGui_CreateRendererFramebuffers(imGuiRenderer.RenderPass);
+//    vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
+//    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
+//    imGuiRenderer.RenderPass = ImGui_CreateRenderPass();
+//    imGuiRenderer.SwapChainFramebuffers = ImGui_CreateRendererFramebuffers(imGuiRenderer.RenderPass);
 //}
 //
 //void ImGui_Destroy(ImGuiRenderer& imGuiRenderer)
 //{
-//    //ImGui_ImplVulkan_Shutdown();
-//    //vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &imGuiRenderer.ImGuiDescriptorPool);
-//    //vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
-//    //vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
-//    //ImGui_ImplGlfw_Shutdown();
-//    //ImGui::DestroyContext();
+//    ImGui_ImplVulkan_Shutdown();
+//    vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &imGuiRenderer.ImGuiDescriptorPool);
+//    vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
+//    vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
+//    ImGui_ImplGlfw_Shutdown();
+//    ImGui::DestroyContext();
 //}
 //
 //VkRenderPass ImGui_CreateRenderPass()
@@ -172,18 +172,18 @@
 //        .dependencyCount = 1,
 //        .pDependencies = &dependency
 //    };
-//    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkan.LogicalDevice(), &renderPassInfo, nullptr, &renderPass));
+//    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkanSystem.Device, &renderPassInfo, nullptr, &renderPass));
 //    return renderPass;
 //}
 //
 //Vector<VkFramebuffer> ImGui_CreateRendererFramebuffers(const VkRenderPass& renderPass)
 //{
-//    Vector<VkFramebuffer> frameBuffers = Vector<VkFramebuffer>(vulkan.Swapchain().SwapChainImageCount());
-//    for (size_t x = 0; x < vulkan.Swapchain().SwapChainImageCount(); x++)
+//    Vector<VkFramebuffer> frameBuffers = Vector<VkFramebuffer>(vulkanSystem.SwapChainImageCount);
+//    for (size_t x = 0; x < vulkanSystem.SwapChainImageCount; x++)
 //    {
 //        std::vector<VkImageView> attachments =
 //        {
-//           vulkan.Swapchain().SwapChainImageViews()[x]
+//            vulkanSystem.SwapChainImageViews[x]
 //        };
 //
 //        VkFramebufferCreateInfo frameBufferInfo =
@@ -192,11 +192,11 @@
 //            .renderPass = renderPass,
 //            .attachmentCount = static_cast<uint32>(attachments.size()),
 //            .pAttachments = attachments.data(),
-//            .width = vulkan.Swapchain().SwapChainResolution().width,
-//            .height = vulkan.Swapchain().SwapChainResolution().height,
+//            .width = vulkanSystem.SwapChainResolution.width,
+//            .height = vulkanSystem.SwapChainResolution.height,
 //            .layers = 1
 //        };
-//        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &frameBufferInfo, nullptr, &frameBuffers[x]));
+//        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkanSystem.Device, &frameBufferInfo, nullptr, &frameBuffers[x]));
 //    }
 //    return frameBuffers;
 //}

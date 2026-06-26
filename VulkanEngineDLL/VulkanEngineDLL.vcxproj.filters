@@ -39,6 +39,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Typedef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Pixel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -53,6 +59,9 @@
     </ClInclude>
     <ClInclude Include="enum.h">
       <Filter>Header Files\Json</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferSystem.h">
+      <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="FileSystem.h">
       <Filter>Header Files\Systems</Filter>
@@ -80,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="DebugSystem.h">
       <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanError.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
       <Filter>Header Files</Filter>
@@ -159,9 +171,6 @@
     <ClInclude Include="ComponentSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="BufferSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -182,6 +191,9 @@
     <ClCompile Include="MaterialSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="BufferSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
     <ClCompile Include="FileSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -198,6 +210,9 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="Pixel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
@@ -261,9 +276,6 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="ComponentSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="BufferSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>

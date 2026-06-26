@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <libgen.h>
 #endif
+#include <vk_mem_alloc.h>
 #include "BufferSystem.h"
 #include "MeshSystem.h"
 
@@ -64,11 +65,11 @@ bool DebugSystem::IsRenderDocInjected()
 VkResult DebugSystem::DumpVMAStats() const
 {
     char* stats = nullptr;
-    vmaBuildStatsString(bufferSystemInstance.vmaAllocator, &stats, VK_TRUE);
+    vmaBuildStatsString(bufferSystem.vmaAllocator, &stats, VK_TRUE);
     if (stats)
     {
         std::cout << "[VMA Stats After Scene Load]\n" << stats << std::endl;
-        vmaFreeStatsString(bufferSystemInstance.vmaAllocator, stats);
+        vmaFreeStatsString(bufferSystem.vmaAllocator, stats);
     }
     return VK_SUCCESS;
 }

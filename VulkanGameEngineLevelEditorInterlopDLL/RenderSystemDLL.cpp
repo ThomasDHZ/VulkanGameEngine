@@ -1,7 +1,8 @@
 #include "RenderSystemDLL.h"
+#include <VulkanSystem2.h>
 #include "../VulkanGameEngine/GameSystem.h"
 
-VkGuid RenderSystem_LoadRenderPass(VkGuid& levelGuid, const char* jsonPath)
+ RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath)
 {
 	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath);
 }
@@ -11,7 +12,7 @@ VkGuid RenderSystem_LoadRenderPass(VkGuid& levelGuid, const char* jsonPath)
 	 renderSystem.Update(windowHandle, deltaTime);
 }
 
- VulkanRenderPass RenderSystem_FindRenderPass(VkGuid renderPassGuid)
+ VulkanRenderPass RenderSystem_FindRenderPass(RenderPassGuid renderPassGuid)
 {
 	 return renderSystem.FindRenderPass(renderPassGuid);
 }
@@ -38,22 +39,22 @@ VkGuid RenderSystem_LoadRenderPass(VkGuid& levelGuid, const char* jsonPath)
 
  void RenderSystem_DestroyPipeline(VulkanPipeline& vulkanPipelineDLL)
 {
-	// renderSystem.DestroyPipeline(vulkanPipelineDLL);
+	 renderSystem.DestroyPipeline(vulkanPipelineDLL);
 }
 
  void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-	// renderSystem.DestroyFrameBuffers(frameBufferList);
+	 renderSystem.DestroyFrameBuffers(frameBufferList);
 }
 
  void RenderSystem_DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
-	// renderSystem.DestroyCommandBuffers(commandBuffer);
+	 renderSystem.DestroyCommandBuffers(commandBuffer);
 }
 
  void RenderSystem_DestroyBuffer(VkBuffer& buffer)
 {
-	// renderSystem.DestroyBuffer(buffer);
+	 renderSystem.DestroyBuffer(buffer);
 }
 
  void RenderSystem_RenderTest(float deltaTime)

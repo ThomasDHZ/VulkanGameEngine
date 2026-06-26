@@ -1,7 +1,6 @@
 #pragma once
 #include <Platform.h>
 #include "ShaderSystem.h"
-#include "BufferSystem.h"
 
 enum MemoryPoolTypes
 {

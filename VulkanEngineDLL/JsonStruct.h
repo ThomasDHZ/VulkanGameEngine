@@ -98,7 +98,7 @@ struct VulkanSubPass
 
 struct VulkanRenderPass
 {
-    VkGuid                               RenderPassId = VkGuid();
+    RenderPassGuid                       RenderPassId = VkGuid();
     ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
     VkRenderPass                         RenderPass = VK_NULL_HANDLE;
     Vector<VkFramebuffer>                FrameBufferList;

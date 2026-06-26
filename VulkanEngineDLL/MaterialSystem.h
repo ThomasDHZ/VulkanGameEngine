@@ -51,10 +51,10 @@ private:
 
         DLL_EXPORT VkGuid LoadMaterial(const String& materialPath);
         DLL_EXPORT VkGuid LoadMaterial(const nlohmann::json& json);
-        DLL_EXPORT const bool MaterialExists(const VkGuid& materialGuid) const;
-        DLL_EXPORT Material& FindMaterial(const VkGuid& materialGuid);
-        DLL_EXPORT uint FindMaterialPoolIndex(const VkGuid& materialGuid);
-        DLL_EXPORT void Destroy(const VkGuid& materialGuid);
+        DLL_EXPORT const bool MaterialExists(const MaterialGuid& materialGuid) const;
+        DLL_EXPORT Material& FindMaterial(const MaterialGuid& materialGuid);
+        DLL_EXPORT uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
+        DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
         DLL_EXPORT void DestroyAllMaterials();
         DLL_EXPORT Vector<Material> GetMaterialList() { return MaterialList; }
 };

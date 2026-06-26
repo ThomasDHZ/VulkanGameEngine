@@ -5,8 +5,8 @@
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
-#include <Mouse.h>
-#include <GameController.h>
+#include "Mouse.h"
+#include "GameController.h"
 #include <LevelSystem.h>
 #include <CSharpScriptSystem.h>
 
@@ -18,12 +18,12 @@
 #include <android/native_window.h>
 #endif
 #include <LuaScriptingSystem.h>
-#include <EngineConfigSystem.h>
 
 #ifndef __ANDROID__
 GameSystem gameSystem = GameSystem();
 #endif
 #include <CollisionSystem.h>
+#include <EngineConfigSystem.h>
 
 GameSystem::GameSystem()
 {
@@ -37,13 +37,14 @@ GameSystem::~GameSystem()
 
 void GameSystem::StartUp()
 {
-    renderSystem.StartUp(configSystem.WindowResolution, configSystem.RenderResolution);
+    vulkan.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
+    bufferSystem.SetUpVmaAllocation();
     memoryPoolSystem.StartUp();
     //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-   // materialBakerSystem.Run();
+    // materialBakerSystem.Run();
 #endif
     levelSystem.LoadLevel("Levels/TestLevel.json");
 }
@@ -51,7 +52,7 @@ void GameSystem::StartUp()
 #ifndef __ANDROID__
 void GameSystem::Update(void* windowHandle, float deltaTime)
 {
-    inputSystem.Update(deltaTime);
+    //inputSystem.Update(deltaTime);
     //luaScriptingSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
@@ -62,6 +63,9 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     renderSystem.Update(windowHandle, deltaTime);
 
     //cSharpScriptSystem.Update(deltaTime);
+    auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
+  //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
+   // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 }
 
 #else
@@ -154,7 +158,7 @@ void GameSystem::DebugUpdate(float deltaTime)
     ////ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.ShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
 
 
-    ////ImGui_EndFrame();
+    //ImGui_EndFrame();
 }
 
 void GameSystem::Draw(float deltaTime)

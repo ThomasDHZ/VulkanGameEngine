@@ -13,23 +13,22 @@
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
-void RenderSystem::StartUp(ivec2 windowSize, ivec2 renderResolution)
-{
-    vulkan.VulkanSetUp(windowSize, renderResolution);
-}
-
 void RenderSystem::Update(void* windowHandle, const float& deltaTime)
 {
-    RecreateSwapchain(windowHandle, deltaTime);
+    //if (vulkan.RebuildRendererFlag)
+    //{
+    //    RecreateSwapchain(windowHandle, deltaTime);
+    //    vulkan.RebuildRendererFlag = false;
+    //}
 }
 
-VkGuid RenderSystem::LoadRenderPass(VkGuid& levelGuid, const String& jsonPath)
+RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
     return LoadRenderPass(levelGuid, renderPassLoader);
 }
 
-VkGuid RenderSystem::LoadRenderPass(VkGuid& levelGuid, RenderPassLoader& renderPassLoader)
+RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader)
 {
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
@@ -549,10 +548,10 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
 
 void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 {
-//    vulkan.DestroyRenderPass(vulkan.LogicalDevice(), &renderPass.RenderPass);
-////    vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, &renderPass.com, 1);
-//    vulkan.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
-//    renderPass = VulkanRenderPass();
+    //vulkanSystem.DestroyRenderPass(vulkan.LogicalDevice(), &renderPass.RenderPass);
+//    vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, &renderPass.com, 1);
+   // vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
+    renderPass = VulkanRenderPass();
 }
 
 void RenderSystem::Destroy()
@@ -582,7 +581,30 @@ void RenderSystem::DestroyRenderPipelines()
     //renderSystem.RenderPipelineMap.clear();
 }
 
-Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const VkGuid& renderPassGuid)
+void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
+{
+    vulkanPipeline.RenderPipelineId = VkGuid();
+    //vulkanSystem.DestroyPipeline(vulkan.LogicalDevice(), &vulkanPipeline.Pipeline);
+    //vulkanSystem.DestroyPipelineLayout(vulkan.LogicalDevice(), &vulkanPipeline.PipelineLayout);
+    //vulkanSystem.DestroyPipelineCache(vulkan.LogicalDevice(), &vulkanPipeline.PipelineCache);
+}
+
+void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
+{
+    //vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), frameBufferList);
+}
+
+void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
+{
+ //   vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, commandBuffer);
+}
+
+void RenderSystem::DestroyBuffer(VkBuffer& buffer)
+{
+   //vulkanSystem.DestroyBuffer(vulkan.LogicalDevice(), &buffer);
+}
+
+Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid)
 {
     Vector<Texture> textureList;
     const VulkanRenderPass& renderPass = FindRenderPass(renderPassGuid);
@@ -659,7 +681,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const VkG
     return texturePropertiesBuffer;
 }
 
-Vector<VkDescriptorImageInfo> RenderSystem::GetTexture3DPropertiesBuffer(const VkGuid& renderPassGuid)
+Vector<VkDescriptorImageInfo> RenderSystem::GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid)
 {
     Vector<VkDescriptorImageInfo>	texturePropertiesBuffer;
     if (textureSystem.Texture3DList.empty())
@@ -725,7 +747,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
     return texturePropertiesBuffer;
 }
 
-const VulkanRenderPass& RenderSystem::FindRenderPass(const VkGuid& renderPassGuid)
+const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
 {
     auto it = RenderPassMap.find(renderPassGuid);
     if (it == RenderPassMap.end())
@@ -750,7 +772,7 @@ const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGui
     return it->second;
 }
 
-uint32 RenderSystem::SampleRenderPassPixel(const VkGuid& textureGuid, ivec2 mousePosition)
+uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
     Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
     if (!texture || texture->textureImage == VK_NULL_HANDLE)
@@ -799,7 +821,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const VkGuid& textureGuid, ivec2 mous
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
     VmaAllocationInfo allocOut = {};
 
-    if (vmaCreateBuffer(bufferSystemInstance.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
+    if (vmaCreateBuffer(bufferSystem.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
     {
         std::cout << "[SamplePixel] Failed to create staging buffer" << std::endl;
         vulkan.CommandBuffer().EndSingleUseCommand(cmd);
@@ -823,7 +845,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const VkGuid& textureGuid, ivec2 mous
     const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
     uint32 pickedId = pData[y * texture->width + x];
 
-    vmaDestroyBuffer(bufferSystemInstance.vmaAllocator, stagingBuffer, stagingAlloc);
+    vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 
     return pickedId;
 }

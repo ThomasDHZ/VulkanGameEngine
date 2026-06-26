@@ -3,11 +3,11 @@
 #include "MemorySystem.h"
 #include "Transform2DComponent.h"
 #include "ComponentSystem.h"
-#include "VulkanSystem.h"
+#include <VulkanSystem2.h>
 #include <entt/entt.hpp>
 #include "nethost.h"
 #include "enum.h"
-#include "InputEnum.h"
+#include <InputEnum.h>
 
 
 struct InputComponent

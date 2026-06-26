@@ -2,11 +2,11 @@
 #define BUFFER_SYSTEM_IMPLEMENTATION
 #include "BufferSystem.h"
 #include "MemorySystem.h"
-#include "VulkanSystem.h"
+#include <VulkanSystem2.h>
 #include <vk_mem_alloc.h>
 #include <iostream>
 
-VulkanBufferSystem& bufferSystemInstance = VulkanBufferSystem::Get();
+VulkanBufferSystem& bufferSystem = VulkanBufferSystem::Get();
 int NextBufferId = 0;
 
 VulkanBuffer& VulkanBufferSystem::FindVulkanBuffer(int id)
@@ -58,9 +58,7 @@ void VulkanBufferSystem::SetUpVmaAllocation()
         .vulkanApiVersion = vulkan.ApiVersion(),
     };
 
-    VmaAllocator allocator = VK_NULL_HANDLE;
-    VkResult result = vmaCreateAllocator(&allocatorCreateInfo, &allocator);
-
+    VkResult result = vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
     if (result != VK_SUCCESS)
     {
         std::cerr << "Failed to create VMA allocator: " << result << std::endl;

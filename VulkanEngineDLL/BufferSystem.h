@@ -1,6 +1,6 @@
 #pragma once
 #include <Platform.h>
-#include <VulkanSystem.h>
+#include <VulkanSystem2.h>
 #include <vk_mem_alloc.h>
 
 
@@ -144,7 +144,7 @@ public:
     DLL_EXPORT VulkanBuffer&               FindVulkanBuffer(int id);
     DLL_EXPORT const Vector<VulkanBuffer>& VulkanBufferList();
 };
-extern DLL_EXPORT VulkanBufferSystem& bufferSystemInstance;
+extern DLL_EXPORT VulkanBufferSystem& bufferSystem;
 inline VulkanBufferSystem& VulkanBufferSystem::Get()
 {
     static VulkanBufferSystem instance;

@@ -591,7 +591,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      }
 
      size_t offset = 0;
-     VulkanBuffer vulkanBuffer = bufferSystemInstance.FindVulkanBuffer(vulkanBufferId);
+     VulkanBuffer vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
      for (const auto& shaderStrucVar : shaderStruct.ShaderBufferVariableList)
      {
          offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
@@ -599,7 +599,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
          offset += shaderStrucVar.Size;
      }
-     bufferSystemInstance.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
+     bufferSystem.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
  }
 
  ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)

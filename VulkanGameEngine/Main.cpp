@@ -1,4 +1,4 @@
-#include <VulkanWindow.h>
+#include "VulkanWindow.h"
 #include "SystemClock.h"
 #include <iostream>
 #include "FrameTimer.h"
@@ -66,12 +66,12 @@ int main(int argc, char** argv)
         textureSystem.DestroyAllTextures();
         meshSystem.DestroyAllGameObjects();
         materialSystem.DestroyAllMaterials();
-        //bufferSystem.DestroyAllBuffers();
+        bufferSystem.DestroyAllBuffers();
 
         memorySystem.ReportLeaks();
      //   debugSystem.DumpVMAStats();
 
-        //vulkan.DestroyRenderer();
+        vulkan.Shutdown();
         vulkanWindow.Close();
     }
     catch (const VulkanError& e)
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_android.h>
 
-static VulkanWindow* g_vulkanWindow = nullptr;
+static GameEngineWindow* g_vulkanWindow = nullptr;
 
 void handle_cmd(android_app* app, int32_t cmd)
 {
@@ -148,7 +148,7 @@ void android_main(struct android_app* app)
     int32 height = ANativeWindow_getHeight(app->window);
     __android_log_print(ANDROID_LOG_INFO, "VulkanEngine", "WINDOW READY: %dx%d", width, height);
 
-    g_vulkanWindow = new VulkanWindow();
+    g_vulkanWindow = new GameEngineWindow();
     g_vulkanWindow->CreateGraphicsWindow(g_vulkanWindow, "Vulkan Game Engine", width, height);
     g_vulkanWindow->WindowHandle = (void*)app->window;
 

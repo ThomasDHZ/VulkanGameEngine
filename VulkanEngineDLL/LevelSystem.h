@@ -1,5 +1,6 @@
 #pragma once
 #include <Platform.h>
+#include <VulkanSystem2.h>
 #include "SpriteSystem.h"
 #include "ComponentSystem.h"
 #include "MeshSystem.h"
@@ -112,7 +113,7 @@ public:
     LevelLayout                                levelLayout;
     Vector<LevelLayer>                         LevelLayerList;
     Vector<Vector<uint>>                       LevelTileMapList;
-    UnorderedMap<VkGuid, LevelTileSet> LevelTileSetMap;
+    UnorderedMap<RenderPassGuid, LevelTileSet> LevelTileSetMap;
 
     SharedPtr<Camera>                          PerspectiveCamera;
 
@@ -121,22 +122,22 @@ public:
     int                                        UseHeightMap = 1;
     float                                      HeightScale = 0.079f;
     vec3                                       ViewDirection = vec3(-0.037f, -0.062f, 1.0f);
-    VkGuid                             environmentToCubeMapRenderPassId;
-    VkGuid                             brdfRenderPassId;
-    VkGuid                             irradianceMapRenderPassId;
-    VkGuid                             prefilterMapRenderPassId;
-    VkGuid                             gBufferRenderPassId;
-    VkGuid                             verticalGaussianBlurRenderPassId;
-    VkGuid                             horizontalGaussianBlurRenderPassId;
-    VkGuid                             bloomRenderPassId;
-    VkGuid                             hdrRenderPassId;
-    VkGuid                             frameBufferId;
-    VkGuid                             shadowDebugRenderPassId;
+    RenderPassGuid                             environmentToCubeMapRenderPassId;
+    RenderPassGuid                             brdfRenderPassId;
+    RenderPassGuid                             irradianceMapRenderPassId;
+    RenderPassGuid                             prefilterMapRenderPassId;
+    RenderPassGuid                             gBufferRenderPassId;
+    RenderPassGuid                             verticalGaussianBlurRenderPassId;
+    RenderPassGuid                             horizontalGaussianBlurRenderPassId;
+    RenderPassGuid                             bloomRenderPassId;
+    RenderPassGuid                             hdrRenderPassId;
+    RenderPassGuid                             frameBufferId;
+    RenderPassGuid                             shadowDebugRenderPassId;
 
-    VkGuid                             levelWireFrameRenderPass2DId;
-    VkGuid                             spriteWireFrameRenderPass2DId;
-    VkGuid                             objectPickerRenderPassId;
-    VkGuid                             selectedObjectPickerRenderPassId;
+    RenderPassGuid                             levelWireFrameRenderPass2DId;
+    RenderPassGuid                             spriteWireFrameRenderPass2DId;
+    RenderPassGuid                             objectPickerRenderPassId;
+    RenderPassGuid                             selectedObjectPickerRenderPassId;
 
     DLL_EXPORT void                            LoadLevel(const char* levelPath);
     DLL_EXPORT void                            Update(const float& deltaTime);

@@ -1,7 +1,7 @@
 #pragma once
 #include <Platform.h>
 #include "JsonStruct.h"
-#include "VulkanSystem.h"
+#include <VulkanSystem2.h>
 #include "TextureSystem.h"
 #include <optional>
 
@@ -98,16 +98,16 @@ public:
 
     Vector<RenderPassNode>                                             RenderPassNodeList;
     bool                                                               UsingMaterialBaker = false;
-    UnorderedMap<VkGuid, Vector<RenderPassAttachmentTexture>>          RenderPassAttachmentTextureInfoMap;
+    UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
-    DLL_EXPORT void                                                    StartUp(ivec2 windowSize, ivec2 renderResolution);
-    DLL_EXPORT VkGuid                                                  LoadRenderPass(VkGuid& levelGuid, const String& jsonPath);
-    DLL_EXPORT VkGuid                                                  LoadRenderPass(VkGuid& levelGuid, RenderPassLoader& renderPassLoader);
+    DLL_EXPORT void                                                    StartUp(void* windowHandle, ivec2 renderResolution);
+    DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);
+    DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
-    DLL_EXPORT const VulkanRenderPass&                                 FindRenderPass(const VkGuid& renderPassGuid);
+    DLL_EXPORT const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     //DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT uint32                                                  SampleRenderPassPixel(const VkGuid& textureGuid, ivec2 mousePosition);
+    DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
     DLL_EXPORT void                                                    AddRenderNode(RenderPassNode renderPassNode);
     DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer);
@@ -116,9 +116,13 @@ public:
     DLL_EXPORT void                                                    DestroyRenderPass(VulkanRenderPass& renderPass);
     DLL_EXPORT void                                                    DestroyRenderPasses();
     DLL_EXPORT void                                                    DestroyRenderPipelines();
+    DLL_EXPORT void                                                    DestroyPipeline(VulkanPipeline& vulkanPipelineDLL);
+    DLL_EXPORT void                                                    DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
+    DLL_EXPORT void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
+    DLL_EXPORT void                                                    DestroyBuffer(VkBuffer& buffer);
 
-    Vector<VkDescriptorImageInfo>                                      GetTexturePropertiesBuffer(const VkGuid& renderPassGuid);
-    Vector<VkDescriptorImageInfo>                                      GetTexture3DPropertiesBuffer(const VkGuid& renderPassGuid);
+    Vector<VkDescriptorImageInfo>                                      GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
+    Vector<VkDescriptorImageInfo>                                      GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid);
     Vector<VkDescriptorImageInfo>                                      GetCubeMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
