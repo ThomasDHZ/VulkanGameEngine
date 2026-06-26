@@ -13,18 +13,13 @@
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
-void RenderSystem::StartUp(void* windowHandle, ivec2 renderResolution)
-{
-    vulkanSystem.RendererSetUp(windowHandle, renderResolution);
-}
-
 void RenderSystem::Update(void* windowHandle, const float& deltaTime)
 {
-    if (vulkanSystem.RebuildRendererFlag)
-    {
-        RecreateSwapchain(windowHandle, deltaTime);
-        vulkanSystem.RebuildRendererFlag = false;
-    }
+    //if (vulkan.RebuildRendererFlag)
+    //{
+    //    RecreateSwapchain(windowHandle, deltaTime);
+    //    vulkan.RebuildRendererFlag = false;
+    //}
 }
 
 RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
@@ -553,9 +548,9 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
 
 void RenderSystem::DestroyRenderPass(VulkanRenderPass& renderPass)
 {
-    vulkanSystem.DestroyRenderPass(vulkan.LogicalDevice(), &renderPass.RenderPass);
+    //vulkanSystem.DestroyRenderPass(vulkan.LogicalDevice(), &renderPass.RenderPass);
 //    vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, &renderPass.com, 1);
-    vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
+   // vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
     renderPass = VulkanRenderPass();
 }
 
@@ -589,14 +584,14 @@ void RenderSystem::DestroyRenderPipelines()
 void RenderSystem::DestroyPipeline(VulkanPipeline& vulkanPipeline)
 {
     vulkanPipeline.RenderPipelineId = VkGuid();
-    vulkanSystem.DestroyPipeline(vulkan.LogicalDevice(), &vulkanPipeline.Pipeline);
-    vulkanSystem.DestroyPipelineLayout(vulkan.LogicalDevice(), &vulkanPipeline.PipelineLayout);
-    vulkanSystem.DestroyPipelineCache(vulkan.LogicalDevice(), &vulkanPipeline.PipelineCache);
+    //vulkanSystem.DestroyPipeline(vulkan.LogicalDevice(), &vulkanPipeline.Pipeline);
+    //vulkanSystem.DestroyPipelineLayout(vulkan.LogicalDevice(), &vulkanPipeline.PipelineLayout);
+    //vulkanSystem.DestroyPipelineCache(vulkan.LogicalDevice(), &vulkanPipeline.PipelineCache);
 }
 
 void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
-    vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), frameBufferList);
+    //vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), frameBufferList);
 }
 
 void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
@@ -606,7 +601,7 @@ void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 
 void RenderSystem::DestroyBuffer(VkBuffer& buffer)
 {
-    vulkanSystem.DestroyBuffer(vulkan.LogicalDevice(), &buffer);
+   //vulkanSystem.DestroyBuffer(vulkan.LogicalDevice(), &buffer);
 }
 
 Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid)
@@ -789,7 +784,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     int x = std::clamp(mousePosition.x, 0, texture->width - 1);
     int y = std::clamp(mousePosition.y, 0, texture->height - 1);
 
-    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+    VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
     VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -829,7 +824,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     if (vmaCreateBuffer(bufferSystem.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
     {
         std::cout << "[SamplePixel] Failed to create staging buffer" << std::endl;
-        vulkanSystem.EndSingleUseCommand(cmd);
+        vulkan.CommandBuffer().EndSingleUseCommand(cmd);
         return UINT32_MAX;
     }
 
@@ -844,7 +839,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
 
     vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
-    vulkanSystem.EndSingleUseCommand(cmd);
+    vulkan.CommandBuffer().EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkan.LogicalDevice());
 
     const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);

@@ -1,5 +1,6 @@
 #pragma once
 #include <Platform.h>
+#include <VulkanSystem2.h>
 #include "SpriteSystem.h"
 #include "ComponentSystem.h"
 #include "MeshSystem.h"

@@ -2,7 +2,7 @@
 #define BUFFER_SYSTEM_IMPLEMENTATION
 #include "BufferSystem.h"
 #include "MemorySystem.h"
-#include "VulkanSystem.h"
+#include <VulkanSystem2.h>
 #include <vk_mem_alloc.h>
 #include <iostream>
 
@@ -40,6 +40,29 @@ void VulkanBufferSystem::DestroyAllBuffers()
         DestroyBuffer(pair.second);
     }
     VulkanBufferMap.clear();
+}
+
+void VulkanBufferSystem::SetUpVmaAllocation()
+{
+    VmaVulkanFunctions vulkanFunctions = {
+      .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+      .vkGetDeviceProcAddr = vkGetDeviceProcAddr
+    };
+
+    VmaAllocatorCreateInfo allocatorCreateInfo = {
+        .physicalDevice = vulkan.PhysicalDevice(),
+        .device = vulkan.LogicalDevice(),
+        .preferredLargeHeapBlockSize = 64ull << 20,   // 64 MB
+        .pVulkanFunctions = &vulkanFunctions,
+        .instance = vulkan.InstanceHandle(),
+        .vulkanApiVersion = vulkan.ApiVersion(),
+    };
+
+    VkResult result = vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
+    if (result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create VMA allocator: " << result << std::endl;
+    }
 }
 
 uint32 VulkanBufferSystem::CreateStaticVulkanBuffer(const void* srcData, VkDeviceSize size,
@@ -238,7 +261,7 @@ void VulkanBufferSystem::UpdateDynamicBuffer(uint32 bufferId, const void* data, 
 void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, VkDeviceSize size,
     VkBufferUsageFlags usageFlags, VkDeviceSize offset)
 {
-    VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+    VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
     VkBufferCopy copyRegion = {
         .srcOffset = offset,
@@ -265,7 +288,7 @@ void VulkanBufferSystem::CopyBuffer(VkBuffer* srcBuffer, VkBuffer* dstBuffer, Vk
         VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
         0, 0, nullptr, 1, &barrier, 0, nullptr);
 
-    vulkanSystem.EndSingleUseCommand(cmd);
+    vulkan.CommandBuffer().EndSingleUseCommand(cmd);
 }
 
 void VulkanBufferSystem::DestroyBuffer(VulkanBuffer& vulkanBuffer)

@@ -381,7 +381,7 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             }
         }
     };
-    vkCmdBlitImage(commandBuffer, srcTexture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().m_ImageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
+    vkCmdBlitImage(commandBuffer, srcTexture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().ImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
 }
 
 LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)

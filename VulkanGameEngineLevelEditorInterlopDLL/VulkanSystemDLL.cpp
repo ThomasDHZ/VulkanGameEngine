@@ -44,12 +44,12 @@
 
  VkCommandBuffer VulkanSystem_BeginSingleUseCommand()
 {
-	 return vulkanSystem.BeginSingleUseCommand();
+	 return vulkan.CommandBuffer().BeginSingleUseCommand();
 }
 
  void VulkanSystem_EndSingleUseCommand(VkCommandBuffer commandBuffer)
 {
-	 return vulkanSystem.EndSingleUseCommand(commandBuffer);
+	 return vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer);
 }
 
 // VkPresentModeKHR* VulkanSystem_GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, size_t* outCount)
@@ -103,5 +103,5 @@
 
  void VulkanSystem_DestroyRenderer()
 {
-	 return vulkanSystem.DestroyRenderer();
+	 return vulkan.Shutdown();
 }

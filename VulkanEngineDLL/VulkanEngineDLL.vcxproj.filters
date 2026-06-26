@@ -48,9 +48,6 @@
     <ClInclude Include="Pixel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VkGuid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="JsonStruct.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
@@ -95,9 +92,6 @@
     </ClInclude>
     <ClInclude Include="VulkanError.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanSystem.h">
-      <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
       <Filter>Header Files</Filter>
@@ -215,17 +209,11 @@
     <ClCompile Include="DebugSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="VkGuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Pixel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanError.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
       <Filter>Source Files</Filter>

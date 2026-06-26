@@ -37,7 +37,8 @@ GameSystem::~GameSystem()
 
 void GameSystem::StartUp()
 {
-    vulkanSystem.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
+    vulkan.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
+    bufferSystem.SetUpVmaAllocation();
     memoryPoolSystem.StartUp();
     //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();

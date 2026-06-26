@@ -3,7 +3,7 @@
 #include <Platform.h>
 #include <JsonStruct.h>
 #include <RenderSystem.h>
-#include <VulkanSystem.h>
+#include <VulkanSystem2.h>
 #include <TextureSystem.h>
 #include <MaterialSystem.h>
 #include "TextureBakerSystem.h"

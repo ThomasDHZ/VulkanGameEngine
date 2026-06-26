@@ -275,7 +275,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	memcpy(mappedInfo.pMappedData, ktex->pData, dataSize);
 	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, dataSize);
 
-	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 	VkImageMemoryBarrier barrierToDst{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		.srcAccessMask = 0,
@@ -320,7 +320,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.subresourceRange = { aspectMask, 0, mipLevels, 0, arrayLayers }
 	};
 	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, isDepthFormat ? VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT : VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierToFinal);
-	vulkanSystem.EndSingleUseCommand(cmd);
+	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
 	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 	ktxTexture_Destroy(ktex);
 
@@ -722,7 +722,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	memcpy(allocInfoOut.pMappedData, textureData.data(), textureData.size());
 	vmaFlushAllocation(bufferSystem.vmaAllocator, stagingAlloc, 0, textureData.size());
 
-	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 	TransitionImageLayout(cmd, texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS, 0, imageCreateInfo.arrayLayers);
 
 	std::vector<VkBufferImageCopy> copyRegions;
@@ -755,7 +755,7 @@ void TextureSystem::CreateTextureImage(Texture& texture, VkImageCreateInfo& imag
 	if (texture.mipMapLevels > 1) GenerateMipmaps(texture);
 	else TransitionImageLayout(cmd, texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK_REMAINING_MIP_LEVELS, 0, imageCreateInfo.arrayLayers);
 
-	vulkanSystem.EndSingleUseCommand(cmd);
+	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
 	vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
 }
 
@@ -973,7 +973,7 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 			<< " does not support linear filtering → mipmaps will use nearest or be incorrect\n";
 	}
 
-	VkCommandBuffer cmd = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
 	VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 	if (IsDepthFormat(texture.textureByteFormat))
@@ -1046,14 +1046,14 @@ void TextureSystem::GenerateMipmaps(Texture& texture)
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	vulkanSystem.EndSingleUseCommand(cmd);
+	vulkan.CommandBuffer().EndSingleUseCommand(cmd);
 }
 
 void TextureSystem::TransitionImageLayout(Texture& texture, VkImageLayout newLayout, uint32 baseMipLevel, uint32 levelCount)
 {
-	VkCommandBuffer commandBuffer = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer commandBuffer = vulkan.CommandBuffer().BeginSingleUseCommand();
 	TransitionImageLayout(commandBuffer, texture, newLayout);
-	vulkanSystem.EndSingleUseCommand(commandBuffer);
+	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer);
 	texture.textureImageLayout = newLayout;
 }
 
@@ -1403,10 +1403,10 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	cleanup();
 
 	Vector<Texture>& cubeMapList = textureSystem.FindRenderedTextureList(renderPassId);
-	VkCommandBuffer commandBuffer2 = vulkanSystem.BeginSingleUseCommand();
+	VkCommandBuffer commandBuffer2 = vulkan.CommandBuffer().BeginSingleUseCommand();
 	for (auto& cubeMap : cubeMapList)
 	{
 		textureSystem.TransitionImageLayout(commandBuffer2, cubeMap, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, cubeMap.mipMapLevels, 0, 6);
 	}
-	vulkanSystem.EndSingleUseCommand(commandBuffer2);
+	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer2);
 }
