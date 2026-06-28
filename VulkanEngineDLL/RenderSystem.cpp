@@ -821,7 +821,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
     VmaAllocationInfo allocOut = {};
 
-    if (vmaCreateBuffer(bufferSystem.vmaAllocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
+    if (vmaCreateBuffer(bufferSystem.VmaAllocatorHandle(), &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
     {
         std::cout << "[SamplePixel] Failed to create staging buffer" << std::endl;
         vulkan.CommandBuffer().EndSingleUseCommand(cmd);
@@ -845,7 +845,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
     uint32 pickedId = pData[y * texture->width + x];
 
-    vmaDestroyBuffer(bufferSystem.vmaAllocator, stagingBuffer, stagingAlloc);
+    vmaDestroyBuffer(bufferSystem.VmaAllocatorHandle(), stagingBuffer, stagingAlloc);
 
     return pickedId;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <Platform.h>
-#include <VulkanSystem2.h>
+#include <VulkanSystem.h>
 
 class TextureSamplers
 {

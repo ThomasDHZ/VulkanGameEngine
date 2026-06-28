@@ -66,7 +66,7 @@ int main(int argc, char** argv)
         textureSystem.DestroyAllTextures();
         meshSystem.DestroyAllGameObjects();
         materialSystem.DestroyAllMaterials();
-        bufferSystem.DestroyAllBuffers();
+       // bufferSystem.DestroyAllBuffers();
 
         memorySystem.ReportLeaks();
      //   debugSystem.DumpVMAStats();

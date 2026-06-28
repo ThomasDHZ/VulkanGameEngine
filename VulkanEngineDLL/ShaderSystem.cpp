@@ -599,7 +599,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
          offset += shaderStrucVar.Size;
      }
-     bufferSystem.UpdateDynamicBuffer(vulkanBuffer.BufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
+     bufferSystem.UpdateDynamicBuffer(vulkanBuffer.Handle().bufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
  }
 
  ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)

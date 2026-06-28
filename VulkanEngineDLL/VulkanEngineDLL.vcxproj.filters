@@ -60,9 +60,6 @@
     <ClInclude Include="enum.h">
       <Filter>Header Files\Json</Filter>
     </ClInclude>
-    <ClInclude Include="BufferSystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="FileSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -189,9 +186,6 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="MaterialSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="BufferSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp">

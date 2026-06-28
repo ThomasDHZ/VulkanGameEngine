@@ -324,8 +324,8 @@ const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
                 .FirstIndex = 0,
                 .StartInstanceIndex = 0,
                 .VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-                .VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer,
-                .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer,
+                .VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer(),
+                .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
             });
     }
     return meshDrawMessageList;

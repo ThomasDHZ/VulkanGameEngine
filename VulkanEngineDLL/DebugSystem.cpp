@@ -65,11 +65,11 @@ bool DebugSystem::IsRenderDocInjected()
 VkResult DebugSystem::DumpVMAStats() const
 {
     char* stats = nullptr;
-    vmaBuildStatsString(bufferSystem.vmaAllocator, &stats, VK_TRUE);
+    vmaBuildStatsString(bufferSystem.VmaAllocatorHandle(), &stats, VK_TRUE);
     if (stats)
     {
         std::cout << "[VMA Stats After Scene Load]\n" << stats << std::endl;
-        vmaFreeStatsString(bufferSystem.vmaAllocator, stats);
+        vmaFreeStatsString(bufferSystem.VmaAllocatorHandle(), stats);
     }
     return VK_SUCCESS;
 }

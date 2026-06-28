@@ -170,7 +170,6 @@
     <ClInclude Include="NetworkingSystem.h" />
     <ClInclude Include="PushConstantRegistry.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="BufferSystem.h" />
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="SpriteSystem.h" />
     <ClInclude Include="VulkanError.h" />
@@ -211,7 +210,6 @@
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="PushConstantRegistry.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
-    <ClCompile Include="BufferSystem.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="SpriteSystem.cpp" />
     <ClCompile Include="Transform2DComponent.cpp" />
