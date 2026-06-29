@@ -81,7 +81,7 @@ public:
     DLL_EXPORT void                     GenerateTexture(VkGuid& renderPassId);
     DLL_EXPORT void                     GenerateCubeMapTexture(VkGuid& renderPassId);
     //DLL_EXPORT VkGuid                 CreateTexture(Pixel clearColorPixel, ivec2 textureResolution, VkFormat textureFormat, ColorChannelUsed colorChannels);
-    DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId);
+    DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId, TextureTypeEnum renderPassAttachmentTextureType);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
     DLL_EXPORT void                     GetTexturePropertiesBuffer(Texture& texture, Vector<VkDescriptorImageInfo>& textureDescriptorList);

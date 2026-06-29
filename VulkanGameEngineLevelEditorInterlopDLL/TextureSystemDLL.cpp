@@ -24,11 +24,11 @@ bool TextureSystem_GenerateCubeMapTexture(VkGuid renderPassId)
 	return true;
 }
 
-bool TextureSystem_CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId)
-{
-	Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, attachmentId);
-	return texture.textureImage ? true : false;
-}
+//bool TextureSystem_CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId)
+//{
+//	Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, attachmentId);
+//	return texture.textureImage ? true : false;
+//}
 
  void TextureSystem_DestroyTexture(VkGuid textureGuid)
 {

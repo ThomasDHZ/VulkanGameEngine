@@ -331,7 +331,7 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
     Vector<RenderPassAttachmentTexture> renderPassAttachmentTextureInfoList = RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId];
     for (int x = 0; x < renderPassAttachmentTextureInfoList.size(); x++)
     {
-        Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, x);
+        Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, x, renderPassAttachmentTextureInfoList[x].TextureType);
         renderedTextureList.emplace_back(texture);
         frameBufferTextureList.emplace_back(texture);
 

@@ -473,7 +473,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 //	return textureLoader.TextureId;
 //}
 
-Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId)
+Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId, TextureTypeEnum renderPassAttachmentTextureType)
 {
 	const RenderPassAttachmentTexture renderPassAttachmentTexture = renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId][attachmentId];
 
@@ -492,6 +492,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.height = vulkanRenderPass.RenderPassResolution.y,
 		.depth = 1,
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
+		.textureType = renderPassAttachmentTextureType,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
 		.sampleCount = vulkanRenderPass.SampleCount,
 
