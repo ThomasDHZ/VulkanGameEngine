@@ -45,28 +45,7 @@ enum ColorChannelUsed
     ChannelRGBA
 };
 
-enum class TextureTypeEnum : uint32
-{
-    kTextureType_Undefined,
-    kTextureType_ColorTexture,
-    kTextureType_DepthTexture,
-    kTextureType_StencilTexture,
-    kTextureType_DataTexture,
-    kTextureType_CubeMap
-};
-
-//enum TextureTypeEnum
-//{
-//    TextureType_UNKNOWN,
-//    TextureType_ColorTexture,
-//    TextureType_DepthTexture,
-//    TextureType_SkyboxTexture,
-//    TextureType_IrradianceMapTexture,
-//    TextureType_PrefilterMapTexture,
-//    TextureType_BRDFTexture
-//};
-
-enum TextureUsageTypeEnum
+enum TextureUsageTypeEnum : uint32
 {
     kUsageType_Undefined,
     kUsageType_SwapChainTexture,
