@@ -37,14 +37,6 @@ enum GameObjectMemberType
    GameObjectVarBool
 };
 
-enum ColorChannelUsed
-{
-    ChannelR = 1,
-    ChannelRG,
-    ChannelRGB,
-    ChannelRGBA
-};
-
 enum TextureUsageTypeEnum : uint32
 {
     kUsageType_Undefined,

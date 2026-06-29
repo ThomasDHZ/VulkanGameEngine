@@ -196,7 +196,7 @@ Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& 
 
     width = w;
     height = h;
-    channelCount = ColorChannelUsed::ChannelRGBA;
+    channelCount = ColorChannelEnum::ChannelRGBA;
 
     Vector<byte> result(data, data + (w * h * 4));
     stbi_image_free(data);

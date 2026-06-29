@@ -23,8 +23,7 @@ struct TextureLoader
 struct Texture
 {
     TextureGuid           textureGuid = TextureGuid();
-    size_t                textureIndex = SIZE_MAX;
-    size_t                bindlessTextureIndex = SIZE_MAX;
+    size_t                textureId = SIZE_MAX;
     int                   width = 1;
     int                   height = 1;
     int                   depth = 1;
@@ -42,7 +41,7 @@ struct Texture
     VkFormat              textureByteFormat = VK_FORMAT_UNDEFINED;
     VkImageLayout         textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
-    ColorChannelUsed      colorChannels = ColorChannelUsed::ChannelRGBA;
+    ColorChannelEnum      colorChannels = ColorChannelEnum::ChannelRGBA;
 };
 
 struct VulkanRenderPass;

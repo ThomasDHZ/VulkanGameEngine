@@ -54,7 +54,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 		texture = Texture
 		{
 			.textureGuid = textureLoader.TextureId,
-			.textureIndex = TextureList.size(),
+			.textureId = TextureList.size(),
 			.width = width,
 			.height = height,
 			.depth = 1,
@@ -63,7 +63,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 			.textureByteFormat = textureLoader.TextureByteFormat,
 			.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 			.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-			.colorChannels = static_cast<ColorChannelUsed>(textureChannels)
+			.colorChannels = static_cast<ColorChannelEnum>(textureChannels)
 		};
 	}
 
@@ -96,8 +96,8 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	if (textureLoader.IsSkyBox)
 	{
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		texture.textureId = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
@@ -109,8 +109,8 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 	}
 	else
 	{
-		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		texture.textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
@@ -361,7 +361,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 
 	Texture texture{
 		.textureGuid = textureLoader.TextureId,
-		.textureIndex = TextureList.size(),
+		.textureId = UINT32_MAX,
 		.width = static_cast<int>(tex2->baseWidth),
 		.height = static_cast<int>(tex2->baseHeight),
 		.depth = static_cast<int>(tex2->baseDepth),
@@ -374,22 +374,22 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.textureByteFormat = format,
 		.textureImageLayout = finalLayout,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
-		.colorChannels = ColorChannelUsed::ChannelRGBA,
+		.colorChannels = ColorChannelEnum::ChannelRGBA,
 	};
 
 	if (textureLoader.IsSkyBox && isCubemap)
 	{
-		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		texture.textureId = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 		
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		switch (textureLoader.TextureUsageType)
 		{
-			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =       texture.bindlessTextureIndex; break;
-			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
-			case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId =  texture.bindlessTextureIndex; break;
+			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =       texture.textureId; break;
+			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.textureId; break;
+			case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId =  texture.textureId; break;
 		}
 
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
@@ -402,15 +402,15 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 	}
 	else
 	{
-		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+		texture.textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
 
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		if (textureLoader.TextureUsageType == kUsageType_BRDFTexture)
 		{
-			sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
+			sceneDataBuffer.BRDFMapId = texture.textureId;
 		}
 
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
@@ -488,14 +488,14 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	Texture texture =
 	{
 		.textureGuid = renderPassAttachmentTexture.RenderedTextureId,
+		.textureId = UINT32_MAX,
 		.width = vulkanRenderPass.RenderPassResolution.x,
 		.height = vulkanRenderPass.RenderPassResolution.y,
 		.depth = 1,
 		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
 		.textureType = renderPassAttachmentTextureType,
 		.textureByteFormat = renderPassAttachmentTexture.Format,
-		.sampleCount = vulkanRenderPass.SampleCount,
-
+		.sampleCount = vulkanRenderPass.SampleCount
 	};
 
 	switch (renderPassAttachmentTexture.TextureUsageType)
@@ -513,12 +513,12 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	if (isDepthFormat)
 	{
 		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		texture.colorChannels = ColorChannelUsed::ChannelR;
+		texture.colorChannels = ColorChannelEnum::ChannelR;
 	}
 	else
 	{
 		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		texture.colorChannels = ColorChannelUsed::ChannelRGBA;
+		texture.colorChannels = ColorChannelEnum::ChannelRGBA;
 	}
 
 	if (texture.mipMapLevels > 1)
@@ -570,17 +570,17 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	if (vulkanRenderPass.IsCubeMapRenderPass)
 	{
-		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		texture.textureId = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		switch (renderPassAttachmentTexture.TextureUsageType)
 		{
-			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =		 texture.bindlessTextureIndex; break;
-			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
-			case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId =  texture.bindlessTextureIndex; break;
+			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =		 texture.textureId; break;
+			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.textureId; break;
+			case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId =  texture.textureId; break;
 		}
 
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
 		textureMetaDataHeader.Width = texture.width;
 		textureMetaDataHeader.Height = texture.height;
 		textureMetaDataHeader.MipLevels = texture.mipMapLevels;
@@ -595,14 +595,14 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	{
 		if (!renderSystem.UsingMaterialBaker)
 		{
-			texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+			texture.textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
 			SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 			if (renderPassAttachmentTexture.TextureUsageType == kUsageType_BRDFTexture)
 			{
-				sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
+				sceneDataBuffer.BRDFMapId = texture.textureId;
 			}
 
-			TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
+			TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
 			textureMetaDataHeader.Width = texture.width;
 			textureMetaDataHeader.Height = texture.height;
 			textureMetaDataHeader.MipLevels = texture.mipMapLevels;
@@ -924,7 +924,7 @@ void TextureSystem::DestroyTexture(Texture& texture)
 		}
 		texture.textureImage = VK_NULL_HANDLE;
 	}
-	memoryPoolSystem.FreeObject(MemoryPoolTypes::kTexture2DMetadataBuffer, texture.bindlessTextureIndex);
+	memoryPoolSystem.FreeObject(MemoryPoolTypes::kTexture2DMetadataBuffer, texture.textureId);
 	texture = Texture();
 }
 

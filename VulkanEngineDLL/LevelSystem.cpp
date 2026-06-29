@@ -62,8 +62,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
     objectPickerRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/ObjectPickerRenderPass.json");
     selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/SelectedGameObjectPickerRenderPass.json");
 
-    sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().bindlessTextureIndex - 1;
-    sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().bindlessTextureIndex;
+    sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().textureId - 1;
+    sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().textureId;
 }
 
 void LevelSystem::Update(const float& deltaTime)
