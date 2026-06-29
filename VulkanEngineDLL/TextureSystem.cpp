@@ -59,7 +59,7 @@ Texture TextureSystem::CreateTexture(TextureLoader textureLoader)
 			.height = height,
 			.depth = 1,
 			.mipMapLevels = textureLoader.MipMapCount == UINT32_MAX ? static_cast<uint32>(std::floor(std::log2(std::max(width, height)))) + 1 : 1,
-			.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+			.textureType = textureLoader.IsSkyBox ? TextureTypeEnum::kTextureType_CubeMap : TextureTypeEnum::kTextureType_ColorTexture,
 			.textureByteFormat = textureLoader.TextureByteFormat,
 			.textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 			.sampleCount = VK_SAMPLE_COUNT_1_BIT,
@@ -208,8 +208,8 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		format = ktxTexture2_GetVkFormat(tex2);
 	}
 
-	uint32_t mipLevels = tex2->numLevels;
-	uint32_t arrayLayers = tex2->numLayers;
+	uint32 mipLevels = tex2->numLevels;
+	uint32 arrayLayers = tex2->numLayers;
 	bool isCubemap = tex2->isCubemap && arrayLayers == 6;
 	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
 	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
@@ -370,7 +370,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		.textureViewList = std::move(views),
 		.textureSampler = sampler,
 		.TextureAllocation = allocation,
-		.textureType = textureLoader.IsSkyBox ? TextureType_SkyboxTexture : TextureType_ColorTexture,
+		.textureType = textureLoader.IsSkyBox ? TextureTypeEnum::kTextureType_CubeMap : TextureTypeEnum::kTextureType_ColorTexture,
 		.textureByteFormat = format,
 		.textureImageLayout = finalLayout,
 		.sampleCount = VK_SAMPLE_COUNT_1_BIT,
@@ -382,11 +382,11 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 		
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		switch (textureLoader.TextureType)
+		switch (textureLoader.TextureUsageType)
 		{
-			case TextureType_SkyboxTexture: sceneDataBuffer.CubeMapId = texture.bindlessTextureIndex; break;
-			case TextureType_IrradianceMapTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
-			case TextureType_PrefilterMapTexture: sceneDataBuffer.PrefilterMapId = texture.bindlessTextureIndex; break;
+			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =       texture.bindlessTextureIndex; break;
+			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
+			case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId =  texture.bindlessTextureIndex; break;
 		}
 
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
@@ -405,7 +405,7 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
 
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		if (textureLoader.TextureType == TextureType_BRDFTexture)
+		if (textureLoader.TextureUsageType == kUsageType_BRDFTexture)
 		{
 			sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
 		}
@@ -497,16 +497,16 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	};
 
-	switch (renderPassAttachmentTexture.RenderTextureType)
+	switch (renderPassAttachmentTexture.TextureUsageType)
 	{
-		case RenderType_DepthBufferTexture:     texture.textureType = TextureType_DepthTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-		case RenderType_GBufferTexture:         texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-		case RenderType_IrradianceTexture:      texture.textureType = TextureType_IrradianceMapTexture; texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-		case RenderType_PrefilterTexture:       texture.textureType = TextureType_PrefilterMapTexture;  texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-		case RenderType_OffscreenColorTexture:  texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-		case RenderType_SwapChainTexture:       texture.textureType = TextureType_ColorTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
-		case RenderType_CubeMapTexture:			texture.textureType = TextureType_SkyboxTexture;		texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-		case RenderType_BRDFTexture:			texture.textureType = TextureType_BRDFTexture;			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_DepthBufferTexture:     texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+		case kUsageType_GBufferTexture:         texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_IrradianceTexture:      texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_PrefilterTexture:       texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_OffscreenColorTexture:  texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_SwapChainTexture:       texture.textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
+		case kUsageType_CubeMap:				texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_BRDFTexture:			texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 	}
 
 	if (isDepthFormat)
@@ -572,11 +572,11 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		switch (texture.textureType)
+		switch (renderPassAttachmentTexture.TextureUsageType)
 		{
-		case TextureType_SkyboxTexture: sceneDataBuffer.CubeMapId = texture.bindlessTextureIndex; break;
-		case TextureType_IrradianceMapTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
-		case TextureType_PrefilterMapTexture: sceneDataBuffer.PrefilterMapId = texture.bindlessTextureIndex; break;
+			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =		 texture.bindlessTextureIndex; break;
+			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.bindlessTextureIndex; break;
+			case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId =  texture.bindlessTextureIndex; break;
 		}
 
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.bindlessTextureIndex);
@@ -596,7 +596,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		{
 			texture.bindlessTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
 			SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-			if (texture.textureType == TextureType_BRDFTexture)
+			if (renderPassAttachmentTexture.TextureUsageType == kUsageType_BRDFTexture)
 			{
 				sceneDataBuffer.BRDFMapId = texture.bindlessTextureIndex;
 			}
@@ -785,16 +785,14 @@ void TextureSystem::CreateTextureView(Texture& texture, bool usingMultiView, VkI
 		}
 	}
 
-	for (uint32_t mip = 0; mip < texture.mipMapLevels; ++mip)
+	for (uint32 mip = 0; mip < texture.mipMapLevels; ++mip)
 	{
 		VkImageView imageView = VK_NULL_HANDLE;
 		VkImageViewCreateInfo viewInfo = {};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = texture.textureImage;
 
-		if (texture.textureType == TextureTypeEnum::TextureType_SkyboxTexture ||
-			texture.textureType == TextureTypeEnum::TextureType_IrradianceMapTexture ||
-			texture.textureType == TextureTypeEnum::TextureType_PrefilterMapTexture)
+		if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap)
 		{
 			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 		}

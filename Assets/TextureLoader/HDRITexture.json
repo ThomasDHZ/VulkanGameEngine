@@ -4,7 +4,8 @@
   "TextureByteFormat": 109,
   "SampleCount": 1,
   "ImageType": 1,
-  "TextureType": 3,
+  "TextureType": 5,
+  "TextureUsageType": 7,
   "MipMapCount": 1,
   "IsSkyBox": false,
   "SamplerCreateInfo": {

@@ -63,7 +63,8 @@
         "LevelEditorIcons/Lightbulb.png"
       ],
       "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
-      "TextureType": 1
+      "TextureType": 1,
+      "TextureUsageType": 9
     },
     "NormalData": {
       "ImageType": 1,
@@ -93,7 +94,8 @@
         "LevelEditorIcons/Lightbulb.png"
       ],
       "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "PackedMROData": {
       "ImageType": 1,
@@ -123,7 +125,8 @@
         "LevelEditorIcons/Lightbulb.png"
       ],
       "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "PackedSheenSSSData": {
       "ImageType": 1,
@@ -153,7 +156,8 @@
         "LevelEditorIcons/Lightbulb.png"
       ],
       "TextureId": "76f4a69e-20c5-407c-99bd-e4ce89fe494c",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "MaterialId": "6a222a9b-1aae-4b44-bdf8-2069f88190c1"
   },

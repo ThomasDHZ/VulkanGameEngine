@@ -23,7 +23,8 @@
     {
       "RenderedTextureId": "0fbb7666-2745-4bd0-8635-45665b6665c6",
       "MipMapCount": 1,
-      "RenderTextureType": 2,
+      "TextureType": 1,
+      "TextureUsageType": 2,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 109,
       "LoadOp": 1,

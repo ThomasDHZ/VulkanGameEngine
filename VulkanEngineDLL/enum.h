@@ -45,43 +45,39 @@ enum ColorChannelUsed
     ChannelRGBA
 };
 
-enum TextureUsageEnum
+enum class TextureTypeEnum : uint32
 {
-    kUse_Undefined,
-    kUse_2DImageTexture,
-    kUse_2DDataTexture,
-    kUse_2DRenderedTexture,
-    kUse_2DDepthTexture,
-    kUse_3DImageTexture,
-    kUse_3DDataTexture,
-    kUse_3DRenderedTexture,
-    kUse_3DDepthTexture,
-    kUse_CubeMapTexture,
-    kUse_CubeMapDepthTexture
+    kTextureType_Undefined,
+    kTextureType_ColorTexture,
+    kTextureType_DepthTexture,
+    kTextureType_StencilTexture,
+    kTextureType_DataTexture,
+    kTextureType_CubeMap
 };
 
-enum TextureTypeEnum
-{
-    TextureType_UNKNOWN,
-    TextureType_ColorTexture,
-    TextureType_DepthTexture,
-    TextureType_SkyboxTexture,
-    TextureType_IrradianceMapTexture,
-    TextureType_PrefilterMapTexture,
-    TextureType_BRDFTexture
-};
+//enum TextureTypeEnum
+//{
+//    TextureType_UNKNOWN,
+//    TextureType_ColorTexture,
+//    TextureType_DepthTexture,
+//    TextureType_SkyboxTexture,
+//    TextureType_IrradianceMapTexture,
+//    TextureType_PrefilterMapTexture,
+//    TextureType_BRDFTexture
+//};
 
-enum RenderTextureTypeEnum
+enum TextureUsageTypeEnum
 {
-    RenderType_UNKNOWN,
-    RenderType_SwapChainTexture,
-    RenderType_OffscreenColorTexture,
-    RenderType_DepthBufferTexture,
-    RenderType_GBufferTexture,
-    RenderType_IrradianceTexture,
-    RenderType_PrefilterTexture,
-    RenderType_CubeMapTexture,
-    RenderType_BRDFTexture
+    kUsageType_Undefined,
+    kUsageType_SwapChainTexture,
+    kUsageType_OffscreenColorTexture,
+    kUsageType_DepthBufferTexture,
+    kUsageType_GBufferTexture,
+    kUsageType_IrradianceTexture,
+    kUsageType_PrefilterTexture,
+    kUsageType_CubeMap,
+    kUsageType_BRDFTexture,
+    kUsageType_Texture
 };
 
 enum RenderAttachmentTypeEnum

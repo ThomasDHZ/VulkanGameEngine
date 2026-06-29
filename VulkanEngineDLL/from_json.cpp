@@ -146,7 +146,8 @@ namespace nlohmann
 
     void from_json(const json& j, RenderPassAttachmentTexture& model) {
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
-        j.at("RenderTextureType").get_to(model.RenderTextureType);
+        j.at("TextureType").get_to(model.TextureType);
+        j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
         j.at("Format").get_to(model.Format);
         j.at("LoadOp").get_to(model.LoadOp);
@@ -433,6 +434,7 @@ namespace nlohmann
         j.at("ImageType").get_to(model.ImageType);
         j.at("TextureByteFormat").get_to(model.TextureByteFormat);
         j.at("TextureType").get_to(model.TextureType);
+        j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("MipMapCount").get_to(model.MipMapCount);
         j.at("IsSkyBox").get_to(model.IsSkyBox);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);

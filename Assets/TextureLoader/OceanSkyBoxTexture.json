@@ -12,6 +12,7 @@
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,
+  "TextureUsageType": 6,
   "MipMapCount": 1,
   "IsSkyBox": true,
   "SamplerCreateInfo": {

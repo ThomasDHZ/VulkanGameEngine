@@ -46,8 +46,7 @@ struct ImportTexture
     VkDescriptorSet          ImGuiDescriptorSet = VK_NULL_HANDLE;
     VmaAllocation            TextureAllocation = VK_NULL_HANDLE;
 
-    TextureUsageEnum         textureUsage = TextureUsageEnum::kUse_Undefined;
-    TextureTypeEnum          textureType = TextureTypeEnum::TextureType_UNKNOWN;
+    TextureTypeEnum          textureType = TextureTypeEnum::kTextureType_Undefined;
     VkFormat                 textureByteFormat = VK_FORMAT_UNDEFINED;
     VkImageLayout            textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkSampleCountFlagBits    sampleCount = VK_SAMPLE_COUNT_1_BIT;

@@ -108,7 +108,8 @@
         "Textures/MegaManMaterial_Albedo.ktx2"
       ],
       "TextureId": "fa43dc13-5ce0-47a5-b58a-60d7146d71f5",
-      "TextureType": 1
+      "TextureType": 1,
+      "TextureUsageType": 9
     },
     "MaterialId": "192a11d5-d0dc-4ead-a257-0feb60d50ff0",
     "NormalData": {
@@ -139,7 +140,8 @@
         "Textures/MegaManMaterial_NormalHeight.ktx2"
       ],
       "TextureId": "3b5161b6-7172-4949-bf64-07b38a8b8fb6",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "PackedMROData": {
       "ImageType": 1,
@@ -169,7 +171,8 @@
         "Textures/MegaManMaterial_MRO.ktx2"
       ],
       "TextureId": "7be62fb7-dafe-459f-a349-60e08a1ae3c5",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "PackedSheenSSSData": {
       "ImageType": 1,
@@ -199,7 +202,8 @@
         "Textures/MegaManMaterial_SheenSSS.ktx2"
       ],
       "TextureId": "019612f6-69b0-44f0-b611-9fd8c93378f2",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     }
   }
 }

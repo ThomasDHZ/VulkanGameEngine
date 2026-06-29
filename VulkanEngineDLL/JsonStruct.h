@@ -66,7 +66,8 @@ struct RenderPassAttachmentTexture
 {
     VkGuid                               RenderedTextureId = VkGuid();
     uint32                               MipMapCount = UINT32_MAX;
-    RenderTextureTypeEnum                RenderTextureType = RenderType_UNKNOWN;
+    TextureTypeEnum                      TextureType = TextureTypeEnum::kTextureType_Undefined;
+    TextureUsageTypeEnum                 TextureUsageType = kUsageType_Undefined;
     Vector<RenderAttachmentTypeEnum>     RenderAttachmentTypes = Vector<RenderAttachmentTypeEnum>();
     VkFormat                             Format = VK_FORMAT_R8G8B8A8_UNORM;
     VkAttachmentLoadOp                   LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;

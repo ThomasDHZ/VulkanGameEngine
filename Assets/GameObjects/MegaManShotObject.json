@@ -74,7 +74,8 @@
         "Textures/MegaManShotMaterial_Albedo.ktx2"
       ],
       "TextureId": "abce344b-ff9f-49b8-954d-d57bfe1c6e0f",
-      "TextureType": 1
+      "TextureType": 1,
+      "TextureUsageType": 9
     },
     "MaterialId": "06c0b5f5-050c-4ef4-b9a7-1a7ef198b419",
     "NormalData": {
@@ -105,7 +106,8 @@
         "Textures/MegaManShotMaterial_NormalHeight.ktx2"
       ],
       "TextureId": "983ccd09-c5b3-489d-b63b-c290c60a5dee",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "PackedMROData": {
       "ImageType": 1,
@@ -135,7 +137,8 @@
         "Textures/MegaManShotMaterial_MRO.ktx2"
       ],
       "TextureId": "d256b448-abee-4327-879b-53546e8684ee",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     },
     "PackedSheenSSSData": {
       "ImageType": 1,
@@ -165,7 +168,8 @@
         "Textures/MegaManShotMaterial_SheenSSS.ktx2"
       ],
       "TextureId": "c4d4826a-1378-4cf0-9fba-795fc556e1dc",
-      "TextureType": 1
+      "TextureType": 4,
+      "TextureUsageType": 9
     }
   },
   "GameObjectSprite": {
