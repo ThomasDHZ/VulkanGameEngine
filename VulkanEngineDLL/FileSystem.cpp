@@ -556,7 +556,6 @@ Vector<byte> FileSystem::LoadAssetFile(const String& filePath)
     AAsset_close(asset);
 
 #else
-    // Use current working directory (should be the bin folder)
     std::filesystem::path fullPath = std::filesystem::current_path() / filePath;
 
     std::ifstream file(fullPath, std::ios::binary | std::ios::ate);

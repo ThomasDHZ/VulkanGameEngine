@@ -1,24 +1,5 @@
 #pragma once
 
-
-enum ShaderMemberType
-{
-    shaderUnknown,
-    shaderInt,
-    shaderUint,
-    shaderFloat,
-    shaderIvec2,
-    shaderIvec3,
-    shaderIvec4,
-    shaderVec2,
-    shaderVec3,
-    shaderVec4,
-    shaderMat2,
-    shaderMat3,
-    shaderMat4,
-    shaderbool
-};
-
 enum GameObjectMemberType
 {
    GameObjectVarUnknown,
@@ -60,7 +41,7 @@ enum RenderAttachmentTypeEnum
     SkipSubPass
 };
 
-enum DescriptorBindingPropertiesEnum
+enum DescriptorBindingTypeEnum
 {
     kMeshPropertiesDescriptor,
     kTextureDescriptor,

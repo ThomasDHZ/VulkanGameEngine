@@ -359,26 +359,36 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
 
 void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
 {
-    Vector<Texture>  frameBufferAttachment = textureSystem.FindRenderedTextureList(vulkanRenderPass.RenderPassId);
-    if (!frameBufferAttachment.empty() && 
-        frameBufferAttachment[0].textureType == TextureTypeEnum::kTextureType_CubeMap)
+    Vector<Texture> frameBufferAttachment = textureSystem.FindRenderedTextureList(vulkanRenderPass.RenderPassId);
+    if (frameBufferAttachment.empty()) return;
+
+    const Texture& firstTex = frameBufferAttachment[0];
+    bool isCubeMap = (firstTex.textureType == TextureTypeEnum::kTextureType_CubeMap);
+    if (isCubeMap && !firstTex.textureViewList.empty())
     {
-        uint32 mipLevels = frameBufferAttachment[0].mipMapLevels;
-        uint32 baseSize = frameBufferAttachment[0].width;
+        uint32 mipLevels = firstTex.mipMapLevels;
+        uint32 baseSize = firstTex.width;
         vulkanRenderPass.FrameBufferList.resize(mipLevels);
         for (uint32_t mip = 0; mip < mipLevels; ++mip)
         {
             uint32 mipWidth = std::max(1u, baseSize >> mip);
             uint32 mipHeight = std::max(1u, baseSize >> mip);
-            Vector<VkImageView> attachments{ frameBufferAttachment[0].textureViewList[mip] };
-            VkFramebufferCreateInfo info = {
+            if (mip >= firstTex.textureViewList.size())
+            {
+                std::cerr << "Error: Missing mip view " << mip << " for cubemap\n";
+                break;
+            }
+
+            Vector<VkImageView> attachments{ firstTex.textureViewList[mip] };
+            VkFramebufferCreateInfo info
+            {
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .renderPass = vulkanRenderPass.RenderPass,
                 .attachmentCount = static_cast<uint32_t>(attachments.size()),
                 .pAttachments = attachments.data(),
                 .width = mipWidth,
                 .height = mipHeight,
-                .layers = vulkanRenderPass.UseCubeMapMultiView ? 1u : 6u
+                .layers = 1u 
             };
             VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &info, nullptr, &vulkanRenderPass.FrameBufferList[mip]));
         }
@@ -386,12 +396,15 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
     else
     {
         vulkanRenderPass.FrameBufferList.resize(1);
-        std::vector<VkImageView> attachments;
-        for (const auto& texture : frameBufferAttachment)
+
+        Vector<VkImageView> attachments;
+        attachments.reserve(frameBufferAttachment.size());
+        for (const auto& tex : frameBufferAttachment)
         {
-            attachments.emplace_back(texture.textureViewList.front());
+            if (!tex.textureViewList.empty()) attachments.push_back(tex.textureViewList.front());
         }
-        VkFramebufferCreateInfo info = {
+
+        VkFramebufferCreateInfo info{
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = vulkanRenderPass.RenderPass,
             .attachmentCount = static_cast<uint32_t>(attachments.size()),
@@ -611,14 +624,11 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
             for (auto& inputTexture : renderPass.InputTextureList)
             {
                 Texture texture = textureSystem.FindTexture(inputTexture);
-                if (!texture.RenderedCubeMapView)
+                if (texture.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
                 {
-                    if (texture.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
-                    {
-                        continue;
-                    }
-                    textureList.emplace_back(texture);
+                    continue;
                 }
+                textureList.emplace_back(texture);
             }
         }
     }

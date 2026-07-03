@@ -10,6 +10,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
 
  VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, VkShaderStageFlagBits shaderStages)
  {
+   //  VulkanShader vulkanShader
      Vector<byte> file = fileSystem.LoadAssetFile(filename);
      VkShaderModuleCreateInfo shaderModuleCreateInfo =
      {
@@ -80,10 +81,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                      shaderSystem.PipelineShaderStructPrototypeMap[name] = ShaderStruct
                      {
                          .Name = name,
-                         .ShaderBufferSize = shaderStruct.ShaderBufferSize,
-                         .ShaderBufferVariableList = shaderStruct.ShaderBufferVariableList,
-                         .ShaderStructBufferId = shaderStruct.ShaderStructBufferId,
-                         .ShaderStructBuffer = Vector<byte>(shaderStruct.ShaderBufferSize, 0x00)
+                         .ShaderBufferVariableList = shaderStruct.ShaderBufferVariableList
                      };
                  }
              }
@@ -117,65 +115,18 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      {
          uint32 binding = 0;
          uint32 inputRate = 0;
-         if (vertexAttributeLocationpecializationConstantResult.size())
-         {
-             String vertexAttributeLocationString(vertexAttributeLocationpecializationConstantResult[x]->name);
-             if (vertexAttributeLocationString.find("VertexAttributeLocation" + std::to_string(inputs[x]->location)) != String::npos)
-             {
-                 binding = *static_cast<DescriptorBindingPropertiesEnum*>(vertexAttributeLocationpecializationConstantResult[0]->default_value);
-             }
-         }
-
-         if (vertexAttributeLocationpecializationConstantResult.size())
+         if (vertexInputRateLocationConstantResult.size())
          {
              String vertexInputRateLocationString(vertexInputRateLocationConstantResult[x]->name);
              if (vertexInputRateLocationString.find("VertexInputRateLocation" + std::to_string(inputs[x]->location)) != String::npos)
              {
-                 inputRate = *static_cast<DescriptorBindingPropertiesEnum*>(vertexInputRateLocationConstantResult[0]->default_value);
+                 inputRate = *static_cast<DescriptorBindingTypeEnum*>(vertexInputRateLocationConstantResult[0]->default_value);
              }
          }
 
          switch (inputs[x]->type_description->op)
          {
-         case SpvOpTypeInt:
-         {
-             vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                 {
-                     .location = inputs[x]->location,
-                     .binding = binding,
-                     .format = static_cast<VkFormat>(inputs[x]->format),
-                     .offset = offset
-                 });
-             offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
-             break;
-         }
-         case SpvOpTypeFloat:
-         {
-             vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                 {
-                     .location = inputs[x]->location,
-                     .binding = binding,
-                     .format = static_cast<VkFormat>(inputs[x]->format),
-                     .offset = offset
-                 });
-             offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
-             break;
-         }
-         case SpvOpTypeVector:
-         {
-             vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
-                 {
-                     .location = inputs[x]->location,
-                     .binding = binding,
-                     .format = static_cast<VkFormat>(inputs[x]->format),
-                     .offset = offset
-                 });
-             offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
-             break;
-         }
-         case SpvOpTypeMatrix:
-         {
-             for (int y = 0; y < inputs[x]->type_description->traits.numeric.vector.component_count; y++)
+             case SpvOpTypeInt:
              {
                  vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
                      {
@@ -184,36 +135,58 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                          .format = static_cast<VkFormat>(inputs[x]->format),
                          .offset = offset
                      });
-                 inputs[x]->location += 1;
-                 offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
+                 offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
+                 break;
              }
-             break;
-         }
+             case SpvOpTypeFloat:
+             {
+                 vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                     {
+                         .location = inputs[x]->location,
+                         .binding = binding,
+                         .format = static_cast<VkFormat>(inputs[x]->format),
+                         .offset = offset
+                     });
+                 offset += inputs[x]->type_description->traits.numeric.scalar.width / 8;
+                 break;
+             }
+             case SpvOpTypeVector:
+             {
+                 vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                     {
+                         .location = inputs[x]->location,
+                         .binding = binding,
+                         .format = static_cast<VkFormat>(inputs[x]->format),
+                         .offset = offset
+                     });
+                 offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
+                 break;
+             }
+             case SpvOpTypeMatrix:
+             {
+                 for (int y = 0; y < inputs[x]->type_description->traits.numeric.vector.component_count; y++)
+                 {
+                     vertexInputAttributeList.emplace_back(VkVertexInputAttributeDescription
+                         {
+                             .location = inputs[x]->location,
+                             .binding = binding,
+                             .format = static_cast<VkFormat>(inputs[x]->format),
+                             .offset = offset
+                         });
+                     inputs[x]->location += 1;
+                     offset += (inputs[x]->type_description->traits.numeric.scalar.width / 8) * inputs[x]->type_description->traits.numeric.vector.component_count;
+                 }
+                 break;
+             }
          }
 
-         if (inputs.size() == 0 ||
-             inputs.size() == 1)
-         {
-             vertexInputBindingList.emplace_back(VkVertexInputBindingDescription{
-                                                    .binding = vertexInputAttributeList[x].binding,
-                                                    .stride = offset,
-                                                    .inputRate = static_cast<VkVertexInputRate>(inputRate)
-                 });
-         }
-         else
-         {
-             if (x + 1 == inputs.size() ||
-                 (x > 0 &&
-                     vertexInputAttributeList[x - 1].binding != binding))
+         vertexInputBindingList.emplace_back(VkVertexInputBindingDescription
              {
-                 vertexInputBindingList.emplace_back(VkVertexInputBindingDescription{
-                                                     .binding = vertexInputAttributeList[x - 1].binding,
-                                                     .stride = offset,
-                                                     .inputRate = static_cast<VkVertexInputRate>(inputRate)
-                     });
-                 offset = 0;
-             }
-         }
+                .binding = vertexInputAttributeList[x].binding,
+                .stride = offset,
+                .inputRate = static_cast<VkVertexInputRate>(inputRate)
+             });
+         if (inputs.size() == x) offset = 0;
      }
  }
 
@@ -268,7 +241,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
 
  void ShaderSystem::LoadShaderDescriptorBindings(const SpvReflectShaderModule& module, Vector<ShaderDescriptorBinding>& shaderDescriptorSetBinding)
  {
-     uint32_t descriptorBindingsCount = 0;
+     uint32 descriptorBindingsCount = 0;
      SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorBindings(&module, &descriptorBindingsCount, nullptr));
      Vector<SpvReflectDescriptorBinding*> descriptorSetBindings(descriptorBindingsCount);
      SPV_VULKAN_RESULT(spvReflectEnumerateDescriptorBindings(&module, &descriptorBindingsCount, descriptorSetBindings.data()));
@@ -286,7 +259,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                      .DescriptorSet = descriptorBinding->set,
                      .Binding = descriptorBinding->binding,
                      .ShaderStageFlags = static_cast<VkShaderStageFlags>(module.shader_stage),
-                     .DescriptorBindingType = kSubpassInputDescriptor,
+                     .DescriptorBindingType = descriptorBinding->descriptor_type,
                      .DescripterType = static_cast<VkDescriptorType>(descriptorBinding->descriptor_type)
                  });
          }
@@ -343,9 +316,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      ShaderStruct shaderStruct =
      {
          .Name = String(shaderInfo.type_name),
-         .ShaderBufferSize = bufferSize,
-         .ShaderBufferVariableList = structVariableList,
-         .ShaderStructBuffer = Vector<byte>()
+         .ShaderBufferVariableList = structVariableList
      };
      return shaderStruct;
  }
@@ -359,20 +330,20 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          uint memberSize = 0;
          size_t byteAlignment = 0;
          size_t arraySize = variable.traits.array.dims[0];
-         ShaderMemberType memberType;
+         ShaderMemberTypeEnum memberType;
          switch (variable.op)
          {
              case SpvOpTypeInt:
              {
                  memberSize = variable.traits.numeric.scalar.width / 8;
-                 memberType = variable.traits.numeric.scalar.signedness ? shaderUint : shaderInt;
+                 memberType = variable.traits.numeric.scalar.signedness ? kShaderMember_Uint : kShaderMember_Int;
                  byteAlignment = 4;
                  break;
              }
              case SpvOpTypeFloat:
              {
                  memberSize = variable.traits.numeric.scalar.width / 8;
-                 memberType = shaderFloat;
+                 memberType = kShaderMember_Float;
                  byteAlignment = 4;
                  break;
              }
@@ -382,15 +353,15 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                  switch (variable.traits.numeric.vector.component_count)
                  {
                  case 2:
-                     memberType = shaderVec2;
+                     memberType = kShaderMember_Vec2;
                      byteAlignment = 8;
                      break;
                  case 3:
-                     memberType = shaderVec3;
+                     memberType = kShaderMember_Vec3;
                      byteAlignment = 16;
                      break;
                  case 4:
-                     memberType = shaderVec4;
+                     memberType = kShaderMember_Vec4;
                      byteAlignment = 16;
                      break;
                  }
@@ -403,17 +374,17 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                  memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                  if (rowCount == 2 && colCount == 2)
                  {
-                     memberType = shaderMat2;
+                     memberType = kShaderMember_Mat2;
                      byteAlignment = 8;
                  }
                  else if (rowCount == 3 && colCount == 3)
                  {
-                     memberType = shaderMat3;
+                     memberType = kShaderMember_Mat3;
                      byteAlignment = 16;
                  }
                  else if (rowCount == 4 && colCount == 4)
                  {
-                     memberType = shaderMat4;
+                     memberType = kShaderMember_Mat4;
                      byteAlignment = 16;
                  }
                  else
@@ -430,17 +401,17 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
                  memberSize = (variable.traits.numeric.scalar.width / 8) * rowCount * colCount;
                  if (rowCount == 2 && colCount == 2)
                  {
-                     memberType = shaderMat2;
+                     memberType = kShaderMember_Mat2;
                      byteAlignment = 8;
                  }
                  else if (rowCount == 3 && colCount == 3)
                  {
-                     memberType = shaderMat3;
+                     memberType = kShaderMember_Mat3;
                      byteAlignment = 16;
                  }
                  else if (rowCount == 4 && colCount == 4)
                  {
-                     memberType = shaderMat4;
+                     memberType = kShaderMember_Mat4;
                      byteAlignment = 16;
                  }
                  else
@@ -583,35 +554,13 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      UpdatePushConstantBuffer(ShaderPushConstantMap[pushConstantName]);
  }
 
- void ShaderSystem::UpdateShaderBuffer(ShaderStruct& shaderStruct, uint vulkanBufferId)
- {
-     if (!ShaderPipelineStructExists(vulkanBufferId))
-     {
-         return;
-     }
-
-     size_t offset = 0;
-     VulkanBuffer vulkanBuffer = bufferSystem.FindVulkanBuffer(vulkanBufferId);
-     for (const auto& shaderStrucVar : shaderStruct.ShaderBufferVariableList)
-     {
-         offset = (offset + shaderStrucVar.ByteAlignment - 1) & ~(shaderStrucVar.ByteAlignment - 1);
-         void* dest = static_cast<byte*>(shaderStruct.ShaderStructBuffer.data()) + offset;
-         memcpy(dest, shaderStrucVar.Value.data(), shaderStrucVar.Size);
-         offset += shaderStrucVar.Size;
-     }
-     bufferSystem.UpdateDynamicBuffer(vulkanBuffer.Handle().bufferId, shaderStruct.ShaderStructBuffer.data(), shaderStruct.ShaderBufferSize);
- }
-
  ShaderStruct ShaderSystem::CopyShaderStructProtoType(const String& structName)
  {
      ShaderStruct shaderStructCopy = FindShaderProtoTypeStruct(structName);
      ShaderStruct shaderStruct = ShaderStruct
      {
          .Name = shaderStructCopy.Name,
-         .ShaderBufferSize = shaderStructCopy.ShaderBufferSize,
-         .ShaderBufferVariableList = shaderStructCopy.ShaderBufferVariableList,
-         .ShaderStructBufferId = shaderStructCopy.ShaderStructBufferId,
-         .ShaderStructBuffer = Vector<byte>(shaderStructCopy.ShaderBufferSize, 0x00)
+         .ShaderBufferVariableList = shaderStructCopy.ShaderBufferVariableList
      };
      for (size_t x = 0; x < shaderStructCopy.ShaderBufferVariableList.size(); ++x)
      {

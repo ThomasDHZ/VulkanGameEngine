@@ -2,6 +2,7 @@
 #include <Platform.h>
 #include "TextureSystem.h"
 #include "enum.h"
+#include <ShaderEnums.h>
 
 enum PushConstantResolverEnum
 {
@@ -37,7 +38,7 @@ struct PipelineDescriptorModel
 {
     uint BindingNumber;
     uint DstArrayElement;
-    DescriptorBindingPropertiesEnum BindingPropertiesList;
+    DescriptorBindingTypeEnum BindingPropertiesList;
     VkDescriptorType DescriptorType;
     VkShaderStageFlags StageFlags;
     VkSampler* pImmutableSamplers;
@@ -158,17 +159,14 @@ struct ShaderVariable
     size_t                          Size = 0;
     size_t                          ByteAlignment = 0;
     Vector<byte>                    Value;
-    ShaderMemberType                MemberTypeEnum = shaderUnknown;
+    ShaderMemberTypeEnum            MemberTypeEnum = kShaderMember_Undefined;
     bool                            ConstVariable = false;
 };
 
 struct ShaderStruct
 {
     String                          Name;
-    size_t			                ShaderBufferSize = 0;
     Vector<ShaderVariable>          ShaderBufferVariableList;
-    int                             ShaderStructBufferId;
-    Vector<byte>                    ShaderStructBuffer;
 };
 
 struct ShaderDescriptorSet
@@ -186,7 +184,7 @@ struct ShaderDescriptorBinding
     uint32                          Binding = UINT32_MAX;
     size_t                          DescriptorCount;
     VkShaderStageFlags              ShaderStageFlags;
-    DescriptorBindingPropertiesEnum DescriptorBindingType;
+    SpvReflectDescriptorType        DescriptorBindingType;
     VkDescriptorType                DescripterType;
     Vector<VkDescriptorImageInfo>   DescriptorImageInfo;
     Vector<VkDescriptorBufferInfo>  DescriptorBufferInfo;

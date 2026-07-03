@@ -1,5 +1,6 @@
 #pragma once
 #include <Platform.h>
+#include <VulkanShader.h>
 #include "JsonStruct.h"
 #include "MemorySystem.h"
 #include "BufferSystem.h"
@@ -18,6 +19,7 @@ private:
     ShaderSystem(ShaderSystem&&) = delete;
     ShaderSystem& operator=(ShaderSystem&&) = delete;
 
+   // UnorderedMap<String, VulkanShader>       VulkanShaderMap;
     UnorderedMap<String, ShaderPipelineData> ShaderModuleMap;
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
 	UnorderedMap<String, ShaderStruct>       PipelineShaderStructPrototypeMap;
@@ -34,7 +36,7 @@ private:
 
 public:
 	
-    UnorderedMap<int, ShaderStruct>             PipelineShaderStructMap;
+    UnorderedMap<int, ShaderStruct>                         PipelineShaderStructMap;
     
     DLL_EXPORT VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
     DLL_EXPORT ShaderPipelineData                           LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths);
@@ -43,7 +45,6 @@ public:
     DLL_EXPORT bool                                         CompileShaders(const String& fileDirectory, const String& outputDirectory);
     DLL_EXPORT void                                         UpdatePushConstantBuffer(const String& pushConstantName);
     DLL_EXPORT void                                         UpdatePushConstantBuffer(ShaderPushConstant& pushConstantStruct);
-    DLL_EXPORT void                                         UpdateShaderBuffer(ShaderStruct& shaderStruct, uint vulkanBufferId);
     DLL_EXPORT ShaderStruct                                 CopyShaderStructProtoType(const String& structName);
     DLL_EXPORT ShaderPipelineData                           FindShaderModule(const String& shaderFile);
     DLL_EXPORT ShaderPushConstant&                          FindShaderPushConstant(const String& pushConstantName);
