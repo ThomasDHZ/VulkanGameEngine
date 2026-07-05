@@ -19,7 +19,7 @@ private:
     ShaderSystem(ShaderSystem&&) = delete;
     ShaderSystem& operator=(ShaderSystem&&) = delete;
 
-   // UnorderedMap<String, VulkanShader>       VulkanShaderMap;
+    UnorderedMap<String, VulkanShader>       VulkanShaderMap;
     UnorderedMap<String, ShaderPipelineData> ShaderModuleMap;
 	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
 	UnorderedMap<String, ShaderStruct>       PipelineShaderStructPrototypeMap;

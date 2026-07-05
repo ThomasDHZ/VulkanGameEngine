@@ -33,6 +33,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
 
  ShaderPipelineData ShaderSystem::LoadPipelineShaderData(const Vector<String>& pipelineShaderPathList)
  {
+
      SpvReflectShaderModule spvModule;
      Vector<VkVertexInputBindingDescription> vertexInputBindingList;
      Vector<VkVertexInputAttributeDescription> vertexInputAttributeList;
@@ -44,6 +45,9 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      {
          Vector<byte> file = fileSystem.LoadAssetFile(pipelineShaderPath.c_str());
          SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.size(), file.data(), &spvModule));
+
+         VulkanShader shader = VulkanShader(file);
+
          LoadShaderConstantBufferData(spvModule, constBuffers);
          LoadShaderDescriptorBindings(spvModule, descriptorBindings);
          if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
