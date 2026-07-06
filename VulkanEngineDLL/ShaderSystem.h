@@ -19,10 +19,10 @@ private:
     ShaderSystem(ShaderSystem&&) = delete;
     ShaderSystem& operator=(ShaderSystem&&) = delete;
 
-    UnorderedMap<String, VulkanShader>       VulkanShaderMap;
-    UnorderedMap<String, ShaderPipelineData> ShaderModuleMap;
-	UnorderedMap<String, ShaderPushConstant> ShaderPushConstantMap;
-	UnorderedMap<String, ShaderStruct>       PipelineShaderStructPrototypeMap;
+    //UnorderedMap<VkGuid, Shader>                            VulkanShaderMap;
+    UnorderedMap<String, ShaderPipelineData>                ShaderModuleMap;
+	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
+	UnorderedMap<String, ShaderStruct>                      PipelineShaderStructPrototypeMap;
 
     void                                                    LoadShaderVertexInputVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
     Vector<SpvReflectInterfaceVariable*>                    LoadShaderVertexOutputVariables(const SpvReflectShaderModule& module);

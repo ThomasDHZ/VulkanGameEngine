@@ -2,8 +2,16 @@
   "Name": "FrameBufferPipeline",
   "PipelineId": "6eee6e25-9bf7-49b4-b8b6-05434ce300f6",
   "ShaderList": [
-    "Shaders/FrameBufferShaderVert.spv",
-    "Shaders/FrameBufferShaderFrag.spv"
+    {
+      "ShaderId": "1721d0bf-ac88-40a7-afd3-6e2120cd0cfc",
+      "ShaderFile": "Shaders/FrameBufferShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "ddcfee0f-fd47-4936-abc2-6c076332c5c7",
+      "ShaderFile": "Shaders/FrameBufferShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

@@ -2,8 +2,16 @@
   "Name": "SDFShadowPipeline",
   "PipelineId": "01fb19cb-b580-4e96-9fdc-b296c9b54011",
   "ShaderList": [
-    "Shaders/LevelDirectionalShadowShaderVert.spv",
-    "Shaders/LevelDirectionalShadowShaderFrag.spv"
+    {
+      "ShaderId": "e07a1d2e-f3ce-4cbd-9ced-7f8493a5edac",
+      "ShaderFile": "Shaders/LevelDirectionalShadowShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "03467d42-c18b-452f-a03b-63a120e8244a",
+      "ShaderFile": "Shaders/LevelDirectionalShadowShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

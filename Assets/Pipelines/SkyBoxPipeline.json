@@ -2,8 +2,16 @@
   "Name": "SkyBoxPipeline",
   "PipelineId": "a432f537-bfa4-46d8-a942-565973c0b164",
   "ShaderList": [
-    "Shaders/SkyBoxShaderVert.spv",
-    "Shaders/SkyBoxShaderFrag.spv"
+    {
+      "ShaderId": "9a443116-d12c-4717-af53-06c76f634290",
+      "ShaderFile": "Shaders/SkyBoxShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "55b1312d-97ab-4b1a-9b7c-25397db5e49d",
+      "ShaderFile": "Shaders/SkyBoxShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 1,

@@ -454,5 +454,12 @@ namespace nlohmann
         model.GameObjectRotation = ivec2(j.at("GameObjectRotation")[0], j.at("GameObjectRotation")[1]);
         model.GameObjectScale = ivec2(j.at("GameObjectScale")[0], j.at("GameObjectScale")[1]);
     }
+
+    void from_json(const json& j, ShaderLoader& model)
+    {
+        j.at("ShaderId").get_to(model.ShaderId);
+        j.at("ShaderFile").get_to(model.ShaderFile);
+        j.at("ShaderStage").get_to(model.ShaderStage);
+    }
 }
 

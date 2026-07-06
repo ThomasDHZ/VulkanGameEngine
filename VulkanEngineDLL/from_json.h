@@ -38,4 +38,5 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, TextureLoader& model);
     DLL_EXPORT void from_json(const json& j, Collider2DComponent& model);
     DLL_EXPORT void from_json(const json& j, Transform2DComponent& model);
+    DLL_EXPORT void from_json(const json& j, ShaderLoader& model);
 }

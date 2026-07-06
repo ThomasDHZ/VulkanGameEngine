@@ -2,8 +2,16 @@
   "Name": "SDFShadowPipeline",
   "PipelineId": "06f1e26a-4ea2-4a21-b1cc-40792d11801d",
   "ShaderList": [
-    "Shaders/SDFSpriteInstanceShadowShaderVert.spv",
-    "Shaders/SDFSpriteInstanceShadowShaderfrag.spv"
+    {
+      "ShaderId": "9c9ebcc2-cb56-4a09-9a66-0c64263ceed4",
+      "ShaderFile": "Shaders/SDFSpriteInstanceShadowShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "d81d4594-1894-47b7-a1b4-bcd48bc9971d",
+      "ShaderFile": "Shaders/SDFSpriteInstanceShadowShaderfrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

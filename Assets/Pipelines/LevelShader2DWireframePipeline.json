@@ -2,8 +2,16 @@
   "Name": "LevelShader2DPipeline",
   "PipelineId": "8b679716-de53-4a2c-8853-f66eb7f47393",
   "ShaderList": [
-    "Shaders/LevelWireFrameShader2DVert.spv",
-    "Shaders/LevelWireFrameShader2DFrag.spv"
+    {
+      "ShaderId": "f39bad67-1e6f-48a1-bac0-9105d29fcbbd",
+      "ShaderFile": "Shaders/LevelWireFrameShader2DVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "6c3dd8f9-fcb9-4869-8fb9-6f5ffc743bb9",
+      "ShaderFile": "Shaders/LevelWireFrameShader2DFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 1,
   "SubPassId": 0,

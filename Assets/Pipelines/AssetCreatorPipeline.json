@@ -2,8 +2,16 @@
   "Name": "LevelShader2DPipeline",
   "PipelineId": "afd187ab-bf2a-4a8b-94e0-4854a408b793",
   "ShaderList": [
-    "Shaders/AssetCreatorShaderVert.spv",
-    "Shaders/AssetCreatorShaderFrag.spv"
+    {
+      "ShaderId": "253fb8e9-6e1c-47ed-b13b-2291c05e8e1e",
+      "ShaderFile": "Shaders/AssetCreatorShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "5c3541ee-143c-43b4-88c4-aa09bb4205fb",
+      "ShaderFile": "Shaders/AssetCreatorShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 1,
   "SubPassId": 0,

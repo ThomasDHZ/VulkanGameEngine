@@ -144,6 +144,20 @@ struct RenderPassAttachementTextures
     Texture* DepthTexture;
 };
 
+//struct Shader
+//{
+//    VkGuid ShaderId;
+//    VulkanShader shader;
+//    VkShaderStageFlagBits ShaderStage;
+//};
+
+struct ShaderLoader
+{
+    VkGuid                ShaderId;
+    String                ShaderFile;
+    VkShaderStageFlagBits ShaderStage;
+};
+
 struct VulkanPipeline
 {
     VkGuid RenderPipelineId;
@@ -152,6 +166,16 @@ struct VulkanPipeline
     VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
     Vector<VkDescriptorSetLayout> DescriptorSetLayoutList = Vector<VkDescriptorSetLayout>();
     Vector<VkDescriptorSet> DescriptorSetList = Vector<VkDescriptorSet>();
+};
+
+struct ShaderPipelineData
+{
+    Vector<String>                              ShaderList;
+    Vector<ShaderDescriptorBinding>             DescriptorBindingsList;
+    Vector<ShaderStruct>                        ShaderStructList;
+    Vector<VkVertexInputBindingDescription>     VertexInputBindingList;
+    Vector<VkVertexInputAttributeDescription>   VertexInputAttributeList;
+    Vector<ShaderPushConstant>                  PushConstantList;
 };
 
 struct RenderPipelineLoader

@@ -1,9 +1,17 @@
 {
-  "Name": "GeometryPipeline",
+  "Name": "GBufferLightingPipeline",
   "PipelineId": "1c9d6cfd-7339-494d-b666-681e58973d17",
   "ShaderList": [
-    "Shaders/GBufferLightingShaderVert.spv",
-    "Shaders/GBufferLightingShaderFrag.spv"
+    {
+      "ShaderId": "dda898f4-8d8c-4cd6-9da3-adc806c14e17",
+      "ShaderFile": "Shaders/GBufferLightingShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "43ac685e-cc94-4ea4-b747-65f222dbef90",
+      "ShaderFile": "Shaders/GBufferLightingShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 1,

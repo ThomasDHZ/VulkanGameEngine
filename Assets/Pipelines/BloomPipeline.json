@@ -2,8 +2,16 @@
   "Name": "BloomPipeline",
   "PipelineId": "0eac993e-45fe-47c3-b5d2-80dbc6f1813e",
   "ShaderList": [
-    "Shaders/BloomShaderVert.spv",
-    "Shaders/BloomShaderFrag.spv"
+    {
+      "ShaderId": "89d132c4-9933-4c92-8646-489df1d9966c",
+      "ShaderFile": "Shaders/BloomShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "ba4692a2-3cc9-4ccb-916a-ca9ece6f4dfa",
+      "ShaderFile": "Shaders/BloomShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

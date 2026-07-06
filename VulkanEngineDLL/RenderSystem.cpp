@@ -183,13 +183,16 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
     Vector<VkDescriptorSetLayout> descriptorSetLayoutList = { memoryPoolSystem.GlobalBindlessDescriptorSetLayout };
 
     nlohmann::json pipelineJson = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str());
+    ShaderLoader renderVertexShaderLoader = pipelineJson["ShaderList"][0].get<ShaderLoader>();
+    ShaderLoader renderFragShaderLoader = pipelineJson["ShaderList"][1].get<ShaderLoader>();
+
     RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPass.SampleCount;
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (renderPass.SampleCount > VK_SAMPLE_COUNT_1_BIT);
     renderPipelineLoader.RenderPassId = renderPass.RenderPassId;
     renderPipelineLoader.RenderPass = renderPass.RenderPass;
     renderPipelineLoader.RenderPassResolution = renderPass.RenderPassResolution;
-    renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] });
+    renderPipelineLoader.ShaderPiplineInfo = shaderSystem.LoadPipelineShaderData(Vector<String>{ pipelineJson["ShaderList"][0]["ShaderFile"], pipelineJson["ShaderList"][1]["ShaderFile"] });
 
     std::unordered_set<uint32> uniqueSets;
     for (const auto& descriptorSet : renderPipelineLoader.ShaderPiplineInfo.DescriptorBindingsList)

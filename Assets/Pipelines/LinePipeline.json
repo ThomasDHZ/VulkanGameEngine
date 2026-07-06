@@ -2,8 +2,16 @@
   "Name": "LinePipeline",
   "PipelineId": "06f656eb-86ed-409d-83d7-9a89387ec37c",
   "ShaderList": [
-    "Shaders/LineShader2DVert.spv",
-    "Shaders/LineShader2DFrag.spv"
+    {
+      "ShaderId": "ca53b6df-3f33-4207-b22c-afe7f7be63f3",
+      "ShaderFile": "Shaders/LineShader2DVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "9660dbe0-d52b-4d44-a4a8-552960fb1294",
+      "ShaderFile": "Shaders/LineShader2DFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

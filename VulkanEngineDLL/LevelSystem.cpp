@@ -24,11 +24,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
 #endif
 
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
-    for (auto& texture :    json["LoadTextures"])    textureSystem.CreateTexture(texture);
-    for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
-    for (auto& material :   json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
-    for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& texture :     json["LoadTextures"])    textureSystem.CreateTexture(texture);
+    for (auto& ktxTexture :  json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& material :    json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
+    for (auto& spriteVRAM :  json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
 
     Vector<String> gameObjectTempleteList;
@@ -40,11 +39,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
 
     LoadSkyBox();
-    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
-    LoadLevelMesh(tileSetId);
-
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-
     brdfRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/BRDFRenderPass.json");
     textureSystem.GenerateTexture(brdfRenderPassId);
     Vector<Texture> textures = textureSystem.RenderedTextureListMap[brdfRenderPassId];
@@ -52,18 +46,23 @@ void LevelSystem::LoadLevel(const char* levelPath)
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/EnvironmentToCubeMapRenderPass.json");
     textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
 
-    irradianceMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
-    prefilterMapRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
-    gBufferRenderPassId = renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
+    irradianceMapRenderPassId =          renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/IrradianceRenderPass.json");
+    prefilterMapRenderPassId =           renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/PrefilterRenderPass.json");
+    gBufferRenderPassId =                renderSystem.LoadRenderPass(levelLayout.LevelLayoutId, "RenderPass/GBufferRenderPass.json");
     /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/HdrRenderPass.json");
-    objectPickerRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/ObjectPickerRenderPass.json");
-    selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass(dummyGuid, "RenderPass/SelectedGameObjectPickerRenderPass.json");
+    hdrRenderPassId =                    renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/HdrRenderPass.json");
+    objectPickerRenderPassId =           renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/ObjectPickerRenderPass.json");
+    selectedObjectPickerRenderPassId =   renderSystem.LoadRenderPass(dummyGuid,                 "RenderPass/SelectedGameObjectPickerRenderPass.json");
 
+    shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().textureId - 1;
     sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().textureId;
+    
+    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
+    LoadLevelMesh(tileSetId);
 }
 
 void LevelSystem::Update(const float& deltaTime)

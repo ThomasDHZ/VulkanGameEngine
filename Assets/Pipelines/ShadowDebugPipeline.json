@@ -2,8 +2,16 @@
   "Name": "HdrPipeline",
   "PipelineId": "f397d22d-406d-41d1-b2b2-1cb5d536868c",
   "ShaderList": [
-    "Shaders/ShaderDebugShaderVert.spv",
-    "Shaders/ShaderDebugShaderFrag.spv"
+    {
+      "ShaderId": "15a20e1b-8408-4ff6-9000-f316aa4828b4",
+      "ShaderFile": "Shaders/ShaderDebugShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "db91d1dc-fc3b-4d4b-986e-e4dbf1fc02ff",
+      "ShaderFile": "Shaders/ShaderDebugShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

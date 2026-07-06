@@ -2,8 +2,16 @@
   "Name": "GaussianBlurPipeline",
   "PipelineId": "71ca1b1d-f4d1-4388-af71-20ee24819117",
   "ShaderList": [
-    "Shaders/GaussianBlurShaderVert.spv",
-    "Shaders/GaussianBlurShaderFrag.spv"
+    {
+      "ShaderId": "e2cb76d4-3e1d-4420-8b15-323a1021053c",
+      "ShaderFile": "Shaders/GaussianBlurShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "3f3296aa-4a95-400c-a0d0-cad347361af7",
+      "ShaderFile": "Shaders/GaussianBlurShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 0,
   "SubPassId": 0,

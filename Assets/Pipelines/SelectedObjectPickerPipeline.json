@@ -2,8 +2,16 @@
   "Name": "objectPickerRenderPassId",
   "PipelineId": "3f7db895-9486-4259-93b3-cb0672f985ce",
   "ShaderList": [
-    "Shaders/SelectedGameObjectPickerVert.spv",
-    "Shaders/SelectedGameObjectPickerFrag.spv"
+    {
+      "ShaderId": "e3324225-219b-4864-8146-a649e95ed37d",
+      "ShaderFile": "Shaders/SelectedGameObjectPickerVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "5ea3e499-320f-431c-9c94-0e534ca6099e",
+      "ShaderFile": "Shaders/SelectedGameObjectPickerFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 1,
   "SubPassId": 0,

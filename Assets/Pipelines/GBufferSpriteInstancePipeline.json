@@ -2,8 +2,16 @@
   "Name": "SpriteInstancePipeline",
   "PipelineId": "8f633af8-a6ec-4233-9db0-94f9954d39fb",
   "ShaderList": [
-    "Shaders/GBufferSpriteInstanceShaderVert.spv",
-    "Shaders/GBufferSpriteInstanceShaderFrag.spv"
+    {
+      "ShaderId": "e4f02539-2b2d-4445-9b86-78d9078dbc47",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "33884287-921f-4a37-a11f-108f173fcbf9",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceShaderFrag.spv",
+      "ShaderStage": 16
+    }
   ],
   "VertexType": 1,
   "SubPassId": 0,

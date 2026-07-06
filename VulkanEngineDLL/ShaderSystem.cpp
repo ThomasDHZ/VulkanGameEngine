@@ -31,7 +31,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      };
  }
 
- ShaderPipelineData ShaderSystem::LoadPipelineShaderData(const Vector<String>& pipelineShaderPathList)
+ ShaderPipelineData ShaderSystem::LoadPipelineShaderData(const Vector<String>& pipelineShaderPaths)
  {
 
      SpvReflectShaderModule spvModule;
@@ -41,13 +41,13 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      Vector<ShaderStruct> shaderStructs;
      Vector<ShaderDescriptorBinding> descriptorBindings;
 
-     for (auto& pipelineShaderPath : pipelineShaderPathList)
+     for (auto& pipelineShaderPath : pipelineShaderPaths)
      {
          Vector<byte> file = fileSystem.LoadAssetFile(pipelineShaderPath.c_str());
          SPV_VULKAN_RESULT(spvReflectCreateShaderModule(file.size(), file.data(), &spvModule));
 
          VulkanShader shader = VulkanShader(file);
-
+      
          LoadShaderConstantBufferData(spvModule, constBuffers);
          LoadShaderDescriptorBindings(spvModule, descriptorBindings);
          if (spvModule.shader_stage == SPV_REFLECT_SHADER_STAGE_VERTEX_BIT)
@@ -59,7 +59,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
 
      return ShaderPipelineData
      {
-          .ShaderList = pipelineShaderPathList,
+          .ShaderList = pipelineShaderPaths,
           .DescriptorBindingsList = descriptorBindings,
           .VertexInputBindingList = vertexInputBindingList,
           .VertexInputAttributeList = vertexInputAttributeList,
@@ -75,7 +75,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
          for (size_t y = 0; y < renderPassJson["RenderPipelineList"].size(); ++y)
          {
              nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassJson["RenderPipelineList"][y].get<String>().c_str());
-             Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0], pipelineJson["ShaderList"][1] };
+             Vector<String> shaderJsonList = Vector<String>{ pipelineJson["ShaderList"][0]["ShaderFile"], pipelineJson["ShaderList"][1]["ShaderFile"]};
              Vector<ShaderStruct> shaderStructList = LoadProtoTypeStructs(shaderJsonList);
              for (auto& shaderStruct : shaderStructList)
              {
