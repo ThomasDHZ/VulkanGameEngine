@@ -6,6 +6,7 @@
   ],
   "RenderPassResolution": [ 0, 0 ],
   "SubPassCount": 1,
+  "UseGlobalBindlessSet": false,
   "UseDefaultRenderResolution": false,
   "UseCubeMapMultiView": false,
   "IsRenderedToSwapchain": false,

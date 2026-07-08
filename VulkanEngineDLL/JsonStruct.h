@@ -1,6 +1,8 @@
 #pragma once
 #include <Platform.h>
 #include <ShaderStructs.h>
+#include <VulkanRenderPass.h>
+#include <VulkanPipeline.h>
 #include "TextureSystem.h"
 #include "enum.h"
 #include <ShaderEnums.h>
@@ -14,17 +16,7 @@ enum PushConstantResolverEnum
     kPushConst_SampleDelta
 };
 
-enum MeshTypeEnum
-{
-    kMesh_None,
-    kMesh_SpriteMesh,
-    kMesh_LevelMesh,
-    kMesh_SkyBoxMesh,
-    kMesh_LineMesh,
-    kMesh_LevelEditorIconMesh,
-    kMesh_FrameBuffer,
-    kMesh_Undefined
-};
+
 
 struct RenderedTextureInfoModel
 {
@@ -63,80 +55,6 @@ struct BlendConstantsModel
     float Alpha;
 };
 
-
-struct RenderPassAttachmentTexture
-{
-    VkGuid                               RenderedTextureId = VkGuid();
-    uint32                               MipMapCount = UINT32_MAX;
-    TextureTypeEnum                      TextureType = TextureTypeEnum::kTextureType_Undefined;
-    TextureUsageTypeEnum                 TextureUsageType = kUsageType_Undefined;
-    Vector<RenderAttachmentTypeEnum>     RenderAttachmentTypes = Vector<RenderAttachmentTypeEnum>();
-    VkFormat                             Format = VK_FORMAT_R8G8B8A8_UNORM;
-    VkAttachmentLoadOp                   LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    VkAttachmentStoreOp                  StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-    VkSamplerCreateInfo                  SamplerCreateInfo = VkSamplerCreateInfo();
-    VkImageLayout                        FinalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    bool                                 UseMipMaps = false;
-};
-
-struct PushConstantUpdateRule
-{
-    String                               Variable;
-    String                               SourceId;
-    String                               Value;
-    bool                                 ConstValue;
-    bool                                 DirtyFlag = true;
-};
-
-struct VulkanSubPass
-{
-    VkGuid                               RenderPassGuid;
-    VkGuid                               PipelineGuid;
-    MeshTypeEnum                         MeshType;
-    std::optional<String>                ShaderPushConstant;
-    Vector<VkGuid>                       InputTextureList;
-    Vector<VkGuid>                       OutputTextureList;
-    bool                                 OffScreenFrameBuffer = false;
-};
-
-struct VulkanRenderPass
-{
-    RenderPassGuid                       RenderPassId = VkGuid();
-    ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
-    VkRenderPass                         RenderPass = VK_NULL_HANDLE;
-    Vector<VkFramebuffer>                FrameBufferList;
-    Vector<Vector<VulkanSubPass>>        VulkanSubPassList;
-    Vector<VkClearValue>                 ClearValueList;
-    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
-    bool                                 UseCubeMapMultiView = false;
-    bool                                 IsCubeMapRenderPass = false;
-};
-
-struct VulkanSubPassLoader
-{
-    String                               Pipeline;
-    MeshTypeEnum                         MeshType;
-    std::optional<String>                ShaderPushConstant;
-    Vector<PushConstantUpdateRule>       PushConstantUpdates;
-    Vector<VkGuid>                       InputTextureList;
-    Vector<VkGuid>                       OutputTextureList;
-    bool                                 OffScreenRenderPass = false;
-};
-
-struct RenderPassLoader
-{
-    VkGuid                               RenderPassId = VkGuid();
-    ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
-    Vector<Vector<VulkanSubPassLoader>>  SubPassList;
-    Vector<String>                       RenderPipelineList;
-    Vector<RenderPassAttachmentTexture>  RenderAttachmentList;
-    Vector<VkSubpassDependency>          SubpassDependencyList;
-    Vector<VkClearValue>                 ClearValueList;
-    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
-    bool                                 UseCubeMapMultiView = false;
-    bool                                 IsCubeMapRenderPass = false;
-};
-
 struct RenderPassAttachementTextures
 {
     size_t RenderPassTextureCount;
@@ -156,45 +74,4 @@ struct ShaderLoader
     VkGuid                ShaderId;
     String                ShaderFile;
     VkShaderStageFlagBits ShaderStage;
-};
-
-struct VulkanPipeline
-{
-    VkGuid RenderPipelineId;
-    VkPipeline Pipeline = VK_NULL_HANDLE;
-    VkPipelineCache PipelineCache = VK_NULL_HANDLE;
-    VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-    Vector<VkDescriptorSetLayout> DescriptorSetLayoutList = Vector<VkDescriptorSetLayout>();
-    Vector<VkDescriptorSet> DescriptorSetList = Vector<VkDescriptorSet>();
-};
-
-struct ShaderPipelineData
-{
-    Vector<String>                              ShaderList;
-    Vector<ShaderDescriptorBinding>             DescriptorBindingsList;
-    Vector<ShaderStruct>                        ShaderStructList;
-    Vector<VkVertexInputBindingDescription>     VertexInputBindingList;
-    Vector<VkVertexInputAttributeDescription>   VertexInputAttributeList;
-    Vector<ShaderPushConstant>                  PushConstantList;
-};
-
-struct RenderPipelineLoader
-{
-    VkGuid PipelineId = VkGuid();
-    VkGuid RenderPassId = VkGuid();
-    VkGuid LevelId = VkGuid();
-    uint32 SubPassId = UINT32_MAX;
-    ivec2 RenderPassResolution = ivec2();
-    VkRenderPass RenderPass = VK_NULL_HANDLE;
-    ShaderPipelineData ShaderPiplineInfo;
-    Vector<VkViewport> ViewportList;
-    Vector<VkRect2D> ScissorList;
-    Vector<VkPipelineColorBlendAttachmentState> PipelineColorBlendAttachmentStateList;
-    VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo();
-    VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo = VkPipelineRasterizationStateCreateInfo();
-    VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo = VkPipelineMultisampleStateCreateInfo();
-    VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateInfo = VkPipelineDepthStencilStateCreateInfo();
-    VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfoModel = VkPipelineColorBlendStateCreateInfo();
-    bool UseDynamicColorWrite = false;
-    bool UseCubeMapMultiview = false;
 };

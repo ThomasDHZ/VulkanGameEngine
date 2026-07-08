@@ -10,7 +10,6 @@ void MemoryPoolSystem::StartUp()
 {
     std::cout << "MemoryPoolSystem::StartUp() started\n";
 
-    // Initialize all sub-pools first
     for (int x = 0; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
     {
         MemoryPoolTypes type = (MemoryPoolTypes)x;

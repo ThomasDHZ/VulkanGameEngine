@@ -15,6 +15,7 @@
       }
     ]
   ],
+  "UseGlobalBindlessSet": true,
   "UseCubeMapMultiView": true,
   "IsRenderedToSwapchain": false,
   "IsCubeMapRenderPass": true,
