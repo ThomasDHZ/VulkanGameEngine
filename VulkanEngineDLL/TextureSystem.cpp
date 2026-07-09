@@ -473,12 +473,10 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 //	return textureLoader.TextureId;
 //}
 
-Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId, TextureTypeEnum renderPassAttachmentTextureType)
+Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentTextureLoader& attachment)
 {
-	const RenderPassAttachmentTexture renderPassAttachmentTexture = renderSystem.RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId][attachmentId];
-
-	bool isDepthFormat = (renderPassAttachmentTexture.Format >= VK_FORMAT_D16_UNORM && renderPassAttachmentTexture.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (renderPassAttachmentTexture.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
-	bool hasStencil = (renderPassAttachmentTexture.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || renderPassAttachmentTexture.Format == VK_FORMAT_D24_UNORM_S8_UINT);
+	bool isDepthFormat = (attachment.Format >= VK_FORMAT_D16_UNORM && attachment.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (attachment.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (attachment.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || attachment.Format == VK_FORMAT_D24_UNORM_S8_UINT);
 
 	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |
 		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
@@ -487,18 +485,18 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	Texture texture =
 	{
-		.textureGuid = renderPassAttachmentTexture.RenderedTextureId,
+		.textureGuid = attachment.RenderedTextureId,
 		.textureId = UINT32_MAX,
 		.width = vulkanRenderPass.RenderPassResolution.x,
 		.height = vulkanRenderPass.RenderPassResolution.y,
 		.depth = 1,
-		.mipMapLevels = renderPassAttachmentTexture.UseMipMaps ? renderPassAttachmentTexture.MipMapCount : 1,
-		.textureType = renderPassAttachmentTextureType,
-		.textureByteFormat = renderPassAttachmentTexture.Format,
+		.mipMapLevels = attachment.UseMipMaps ? attachment.MipMapCount : 1,
+		.textureType = attachment.TextureType,
+		.textureByteFormat = attachment.Format,
 		.sampleCount = vulkanRenderPass.SampleCount
 	};
 
-	switch (renderPassAttachmentTexture.TextureUsageType)
+	switch (attachment.TextureUsageType)
 	{
 		case kUsageType_DepthBufferTexture:     texture.textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
 		case kUsageType_GBufferTexture:         texture.textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
@@ -566,14 +564,14 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	}
 
 	CreateTextureView(texture, vulkanRenderPass.UseCubeMapMultiView, aspectMask);
-	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkan.LogicalDevice(), &renderPassAttachmentTexture.SamplerCreateInfo, nullptr, &texture.textureSampler));
+	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkan.LogicalDevice(), &attachment.SamplerCreateInfo, nullptr, &texture.textureSampler));
 
 	if (vulkanRenderPass.IsCubeMapRenderPass)
 	{
 		texture.textureId = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		switch (renderPassAttachmentTexture.TextureUsageType)
+		switch (attachment.TextureUsageType)
 		{
 			case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId =		 texture.textureId; break;
 			case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.textureId; break;
@@ -593,11 +591,9 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	}
 	else
 	{
-		if (!renderSystem.UsingMaterialBaker)
-		{
 			texture.textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
 			SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-			if (renderPassAttachmentTexture.TextureUsageType == kUsageType_BRDFTexture)
+			if (attachment.TextureUsageType == kUsageType_BRDFTexture)
 			{
 				sceneDataBuffer.BRDFMapId = texture.textureId;
 			}
@@ -607,11 +603,10 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 			textureMetaDataHeader.Height = texture.height;
 			textureMetaDataHeader.MipLevels = texture.mipMapLevels;
 			textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
-			textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
+			textureMetaDataHeader.Format = (uint32)texture.textureByteFormat;
 			textureMetaDataHeader.Type = 0;
 			TextureList.emplace_back(texture);
 			memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
-		}
 	}
 	return texture;
 }

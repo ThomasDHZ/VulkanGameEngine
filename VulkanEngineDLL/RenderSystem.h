@@ -57,7 +57,6 @@ struct RenderPassNode
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PostRenderPassCmd;
 };
 
-
 class RenderSystem
 {
 public:
@@ -80,8 +79,8 @@ private:
     DLL_EXPORT void                                                    BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
     DLL_EXPORT void                                                    BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet);
     DLL_EXPORT VulkanSubPass                                           BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader);
-    DLL_EXPORT Vector<VkAttachmentDescription>                         BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass);
-    DLL_EXPORT Vector<Texture>                                         BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass);
+    DLL_EXPORT Vector<VkAttachmentDescription>                         BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentTextureLoader>& attchmentTextureList);
+    DLL_EXPORT Vector<Texture>                                         BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentTextureLoader>& attchmentTextureList);
     DLL_EXPORT void                                                    BuildFrameBuffer(VulkanRenderPass& renderPass);
 
     DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, ivec2 renderPassResolution, uint mipLevel = 0);
@@ -97,7 +96,7 @@ public:
 
     Vector<RenderPassNode>                                             RenderPassNodeList;
     bool                                                               UsingMaterialBaker = false;
-    UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
+   // UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
     DLL_EXPORT void                                                    StartUp(void* windowHandle, ivec2 renderResolution);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath);

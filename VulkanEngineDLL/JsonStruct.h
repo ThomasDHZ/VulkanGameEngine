@@ -62,16 +62,35 @@ struct RenderPassAttachementTextures
     Texture* DepthTexture;
 };
 
-//struct Shader
-//{
-//    VkGuid ShaderId;
-//    VulkanShader shader;
-//    VkShaderStageFlagBits ShaderStage;
-//};
-
 struct ShaderLoader
 {
     VkGuid                ShaderId;
     String                ShaderFile;
     VkShaderStageFlagBits ShaderStage;
+};
+
+struct VulkanSubPassLoader
+{
+    String                               Pipeline;
+    MeshTypeEnum                         MeshType;
+    std::optional<String>                ShaderPushConstant;
+    Vector<PushConstantUpdateRule>       PushConstantUpdates;
+    Vector<VkGuid>                       InputTextureList;
+    Vector<VkGuid>                       OutputTextureList;
+    bool                                 OffScreenRenderPass = false;
+};
+
+struct RenderPassLoader
+{
+    VkGuid                               RenderPassId = VkGuid();
+    ivec2                                RenderPassResolution = ivec2(INT32_MAX, INT32_MAX);
+    Vector<Vector<VulkanSubPassLoader>>  SubPassList;
+    Vector<String>                       RenderPipelineList;
+    Vector<RenderPassAttachmentTextureLoader>  RenderAttachmentList;
+    Vector<VkSubpassDependency>          SubpassDependencyList;
+    Vector<VkClearValue>                 ClearValueList;
+    VkSampleCountFlagBits                SampleCount = VK_SAMPLE_COUNT_1_BIT;
+    bool                                 UseGlobalBindlessSet = false;
+    bool                                 UseCubeMapMultiView = false;
+    bool                                 IsCubeMapRenderPass = false;
 };

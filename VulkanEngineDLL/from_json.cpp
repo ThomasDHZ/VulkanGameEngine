@@ -144,7 +144,7 @@ namespace nlohmann
         j.at("maxDepth").get_to(viewPort.maxDepth);
     }
 
-    void from_json(const json& j, RenderPassAttachmentTexture& model) {
+    void from_json(const json& j, RenderPassAttachmentTextureLoader& model) {
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);

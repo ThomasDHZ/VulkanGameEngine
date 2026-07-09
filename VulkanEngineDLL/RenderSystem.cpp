@@ -42,7 +42,6 @@ RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoad
         .UseCubeMapMultiView = renderPassLoader.UseCubeMapMultiView,
         .IsCubeMapRenderPass = renderPassLoader.IsCubeMapRenderPass
     };
-    RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId] = renderPassLoader.RenderAttachmentList; 
 
     BuildRenderPass(vulkanRenderPass, renderPassLoader);
     for (auto& renderPass : renderPassLoader.SubPassList)
@@ -87,14 +86,14 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     Vector<Vector<VkAttachmentReference>> colorAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
     Vector<Vector<VkAttachmentReference>> resolveAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
     Vector<Vector<VkSubpassDescription>> preserveAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
-    Vector<RenderPassAttachmentTexture> renderPassAttachmentTextureInfoMap = RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId];
+    Vector<RenderPassAttachmentTextureLoader> renderPassAttachmentTextureInfoMap = renderPassJsonLoader.RenderAttachmentList;
     for (int x = 0; x < renderPassJsonLoader.SubPassList.size(); x++)
     {
         bool useDepthForThisSubpass = false;
         VkAttachmentReference depthRefForThisSubpass = {};
         for (int y = 0; y < renderPassAttachmentTextureInfoMap.size(); y++)
         {
-            RenderPassAttachmentTexture renderAttachment = renderPassAttachmentTextureInfoMap[y];
+            RenderPassAttachmentTextureLoader renderAttachment = renderPassAttachmentTextureInfoMap[y];
             switch (renderAttachment.RenderAttachmentTypes[x])
             {
             case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
@@ -128,8 +127,8 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
             });
     }
 
-    Vector<VkAttachmentDescription> attachmentDescriptionList = BuildRenderPassAttachments(vulkanRenderPass);
-    Vector<Texture> frameBufferTextureList = BuildRenderPassAttachmentTextures(vulkanRenderPass);
+    Vector<VkAttachmentDescription> attachmentDescriptionList = BuildRenderPassAttachments(vulkanRenderPass, renderPassAttachmentTextureInfoMap);
+    Vector<Texture> frameBufferTextureList = BuildRenderPassAttachmentTextures(vulkanRenderPass, renderPassAttachmentTextureInfoMap);
 
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
     if (renderPassJsonLoader.UseCubeMapMultiView)
@@ -222,15 +221,14 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
 }
 
 
-Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass)
+Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentTextureLoader>& attchmentTextureList)
 {
     Vector<VkAttachmentDescription> attachmentDescriptionList;
-    Vector<RenderPassAttachmentTexture> renderPassAttachmentTextureInfoList = RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId];
-    for (int x = 0; x < renderPassAttachmentTextureInfoList.size(); x++)
+    for (int x = 0; x < attchmentTextureList.size(); x++)
     {
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        const RenderPassAttachmentTexture& renderAttachment = renderPassAttachmentTextureInfoList[x];
+        const RenderPassAttachmentTextureLoader& renderAttachment = attchmentTextureList[x];
         switch (renderAttachment.TextureUsageType)
         {
             case kUsageType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
@@ -259,36 +257,22 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
     return attachmentDescriptionList;
 }
 
-Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass)
+Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentTextureLoader>& attchmentTextureList)
 {
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 
     Texture depthTexture;
     Vector<Texture> renderedTextureList;
     Vector<Texture> frameBufferTextureList;
-    Vector<RenderPassAttachmentTexture> renderPassAttachmentTextureInfoList = RenderPassAttachmentTextureInfoMap[vulkanRenderPass.RenderPassId];
-    for (int x = 0; x < renderPassAttachmentTextureInfoList.size(); x++)
+    for (int x = 0; x < attchmentTextureList.size(); x++)
     {
-        Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, x, renderPassAttachmentTextureInfoList[x].TextureType);
+        Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, attchmentTextureList[x]);
         renderedTextureList.emplace_back(texture);
         frameBufferTextureList.emplace_back(texture);
 
-        if (texture.textureType == TextureTypeEnum::kTextureType_DepthTexture)
-        {
-            depthTexture = texture;
-        }
-
-        if (!renderSystem.UsingMaterialBaker)
-        {
-            if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap)
-            {
-                memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
-            }
-            else
-            {
-                memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
-            }
-        }
+        if (texture.textureType == TextureTypeEnum::kTextureType_DepthTexture) depthTexture = texture;
+        if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
     if (depthTexture.textureImage != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
@@ -307,7 +291,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
         uint32 mipLevels = firstTex.mipMapLevels;
         uint32 baseSize = firstTex.width;
         vulkanRenderPass.FrameBufferList.resize(mipLevels);
-        for (uint32_t mip = 0; mip < mipLevels; ++mip)
+        for (uint32 mip = 0; mip < mipLevels; ++mip)
         {
             uint32 mipWidth = std::max(1u, baseSize >> mip);
             uint32 mipHeight = std::max(1u, baseSize >> mip);
@@ -322,7 +306,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
             {
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .renderPass = vulkanRenderPass.RenderPass,
-                .attachmentCount = static_cast<uint32_t>(attachments.size()),
+                .attachmentCount = static_cast<uint32>(attachments.size()),
                 .pAttachments = attachments.data(),
                 .width = mipWidth,
                 .height = mipHeight,
@@ -345,10 +329,10 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
         VkFramebufferCreateInfo info{
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = vulkanRenderPass.RenderPass,
-            .attachmentCount = static_cast<uint32_t>(attachments.size()),
+            .attachmentCount = static_cast<uint32>(attachments.size()),
             .pAttachments = attachments.data(),
-            .width = static_cast<uint32_t>(vulkanRenderPass.RenderPassResolution.x),
-            .height = static_cast<uint32_t>(vulkanRenderPass.RenderPassResolution.y),
+            .width = static_cast<uint32>(vulkanRenderPass.RenderPassResolution.x),
+            .height = static_cast<uint32>(vulkanRenderPass.RenderPassResolution.y),
             .layers = 1
         };
         VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &info, nullptr, &vulkanRenderPass.FrameBufferList[0]));
