@@ -22,7 +22,6 @@ private:
 
     //UnorderedMap<VkGuid, Shader>                            VulkanShaderMap;
     //UnorderedMap<String, ShaderPipelineData>                ShaderModuleMap;
-	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
 	UnorderedMap<String, ShaderStruct>                      PipelineShaderStructPrototypeMap;
 
     void                                                    LoadShaderVertexInputVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
@@ -37,6 +36,7 @@ private:
 
 public:
 	
+	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
     UnorderedMap<int, ShaderStruct>                         PipelineShaderStructMap;
     
     DLL_EXPORT VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);

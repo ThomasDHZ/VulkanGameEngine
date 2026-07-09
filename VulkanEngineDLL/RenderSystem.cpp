@@ -197,6 +197,19 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
 
     VulkanShader renderVertexShader = VulkanShader(vertexShaderCode);
     VulkanShader renderPixelShader = VulkanShader(pixelShaderCode);
+
+    
+    if (!renderVertexShader.PushConstant().PushConstantName.empty() &&
+        !shaderSystem.ShaderPushConstantExists(renderVertexShader.PushConstant().PushConstantName))
+    {
+        shaderSystem.ShaderPushConstantMap[renderVertexShader.PushConstant().PushConstantName] = renderVertexShader.PushConstant();
+    }
+    if (!renderPixelShader.PushConstant().PushConstantName.empty() &&
+        !shaderSystem.ShaderPushConstantExists(renderPixelShader.PushConstant().PushConstantName))
+    {
+        shaderSystem.ShaderPushConstantMap[renderPixelShader.PushConstant().PushConstantName] = renderPixelShader.PushConstant();
+    }
+
     renderPipelineLoader.VulkanShaderList = Vector<VulkanShader>
     {
         renderVertexShader,

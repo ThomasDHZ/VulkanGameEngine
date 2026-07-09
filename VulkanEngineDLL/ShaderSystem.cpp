@@ -36,6 +36,7 @@ ShaderSystem& shaderSystem = ShaderSystem::Get();
      for (size_t x = 0; x < shaderPathList.size(); ++x)
      {
          nlohmann::json renderPassJson = fileSystem.LoadJsonFile(shaderPathList[x].c_str());
+         auto a = renderPassJson.dump();
          for (size_t y = 0; y < renderPassJson["RenderPipelineList"].size(); ++y)
          {
              nlohmann::json pipelineJson = fileSystem.LoadJsonFile(renderPassJson["RenderPipelineList"][y].get<String>().c_str());

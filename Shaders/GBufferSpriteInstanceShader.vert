@@ -27,22 +27,15 @@ layout (location = 5) out uint  PS_MaterialId;
 layout (location = 6) out vec4  PS_UVOffset;
 layout (location = 7) out uint  PS_SpriteId;
 
+layout(constant_id = 1)  const uint VertexInputRate = 1;
 layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
-layout(constant_id = 1)  const uint VertexInputRateLocation0 = 1;
 layout(constant_id = 2)  const uint VertexAttributeLocation1 = 0;
-layout(constant_id = 3)  const uint VertexInputRateLocation1 = 1;
 layout(constant_id = 4)  const uint VertexAttributeLocation2 = 0;
-layout(constant_id = 5)  const uint VertexInputRateLocation2 = 1;
 layout(constant_id = 6)  const uint VertexAttributeLocation3 = 0;
-layout(constant_id = 7)  const uint VertexInputRateLocation3 = 1;
 layout(constant_id = 8)  const uint VertexAttributeLocation4 = 0;
-layout(constant_id = 9)  const uint VertexInputRateLocation4 = 1;
 layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
-layout(constant_id = 11) const uint VertexInputRateLocation5 = 1;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
-layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
-layout(constant_id = 15) const uint VertexInputRateLocation10 = 1;
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 	uint HDRMapIndex;
