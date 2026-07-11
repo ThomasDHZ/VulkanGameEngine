@@ -17,13 +17,12 @@ typedef struct fileState
 
 struct TextureReturnFileData
 {
-	void* TextureData = nullptr;
-	uint32             TextureByteSize = UINT32_MAX;
-	uint32             MipMapCount = UINT32_MAX;
-	uint32             ArrayLayers = UINT32_MAX;
-	ivec3              TextureDimensions = ivec3(UINT32_MAX);
-	VkImageLayout      TextureFormat = VK_IMAGE_LAYOUT_UNDEFINED;
-	VkImageAspectFlags TextureAspectFlags = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
+	Vector<byte>       TextureData;   
+	uint32             MipMapCount = 1;
+	uint32             ArrayLayers = 1;
+	ivec3              TextureDimensions = { 0, 0, 0 };
+	VkFormat           TextureByteFormat = VK_FORMAT_UNDEFINED;
+	VkImageAspectFlags TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	VkImageLayout      TextureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	bool               IsCubeMap = false;
 	bool               IsDepthFormat = false;

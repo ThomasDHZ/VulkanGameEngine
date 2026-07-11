@@ -11,7 +11,6 @@ struct TextureLoader
     Vector<String> TextureFilePath;
     VkGuid TextureId;
     VkFormat TextureByteFormat;
-    VkImageAspectFlags ImageType;
     TextureTypeEnum TextureType;
     TextureUsageTypeEnum TextureUsageType;
     VkSamplerCreateInfo SamplerCreateInfo;
@@ -51,8 +50,6 @@ private:
     TextureSystem(TextureSystem&&) = delete;
     TextureSystem& operator=(TextureSystem&&) = delete;
 
-    bool IsDepthFormat(VkFormat format);
-    bool HasStencilComponent(VkFormat format);
     void AddToMemoryPool(Texture& texture, VulkanTextureLoader& textureLoader, TextureReturnFileData& textureReturnData);
 
     TextureReturnFileData LoadGeneralTexture(const TextureLoader& textureLoader);

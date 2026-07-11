@@ -23,54 +23,56 @@ Texture TextureSystem::LoadTexture(const String& texturePath)
 Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 {
 	if (TextureExists(textureLoader.TextureId))
-	{
 		return FindTexture(textureLoader.TextureId);
-	}
 
-	TextureReturnFileData texData;
 	String path = textureLoader.TextureFilePath.front();
 	String ext = fileSystem.GetFileExtention(path.c_str());
+
+	TextureReturnFileData texData;
 	if (ext == "ktx" || ext == "ktx2") texData = LoadKtxTexture(textureLoader);
 	else if (ext == "png") texData = LoadPngTexture(textureLoader);
 	else texData = LoadGeneralTexture(textureLoader);
-	if (!texData.TextureData)
+	if (texData.TextureData.empty())
 	{
 		std::cerr << "[TextureSystem] Failed to load: " << path << std::endl;
-		return Texture{};
+		return {};
 	}
 
-	VulkanTextureLoader vulkanTextureLoader =
+	VulkanTextureLoader vulkanLoader
 	{
 		.TextureData = texData.TextureData,
-		.TextureByteSize = texData.TextureByteSize,
 		.TextureDimensions = texData.TextureDimensions,
 		.SamplerCreateInfo = textureLoader.SamplerCreateInfo,
 		.MipMapCount = texData.MipMapCount,
-		.ArrayLayers = texData.ArrayLayers,
-		.ImageType = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM ,
 		.ColorChannels = ColorChannelEnum::ChannelRGBA,
 		.TextureImageLayout = texData.TextureImageLayout,
 		.SampleCount = VK_SAMPLE_COUNT_1_BIT,
 		.TextureByteFormat = textureLoader.TextureByteFormat,
 		.TextureType = textureLoader.TextureType,
-		.IsRenderPassAttachmentTexture = false,
+		.IsRenderPassAttachment = false,
+		.IsCubeMap = texData.IsCubeMap
 	};
 
-	Texture texture = Texture
+	Texture texture
 	{
 		.textureGuid = textureLoader.TextureId,
-		.texture = VulkanTexture(vulkanTextureLoader),
+		.texture = VulkanTexture(vulkanLoader),
 		.textureType = textureLoader.TextureType,
 		.textureUsageType = textureLoader.TextureUsageType,
 		.imGuiDescriptorSet = nullptr
 	};
 
-	SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-	if (textureLoader.TextureUsageType == kUsageType_CubeMap)		    sceneDataBuffer.CubeMapId = texture.textureId.id;
-	if (textureLoader.TextureUsageType == kUsageType_IrradianceTexture) sceneDataBuffer.IrradianceMapId = texture.textureId.id;
-	if (textureLoader.TextureUsageType == kUsageType_PrefilterTexture)  sceneDataBuffer.PrefilterMapId = texture.textureId.id;
-	if (textureLoader.TextureUsageType == kUsageType_BRDFTexture)	    sceneDataBuffer.BRDFMapId = texture.textureId.id;
-	AddToMemoryPool(texture, vulkanTextureLoader, texData);
+	SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
+	switch (textureLoader.TextureUsageType)
+	{
+		case kUsageType_CubeMap:            sceneData.CubeMapId = texture.textureId.id; break;
+		case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.textureId.id; break;
+		case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.textureId.id; break;
+		case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.textureId.id; break;
+		default: break;
+	}
+
+	AddToMemoryPool(texture, vulkanLoader, texData);
 	return texture;
 }
 
@@ -91,19 +93,16 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	VulkanTextureLoader vulkanTextureLoader =
 	{
-		.TextureData = nullptr,
-		.TextureByteSize = UINT32_MAX,
+		.TextureData = Vector<byte>(),
 		.TextureDimensions = ivec3(vulkanRenderPass.RenderPassResolution.x, vulkanRenderPass.RenderPassResolution.y, 1),
 		.SamplerCreateInfo = attachment.SamplerCreateInfo,
 		.MipMapCount = attachment.MipMapCount,
-		.ArrayLayers = attachment.IsSkyBox ? static_cast<uint>(6) : static_cast<uint>(1),
-		.ImageType = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM ,
 		.ColorChannels = ColorChannelEnum::ChannelRGBA,
 		.TextureImageLayout = textureImageLayout,
 		.SampleCount = vulkanRenderPass.SampleCount,
-		.TextureByteFormat = attachment.Format,
+		.TextureByteFormat = attachment.TextureByteFormat,
 		.TextureType = attachment.TextureType,
-		.IsRenderPassAttachmentTexture = true,
+		.IsRenderPassAttachment = true,
 	};
 
 	Texture texture = Texture
@@ -117,7 +116,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 
 	 TextureReturnFileData textureReturnFileData = TextureReturnFileData
 	 {
-		 .TextureFormat = textureImageLayout,
+		 .TextureByteFormat = attachment.TextureByteFormat,
 		 .IsCubeMap = false
 	 };
 	AddToMemoryPool(texture, vulkanTextureLoader, textureReturnFileData);
@@ -127,26 +126,17 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& textureLoader)
 {
 	ktxTexture* ktex = nullptr;
-	String path = textureLoader.TextureFilePath.front();
-	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
-	if (result != KTX_SUCCESS)
-	{
-		std::cerr << "Failed to load KTX2: " << path << " - " << ktxErrorString(result) << std::endl;
-		return TextureReturnFileData
-		{
-			.TextureData = nullptr
-		};
-	}
+	const String& path = textureLoader.TextureFilePath.front();
 
-	if (ktex->classId != ktxTexture2_c)
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
+	if (result != KTX_SUCCESS || !ktex)
 	{
-		std::cout << "[KTX] KTX1 file detected: " << path << std::endl;
-		ktxTexture_Destroy(ktex);
+		std::cerr << "Failed to load KTX: " << path << " - " << ktxErrorString(result) << std::endl;
+		return TextureReturnFileData();
 	}
 
 	ktxTexture2* ktex2 = reinterpret_cast<ktxTexture2*>(ktex);
-	bool needsTranscode = ktxTexture2_NeedsTranscoding(ktex2);
-	if (needsTranscode)
+	if (ktxTexture2_NeedsTranscoding(ktex2))
 	{
 		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
 		Vector<Candidate> candidates;
@@ -180,34 +170,35 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 		{
 			std::cerr << "Transcode failed: " << ktxErrorString(result) << std::endl;
 			ktxTexture_Destroy(ktex);
-			return TextureReturnFileData
-			{
-				.TextureData = nullptr
-			};
+			return TextureReturnFileData();
 		}
 	}
 
-	VkFormat format = ktxTexture2_GetVkFormat(ktex2);
+	VkFormat textureByteFormat = ktxTexture2_GetVkFormat(ktex2);
 	bool isCubemap = ktex2->isCubemap && ktex2->numLayers == 6;
-	bool isDepthFormat = (format >= VK_FORMAT_D16_UNORM && format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_X8_D24_UNORM_PACK32);
-	bool hasStencil = (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT);
+	bool isDepthFormat = (textureByteFormat >= VK_FORMAT_D16_UNORM && textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
 	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-	return TextureReturnFileData
+	size_t dataSize = ktxTexture_GetDataSize(ktex);
+	Vector<byte> ownedData(static_cast<const byte*>(ktxTexture_GetData(ktex)), static_cast<const byte*>(ktxTexture_GetData(ktex)) + dataSize);
+	TextureReturnFileData out
 	{
-		.TextureData = ktex->pData,
-		.TextureByteSize = static_cast<uint32>(ktxTexture_GetDataSize(ktex)),
+		.TextureData = std::move(ownedData),
 		.MipMapCount = ktex2->numLevels,
 		.ArrayLayers = ktex2->numLayers,
-		.TextureDimensions = ivec3(ktex2->baseWidth, ktex2->baseHeight, ktex2->baseDepth),
-		.TextureFormat = VK_IMAGE_LAYOUT_UNDEFINED,
+		.TextureDimensions = {ktex2->baseWidth, ktex2->baseHeight, ktex2->baseDepth},
+		.TextureByteFormat = textureByteFormat,
 		.TextureAspectFlags = aspectMask,
 		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		.IsCubeMap = ktex2->isCubemap && ktex2->numLayers == 6,
+		.IsCubeMap = isCubemap,
 		.IsDepthFormat = isDepthFormat,
 		.IsStencil = hasStencil
 	};
+
+	ktxTexture_Destroy(ktex);
+	return out;
 }
 
 TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& textureLoader)
@@ -247,14 +238,14 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 	bool hasStencil = (textureLoader.TextureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureLoader.TextureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
 	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
 	return TextureReturnFileData
 	{
-		.TextureData = textureData.data(),
-		.TextureByteSize = static_cast<uint32>(textureData.size()),
+		.TextureData = textureData,
 		.MipMapCount = textureLoader.MipMapCount,
 		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
 		.TextureDimensions = ivec3(width, height, 0),
-		.TextureFormat = VK_IMAGE_LAYOUT_UNDEFINED,
+		.TextureByteFormat = textureLoader.TextureByteFormat,
 		.TextureAspectFlags = aspectMask,
 		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = static_cast<uint32>(textureLoader.TextureFilePath.size()) == 6,
@@ -307,12 +298,11 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 
 	return TextureReturnFileData
 	{
-		.TextureData = textureData.data(),
-		.TextureByteSize = static_cast<uint32>(textureData.size()),
+		.TextureData = textureData,
 		.MipMapCount = textureLoader.MipMapCount,
 		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
 		.TextureDimensions = ivec3(width, height, 1),
-		.TextureFormat = VK_IMAGE_LAYOUT_UNDEFINED,
+		.TextureByteFormat = textureLoader.TextureByteFormat,
 		.TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
 		.TextureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = false
@@ -329,7 +319,7 @@ void TextureSystem::AddToMemoryPool(Texture& texture, VulkanTextureLoader& textu
 		textureMetaDataHeader.Height = textureLoader.TextureDimensions.y;
 		textureMetaDataHeader.Depth = textureLoader.TextureDimensions.z;
 		textureMetaDataHeader.MipLevels = textureLoader.MipMapCount;
-		textureMetaDataHeader.LayerCount = textureLoader.ArrayLayers;
+		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
 		textureMetaDataHeader.Format = (uint32)textureReturnData.TextureImageLayout;
 		textureMetaDataHeader.Type = 1;
 
@@ -345,7 +335,7 @@ void TextureSystem::AddToMemoryPool(Texture& texture, VulkanTextureLoader& textu
 		textureMetaDataHeader.Height = textureLoader.TextureDimensions.y;
 		textureMetaDataHeader.Depth = textureLoader.TextureDimensions.z;
 		textureMetaDataHeader.MipLevels = textureLoader.MipMapCount;
-		textureMetaDataHeader.LayerCount = textureLoader.ArrayLayers;
+		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
 		textureMetaDataHeader.Format = (uint32)textureReturnData.TextureImageLayout;
 		textureMetaDataHeader.Type = 0;
 		TextureList.emplace_back(texture);

@@ -98,7 +98,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
             {
             case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
             case RenderAttachmentTypeEnum::InputAttachmentTexture: {
-                bool is_depth = (renderAttachment.Format >= VK_FORMAT_D16_UNORM && renderAttachment.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT);
+                bool is_depth = (renderAttachment.TextureByteFormat >= VK_FORMAT_D16_UNORM && renderAttachment.TextureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT);
                 VkImageLayout input_layout = is_depth ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 inputAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = input_layout });
                 break;
@@ -244,7 +244,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
             {
-            .format = renderAttachment.Format,
+            .format = renderAttachment.TextureByteFormat,
             .samples = vulkanRenderPass.SampleCount >= vulkan.MaxSampleCount() ? vulkan.MaxSampleCount() : vulkanRenderPass.SampleCount,
             .loadOp = renderAttachment.LoadOp,
             .storeOp = renderAttachment.StoreOp,
@@ -291,7 +291,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
         uint32 mipLevels = firstTex.texture.MipMapLevels();
         uint32 baseSize = firstTex.texture.TextureSize().x;
         vulkanRenderPass.FrameBufferList.resize(mipLevels);
-        for (uint32 mip = 0; mip < mipLevels; ++mip)
+        for (uint32 mip = 0; mip < mipLevels; mip++)
         {
             uint32 mipWidth = std::max(1u, baseSize >> mip);
             uint32 mipHeight = std::max(1u, baseSize >> mip);
