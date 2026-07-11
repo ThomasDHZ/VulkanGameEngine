@@ -196,7 +196,7 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 
 	return TextureReturnFileData
 	{
-		.TextureData = ktex2->kvData,
+		.TextureData = ktex->pData,
 		.TextureByteSize = static_cast<uint32>(ktxTexture_GetDataSize(ktex)),
 		.MipMapCount = ktex2->numLevels,
 		.ArrayLayers = ktex2->numLayers,
