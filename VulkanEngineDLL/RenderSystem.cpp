@@ -275,7 +275,7 @@ Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass
         else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
-    if (depthTexture.textureImage != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
+    if (depthTexture.texture.TextureImage() != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
     return frameBufferTextureList;
 }
 
@@ -286,22 +286,22 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
 
     const Texture& firstTex = frameBufferAttachment[0];
     bool isCubeMap = (firstTex.textureType == TextureTypeEnum::kTextureType_CubeMap);
-    if (isCubeMap && !firstTex.textureViewList.empty())
+    if (isCubeMap && !firstTex.texture.TextureViews().empty())
     {
-        uint32 mipLevels = firstTex.mipMapLevels;
-        uint32 baseSize = firstTex.width;
+        uint32 mipLevels = firstTex.texture.MipMapLevels();
+        uint32 baseSize = firstTex.texture.TextureSize().x;
         vulkanRenderPass.FrameBufferList.resize(mipLevels);
         for (uint32 mip = 0; mip < mipLevels; ++mip)
         {
             uint32 mipWidth = std::max(1u, baseSize >> mip);
             uint32 mipHeight = std::max(1u, baseSize >> mip);
-            if (mip >= firstTex.textureViewList.size())
+            if (mip >= firstTex.texture.TextureViews().size())
             {
                 std::cerr << "Error: Missing mip view " << mip << " for cubemap\n";
                 break;
             }
 
-            Vector<VkImageView> attachments{ firstTex.textureViewList[mip] };
+            Vector<VkImageView> attachments{ firstTex.texture.TextureViews()[mip] };
             VkFramebufferCreateInfo info
             {
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -323,7 +323,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
         attachments.reserve(frameBufferAttachment.size());
         for (const auto& tex : frameBufferAttachment)
         {
-            if (!tex.textureViewList.empty()) attachments.push_back(tex.textureViewList.front());
+            if (!tex.texture.TextureViews().empty()) attachments.push_back(tex.texture.TextureViews().front());
         }
 
         VkFramebufferCreateInfo info{
@@ -344,7 +344,7 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
     Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
     for (auto& renderedTexture : renderedTextureList)
     {
-        textureSystem.DestroyTexture(renderedTexture);
+        //textureSystem.DestroyTexture(renderedTexture);
     }
     std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
     renderedTextureCount = 0;
@@ -420,7 +420,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
             for (auto& inputTexture : renderPass.InputTextureList)
             {
                 Texture texture = textureSystem.FindTexture(inputTexture);
-                if (texture.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+                if (texture.texture.TextureImageLayout() == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
                 {
                     continue;
                 }
@@ -470,13 +470,13 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexturePropertiesBuffer(const Ren
     {
         for (auto& texture : textureList)
         {
-            if (texture.textureImageLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR ||
-                texture.textureImageLayout == VK_IMAGE_LAYOUT_UNDEFINED)
+            if (texture.texture.TextureImageLayout() == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR ||
+                texture.texture.TextureImageLayout() == VK_IMAGE_LAYOUT_UNDEFINED)
             {
                 continue;
             }
 
-            textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
+          //  textureSystem.GetTexturePropertiesBuffer(texture, texturePropertiesBuffer);
         }
     }
     
@@ -526,7 +526,7 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetTexture3DPropertiesBuffer(const R
     {
         for (auto& texture : textureSystem.Texture3DList)
         {
-            textureSystem.GetTexture3DPropertiesBuffer(texture, texturePropertiesBuffer);
+           // textureSystem.GetTexture3DPropertiesBuffer(texture, texturePropertiesBuffer);
         }
     }
 
@@ -541,9 +541,9 @@ Vector<VkDescriptorImageInfo> RenderSystem::GetCubeMapTextureBuffer()
 
         texturePropertiesBuffer.emplace_back(VkDescriptorImageInfo
         {
-            .sampler = cubeMap.textureSampler,
-            .imageView = cubeMap.textureViewList.front(),
-            .imageLayout = cubeMap.textureImageLayout
+            .sampler = cubeMap.texture.TextureSampler(),
+            .imageView = cubeMap.texture.TextureViews().front(),
+            .imageLayout = cubeMap.texture.TextureImageLayout()
         });
     }
     return texturePropertiesBuffer;
@@ -577,14 +577,14 @@ const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGui
 uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
     Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
-    if (!texture || texture->textureImage == VK_NULL_HANDLE)
+    if (!texture || texture->texture.TextureImage() == VK_NULL_HANDLE)
     {
         std::cout << "[SamplePixel] Texture not found" << std::endl;
         return UINT32_MAX;
     }
 
-    int x = std::clamp(mousePosition.x, 0, texture->width - 1);
-    int y = std::clamp(mousePosition.y, 0, texture->height - 1);
+    int x = std::clamp(mousePosition.x, 0, texture->texture.TextureSize().x - 1);
+    int y = std::clamp(mousePosition.y, 0, texture->texture.TextureSize().y - 1);
 
     VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
@@ -592,11 +592,11 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-        .oldLayout = texture->textureImageLayout,
+        .oldLayout = texture->texture.TextureImageLayout(),
         .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = texture->textureImage,
+        .image = texture->texture.TextureImage(),
         .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
     };
 
@@ -606,7 +606,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     // Create staging buffer (R32_UINT = 4 bytes per pixel)
-    VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->width) * texture->height * 4;
+    VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->texture.TextureSize().x) * texture->texture.TextureSize().y * 4;
 
     VkBufferCreateInfo bufferInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -636,16 +636,16 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .bufferImageHeight = 0,
         .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 },
         .imageOffset = { 0, 0, 0 },
-        .imageExtent = { static_cast<uint32>(texture->width), static_cast<uint32>(texture->height), 1 }
+        .imageExtent = { static_cast<uint32>(texture->texture.TextureSize().x), static_cast<uint32>(texture->texture.TextureSize().y), 1 }
     };
 
-    vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+    vkCmdCopyImageToBuffer(cmd, texture->texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
     vulkan.CommandBuffer().EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkan.LogicalDevice());
 
     const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
-    uint32 pickedId = pData[y * texture->width + x];
+    uint32 pickedId = pData[y * texture->texture.TextureSize().x + x];
 
     vmaDestroyBuffer(bufferSystem.VmaAllocatorHandle(), stagingBuffer, stagingAlloc);
 

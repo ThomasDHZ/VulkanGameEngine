@@ -24,8 +24,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
 #endif
 
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    for (auto& texture :     json["LoadTextures"])    textureSystem.CreateTexture(texture);
-    for (auto& ktxTexture :  json["LoadKTXTextures"]) textureSystem.LoadKTXTexture(ktxTexture);
+    for (auto& texture :     json["LoadTextures"])    textureSystem.LoadTexture(texture);
+    for (auto& ktxTexture :  json["LoadKTXTextures"]) textureSystem.LoadTexture(ktxTexture);
     for (auto& material :    json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
     for (auto& spriteVRAM :  json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
@@ -58,8 +58,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().textureId - 1;
-    sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().textureId;
+    sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().textureId.id - 1;
+    sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().textureId.id - 1;
     
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
@@ -108,7 +108,7 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
                 for (auto& inputTexture : subPass.InputTextureList)
                 {
                     const Texture& texture = textureSystem.FindRenderedTexture(inputTexture);
-                    if (maxMipLevelCount < texture.mipMapLevels) maxMipLevelCount = texture.mipMapLevels - 1;
+                    if (maxMipLevelCount < texture.texture.MipMapLevels()) maxMipLevelCount = texture.texture.MipMapLevels() - 1;
                 }
 
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
@@ -352,8 +352,8 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             },
             VkOffset3D
             {
-                .x = srcTexture.width,
-                .y = srcTexture.height,
+                .x = srcTexture.texture.TextureSize().x,
+                .y = srcTexture.texture.TextureSize().y,
                 .z = 1
             }
         },
@@ -380,7 +380,7 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             }
         }
     };
-    vkCmdBlitImage(commandBuffer, srcTexture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().ImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
+    vkCmdBlitImage(commandBuffer, srcTexture.texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().ImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
 }
 
 LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)
@@ -391,7 +391,7 @@ LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Materia
     tileSet.TileSetId = VkGuid(json["TileSetId"].get<String>().c_str());
     tileSet.MaterialId = material.MaterialGuid;
     tileSet.TilePixelSize = ivec2{ json["TilePixelSize"][0], json["TilePixelSize"][1] };
-    tileSet.TileSetBounds = ivec2{ tileVramTexture.width / tileSet.TilePixelSize.x,  tileVramTexture.height / tileSet.TilePixelSize.y };
+    tileSet.TileSetBounds = ivec2{ tileVramTexture.texture.TextureSize().x / tileSet.TilePixelSize.x,  tileVramTexture.texture.TextureSize().y / tileSet.TilePixelSize.y };
     tileSet.TileUVSize = vec2(1.0f / (float)tileSet.TileSetBounds.x, 1.0f / (float)tileSet.TileSetBounds.y);
 
     return tileSet;

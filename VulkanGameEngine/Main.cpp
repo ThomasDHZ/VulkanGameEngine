@@ -63,7 +63,7 @@ int main(int argc, char** argv)
         //ImGui_Destroy(imGuiRenderer);
 
         renderSystem.Destroy();
-        textureSystem.DestroyAllTextures();
+       // textureSystem.DestroyAllTextures();
         meshSystem.DestroyAllGameObjects();
         materialSystem.DestroyAllMaterials();
        // bufferSystem.DestroyAllBuffers();
