@@ -91,6 +91,7 @@ private:
     DLL_EXPORT void                                                    BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet = 0);
     DLL_EXPORT void                                                    NextSubpass(VkCommandBuffer& commandBuffer);
     DLL_EXPORT void                                                    EndRenderPass(VkCommandBuffer& commandBuffer);
+    void                                                               GetCubeMapMipView(uint32 mip) const;
 
 public:
 

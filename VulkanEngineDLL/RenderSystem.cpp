@@ -133,7 +133,7 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
     if (renderPassJsonLoader.UseCubeMapMultiView)
     {
-        const uint32 viewMask =     0b0000111111;  // bits 0-5 for 6 faces
+        const uint32 viewMask = 0b0000111111;
         multiviewCreateInfo = VkRenderPassMultiviewCreateInfo
         {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
@@ -291,7 +291,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
         uint32 mipLevels = firstTex.texture.MipMapLevels();
         uint32 baseSize = firstTex.texture.TextureSize().x;
         vulkanRenderPass.FrameBufferList.resize(mipLevels);
-        for (uint32 mip = 0; mip < mipLevels; mip++)
+        for (uint32 mip = 0; mip < mipLevels; ++mip)
         {
             uint32 mipWidth = std::max(1u, baseSize >> mip);
             uint32 mipHeight = std::max(1u, baseSize >> mip);
@@ -310,7 +310,7 @@ void RenderSystem::BuildFrameBuffer(VulkanRenderPass& vulkanRenderPass)
                 .pAttachments = attachments.data(),
                 .width = mipWidth,
                 .height = mipHeight,
-                .layers = 1u 
+                .layers = vulkanRenderPass.UseCubeMapMultiView ? 1u : 6u
             };
             VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &info, nullptr, &vulkanRenderPass.FrameBufferList[mip]));
         }
