@@ -473,10 +473,10 @@ Texture TextureSystem::LoadKTXTexture(TextureLoader textureLoader)
 //	return textureLoader.TextureId;
 //}
 
-Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentTextureLoader& attachment)
+Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachment)
 {
-	bool isDepthFormat = (attachment.Format >= VK_FORMAT_D16_UNORM && attachment.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (attachment.Format == VK_FORMAT_X8_D24_UNORM_PACK32);
-	bool hasStencil = (attachment.Format == VK_FORMAT_D32_SFLOAT_S8_UINT || attachment.Format == VK_FORMAT_D24_UNORM_S8_UINT);
+	bool isDepthFormat = (attachment.TextureByteFormat >= VK_FORMAT_D16_UNORM && attachment.TextureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (attachment.TextureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (attachment.TextureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || attachment.TextureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
 
 	VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT |
 		VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
@@ -492,7 +492,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.depth = 1,
 		.mipMapLevels = attachment.UseMipMaps ? attachment.MipMapCount : 1,
 		.textureType = attachment.TextureType,
-		.textureByteFormat = attachment.Format,
+		.textureByteFormat = attachment.TextureByteFormat,
 		.sampleCount = vulkanRenderPass.SampleCount
 	};
 

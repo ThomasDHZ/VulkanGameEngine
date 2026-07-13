@@ -144,12 +144,12 @@ namespace nlohmann
         j.at("maxDepth").get_to(viewPort.maxDepth);
     }
 
-    void from_json(const json& j, RenderPassAttachmentTextureLoader& model) {
+    void from_json(const json& j, RenderPassAttachmentLoader& model) {
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
-        j.at("Format").get_to(model.Format);
+        j.at("Format").get_to(model.TextureByteFormat);
         j.at("LoadOp").get_to(model.LoadOp);
         j.at("StoreOp").get_to(model.StoreOp);
         j.at("FinalLayout").get_to(model.FinalLayout);
@@ -375,7 +375,7 @@ namespace nlohmann
     {
         j.at("RenderPassId").get_to(model.RenderPassId);
         model.RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]) ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
-        j.at("RenderAttachmentList").get_to(model.RenderAttachmentList);
+        j.at("RenderAttachmentList").get_to(model.AttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("SampleCount").get_to(model.SampleCount);
@@ -400,7 +400,7 @@ namespace nlohmann
         }
     }
 
-  void from_json(const json& j, RenderPipelineLoader& model)
+  void from_json(const json& j, VulkanPipelineLoader& model)
     {
         j.at("PipelineId").get_to(model.PipelineId);
         j.at("SubPassId").get_to(model.SubPassId);

@@ -22,13 +22,13 @@ void RenderSystem::Update(void* windowHandle, const float& deltaTime)
     //}
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, const String& jsonPath)
+RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
-    return LoadRenderPass(levelGuid, renderPassLoader);
+    return LoadRenderPass(renderPassLoader);
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(LevelGuid& levelGuid, RenderPassLoader& renderPassLoader)
+RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass
     {
@@ -86,19 +86,19 @@ void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, const Ren
     Vector<Vector<VkAttachmentReference>> colorAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
     Vector<Vector<VkAttachmentReference>> resolveAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
     Vector<Vector<VkSubpassDescription>> preserveAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
-    Vector<RenderPassAttachmentTextureLoader> renderPassAttachmentTextureInfoMap = renderPassJsonLoader.RenderAttachmentList;
+    Vector<RenderPassAttachmentLoader> renderPassAttachmentTextureInfoMap = renderPassJsonLoader.AttachmentList;
     for (int x = 0; x < renderPassJsonLoader.SubPassList.size(); x++)
     {
         bool useDepthForThisSubpass = false;
         VkAttachmentReference depthRefForThisSubpass = {};
         for (int y = 0; y < renderPassAttachmentTextureInfoMap.size(); y++)
         {
-            RenderPassAttachmentTextureLoader renderAttachment = renderPassAttachmentTextureInfoMap[y];
+            RenderPassAttachmentLoader renderAttachment = renderPassAttachmentTextureInfoMap[y];
             switch (renderAttachment.RenderAttachmentTypes[x])
             {
             case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
             case RenderAttachmentTypeEnum::InputAttachmentTexture: {
-                bool is_depth = (renderAttachment.Format >= VK_FORMAT_D16_UNORM && renderAttachment.Format <= VK_FORMAT_D32_SFLOAT_S8_UINT);
+                bool is_depth = (renderAttachment.TextureByteFormat >= VK_FORMAT_D16_UNORM && renderAttachment.TextureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT);
                 VkImageLayout input_layout = is_depth ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 inputAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = input_layout });
                 break;
@@ -164,7 +164,7 @@ VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSub
     return VulkanSubPass
     {
         .RenderPassGuid = renderPassId,
-        .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<RenderPipelineLoader>().PipelineId,
+        .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<VulkanPipelineLoader>().PipelineId,
         .MeshType = subPassLoader.MeshType,
         .ShaderPushConstant = subPassLoader.ShaderPushConstant,
         .InputTextureList = subPassLoader.InputTextureList,
@@ -176,7 +176,7 @@ VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSub
 void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet)
 {
     nlohmann::json pipelineJson = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str());
-    RenderPipelineLoader renderPipelineLoader = pipelineJson.get<RenderPipelineLoader>();
+    VulkanPipelineLoader renderPipelineLoader = pipelineJson.get<VulkanPipelineLoader>();
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPass.SampleCount;
     renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (renderPass.SampleCount > VK_SAMPLE_COUNT_1_BIT);
     renderPipelineLoader.RenderPassId = renderPass.RenderPassId;
@@ -221,14 +221,14 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
 }
 
 
-Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentTextureLoader>& attchmentTextureList)
+Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentLoader>& attchmentTextureList)
 {
     Vector<VkAttachmentDescription> attachmentDescriptionList;
     for (int x = 0; x < attchmentTextureList.size(); x++)
     {
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        const RenderPassAttachmentTextureLoader& renderAttachment = attchmentTextureList[x];
+        const RenderPassAttachmentLoader& renderAttachment = attchmentTextureList[x];
         switch (renderAttachment.TextureUsageType)
         {
             case kUsageType_SwapChainTexture:      initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;         finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
@@ -244,7 +244,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
 
         attachmentDescriptionList.emplace_back(VkAttachmentDescription
             {
-            .format = renderAttachment.Format,
+            .format = renderAttachment.TextureByteFormat,
             .samples = vulkanRenderPass.SampleCount >= vulkan.MaxSampleCount() ? vulkan.MaxSampleCount() : vulkanRenderPass.SampleCount,
             .loadOp = renderAttachment.LoadOp,
             .storeOp = renderAttachment.StoreOp,
@@ -257,7 +257,7 @@ Vector<VkAttachmentDescription> RenderSystem::BuildRenderPassAttachments(VulkanR
     return attachmentDescriptionList;
 }
 
-Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentTextureLoader>& attchmentTextureList)
+Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentLoader>& attchmentTextureList)
 {
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 

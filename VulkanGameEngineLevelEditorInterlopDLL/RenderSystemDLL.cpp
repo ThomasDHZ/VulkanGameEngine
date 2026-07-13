@@ -2,9 +2,9 @@
 #include <VulkanSystem.h>
 #include "../VulkanGameEngine/GameSystem.h"
 
- RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath)
+ RenderPassGuid RenderSystem_LoadRenderPass(const char* jsonPath)
 {
-	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath);
+	 return  renderSystem.LoadRenderPass(jsonPath);
 }
 
  void RenderSystem_Update(void* windowHandle, const float deltaTime)

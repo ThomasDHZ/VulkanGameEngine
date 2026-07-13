@@ -1,5 +1,6 @@
 #pragma once
 #include "JsonStruct.h"
+#include <VulkanPipelineLoader.h>
 #include "Collider2DComponent.h"
 #include "Transform2DComponent.h"
 
@@ -17,7 +18,7 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, VkRect2D& rect);
     DLL_EXPORT void from_json(const json& j, VkGuid& guid);
     DLL_EXPORT void from_json(const json& j, VkViewport& viewPort);
-    DLL_EXPORT void from_json(const json& j, RenderPassAttachmentTextureLoader& model);
+    DLL_EXPORT void from_json(const json& j, RenderPassAttachmentLoader& model);
     DLL_EXPORT void from_json(const json& j, RenderedTextureInfoModel& model);
     DLL_EXPORT void from_json(const json& j, PipelineDescriptorModel& model);
     DLL_EXPORT void from_json(const json& j, RenderPassBuildInfoModel& model);
@@ -33,7 +34,7 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, PushConstantUpdateRule& model);
     DLL_EXPORT void from_json(const json& j, VulkanSubPassLoader& model);
     DLL_EXPORT void from_json(const json& j, RenderPassLoader& model);
-    DLL_EXPORT void from_json(const json& j, RenderPipelineLoader& model);
+    DLL_EXPORT void from_json(const json& j, VulkanPipelineLoader& model);
     DLL_EXPORT void from_json(const json& j, BlendConstantsModel& model);
     DLL_EXPORT void from_json(const json& j, TextureLoader& model);
     DLL_EXPORT void from_json(const json& j, Collider2DComponent& model);
