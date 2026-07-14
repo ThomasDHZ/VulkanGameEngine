@@ -73,34 +73,41 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet)
 {
     nlohmann::json pipelineJson = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str());
+
+    Vector<VkDescriptorImageInfo> descriptorSetInfoList;
     VulkanPipelineLoader renderPipelineLoader = pipelineJson.get<VulkanPipelineLoader>();
-    renderPipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPass.SampleCount;
-    renderPipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (renderPass.SampleCount > VK_SAMPLE_COUNT_1_BIT);
-    renderPipelineLoader.RenderPassId = renderPass.RenderPassId;
-    renderPipelineLoader.RenderPass = renderPass.RenderPass;
-    renderPipelineLoader.RenderPassResolution = renderPass.RenderPassResolution;
-    renderPipelineLoader.UseGlobalBindlessSet = useGlobalBindlessSet;
     renderPipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
     renderPipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
     renderPipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
-    renderPipelineLoader.RenderPassInputTextures = memoryPoolSystem.GetSubPassInputTextureDescriptor(renderPass.RenderPassId);
+    for (auto& attachment : renderPass.AttachmentList)
+    {
+        descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = attachment.m_textureSampler,
+                .imageView = attachment.m_textureViewList.front(),
+                .imageLayout = attachment.m_textureImageLayout
+            });
+    }
+    renderPipelineLoader.RenderPassInputTextures = descriptorSetInfoList;
 
     for (auto& shader : renderPipelineLoader.ShaderLoaderList)
     {
         Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
         VulkanShader shader = VulkanShader(vertexShaderCode);
         renderPipelineLoader.VulkanShaderList.emplace_back(shader);
+    }
 
+    VulkanPipeline pipeline;
+    renderPass.BuildPipeline(renderPipelineLoader, useGlobalBindlessSet);
+    RenderPipelineMap[renderPipelineLoader.PipelineId] = renderPass.PipelineList.back();
+    for (auto& shader : renderPipelineLoader.VulkanShaderList)
+    {
         if (!shader.PushConstant().PushConstantName.empty() &&
             !shaderSystem.ShaderPushConstantExists(shader.PushConstant().PushConstantName))
         {
             shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
         }
     }
-
-    VulkanPipeline pipeline;
-    pipeline.BuildPipelines(renderPipelineLoader);
-    RenderPipelineMap[renderPipelineLoader.PipelineId] = pipeline;
 }
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
