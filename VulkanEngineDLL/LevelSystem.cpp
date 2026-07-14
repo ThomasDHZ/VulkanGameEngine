@@ -45,17 +45,17 @@ void LevelSystem::LoadLevel(const char* levelPath)
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
     textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
 
-    irradianceMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
-    prefilterMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
-    gBufferRenderPassId = renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
+    irradianceMapRenderPassId =          renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
+    prefilterMapRenderPassId =           renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
+    gBufferRenderPassId =                renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
     /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass("RenderPass/VertGaussianBlurRenderPass.json");
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass("RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass("RenderPass/BloomRenderPass.json");*/
-    hdrRenderPassId = renderSystem.LoadRenderPass("RenderPass/HdrRenderPass.json");
-    objectPickerRenderPassId = renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
-    selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
+    hdrRenderPassId =                    renderSystem.LoadRenderPass("RenderPass/HdrRenderPass.json");
+    objectPickerRenderPassId =           renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
+    selectedObjectPickerRenderPassId =   renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
 
-    shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+    //shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 }
@@ -71,6 +71,12 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
     sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
     sceneDataBuffer.ViewDirection = ViewDirection;
+    sceneDataBuffer.BRDFMapId = 13;
+    sceneDataBuffer.HDRMapIndex = 23;
+    sceneDataBuffer.FrameBufferIndex = 25;
+    sceneDataBuffer.IrradianceMapId = 1;
+    sceneDataBuffer.PrefilterMapId = 2;
+    sceneDataBuffer.CubeMapId = 0;
     cameraSystem.Update();
 }
 

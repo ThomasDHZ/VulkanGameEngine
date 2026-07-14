@@ -30,10 +30,19 @@ RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 
 RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
-    VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
-    vulkanRenderPass.LoadRenderPass(renderPassLoader);
 
-    BuildRenderPass(vulkanRenderPass, renderPassLoader);
+    VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
+    //for (auto& pipelineLoader : renderPassLoader.PipelineList)
+    //{
+    //        pipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPassLoader.SampleCount;
+    //        pipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (renderPassLoader.SampleCount > VK_SAMPLE_COUNT_1_BIT);
+    //        pipelineLoader.RenderPassId = renderPassLoader.RenderPassId;
+    //        pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+    //        pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+    //        pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+    //}
+    vulkanRenderPass.LoadRenderPass(renderPassLoader);
+    BuildRenderPassAttachmentTextures(vulkanRenderPass, renderPassLoader.AttachmentList);
     for (auto& renderPass : renderPassLoader.SubPassList)
     {
         Vector<VulkanSubPass> subPassList;
@@ -47,120 +56,18 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     BuildFrameBuffer(vulkanRenderPass);
 
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
-    return renderPassLoader.RenderPassId;
-}
-
-void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
-{
-    //vkDeviceWaitIdle(vulkan.LogicalDevice());
-    //for (auto& renderPass : renderSystem.RenderPassList()) vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
-    //vulkanSystem.DestroySwapChainImageView(vulkan.LogicalDevice(), vulkanSystem.SwapChainImageViews);
-    //vulkanSystem.DestroySwapChain(vulkan.LogicalDevice(), &vulkanSystem.Swapchain);
-
-    //vulkanSystem.SetUpSwapChain(windowHandle);
-    //for (auto& renderPass : renderSystem.RenderPassList())
+    //for (auto& pipeline : vulkanRenderPass.PipelineList)
     //{
-    //    BuildFrameBuffer(renderPass);
+    //    RenderPipelineMap[pipeline.m_pipelineId] = pipeline;
+    //    for (auto& pushConst : pipeline.m_pushConstantList)
+    //    {
+    //        if (!shaderSystem.ShaderPushConstantExists(pushConst.PushConstantName))
+    //        {
+    //            shaderSystem.ShaderPushConstantMap[pushConst.PushConstantName] = pushConst;
+    //        }
+    //    }
     //}
-    // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
-}
-
-void RenderSystem::BuildRenderPass(VulkanRenderPass& vulkanRenderPass, RenderPassLoader& renderPassJsonLoader)
-{
-    VkAttachmentReference unusedRef = {};
-    VkAttachmentReference depthReference = VkAttachmentReference();
-    Vector<bool> useDepthReferences(renderPassJsonLoader.SubPassList.size(), false);
-    Vector<VkAttachmentReference> depthReferences(renderPassJsonLoader.SubPassList.size());
-    Vector<VkSubpassDescription> subPassDescriptionList;
-    Vector<Vector<VkAttachmentReference>> inputAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
-    Vector<Vector<VkAttachmentReference>> colorAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
-    Vector<Vector<VkAttachmentReference>> resolveAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
-    Vector<Vector<VkSubpassDescription>> preserveAttachmentReferenceList(renderPassJsonLoader.SubPassList.size());
-    Vector<RenderPassAttachmentLoader> renderPassAttachmentTextureInfoMap = renderPassJsonLoader.AttachmentList;
-    for (int x = 0; x < renderPassJsonLoader.SubPassList.size(); x++)
-    {
-        bool useDepthForThisSubpass = false;
-        VkAttachmentReference depthRefForThisSubpass = {};
-        for (int y = 0; y < renderPassAttachmentTextureInfoMap.size(); y++)
-        {
-            RenderPassAttachmentLoader renderAttachment = renderPassAttachmentTextureInfoMap[y];
-            switch (renderAttachment.RenderAttachmentTypes[x])
-            {
-            case RenderAttachmentTypeEnum::ColorRenderedTexture: colorAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
-            case RenderAttachmentTypeEnum::InputAttachmentTexture: {
-                bool is_depth = (renderAttachment.TextureByteFormat >= VK_FORMAT_D16_UNORM && renderAttachment.TextureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT);
-                VkImageLayout input_layout = is_depth ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                inputAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = input_layout });
-                break;
-            }
-            case RenderAttachmentTypeEnum::ResolveAttachmentTexture: resolveAttachmentReferenceList[x].emplace_back(VkAttachmentReference{ .attachment = static_cast<uint32>(y), .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }); break;
-            case RenderAttachmentTypeEnum::DepthRenderedTexture:  depthRefForThisSubpass = VkAttachmentReference{ .attachment = (uint)(y), .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL }; useDepthForThisSubpass = true; break;
-            case RenderAttachmentTypeEnum::SkipSubPass: break;
-            default: throw std::runtime_error("Case doesn't exist: RenderedTextureType");
-            }
-        }
-
-        depthReferences[x] = depthRefForThisSubpass;
-        useDepthReferences[x] = useDepthForThisSubpass;
-
-        subPassDescriptionList.emplace_back(VkSubpassDescription{
-            .flags = 0,
-            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-            .inputAttachmentCount = static_cast<uint32>(inputAttachmentReferenceList[x].size()),
-            .pInputAttachments = inputAttachmentReferenceList[x].empty() ? nullptr : inputAttachmentReferenceList[x].data(),
-            .colorAttachmentCount = static_cast<uint32>(colorAttachmentReferenceList[x].size()),
-            .pColorAttachments = colorAttachmentReferenceList[x].empty() ? nullptr : colorAttachmentReferenceList[x].data(),
-            .pResolveAttachments = resolveAttachmentReferenceList[x].empty() ? nullptr : resolveAttachmentReferenceList[x].data(),
-            .pDepthStencilAttachment = useDepthReferences[x] ? &depthReferences[x] : nullptr,
-            .preserveAttachmentCount = 0,
-            .pPreserveAttachments = nullptr
-            });
-    }
-
-    vulkanRenderPass.BuildAttachmentDescriptors(renderPassJsonLoader);
-    BuildRenderPassAttachmentTextures(vulkanRenderPass, renderPassAttachmentTextureInfoMap);
-
-    VkRenderPassMultiviewCreateInfo multiviewCreateInfo{};
-    if (renderPassJsonLoader.UseCubeMapMultiView)
-    {
-        const uint32 viewMask =     0b0000111111;  // bits 0-5 for 6 faces
-        multiviewCreateInfo = VkRenderPassMultiviewCreateInfo
-        {
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
-            .subpassCount = 1,
-            .pViewMasks = &viewMask,
-            .correlationMaskCount = 1,
-            .pCorrelationMasks = &viewMask
-        };
-    }
-
-    Vector<VkSubpassDependency> subpassDependencies = renderPassJsonLoader.SubpassDependencyList;
-    VkRenderPassCreateInfo renderPassInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .pNext = renderPassJsonLoader.UseCubeMapMultiView ? &multiviewCreateInfo : nullptr,
-        .attachmentCount = static_cast<uint32>(vulkanRenderPass.AttachmentDescriptionList.size()),
-        .pAttachments = vulkanRenderPass.AttachmentDescriptionList.data(),
-        .subpassCount = static_cast<uint32>(subPassDescriptionList.size()),
-        .pSubpasses = subPassDescriptionList.data(),
-        .dependencyCount = static_cast<uint32>(subpassDependencies.size()),
-        .pDependencies = subpassDependencies.data(),
-    };
-    VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkan.LogicalDevice(), &renderPassInfo, nullptr, &vulkanRenderPass.RenderPass));
-}
-
-VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader)
-{
-    return VulkanSubPass
-    {
-        .RenderPassGuid = renderPassId,
-        .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<VulkanPipelineLoader>().PipelineId,
-        .MeshType = subPassLoader.MeshType,
-        .ShaderPushConstant = subPassLoader.ShaderPushConstant,
-        .InputTextureList = subPassLoader.InputTextureList,
-        .OutputTextureList = subPassLoader.OutputTextureList,
-        .OffScreenFrameBuffer = subPassLoader.OffScreenRenderPass,
-    };
+    return renderPassLoader.RenderPassId;
 }
 
 void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet)
@@ -178,44 +85,99 @@ void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubP
     renderPipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
     renderPipelineLoader.RenderPassInputTextures = memoryPoolSystem.GetSubPassInputTextureDescriptor(renderPass.RenderPassId);
 
-    ShaderLoader vertexShaderLoader = pipelineJson["ShaderList"][0].get<ShaderLoader>();
-    ShaderLoader pixelShaderLoader = pipelineJson["ShaderList"][1].get<ShaderLoader>();
-
-    Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(vertexShaderLoader.ShaderFile.c_str());
-    Vector<byte> pixelShaderCode = fileSystem.LoadAssetFile(pixelShaderLoader.ShaderFile.c_str());
-
-    VulkanShader renderVertexShader = VulkanShader(vertexShaderCode);
-    VulkanShader renderPixelShader = VulkanShader(pixelShaderCode);
-
-    
-    if (!renderVertexShader.PushConstant().PushConstantName.empty() &&
-        !shaderSystem.ShaderPushConstantExists(renderVertexShader.PushConstant().PushConstantName))
+    for (auto& shader : renderPipelineLoader.ShaderLoaderList)
     {
-        shaderSystem.ShaderPushConstantMap[renderVertexShader.PushConstant().PushConstantName] = renderVertexShader.PushConstant();
+        Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
+        VulkanShader shader = VulkanShader(vertexShaderCode);
+        renderPipelineLoader.VulkanShaderList.emplace_back(shader);
+
+        if (!shader.PushConstant().PushConstantName.empty() &&
+            !shaderSystem.ShaderPushConstantExists(shader.PushConstant().PushConstantName))
+        {
+            shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
+        }
     }
-    if (!renderPixelShader.PushConstant().PushConstantName.empty() &&
-        !shaderSystem.ShaderPushConstantExists(renderPixelShader.PushConstant().PushConstantName))
-    {
-        shaderSystem.ShaderPushConstantMap[renderPixelShader.PushConstant().PushConstantName] = renderPixelShader.PushConstant();
-    }
-
-    renderPipelineLoader.VulkanShaderList = Vector<VulkanShader>
-    {
-        renderVertexShader,
-        renderPixelShader
-    };
 
     VulkanPipeline pipeline;
     pipeline.BuildPipelines(renderPipelineLoader);
     RenderPipelineMap[renderPipelineLoader.PipelineId] = pipeline;
 }
 
+void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
+{
+    //vkDeviceWaitIdle(vulkan.LogicalDevice());
+    //for (auto& renderPass : renderSystem.RenderPassList()) vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
+    //vulkanSystem.DestroySwapChainImageView(vulkan.LogicalDevice(), vulkanSystem.SwapChainImageViews);
+    //vulkanSystem.DestroySwapChain(vulkan.LogicalDevice(), &vulkanSystem.Swapchain);
+
+    //vulkanSystem.SetUpSwapChain(windowHandle);
+    //for (auto& renderPass : renderSystem.RenderPassList())
+    //{
+    //    BuildFrameBuffer(renderPass);
+    //}
+    // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
+}
+
+VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader)
+{
+    return VulkanSubPass
+    {
+        .RenderPassGuid = renderPassId,
+        .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<VulkanPipelineLoader>().PipelineId,
+        .MeshType = subPassLoader.MeshType,
+        .ShaderPushConstant = subPassLoader.ShaderPushConstant,
+        .InputTextureList = subPassLoader.InputTextureList,
+        .OutputTextureList = subPassLoader.OutputTextureList,
+        .OffScreenFrameBuffer = subPassLoader.OffScreenRenderPass,
+    };
+}
+
+//void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, VulkanPipelineLoader& pipelineLoader, bool useGlobalBindlessSet)
+//{
+//    pipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPass.SampleCount;
+//    pipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (renderPass.SampleCount > VK_SAMPLE_COUNT_1_BIT);
+//    pipelineLoader.RenderPassId = renderPass.RenderPassId;
+//    pipelineLoader.RenderPass = renderPass.RenderPass;
+//    pipelineLoader.RenderPassResolution = renderPass.RenderPassResolution;
+//    pipelineLoader.UseGlobalBindlessSet = useGlobalBindlessSet;
+//    pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+//    pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+//    pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+//    pipelineLoader.RenderPassInputTextures = memoryPoolSystem.GetSubPassInputTextureDescriptor(renderPass.RenderPassId);
+//
+//    Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(vertexShaderLoader.ShaderFile.c_str());
+//    Vector<byte> pixelShaderCode = fileSystem.LoadAssetFile(pixelShaderLoader.ShaderFile.c_str());
+//
+//    VulkanShader renderVertexShader = VulkanShader(vertexShaderCode);
+//    VulkanShader renderPixelShader = VulkanShader(pixelShaderCode);
+//    
+//    if (!renderVertexShader.PushConstant().PushConstantName.empty() &&
+//        !shaderSystem.ShaderPushConstantExists(renderVertexShader.PushConstant().PushConstantName))
+//    {
+//        shaderSystem.ShaderPushConstantMap[renderVertexShader.PushConstant().PushConstantName] = renderVertexShader.PushConstant();
+//    }
+//    if (!renderPixelShader.PushConstant().PushConstantName.empty() &&
+//        !shaderSystem.ShaderPushConstantExists(renderPixelShader.PushConstant().PushConstantName))
+//    {
+//        shaderSystem.ShaderPushConstantMap[renderPixelShader.PushConstant().PushConstantName] = renderPixelShader.PushConstant();
+//    }
+//
+//    pipelineLoader.VulkanShaderList = Vector<VulkanShader>
+//    {
+//        renderVertexShader,
+//        renderPixelShader
+//    };
+//
+//    VulkanPipeline pipeline;
+//    pipeline.BuildPipelines(pipelineLoader);
+//    RenderPipelineMap[pipelineLoader.PipelineId] = pipeline;
+//}
+
 Vector<Texture> RenderSystem::BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentLoader>& attchmentTextureList)
 {
     Texture depthTexture;
     Vector<Texture> renderedTextureList;
     Vector<Texture> frameBufferTextureList;
-    vulkanRenderPass.BuildAttachments(attchmentTextureList);
     for (int x = 0; x < vulkanRenderPass.AttachmentList.size(); x++)
     {
         VulkanTexture attachment = vulkanRenderPass.AttachmentList[x];

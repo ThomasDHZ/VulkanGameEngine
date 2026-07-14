@@ -156,15 +156,8 @@ namespace nlohmann
         j.at("UseMipMaps").get_to(model.UseMipMaps);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
 
-        if (model.UseMipMaps &&
-            j.contains("MipMapCount"))
-        {
-            j.at("MipMapCount").get_to(model.MipMapCount);
-        }
-        else
-        {
-            model.MipMapCount = 1;
-        }
+        if (model.UseMipMaps && j.contains("MipMapCount")) j.at("MipMapCount").get_to(model.MipMapCount);
+        else model.MipMapCount = 1;
     }
 
     void from_json(const json& j, RenderedTextureInfoModel& model)
@@ -187,22 +180,10 @@ namespace nlohmann
 
     void from_json(const json& j, RenderPassBuildInfoModel& model)
     {
-        for (int x = 0; x < j.at("RenderPipelineList").size(); x++)
-        {
-            model.RenderPipelineList.emplace_back(j.at("RenderPipelineList")[x]["Path"]);
-        }
-        for (int x = 0; x < j.at("RenderedTextureInfoModelList").size(); x++)
-        {
-            model.RenderedTextureInfoModelList.emplace_back(j.at("RenderedTextureInfoModelList")[x]);
-        }
-        for (int x = 0; x < j.at("SubpassDependencyList").size(); x++)
-        {
-            model.SubpassDependencyModelList.emplace_back(j.at("SubpassDependencyList")[x]);
-        }
-        for (int x = 0; x < j.at("ClearValueList").size(); x++)
-        {
-            model.ClearValueList.emplace_back(j.at("ClearValueList")[x]);
-        }
+        for (int x = 0; x < j.at("RenderPipelineList").size(); x++)           model.RenderPipelineList.emplace_back(j.at("RenderPipelineList")[x]["Path"]);
+        for (int x = 0; x < j.at("RenderedTextureInfoModelList").size(); x++) model.RenderedTextureInfoModelList.emplace_back(j.at("RenderedTextureInfoModelList")[x]);
+        for (int x = 0; x < j.at("SubpassDependencyList").size(); x++)        model.SubpassDependencyModelList.emplace_back(j.at("SubpassDependencyList")[x]);
+        for (int x = 0; x < j.at("ClearValueList").size(); x++)               model.ClearValueList.emplace_back(j.at("ClearValueList")[x]);
     }
 
     void from_json(const nlohmann::json& j, VkVertexInputBindingDescription& model)
@@ -390,17 +371,20 @@ namespace nlohmann
                 Vector<VulkanSubPassLoader> subPassLoader;
                 if (subPass.is_array()) 
                 {
-                    for (const auto& item : subPass) 
+                    for (const auto& item : subPass)
                     {
+                        nlohmann::json pipelineJson = fileSystem.LoadJsonFile(item["Pipeline"].get<String>());
+                        model.PipelineList.emplace_back(pipelineJson.get<VulkanPipelineLoader>());
+ 
                         subPassLoader.push_back(item.get<VulkanSubPassLoader>());
                     }
                 }
-                model.SubPassList.push_back(subPassLoader);
+                model.SubPassList.emplace_back(subPassLoader);
             }
         }
     }
 
-  void from_json(const json& j, VulkanPipelineLoader& model)
+    void from_json(const json& j, VulkanPipelineLoader& model)
     {
         j.at("PipelineId").get_to(model.PipelineId);
         j.at("SubPassId").get_to(model.SubPassId);
@@ -410,17 +394,20 @@ namespace nlohmann
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
         j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
         j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
-        for (auto& pipelineColorBlendAttachmentState : j.at("PipelineColorBlendAttachmentStateList"))
+        for (auto& pipelineColorBlendAttachmentState : j.at("PipelineColorBlendAttachmentStateList")) model.PipelineColorBlendAttachmentStateList.emplace_back(pipelineColorBlendAttachmentState);
+        for (auto& viewPort : j.at("ViewportList"))                                                   model.ViewportList.emplace_back(viewPort);
+        for (auto& scissor : j.at("ScissorList"))                                                     model.ScissorList.emplace_back(scissor);
+
+        if (j.contains("ShaderList") && j["ShaderList"].is_array())
         {
-            model.PipelineColorBlendAttachmentStateList.emplace_back(pipelineColorBlendAttachmentState);
-        }
-        for (auto& viewPort : j.at("ViewportList"))
-        {
-            model.ViewportList.emplace_back(viewPort);
-        }
-        for (auto& scissor : j.at("ScissorList"))
-        {
-            model.ScissorList.emplace_back(scissor);
+            for (auto& shader : j["ShaderList"])
+            {
+                auto s = shader.dump();
+                ShaderLoader shaderLoader = shader.get<ShaderLoader>();
+                shaderLoader.ShaderCode = fileSystem.LoadAssetFile(shaderLoader.ShaderFile.c_str());
+                
+                model.ShaderLoaderList.emplace_back(shaderLoader);
+            }
         }
     }
 
