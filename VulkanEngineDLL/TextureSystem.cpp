@@ -563,7 +563,56 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	CreateTextureView(texture, vulkanRenderPass.UseCubeMapMultiView, aspectMask);
+	VkImageAspectFlags aspect = aspectMask;
+	if (aspect == 0)
+	{
+		std::cout << "CreateTextureView: imageAspectFlags not set ? using auto-detect." << std::endl;
+
+		bool isDepthFormat = (texture.textureByteFormat >= VK_FORMAT_D16_UNORM &&
+			texture.textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) ||
+			(texture.textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+
+		if (isDepthFormat)
+		{
+			aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+			if (texture.textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+				texture.textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT)
+			{
+				aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+		}
+		else
+		{
+			aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+	}
+
+	for (uint32 mip = 0; mip < texture.mipMapLevels; ++mip)
+	{
+		VkImageView imageView = VK_NULL_HANDLE;
+		VkImageViewCreateInfo viewInfo = {};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = texture.textureImage;
+
+		if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap)
+		{
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+		}
+		else
+		{
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		}
+
+		viewInfo.format = texture.textureByteFormat;
+		viewInfo.subresourceRange.aspectMask = aspect;
+		viewInfo.subresourceRange.baseMipLevel = mip;
+		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = vulkanRenderPass.UseCubeMapMultiView ? 6u : 1u;
+
+		VULKAN_THROW_IF_FAIL(vkCreateImageView(vulkan.LogicalDevice(), &viewInfo, nullptr, &imageView));
+		texture.textureViewList.emplace_back(imageView);
+	}
 	VULKAN_THROW_IF_FAIL(vkCreateSampler(vulkan.LogicalDevice(), &attachment.SamplerCreateInfo, nullptr, &texture.textureSampler));
 
 	if (vulkanRenderPass.IsCubeMapRenderPass)
@@ -837,7 +886,7 @@ Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 		if (it != textureList.end())
 			return *it;
 	}
-	throw std::out_of_range("Texture with given ID not found");
+	throw std::out_of_range("Texture with Id: " + textureGuid.ToString() + " not found");
 }
 
 Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
@@ -1156,7 +1205,7 @@ bool TextureSystem::HasStencilComponent(VkFormat format)
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	VulkanPipeline pipeline = renderSystem.FindRenderPipeline(renderPass.VulkanSubPassList[0][0].PipelineGuid);
+	VulkanPipeline pipeline = renderSystem.FindRenderPipeline(renderPass.SubPassList[0][0].PipelineGuid);
 	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
 	if (renderPassTexture.empty())
@@ -1300,7 +1349,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipeline(renderPass.VulkanSubPassList[0][0].PipelineGuid);
+	VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipeline(renderPass.SubPassList[0][0].PipelineGuid);
 	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
 
 	if (renderPassTexture.empty() || renderPassTexture[0].textureImage == VK_NULL_HANDLE)

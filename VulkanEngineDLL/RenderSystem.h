@@ -76,10 +76,9 @@ private:
 
     DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     DLL_EXPORT void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
-    DLL_EXPORT void                                                    BuildRenderPass(VulkanRenderPass& renderPass, const RenderPassLoader& renderPassJsonLoader);
+    DLL_EXPORT void                                                    BuildRenderPass(VulkanRenderPass& renderPass, RenderPassLoader& renderPassJsonLoader);
     DLL_EXPORT void                                                    BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet);
     DLL_EXPORT VulkanSubPass                                           BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader);
-    DLL_EXPORT Vector<VkAttachmentDescription>                         BuildRenderPassAttachments(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentLoader>& attchmentTextureList);
     DLL_EXPORT Vector<Texture>                                         BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentLoader>& attchmentTextureList);
     DLL_EXPORT void                                                    BuildFrameBuffer(VulkanRenderPass& renderPass);
 

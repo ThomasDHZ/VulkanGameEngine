@@ -56,10 +56,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
 
     shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.HDRMapIndex = textureSystem.FindRenderedTextureList(gBufferRenderPassId).back().textureId - 1;
-    sceneDataBuffer.FrameBufferIndex = textureSystem.FindRenderedTextureList(hdrRenderPassId).back().textureId;
-
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 }
@@ -99,7 +95,7 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
 
         uint32 maxMipLevelCount = 1;
         Vector<Vector<VulkanDrawMessage>> vulkanDrawMessageList;
-        for (auto& renderPassList : renderPass.VulkanSubPassList)
+        for (auto& renderPassList : renderPass.SubPassList)
         {
             Vector<VulkanDrawMessage> vulkanSubPassMessageList;
             for (auto& subPass : renderPassList)
