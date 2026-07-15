@@ -30,17 +30,20 @@ RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 
 RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
+    for (auto& pipelineLoader : renderPassLoader.PipelineList)
+    {
+        pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+        pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+        pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+        for (auto& shader : pipelineLoader.ShaderLoaderList)
+        {
+            Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
+            VulkanShader shader = VulkanShader(vertexShaderCode);
+            pipelineLoader.VulkanShaderList.emplace_back(shader);
+        }
+    }
 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
-    //for (auto& pipelineLoader : renderPassLoader.PipelineList)
-    //{
-    //        pipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = renderPassLoader.SampleCount;
-    //        pipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (renderPassLoader.SampleCount > VK_SAMPLE_COUNT_1_BIT);
-    //        pipelineLoader.RenderPassId = renderPassLoader.RenderPassId;
-    //        pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
-    //        pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
-    //        pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
-    //}
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
     BuildRenderPassAttachmentTextures(vulkanRenderPass, renderPassLoader.AttachmentList);
     for (auto& renderPass : renderPassLoader.SubPassList)
@@ -48,7 +51,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
         Vector<VulkanSubPass> subPassList;
         for (auto& subPass : renderPass)
         {
-            BuildPipelines(vulkanRenderPass, subPass, renderPassLoader.UseGlobalBindlessSet);
+            //BuildPipelines(vulkanRenderPass, subPass, renderPassLoader.UseGlobalBindlessSet);
             subPassList.emplace_back(BuildSubpasses(renderPassLoader.RenderPassId, subPass));
         }
         vulkanRenderPass.SubPassList.emplace_back(subPassList);
@@ -56,58 +59,59 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     BuildFrameBuffer(vulkanRenderPass);
 
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
-    //for (auto& pipeline : vulkanRenderPass.PipelineList)
-    //{
-    //    RenderPipelineMap[pipeline.m_pipelineId] = pipeline;
-    //    for (auto& pushConst : pipeline.m_pushConstantList)
-    //    {
-    //        if (!shaderSystem.ShaderPushConstantExists(pushConst.PushConstantName))
-    //        {
-    //            shaderSystem.ShaderPushConstantMap[pushConst.PushConstantName] = pushConst;
-    //        }
-    //    }
-    //}
+    for (auto& vulkanPipeline : vulkanRenderPass.PipelineList)
+    {
+        RenderPipelineMap[vulkanPipeline.m_pipelineId] = vulkanPipeline;
+        for (auto& pushConstant : vulkanPipeline.m_pushConstantList)
+        {
+            if (!pushConstant.PushConstantName.empty() &&
+                !shaderSystem.ShaderPushConstantExists(pushConstant.PushConstantName))
+            {
+                shaderSystem.ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
+            }
+        }
+    }
     return renderPassLoader.RenderPassId;
 }
 
 void RenderSystem::BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet)
 {
-    nlohmann::json pipelineJson = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str());
+    //nlohmann::json pipelineJson = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str());
 
-    Vector<VkDescriptorImageInfo> descriptorSetInfoList;
-    VulkanPipelineLoader renderPipelineLoader = pipelineJson.get<VulkanPipelineLoader>();
-    renderPipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
-    renderPipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
-    renderPipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
-    for (auto& attachment : renderPass.AttachmentList)
-    {
-        descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
-            {
-                .sampler = attachment.m_textureSampler,
-                .imageView = attachment.m_textureViewList.front(),
-                .imageLayout = attachment.m_textureImageLayout
-            });
-    }
-    renderPipelineLoader.RenderPassInputTextures = descriptorSetInfoList;
+    //Vector<VkDescriptorImageInfo> descriptorSetInfoList;
+    //VulkanPipelineLoader renderPipelineLoader = pipelineJson.get<VulkanPipelineLoader>();
+    //renderPipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+    //renderPipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+    //renderPipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+    //for (auto& attachment : renderPass.AttachmentList)
+    //{
+    //    descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
+    //        {
+    //            .sampler = attachment.m_textureSampler,
+    //            .imageView = attachment.m_textureViewList.front(),
+    //            .imageLayout = attachment.m_textureImageLayout
+    //        });
+    //}
+    //renderPipelineLoader.RenderPassInputTextures = descriptorSetInfoList;
 
-    for (auto& shader : renderPipelineLoader.ShaderLoaderList)
-    {
-        Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
-        VulkanShader shader = VulkanShader(vertexShaderCode);
-        renderPipelineLoader.VulkanShaderList.emplace_back(shader);
-    }
+    //for (auto& shader : renderPipelineLoader.ShaderLoaderList)
+    //{
+    //    Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
+    //    VulkanShader shader = VulkanShader(vertexShaderCode);
+    //    renderPipelineLoader.VulkanShaderList.emplace_back(shader);
+    //}
 
-    VulkanPipeline pipeline;
-    renderPass.BuildPipeline(renderPipelineLoader, useGlobalBindlessSet);
-    RenderPipelineMap[renderPipelineLoader.PipelineId] = renderPass.PipelineList.back();
-    for (auto& shader : renderPipelineLoader.VulkanShaderList)
-    {
-        if (!shader.PushConstant().PushConstantName.empty() &&
-            !shaderSystem.ShaderPushConstantExists(shader.PushConstant().PushConstantName))
-        {
-            shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
-        }
-    }
+    //VulkanPipeline pipeline;
+    //renderPass.BuildPipeline(renderPipelineLoader, useGlobalBindlessSet);
+    //RenderPipelineMap[renderPipelineLoader.PipelineId] = renderPass.PipelineList.back();
+    //for (auto& shader : renderPipelineLoader.VulkanShaderList)
+    //{
+    //    if (!shader.PushConstant().PushConstantName.empty() &&
+    //        !shaderSystem.ShaderPushConstantExists(shader.PushConstant().PushConstantName))
+    //    {
+    //        shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
+    //    }
+    //}
 }
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
