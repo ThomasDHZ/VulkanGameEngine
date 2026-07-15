@@ -191,11 +191,6 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
     renderedTextureList.clear();
 }
 
-void RenderSystem::DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
-{
-    //vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), frameBufferList);
-}
-
 void RenderSystem::DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
  //   vulkanSystem.DestroyCommandBuffers(vulkan.LogicalDevice(), &vulkanSystem.CommandPool, commandBuffer);
@@ -314,113 +309,6 @@ void RenderSystem::AddRenderNode(RenderPassNode renderPassNode)
     RenderPassNodeList.emplace_back(renderPassNode);
 }
 
-void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, ivec2 renderPassResolution, uint mipLevel)
-{
-
-    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = renderPass.RenderPass,
-        .framebuffer = renderPass.FrameBufferList[mipLevel],
-        .renderArea = VkRect2D
-        {
-           .offset = VkOffset2D
-            {
-                .x = 0,
-                .y = 0
-            },
-           .extent = VkExtent2D
-            {
-                .width = static_cast<uint32>(renderPassResolution.x),
-                .height = static_cast<uint32>(renderPassResolution.y)
-            }
-        },
-        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-        .pClearValues = renderPass.ClearValueList.data()
-    };
-    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-}
-
-void RenderSystem::BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel)
-{
-    const uint32 renderPassWidth = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
-    const uint32 renderPassHeight = std::max(1, renderPass.RenderPassResolution.y >> mipLevel);
-    VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = renderPass.RenderPass,
-        .framebuffer = renderPass.FrameBufferList[mipLevel],
-        .renderArea = VkRect2D
-        {
-           .offset = VkOffset2D
-            {
-                .x = 0,
-                .y = 0
-            },
-           .extent = VkExtent2D
-            {
-                .width = renderPassWidth,
-                .height = renderPassHeight
-            }
-        },
-        .clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-        .pClearValues = renderPass.ClearValueList.data()
-    };
-    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-}
-
-void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel)
-{
-    if (renderPass.RenderPassResolution == ivec2(INT32_MAX, INT32_MAX))
-    {
-        return;
-    }
-
-    const uint32 renderPassWidth = std::max(1, renderPass.RenderPassResolution.x >> mipLevel);
-    const uint32 renderPassHeight = std::max(1, renderPass.RenderPassResolution.y >> mipLevel);
-
-    VkViewport viewport
-    {
-        .x = 0.0f,
-        .y = 0.0f,
-        .width = static_cast<float>(renderPassWidth),
-        .height = static_cast<float>(renderPassHeight),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
-    };
-
-    VkRect2D rect2D = VkRect2D
-    {
-       .offset = VkOffset2D {.x = 0, .y = 0 },
-       .extent = VkExtent2D {.width = renderPassWidth, .height = renderPassHeight }
-    };
-
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    vkCmdSetScissor(commandBuffer, 0, 1, &rect2D);
-}
-
-void RenderSystem::BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPassResolution, uint mipLevel)
-{
-    VkViewport viewport
-    {
-        .x = 0.0f,
-        .y = 0.0f,
-        .width = static_cast<float>(renderPassResolution.x),
-        .height = static_cast<float>(renderPassResolution.y),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
-    };
-
-    VkRect2D rect2D = VkRect2D
-    {
-       .offset = VkOffset2D {.x = 0, .y = 0 },
-       .extent = VkExtent2D {.width = static_cast<uint32>(renderPassResolution.x), .height = static_cast<uint32>(renderPassResolution.y) }
-    };
-
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    vkCmdSetScissor(commandBuffer, 0, 1, &rect2D);
-}
-
 void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
 {
     if (drawMessage.PushConstant.has_value())
@@ -443,97 +331,46 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
     }
 }
 
-void RenderSystem::BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet)
-{
-    if (pipeline.Pipeline() == nullptr)
-    {
-        std::cout << "Pipeline not set" << std::endl;
-        return;
-    }
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline());
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout(), firstSet, pipeline.DescriptorSetList().size(), pipeline.DescriptorSetList().data(), 0, nullptr);
-}
-
-void RenderSystem::NextSubpass(VkCommandBuffer& commandBuffer)
-{
-    vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
-}
-
-void RenderSystem::EndRenderPass(VkCommandBuffer& commandBuffer)
-{
-    vkCmdEndRenderPass(commandBuffer);
-}
-
 void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
 {
     for (auto& renderPassNode : RenderPassNodeList)
     {
-        const VulkanRenderPass& renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
+        VulkanRenderPass renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
         uint32 mipCount = std::max(1u, renderPassNode.MipCount);
         if (renderPassNode.PreRenderPassCmd) renderPassNode.PreRenderPassCmd(commandBuffer, renderPassNode);
         for (uint32 mip = 0; mip < mipCount; mip++)
         {
-            bool firstSubPass = true;
-            const ivec2 renderPassResolution = ivec2(std::max(1, renderPass.RenderPassResolution.x >> mip),
-                                                     std::max(1, renderPass.RenderPassResolution.y >> mip));
-
-            BeginRenderPass(commandBuffer, renderPass, renderPassResolution, mip);
-            BindViewPort(commandBuffer, renderPassResolution, mip);
+            uint subPassIndex = 0;
+            renderPass.BeginRenderPass(commandBuffer, mip);
+            renderPass.BindViewPort(commandBuffer, mip);
             for (auto& subPass : renderPassNode.SubPassDrawMessage)
             {
-                if (!firstSubPass)
-                {
-                    NextSubpass(commandBuffer);
-                }
-
+                if (subPassIndex != 0) renderPass.NextSubpass(commandBuffer);
                 for (auto& renderPassLayer : subPass)
                 {
-                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPassLayer.PipelineGuid);
-
                     Texture inputTexture;
-                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
-                    if (renderPassLayer.PreDrawCmd)
-                    {
-                        renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
-                    }
+                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPassLayer.PipelineGuid);
+                    renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
 
-                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline());
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout(), 0, pipeline.DescriptorSetList().size(), pipeline.DescriptorSetList().data(), 0, nullptr);
-                    if (renderPassLayer.OffScreenRenderPass)
-                    {
-                        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-                    }
+                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
+                    if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
+                    if (renderPassLayer.OffScreenRenderPass)  vkCmdDraw(commandBuffer, 3, 1, 0, 0);
                     else
                     {
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
-                            const MeshDrawMessage mesh = renderPassLayer.DrawMeshList[x];
+                            MeshDrawMessage mesh = renderPassLayer.DrawMeshList[x];
                             BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount);
-                            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.VertexBuffer, &mesh.VertexOffset);
-                            if (mesh.IndexBuffer)
-                            {
-                                vkCmdBindIndexBuffer(commandBuffer, mesh.IndexBuffer, mesh.FirstIndex * sizeof(uint32), VK_INDEX_TYPE_UINT32);
-                                vkCmdDrawIndexed(commandBuffer, mesh.IndexCount, mesh.InstanceCount, mesh.FirstIndex, 0, mesh.StartInstanceIndex);
-                            }
-                            else
-                            {
-                                vkCmdDraw(commandBuffer, mesh.VertexCount, mesh.InstanceCount, mesh.FirstVertex, mesh.StartInstanceIndex);
-                            }
+                            renderPass.DrawMesh(commandBuffer, mesh);
                         }
                     }
-
-                    if (renderPassLayer.PostDrawCmd)
-                    {
-                        renderPassLayer.PostDrawCmd(commandBuffer, renderPassLayer);
-                    }
+                    if (renderPassLayer.PostDrawCmd) renderPassLayer.PostDrawCmd(commandBuffer, renderPassLayer);
                 }
-
-                firstSubPass = false;
+                subPassIndex++;
             }
             if (renderPassNode.PostRenderPassCmd) renderPassNode.PostRenderPassCmd(commandBuffer, renderPassNode);
-            EndRenderPass(commandBuffer);
+            renderPass.EndRenderPass(commandBuffer);
         }
     }
 }

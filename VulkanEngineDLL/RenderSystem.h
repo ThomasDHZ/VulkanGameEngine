@@ -12,24 +12,6 @@ struct VulkanBindVertexBuffer
     VkBuffer vertexBuffer = VK_NULL_HANDLE;
 };
 
-struct MeshDrawMessage
-{
-    uint32		   MeshId = UINT32_MAX;
-    uint32	       Drawlayer = UINT32_MAX;
-    uint32         VertexBufferBinding = 0;
-    uint32		   VertexCount = 0;
-    uint32		   IndexCount = 0;
-    uint32		   InstanceCount = 1;
-    uint32         FirstVertex = 0;
-    uint32	       FirstIndex = 0;
-    uint32	       StartInstanceIndex = 0;
-    VkDeviceSize   VertexOffset = 0;
-    VkDeviceSize   InstanceOffset = 0;
-    VkBuffer	   VertexBuffer = VK_NULL_HANDLE;
-    VkBuffer	   IndexBuffer = VK_NULL_HANDLE;
-    VkBuffer       InstanceBuffer = VK_NULL_HANDLE;
-};
-
 struct VulkanDrawMessage
 {
     VkGuid                            RenderPassGuid;
@@ -77,15 +59,7 @@ private:
     DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     DLL_EXPORT void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     DLL_EXPORT VulkanSubPass                                           BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader);
-
-    DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, ivec2 renderPassResolution, uint mipLevel = 0);
-    DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
-    DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
-    DLL_EXPORT void                                                    BindViewPort(VkCommandBuffer& commandBuffer, ivec2 renderPassResolution, uint mipLevel = 0);
     DLL_EXPORT void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-    DLL_EXPORT void                                                    BindRenderPassPipeline(VkCommandBuffer& commandBuffer, const VulkanPipeline& pipeline, uint32 firstSet = 0);
-    DLL_EXPORT void                                                    NextSubpass(VkCommandBuffer& commandBuffer);
-    DLL_EXPORT void                                                    EndRenderPass(VkCommandBuffer& commandBuffer);
 
 public:
 
@@ -104,7 +78,6 @@ public:
     DLL_EXPORT void                                                    AddRenderNode(RenderPassNode renderPassNode);
     DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer);
 
-    DLL_EXPORT void                                                    DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
     DLL_EXPORT void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
     DLL_EXPORT void                                                    DestroyBuffer(VkBuffer& buffer);
 };

@@ -17,11 +17,6 @@
 	 return renderSystem.FindRenderPass(renderPassGuid);
 }
 
- void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
-{
-	 renderSystem.DestroyFrameBuffers(frameBufferList);
-}
-
  void RenderSystem_DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
 {
 	 renderSystem.DestroyCommandBuffers(commandBuffer);
