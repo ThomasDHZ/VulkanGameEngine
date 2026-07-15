@@ -62,7 +62,7 @@ int main(int argc, char** argv)
         vkDeviceWaitIdle(vulkan.LogicalDevice());
         //ImGui_Destroy(imGuiRenderer);
 
-        renderSystem.Destroy();
+        
         textureSystem.DestroyAllTextures();
         meshSystem.DestroyAllGameObjects();
         materialSystem.DestroyAllMaterials();

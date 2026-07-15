@@ -76,10 +76,7 @@ private:
 
     DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     DLL_EXPORT void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
-    DLL_EXPORT void                                                    BuildPipelines(VulkanRenderPass& renderPass, const VulkanSubPassLoader& subPassLoader, bool useGlobalBindlessSet);
     DLL_EXPORT VulkanSubPass                                           BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader);
-    DLL_EXPORT Vector<Texture>                                         BuildRenderPassAttachmentTextures(VulkanRenderPass& vulkanRenderPass, Vector<RenderPassAttachmentLoader>& attchmentTextureList);
-    DLL_EXPORT void                                                    BuildFrameBuffer(VulkanRenderPass& renderPass);
 
     DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, ivec2 renderPassResolution, uint mipLevel = 0);
     DLL_EXPORT void                                                    BeginRenderPass(VkCommandBuffer& commandBuffer, const VulkanRenderPass& renderPass, uint mipLevel = 0);
@@ -96,7 +93,6 @@ public:
     bool                                                               UsingMaterialBaker = false;
    // UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
-    DLL_EXPORT void                                                    StartUp(void* windowHandle, ivec2 renderResolution);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
@@ -108,18 +104,9 @@ public:
     DLL_EXPORT void                                                    AddRenderNode(RenderPassNode renderPassNode);
     DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer);
 
-    DLL_EXPORT void                                                    Destroy();
-    DLL_EXPORT void                                                    DestroyRenderPass(VulkanRenderPass& renderPass);
-    DLL_EXPORT void                                                    DestroyRenderPasses();
-    DLL_EXPORT void                                                    DestroyRenderPipelines();
-    DLL_EXPORT void                                                    DestroyPipeline(VulkanPipeline& vulkanPipelineDLL);
     DLL_EXPORT void                                                    DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
     DLL_EXPORT void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
     DLL_EXPORT void                                                    DestroyBuffer(VkBuffer& buffer);
-
-    Vector<VkDescriptorImageInfo>                                      GetTexturePropertiesBuffer(const RenderPassGuid& renderPassGuid);
-    Vector<VkDescriptorImageInfo>                                      GetTexture3DPropertiesBuffer(const RenderPassGuid& renderPassGuid);
-    Vector<VkDescriptorImageInfo>                                      GetCubeMapTextureBuffer();
 };
 extern DLL_EXPORT RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

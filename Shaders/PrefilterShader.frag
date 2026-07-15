@@ -62,6 +62,7 @@ layout(location = 0) in vec3 WorldPos;
 layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform PrefilterSamplerProperties {
+    uint MipLevels;
     uint CubeMapResolution;
     float Roughness;
 } prefilterSamplerProperties;
@@ -122,6 +123,9 @@ void main()
 
     const uint SAMPLE_COUNT = 1024u;
     vec3 prefilteredColor = vec3(0.0f);
+
+    float lod = prefilterSamplerProperties.Roughness * float(prefilterSamplerProperties.MipLevels - 1);
+
     for(uint i = 0u; i < SAMPLE_COUNT; ++i)
     {
         vec2 Xi = Hammersley(i, SAMPLE_COUNT);
@@ -129,18 +133,10 @@ void main()
         vec3 L = normalize(2.0 * dot(V, H) * H - V);
 
         float NdotL = max(dot(N, L), 0.0f);
-        if(NdotL > 0.0f)
-        {
-            prefilteredColor += textureLod(CubeMap[sceneDataBuffer.CubeMapId], L, 0.0).rgb * NdotL;
-        }
+        if(NdotL > 0.0f) prefilteredColor += textureLod(CubeMap[sceneDataBuffer.CubeMapId], L, lod).rgb * NdotL;
     }
     prefilteredColor /= float(SAMPLE_COUNT);
 
-    // Perfect mirror for near-zero roughness
-    if (prefilterSamplerProperties.Roughness < 0.01f)
-    {
-        prefilteredColor = textureLod(CubeMap[sceneDataBuffer.CubeMapId], N, 0.0).rgb;
-    } 
-
+    if (prefilterSamplerProperties.Roughness < 0.01f) prefilteredColor = textureLod(CubeMap[sceneDataBuffer.CubeMapId], N, 0.0).rgb;
     outColor = vec4(prefilteredColor, 1.0f);
 }

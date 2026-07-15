@@ -17,31 +17,6 @@
 	 return renderSystem.FindRenderPass(renderPassGuid);
 }
 
- void RenderSystem_Destroy()
-{
-	 renderSystem.Destroy();
-}
-
- void RenderSystem_DestroyRenderPass(VulkanRenderPass& renderPass)
-{
-	 renderSystem.DestroyRenderPass(renderPass);
-}
-
- void RenderSystem_DestroyRenderPasses()
-{
-	 renderSystem.DestroyRenderPasses();
-}
-
- void RenderSystem_DestroyRenderPipelines()
-{
-	 renderSystem.DestroyRenderPipelines();
-}
-
- void RenderSystem_DestroyPipeline(VulkanPipeline& vulkanPipelineDLL)
-{
-	 renderSystem.DestroyPipeline(vulkanPipelineDLL);
-}
-
  void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
 {
 	 renderSystem.DestroyFrameBuffers(frameBufferList);
