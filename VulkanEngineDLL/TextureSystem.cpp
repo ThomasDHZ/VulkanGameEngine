@@ -1453,3 +1453,349 @@ void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
 	}
 	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer2);
 }
+
+
+#include "TextureSystem.h"
+#include "RenderSystem.h"
+#include "FileSystem.h"
+#include "BufferSystem.h"
+#include "JsonStruct.h"
+#include "from_json.h"
+#include <algorithm>
+#include <cmath>
+#include <stb/stb_image.h> 
+#include <stb/stb_image_write.h>
+#include "JsonStruct.h"
+#include <imgui/backends/imgui_impl_vulkan.h>
+#include "MemoryPoolSystem.h"
+#include "MeshSystem.h"
+#include <lodepng.h>
+
+TextureSystem& textureSystem = TextureSystem::Get();
+Texture TextureSystem::LoadTexture(const String& texturePath)
+{
+	return LoadTexture(fileSystem.LoadJsonFile(texturePath.c_str()).get<TextureLoader>());
+}
+
+Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
+{
+	if (TextureExists(textureLoader.TextureId))
+		return FindTexture(textureLoader.TextureId);
+
+	String path = textureLoader.TextureFilePath.front();
+	String ext = fileSystem.GetFileExtention(path.c_str());
+
+	TextureReturnFileData texData;
+	if (ext == "ktx" || ext == "ktx2") texData = LoadKtxTexture(textureLoader);
+	else if (ext == "png") texData = LoadPngTexture(textureLoader);
+	else texData = LoadGeneralTexture(textureLoader);
+	if (texData.TextureData.empty())
+	{
+		std::cerr << "[TextureSystem] Failed to load: " << path << std::endl;
+		return {};
+	}
+
+	VulkanTextureLoader vulkanLoader
+	{
+		.TextureData = texData.TextureData,
+		.TextureDimensions = texData.TextureDimensions,
+		.SamplerCreateInfo = textureLoader.SamplerCreateInfo,
+		.MipMapCount = texData.MipMapCount,
+		.ColorChannels = ColorChannelEnum::ChannelRGBA,
+		.TextureImageLayout = texData.TextureImageLayout,
+		.SampleCount = VK_SAMPLE_COUNT_1_BIT,
+		.TextureByteFormat = textureLoader.TextureByteFormat,
+		.TextureType = textureLoader.TextureType,
+		.IsRenderPassAttachment = false,
+		.IsCubeMap = texData.IsCubeMap
+	};
+
+	Texture texture
+	{
+		.textureGuid = textureLoader.TextureId,
+		.texture = VulkanTexture(vulkanLoader),
+		.textureType = textureLoader.TextureType,
+		.textureUsageType = textureLoader.TextureUsageType,
+		.imGuiDescriptorSet = nullptr
+	};
+
+	SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
+	switch (textureLoader.TextureUsageType)
+	{
+	case kUsageType_CubeMap:            sceneData.CubeMapId = texture.textureId.id; break;
+	case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.textureId.id; break;
+	case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.textureId.id; break;
+	case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.textureId.id; break;
+	default: break;
+	}
+
+	AddToMemoryPool(texture, vulkanLoader, texData);
+	return texture;
+}
+
+Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentTextureLoader& attachment)
+{
+	VkImageLayout textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	switch (attachment.TextureUsageType)
+	{
+	case kUsageType_DepthBufferTexture:     textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+	case kUsageType_GBufferTexture:         textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+	case kUsageType_IrradianceTexture:      textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+	case kUsageType_PrefilterTexture:       textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+	case kUsageType_OffscreenColorTexture:  textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+	case kUsageType_SwapChainTexture:       textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
+	case kUsageType_CubeMap:				textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+	case kUsageType_BRDFTexture:			textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+	}
+
+	VulkanTextureLoader vulkanTextureLoader =
+	{
+		.TextureData = Vector<byte>(),
+		.TextureDimensions = ivec3(vulkanRenderPass.RenderPassResolution.x, vulkanRenderPass.RenderPassResolution.y, 1),
+		.SamplerCreateInfo = attachment.SamplerCreateInfo,
+		.MipMapCount = attachment.MipMapCount,
+		.ColorChannels = ColorChannelEnum::ChannelRGBA,
+		.TextureImageLayout = textureImageLayout,
+		.SampleCount = vulkanRenderPass.SampleCount,
+		.TextureByteFormat = attachment.TextureByteFormat,
+		.TextureType = attachment.TextureType,
+		.IsRenderPassAttachment = true,
+	};
+
+	Texture texture = Texture
+	{
+		.textureGuid = attachment.RenderedTextureId,
+		.texture = VulkanTexture(vulkanTextureLoader),
+		.textureType = attachment.TextureType,
+		.textureUsageType = attachment.TextureUsageType,
+		.imGuiDescriptorSet = nullptr
+	};
+
+	TextureReturnFileData textureReturnFileData = TextureReturnFileData
+	{
+		.TextureByteFormat = attachment.TextureByteFormat,
+		.IsCubeMap = false
+	};
+	AddToMemoryPool(texture, vulkanTextureLoader, textureReturnFileData);
+	return texture;
+}
+
+TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& textureLoader)
+{
+	ktxTexture* ktex = nullptr;
+	const String& path = textureLoader.TextureFilePath.front();
+
+	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
+	if (result != KTX_SUCCESS || !ktex)
+	{
+		std::cerr << "Failed to load KTX: " << path << " - " << ktxErrorString(result) << std::endl;
+		return TextureReturnFileData();
+	}
+
+	ktxTexture2* ktex2 = reinterpret_cast<ktxTexture2*>(ktex);
+	if (ktxTexture2_NeedsTranscoding(ktex2))
+	{
+		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
+		Vector<Candidate> candidates;
+		if (textureLoader.UsingSRGBFormat)
+		{
+			candidates.push_back({ VK_FORMAT_BC7_SRGB_BLOCK,    KTX_TTF_BC7_RGBA });
+			candidates.push_back({ VK_FORMAT_ASTC_4x4_SRGB_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back({ VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK, KTX_TTF_ETC2_RGBA });
+		}
+		else
+		{
+			candidates.push_back({ VK_FORMAT_BC7_UNORM_BLOCK,    KTX_TTF_BC7_RGBA });
+			candidates.push_back({ VK_FORMAT_ASTC_4x4_UNORM_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back({ VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, KTX_TTF_ETC2_RGBA });
+		}
+
+		ktx_transcode_fmt_e targetFmt = KTX_TTF_RGBA32;
+		for (const auto& candidate : candidates)
+		{
+			VkFormatProperties props{};
+			vkGetPhysicalDeviceFormatProperties(vulkan.PhysicalDevice(), candidate.vkFmt, &props);
+			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
+			{
+				targetFmt = candidate.ktxFmt;
+				break;
+			}
+		}
+
+		result = ktxTexture2_TranscodeBasis(ktex2, targetFmt, 0);
+		if (result != KTX_SUCCESS)
+		{
+			std::cerr << "Transcode failed: " << ktxErrorString(result) << std::endl;
+			ktxTexture_Destroy(ktex);
+			return TextureReturnFileData();
+		}
+	}
+
+	VkFormat textureByteFormat = ktxTexture2_GetVkFormat(ktex2);
+	bool isCubemap = ktex2->isCubemap && ktex2->numLayers == 6;
+	bool isDepthFormat = (textureByteFormat >= VK_FORMAT_D16_UNORM && textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
+	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
+	size_t dataSize = ktxTexture_GetDataSize(ktex);
+	Vector<byte> ownedData(static_cast<const byte*>(ktxTexture_GetData(ktex)), static_cast<const byte*>(ktxTexture_GetData(ktex)) + dataSize);
+	TextureReturnFileData out
+	{
+		.TextureData = std::move(ownedData),
+		.MipMapCount = ktex2->numLevels,
+		.ArrayLayers = ktex2->numLayers,
+		.TextureDimensions = {ktex2->baseWidth, ktex2->baseHeight, ktex2->baseDepth},
+		.TextureByteFormat = textureByteFormat,
+		.TextureAspectFlags = aspectMask,
+		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		.IsCubeMap = isCubemap,
+		.IsDepthFormat = isDepthFormat,
+		.IsStencil = hasStencil
+	};
+
+	ktxTexture_Destroy(ktex);
+	return out;
+}
+
+TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& textureLoader)
+{
+	int width = 0;
+	int height = 0;
+	int channels = 0;
+	Vector<byte> textureData;
+	for (auto& textureLayerPath : textureLoader.TextureFilePath)
+	{
+		byte* data = nullptr;
+#ifdef PLATFORM_ANDROID
+		AAsset* asset = AAssetManager_open(g_AssetManager, filePath.c_str(), AASSET_MODE_BUFFER);
+		if (!asset) {
+			return {};
+		}
+
+		size_t size = AAsset_getLength(asset);
+		const void* buffer = AAsset_getBuffer(asset);
+		data = stbi_load_from_memory((const stbi_uc*)buffer, (int)size, &w, &h, &comp, 4);
+		AAsset_close(asset);
+
+		/* if (!data) {
+			 __android_log_print(ANDROID_LOG_ERROR, "FileSystem", "STB failed: %s", stbi_failure_reason());
+			 return {};
+		 }*/
+#else
+		data = stbi_load(textureLayerPath.c_str(), &width, &height, &channels, 4);
+#endif
+		Vector<byte> layerData(data, data + (width * height * 4));
+		stbi_image_free(data);
+
+		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
+	}
+
+	bool isDepthFormat = (textureLoader.TextureByteFormat >= VK_FORMAT_D16_UNORM && textureLoader.TextureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureLoader.TextureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (textureLoader.TextureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureLoader.TextureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
+	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
+	return TextureReturnFileData
+	{
+		.TextureData = textureData,
+		.MipMapCount = textureLoader.MipMapCount,
+		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
+		.TextureDimensions = ivec3(width, height, 0),
+		.TextureByteFormat = textureLoader.TextureByteFormat,
+		.TextureAspectFlags = aspectMask,
+		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		.IsCubeMap = static_cast<uint32>(textureLoader.TextureFilePath.size()) == 6,
+		.IsDepthFormat = isDepthFormat,
+		.IsStencil = hasStencil
+	};
+}
+
+TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& textureLoader)
+{
+	String path = textureLoader.TextureFilePath.front();
+	std::vector<unsigned char> pngData;
+	unsigned error = lodepng::load_file(pngData, path.c_str());
+
+	if (error)
+	{
+		std::cerr << "LodePNG load failed: " << lodepng_error_text(error) << std::endl;
+		return {};
+	}
+
+	LodePNGState state;
+	lodepng_state_init(&state);
+
+	unsigned width = 0, height = 0;
+	error = lodepng_inspect(&width, &height, &state, pngData.data(), pngData.size());
+	if (error)
+	{
+		std::cerr << "LodePNG inspect failed: " << lodepng_error_text(error) << std::endl;
+		lodepng_state_cleanup(&state);
+		return {};
+	}
+
+	state.info_raw.colortype = LCT_RGBA;
+	state.info_raw.bitdepth = 8;
+
+	unsigned char* rawImage = nullptr;
+	error = lodepng_decode(&rawImage, &width, &height, &state, pngData.data(), pngData.size());
+	lodepng_state_cleanup(&state);
+
+	if (error)
+	{
+		std::cerr << "LodePNG decode failed: " << lodepng_error_text(error) << std::endl;
+		if (rawImage) free(rawImage);
+		return {};
+	}
+
+	size_t totalBytes = static_cast<size_t>(width) * height * 4;
+	Vector<byte> textureData(rawImage, rawImage + totalBytes);
+	free(rawImage);
+
+	return TextureReturnFileData
+	{
+		.TextureData = textureData,
+		.MipMapCount = textureLoader.MipMapCount,
+		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
+		.TextureDimensions = ivec3(width, height, 1),
+		.TextureByteFormat = textureLoader.TextureByteFormat,
+		.TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
+		.TextureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		.IsCubeMap = false
+	};
+}
+
+void TextureSystem::AddToMemoryPool(Texture& texture, VulkanTextureLoader& textureLoader, TextureReturnFileData& textureReturnData)
+{
+	if (textureReturnData.IsCubeMap)
+	{
+		texture.textureId.id = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId.id);
+		textureMetaDataHeader.Width = textureLoader.TextureDimensions.x;
+		textureMetaDataHeader.Height = textureLoader.TextureDimensions.y;
+		textureMetaDataHeader.Depth = textureLoader.TextureDimensions.z;
+		textureMetaDataHeader.MipLevels = textureLoader.MipMapCount;
+		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
+		textureMetaDataHeader.Format = (uint32)textureReturnData.TextureImageLayout;
+		textureMetaDataHeader.Type = 1;
+
+		CubeMapTextureList.emplace_back(texture);
+		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+	}
+	else
+	{
+		texture.textureId.id = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId.id);
+		textureMetaDataHeader.Width = textureLoader.TextureDimensions.x;
+		textureMetaDataHeader.Height = textureLoader.TextureDimensions.y;
+		textureMetaDataHeader.Depth = textureLoader.TextureDimensions.z;
+		textureMetaDataHeader.MipLevels = textureLoader.MipMapCount;
+		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
+		textureMetaDataHeader.Format = (uint32)textureReturnData.TextureImageLayout;
+		textureMetaDataHeader.Type = 0;
+		TextureList.emplace_back(texture);
+		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+	}
+}
