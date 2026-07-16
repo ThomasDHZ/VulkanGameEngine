@@ -12,6 +12,7 @@
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include "MemoryPoolSystem.h"
 #include "MeshSystem.h"
+#include <lodepng.h>
 
 TextureSystem& textureSystem = TextureSystem::Get();
 Texture TextureSystem::LoadTexture(const String& texturePath)
@@ -21,8 +22,7 @@ Texture TextureSystem::LoadTexture(const String& texturePath)
 
 Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 {
-	if (TextureExists(textureLoader.TextureId))
-		return FindTexture(textureLoader.TextureId);
+	if (TextureExists(textureLoader.TextureId)) return FindTexture(textureLoader.TextureId);
 
 	String path = textureLoader.TextureFilePath.front();
 	String ext = fileSystem.GetFileExtention(path.c_str());
@@ -46,7 +46,7 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 		.ColorChannels = ColorChannelEnum::ChannelRGBA,
 		.TextureImageLayout = texData.TextureImageLayout,
 		.SampleCount = VK_SAMPLE_COUNT_1_BIT,
-		.TextureByteFormat = textureLoader.TextureByteFormat,
+		.TextureByteFormat = texData.TextureByteFormat,
 		.TextureType = textureLoader.TextureType,
 		.IsRenderPassAttachment = false,
 		.IsCubeMap = texData.IsCubeMap
@@ -71,11 +71,11 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 	default: break;
 	}
 
-	AddToMemoryPool(texture, vulkanLoader, texData);
+	AddToMemoryPool(texture);
 	return texture;
 }
 
-Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentTextureLoader& attachment)
+Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachment)
 {
 	VkImageLayout textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	switch (attachment.TextureUsageType)
@@ -118,7 +118,7 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 		.TextureByteFormat = attachment.TextureByteFormat,
 		.IsCubeMap = false
 	};
-	AddToMemoryPool(texture, vulkanTextureLoader, textureReturnFileData);
+	AddToMemoryPool(texture);
 	return texture;
 }
 
@@ -181,14 +181,27 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
 	size_t dataSize = ktxTexture_GetDataSize(ktex);
-	Vector<byte> ownedData(static_cast<const byte*>(ktxTexture_GetData(ktex)), static_cast<const byte*>(ktxTexture_GetData(ktex)) + dataSize);
+	if (dataSize == 0)
+	{
+		std::cerr << "KTX data size is zero!" << std::endl;
+		ktxTexture_Destroy(ktex);
+		return TextureReturnFileData();
+	}
+	std::cout << "[KTX] Loaded " << path
+		<< " | Size: " << dataSize
+		<< " | Dims: " << ktex2->baseWidth << "x" << ktex2->baseHeight
+		<< " | Format: " << ktxTexture2_GetVkFormat(ktex2) << std::endl;
+
+	Vector<byte> ownedData(dataSize);
+	memcpy(ownedData.data(), ktxTexture_GetData(ktex), dataSize);
+
 	TextureReturnFileData out
 	{
 		.TextureData = std::move(ownedData),
 		.MipMapCount = ktex2->numLevels,
 		.ArrayLayers = ktex2->numLayers,
 		.TextureDimensions = {ktex2->baseWidth, ktex2->baseHeight, ktex2->baseDepth},
-		.TextureByteFormat = textureByteFormat,
+		.TextureByteFormat = ktxTexture2_GetVkFormat(ktex2),
 		.TextureAspectFlags = aspectMask,
 		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = isCubemap,
@@ -308,18 +321,18 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 	};
 }
 
-void TextureSystem::AddToMemoryPool(Texture& texture, VulkanTextureLoader& textureLoader, TextureReturnFileData& textureReturnData)
+void TextureSystem::AddToMemoryPool(Texture& texture)
 {
-	if (textureReturnData.IsCubeMap)
+	if (texture.texture.IsCubeMap())
 	{
 		texture.textureId.id = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId.id);
-		textureMetaDataHeader.Width = textureLoader.TextureDimensions.x;
-		textureMetaDataHeader.Height = textureLoader.TextureDimensions.y;
-		textureMetaDataHeader.Depth = textureLoader.TextureDimensions.z;
-		textureMetaDataHeader.MipLevels = textureLoader.MipMapCount;
+		textureMetaDataHeader.Width = texture.texture.TextureSize().x;
+		textureMetaDataHeader.Height = texture.texture.TextureSize().y;
+		textureMetaDataHeader.Depth = texture.texture.TextureSize().z;
+		textureMetaDataHeader.MipLevels = texture.texture.MipMapLevels();
 		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
-		textureMetaDataHeader.Format = (uint32)textureReturnData.TextureImageLayout;
+		textureMetaDataHeader.Format = (uint32)texture.texture.TextureImageLayout();
 		textureMetaDataHeader.Type = 1;
 
 		CubeMapTextureList.emplace_back(texture);
@@ -330,12 +343,12 @@ void TextureSystem::AddToMemoryPool(Texture& texture, VulkanTextureLoader& textu
 		texture.textureId.id = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
 		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
 		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId.id);
-		textureMetaDataHeader.Width = textureLoader.TextureDimensions.x;
-		textureMetaDataHeader.Height = textureLoader.TextureDimensions.y;
-		textureMetaDataHeader.Depth = textureLoader.TextureDimensions.z;
-		textureMetaDataHeader.MipLevels = textureLoader.MipMapCount;
+		textureMetaDataHeader.Width = texture.texture.TextureSize().x;
+		textureMetaDataHeader.Height = texture.texture.TextureSize().y;
+		textureMetaDataHeader.Depth = texture.texture.TextureSize().z;
+		textureMetaDataHeader.MipLevels = texture.texture.MipMapLevels();
 		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
-		textureMetaDataHeader.Format = (uint32)textureReturnData.TextureImageLayout;
+		textureMetaDataHeader.Format = (uint32)texture.texture.TextureImageLayout();
 		textureMetaDataHeader.Type = 0;
 		TextureList.emplace_back(texture);
 		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);

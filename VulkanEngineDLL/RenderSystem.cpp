@@ -48,14 +48,9 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     for (auto& renderPass : renderPassLoader.SubPassList)
     {
         Vector<VulkanSubPass> subPassList;
-        for (auto& subPass : renderPass)
-        {
-            //BuildPipelines(vulkanRenderPass, subPass, renderPassLoader.UseGlobalBindlessSet);
-            subPassList.emplace_back(BuildSubpasses(renderPassLoader.RenderPassId, subPass));
-        }
+        for (auto& subPass : renderPass) subPassList.emplace_back(BuildSubpasses(renderPassLoader.RenderPassId, subPass));
         vulkanRenderPass.SubPassList.emplace_back(subPassList);
     }
-    //   BuildFrameBuffer(vulkanRenderPass);
 
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
     for (auto& vulkanPipeline : vulkanRenderPass.PipelineList)
@@ -72,81 +67,30 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     }
 
     Texture depthTexture;
+    VulkanTexture vulkanTexture = VulkanTexture();
     Vector<Texture> renderedTextureList;
     Vector<Texture> frameBufferTextureList;
     for (int x = 0; x < vulkanRenderPass.AttachmentList.size(); x++)
     {
         VulkanTexture attachment = vulkanRenderPass.AttachmentList[x];
+        ivec2 renderPassSize = ivec2(attachment.TextureSize().x, attachment.TextureSize().y);
         Texture texture = Texture
         {
            .textureGuid = renderPassLoader.AttachmentList[x].RenderedTextureId,
-           .textureId = SIZE_MAX,
-           .width = attachment.m_textureSize.x,
-           .height = attachment.m_textureSize.y,
-           .depth = attachment.m_textureSize.z,
-           .mipMapLevels = attachment.m_mipMapLevels,
-           .textureImage = attachment.m_textureImage,
-           .textureViewList = attachment.m_textureViewList,
-           .textureSampler = attachment.m_textureSampler,
-           .ImGuiDescriptorSet = VK_NULL_HANDLE,
-           .TextureAllocation = attachment.m_vmaTextureAllocation,
+           .textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer),
+           .texture = attachment,
            .textureType = attachment.m_textureType,
-           .textureByteFormat = attachment.m_textureByteFormat,
-           .textureImageLayout = attachment.m_textureImageLayout,
-           .sampleCount = attachment.m_sampleCount,
-           .colorChannels = attachment.m_colorChannels
+           .textureUsageType = TextureUsageTypeEnum::kUsageType_Undefined,
+           .imGuiDescriptorSet = VK_NULL_HANDLE
         };
         renderedTextureList.emplace_back(texture);
         frameBufferTextureList.emplace_back(texture);
-
-        if (vulkanRenderPass.IsCubeMapRenderPass)
-        {
-            texture.textureId = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
-
-            SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-            switch (renderPassLoader.AttachmentList[x].TextureUsageType)
-            {
-            case kUsageType_CubeMap:		   sceneDataBuffer.CubeMapId = texture.textureId; break;
-            case kUsageType_IrradianceTexture: sceneDataBuffer.IrradianceMapId = texture.textureId; break;
-            case kUsageType_PrefilterTexture:  sceneDataBuffer.PrefilterMapId = texture.textureId; break;
-            }
-
-            TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
-            textureMetaDataHeader.Width = texture.width;
-            textureMetaDataHeader.Height = texture.height;
-            textureMetaDataHeader.MipLevels = texture.mipMapLevels;
-            textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
-            textureMetaDataHeader.Format = (uint32_t)texture.textureByteFormat;
-            textureMetaDataHeader.Type = 1;
-
-            textureSystem.CubeMapTextureList.emplace_back(texture);
-            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
-        }
-        else
-        {
-            texture.textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
-            SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-            if (renderPassLoader.AttachmentList[x].TextureUsageType == kUsageType_BRDFTexture)
-            {
-                sceneDataBuffer.BRDFMapId = texture.textureId;
-            }
-
-            TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId);
-            textureMetaDataHeader.Width = texture.width;
-            textureMetaDataHeader.Height = texture.height;
-            textureMetaDataHeader.MipLevels = texture.mipMapLevels;
-            textureMetaDataHeader.LayerCount = (vulkanRenderPass.IsCubeMapRenderPass) ? 6u : 1u;
-            textureMetaDataHeader.Format = (uint32)texture.textureByteFormat;
-            textureMetaDataHeader.Type = 0;
-            textureSystem.TextureList.emplace_back(texture);
-            memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
-        }
-
+        textureSystem.AddToMemoryPool(texture);
         if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
-    if (depthTexture.textureImage != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
+    if (depthTexture.texture.TextureImage() != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
     return renderPassLoader.RenderPassId;
 }
 
@@ -184,7 +128,7 @@ void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureLi
     Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
     for (auto& renderedTexture : renderedTextureList)
     {
-        textureSystem.DestroyTexture(renderedTexture);
+       // textureSystem.DestroyTexture(renderedTexture);
     }
     std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
     renderedTextureCount = 0;
@@ -229,14 +173,14 @@ const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGui
 uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
     Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
-    if (!texture || texture->textureImage == VK_NULL_HANDLE)
+    if (!texture || texture->texture.TextureImage() == VK_NULL_HANDLE)
     {
         std::cout << "[SamplePixel] Texture not found" << std::endl;
         return UINT32_MAX;
     }
 
-    int x = std::clamp(mousePosition.x, 0, texture->width - 1);
-    int y = std::clamp(mousePosition.y, 0, texture->height - 1);
+    int x = std::clamp(mousePosition.x, 0, texture->texture.TextureSize().x - 1);
+    int y = std::clamp(mousePosition.y, 0, texture->texture.TextureSize().y - 1);
 
     VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
@@ -244,11 +188,11 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-        .oldLayout = texture->textureImageLayout,
+        .oldLayout = texture->texture.TextureImageLayout(),
         .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = texture->textureImage,
+        .image = texture->texture.TextureImage(),
         .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
     };
 
@@ -258,7 +202,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     // Create staging buffer (R32_UINT = 4 bytes per pixel)
-    VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->width) * texture->height * 4;
+    VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->texture.TextureSize().x) * texture->texture.TextureSize().y * 4;
 
     VkBufferCreateInfo bufferInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -288,16 +232,16 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .bufferImageHeight = 0,
         .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 },
         .imageOffset = { 0, 0, 0 },
-        .imageExtent = { static_cast<uint32>(texture->width), static_cast<uint32>(texture->height), 1 }
+        .imageExtent = { static_cast<uint32>(texture->texture.TextureSize().x), static_cast<uint32>(texture->texture.TextureSize().y), 1 }
     };
 
-    vkCmdCopyImageToBuffer(cmd, texture->textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+    vkCmdCopyImageToBuffer(cmd, texture->texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
     vulkan.CommandBuffer().EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkan.LogicalDevice());
 
     const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
-    uint32 pickedId = pData[y * texture->width + x];
+    uint32 pickedId = pData[y * texture->texture.TextureSize().x + x];
 
     vmaDestroyBuffer(bufferSystem.VmaAllocatorHandle(), stagingBuffer, stagingAlloc);
 

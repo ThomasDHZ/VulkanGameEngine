@@ -35,6 +35,20 @@ struct Texture
     VkDescriptorSet       imGuiDescriptorSet = VK_NULL_HANDLE;
 };
 
+struct TextureReturnFileData
+{
+    Vector<byte>       TextureData;
+    uint32             MipMapCount = 1;
+    uint32             ArrayLayers = 1;
+    ivec3              TextureDimensions = { 0, 0, 0 };
+    VkFormat           TextureByteFormat = VK_FORMAT_UNDEFINED;
+    VkImageAspectFlags TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+    VkImageLayout      TextureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    bool               IsCubeMap = false;
+    bool               IsDepthFormat = false;
+    bool               IsStencil = false;
+};
+
 struct VulkanRenderPass;
 struct RenderAttachmentLoader;
 class TextureSystem
@@ -50,7 +64,6 @@ private:
     TextureSystem(TextureSystem&&) = delete;
     TextureSystem& operator=(TextureSystem&&) = delete;
 
-    void AddToMemoryPool(Texture& texture, VulkanTextureLoader& textureLoader, TextureReturnFileData& textureReturnData);
 
     TextureReturnFileData LoadGeneralTexture(const TextureLoader& textureLoader);
     TextureReturnFileData LoadPngTexture(const TextureLoader& textureLoader);
@@ -64,9 +77,10 @@ public:
     Vector<Texture>                                                Texture3DList;
     Vector<Texture>                                                CubeMapTextureList;
 
+    void AddToMemoryPool(Texture& texture);
     DLL_EXPORT Texture                  LoadTexture(const String& texturePath);
     DLL_EXPORT Texture                  LoadTexture(const TextureLoader& textureLoader);
-    DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentTextureLoader& attachmentList);
+    DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachmentList);
     DLL_EXPORT void                     GenerateTexture(VkGuid& renderPassId);
     DLL_EXPORT void                     GenerateCubeMapTexture(VkGuid& renderPassId);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);

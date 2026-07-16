@@ -598,9 +598,9 @@ void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding
 {
     VkDescriptorImageInfo textureUpdate = VkDescriptorImageInfo
     {
-        .sampler = texture.textureSampler,
-        .imageView = texture.textureViewList.front(),
-        .imageLayout = texture.colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        .sampler = texture.texture.TextureSampler(),
+        .imageView = texture.texture.TextureViews().front(),
+        .imageLayout = texture.texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     };
 
     VkWriteDescriptorSet descriptorUpdate = VkWriteDescriptorSet
@@ -608,7 +608,7 @@ void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
         .dstBinding = binding,
-        .dstArrayElement = static_cast<uint32>(texture.textureId),
+        .dstArrayElement = static_cast<uint32>(texture.textureId.id),
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .pImageInfo = &textureUpdate,
@@ -677,9 +677,9 @@ const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDesc
     {
         descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
             {
-                .sampler = texture.textureSampler,
-                .imageView = texture.textureViewList.front(),
-                .imageLayout = texture.textureImageLayout
+                .sampler = texture.texture.TextureSampler(),
+                .imageView = texture.texture.TextureViews().front(),
+                .imageLayout = texture.texture.TextureImageLayout()
             });
     }
     return descriptorSetInfoList;

@@ -419,7 +419,6 @@ namespace nlohmann
         }
 
         j.at("TextureId").get_to(model.TextureId);
-        j.at("ImageType").get_to(model.ImageType);
         j.at("TextureByteFormat").get_to(model.TextureByteFormat);
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);

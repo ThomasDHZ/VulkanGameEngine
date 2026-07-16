@@ -1,16 +1,16 @@
 #include "TextureSystemDLL.h"
 
-bool TextureSystem_CreateTexture(const char* texturePath)
-{
-	Texture texture = textureSystem.CreateTexture(texturePath);
-	return texture.textureImage ? true : false;
-}
-
-bool TextureSystem_LoadKTXTexture(const char* texturePath)
-{
-	Texture texture = textureSystem.LoadKTXTexture(texturePath);
-	return texture.textureImage ? true : false;
-}
+//bool TextureSystem_CreateTexture(const char* texturePath)
+//{
+//	Texture texture = textureSystem.CreateTexture(texturePath);
+//	return texture.textureImage ? true : false;
+//}
+//
+//bool TextureSystem_LoadKTXTexture(const char* texturePath)
+//{
+//	Texture texture = textureSystem.LoadKTXTexture(texturePath);
+//	return texture.textureImage ? true : false;
+//}
 
 bool TextureSystem_GenerateTexture(VkGuid renderPassId)
 {
@@ -29,17 +29,17 @@ bool TextureSystem_GenerateCubeMapTexture(VkGuid renderPassId)
 //	Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, attachmentId);
 //	return texture.textureImage ? true : false;
 //}
-
- void TextureSystem_DestroyTexture(VkGuid textureGuid)
-{
-	 Texture texture = textureSystem.FindTexture(textureGuid);
-	 textureSystem.DestroyTexture(texture);
-}
-
- void TextureSystem_DestroyAllTextures()
-{
-	 textureSystem.DestroyAllTextures();
-}
+//
+// void TextureSystem_DestroyTexture(VkGuid textureGuid)
+//{
+//	 Texture texture = textureSystem.FindTexture(textureGuid);
+//	 textureSystem.DestroyTexture(texture);
+//}
+//
+// void TextureSystem_DestroyAllTextures()
+//{
+//	 textureSystem.DestroyAllTextures();
+//}
 
  const bool TextureSystem_TextureExists(VkGuid textureGuid)
  {

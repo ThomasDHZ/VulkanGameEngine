@@ -25,22 +25,22 @@ VkGuid MaterialSystem::LoadMaterial(const nlohmann::json& json)
 
     Material material;
     material.MaterialGuid = materialGuid;
-    material.AlbedoDataId = json.contains("AlbedoData") ? textureSystem.LoadKTXTexture(json["AlbedoData"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.NormalDataId = json.contains("NormalData") ? textureSystem.LoadKTXTexture(json["NormalData"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.PackedMRODataId = json.contains("PackedMROData") ? textureSystem.LoadKTXTexture(json["PackedMROData"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.PackedSheenSSSDataId = json.contains("PackedSheenSSSData") ? textureSystem.LoadKTXTexture(json["PackedSheenSSSData"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.UnusedDataId = json.contains("UnusedData") ? textureSystem.LoadKTXTexture(json["UnusedData"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.EmissionDataId = json.contains("EmissionData") ? textureSystem.LoadKTXTexture(json["EmissionData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.AlbedoDataId =         json.contains("AlbedoData") ? textureSystem.LoadTexture(json["AlbedoData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.NormalDataId =         json.contains("NormalData") ? textureSystem.LoadTexture(json["NormalData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.PackedMRODataId =      json.contains("PackedMROData") ? textureSystem.LoadTexture(json["PackedMROData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.PackedSheenSSSDataId = json.contains("PackedSheenSSSData") ? textureSystem.LoadTexture(json["PackedSheenSSSData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.UnusedDataId =         json.contains("UnusedData") ? textureSystem.LoadTexture(json["UnusedData"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.EmissionDataId =       json.contains("EmissionData") ? textureSystem.LoadTexture(json["EmissionData"].get<TextureLoader>()).textureGuid : VkGuid();
     MaterialList.emplace_back(material);
 
     uint32 poolIndex = memoryPoolSystem.AllocateObject(kMaterialBuffer);
     GPUMaterial& gpuMaterial = memoryPoolSystem.UpdateMaterial(poolIndex);
-    gpuMaterial.AlbedoDataId = material.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(material.AlbedoDataId).textureId : UINT32_MAX;
-    gpuMaterial.NormalDataId = material.NormalDataId != VkGuid() ? textureSystem.FindTexture(material.NormalDataId).textureId : UINT32_MAX;
-    gpuMaterial.PackedMRODataId = material.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(material.PackedMRODataId).textureId : UINT32_MAX;
-    gpuMaterial.PackedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(material.PackedSheenSSSDataId).textureId : UINT32_MAX;
-    gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureId : UINT32_MAX;
-    gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureId : UINT32_MAX;
+    gpuMaterial.AlbedoDataId = material.AlbedoDataId != VkGuid() ? textureSystem.FindTexture(material.AlbedoDataId).textureId.id : UINT32_MAX;
+    gpuMaterial.NormalDataId = material.NormalDataId != VkGuid() ? textureSystem.FindTexture(material.NormalDataId).textureId.id : UINT32_MAX;
+    gpuMaterial.PackedMRODataId = material.PackedMRODataId != VkGuid() ? textureSystem.FindTexture(material.PackedMRODataId).textureId.id : UINT32_MAX;
+    gpuMaterial.PackedSheenSSSDataId = material.PackedSheenSSSDataId != VkGuid() ? textureSystem.FindTexture(material.PackedSheenSSSDataId).textureId.id : UINT32_MAX;
+    gpuMaterial.UnusedDataId = material.UnusedDataId != VkGuid() ? textureSystem.FindTexture(material.UnusedDataId).textureId.id : UINT32_MAX;
+    gpuMaterial.EmissionDataId = material.EmissionDataId != VkGuid() ? textureSystem.FindTexture(material.EmissionDataId).textureId.id : UINT32_MAX;
     GuidToPoolIndex[materialGuid] = poolIndex;
     return materialGuid;
 }
