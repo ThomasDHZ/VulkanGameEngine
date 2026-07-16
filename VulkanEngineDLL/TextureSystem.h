@@ -40,6 +40,7 @@ struct TextureReturnFileData
     Vector<byte>       TextureData;
     uint32             MipMapCount = 1;
     uint32             ArrayLayers = 1;
+    uint32             BytesPerChannel = 0;
     ivec3              TextureDimensions = { 0, 0, 0 };
     VkFormat           TextureByteFormat = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;

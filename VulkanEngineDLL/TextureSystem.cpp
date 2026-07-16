@@ -126,7 +126,7 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 {
 	ktxTexture* ktex = nullptr;
 	const String& path = textureLoader.TextureFilePath.front();
-
+	
 	KTX_error_code result = ktxTexture_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktex);
 	if (result != KTX_SUCCESS || !ktex)
 	{
@@ -179,7 +179,7 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 	bool hasStencil = (textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
 	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-
+	
 	size_t dataSize = ktxTexture_GetDataSize(ktex);
 	if (dataSize == 0)
 	{
@@ -194,12 +194,17 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 
 	Vector<byte> ownedData(dataSize);
 	memcpy(ownedData.data(), ktxTexture_GetData(ktex), dataSize);
+	
+	uint32 numComponents = 0;
+	uint32 componentByteLength = 0;
+	ktxTexture2_GetComponentInfo(ktex2, &numComponents, &componentByteLength);
 
 	TextureReturnFileData out
 	{
 		.TextureData = std::move(ownedData),
 		.MipMapCount = ktex2->numLevels,
 		.ArrayLayers = ktex2->numLayers,
+		.BytesPerChannel = componentByteLength,
 		.TextureDimensions = {ktex2->baseWidth, ktex2->baseHeight, ktex2->baseDepth},
 		.TextureByteFormat = ktxTexture2_GetVkFormat(ktex2),
 		.TextureAspectFlags = aspectMask,
@@ -218,6 +223,7 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 	int width = 0;
 	int height = 0;
 	int channels = 0;
+	uint forceChannel = 4;
 	Vector<byte> textureData;
 	for (auto& textureLayerPath : textureLoader.TextureFilePath)
 	{
@@ -230,7 +236,7 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 
 		size_t size = AAsset_getLength(asset);
 		const void* buffer = AAsset_getBuffer(asset);
-		data = stbi_load_from_memory((const stbi_uc*)buffer, (int)size, &w, &h, &comp, 4);
+		data = stbi_load_from_memory((const stbi_uc*)buffer, (int)size, &w, &h, &comp, forceChannel);
 		AAsset_close(asset);
 
 		/* if (!data) {
@@ -238,9 +244,9 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 			 return {};
 		 }*/
 #else
-		data = stbi_load(textureLayerPath.c_str(), &width, &height, &channels, 4);
+		data = stbi_load(textureLayerPath.c_str(), &width, &height, &channels, forceChannel);
 #endif
-		Vector<byte> layerData(data, data + (width * height * 4));
+		Vector<byte> layerData(data, data + (width * height * forceChannel));
 		stbi_image_free(data);
 
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
@@ -256,6 +262,7 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 		.TextureData = textureData,
 		.MipMapCount = textureLoader.MipMapCount,
 		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
+		.BytesPerChannel = 1,
 		.TextureDimensions = ivec3(width, height, 0),
 		.TextureByteFormat = textureLoader.TextureByteFormat,
 		.TextureAspectFlags = aspectMask,
@@ -304,7 +311,8 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 		return {};
 	}
 
-	size_t totalBytes = static_cast<size_t>(width) * height * 4;
+	uint32 forceChannel = 4;
+	size_t totalBytes = static_cast<size_t>(width) * height * forceChannel;
 	Vector<byte> textureData(rawImage, rawImage + totalBytes);
 	free(rawImage);
 
@@ -313,6 +321,7 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 		.TextureData = textureData,
 		.MipMapCount = textureLoader.MipMapCount,
 		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
+		.BytesPerChannel = 1,
 		.TextureDimensions = ivec3(width, height, 1),
 		.TextureByteFormat = textureLoader.TextureByteFormat,
 		.TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,

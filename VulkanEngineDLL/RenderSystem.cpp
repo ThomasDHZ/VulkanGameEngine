@@ -77,7 +77,6 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
         Texture texture = Texture
         {
            .textureGuid = renderPassLoader.AttachmentList[x].RenderedTextureId,
-           .textureId = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer),
            .texture = attachment,
            .textureType = attachment.m_textureType,
            .textureUsageType = TextureUsageTypeEnum::kUsageType_Undefined,
