@@ -43,7 +43,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     Vector<Texture> textures = textureSystem.RenderedTextureListMap[brdfRenderPassId];
 
     environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
-    textureSystem.GenerateCubeMapTexture(environmentToCubeMapRenderPassId);
+    textureSystem.GenerateTexture(environmentToCubeMapRenderPassId);
 
     irradianceMapRenderPassId =          renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId =           renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
@@ -80,9 +80,8 @@ void LevelSystem::Update(const float& deltaTime)
     cameraSystem.Update();
 }
 
-void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
+Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
-    renderSystem.RenderPassNodeList.clear();
     Vector<VkGuid> renderPassesToDraw
     {
         irradianceMapRenderPassId,
@@ -93,11 +92,10 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
         selectedObjectPickerRenderPassId
     };
 
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    Vector<RenderPassNode> renderPassNodeList;
     for (auto& renderPassGuid : renderPassesToDraw)
     {
         const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassGuid);
-        sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
 
         uint32 maxMipLevelCount = 1;
         Vector<Vector<VulkanDrawMessage>> vulkanDrawMessageList;
@@ -114,24 +112,25 @@ void LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
 
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
-                            .RenderPassGuid = renderPassGuid,
-                            .PipelineGuid = subPass.PipelineGuid,
-                            .PushConstant = subPass.ShaderPushConstant,
-                            .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_SpriteMesh ? meshSystem.DrawMesh(subPass.MeshType) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
-                            .RenderPassInputs = subPass.InputTextureList,
-                            .RenderPassOutputs = subPass.OutputTextureList,
-                            .OffScreenRenderPass = subPass.OffScreenFrameBuffer
+                        .RenderPassGuid = renderPassGuid,
+                        .PipelineGuid = subPass.PipelineGuid,
+                        .PushConstant = subPass.ShaderPushConstant,
+                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_SpriteMesh ? meshSystem.DrawMesh(subPass.MeshType) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
+                        .RenderPassInputs = subPass.InputTextureList,
+                        .RenderPassOutputs = subPass.OutputTextureList,
+                        .OffScreenRenderPass = subPass.OffScreenFrameBuffer
                     });
             }
             vulkanDrawMessageList.emplace_back(vulkanSubPassMessageList);
         }
-        renderSystem.AddRenderNode(RenderPassNode
+        renderPassNodeList.emplace_back(RenderPassNode
             {
                .RenderPassGuid = renderPassGuid,
-               .MipCount = maxMipLevelCount,
-               .SubPassDrawMessage = vulkanDrawMessageList
+               .SubPassDrawMessage = vulkanDrawMessageList,
+               .MipCount = maxMipLevelCount
             });
     }
+    return renderPassNodeList;
 }
 
 LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex)

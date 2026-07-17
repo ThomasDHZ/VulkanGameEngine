@@ -83,7 +83,6 @@ public:
     DLL_EXPORT Texture                  LoadTexture(const TextureLoader& textureLoader);
     DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachmentList);
     DLL_EXPORT void                     GenerateTexture(VkGuid& renderPassId);
-    DLL_EXPORT void                     GenerateCubeMapTexture(VkGuid& renderPassId);
     DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
     DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
 

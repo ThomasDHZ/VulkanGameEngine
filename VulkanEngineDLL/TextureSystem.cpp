@@ -13,6 +13,7 @@
 #include "MemoryPoolSystem.h"
 #include "MeshSystem.h"
 #include <lodepng.h>
+#include "RenderSystem.h"
 
 TextureSystem& textureSystem = TextureSystem::Get();
 Texture TextureSystem::LoadTexture(const String& texturePath)
@@ -174,7 +175,6 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 	}
 
 	VkFormat textureByteFormat = ktxTexture2_GetVkFormat(ktex2);
-	bool isCubemap = ktex2->isCubemap && ktex2->numLayers == 6;
 	bool isDepthFormat = (textureByteFormat >= VK_FORMAT_D16_UNORM && textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
 	bool hasStencil = (textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
 	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -187,10 +187,6 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 		ktxTexture_Destroy(ktex);
 		return TextureReturnFileData();
 	}
-	std::cout << "[KTX] Loaded " << path
-		<< " | Size: " << dataSize
-		<< " | Dims: " << ktex2->baseWidth << "x" << ktex2->baseHeight
-		<< " | Format: " << ktxTexture2_GetVkFormat(ktex2) << std::endl;
 
 	Vector<byte> ownedData(dataSize);
 	memcpy(ownedData.data(), ktxTexture_GetData(ktex), dataSize);
@@ -209,7 +205,7 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 		.TextureByteFormat = ktxTexture2_GetVkFormat(ktex2),
 		.TextureAspectFlags = aspectMask,
 		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		.IsCubeMap = isCubemap,
+		.IsCubeMap = ktex2->isCubemap && ktex2->numLayers == 6,
 		.IsDepthFormat = isDepthFormat,
 		.IsStencil = hasStencil
 	};
@@ -465,251 +461,43 @@ const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& render
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	VulkanPipeline pipeline = renderSystem.FindRenderPipeline(renderPass.SubPassList[0][0].PipelineGuid);
-	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
-
-	if (renderPassTexture.empty())
+	const VulkanSubPass subPass = renderPass.SubPassList.front().front();
+	if (renderPass.SubPassList.empty() || renderPass.SubPassList.front().empty())
 	{
-		std::cerr << "[GenerateTexture] No render texture found for pass " << renderPassId.ToString() << std::endl;
+		std::cerr << "[TextureSystem] GenerateTexture: No subpasses defined for render pass!\n";
 		return;
 	}
 
-	VkImage targetImage = renderPassTexture[0].texture.TextureImage();
-
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	VkFence fence = VK_NULL_HANDLE;
-
-	auto cleanup = [&]() {
-		if (commandBuffer != VK_NULL_HANDLE) {
-			vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
-			commandBuffer = VK_NULL_HANDLE;
-		}
-		if (fence != VK_NULL_HANDLE) {
-			vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
-			fence = VK_NULL_HANDLE;
-		}
-		};
-
-	VkCommandBufferAllocateInfo allocInfo
+	uint32 maxMipLevelCount = 1;
+	Vector<Texture> textureList = textureSystem.FindRenderedTextureList(renderPassId);
+	for (auto& inputTexture : textureList)
 	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = vulkan.CommandPool(),
-		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = 1
-	};
-
-	if (vkAllocateCommandBuffers(vulkan.LogicalDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
-		std::cerr << "[GenerateTexture] Failed to allocate command buffer" << std::endl;
-		cleanup();
-		return;
+		if (maxMipLevelCount < inputTexture.texture.MipMapLevels()) maxMipLevelCount = inputTexture.texture.MipMapLevels() - 1;
 	}
 
-	VkCommandBufferBeginInfo beginInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-	};
-
-
-	VkViewport viewport
-	{
-		.x = 0.0f,
-		.y = 0.0f,
-		.width = static_cast<float>(renderPass.RenderPassResolution.x),
-		.height = static_cast<float>(renderPass.RenderPassResolution.y),
-		.minDepth = 0.0f,
-		.maxDepth = 1.0f
-	};
-
-	VkRect2D scissor
-	{
-		.offset = {0, 0},
-		.extent =
+	Vector<VulkanDrawMessage> subPassDrawList;
+	subPassDrawList.emplace_back(VulkanDrawMessage
 		{
-			static_cast<uint32>(renderPass.RenderPassResolution.x),
-			static_cast<uint32>(renderPass.RenderPassResolution.y)
-		}
-	};
+			.RenderPassGuid = renderPass.RenderPassId,
+			.PipelineGuid = subPass.PipelineGuid,
+			.PushConstant = subPass.ShaderPushConstant,
+			.DrawMeshList = subPass.MeshType == MeshTypeEnum::kMesh_SkyBoxMesh ? meshSystem.DrawMesh(subPass.MeshType) : Vector<MeshDrawMessage>(),
+			.RenderPassInputs = subPass.InputTextureList,
+			.RenderPassOutputs = subPass.OutputTextureList,
+			.OffScreenRenderPass = subPass.OffScreenFrameBuffer
+		});
 
-	VkRenderPassBeginInfo renderPassBeginInfo
+	Vector<RenderPassNode> node
 	{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.renderPass = renderPass.RenderPass,
-		.framebuffer = renderPass.FrameBufferList[0],
-		.renderArea = {
-			.offset = {0, 0},
-			.extent = {
-				static_cast<uint32>(renderPass.RenderPassResolution.x),
-				static_cast<uint32>(renderPass.RenderPassResolution.y)
-			}
-		},
-		.clearValueCount = static_cast<uint32>(renderPass.ClearValueList.size()),
-		.pClearValues = renderPass.ClearValueList.data()
-	};
-
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-		std::cerr << "[GenerateTexture] Failed to begin command buffer" << std::endl;
-		cleanup();
-		return;
-	}
-
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline());
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.PipelineLayout(), 0, static_cast<uint32>(pipeline.DescriptorSetList().size()), pipeline.DescriptorSetList().data(), 0, nullptr);
-	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-	vkCmdEndRenderPass(commandBuffer);
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-		std::cerr << "[GenerateTexture] Failed to end command buffer" << std::endl;
-		cleanup();
-		return;
-	}
-
-	VkFenceCreateInfo fenceCreateInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-		.flags = 0
-	};
-
-	if (vkCreateFence(vulkan.LogicalDevice(), &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)
-	{
-		std::cerr << "[GenerateTexture] Failed to create fence" << std::endl;
-		cleanup();
-		return;
-	}
-
-	VkSubmitInfo submitInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.commandBufferCount = 1,
-		.pCommandBuffers = &commandBuffer
-	};
-
-	if (vkQueueSubmit(vulkan.GraphicsQueue(), 1, &submitInfo, fence) != VK_SUCCESS)
-	{
-		std::cerr << "[GenerateTexture] Failed to submit queue" << std::endl;
-		cleanup();
-		return;
-	}
-
-	if (vkWaitForFences(vulkan.LogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
-	{
-		std::cerr << "[GenerateTexture] Failed to wait for fence" << std::endl;
-		cleanup();
-		return;
-	}
-
-	vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
-	vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
-	commandBuffer = VK_NULL_HANDLE;
-	fence = VK_NULL_HANDLE;
-}
-
-void TextureSystem::GenerateCubeMapTexture(VkGuid& renderPassId)
-{
-	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	VulkanPipeline skyboxPipeline = renderSystem.FindRenderPipeline(renderPass.SubPassList[0][0].PipelineGuid);
-	Vector<Texture> renderPassTexture = textureSystem.FindRenderedTextureList(renderPassId);
-
-	if (renderPassTexture.empty() || renderPassTexture[0].texture.TextureImage() == VK_NULL_HANDLE)
-	{
-		std::cerr << "[GenerateCubeMapTexture] No valid cubemap texture found for pass " << renderPassId.ToString() << std::endl;
-		return;
-	}
-
-	Texture& targetCubemap = renderPassTexture[0];
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	VkFence fence = VK_NULL_HANDLE;
-
-	auto cleanup = [&]()
+		RenderPassNode
 		{
-			if (commandBuffer != VK_NULL_HANDLE) {
-				vkFreeCommandBuffers(vulkan.LogicalDevice(), vulkan.CommandPool(), 1, &commandBuffer);
-			}
-			if (fence != VK_NULL_HANDLE) {
-				vkDestroyFence(vulkan.LogicalDevice(), fence, nullptr);
-			}
-		};
-
-	VkCommandBufferAllocateInfo allocInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = vulkan.CommandPool(),
-		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = 1
-	};
-	VULKAN_THROW_IF_FAIL(vkAllocateCommandBuffers(vulkan.LogicalDevice(), &allocInfo, &commandBuffer));
-
-	VkCommandBufferBeginInfo beginInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-	};
-	VULKAN_THROW_IF_FAIL(vkBeginCommandBuffer(commandBuffer, &beginInfo));
-
-	VkViewport viewport{
-		.x = 0.0f, .y = 0.0f,
-		.width = static_cast<float>(renderPass.RenderPassResolution.x),
-		.height = static_cast<float>(renderPass.RenderPassResolution.y),
-		.minDepth = 0.0f, .maxDepth = 1.0f
-	};
-	VkRect2D scissor{
-		.offset = {0, 0},
-		.extent = {
-			static_cast<uint32_t>(renderPass.RenderPassResolution.x),
-			static_cast<uint32_t>(renderPass.RenderPassResolution.y)
+			.RenderPassGuid = renderPass.RenderPassId,
+			.SubPassDrawMessage = { subPassDrawList },
+			.MipCount = maxMipLevelCount - 1
 		}
 	};
 
-	VkRenderPassBeginInfo renderPassBeginInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.renderPass = renderPass.RenderPass,
-		.framebuffer = renderPass.FrameBufferList[0],
-		.renderArea = scissor,
-		.clearValueCount = static_cast<uint32_t>(renderPass.ClearValueList.size()),
-		.pClearValues = renderPass.ClearValueList.data()
-	};
-
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.Pipeline());
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline.PipelineLayout(), 0, static_cast<uint32>(skyboxPipeline.DescriptorSetList().size()), skyboxPipeline.DescriptorSetList().data(), 0, nullptr);
-	const Vector<Mesh>& skyBoxList = meshSystem.FindMeshByMeshType(MeshTypeEnum::kMesh_SkyBoxMesh);
-	if (!skyBoxList.empty())
-	{
-		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(skyBoxList.front().SharedAssetId);
-		const VkBuffer& vb = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer();
-		const VkBuffer& ib = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer();
-		VkDeviceSize offsets[] = { 0 };
-
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vb, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, ib, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(commandBuffer, meshAsset.IndexCount, 1, 0, 0, 0);
-	}
-	vkCmdEndRenderPass(commandBuffer);
-	VULKAN_THROW_IF_FAIL(vkEndCommandBuffer(commandBuffer));
-
-	VkFenceCreateInfo fenceInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-	VULKAN_THROW_IF_FAIL(vkCreateFence(vulkan.LogicalDevice(), &fenceInfo, nullptr, &fence));
-
-	VkSubmitInfo submitInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.commandBufferCount = 1,
-		.pCommandBuffers = &commandBuffer
-	};
-	VULKAN_THROW_IF_FAIL(vkQueueSubmit(vulkan.GraphicsQueue(), 1, &submitInfo, fence));
-	VULKAN_THROW_IF_FAIL(vkWaitForFences(vulkan.LogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX));
-	cleanup();
-
-	Vector<Texture>& cubeMapList = textureSystem.FindRenderedTextureList(renderPassId);
-	VkCommandBuffer commandBuffer2 = vulkan.CommandBuffer().BeginSingleUseCommand();
-	for (auto& cubeMap : cubeMapList)
-	{
-		cubeMap.texture.TransitionImageLayout(commandBuffer2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, renderPassTexture[0].texture.MipMapLevels(), 0, 6);
-	}
-	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer2);
+	VkCommandBuffer commandBuffer = vulkan.CommandBuffer().BeginSingleUseCommand();
+	renderSystem.Draw(commandBuffer, node);
+	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer);
 }

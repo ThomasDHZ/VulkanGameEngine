@@ -32,11 +32,11 @@ struct VulkanDrawMessage
 struct RenderPassNode
 {
     VkGuid                                                        RenderPassGuid;
-    uint32                                                        MipCount = 0;
     Vector<Vector<VulkanDrawMessage>>                             SubPassDrawMessage;
-
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PreRenderPassCmd;
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PostRenderPassCmd;
+    uint32                                                        MipCount = 0;
+
 };
 
 class RenderSystem
@@ -63,8 +63,6 @@ private:
 
 public:
 
-    Vector<RenderPassNode>                                             RenderPassNodeList;
-    bool                                                               UsingMaterialBaker = false;
    // UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
 
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
@@ -75,8 +73,7 @@ public:
     //DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
-    DLL_EXPORT void                                                    AddRenderNode(RenderPassNode renderPassNode);
-    DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer);
+    DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
     DLL_EXPORT void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
     DLL_EXPORT void                                                    DestroyBuffer(VkBuffer& buffer);

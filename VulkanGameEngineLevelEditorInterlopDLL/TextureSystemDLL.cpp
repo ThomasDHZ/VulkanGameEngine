@@ -18,12 +18,6 @@ bool TextureSystem_GenerateTexture(VkGuid renderPassId)
 	return  true;
 }
 
-bool TextureSystem_GenerateCubeMapTexture(VkGuid renderPassId)
-{
-	textureSystem.GenerateCubeMapTexture(renderPassId);
-	return true;
-}
-
 //bool TextureSystem_CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId)
 //{
 //	Texture texture = textureSystem.CreateRenderPassTexture(vulkanRenderPass, attachmentId);

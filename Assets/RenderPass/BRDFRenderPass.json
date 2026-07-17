@@ -11,7 +11,7 @@
         "PushConstantUpdates": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": true
       }
     ]
   ],

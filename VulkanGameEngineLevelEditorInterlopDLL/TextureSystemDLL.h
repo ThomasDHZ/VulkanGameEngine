@@ -8,7 +8,6 @@ extern "C"
     //DLL_EXPORT bool                  TextureSystem_CreateTexture(const char* texturePath);
     //DLL_EXPORT bool                  TextureSystem_LoadKTXTexture(const char* texturePath);
     DLL_EXPORT bool                  TextureSystem_GenerateTexture(VkGuid renderPassId);
-    DLL_EXPORT bool                  TextureSystem_GenerateCubeMapTexture(VkGuid renderPassId);
    // DLL_EXPORT bool                  TextureSystem_CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, uint attachmentId);
     //DLL_EXPORT void                  TextureSystem_DestroyTexture(VkGuid textureGuid);
     //DLL_EXPORT void                  TextureSystem_DestroyAllTextures();

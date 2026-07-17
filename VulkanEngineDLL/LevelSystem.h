@@ -144,7 +144,7 @@ public:
     DLL_EXPORT void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
 
     DLL_EXPORT const Vector<MeshDrawMessage>   DrawSpriteMesh();
-    DLL_EXPORT void                            Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+    DLL_EXPORT Vector<RenderPassNode>          Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
     DLL_EXPORT LevelLayout                     GetLevelLayout();
     DLL_EXPORT Vector<LevelLayer>              GetLevelLayerList();
     DLL_EXPORT Vector<Vector<uint>>            GetLevelTileMapList();

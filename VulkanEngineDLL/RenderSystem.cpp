@@ -247,11 +247,6 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     return pickedId;
 }
 
-void RenderSystem::AddRenderNode(RenderPassNode renderPassNode)
-{
-    RenderPassNodeList.emplace_back(renderPassNode);
-}
-
 void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
 {
     if (drawMessage.PushConstant.has_value())
@@ -274,9 +269,9 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
     }
 }
 
-void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
+void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList)
 {
-    for (auto& renderPassNode : RenderPassNodeList)
+    for (auto& renderPassNode : renderPassNodeList)
     {
         VulkanRenderPass renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
@@ -298,14 +293,16 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer)
 
                     if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
                     if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
-                    if (renderPassLayer.OffScreenRenderPass)  vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+                    if (renderPassLayer.OffScreenRenderPass && renderPassLayer.DrawMeshList.empty())
+                    {
+                        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+                    }
                     else
                     {
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
-                            MeshDrawMessage mesh = renderPassLayer.DrawMeshList[x];
                             BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount);
-                            renderPass.DrawMesh(commandBuffer, mesh);
+                            renderPass.DrawMesh(commandBuffer, renderPassLayer.DrawMeshList[x]);
                         }
                     }
                     if (renderPassLayer.PostDrawCmd) renderPassLayer.PostDrawCmd(commandBuffer, renderPassLayer);
