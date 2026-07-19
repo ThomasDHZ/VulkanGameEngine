@@ -103,5 +103,5 @@
 
  void VulkanSystem_DestroyRenderer()
 {
-	 return vulkan.Shutdown();
+	 return vulkan.Destroy();
 }

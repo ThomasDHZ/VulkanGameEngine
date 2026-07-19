@@ -94,12 +94,12 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	VulkanTextureLoader vulkanTextureLoader =
 	{
 		.TextureData = Vector<byte>(),
-		.TextureDimensions = ivec3(vulkanRenderPass.RenderPassResolution.x, vulkanRenderPass.RenderPassResolution.y, 1),
+		.TextureDimensions = ivec3(vulkanRenderPass.RenderPassResolution().x, vulkanRenderPass.RenderPassResolution().y, 1),
 		.SamplerCreateInfo = attachment.SamplerCreateInfo,
 		.MipMapCount = attachment.MipMapCount,
 		.ColorChannels = ColorChannelEnum::ChannelRGBA,
 		.TextureImageLayout = textureImageLayout,
-		.SampleCount = vulkanRenderPass.SampleCount,
+		.SampleCount = vulkanRenderPass.SampleCount(),
 		.TextureByteFormat = attachment.TextureByteFormat,
 		.TextureType = attachment.TextureType,
 		.IsRenderPassAttachment = true,
@@ -391,12 +391,12 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId)
 	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
 }
 
-void TextureSystem::AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList)
+void TextureSystem::AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList)
 {
 	RenderedTextureListMap[renderPassGuid] = renderedTextureList;
 }
 
-void TextureSystem::AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture)
+void TextureSystem::AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture)
 {
 	DepthTextureMap[renderPassGuid] = depthTexture;
 }
@@ -461,8 +461,8 @@ const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& render
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
-	const VulkanSubPass subPass = renderPass.SubPassList.front().front();
-	if (renderPass.SubPassList.empty() || renderPass.SubPassList.front().empty())
+	const VulkanSubPass subPass = renderPass.SubPassList().front().front();
+	if (renderPass.SubPassList().empty() || renderPass.SubPassList().front().empty())
 	{
 		std::cerr << "[TextureSystem] GenerateTexture: No subpasses defined for render pass!\n";
 		return;
@@ -478,10 +478,10 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	Vector<VulkanDrawMessage> subPassDrawList;
 	subPassDrawList.emplace_back(VulkanDrawMessage
 		{
-			.RenderPassGuid = renderPass.RenderPassId,
+			.RenderPassGuid = renderPass.RenderPassId(),
 			.PipelineGuid = subPass.PipelineGuid,
 			.PushConstant = subPass.ShaderPushConstant,
-			.DrawMeshList = subPass.MeshType == MeshTypeEnum::kMesh_SkyBoxMesh ? meshSystem.DrawMesh(subPass.MeshType) : Vector<MeshDrawMessage>(),
+			.DrawMeshList = subPass.MeshType == MeshTypeEnum::kMesh_StaticMesh ? meshSystem.DrawMesh(subPass.MeshType) : Vector<MeshDrawMessage>(),
 			.RenderPassInputs = subPass.InputTextureList,
 			.RenderPassOutputs = subPass.OutputTextureList,
 			.OffScreenRenderPass = subPass.OffScreenFrameBuffer
@@ -491,7 +491,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	{
 		RenderPassNode
 		{
-			.RenderPassGuid = renderPass.RenderPassId,
+			.RenderPassGuid = renderPass.RenderPassId(),
 			.SubPassDrawMessage = { subPassDrawList },
 			.MipCount = maxMipLevelCount - 1
 		}

@@ -45,18 +45,12 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
-    for (auto& renderPass : renderPassLoader.SubPassList)
-    {
-        Vector<VulkanSubPass> subPassList;
-        for (auto& subPass : renderPass) subPassList.emplace_back(BuildSubpasses(renderPassLoader.RenderPassId, subPass));
-        vulkanRenderPass.SubPassList.emplace_back(subPassList);
-    }
-
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
-    for (auto& vulkanPipeline : vulkanRenderPass.PipelineList)
+
+    for (auto& vulkanPipeline : vulkanRenderPass.PipelineList())
     {
-        RenderPipelineMap[vulkanPipeline.m_pipelineId] = vulkanPipeline;
-        for (auto& pushConstant : vulkanPipeline.m_pushConstantList)
+        RenderPipelineMap[vulkanPipeline.PipelineId()] = vulkanPipeline;
+        for (auto& pushConstant : vulkanPipeline.ShaderPushConstantList())
         {
             if (!pushConstant.PushConstantName.empty() &&
                 !shaderSystem.ShaderPushConstantExists(pushConstant.PushConstantName))
@@ -67,12 +61,12 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     }
 
     Texture depthTexture;
-    VulkanTexture vulkanTexture = VulkanTexture();
     Vector<Texture> renderedTextureList;
     Vector<Texture> frameBufferTextureList;
-    for (int x = 0; x < vulkanRenderPass.AttachmentList.size(); x++)
+    VulkanTexture vulkanTexture = VulkanTexture();
+    for (int x = 0; x < vulkanRenderPass.AttachmentList().size(); x++)
     {
-        VulkanTexture attachment = vulkanRenderPass.AttachmentList[x];
+        VulkanTexture attachment = vulkanRenderPass.AttachmentList()[x];
         ivec2 renderPassSize = ivec2(attachment.TextureSize().x, attachment.TextureSize().y);
         Texture texture = Texture
         {
@@ -88,8 +82,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
         if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
     }
-    if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId, renderedTextureList);
-    if (depthTexture.texture.TextureImage() != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId, depthTexture);
+    if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
+    if (depthTexture.texture.TextureImage() != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId(), depthTexture);
     return renderPassLoader.RenderPassId;
 }
 
@@ -106,20 +100,6 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
     //    BuildFrameBuffer(renderPass);
     //}
     // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
-}
-
-VulkanSubPass RenderSystem::BuildSubpasses(VkGuid& renderPassId, const VulkanSubPassLoader& subPassLoader)
-{
-    return VulkanSubPass
-    {
-        .RenderPassGuid = renderPassId,
-        .PipelineGuid = fileSystem.LoadJsonFile(subPassLoader.Pipeline.c_str()).get<VulkanPipelineLoader>().PipelineId,
-        .MeshType = subPassLoader.MeshType,
-        .ShaderPushConstant = subPassLoader.ShaderPushConstant,
-        .InputTextureList = subPassLoader.InputTextureList,
-        .OutputTextureList = subPassLoader.OutputTextureList,
-        .OffScreenFrameBuffer = subPassLoader.OffScreenRenderPass,
-    };
 }
 
 void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
@@ -183,7 +163,8 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
 
     VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
-    VkImageMemoryBarrier barrier = {
+    VkImageMemoryBarrier barrier = 
+    {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT,
         .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
@@ -194,30 +175,25 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .image = texture->texture.TextureImage(),
         .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
     };
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-    vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,
-        0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-    // Create staging buffer (R32_UINT = 4 bytes per pixel)
     VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->texture.TextureSize().x) * texture->texture.TextureSize().y * 4;
-
-    VkBufferCreateInfo bufferInfo = {
+    VkBufferCreateInfo bufferInfo = 
+    {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = bufferSize,
         .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
     };
 
-    VmaAllocationCreateInfo allocInfo = {
+    VmaAllocationCreateInfo allocInfo = 
+    {
         .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
         .usage = VMA_MEMORY_USAGE_AUTO
     };
 
+    VmaAllocationInfo allocOut = {};
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-    VmaAllocationInfo allocOut = {};
-
     if (vmaCreateBuffer(bufferSystem.VmaAllocatorHandle(), &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
     {
         std::cout << "[SamplePixel] Failed to create staging buffer" << std::endl;
@@ -233,7 +209,6 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         .imageOffset = { 0, 0, 0 },
         .imageExtent = { static_cast<uint32>(texture->texture.TextureSize().x), static_cast<uint32>(texture->texture.TextureSize().y), 1 }
     };
-
     vkCmdCopyImageToBuffer(cmd, texture->texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
     vulkan.CommandBuffer().EndSingleUseCommand(cmd);
@@ -260,7 +235,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
             .MipCount = mipCount,
-            .RenderPassResolution = renderPass.RenderPassResolution
+            .RenderPassResolution = renderPass.RenderPassResolution()
         };
 
         ShaderPushConstant shaderPushConstant = shaderSystem.FindShaderPushConstant(drawMessage.PushConstant.value());

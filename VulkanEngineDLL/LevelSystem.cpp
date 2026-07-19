@@ -99,7 +99,7 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
 
         uint32 maxMipLevelCount = 1;
         Vector<Vector<VulkanDrawMessage>> vulkanDrawMessageList;
-        for (auto& renderPassList : renderPass.SubPassList)
+        for (auto& renderPassList : renderPass.SubPassList())
         {
             Vector<VulkanDrawMessage> vulkanSubPassMessageList;
             for (auto& subPass : renderPassList)
@@ -115,7 +115,7 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
                         .RenderPassGuid = renderPassGuid,
                         .PipelineGuid = subPass.PipelineGuid,
                         .PushConstant = subPass.ShaderPushConstant,
-                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_SpriteMesh ? meshSystem.DrawMesh(subPass.MeshType) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
+                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshSystem.DrawMesh(subPass.MeshType) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
                         .OffScreenRenderPass = subPass.OffScreenFrameBuffer
@@ -269,7 +269,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexDataSize = LevelLayerList[x].VertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = LevelLayerList[x].VertexList.data()
         };
-        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_LevelMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
     }
 }
 
@@ -304,7 +304,7 @@ void LevelSystem::LoadSkyBox()
         .VertexData = skyBoxVertices.data()
     };
 
-    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_SkyBoxMesh, vertexData, indexList, VkGuid());
+    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, indexList, VkGuid());
 }
 
 const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()

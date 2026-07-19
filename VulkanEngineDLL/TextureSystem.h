@@ -78,23 +78,23 @@ public:
     Vector<Texture>                                                Texture3DList;
     Vector<Texture>                                                CubeMapTextureList;
 
-    void AddToMemoryPool(Texture& texture);
     DLL_EXPORT Texture                  LoadTexture(const String& texturePath);
     DLL_EXPORT Texture                  LoadTexture(const TextureLoader& textureLoader);
     DLL_EXPORT Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachmentList);
     DLL_EXPORT void                     GenerateTexture(VkGuid& renderPassId);
-    DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid& renderPassGuid, Vector<Texture>& renderedTextureList);
-    DLL_EXPORT void                     AddDepthTexture(RenderPassGuid& renderPassGuid, Texture& depthTexture);
+    DLL_EXPORT void                     AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
+    DLL_EXPORT void                     AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture);
 
     DLL_EXPORT Texture                  FindTexture(const VkGuid& textureId);
-    DLL_EXPORT Texture& FindDepthTexture(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT Texture& FindRenderedTexture(const TextureGuid& textureGuid);
-    DLL_EXPORT Vector<Texture>& FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT Texture&                 FindDepthTexture(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);
+    DLL_EXPORT Vector<Texture>&         FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
 
     DLL_EXPORT const bool               TextureExists(const TextureGuid& textureGuid) const;
     DLL_EXPORT const bool               DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
     DLL_EXPORT const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
     DLL_EXPORT const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
+    void                                AddToMemoryPool(Texture& texture);
 };
 extern DLL_EXPORT TextureSystem& textureSystem;
 inline TextureSystem& TextureSystem::Get()

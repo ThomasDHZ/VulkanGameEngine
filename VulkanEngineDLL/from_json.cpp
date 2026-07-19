@@ -335,7 +335,7 @@ namespace nlohmann
 
     void from_json(const json& j, VulkanSubPassLoader& model)
     {
-        j.at("Pipeline").get_to(model.Pipeline);
+        model.PipelineGuid = fileSystem.LoadJsonFile(j["Pipeline"]).get<VulkanPipelineLoader>().PipelineId;
         j.at("MeshType").get_to(model.MeshType);
         j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
         j.at("InputTextureList").get_to(model.InputTextureList);

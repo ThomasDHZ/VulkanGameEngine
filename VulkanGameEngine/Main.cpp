@@ -71,7 +71,7 @@ int main(int argc, char** argv)
         memorySystem.ReportLeaks();
      //   debugSystem.DumpVMAStats();
 
-        vulkan.Shutdown();
+        vulkan.Destroy();
         vulkanWindow.Close();
     }
     catch (const VulkanError& e)

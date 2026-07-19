@@ -6,7 +6,7 @@
     [
       {
         "Pipeline": "Pipelines/SelectedObjectPickerPipeline.json",
-        "MeshType": 6,
+        "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [],

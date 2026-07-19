@@ -6,7 +6,7 @@
     [
       {
         "Pipeline": "Pipelines/EnvironmentToCubeMapPipeline.json",
-        "MeshType": 3,
+        "MeshType": 1,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [],
