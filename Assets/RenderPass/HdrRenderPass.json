@@ -6,7 +6,7 @@
     [
       {
         "Pipeline": "Pipelines/HdrPipeline.json",
-        "MeshType": 6,
+        "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [ "c836201c-8413-4185-a37c-3a43d8c9bb67" ],

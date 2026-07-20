@@ -600,7 +600,7 @@ void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding
     {
         .sampler = texture.texture.TextureSampler(),
         .imageView = texture.texture.TextureViews().front(),
-        .imageLayout = texture.texture.TextureImageLayout() == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        .imageLayout = texture.texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     };
 
     VkWriteDescriptorSet descriptorUpdate = VkWriteDescriptorSet

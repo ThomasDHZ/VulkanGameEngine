@@ -15,7 +15,7 @@
 #include <stb_image_write.h>
 #include <VulkanSystem.h>
 #include "BufferSystem.h"
-
+#include <lodepng.h>
 
 FileSystem& fileSystem = FileSystem::Get();
 
@@ -111,6 +111,65 @@ nlohmann::json FileSystem::LoadJsonFile(const String& filePath)
     return nlohmann::json::parse(rawJson);
 }
 
+Vector<byte> FileSystem::LoadPNG(const String& filePath, uint& width, uint& height, uint& bitsPerChannel, int& channelCount)
+{
+
+    LodePNGState state;
+    lodepng_state_init(&state);
+
+    unsigned w = 0, h = 0;
+    std::vector<unsigned char> fileBuffer;
+    unsigned error = lodepng::load_file(fileBuffer, filePath.c_str());
+    if (error)
+    {
+        std::cerr << "Failed to read PNG '" << filePath << "': "
+            << lodepng_error_text(error) << "\n";
+        return Vector<byte>();
+    }
+
+     error = lodepng_inspect(&w, &h, &state, fileBuffer.data(), fileBuffer.size());
+    if (error) { /* handle */ }
+
+    bool use16bit = (state.info_png.color.bitdepth == 16);
+
+    state.info_raw.colortype = LCT_RGBA;
+    state.info_raw.bitdepth = use16bit ? 16 : 8;
+
+    unsigned char* rawImage = nullptr;
+    error = lodepng_decode(&rawImage, &w, &h, &state, fileBuffer.data(), fileBuffer.size());
+    if (error) { /* handle */ free(rawImage); /* cleanup */ }
+
+    width = w;
+    height = h;
+    bitsPerChannel = state.info_raw.bitdepth;   // now correct: 8 or 16
+    channelCount = 4;
+
+    size_t bytesPerPixel = (bitsPerChannel / 8) * 4;
+    size_t totalBytes = static_cast<size_t>(w) * h * bytesPerPixel;
+
+    Vector<byte> result(totalBytes);
+
+    if (bitsPerChannel == 16)
+    {
+        uint16_t* src = reinterpret_cast<uint16_t*>(rawImage);
+        uint16_t* dst = reinterpret_cast<uint16_t*>(result.data());
+        size_t count = static_cast<size_t>(w) * h * 4;
+        for (size_t i = 0; i < count; ++i)
+        {
+            uint16_t v = src[i];
+            dst[i] = (v >> 8) | (v << 8);   // swap bytes
+        }
+    }
+    else
+    {
+        std::memcpy(result.data(), rawImage, totalBytes);
+    }
+
+    free(rawImage);
+    lodepng_state_cleanup(&state);
+    return result;
+}
+
 Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& height, int& channelCount)
 {
     byte* data = nullptr;
@@ -142,6 +201,29 @@ Vector<byte> FileSystem::LoadImageFile(const String& filePath, int& width, int& 
     Vector<byte> result(data, data + (w * h * 4));
     stbi_image_free(data);
     return result;
+}
+
+ktxVulkanTexture FileSystem::LoadKTX2File(const String& filePath)
+{
+    ktxTexture* kTexture = nullptr;
+    KTX_error_code result = ktxTexture_CreateFromNamedFile(filePath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &kTexture);
+    if (result != KTX_SUCCESS) 
+    {
+        std::cerr << "Failed to load KTX: " << ktxErrorString(result) << std::endl;
+    }
+    ktxVulkanDeviceInfo vdi{};
+    result = ktxVulkanDeviceInfo_Construct(&vdi, vulkan.PhysicalDevice(), vulkan.LogicalDevice(), vulkan.GraphicsQueue(), vulkan.CommandPool(), nullptr);
+    if (result != KTX_SUCCESS) 
+    {
+        ktxTexture_Destroy(kTexture);
+    }
+
+    ktxVulkanTexture vkTex;
+    result = ktxTexture_VkUploadEx(kTexture, &vdi, &vkTex, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    ktxVulkanDeviceInfo_Destruct(&vdi);
+    ktxTexture_Destroy(kTexture);
+    
+    return vkTex;
 }
 
 //void FileSystem::ExportTexture(VkGuid& renderPassId, const String& filePath)

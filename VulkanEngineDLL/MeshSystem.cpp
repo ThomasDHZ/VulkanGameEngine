@@ -33,7 +33,6 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 				.VertexBufferId = bufferSystem.CreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
 				.IndexBufferId = bufferSystem.CreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
 				.IndexCount = static_cast<uint>(indexList.size()),
-				.Layout = vertexData.VertexType
 			});
 		MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
 	}
@@ -49,7 +48,6 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 			.SharedAssetId = meshHash,
 			.ObjectDataIndex = static_cast<uint32>(objectIndex),
 			.Type = meshType,
-			.Layout = vertexData.VertexType,
 			.Position = vec3(0.0f),
 			.Rotation = vec3(0.0f),
 			.Scale = vec3(1.0f),
@@ -78,12 +76,11 @@ uint MeshSystem::CreateSpriteLayer(uint32 spriteMeshId)
 
 		VertexLayout vertexData =
 		{
-			.VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
 			.VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
 			.VertexData = spriteVertexList.data(),
 		};
 
-		return meshSystem.CreateMesh("__SpriteMesh__", kMesh_SpriteMesh, vertexData, spriteIndexList);
+		return meshSystem.CreateMesh("__SpriteMesh__", kMesh_InstanceMesh, vertexData, spriteIndexList);
 	}
 	return UINT32_MAX;
 }
@@ -103,12 +100,11 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color)
@@ -126,12 +122,11 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor)
@@ -149,12 +144,11 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor)
@@ -172,12 +166,11 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color)
@@ -195,12 +188,11 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color)
@@ -218,12 +210,11 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor)
@@ -241,12 +232,11 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor)
@@ -264,12 +254,11 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_LineMesh, vertexData, lineIndexList);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList);
 }
 
 void MeshSystem::Update(const float& deltaTime)

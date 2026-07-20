@@ -2,9 +2,9 @@
 #include <VulkanSystem.h>
 #include "../VulkanGameEngine/GameSystem.h"
 
- RenderPassGuid RenderSystem_LoadRenderPass(LevelGuid& levelGuid, const char* jsonPath)
+ RenderPassGuid RenderSystem_LoadRenderPass(const char* jsonPath)
 {
-	 return  renderSystem.LoadRenderPass(levelGuid, jsonPath);
+	 return  renderSystem.LoadRenderPass(jsonPath);
 }
 
  void RenderSystem_Update(void* windowHandle, const float deltaTime)
@@ -15,36 +15,6 @@
  VulkanRenderPass RenderSystem_FindRenderPass(RenderPassGuid renderPassGuid)
 {
 	 return renderSystem.FindRenderPass(renderPassGuid);
-}
-
- void RenderSystem_Destroy()
-{
-	 renderSystem.Destroy();
-}
-
- void RenderSystem_DestroyRenderPass(VulkanRenderPass& renderPass)
-{
-	 renderSystem.DestroyRenderPass(renderPass);
-}
-
- void RenderSystem_DestroyRenderPasses()
-{
-	 renderSystem.DestroyRenderPasses();
-}
-
- void RenderSystem_DestroyRenderPipelines()
-{
-	 renderSystem.DestroyRenderPipelines();
-}
-
- void RenderSystem_DestroyPipeline(VulkanPipeline& vulkanPipelineDLL)
-{
-	 renderSystem.DestroyPipeline(vulkanPipelineDLL);
-}
-
- void RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList)
-{
-	 renderSystem.DestroyFrameBuffers(frameBufferList);
 }
 
  void RenderSystem_DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
@@ -61,10 +31,9 @@
  {
 	 vulkan.Swapchain().StartFrame();
 	 VkCommandBuffer commandBuffer = vulkan.CommandBufferList()[vulkan.Swapchain().CommandIndex()];
-	 // materialBakerSystem.Draw(commandBuffer);
-	 levelSystem.Draw(commandBuffer, deltaTime);
+	 Vector<RenderPassNode> renderNodes = levelSystem.Draw(commandBuffer, deltaTime);
+	 renderSystem.Draw(commandBuffer, renderNodes);
 	 levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
-	 renderSystem.Draw(commandBuffer);
 	 //ImGui_Draw(commandBuffer, imGuiRenderer);
 	 vulkan.Swapchain().EndFrame(commandBuffer);
  }

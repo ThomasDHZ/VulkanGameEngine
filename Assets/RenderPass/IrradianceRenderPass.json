@@ -6,7 +6,7 @@
     [
       {
         "Pipeline": "Pipelines/IrradiancePipeline.json",
-        "MeshType": 3,
+        "MeshType": 1,
         "ShaderPushConstant": "irradianceShaderConstants",
         "InputTextureList": [],
         "OutputTextureList": [],

@@ -26,7 +26,7 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
         {
             VulkanRenderPass renderPass = renderSystem.FindRenderPass(context.RenderPassGuid);
             SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-            sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution.x), 1.0f / static_cast<float>(renderPass.RenderPassResolution.y));
+            sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution().x), 1.0f / static_cast<float>(renderPass.RenderPassResolution().y));
 
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", context.MeshId);
             shaderSystem.UpdatePushConstantBuffer(pushConstant);

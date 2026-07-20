@@ -48,7 +48,7 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
     const Texture& texture    = textureSystem.FindTexture(material.AlbedoDataId);
 
     ivec2 spritePixelSize = ivec2{ gameObjectSpriteJson["SpritePixelSize"][0], gameObjectSpriteJson["SpritePixelSize"][1] };
-    ivec2 spriteCells     = ivec2( texture.texture.TextureSize().x / spritePixelSize.x, texture.texture.TextureSize().y / spritePixelSize.y);
+    ivec2 spriteCells     = ivec2( texture.texture.m_textureSize.x / spritePixelSize.x, texture.texture.m_textureSize.y / spritePixelSize.y);
     ivec2 spriteScale     = ivec2{ gameObjectSpriteJson["SpriteScale"][0], gameObjectSpriteJson["SpriteScale"][1] };
 
     if(gameObjectSpriteJson.contains("AnimationList")) SpriteAnimationMap[vramId] = LoadSpriteAnimations(gameObjectSpriteJson);
@@ -60,7 +60,7 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
         .SpriteColor = vec4{ gameObjectSpriteJson["SpriteColor"][0], gameObjectSpriteJson["SpriteColor"][1], gameObjectSpriteJson["SpriteColor"][2], gameObjectSpriteJson["SpriteColor"][3] },
         .SpritePixelSize = ivec2{ gameObjectSpriteJson["SpritePixelSize"][0], gameObjectSpriteJson["SpritePixelSize"][1] },
         .SpriteScale = ivec2{ gameObjectSpriteJson["SpriteScale"][0], gameObjectSpriteJson["SpriteScale"][1] },
-        .SpriteCells = ivec2(texture.texture.TextureSize().x / spritePixelSize.x, texture.texture.TextureSize().y / spritePixelSize.y),
+        .SpriteCells = ivec2(texture.texture.m_textureSize.x / spritePixelSize.x, texture.texture.m_textureSize.y / spritePixelSize.y),
         .SpriteUVSize = vec2(1.0f / (float)spriteCells.x, 1.0f / (float)spriteCells.y),
         .SpriteSize = vec2(spritePixelSize.x * spriteScale.x, spritePixelSize.y * spriteScale.y),
     });

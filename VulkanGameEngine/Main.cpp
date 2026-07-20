@@ -62,8 +62,8 @@ int main(int argc, char** argv)
         vkDeviceWaitIdle(vulkan.LogicalDevice());
         //ImGui_Destroy(imGuiRenderer);
 
-        renderSystem.Destroy();
-       // textureSystem.DestroyAllTextures();
+        
+      //  textureSystem.DestroyAllTextures();
         meshSystem.DestroyAllGameObjects();
         materialSystem.DestroyAllMaterials();
        // bufferSystem.DestroyAllBuffers();
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
         memorySystem.ReportLeaks();
      //   debugSystem.DumpVMAStats();
 
-        vulkan.Shutdown();
+        vulkan.Destroy();
         vulkanWindow.Close();
     }
     catch (const VulkanError& e)

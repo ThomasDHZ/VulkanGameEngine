@@ -6,12 +6,12 @@
     [
       {
         "Pipeline": "Pipelines/EnvironmentToCubeMapPipeline.json",
-        "MeshType": 6,
+        "MeshType": 1,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": true
       }
     ]
   ],
