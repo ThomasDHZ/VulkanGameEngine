@@ -33,7 +33,6 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 				.VertexBufferId = bufferSystem.CreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
 				.IndexBufferId = bufferSystem.CreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
 				.IndexCount = static_cast<uint>(indexList.size()),
-				.Layout = vertexData.VertexType
 			});
 		MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
 	}
@@ -49,7 +48,6 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 			.SharedAssetId = meshHash,
 			.ObjectDataIndex = static_cast<uint32>(objectIndex),
 			.Type = meshType,
-			.Layout = vertexData.VertexType,
 			.Position = vec3(0.0f),
 			.Rotation = vec3(0.0f),
 			.Scale = vec3(1.0f),
@@ -78,7 +76,6 @@ uint MeshSystem::CreateSpriteLayer(uint32 spriteMeshId)
 
 		VertexLayout vertexData =
 		{
-			.VertexType = VertexLayoutEnum::kVertexLayout_SpriteInstanceVertex,
 			.VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
 			.VertexData = spriteVertexList.data(),
 		};
@@ -103,7 +100,6 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -126,7 +122,6 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -149,7 +144,6 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -172,7 +166,6 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex2DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -195,7 +188,6 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -218,7 +210,6 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -241,7 +232,6 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};
@@ -264,7 +254,6 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 
 	VertexLayout vertexData =
 	{
-		.VertexType = VertexLayoutEnum::kVertexLayout_LineVertex,
 		.VertexDataSize = sizeof(LineVertex3DLayout) * lineVertexList.size(),
 		.VertexData = lineVertexList.data(),
 	};

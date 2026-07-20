@@ -5,6 +5,7 @@
 #include "RenderSystem.h"
 #include <xxhash.h>
 #include <entt/entt.hpp>
+#include <VulkanMesh.h>
 
 enum VertexLayoutEnum
 {
@@ -77,23 +78,6 @@ struct SkyboxVertexLayout
 	vec3 Position = glm::vec3(0.0f);
 };
 
-struct MeshAssetData
-{
-	Vector<uint32> MeshIdUsageList = Vector<uint32>();
-	uint32 VertexBufferId = UINT32_MAX;
-	uint32 IndexBufferId = UINT32_MAX;
-	uint32 VertexCount = UINT32_MAX;
-	uint32 IndexCount = UINT32_MAX;
-	VertexLayoutEnum Layout = VertexLayoutEnum::kVertexLayout_Undefined;
-};
-
-struct VertexLayout
-{
-	VertexLayoutEnum VertexType = kVertexLayout_Undefined;
-	uint64 VertexDataSize = UINT64_MAX;
-	void* VertexData = nullptr;
-};
-
 struct alignas(4) MeshBufferHeader
 {
 	uint MeshOffset;
@@ -114,6 +98,15 @@ struct SpriteLayer
 	uint32 SpriteDrawLayer = UINT32_MAX;
 };
 
+struct MeshAssetData
+{
+	Vector<uint32> MeshIdUsageList = Vector<uint32>();
+	uint32 VertexBufferId = UINT32_MAX;
+	uint32 IndexBufferId = UINT32_MAX;
+	uint32 VertexCount = UINT32_MAX;
+	uint32 IndexCount = UINT32_MAX;
+};
+
 struct Mesh
 {
 	uint32 MeshId = UINT32_MAX;
@@ -121,14 +114,18 @@ struct Mesh
 	uint64 SharedAssetId = UINT64_MAX;
 	uint32 ObjectDataIndex = UINT32_MAX;
 	MeshTypeEnum Type = MeshTypeEnum::kMesh_Undefined;
-	VertexLayoutEnum Layout = VertexLayoutEnum::kVertexLayout_Undefined;
 	vec3 Position = vec3(0.0f);
 	vec3 Rotation = vec3(0.0f);
 	vec3 Scale = vec3(1.0f);
 	VkGuid MaterialId;
 	bool IsTransformDirty = true;
 	bool IsMaterialDirty = true;
-	void* Extension = nullptr;
+};
+
+struct VertexLayout
+{
+	uint64 VertexDataSize = UINT64_MAX;
+	void* VertexData = nullptr;
 };
 
 class MeshSystem

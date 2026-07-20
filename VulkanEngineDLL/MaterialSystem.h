@@ -57,8 +57,7 @@ private:
         DLL_EXPORT void Destroy(const MaterialGuid& materialGuid);
         DLL_EXPORT void DestroyAllMaterials();
         DLL_EXPORT Vector<Material> GetMaterialList() { return MaterialList; }
-};
-
+}; 
 extern DLL_EXPORT MaterialSystem& materialSystem;
 inline MaterialSystem& MaterialSystem::Get()
 {

@@ -265,7 +265,6 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
 
         VertexLayout vertexData =
         {
-            .VertexType = VertexLayoutEnum::kVertexLayout_Vertex2D,
             .VertexDataSize = LevelLayerList[x].VertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = LevelLayerList[x].VertexList.data()
         };
@@ -299,7 +298,6 @@ void LevelSystem::LoadSkyBox()
 
     VertexLayout vertexData =
     {
-        .VertexType = VertexLayoutEnum::kVertexLayout_Vertex2D,
         .VertexDataSize = skyBoxVertices.size() * sizeof(SkyboxVertexLayout),
         .VertexData = skyBoxVertices.data()
     };
