@@ -17,16 +17,6 @@
 	 return renderSystem.FindRenderPass(renderPassGuid);
 }
 
- void RenderSystem_DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer)
-{
-	 renderSystem.DestroyCommandBuffers(commandBuffer);
-}
-
- void RenderSystem_DestroyBuffer(VkBuffer& buffer)
-{
-	 renderSystem.DestroyBuffer(buffer);
-}
-
  void RenderSystem_RenderTest(float deltaTime)
  {
 	 vulkan.Swapchain().StartFrame();

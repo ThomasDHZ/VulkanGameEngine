@@ -177,7 +177,6 @@
     <ClInclude Include="from_json.h" />
     <ClInclude Include="JsonStruct.h" />
     <ClInclude Include="MaterialSystem.h" />
-    <ClInclude Include="MemorySystem.h" />
     <ClInclude Include="MeshSystem.h" />
     <ClInclude Include="Pixel.h" />
     <ClInclude Include="ShaderSystem.h" />
@@ -216,7 +215,6 @@
     <ClCompile Include="VulkanError.cpp" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
-    <ClCompile Include="MemorySystem.cpp" />
     <ClCompile Include="MeshSystem.cpp" />
     <ClCompile Include="ShaderSystem.cpp" />
     <ClCompile Include="TextureSystem.cpp" />

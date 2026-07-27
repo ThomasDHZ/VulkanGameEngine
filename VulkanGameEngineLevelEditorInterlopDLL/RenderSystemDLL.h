@@ -10,10 +10,6 @@ extern "C"
     DLL_EXPORT RenderPassGuid                                          RenderSystem_LoadRenderPass(const char* jsonPath);     
     DLL_EXPORT void                                                    RenderSystem_Update(void* windowHandle, const float deltaTime);
     DLL_EXPORT VulkanRenderPass                                        RenderSystem_FindRenderPass(RenderPassGuid renderPassGuid);
-
-    DLL_EXPORT void                                                    RenderSystem_DestroyFrameBuffers(Vector<VkFramebuffer>& frameBufferList);
-    DLL_EXPORT void                                                    RenderSystem_DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
-    DLL_EXPORT void                                                    RenderSystem_DestroyBuffer(VkBuffer& buffer);
     DLL_EXPORT void                                                    RenderSystem_RenderTest(float deltaTime);
 #ifdef __cplusplus
 }

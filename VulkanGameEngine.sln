@@ -38,7 +38,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngine", "VulkanGameEngine\VulkanGameEngine.vcxproj", "{59F6607D-4EFF-4042-8D44-7DFF6D1968CA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{20F49CB4-34DB-4355-82FA-30B4B16B6F00} = {20F49CB4-34DB-4355-82FA-30B4B16B6F00}
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
 		{526BFF96-6C33-482D-9BEC-29A6D553F16A} = {526BFF96-6C33-482D-9BEC-29A6D553F16A}
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
@@ -67,11 +66,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineDLL", "VulkanEn
 		{526BFF96-6C33-482D-9BEC-29A6D553F16A} = {526BFF96-6C33-482D-9BEC-29A6D553F16A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics2DDLL", "Physics2DDLL\Physics2DDLL.vcxproj", "{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SkyBoxes", "SkyBoxes", "{B82F64D6-6B26-4A25-9E5D-DDED581513ED}"
 	ProjectSection(SolutionItems) = preProject
 		Assets\SkyBoxs\LavaSkyBox.json = Assets\SkyBoxs\LavaSkyBox.json
@@ -83,15 +77,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImportMaterial", "ImportMat
 		Assets\ImportMaterials\MegaManImportMaterial.json = Assets\ImportMaterials\MegaManImportMaterial.json
 		Assets\ImportMaterials\MegaManShotImportMaterial.json = Assets\ImportMaterials\MegaManShotImportMaterial.json
 		Assets\ImportMaterials\SparkManTileSetImportMaterial.json = Assets\ImportMaterials\SparkManTileSetImportMaterial.json
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngineLevelEditorInterlopDLL", "VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj", "{E7C26245-5E86-4FA3-957C-3A281866F273}"
-	ProjectSection(ProjectDependencies) = postProject
-		{20F49CB4-34DB-4355-82FA-30B4B16B6F00} = {20F49CB4-34DB-4355-82FA-30B4B16B6F00}
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8} = {353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}
-		{526BFF96-6C33-482D-9BEC-29A6D553F16A} = {526BFF96-6C33-482D-9BEC-29A6D553F16A}
-		{59F6607D-4EFF-4042-8D44-7DFF6D1968CA} = {59F6607D-4EFF-4042-8D44-7DFF6D1968CA}
-		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorShaders", "LevelEditorShaders", "{E7685364-290B-4B5E-AA46-71C9806F21F6}"
@@ -225,6 +210,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkingDLL", "Networking
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanEngineCore", "..\VulkanEngineCore\VulkanEngineCore\VulkanEngineCore.vcxproj", "{526BFF96-6C33-482D-9BEC-29A6D553F16A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGameEngineLevelEditorInterlopDLL", "VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj", "{E7C26245-5E86-4FA3-957C-3A281866F273}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -259,30 +246,6 @@ Global
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x64.Build.0 = Release|x64
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.ActiveCfg = Release|Win32
 		{D22B29FB-1F02-471C-81AC-A352862F6951}.Release|x86.Build.0 = Release|Win32
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|Any CPU.Build.0 = Debug|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x64.ActiveCfg = Debug|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x64.Build.0 = Debug|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x86.ActiveCfg = Debug|Win32
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Debug|x86.Build.0 = Debug|Win32
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|Any CPU.ActiveCfg = Release|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|Any CPU.Build.0 = Release|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x64.ActiveCfg = Release|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x64.Build.0 = Release|x64
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x86.ActiveCfg = Release|Win32
-		{353BB78F-3CAF-4CB4-A04D-DDA15DC5DDA8}.Release|x86.Build.0 = Release|Win32
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|Any CPU.Build.0 = Debug|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x64.ActiveCfg = Debug|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x64.Build.0 = Debug|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x86.ActiveCfg = Debug|Win32
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x86.Build.0 = Debug|Win32
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|Any CPU.ActiveCfg = Release|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|Any CPU.Build.0 = Release|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x64.ActiveCfg = Release|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x64.Build.0 = Release|x64
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x86.ActiveCfg = Release|Win32
-		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x86.Build.0 = Release|Win32
 		{27B62C4A-F1F6-4546-BC4F-C8AE19A27754}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{27B62C4A-F1F6-4546-BC4F-C8AE19A27754}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27B62C4A-F1F6-4546-BC4F-C8AE19A27754}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -319,6 +282,18 @@ Global
 		{526BFF96-6C33-482D-9BEC-29A6D553F16A}.Release|x64.Build.0 = Release|x64
 		{526BFF96-6C33-482D-9BEC-29A6D553F16A}.Release|x86.ActiveCfg = Release|Win32
 		{526BFF96-6C33-482D-9BEC-29A6D553F16A}.Release|x86.Build.0 = Release|Win32
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|Any CPU.Build.0 = Debug|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x64.ActiveCfg = Debug|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x64.Build.0 = Debug|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x86.ActiveCfg = Debug|Win32
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Debug|x86.Build.0 = Debug|Win32
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|Any CPU.ActiveCfg = Release|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|Any CPU.Build.0 = Release|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x64.ActiveCfg = Release|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x64.Build.0 = Release|x64
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x86.ActiveCfg = Release|Win32
+		{E7C26245-5E86-4FA3-957C-3A281866F273}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

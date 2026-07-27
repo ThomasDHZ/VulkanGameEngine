@@ -81,14 +81,14 @@ Texture TextureSystem::CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPas
 	VkImageLayout textureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	switch (attachment.TextureUsageType)
 	{
-	case kUsageType_DepthBufferTexture:     textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
-	case kUsageType_GBufferTexture:         textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-	case kUsageType_IrradianceTexture:      textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-	case kUsageType_PrefilterTexture:       textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-	case kUsageType_OffscreenColorTexture:  textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-	case kUsageType_SwapChainTexture:       textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
-	case kUsageType_CubeMap:				textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
-	case kUsageType_BRDFTexture:			textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_DepthBufferTexture:     textureImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;  break;
+		case kUsageType_GBufferTexture:         textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_IrradianceTexture:      textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_PrefilterTexture:       textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_OffscreenColorTexture:  textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_SwapChainTexture:       textureImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;                  break;
+		case kUsageType_CubeMap:				textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
+		case kUsageType_BRDFTexture:			textureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;         break;
 	}
 
 	VulkanTextureLoader vulkanTextureLoader =

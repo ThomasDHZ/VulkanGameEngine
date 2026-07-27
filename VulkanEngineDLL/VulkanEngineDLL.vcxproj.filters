@@ -66,9 +66,6 @@
     <ClInclude Include="MaterialSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="MemorySystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -180,9 +177,6 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="TextureSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="MemorySystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="MaterialSystem.cpp">

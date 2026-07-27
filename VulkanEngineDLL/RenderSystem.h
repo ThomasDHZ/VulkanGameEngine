@@ -62,14 +62,11 @@ private:
 
 public:
 
-   // UnorderedMap<RenderPassGuid, Vector<RenderPassAttachmentTexture>>  RenderPassAttachmentTextureInfoMap;
-
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
     DLL_EXPORT const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
-    //DLL_EXPORT const Vector<VulkanPipeline>                            FindRenderPipelineList(const RenderPassGuid& renderPassGuid);
     DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
     DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
