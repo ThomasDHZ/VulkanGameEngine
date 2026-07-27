@@ -163,6 +163,7 @@
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GameObjectSystem.h" />
+    <ClInclude Include="GameObjectSystemDLL.h" />
     <ClInclude Include="LevelSystem.h" />
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="LuaScriptingSystem.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
+    <ClCompile Include="GameObjectSystemDLL.cpp" />
     <ClCompile Include="LevelSystem.cpp" />
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="LuaScriptingSystem.cpp" />

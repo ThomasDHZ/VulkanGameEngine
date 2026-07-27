@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using VulkanEngineCoreCS;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
@@ -88,10 +89,8 @@ namespace GameScriptLibraryDLL.GameObjects
             return GetFromPtr<T>(ptr);
         }
 
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, out nuint returnCount);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObjectBase(vec2 gameObjectPosition, uint parentGameObjectId);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern intptr_t GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
-        [DllImport(DLLSystem.GameEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
+        [DllImport(Module.VulkanEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId);
+        [DllImport(Module.VulkanEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern intptr_t GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
+        [DllImport(Module.VulkanEngineDLL, CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
     }
 }

@@ -2,12 +2,7 @@
 #include <LightSystem.h>
 #include <SpriteSystem.h>
 
-uint32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint32 parentGameObjectId)
-{
-    entt::entity parentGameObject = static_cast<entt::entity>(parentGameObjectId);
-	uint gameObjectId = static_cast<uint32>(gameObjectSystem.CreateGameObject(gameObjectType, gameObjectPosition, parentGameObject));
-    return gameObjectId;
-}
+
 
 void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData)
 {

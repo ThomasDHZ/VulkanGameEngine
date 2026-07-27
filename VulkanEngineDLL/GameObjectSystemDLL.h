@@ -1,0 +1,28 @@
+#pragma once
+#include "GameObjectSystem.h"
+
+struct GameObjectComponentContainer
+{
+    ComponentTypeEnum ComponentType;
+    void* ComponentPtr;
+};
+
+struct GameObjectVariableDLL
+{
+    const char*                       VariableName;
+    byte*                             Value;
+    size_t                            VariableByteSize = 0;
+    GameObjectMemberType              MemberTypeEnum;
+    bool                              ConstVariable = false;
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    DLL_EXPORT uint                   GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
+    DLL_EXPORT GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
+    DLL_EXPORT intptr_t               GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
+    DLL_EXPORT void                   GameObjectSystem_DestroyGameObject(uint gameObjectId);
+#ifdef __cplusplus
+}
+#endif

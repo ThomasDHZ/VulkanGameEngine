@@ -37,6 +37,12 @@
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{a1d6e5bb-3594-4903-bae1-77e882612d94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Interop">
+      <UniqueIdentifier>{1e77c8cf-db1a-4406-96a3-c948490bae0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interop">
+      <UniqueIdentifier>{ab6b2d68-7db7-451d-b6c3-ae9ffe7e41fa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLL.h">
@@ -165,6 +171,9 @@
     <ClInclude Include="ComponentSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="GameObjectSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -265,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="ComponentSystem.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -12,6 +12,14 @@
     <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VulkanGameEngineLevelEditorInterlopDLL\VulkanGameEngineLevelEditorInterlopDLL.vcxproj" />
+    <ProjectReference Include="..\..\VulkanEngineCore\VulkanEngineCoreCS\VulkanEngineCoreCS.csproj" />
+    <ProjectReference Include="..\..\VulkanEngineCore\VulkanEngineCore\VulkanEngineCore.vcxproj" />
+    <ProjectReference Include="..\VulkanEngineDLL\VulkanEngineDLL.vcxproj" />
+    <ProjectReference Include="..\VulkanGameEngine\VulkanGameEngine.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="VulkanEngineCoreCS">
+      <HintPath>..\..\VulkanEngineCore\VulkanEngineCoreCS\bin\Debug\net8.0\VulkanEngineCoreCS.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
