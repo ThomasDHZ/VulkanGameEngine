@@ -6,7 +6,7 @@
 #include "EngineConfigSystem.h"
 #include "ImGuiRenderer.h"
 #include <DebugSystem.h>
-#include "ImGuiRenderer.h"
+#include <ImGuiRenderer.h>
 #include <ktx/include/ktx.h>
 
 #ifndef __ANDROID__
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     {
 
         gameSystem.StartUp();
-        imGuiRenderer = ImGui_StartUp();
+        imGuiSystem.StartUp();
         while (!vulkanWindow.ShouldClose())
         {
             const float frameTime = deltaTime.GetFrameTime();
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
             deltaTime.EndFrameTime();
         }
         vkDeviceWaitIdle(vulkan.LogicalDevice());
-        ImGui_Destroy(imGuiRenderer);
+        imGuiSystem.Destroy();
 
         
       //  textureSystem.DestroyAllTextures();

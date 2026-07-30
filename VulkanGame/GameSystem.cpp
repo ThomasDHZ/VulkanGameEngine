@@ -9,6 +9,7 @@
 #include "GameController.h"
 #include <LevelSystem.h>
 #include <CSharpScriptSystem.h>
+#include <ImGuiRenderer.h>
 
 #if !defined(__linux__) && !defined(__ANDROID__)
 #include <MaterialBakerSystem.h>
@@ -92,15 +93,12 @@ void GameSystem::DebugUpdate(float deltaTime)
     //vec2 rightStick = gameController.RightJoyStickMoved(GLFW_JOYSTICK_1);
     //vec2 r2L2 = gameController.R2L2Pressed(GLFW_JOYSTICK_1);
 
- /*   ImGui_StartFrame();
-    ImGui::ShowDemoWindow();
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    imGuiSystem.StartFrame();
+    imGuiSystem.FpsDisplay();
+    imGuiSystem.SliderInt("UseHeightMap ", &levelSystem.UseHeightMap, 0, 1);
+    imGuiSystem.SliderFloat("HeightScale ", &levelSystem.HeightScale, 0.0f, 1.0f);
+    imGuiSystem.SliderFloat3("ViewDirection ", &levelSystem.ViewDirection.x, -1.0f, 1.0f);
 
-
-    ImGui::SliderInt("UseHeightMap ", &levelSystem.UseHeightMap, 0, 1);
-    ImGui::SliderFloat("HeightScale ", &levelSystem.HeightScale, 0.0f, 1.0f);
-    ImGui::SliderFloat3("ViewDirection ", &levelSystem.ViewDirection.x, -1.0f, 1.0f);
-*/
 
     //ImGui::Separator();
 
@@ -159,7 +157,7 @@ void GameSystem::DebugUpdate(float deltaTime)
     //ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.ShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
 
 
-   // ImGui_EndFrame();
+    imGuiSystem.EndFrame();
 }
 
 void GameSystem::Draw(float deltaTime)
@@ -167,13 +165,10 @@ void GameSystem::Draw(float deltaTime)
     vulkan.Swapchain().StartFrame();
     commandBuffer = vulkan.CommandBufferList()[vulkan.Swapchain().CommandIndex()];
    // materialBakerSystem.Draw(commandBuffer);
-   // Vector<RenderPassNode> renderNodes = levelSystem.Draw(commandBuffer, deltaTime);
-  //  renderSystem.Draw(commandBuffer, renderNodes);
-  //  levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
-    ImGui_StartFrame();
-    ImGui::ShowDemoWindow();
-    ImGui_EndFrame();
-    ImGui_Draw(commandBuffer, imGuiRenderer);
+    Vector<RenderPassNode> renderNodes = levelSystem.Draw(commandBuffer, deltaTime);
+    renderSystem.Draw(commandBuffer, renderNodes);
+    levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
+    imGuiSystem.Draw(commandBuffer);
     vulkan.Swapchain().EndFrame(commandBuffer);
 }
 
