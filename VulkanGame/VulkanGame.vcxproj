@@ -158,7 +158,6 @@
     <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameSystem.h" />
-    <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SystemClock.h" />
@@ -176,10 +175,8 @@
     <ClCompile Include="AndroidMain.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="GameSystem.cpp" />
-    <ClCompile Include="ImGuiRenderer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="SystemClock.cpp" />
-    <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TimeSystem.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
