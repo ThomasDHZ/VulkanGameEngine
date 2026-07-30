@@ -168,7 +168,6 @@
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="LuaScriptingSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
-    <ClInclude Include="NetworkingSystem.h" />
     <ClInclude Include="PushConstantRegistry.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SkyBox.h" />
@@ -207,7 +206,6 @@
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="LuaScriptingSystem.cpp" />
     <ClCompile Include="MemoryPoolSystem.cpp" />
-    <ClCompile Include="NetworkingSystem.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="PushConstantRegistry.cpp" />
     <ClCompile Include="RenderSystem.cpp" />

@@ -49,18 +49,18 @@ int main(int argc, char** argv)
     {
 
         gameSystem.StartUp();
-        //imGuiRenderer = ImGui_StartUp();
+        imGuiRenderer = ImGui_StartUp();
         while (!vulkanWindow.ShouldClose())
         {
             const float frameTime = deltaTime.GetFrameTime();
             vulkanWindow.PollEvents();
-            gameSystem.Update(vulkanWindow.GetHandle(), frameTime);
+            gameSystem.Update(vulkanWindow.GetWindowHandle(), frameTime);
             gameSystem.DebugUpdate(frameTime);
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();
         }
         vkDeviceWaitIdle(vulkan.LogicalDevice());
-        //ImGui_Destroy(imGuiRenderer);
+        ImGui_Destroy(imGuiRenderer);
 
         
       //  textureSystem.DestroyAllTextures();

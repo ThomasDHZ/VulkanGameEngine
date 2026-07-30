@@ -153,9 +153,6 @@
     <ClInclude Include="SpriteSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkingSystem.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="DLLSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -261,9 +258,6 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="LevelSystem.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkingSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="DLLSystem.cpp">
