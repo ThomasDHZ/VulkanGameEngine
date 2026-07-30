@@ -1,72 +1,47 @@
-#include <VulkanWindow.h>
+#include "VulkanWindow.h"
 #include "ImGuiRenderer.h"
-#include "imgui_impl_vulkan.h"
 #include "Platform.h"
 
 #ifndef PLATFORM_ANDROID
-
 ImGuiRenderer imGuiRenderer = ImGuiRenderer();
 
-// ------------------------------------------------------------
-// Startup
-// ------------------------------------------------------------
 ImGuiRenderer ImGui_StartUp()
 {
     ImGuiRenderer imGui;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)vulkanWindow.GetWindowHandle(), true);
 
-    // Keep multi-viewport OFF for now
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-    GLFWwindow* window = static_cast<GLFWwindow*>(vulkanWindow.GetWindowHandle());
-    if (!window)
-        throw std::runtime_error("ImGui_StartUp: GLFW window is null");
-
-#ifdef _WIN32
-    HWND hwnd = vulkanWindow.GetHWND(window);
-    if (!hwnd) throw std::runtime_error("ImGui_StartUp: Win32 HWND is null");
-#endif
-
-    // false = do not install GLFW callbacks (you already have your own)
-    ImGui_ImplGlfw_InitForVulkan(window, false);
-
-    // Create ImGui render pass + framebuffers (must match swapchain format)
     imGui.RenderPass = ImGui_CreateRenderPass();
     imGui.SwapChainFramebuffers = ImGui_CreateRendererFramebuffers(imGui.RenderPass);
 
-    // Descriptor pool
     VkDescriptorPoolSize poolSizes[] =
     {
-        { VK_DESCRIPTOR_TYPE_SAMPLER,                1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
         { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,          1000 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,          1000 },
-        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,   1000 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,   1000 },
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1000 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       1000 }
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
     };
-
-    VkDescriptorPoolCreateInfo poolInfo
+    VkDescriptorPoolCreateInfo pool_info =
     {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
         .maxSets = 1000 * IM_ARRAYSIZE(poolSizes),
-        .poolSizeCount = static_cast<uint32_t>(IM_ARRAYSIZE(poolSizes)),
+        .poolSizeCount = (uint32)IM_ARRAYSIZE(poolSizes),
         .pPoolSizes = poolSizes
     };
+    vkCreateDescriptorPool(vulkan.LogicalDevice(), &pool_info, nullptr, &imGui.ImGuiDescriptorPool);
 
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(
-        vulkan.LogicalDevice(), &poolInfo, nullptr, &imGui.ImGuiDescriptorPool));
-
-    // Vulkan backend init
-    ImGui_ImplVulkan_InitInfo initInfo
+    ImGui_ImplVulkan_InitInfo init_info =
     {
         .Instance = vulkan.InstanceHandle(),
         .PhysicalDevice = vulkan.PhysicalDevice(),
@@ -74,8 +49,8 @@ ImGuiRenderer ImGui_StartUp()
         .QueueFamily = vulkan.Device().GraphicsFamily(),
         .Queue = vulkan.GraphicsQueue(),
         .DescriptorPool = imGui.ImGuiDescriptorPool,
-        .MinImageCount = static_cast<uint32_t>(vulkan.SwapChainImageCount()),
-        .ImageCount = static_cast<uint32_t>(vulkan.SwapChainImageCount()),
+        .MinImageCount = static_cast<uint32>(vulkan.SwapChainImageCount()),
+        .ImageCount = static_cast<uint32>(vulkan.SwapChainImageCount()),
         .PipelineCache = VK_NULL_HANDLE,
         .PipelineInfoMain = ImGui_ImplVulkan_PipelineInfo
         {
@@ -86,39 +61,49 @@ ImGuiRenderer ImGui_StartUp()
         .Allocator = nullptr,
         .CheckVkResultFn = ImGui_VkResult
     };
-
-    ImGui_ImplVulkan_Init(&initInfo);
+    ImGui_ImplVulkan_Init(&init_info);
     return imGui;
 }
 
-// ------------------------------------------------------------
-// Per-frame draw (call from GameSystem::Draw after scene)
-// ------------------------------------------------------------
-void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer)
+void ImGui_StartFrame()
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    ImGui::Begin("Button Window");
+}
 
-    ImGui::ShowDemoWindow();   // remove later
-
+void ImGui_EndFrame()
+{
+    ImGui::End();
     ImGui::Render();
+    ImDrawData* dd = ImGui::GetDrawData();
+    printf("lists=%d vtx=%d display=%.0fx%.0f\n",
+        dd ? dd->CmdListsCount : -1,
+        dd ? dd->TotalVtxCount : -1,
+        dd ? dd->DisplaySize.x : 0,
+        dd ? dd->DisplaySize.y : 0);
+}
 
-    VkClearValue clearValue{};
-    clearValue.color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer)
+{
+    std::vector<VkClearValue> clearValues
+    {
+        VkClearValue {.color = { {0.0f, 0.0f, 0.0f, 1.0f} } }
+    };
 
     VkRenderPassBeginInfo renderPassInfo
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = imGuiRenderer.RenderPass,
         .framebuffer = imGuiRenderer.SwapChainFramebuffers[vulkan.Swapchain().ImageIndex()],
-        .renderArea =
+        .renderArea
         {
             .offset = { 0, 0 },
-            .extent = vulkan.SwapChainResolution()
+            .extent = vulkan.SwapChainResolution(),
         },
-        .clearValueCount = 1,
-        .pClearValues = &clearValue
+.clearValueCount = 0,
+.pClearValues = nullptr
     };
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -126,75 +111,32 @@ void ImGui_Draw(VkCommandBuffer& commandBuffer, ImGuiRenderer& imGuiRenderer)
     vkCmdEndRenderPass(commandBuffer);
 }
 
-// ------------------------------------------------------------
-// Swapchain rebuild
-// ------------------------------------------------------------
 void ImGui_RebuildSwapChain(ImGuiRenderer& imGuiRenderer)
 {
-    vkDeviceWaitIdle(vulkan.LogicalDevice());
-
-    // Destroy old framebuffers (add proper destroy helpers if you have them)
-    for (VkFramebuffer fb : imGuiRenderer.SwapChainFramebuffers)
-    {
-        if (fb != VK_NULL_HANDLE)
-            vkDestroyFramebuffer(vulkan.LogicalDevice(), fb, nullptr);
-    }
-    imGuiRenderer.SwapChainFramebuffers.clear();
-
-    if (imGuiRenderer.RenderPass != VK_NULL_HANDLE)
-    {
-        vkDestroyRenderPass(vulkan.LogicalDevice(), imGuiRenderer.RenderPass, nullptr);
-        imGuiRenderer.RenderPass = VK_NULL_HANDLE;
-    }
-
+   // vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
+   // vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
     imGuiRenderer.RenderPass = ImGui_CreateRenderPass();
     imGuiRenderer.SwapChainFramebuffers = ImGui_CreateRendererFramebuffers(imGuiRenderer.RenderPass);
-
-    // Tell ImGui the swapchain changed (if your ImGui version needs it)
-    // ImGui_ImplVulkan_SetMinImageCount(static_cast<uint32_t>(vulkan.SwapChainImageCount()));
 }
 
-// ------------------------------------------------------------
-// Shutdown
-// ------------------------------------------------------------
 void ImGui_Destroy(ImGuiRenderer& imGuiRenderer)
 {
-    vkDeviceWaitIdle(vulkan.LogicalDevice());
-
     ImGui_ImplVulkan_Shutdown();
+    //vulkanSystem.DestroyDescriptorPool(vulkanSystem.Device, &imGuiRenderer.ImGuiDescriptorPool);
+    //vulkanSystem.DestroyRenderPass(vulkanSystem.Device, &imGuiRenderer.RenderPass);
+    //vulkanSystem.DestroyFrameBuffers(vulkanSystem.Device, imGuiRenderer.SwapChainFramebuffers);
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
-    if (imGuiRenderer.ImGuiDescriptorPool != VK_NULL_HANDLE)
-    {
-        vkDestroyDescriptorPool(vulkan.LogicalDevice(), imGuiRenderer.ImGuiDescriptorPool, nullptr);
-        imGuiRenderer.ImGuiDescriptorPool = VK_NULL_HANDLE;
-    }
-
-    for (VkFramebuffer fb : imGuiRenderer.SwapChainFramebuffers)
-    {
-        if (fb != VK_NULL_HANDLE)
-            vkDestroyFramebuffer(vulkan.LogicalDevice(), fb, nullptr);
-    }
-    imGuiRenderer.SwapChainFramebuffers.clear();
-
-    if (imGuiRenderer.RenderPass != VK_NULL_HANDLE)
-    {
-        vkDestroyRenderPass(vulkan.LogicalDevice(), imGuiRenderer.RenderPass, nullptr);
-        imGuiRenderer.RenderPass = VK_NULL_HANDLE;
-    }
 }
 
-// ------------------------------------------------------------
-// Render pass – MUST use swapchain format
-// ------------------------------------------------------------
 VkRenderPass ImGui_CreateRenderPass()
 {
+    VkRenderPass renderPass = VK_NULL_HANDLE;
     VkAttachmentDescription colorAttachment
     {
-        .format = vulkan.Swapchain().SwapChainImageFormat(), // CRITICAL
+        .format = VK_FORMAT_R8G8B8A8_UNORM,
         .samples = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,  // CLEAR while testing; use LOAD to keep scene
+        .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -225,6 +167,7 @@ VkRenderPass ImGui_CreateRenderPass()
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
     };
 
+
     VkRenderPassCreateInfo renderPassInfo
     {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
@@ -235,49 +178,40 @@ VkRenderPass ImGui_CreateRenderPass()
         .dependencyCount = 1,
         .pDependencies = &dependency
     };
-
-    VkRenderPass renderPass = VK_NULL_HANDLE;
     VULKAN_THROW_IF_FAIL(vkCreateRenderPass(vulkan.LogicalDevice(), &renderPassInfo, nullptr, &renderPass));
     return renderPass;
 }
 
-// ------------------------------------------------------------
-// Framebuffers for each swapchain image
-// ------------------------------------------------------------
 Vector<VkFramebuffer> ImGui_CreateRendererFramebuffers(const VkRenderPass& renderPass)
 {
-    Vector<VkFramebuffer> frameBuffers(vulkan.SwapChainImageCount());
-
-    for (size_t i = 0; i < vulkan.SwapChainImageCount(); ++i)
+    Vector<VkFramebuffer> frameBuffers = Vector<VkFramebuffer>(vulkan.SwapChainImageCount());
+    for (size_t x = 0; x < vulkan.SwapChainImageCount(); x++)
     {
-        VkImageView attachments[] = { vulkan.Swapchain().SwapChainImageViews()[i] };
+        std::vector<VkImageView> attachments =
+        {
+            vulkan.Swapchain().SwapChainImageViews()[x]
+        };
 
-        VkFramebufferCreateInfo framebufferInfo
+        VkFramebufferCreateInfo frameBufferInfo =
         {
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = renderPass,
-            .attachmentCount = 1,
-            .pAttachments = attachments,
+            .attachmentCount = static_cast<uint32>(attachments.size()),
+            .pAttachments = attachments.data(),
             .width = vulkan.SwapChainResolution().width,
             .height = vulkan.SwapChainResolution().height,
             .layers = 1
         };
-
-        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(
-            vulkan.LogicalDevice(), &framebufferInfo, nullptr, &frameBuffers[i]));
+        VULKAN_THROW_IF_FAIL(vkCreateFramebuffer(vulkan.LogicalDevice(), &frameBufferInfo, nullptr, &frameBuffers[x]));
     }
-
     return frameBuffers;
 }
 
 void ImGui_VkResult(VkResult err)
 {
-    if (err == VK_SUCCESS)
-        return;
-
-    printf("ImGui Vulkan error: VkResult %d\n", static_cast<int>(err));
+    if (err == 0) return;
+    printf("VkResult %d\n", err);
     if (err < 0)
         abort();
 }
-
-#endif // !PLATFORM_ANDROID
+#endif
