@@ -4,9 +4,8 @@
 #include "FrameTimer.h"
 #include "GameSystem.h"
 #include "EngineConfigSystem.h"
-#include "ImGuiRenderer.h"
+#include <ImGuiSystem.h>
 #include <DebugSystem.h>
-#include <ImGuiRenderer.h>
 #include <ktx/include/ktx.h>
 
 #ifndef __ANDROID__

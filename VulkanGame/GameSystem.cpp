@@ -1,7 +1,7 @@
 #include "GameSystem.h"
 #include <imgui_impl_glfw.h>
 #include "TextureSystem.h"
-#include "ImGuiRenderer.h"
+#include <ImGuiSystem.h>
 #include "GameObjectSystem.h"
 #include "LevelSystem.h"
 #include "MeshSystem.h"
@@ -9,7 +9,6 @@
 #include "GameController.h"
 #include <LevelSystem.h>
 #include <CSharpScriptSystem.h>
-#include <ImGuiRenderer.h>
 
 #if !defined(__linux__) && !defined(__ANDROID__)
 #include <MaterialBakerSystem.h>
@@ -25,6 +24,7 @@ GameSystem gameSystem = GameSystem();
 #endif
 #include <CollisionSystem.h>
 #include <EngineConfigSystem.h>
+#include <NetworkSystem.h>
 
 GameSystem::GameSystem()
 {
@@ -41,6 +41,7 @@ void GameSystem::StartUp()
     vulkan.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
     bufferSystem.SetUpVmaAllocation();
     memoryPoolSystem.StartUp();
+    networkSystem.StartAsServer(7777);
     //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();
 #if defined(_WIN32)
@@ -62,6 +63,7 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     meshSystem.Update(deltaTime);
     memoryPoolSystem.UpdateMemoryPool();
     renderSystem.Update(windowHandle, deltaTime);
+    networkSystem.Update(deltaTime);
 
     //cSharpScriptSystem.Update(deltaTime);
     auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
@@ -98,7 +100,43 @@ void GameSystem::DebugUpdate(float deltaTime)
     imGuiSystem.SliderInt("UseHeightMap ", &levelSystem.UseHeightMap, 0, 1);
     imGuiSystem.SliderFloat("HeightScale ", &levelSystem.HeightScale, 0.0f, 1.0f);
     imGuiSystem.SliderFloat3("ViewDirection ", &levelSystem.ViewDirection.x, -1.0f, 1.0f);
+    imGuiSystem.Separator();
 
+    // Current status
+    const char* modeNames[] = { "None", "Server", "Client" };
+    imGuiSystem.Text("Current Mode: %s", modeNames[(int)networkSystem.GetNetworkMode()]);
+    imGuiSystem.Text("Connected: %s", networkSystem.IsConnected() ? "Yes" : "No");
+
+    imGuiSystem.Separator();
+
+    // --- Server ---
+    if (imGuiSystem.Button("Start Server"))
+    {
+        networkSystem.StartAsServer(7777);
+    }
+
+    // --- Client ---
+    static char ipBuffer[64] = "127.0.0.1";
+    std::array<char, 64> ip = { 0 };
+    std::snprintf(ip.data(), ip.size(), "%s", ipBuffer);
+    static int port = 7777;
+
+    imGuiSystem.InputText("Server IP", ipBuffer, sizeof(ipBuffer));
+    imGuiSystem.InputInt("Port", &port);
+
+    if (imGuiSystem.Button("Start Client"))
+    {
+        if (networkSystem.StartAsClient())
+        {
+            networkSystem.ConnectToServer(ip, static_cast<uint16_t>(port));
+        }
+    }
+
+    imGuiSystem.SameLine();
+    if (imGuiSystem.Button("Stop / Disconnect"))
+    {
+        networkSystem.Stop();
+    }
 
     //ImGui::Separator();
 
