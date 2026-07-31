@@ -110,12 +110,14 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
                     if (maxMipLevelCount < texture.texture.MipMapLevels()) maxMipLevelCount = texture.texture.MipMapLevels() - 1;
                 }
 
+                Vector<MeshDrawMessage> meshList;
+                meshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.IsCubeMapRenderPass() ? meshSystem.DrawMesh("__SkyBoxMesh__") : meshSystem.DrawMesh(subPass.MeshType);
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassGuid,
                         .PipelineGuid = subPass.PipelineGuid,
                         .PushConstant = subPass.ShaderPushConstant,
-                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshSystem.DrawMesh(subPass.MeshType) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
+                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
                         .OffScreenRenderPass = subPass.OffScreenFrameBuffer

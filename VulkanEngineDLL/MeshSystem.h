@@ -160,7 +160,9 @@ public:
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
 	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
+	DLL_EXPORT const Vector<Mesh> FindMeshByMeshKey(const String& meshKey);
 	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
+	DLL_EXPORT const Vector<MeshDrawMessage> DrawMesh(const String& meshKey);
 	DLL_EXPORT const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
 	DLL_EXPORT const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
 

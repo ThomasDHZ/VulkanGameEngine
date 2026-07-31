@@ -334,6 +334,20 @@ const Mesh& MeshSystem::FindMesh(const uint& meshId)
 	return MeshList[meshId];
 }
 
+const Vector<Mesh> MeshSystem::FindMeshByMeshKey(const String& meshKey)
+{
+	Vector<Mesh> result;
+	uint64 sharedAssetId = HashAssetKey(meshKey);
+	for (const auto& mesh : MeshList)
+	{
+		if (sharedAssetId == mesh.SharedAssetId)
+		{
+			result.emplace_back(mesh);
+		}
+	}
+	return result;
+}
+
 const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
 {
 	Vector<Mesh> result;
@@ -345,6 +359,29 @@ const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
 		}
 	}
 	return result;
+}
+
+const Vector<MeshDrawMessage> MeshSystem::DrawMesh(const String& meshKey)
+{
+	Vector<MeshDrawMessage> meshDrawMessageList;
+	const Vector<Mesh>& meshList = meshSystem.FindMeshByMeshKey(meshKey);
+	for (auto& mesh : meshList)
+	{
+		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(mesh.SharedAssetId);
+		meshDrawMessageList.emplace_back(MeshDrawMessage
+			{
+				.MeshId = mesh.MeshId,
+				.VertexCount = meshAsset.VertexCount,
+				.IndexCount = meshAsset.IndexCount,
+				.InstanceCount = 1,
+				.FirstIndex = 0,
+				.StartInstanceIndex = 0,
+				.VertexOffset = 0,
+				.VertexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.VertexBufferId).Buffer(),
+				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
+			});
+	}
+	return meshDrawMessageList;
 }
 
 const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
