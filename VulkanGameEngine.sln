@@ -203,6 +203,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanEngineCoreCS", "..\VulkanEngineCore\VulkanEngineCoreCS\VulkanEngineCoreCS.csproj", "{9FF08754-5750-D570-6B02-0BE424C693B6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanGame", "VulkanGame\VulkanGame.vcxproj", "{F75747BB-CC26-4C02-89ED-AA7DC3749EE5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{27B62C4A-F1F6-4546-BC4F-C8AE19A27754} = {27B62C4A-F1F6-4546-BC4F-C8AE19A27754}
+		{526BFF96-6C33-482D-9BEC-29A6D553F16A} = {526BFF96-6C33-482D-9BEC-29A6D553F16A}
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

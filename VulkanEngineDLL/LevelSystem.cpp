@@ -17,8 +17,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
 
-    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.SwapChainResolution().width, (float)vulkan.SwapChainResolution().height), vec2(0.0f, 0.0f));
-    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.SwapChainResolution().width, (float)vulkan.SwapChainResolution().height), vec3(0.0f, 0.0f, 0.0f)));
+    cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec2(0.0f, 0.0f));
+    PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec3(0.0f, 0.0f, 0.0f)));
     pushConstantRegistry.RegisterDefaultPushConstantRules();
 
     VkGuid tileSetId = VkGuid();
