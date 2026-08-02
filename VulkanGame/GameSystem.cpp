@@ -9,6 +9,7 @@
 #include "GameController.h"
 #include <LevelSystem.h>
 #include <CSharpScriptSystem.h>
+#include <ChatSystem.h>
 
 #if !defined(__linux__) && !defined(__ANDROID__)
 #include <MaterialBakerSystem.h>
@@ -138,6 +139,16 @@ void GameSystem::DebugUpdate(float deltaTime)
         networkSystem.Stop();
     }
 
+    static char chatInput[128] = "";
+    imGuiSystem.InputText("Message", chatInput, sizeof(chatInput));
+    if (imGuiSystem.Button("Send") || (imGuiSystem.IsKeyPressed(ImGuiKey_Enter) && imGuiSystem.IsItemFocused()))
+    {
+        if (strlen(chatInput) > 0)
+        {
+            networkSystem.SendChatMessage(chatInput);
+            chatInput[0] = '\0';          // clear input
+        }
+    }
     //ImGui::Separator();
 
     ////for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
@@ -194,7 +205,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     //ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.ShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
 
-
+    chatSystem.DrawChatWindow();
     imGuiSystem.EndFrame();
 }
 
