@@ -21,8 +21,11 @@ extern "C" {
 #endif
     DLL_EXPORT uint                   GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
-    DLL_EXPORT intptr_t               GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
+    DLL_EXPORT IntPtr                 GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
     DLL_EXPORT void                   GameObjectSystem_DestroyGameObject(uint gameObjectId);
+
+    DLL_EXPORT void                   GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
+    DLL_EXPORT void*                  GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
 #ifdef __cplusplus
 }
 #endif

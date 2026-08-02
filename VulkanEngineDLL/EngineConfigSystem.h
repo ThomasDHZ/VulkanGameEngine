@@ -22,7 +22,6 @@ public:
     const String CompilerBuildParams;
     const String CompiledShaderOutputDirectory;
     const String GameScriptLibraryDLL;
-    const String NetworkingDLL;
     const String NvidiaTextureTool;
 #else
     ivec2 WindowResolution;

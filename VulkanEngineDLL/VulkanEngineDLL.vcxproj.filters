@@ -171,6 +171,9 @@
     <ClInclude Include="GameObjectSystemDLL.h">
       <Filter>Header Files\Interop</Filter>
     </ClInclude>
+    <ClInclude Include="InputSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -271,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="GameObjectSystemDLL.cpp">
       <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="InputSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

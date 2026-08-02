@@ -1,4 +1,6 @@
 #include "GameObjectSystemDLL.h"
+#include "SpriteSystem.h"
+#include "LightSystem.h"
 
 uint32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
@@ -58,4 +60,36 @@ void GameObjectSystem_DestroyGameObject(uint gameObjectId)
 {
     entt::entity gameObjectEntity = static_cast<entt::entity>(gameObjectId);
     gameObjectSystem.DestroyGameObject(gameObjectEntity);
+}
+
+void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData)
+{
+    entt::entity gameObjectEntity = static_cast<entt::entity>(gameObjectId);
+    switch (componentType)
+    {
+        case kInputComponent:            gameObjectSystem.CreateGameObjectComponent<InputComponent>(gameObjectEntity, static_cast<InputComponent*>(componentData)); break;
+        case kSpriteComponent:           gameObjectSystem.CreateGameObjectComponent<Sprite>(gameObjectEntity, static_cast<Sprite*>(componentData)); break;
+        case kTransform2DComponent:      gameObjectSystem.CreateGameObjectComponent<Transform2DComponent>(gameObjectEntity, static_cast<Transform2DComponent*>(componentData)); break;
+        case kTransform3DComponent:      gameObjectSystem.CreateGameObjectComponent<Transform3DComponent>(gameObjectEntity, static_cast<Transform3DComponent*>(componentData)); break;
+        case kCameraFollowComponent:     gameObjectSystem.CreateGameObjectComponent<CameraFollowComponent>(gameObjectEntity, static_cast<CameraFollowComponent*>(componentData)); break;
+        case kDirectionalLightComponent: gameObjectSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectEntity, static_cast<DirectionalLightComponent*>(componentData)); break;
+        case kPointLightComponent:       gameObjectSystem.CreateGameObjectComponent<PointLightComponent>(gameObjectEntity, static_cast<PointLightComponent*>(componentData)); break;
+        default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");
+    }
+}
+
+void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType)
+{
+    entt::entity gameObjectEntity = static_cast<entt::entity>(gameObjectId);
+    switch (componentType)
+    {
+    case kInputComponent:            return gameObjectSystem.GetGameObjectComponent<InputComponent>(gameObjectEntity);
+    case kSpriteComponent:           return gameObjectSystem.GetGameObjectComponent<Sprite>(gameObjectEntity);
+    case kTransform2DComponent:      return gameObjectSystem.GetGameObjectComponent<Transform2DComponent>(gameObjectEntity);
+    case kTransform3DComponent:      return gameObjectSystem.GetGameObjectComponent<Transform3DComponent>(gameObjectEntity);
+    case kCameraFollowComponent:     return gameObjectSystem.GetGameObjectComponent<CameraFollowComponent>(gameObjectEntity);
+    case kDirectionalLightComponent: return gameObjectSystem.GetGameObjectComponent<DirectionalLightComponent>(gameObjectEntity);
+    case kPointLightComponent:       return gameObjectSystem.GetGameObjectComponent<PointLightComponent>(gameObjectEntity);
+    default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");
+    }
 }

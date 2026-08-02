@@ -2,7 +2,7 @@
 #include <Platform.h>
 #include "GameObjectSystem.h"
 #include <RenderSystem.h>
-#include "InputSystem.h"
+#include <InputSystem.h>
 #include <Camera.h>
 #include <LevelSystem.h>
 
