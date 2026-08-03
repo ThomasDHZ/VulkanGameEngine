@@ -7,88 +7,67 @@
 
 InputSystem& inputSystem = InputSystem::Get();
 
-void InputSystem::Update(const float& deltaTime)
+void InputSystem::Update(float deltaTime)
 {
 #ifndef PLATFORM_ANDROID
     int joy = GLFW_JOYSTICK_1;
-    auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent, InputComponent>();
-    for (auto [entity, sprite, transform, input] : view.each())
+    if (glfwJoystickIsGamepad(joy))
     {
-        int joy = GLFW_JOYSTICK_1;
-
-        if (glfwJoystickIsGamepad(joy))
+        GLFWgamepadstate state;
+        if (glfwGetGamepadState(joy, &state))
         {
-            GLFWgamepadstate controllerState;
-            glfwGetGamepadState(joy, &controllerState);
-            if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT]) keyboard.KeyPressed[KEY_A] = KeyState::KS_PRESSED;
-            else keyboard.KeyPressed[KEY_A] = KeyState::KS_RELEASED;
-
-            if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]) keyboard.KeyPressed[KEY_D] = KeyState::KS_PRESSED;
-            else keyboard.KeyPressed[KEY_D] = KeyState::KS_RELEASED;
-
-            if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP]) keyboard.KeyPressed[KEY_W] = KeyState::KS_PRESSED;
-            else keyboard.KeyPressed[KEY_W] = KeyState::KS_RELEASED;
-
-            if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN]) keyboard.KeyPressed[KEY_S] = KeyState::KS_PRESSED;
-            else keyboard.KeyPressed[KEY_S] = KeyState::KS_RELEASED;
-
-            if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE]) keyboard.KeyPressed[KEY_E] = KeyState::KS_PRESSED;
-            else keyboard.KeyPressed[KEY_E] = KeyState::KS_RELEASED;
-
-            std::copy(keyboard.KeyPressed, keyboard.KeyPressed + MAXKEYBOARDKEY, input.KeyPressed);
-
-            //if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] &&
-            //    controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
-            //{
-            //    sprite.FlipSprite.x = 1;
-            //    transform.GameObjectPosition.x -= 200.0f * deltaTime;
-            //    if (levelSystem.EntityRegistry.all_of<const CameraFollowComponent>(entity)) cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position.x -= 200.0f * deltaTime;
-            ////    spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShootWalk);
-            //}
-            //else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT])
-            //{
-            //    sprite.FlipSprite.x = 1;
-            //    transform.GameObjectPosition.x -= 200.0f * deltaTime;
-            //    if (levelSystem.EntityRegistry.all_of<const CameraFollowComponent>(entity)) cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position.x -= 200.0f * deltaTime;
-            //   // spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kWalking);
-            //}
-            //else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] &&
-            //    controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
-            //{
-            //    sprite.FlipSprite.x = 0;
-            //    transform.GameObjectPosition.x += 200.0f * deltaTime;
-            //    if (levelSystem.EntityRegistry.all_of<const CameraFollowComponent>(entity)) cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position.x += 200.0f * deltaTime;
-            // //   spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShootWalk);
-            //}
-            //else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT])
-            //{
-            //    sprite.FlipSprite.x = 0;
-            //    transform.GameObjectPosition.x += 200.0f * deltaTime;
-            //    if (levelSystem.EntityRegistry.all_of<const CameraFollowComponent>(entity)) cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position.x += 200.0f * deltaTime;
-            //   // spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kWalking);
-            //}
-            //else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] &&
-            //    controllerState.buttons[GLFW_GAMEPAD_BUTTON_CROSS])
-            //{
-            //    sprite.FlipSprite.x == 1 ? transform.GameObjectPosition.x += 200.0f * deltaTime : transform.GameObjectPosition.x -= 200.0f * deltaTime;
-            //    if (levelSystem.EntityRegistry.all_of<const CameraFollowComponent>(entity)) cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position.x -= 200.0f * deltaTime;
-            //  //  spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kSlide);
-            //}
-            //else if (controllerState.buttons[GLFW_GAMEPAD_BUTTON_SQUARE])
-            //{
-            //    /* MegaManObject* objectData = static_cast<MegaManObject*>(gameObject.GameObjectData);
-            //     spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kShoot);
-            //     MegaManShot_CreateObject("Shot", VkGuid("623e5b6b-b1f8-4e69-8dca-237069a373e2"), transform.GameObjectPosition + objectData->ShotPostionOffset, gameObject.GameObjectId);*/
-            //}
-            //else
-            //{
-            //    //spriteSystem.SetSpriteAnimation(&sprite, MegaManAnimationEnum::kStanding);
-            //}
-        }
-        else
-        {
-            std::copy(keyboard.KeyPressed, keyboard.KeyPressed + MAXKEYBOARDKEY, input.KeyPressed);
+            keyboard.KeyPressed[KEY_A] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] ? KS_PRESSED : KS_RELEASED;
+            keyboard.KeyPressed[KEY_D] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] ? KS_PRESSED : KS_RELEASED;
+            keyboard.KeyPressed[KEY_W] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] ? KS_PRESSED : KS_RELEASED;
+            keyboard.KeyPressed[KEY_S] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] ? KS_PRESSED : KS_RELEASED;
+            keyboard.KeyPressed[KEY_E] = state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE] ? KS_PRESSED : KS_RELEASED;
         }
     }
+
+    GLFWgamepadstate state;
+    if (glfwGetGamepadState(joy, &state))
+    {
+        keyboard.KeyPressed[KEY_A] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_LEFT] ? KS_PRESSED : KS_RELEASED;
+        keyboard.KeyPressed[KEY_D] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] ? KS_PRESSED : KS_RELEASED;
+        keyboard.KeyPressed[KEY_W] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_UP] ? KS_PRESSED : KS_RELEASED;
+        keyboard.KeyPressed[KEY_S] = state.buttons[GLFW_GAMEPAD_BUTTON_DPAD_DOWN] ? KS_PRESSED : KS_RELEASED;
+        keyboard.KeyPressed[KEY_E] = state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE] ? KS_PRESSED : KS_RELEASED;
+    }
+    if (state.buttons[GLFW_GAMEPAD_BUTTON_SQUARE] == KS_PRESSED)
+    {
+        int a = 34;
+    }
+
+    auto view = gameObjectSystem.EntityRegistry.view<InputComponent>();
+    for (auto [entity, input] : view.each())
+    {
+        std::copy(keyboard.KeyPressed, keyboard.KeyPressed + MAXKEYBOARDKEY, input.KeyPressed);
+
+        input.MouseX = mouse.X;
+        input.MouseY = mouse.Y;
+        input.MouseDeltaX = mouse.X - mouse.XLast;
+        input.MouseDeltaY = mouse.Y - mouse.YLast;
+        std::copy(mouse.MouseButtonState, mouse.MouseButtonState + MAXMOUSEKEY, input.MouseButtons);
+        input.DeltaTime = deltaTime;
+    }
+
+    std::copy(std::begin(keyboard.KeyPressed), std::end(keyboard.KeyPressed), std::begin(m_previousKeys));
+    mouse.XLast = mouse.X;
+    mouse.YLast = mouse.Y;
 #endif
+}
+
+bool InputSystem::IsKeyDown(int key) const
+{
+    return keyboard.KeyPressed[key] == KS_PRESSED || keyboard.KeyPressed[key] == KS_HELD;
+}
+
+bool InputSystem::IsKeyPressed(int key) const
+{
+    return keyboard.KeyPressed[key] == KS_PRESSED && m_previousKeys[key] != KS_PRESSED;
+}
+
+bool InputSystem::IsKeyReleased(int key) const
+{
+    return keyboard.KeyPressed[key] == KS_RELEASED && m_previousKeys[key] != KS_RELEASED;
 }

@@ -12,24 +12,34 @@
 
 struct InputComponent
 {
-    KeyState* KeyPressed;
-    size_t size;
+    KeyState* KeyPressed{};
+    float MouseX = 0.0f;
+    float MouseY = 0.0f;
+    float MouseDeltaX = 0.0f;
+    float MouseDeltaY = 0.0f;
+    bool*  MouseButtons{};
+    float  DeltaTime = 0.0f;
+    uint32 Sequence = 0;
+    size_t MaxKeyboardSize = MAXKEYBOARDKEY;
+    size_t MaxMouseButton = MAXMOUSEKEY;
 
     InputComponent()
     {
         KeyPressed = memorySystem.AddPtrBuffer<KeyState>(MAXKEYBOARDKEY, __FILE__, __LINE__, __func__);
-        size = MAXKEYBOARDKEY;
+        MouseButtons = memorySystem.AddPtrBuffer<bool>(MAXMOUSEKEY, __FILE__, __LINE__, __func__);
     }
 
     InputComponent(const InputComponent& other)
     {
-        size = other.size;
-        KeyPressed = memorySystem.AddPtrBuffer<KeyState>(size, __FILE__, __LINE__, __func__);
-        std::memcpy(KeyPressed, other.KeyPressed, sizeof(KeyState) * size);
-    }
+        MaxKeyboardSize = other.MaxKeyboardSize;
+        KeyPressed = memorySystem.AddPtrBuffer<KeyState>(MaxKeyboardSize, __FILE__, __LINE__, __func__);
+        std::memcpy(KeyPressed, other.KeyPressed, sizeof(KeyState) * MaxKeyboardSize);
+        memorySystem.DeletePtr(other.KeyPressed);
 
-    ~InputComponent()
-    {
+        MaxMouseButton = other.MaxMouseButton;
+        MouseButtons = memorySystem.AddPtrBuffer<bool>(MaxMouseButton, __FILE__, __LINE__, __func__);
+        std::memcpy(MouseButtons, other.MouseButtons, sizeof(bool) * MaxMouseButton);
+        memorySystem.DeletePtr(other.MouseButtons);
     }
 };
 

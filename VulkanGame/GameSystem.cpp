@@ -200,7 +200,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     //ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.ShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
 
-    chatSystem.DrawChatWindow();
+  //  chatSystem.DrawChatWindow();
     imGuiSystem.EndFrame();
 }
 
