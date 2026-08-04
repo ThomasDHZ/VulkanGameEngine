@@ -8,25 +8,36 @@
 #include "nethost.h"
 #include "enum.h"
 #include <InputEnum.h>
-
+#include <glfw3.h>
+#include <GameController.h>
 
 struct InputComponent
 {
+    // Keyboard
     KeyState* KeyPressed{};
+
+    // Mouse
     float MouseX = 0.0f;
     float MouseY = 0.0f;
     float MouseDeltaX = 0.0f;
     float MouseDeltaY = 0.0f;
-    bool*  MouseButtons{};
+    bool* MouseButtons{};
+    bool  HasGamepad = false;
+    byte* buttonsList{};
+    float* axesList{};
     float  DeltaTime = 0.0f;
     uint32 Sequence = 0;
     size_t MaxKeyboardSize = MAXKEYBOARDKEY;
     size_t MaxMouseButton = MAXMOUSEKEY;
+    size_t maxButtonCount = 15;
+    size_t maxAxesCount = 6;
 
     InputComponent()
     {
         KeyPressed = memorySystem.AddPtrBuffer<KeyState>(MAXKEYBOARDKEY, __FILE__, __LINE__, __func__);
         MouseButtons = memorySystem.AddPtrBuffer<bool>(MAXMOUSEKEY, __FILE__, __LINE__, __func__);
+        buttonsList = memorySystem.AddPtrBuffer<byte>(maxButtonCount, __FILE__, __LINE__, __func__);
+        axesList = memorySystem.AddPtrBuffer<float>(maxAxesCount, __FILE__, __LINE__, __func__);
     }
 
     InputComponent(const InputComponent& other)
@@ -34,12 +45,18 @@ struct InputComponent
         MaxKeyboardSize = other.MaxKeyboardSize;
         KeyPressed = memorySystem.AddPtrBuffer<KeyState>(MaxKeyboardSize, __FILE__, __LINE__, __func__);
         std::memcpy(KeyPressed, other.KeyPressed, sizeof(KeyState) * MaxKeyboardSize);
-        memorySystem.DeletePtr(other.KeyPressed);
 
         MaxMouseButton = other.MaxMouseButton;
         MouseButtons = memorySystem.AddPtrBuffer<bool>(MaxMouseButton, __FILE__, __LINE__, __func__);
         std::memcpy(MouseButtons, other.MouseButtons, sizeof(bool) * MaxMouseButton);
-        memorySystem.DeletePtr(other.MouseButtons);
+
+        maxButtonCount = other.maxButtonCount;
+        buttonsList = memorySystem.AddPtrBuffer<byte>(maxButtonCount, __FILE__, __LINE__, __func__);
+        std::memcpy(buttonsList, other.buttonsList, sizeof(byte) * maxButtonCount);
+
+        maxAxesCount = other.maxAxesCount;
+        axesList = memorySystem.AddPtrBuffer<float>(maxAxesCount, __FILE__, __LINE__, __func__);
+        std::memcpy(axesList, other.axesList, sizeof(float) * maxAxesCount);
     }
 };
 

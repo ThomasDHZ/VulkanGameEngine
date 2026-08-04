@@ -72,32 +72,17 @@ namespace GameScriptLibraryDLL.GameObjects
             if (instancePtr == IntPtr.Zero) return;
 
             var instance = GameObject.GetFromPtr<Player>(instancePtr);
-           // Dictionary<String, GameObjectVariable<float>> gameObjectVariableList = GameObject.GetGameObjectVariables<float>(instance.GameObjectId);
+            //Dictionary<String, GameObjectVariable<float>> gameObjectVariableList = GameObject.GetGameObjectVariables<float>(instance.GameObjectId);
             Transform2DComponent* transform = Component.GetGameObjectComponent<Transform2DComponent>(instance.GameObjectId, ComponentTypeEnum.kTransform2DComponent);
             SpriteComponent* sprite = Component.GetGameObjectComponent<SpriteComponent>(instance.GameObjectId, ComponentTypeEnum.kSpriteComponent);
             InputComponent* input = Component.GetGameObjectComponent<InputComponent>(instance.GameObjectId, ComponentTypeEnum.kInputComponent);
 
             if (transform == null) return;
-            bool leftPressed = input != null &&
-                (input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_PRESSED ||
-                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_A] == KeyState.KS_HELD);
-
-            bool rightPressed = input != null &&
-                (input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_PRESSED ||
-                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_D] == KeyState.KS_HELD);
-
-            bool upPressed = input != null &&
-                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_W] == KeyState.KS_PRESSED ||
-                  input->KeyBoardState[(int)KeyboardKeyCode.KEY_W] == KeyState.KS_HELD);
-
-            bool downPressed = input != null &&
-                 (input->KeyBoardState[(int)KeyboardKeyCode.KEY_S] == KeyState.KS_PRESSED ||
-                  input->KeyBoardState[(int)KeyboardKeyCode.KEY_S] == KeyState.KS_HELD);
-
-            bool shootPressed = input != null &&
-                (input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_PRESSED ||
-                 input->KeyBoardState[(int)KeyboardKeyCode.KEY_E] == KeyState.KS_HELD);
-
+            bool leftPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_LEFT] == 1);
+            bool rightPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == 1);
+            bool upPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_UP] == 1);
+            bool downPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_DOWN] == 1);
+            bool shootPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_SQUARE] == 1);
 
             if (leftPressed)
             {

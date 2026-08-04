@@ -48,9 +48,12 @@ void InputSystem::Update(float deltaTime)
         input.MouseDeltaX = mouse.X - mouse.XLast;
         input.MouseDeltaY = mouse.Y - mouse.YLast;
         std::copy(mouse.MouseButtonState, mouse.MouseButtonState + MAXMOUSEKEY, input.MouseButtons);
+
+        GLFWgamepadstate gamePadState = gameController.GetGamePadState();
+        std::copy(gamePadState.buttons, gamePadState.buttons + input.maxButtonCount, input.buttonsList);
+        std::copy(gamePadState.axes,    gamePadState.axes + input.maxAxesCount, input.axesList);
         input.DeltaTime = deltaTime;
     }
-
     std::copy(std::begin(keyboard.KeyPressed), std::end(keyboard.KeyPressed), std::begin(m_previousKeys));
     mouse.XLast = mouse.X;
     mouse.YLast = mouse.Y;
