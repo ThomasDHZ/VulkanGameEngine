@@ -52,8 +52,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
     horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass("RenderPass/HorizontalGaussianBlurRenderPass.json");
     bloomRenderPassId                  = renderSystem.LoadRenderPass("RenderPass/BloomRenderPass.json");*/
     hdrRenderPassId =                    renderSystem.LoadRenderPass("RenderPass/HdrRenderPass.json");
-    objectPickerRenderPassId =           renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
-    selectedObjectPickerRenderPassId =   renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
+    //objectPickerRenderPassId =           renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
+    //selectedObjectPickerRenderPassId =   renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
 
     //shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
@@ -88,8 +88,8 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
         prefilterMapRenderPassId,
         gBufferRenderPassId,
         hdrRenderPassId,
-        objectPickerRenderPassId,
-        selectedObjectPickerRenderPassId
+      //  objectPickerRenderPassId,
+     //   selectedObjectPickerRenderPassId
     };
 
     Vector<RenderPassNode> renderPassNodeList;
@@ -115,7 +115,7 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassGuid,
-                        .PipelineGuid = subPass.PipelineGuid,
+                        .PipelinePackageGuid = subPass.PipelinePackageGuid,
                         .PushConstant = subPass.ShaderPushConstant,
                         .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                         .RenderPassInputs = subPass.InputTextureList,

@@ -30,23 +30,37 @@ RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 
 RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
-    for (auto& pipelineLoader : renderPassLoader.PipelineList)
-    {
-        pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
-        pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
-        pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
-        for (auto& shader : pipelineLoader.ShaderLoaderList)
+    auto BuildPipelineLoader = [&](VulkanPipelinePackageLoader& pipelinePackageLoader, VulkanPipelineLoader& pipelineLoader)
         {
-            Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
-            VulkanShader shader = VulkanShader(vertexShaderCode);
-            pipelineLoader.VulkanShaderList.emplace_back(shader);
-        }
+            for (auto& shader : pipelineLoader.ShaderLoaderList)
+            {
+                Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
+                VulkanShader shader = VulkanShader(vertexShaderCode);
+                pipelineLoader.VulkanShaderList.emplace_back(shader);
+            }
+        };
+
+    for (auto& pipelinePackageLoader : renderPassLoader.PipelinePackageList)
+    {
+        pipelinePackageLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+        pipelinePackageLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+        pipelinePackageLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+
+        BuildPipelineLoader(pipelinePackageLoader, pipelinePackageLoader.DefaultPipeline);
+        if (pipelinePackageLoader.DepthPipeline.has_value())       BuildPipelineLoader(pipelinePackageLoader, pipelinePackageLoader.DepthPipeline.value());
+        if (pipelinePackageLoader.ReflectionPipeline.has_value())  BuildPipelineLoader(pipelinePackageLoader, pipelinePackageLoader.ReflectionPipeline.value());
+        if (pipelinePackageLoader.WireFramePipeline.has_value())   BuildPipelineLoader(pipelinePackageLoader, pipelinePackageLoader.WireFramePipeline.value());
+        if (pipelinePackageLoader.CollisionPipeline.has_value())   BuildPipelineLoader(pipelinePackageLoader, pipelinePackageLoader.WireFramePipeline.value());
     }
 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
 
+    for (auto& pipelinePackage : vulkanRenderPass.PipelinePackageList())
+    {
+        RenderPipelinePackageMap[pipelinePackage.PipelinePackageId] = pipelinePackage;
+    }
     for (auto& vulkanPipeline : vulkanRenderPass.PipelineList())
     {
         RenderPipelineMap[vulkanPipeline.PipelineId()] = vulkanPipeline;
@@ -112,6 +126,16 @@ const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& rende
     return it->second;
 }
 
+const VulkanPipelinePackage& RenderSystem::FindRenderPipelinePackage(const VkGuid& pipelinePackageGuid)
+{
+    auto it = RenderPipelinePackageMap.find(pipelinePackageGuid);
+    if (it == RenderPipelinePackageMap.end())
+    {
+        throw std::runtime_error("Pipeline package not found: " + pipelinePackageGuid.ToString());
+    }
+    return it->second;
+}
+
 const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGuid)
 {
     auto it = RenderPipelineMap.find(pipelineGuid);
@@ -126,8 +150,9 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
 {
     if (drawMessage.PushConstant.has_value())
     {
-        const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(drawMessage.RenderPassGuid);
-        const VulkanPipeline& pipeline = renderSystem.FindRenderPipeline(drawMessage.PipelineGuid);
+        const VulkanRenderPass& renderPass = FindRenderPass(drawMessage.RenderPassGuid);
+        const VulkanPipelinePackage& pipelinePackage = FindRenderPipelinePackage(drawMessage.PipelinePackageGuid);
+        const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.DefaultPipeline);
         PushConstantContext pushConstantContext = PushConstantContext
         {
             .RenderPassGuid = drawMessage.RenderPassGuid,
@@ -163,19 +188,23 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                 for (auto& renderPassLayer : subPass)
                 {
                     Texture inputTexture;
-                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPassLayer.PipelineGuid);
-                    renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
-
                     if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
                     if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
                     if (renderPassLayer.OffScreenRenderPass && renderPassLayer.DrawMeshList.empty())
                     {
+                        const VulkanPipelinePackage& pipelinePackage = FindRenderPipelinePackage(renderPassLayer.PipelinePackageGuid);
+                        const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.DefaultPipeline);
+                        renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
                         vkCmdDraw(commandBuffer, 3, 1, 0, 0);
                     }
                     else
                     {
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
+
+                            const VulkanPipelinePackage& pipelinePackage = FindRenderPipelinePackage(renderPassLayer.PipelinePackageGuid);
+                            const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.DefaultPipeline);
+                            renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
                             BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount);
                             renderPass.DrawMesh(commandBuffer, renderPassLayer.DrawMeshList[x]);
                         }

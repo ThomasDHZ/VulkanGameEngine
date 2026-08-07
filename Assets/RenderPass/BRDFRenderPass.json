@@ -5,7 +5,17 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/BRDFPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "834b3dc4-a38d-4bc8-a02a-fe349d5c61d9",
+          "DefaultPipeline": "Pipelines/BRDFPipeline.json",
+          "DepthPipeline": null,
+          "WireFramePipeline": null,
+          "ReflectionPipeline": null,
+          "CollisionPipeline": null,
+          "SubPassId": 0,
+          "ViewportList": [],
+          "ScissorList": []
+        },
         "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

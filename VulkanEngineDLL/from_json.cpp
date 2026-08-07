@@ -335,7 +335,6 @@ namespace nlohmann
 
     void from_json(const json& j, VulkanSubPassLoader& model)
     {
-        model.PipelineGuid = fileSystem.LoadJsonFile(j["Pipeline"]).get<VulkanPipelineLoader>().PipelineId;
         j.at("MeshType").get_to(model.MeshType);
         j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
         j.at("InputTextureList").get_to(model.InputTextureList);
@@ -373,8 +372,8 @@ namespace nlohmann
                 {
                     for (const auto& item : subPass)
                     {
-                        nlohmann::json pipelineJson = fileSystem.LoadJsonFile(item["Pipeline"].get<String>());
-                        model.PipelineList.emplace_back(pipelineJson.get<VulkanPipelineLoader>());
+                        VulkanPipelinePackageLoader pipelinePackageJson = item["PipelinePackage"].get<VulkanPipelinePackageLoader>();
+                        model.PipelinePackageList.emplace_back(pipelinePackageJson);
  
                         subPassLoader.push_back(item.get<VulkanSubPassLoader>());
                     }
@@ -384,23 +383,38 @@ namespace nlohmann
         }
     }
 
+    void from_json(const json& j, VulkanPipelinePackageLoader& model)
+    {
+     
+        j.at("SubPassId").get_to(model.SubPassId);
+        for (auto& viewPort : j.at("ViewportList")) model.ViewportList.emplace_back(viewPort);
+        for (auto& scissor : j.at("ScissorList"))   model.ScissorList.emplace_back(scissor);
+
+        j.at("PipelinePackageId").get_to(model.PipelinePackageId);
+        j.at("DefaultPipeline").get_to(model.DefaultPipeline);
+        if (!j["DepthPipeline"].is_null()) j.at("DepthPipeline").get_to(model.DepthPipeline);
+        if (!j["WireFramePipeline"].is_null()) j.at("WireFramePipeline").get_to(model.WireFramePipeline);
+        if (!j["ReflectionPipeline"].is_null()) j.at("ReflectionPipeline").get_to(model.ReflectionPipeline);
+        if (!j["CollisionPipeline"].is_null()) j.at("CollisionPipeline").get_to(model.CollisionPipeline);
+    }
+
     void from_json(const json& j, VulkanPipelineLoader& model)
     {
-        j.at("PipelineId").get_to(model.PipelineId);
-        j.at("SubPassId").get_to(model.SubPassId);
-        j.at("UseDynamicColorWrite").get_to(model.UseDynamicColorWrite);
-        j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
-        j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
-        j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
-        j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
-        j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
-        for (auto& pipelineColorBlendAttachmentState : j.at("PipelineColorBlendAttachmentStateList")) model.PipelineColorBlendAttachmentStateList.emplace_back(pipelineColorBlendAttachmentState);
-        for (auto& viewPort : j.at("ViewportList"))                                                   model.ViewportList.emplace_back(viewPort);
-        for (auto& scissor : j.at("ScissorList"))                                                     model.ScissorList.emplace_back(scissor);
+        auto st = j.dump();
+        nlohmann::json pipelineJson = fileSystem.LoadJsonFile(j.get<String>());
+        pipelineJson.at("PipelineId").get_to(model.PipelineId);
+        
+        pipelineJson.at("UseDynamicColorWrite").get_to(model.UseDynamicColorWrite);
+        pipelineJson.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
+        pipelineJson.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
+        pipelineJson.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
+        pipelineJson.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
+        pipelineJson.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
+        for (auto& pipelineColorBlendAttachmentState : pipelineJson.at("PipelineColorBlendAttachmentStateList")) model.PipelineColorBlendAttachmentStateList.emplace_back(pipelineColorBlendAttachmentState);
 
-        if (j.contains("ShaderList") && j["ShaderList"].is_array())
+        if (pipelineJson.contains("ShaderList") && pipelineJson["ShaderList"].is_array())
         {
-            for (auto& shader : j["ShaderList"])
+            for (auto& shader : pipelineJson["ShaderList"])
             {
                 auto s = shader.dump();
                 ShaderLoader shaderLoader = shader.get<ShaderLoader>();

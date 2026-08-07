@@ -5,7 +5,17 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/HdrPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "1b048bb2-f49a-4f2b-b6d1-7a3e5dac5bb6",
+          "DefaultPipeline": "Pipelines/HdrPipeline.json",
+          "DepthPipeline": null,
+          "WireFramePipeline": null,
+          "ReflectionPipeline": null,
+          "CollisionPipeline": null,
+          "SubPassId": 0,
+          "ViewportList": [],
+          "ScissorList": []
+        },
         "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

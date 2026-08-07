@@ -14,13 +14,11 @@
     }
   ],
   "VertexType": 0,
-  "SubPassId": 0,
   "UseDynamicColorWrite": false,
   "ViewportList": [],
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "_comment": "Attachment 0 - Final Color (e.g., swapchain)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -35,20 +33,20 @@
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
-    "AttachmentCount": 0
+    "AttachmentCount": 1
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
     "polygonMode": 1,
-    "cullMode": 0,
+    "cullMode": 2,
     "frontFace": 0,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
     "depthBiasClamp": 0.0,
     "depthBiasSlopeFactor": 0.0,
-    "lineWidth": 1.0,
+    "lineWidth": 5.0,
     "flags": 0
   },
   "PipelineMultisampleStateCreateInfo": {
@@ -64,7 +62,7 @@
     "sType": 25,
     "depthTestEnable": true,
     "depthWriteEnable": false,
-    "depthCompareOp": 3,
+    "depthCompareOp": 7,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {

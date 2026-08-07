@@ -34,6 +34,7 @@ namespace nlohmann
     DLL_EXPORT void from_json(const json& j, PushConstantUpdateRule& model);
     DLL_EXPORT void from_json(const json& j, VulkanSubPassLoader& model);
     DLL_EXPORT void from_json(const json& j, RenderPassLoader& model);
+    DLL_EXPORT void from_json(const json& j, VulkanPipelinePackageLoader& model);
     DLL_EXPORT void from_json(const json& j, VulkanPipelineLoader& model);
     DLL_EXPORT void from_json(const json& j, BlendConstantsModel& model);
     DLL_EXPORT void from_json(const json& j, TextureLoader& model);

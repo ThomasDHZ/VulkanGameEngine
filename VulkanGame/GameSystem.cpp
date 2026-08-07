@@ -11,10 +11,6 @@
 #include <ChatSystem.h>
 #include <GameController.h>
 
-#if !defined(__linux__) && !defined(__ANDROID__)
-#include <MaterialBakerSystem.h>
-#endif
-
 #ifdef PLATFORM_ANDROID
 #include <android/native_window.h>
 #endif
@@ -69,7 +65,6 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     networkSystem.Update(deltaTime);
 
     //cSharpScriptSystem.Update(deltaTime);
-    auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
   //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
    // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 }
@@ -169,11 +164,11 @@ void GameSystem::DebugUpdate(float deltaTime)
         int a = 324;
     }
     imGuiSystem.Separator();
-    uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df"), ivec2(mouse.X, mouse.Y));
+    //uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df"), ivec2(mouse.X, mouse.Y));
 
     imGuiSystem.Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
     imGuiSystem.Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
-    imGuiSystem.Text("Mouse Hover Id: %u", hoverId);
+  //  imGuiSystem.Text("Mouse Hover Id: %u", hoverId);
     imGuiSystem.Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
     imGuiSystem.Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
     imGuiSystem.Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");

@@ -14,10 +14,7 @@
     }
   ],
   "VertexType": 0,
-  "SubPassId": 0,
   "UseDynamicColorWrite": false,
-  "ViewportList": [],
-  "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
       "_comment": "Attachment 0 - Final Color (e.g., swapchain)",

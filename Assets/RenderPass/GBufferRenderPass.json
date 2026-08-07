@@ -5,7 +5,37 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/GBufferLevelShader2DPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "4a2850b3-7e58-4fb7-968b-370ba31929b0",
+          "DefaultPipeline": "Pipelines/GBufferLevelShader2DPipeline.json",
+          "DepthPipeline": null,
+          "WireFramePipeline": null,
+          "ReflectionPipeline": null,
+          "CollisionPipeline": null,
+          "SubPassId": 0,
+          "ViewportList": [
+            {
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0,
+              "minDepth": 0.0,
+              "maxDepth": 1.0
+            }
+          ],
+          "ScissorList": [
+            {
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "extent": {
+                "width": 0,
+                "height": 0
+              }
+            }
+          ]
+        },
         "MeshType": 1,
         "ShaderPushConstant": "sceneData",
         "InputTextureList": [],
@@ -13,7 +43,37 @@
         "OffScreenRenderPass": false
       },
       {
-        "Pipeline": "Pipelines/GBufferSpriteInstancePipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "1027ed19-e1c6-4755-9bb4-005eee58c809",
+          "DefaultPipeline": "Pipelines/GBufferSpriteInstancePipeline.json",
+          "DepthPipeline": null,
+          "WireFramePipeline": null,
+          "ReflectionPipeline": null,
+          "CollisionPipeline": null,
+          "SubPassId": 0,
+          "ViewportList": [
+            {
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0,
+              "minDepth": 0.0,
+              "maxDepth": 1.0
+            }
+          ],
+          "ScissorList": [
+            {
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "extent": {
+                "width": 0,
+                "height": 0
+              }
+            }
+          ]
+        },
         "MeshType": 2,
         "ShaderPushConstant": null,
         "InputTextureList": [],
@@ -23,7 +83,38 @@
     ],
     [
       {
-        "Pipeline": "Pipelines/GBufferLightingPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "385c8a12-ece1-4017-86e1-58a301930b3a",
+          "DefaultPipeline": "Pipelines/GBufferLightingPipeline.json",
+          "DepthPipeline": null,
+          "WireFramePipeline": null,
+          "ReflectionPipeline": null,
+          "CollisionPipeline": null,
+          "SubPassId": 1,
+          "ViewportList": [
+            {
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0,
+              "minDepth": 0.0,
+              "maxDepth": 1.0
+            }
+          ],
+          "ScissorList": [
+            {
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "extent": {
+                "width": 0,
+                "height": 0
+              }
+            }
+          ]
+        },
+        "SubPassId": 1,
         "MeshType": 0,
         "ShaderPushConstant": null,
         "InputTextureList": [],

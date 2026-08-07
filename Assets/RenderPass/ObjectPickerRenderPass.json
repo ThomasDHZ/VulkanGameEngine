@@ -5,7 +5,17 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/ObjectPickerPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "e927c680-d9e6-4c66-a9ee-8c98136647ec",
+          "DefaultPipeline": "Pipelines/ObjectPickerPipeline.json",
+          "DepthPipeline": null,
+          "WireFramePipeline": null,
+          "ReflectionPipeline": null,
+          "CollisionPipeline": null,
+          "SubPassId": 0,
+          "ViewportList": [],
+          "ScissorList": []
+        },
         "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

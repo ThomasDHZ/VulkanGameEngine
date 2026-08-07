@@ -14,10 +14,7 @@
     }
   ],
   "VertexType": 0,
-  "SubPassId": 0,
   "UseDynamicColorWrite": false,
-  "ViewportList": [],
-  "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
       "BlendEnable": true,

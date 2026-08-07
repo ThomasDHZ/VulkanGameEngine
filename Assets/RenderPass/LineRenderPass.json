@@ -20,7 +20,7 @@
       "TextureUsageType": 1,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 43,
-      "LoadOp": 1,
+      "LoadOp": 2,
       "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
