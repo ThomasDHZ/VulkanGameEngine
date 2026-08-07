@@ -141,12 +141,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPasses", "GameRen
 		Assets\RenderPass\BloomRenderPass.json = Assets\RenderPass\BloomRenderPass.json
 		Assets\RenderPass\BRDFRenderPass.json = Assets\RenderPass\BRDFRenderPass.json
 		Assets\RenderPass\EnvironmentToCubeMapRenderPass.json = Assets\RenderPass\EnvironmentToCubeMapRenderPass.json
-		Assets\RenderPass\FrameBufferRenderPass.json = Assets\RenderPass\FrameBufferRenderPass.json
 		Assets\RenderPass\GBufferRenderPass.json = Assets\RenderPass\GBufferRenderPass.json
 		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
 		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
 		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
-		Assets\RenderPass\LineRenderPass.json = Assets\RenderPass\LineRenderPass.json
 		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
 		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
 	EndProjectSection

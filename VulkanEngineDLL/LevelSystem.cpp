@@ -115,7 +115,7 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassGuid,
-                        .PipelineGuid = subPass.PipelineGuid,
+                        .PipelinePackageGuid = subPass.PipelinePackageGuid,
                         .PushConstant = subPass.ShaderPushConstant,
                         .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                         .RenderPassInputs = subPass.InputTextureList,

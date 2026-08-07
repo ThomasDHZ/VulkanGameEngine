@@ -5,7 +5,15 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/ObjectPickerPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "f1cc6e98-1874-49eb-812b-950d0f5f4cdb",
+          "Pipelines": [
+            {
+              "PipelineType": 0,
+              "Pipeline": "Pipelines/ObjectPickerPipeline.json"
+            }
+          ]
+        },
         "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

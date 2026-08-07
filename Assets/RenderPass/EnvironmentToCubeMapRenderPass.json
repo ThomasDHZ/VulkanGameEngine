@@ -5,7 +5,15 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/EnvironmentToCubeMapPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "1af890da-3ca5-4172-a8e1-5703f74a66b9",
+          "Pipelines": [
+            {
+              "PipelineType": 0,
+              "Pipeline": "Pipelines/EnvironmentToCubeMapPipeline.json"
+            }
+          ]
+        },
         "MeshType": 1,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

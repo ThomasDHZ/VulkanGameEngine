@@ -5,7 +5,15 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/HdrPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "1b048bb2-f49a-4f2b-b6d1-7a3e5dac5bb6",
+          "Pipelines": [
+            {
+              "PipelineType": 0,
+              "Pipeline": "Pipelines/HdrPipeline.json"
+            }
+          ]
+        },
         "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

@@ -335,7 +335,7 @@ namespace nlohmann
 
     void from_json(const json& j, VulkanSubPassLoader& model)
     {
-        model.PipelineGuid = fileSystem.LoadJsonFile(j["Pipeline"]).get<VulkanPipelineLoader>().PipelineId;
+        auto a = j.at("PipelinePackage").at("PipelinePackageId").get_to(model.PipelinePackageGuid);
         j.at("MeshType").get_to(model.MeshType);
         j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
         j.at("InputTextureList").get_to(model.InputTextureList);
@@ -373,14 +373,22 @@ namespace nlohmann
                 {
                     for (const auto& item : subPass)
                     {
-                        nlohmann::json pipelineJson = fileSystem.LoadJsonFile(item["Pipeline"].get<String>());
-                        model.PipelineList.emplace_back(pipelineJson.get<VulkanPipelineLoader>());
- 
+                        model.PipelinePackageList.emplace_back(item["PipelinePackage"].get<VulkanPipelinePackageLoader>());
                         subPassLoader.push_back(item.get<VulkanSubPassLoader>());
                     }
                 }
                 model.SubPassList.emplace_back(subPassLoader);
             }
+        }
+    }
+
+    void from_json(const json& j, VulkanPipelinePackageLoader& model)
+    {
+        j.at("PipelinePackageId").get_to(model.PipelinePackageId);
+        for (auto& pipeline : j["Pipelines"])
+        {
+            nlohmann::json pipelineJson = fileSystem.LoadJsonFile(pipeline["Pipeline"].get<String>());
+            model.PipelineMap[pipeline["PipelineType"]] = pipelineJson.get<VulkanPipelineLoader>();
         }
     }
 

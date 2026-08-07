@@ -5,7 +5,15 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/PrefilterPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "9f34ee82-4e8e-4512-816f-acfb8a7ca800",
+          "Pipelines": [
+            {
+              "PipelineType": 0,
+              "Pipeline": "Pipelines/PrefilterPipeline.json"
+            }
+          ]
+        },
         "MeshType": 1,
         "ShaderPushConstant": "prefilterSamplerProperties",
         "InputTextureList": [ "1d68f22f-77a7-4c53-9650-edec72bb6687" ],

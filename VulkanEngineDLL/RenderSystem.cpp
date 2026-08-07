@@ -30,16 +30,24 @@ RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 
 RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
-    for (auto& pipelineLoader : renderPassLoader.PipelineList)
-    {
-        pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
-        pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
-        pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
-        for (auto& shader : pipelineLoader.ShaderLoaderList)
+    auto BuildPipelineLoader = [&](VulkanPipelinePackageLoader& pipelinePackageLoader, VulkanPipelineLoader& pipelineLoader)
         {
-            Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
-            VulkanShader shader = VulkanShader(vertexShaderCode);
-            pipelineLoader.VulkanShaderList.emplace_back(shader);
+            for (auto& shader : pipelineLoader.ShaderLoaderList)
+            {
+                Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
+                VulkanShader shader = VulkanShader(vertexShaderCode);
+                pipelineLoader.VulkanShaderList.emplace_back(shader);
+            }
+        };
+
+    for (auto& pipelinePackageLoader : renderPassLoader.PipelinePackageList)
+    {
+        pipelinePackageLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+        pipelinePackageLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+        pipelinePackageLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+        for (auto& pipelineLoader : pipelinePackageLoader.PipelineMap)
+        {
+            BuildPipelineLoader(pipelinePackageLoader, pipelineLoader.second);
         }
     }
 
@@ -47,6 +55,10 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
 
+    for (auto& pipelinePackage : vulkanRenderPass.PipelinePackageList())
+    {
+        RenderPipelinePackageMap[pipelinePackage.PipelinePackageId] = pipelinePackage;
+    }
     for (auto& vulkanPipeline : vulkanRenderPass.PipelineList())
     {
         RenderPipelineMap[vulkanPipeline.PipelineId()] = vulkanPipeline;
@@ -112,6 +124,16 @@ const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& rende
     return it->second;
 }
 
+const VulkanPipelinePackage& RenderSystem::FindPipelinePackage(const VkGuid& pipelinePackageGuid)
+{
+    auto it = RenderPipelinePackageMap.find(pipelinePackageGuid);
+    if (it == RenderPipelinePackageMap.end())
+    {
+        throw std::runtime_error("PipelinePackage not found: " + pipelinePackageGuid.ToString());
+    }
+    return it->second;
+}
+
 const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGuid)
 {
     auto it = RenderPipelineMap.find(pipelineGuid);
@@ -127,7 +149,8 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
     if (drawMessage.PushConstant.has_value())
     {
         const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(drawMessage.RenderPassGuid);
-        const VulkanPipeline& pipeline = renderSystem.FindRenderPipeline(drawMessage.PipelineGuid);
+        VulkanPipelinePackage pipelinePackage = FindPipelinePackage(drawMessage.PipelinePackageGuid);
+        const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::MainPipeline]);
         PushConstantContext pushConstantContext = PushConstantContext
         {
             .RenderPassGuid = drawMessage.RenderPassGuid,
@@ -163,7 +186,8 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                 for (auto& renderPassLayer : subPass)
                 {
                     Texture inputTexture;
-                    const VulkanPipeline& pipeline = FindRenderPipeline(renderPassLayer.PipelineGuid);
+                    VulkanPipelinePackage pipelinePackage = FindPipelinePackage(renderPassLayer.PipelinePackageGuid);
+                    const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::MainPipeline]);
                     renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
 
                     if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);

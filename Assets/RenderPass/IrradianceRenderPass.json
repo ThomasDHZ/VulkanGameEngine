@@ -5,7 +5,15 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/IrradiancePipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "af0105b6-650a-4f4f-8163-ed7fdd9dadc9",
+          "Pipelines": [
+            {
+              "PipelineType": 0,
+              "Pipeline": "Pipelines/IrradiancePipeline.json"
+            }
+          ]
+        },
         "MeshType": 1,
         "ShaderPushConstant": "irradianceShaderConstants",
         "InputTextureList": [],

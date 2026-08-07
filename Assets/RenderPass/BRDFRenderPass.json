@@ -5,7 +5,15 @@
   "SubPasses": [
     [
       {
-        "Pipeline": "Pipelines/BRDFPipeline.json",
+        "PipelinePackage": {
+          "PipelinePackageId": "834b3dc4-a38d-4bc8-a02a-fe349d5c61d9",
+          "Pipelines": [
+            {
+              "PipelineType": 0,
+              "Pipeline": "Pipelines/BRDFPipeline.json"
+            }
+          ]
+        },
         "MeshType": 5,
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

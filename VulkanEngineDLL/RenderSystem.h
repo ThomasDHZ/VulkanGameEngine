@@ -15,7 +15,7 @@ struct VulkanBindVertexBuffer
 struct VulkanDrawMessage
 {
     VkGuid                            RenderPassGuid;
-    VkGuid                            PipelineGuid;
+    VkGuid                            PipelinePackageGuid;
     std::optional<String>             PushConstant;
     Vector<PushConstantUpdateRule>    PushConstantUpdateRules;
     Vector<MeshDrawMessage>           DrawMeshList;
@@ -54,6 +54,7 @@ private:
     RenderSystem& operator=(RenderSystem&&) = delete;
 
     UnorderedMap<VkGuid, VulkanRenderPass>                             RenderPassMap;
+    UnorderedMap<VkGuid, VulkanPipelinePackage>                        RenderPipelinePackageMap;
     UnorderedMap<VkGuid, VulkanPipeline>                               RenderPipelineMap;
 
     DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
@@ -66,6 +67,7 @@ public:
     DLL_EXPORT RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
     DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
     DLL_EXPORT const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
+    DLL_EXPORT const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
     DLL_EXPORT const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
