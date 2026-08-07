@@ -1,0 +1,195 @@
+{
+  "Name": "SpriteInstanceWireFramePipeline",
+  "PipelineId": "24d2160a-eb86-4f0d-9397-b3003a1045d8",
+  "ShaderList": [
+    {
+      "ShaderId": "389bb0a1-27e7-4aa3-af30-99417b44f5f7",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceShaderWireFrameVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "d8502495-0d56-41e8-a564-9cb98895a280",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceShaderWireFrameFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "VertexType": 1,
+  "SubPassId": 0,
+  "UseDynamicColorWrite": false,
+  "ViewportList": [
+    {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "minDepth": 0.0,
+      "maxDepth": 1.0
+    }
+  ],
+  "ScissorList": [
+    {
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "extent": {
+        "width": 0,
+        "height": 0
+      }
+    }
+  ],
+  "PipelineColorBlendAttachmentStateList": [
+    {
+      "TextureAttachment": "Attachment 0: Position",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 1: Albedo",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 2: NormalData",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 3: PackedMRO",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 4: PackedSheenSSS",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 5: Unused Attachment",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 6: ParallaxInfo",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 7: Emission",
+      "BlendEnable": false,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    }
+  ],
+  "PipelineColorBlendStateCreateInfoModel": {
+    "BlendConstants": { "FixedElementField": 0.0 },
+    "sType": 26,
+    "LogicOpEnable": false,
+    "LogicOp": 0,
+    "AttachmentCount": 0
+  },
+  "PipelineRasterizationStateCreateInfo": {
+    "sType": 23,
+    "depthClampEnable": 0,
+    "rasterizerDiscardEnable": 0,
+    "polygonMode": 1,
+    "cullMode": 2,
+    "frontFace": 0,
+    "depthBiasEnable": 0,
+    "depthBiasConstantFactor": 0.0,
+    "depthBiasClamp": 0.0,
+    "depthBiasSlopeFactor": 0.0,
+    "lineWidth": 5.0,
+    "flags": 0
+  },
+  "PipelineMultisampleStateCreateInfo": {
+    "sType": 24,
+    "rasterizationSamples": 1,
+    "sampleShadingEnable": false,
+    "minSampleShading": 0.0,
+    "alphaToCoverageEnable": false,
+    "alphaToOneEnable": false,
+    "flags": 0
+  },
+  "PipelineDepthStencilStateCreateInfo": {
+    "sType": 25,
+    "depthTestEnable": true,
+    "depthWriteEnable": true,
+    "depthCompareOp": 1,
+    "depthBoundsTestEnable": false,
+    "stencilTestEnable": false,
+    "front": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "back": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "minDepthBounds": 0.0,
+    "maxDepthBounds": 0.0,
+    "flags": 0
+  },
+  "PipelineInputAssemblyStateCreateInfo": {
+    "sType": 20,
+    "topology": 3,
+    "primitiveRestartEnable": 0
+  }
+}

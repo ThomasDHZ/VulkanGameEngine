@@ -11,6 +11,10 @@
             {
               "PipelineType": 0,
               "Pipeline": "Pipelines/GBufferLevelShader2DPipeline.json"
+            },
+            {
+              "PipelineType": 2,
+              "Pipeline": "Pipelines/GBufferLevelShader2DWireFramePipeline.json"
             }
           ]
         },
@@ -27,6 +31,10 @@
             {
               "PipelineType": 0,
               "Pipeline": "Pipelines/GBufferSpriteInstancePipeline.json"
+            },
+            {
+              "PipelineType": 2,
+              "Pipeline": "Pipelines/GBufferLevelShader2DWireFramePipeline.json"
             }
           ]
         },
@@ -45,6 +53,10 @@
             {
               "PipelineType": 0,
               "Pipeline": "Pipelines/GBufferLightingPipeline.json"
+            },
+            {
+              "PipelineType": 2,
+              "Pipeline": "Pipelines/GBufferLevelShader2DWireFramePipeline.json"
             }
           ]
         },

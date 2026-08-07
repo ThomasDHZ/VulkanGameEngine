@@ -144,13 +144,22 @@ const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGui
     return it->second;
 }
 
+bool RenderSystem::FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineType pipelineType)
+{
+    return RenderPipelinePackageMap[pipelinePackageGuid].PipelineMap.contains(pipelineType);
+}
+
 void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
 {
     if (drawMessage.PushConstant.has_value())
     {
         const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(drawMessage.RenderPassGuid);
         VulkanPipelinePackage pipelinePackage = FindPipelinePackage(drawMessage.PipelinePackageGuid);
-        const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::MainPipeline]);
+        VulkanPipeline pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::DefaultPipeline]);
+     /*   if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
+        {
+            pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::WireFramePipeline]);
+        }*/
         PushConstantContext pushConstantContext = PushConstantContext
         {
             .RenderPassGuid = drawMessage.RenderPassGuid,
@@ -187,7 +196,11 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                 {
                     Texture inputTexture;
                     VulkanPipelinePackage pipelinePackage = FindPipelinePackage(renderPassLayer.PipelinePackageGuid);
-                    const VulkanPipeline& pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::MainPipeline]);
+                    VulkanPipeline pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::DefaultPipeline]);
+               /*     if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
+                    {
+                        pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::WireFramePipeline]);
+                    }*/
                     renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
 
                     if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
