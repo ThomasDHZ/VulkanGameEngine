@@ -55,7 +55,7 @@ namespace GameScriptLibraryDLL.GameObjects
             var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
             var parentGameObject = GameObject.GetById<GameObject>(gameObjectId);
             var hitGameObject = GameObject.GetById<GameObject>(collidingGameObjectId);
-            DestroyGameObject(instance.GameObjectId);
+          //  DestroyGameObject(instance.GameObjectId);
 
             Console.WriteLine("[Player Object] Object has entered collision zone.");
         }

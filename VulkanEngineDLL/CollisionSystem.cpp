@@ -67,16 +67,15 @@ void CollisionSystem::HandleCollision(const CollisionEvent& event)
 
 bool CollisionSystem::AABBIntersect(const Transform2DComponent& t1, const Collider2DComponent& c1, const Transform2DComponent& t2, const Collider2DComponent& c2)
 {
-	int left1 = (int)(t1.GameObjectPosition.x + c1.Offset.x);
-	int right1 = left1 + c1.Size.x;
-	int top1 = (int)(t1.GameObjectPosition.y + c1.Offset.y);
-	int bottom1 = top1 + c1.Size.y;
+	const float left1 = t1.GameObjectPosition.x + c1.Offset.x;
+	const float right1 = left1 + c1.Size.x;
+	const float top1 = t1.GameObjectPosition.y + c1.Offset.y;
+	const float bottom1 = top1 + c1.Size.y;
 
-	int left2 = (int)(t2.GameObjectPosition.x + c2.Offset.x);
-	int right2 = left2 + c2.Size.x;
-	int top2 = (int)(t2.GameObjectPosition.y + c2.Offset.y);
-	int bottom2 = top2 + c2.Size.y;
+	const float left2 = t2.GameObjectPosition.x + c2.Offset.x;
+	const float right2 = left2 + c2.Size.x;
+	const float top2 = t2.GameObjectPosition.y + c2.Offset.y;
+	const float bottom2 = top2 + c2.Size.y;
 
-	return !(right1 <= left2 || left1 >= right2 ||
-		bottom1 <= top2 || top1 >= bottom2);
+	return right1 >= left2 && left1 <= right2 && bottom1 >= top2 && top1 <= bottom2;
 }

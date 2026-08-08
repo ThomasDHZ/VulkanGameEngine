@@ -156,10 +156,10 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
         const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(drawMessage.RenderPassGuid);
         VulkanPipelinePackage pipelinePackage = FindPipelinePackage(drawMessage.PipelinePackageGuid);
         VulkanPipeline pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::DefaultPipeline]);
-     /*   if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
+        if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
         {
             pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::WireFramePipeline]);
-        }*/
+        }
         PushConstantContext pushConstantContext = PushConstantContext
         {
             .RenderPassGuid = drawMessage.RenderPassGuid,
@@ -197,7 +197,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                     Texture inputTexture;
                     VulkanPipelinePackage pipelinePackage = FindPipelinePackage(renderPassLayer.PipelinePackageGuid);
                     VulkanPipeline pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::DefaultPipeline]);
-               /*     if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
+                 /*   if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
                     {
                         pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::WireFramePipeline]);
                     }*/

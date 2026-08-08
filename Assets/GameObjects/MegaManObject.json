@@ -41,8 +41,8 @@
     {
       "ComponentType": 8,
       "ColliderSize": [
-        32.0,
-        32.0
+        464.0,
+        688.0
       ],
       "ColliderOffset": [
         0.0,
