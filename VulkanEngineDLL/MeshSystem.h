@@ -25,6 +25,7 @@ struct Vertex2DLayout
 {
 	vec2 Position = vec2(0.0f);
 	vec2 UV = vec2(0.0f);
+
 	Vertex2DLayout()
 	{
 		Position = vec2(0.0f);
@@ -34,6 +35,27 @@ struct Vertex2DLayout
 	{
 		Position = position;
 		UV = uv;
+	}
+};
+
+struct TextVertex2DLayout
+{
+	vec2 Position = vec2(0.0f);
+	vec2 UV = vec2(0.0f);
+	vec3 Color = vec3(1.0f);
+
+	TextVertex2DLayout()
+	{
+		Position = vec2(0.0f);
+		UV = vec2(0.0f);
+		Color = vec3(1.0f);
+	}
+
+	TextVertex2DLayout(vec2 position, vec2 uv, vec3 color)
+	{
+		Position = position;
+		UV = uv;
+		Color = color;
 	}
 };
 
@@ -150,7 +172,8 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshtype, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
+	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
 	DLL_EXPORT uint CreateSpriteLayer(uint32 spriteMeshId);
 	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
 	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);

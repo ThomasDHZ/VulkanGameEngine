@@ -63,6 +63,7 @@
         "MeshType": 0,
         "ShaderPushConstant": null,
         "InputTextureList": [],
+        "ResolveTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": true
       }
@@ -87,7 +88,6 @@
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
-      "UseDefaultSwapChainResolution": false,
       "SamplerCreateInfo": {
         "SType": 31,
         "MagFilter": 1,

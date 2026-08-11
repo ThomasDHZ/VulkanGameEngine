@@ -23,6 +23,7 @@ GameSystem gameSystem = GameSystem();
 #include <EngineConfigSystem.h>
 #include <NetworkSystem.h>
 #include <InputSystem.h>
+#include <TextSystem.h>
 
 GameSystem::GameSystem()
 {
@@ -38,6 +39,8 @@ void GameSystem::StartUp()
 {
     vulkan.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
     bufferSystem.SetUpVmaAllocation();
+    textSystem.StartUp();
+    textSystem.SetFont("fonts/arial.ttf");
     memoryPoolSystem.StartUp();
     networkSystem.StartAsServer(7777);
     //luaScriptingSystem.StartUp();
@@ -47,12 +50,14 @@ void GameSystem::StartUp()
     // materialBakerSystem.Run();
 #endif
     levelSystem.LoadLevel("Levels/TestLevel.json");
+    //String text = String("asdfasdf");
+   // textSystem.RenderText(text, vec2(200.0f), 32, vec3(1.0f));
 }
 
 #ifndef __ANDROID__
 void GameSystem::Update(void* windowHandle, float deltaTime)
 {
-    //inputSystem.Update(deltaTime);
+
     //luaScriptingSystem.Update(deltaTime);
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
@@ -142,12 +147,12 @@ void GameSystem::DebugUpdate(float deltaTime)
     //for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
     //{
     //    DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(x);
-    //    if (ImGui::SliderFloat3("DLightColor ", &directionalLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat3("DLightDirection ", &directionalLight.LightDirection.x, -1.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat("DLightIntensity ", &directionalLight.LightIntensity, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat("ShadowBias ", &directionalLight.ShadowBias, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat("ShadowSoftness ", &directionalLight.ShadowSoftness, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat("ShadowStrength ", &directionalLight.ShadowStrength, 0.0f, 10.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
+    //    if (ImGui::SliderFloat3("DLightColor ", &directionalLight.LightColor.x, 0.0f, 1.0f));
+    //    if (ImGui::SliderFloat3("DLightDirection ", &directionalLight.LightDirection.x, -1.0f, 1.0f));
+    //    if (ImGui::SliderFloat("DLightIntensity ", &directionalLight.LightIntensity, 0.0f, 10.0f));
+    //    if (ImGui::SliderFloat("ShadowBias ", &directionalLight.ShadowBias, 0.0f, 10.0f));
+    //    if (ImGui::SliderFloat("ShadowSoftness ", &directionalLight.ShadowSoftness, 0.0f, 10.0f));
+    //    if (ImGui::SliderFloat("ShadowStrength ", &directionalLight.ShadowStrength, 0.0f, 10.0f));
     //}
 
     //ImGui::Separator();
@@ -160,40 +165,38 @@ void GameSystem::DebugUpdate(float deltaTime)
     //    if (ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
     //    if (ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
     //}
-    if (glfwJoystickPresent(GLFW_JOYSTICK_1))
-    {
-        int a = 324;
-    }
-    imGuiSystem.Separator();
-    uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df"), ivec2(mouse.X, mouse.Y));
-    imGuiSystem.Checkbox("Show Wireframe View", &renderSystem.WireFrameFlag);
 
-    imGuiSystem.Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
-    imGuiSystem.Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
-    imGuiSystem.Text("Mouse Hover Id: %u", hoverId);
-    imGuiSystem.Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
-    imGuiSystem.Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
-    imGuiSystem.Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");
 
-    imGuiSystem.Separator();
+  //  imGuiSystem.Separator();
+  ////  uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df"), ivec2(mouse.X, mouse.Y));
+  //  imGuiSystem.Checkbox("Show Wireframe View", &renderSystem.WireFrameFlag);
 
-    imGuiSystem.Text("Left Stick: (%.03f, %.03f)", leftStick.x, leftStick.y);
-    imGuiSystem.Text("Right Stick: (%.03f, %.03f)", rightStick.x, rightStick.y);
-    imGuiSystem.Text("Up DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_UP) ? "Pressed" : "Released");
-    imGuiSystem.Text("Right DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) ? "Pressed" : "Released");
-    imGuiSystem.Text("Down DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_DOWN) ? "Pressed" : "Released");
-    imGuiSystem.Text("Left DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_LEFT) ? "Pressed" : "Released");
-    imGuiSystem.Text("X button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_CROSS) ? "Pressed" : "Released");
-    imGuiSystem.Text("O button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_CIRCLE) ? "Pressed" : "Released");
-    imGuiSystem.Text("Square button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_SQUARE) ? "Pressed" : "Released");
-    imGuiSystem.Text("Triangle: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_TRIANGLE) ? "Pressed" : "Released");
-    imGuiSystem.Text("L1 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_BUMPER) ? "Pressed" : "Released");
-    imGuiSystem.Text("R1 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER) ? "Pressed" : "Released");
-    imGuiSystem.Text("L3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_THUMB) ? "Pressed" : "Released");
-    imGuiSystem.Text("R3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) ? "Pressed" : "Released");
-    imGuiSystem.Text("R2L2: (%.03f, %.03f)", r2L2.x, r2L2.y);
+  //  imGuiSystem.Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
+  //  imGuiSystem.Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
+  //  //imGuiSystem.Text("Mouse Hover Id: %u", hoverId);
+  //  imGuiSystem.Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");
 
-    imGuiSystem.Separator();
+  //  imGuiSystem.Separator();
+
+  //  imGuiSystem.Text("Left Stick: (%.03f, %.03f)", leftStick.x, leftStick.y);
+  //  imGuiSystem.Text("Right Stick: (%.03f, %.03f)", rightStick.x, rightStick.y);
+  //  imGuiSystem.Text("Up DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_UP) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Right DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Down DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_DOWN) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Left DPad: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_DPAD_LEFT) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("X button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_CROSS) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("O button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_CIRCLE) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Square button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_SQUARE) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("Triangle: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_TRIANGLE) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("L1 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_BUMPER) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("R1 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("L3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_THUMB) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("R3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) ? "Pressed" : "Released");
+  //  imGuiSystem.Text("R2L2: (%.03f, %.03f)", r2L2.x, r2L2.y);
+
+  //  imGuiSystem.Separator();
 
     //ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.ShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
 

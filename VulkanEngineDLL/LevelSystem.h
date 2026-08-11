@@ -131,6 +131,7 @@ public:
     RenderPassGuid                             horizontalGaussianBlurRenderPassId;
     RenderPassGuid                             bloomRenderPassId;
     RenderPassGuid                             hdrRenderPassId;
+    RenderPassGuid                             textRenderPassId;
     RenderPassGuid                             frameBufferId;
     RenderPassGuid                             shadowDebugRenderPassId;
 

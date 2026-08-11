@@ -20,7 +20,6 @@
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "_comment": "Attachment 0 - Final Color (e.g., swapchain)",
       "BlendEnable": false,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

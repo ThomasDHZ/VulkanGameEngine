@@ -16,6 +16,44 @@ uint32 MeshSystem::GetNextMeshId()
 	return MeshList.size();
 }
 
+uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId)
+{
+	uint meshId = meshSystem.GetNextMeshId();
+	uint64 meshHash = HashAssetKey(key);
+	uint assetId = UINT32_MAX;
+	auto it = MeshAssetLookup.find(meshHash);
+	if (it != MeshAssetLookup.end())
+	{
+		assetId = it->second;
+	}
+	if (assetId == UINT32_MAX)
+	{
+		MeshAssetDataList.emplace_back(MeshAssetData
+			{
+				.VertexBufferId = bufferSystem.CreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+			});
+		MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
+	}
+
+	uint32 objectIndex = memoryPoolSystem.AllocateObject(kMeshBuffer);
+	MeshPropertiesStruct& properties = memoryPoolSystem.UpdateMesh(objectIndex);
+	properties.MaterialIndex = UINT32_MAX;
+	properties.MeshTransform = mat4(1.0f);
+
+	MeshList.emplace_back(Mesh
+		{
+			.MeshId = meshId,
+			.SharedAssetId = meshHash,
+			.ObjectDataIndex = static_cast<uint32>(objectIndex),
+			.Type = meshType,
+			.Position = vec3(0.0f),
+			.Rotation = vec3(0.0f),
+			.Scale = vec3(1.0f),
+			.MaterialId = materialId,
+		});
+	return meshId;
+}
+
 uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId)
 {
 	uint meshId = meshSystem.GetNextMeshId();

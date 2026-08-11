@@ -1,23 +1,43 @@
 {
-  "Name": "SkyBoxPipeline",
-  "PipelineId": "82f8c702-47e9-41e2-b670-755f963d1b8d",
+  "Name": "TextRenderPipeline",
+  "PipelineId": "eea4b7a7-b44c-49e0-b72b-cf8435489750",
   "ShaderList": [
     {
-      "ShaderId": "de32705a-3a06-4ab5-820b-7389a533216f",
-      "ShaderFile": "Shaders/EnvironmentToCubeMapShaderVert.spv",
+      "ShaderId": "c3217f02-0e40-4702-b5f8-ae71ac5b5135",
+      "ShaderFile": "Shaders/TextRenderShaderVert.spv",
       "ShaderStage": 1
     },
     {
-      "ShaderId": "42b95563-9887-44d7-b3dd-43c3e8013367",
-      "ShaderFile": "Shaders/EnvironmentToCubeMapShaderFrag.spv",
+      "ShaderId": "7553ecd0-e7f9-4693-a5fc-cfe7049648f4",
+      "ShaderFile": "Shaders/TextRenderShaderFrag.spv",
       "ShaderStage": 16
     }
   ],
-  "VertexType": 0,
+  "VertexType": 1,
   "SubPassId": 0,
   "UseDynamicColorWrite": false,
-  "ViewportList": [],
-  "ScissorList": [],
+  "ViewportList": [
+    {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "minDepth": 0.0,
+      "maxDepth": 1.0
+    }
+  ],
+  "ScissorList": [
+    {
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "extent": {
+        "width": 0,
+        "height": 0
+      }
+    }
+  ],
   "PipelineColorBlendAttachmentStateList": [
     {
       "BlendEnable": false,
@@ -31,6 +51,7 @@
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
+    "BlendConstants": { "FixedElementField": 0.0 },
     "sType": 26,
     "LogicOpEnable": false,
     "LogicOp": 0,
@@ -41,7 +62,7 @@
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
     "polygonMode": 0,
-    "cullMode": 0,
+    "cullMode": 2,
     "frontFace": 0,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
@@ -52,7 +73,7 @@
   },
   "PipelineMultisampleStateCreateInfo": {
     "sType": 24,
-    "rasterizationSamples": 1,
+    "rasterizationSamples": 8,
     "sampleShadingEnable": false,
     "minSampleShading": 0.0,
     "alphaToCoverageEnable": false,
@@ -62,8 +83,8 @@
   "PipelineDepthStencilStateCreateInfo": {
     "sType": 25,
     "depthTestEnable": true,
-    "depthWriteEnable": false,
-    "depthCompareOp": 3,
+    "depthWriteEnable": true,
+    "depthCompareOp": 1,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {

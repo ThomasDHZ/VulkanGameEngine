@@ -117,6 +117,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameShaders", "GameShaders"
 		Shaders\LineShader2D.vert = Shaders\LineShader2D.vert
 		Shaders\PrefilterShader.frag = Shaders\PrefilterShader.frag
 		Shaders\PrefilterShader.vert = Shaders\PrefilterShader.vert
+		Shaders\TextRenderShader.frag = Shaders\TextRenderShader.frag
+		Shaders\TextRenderShader.vert = Shaders\TextRenderShader.vert
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolShaders", "ToolShaders", "{5635239D-F4FB-418F-B78A-BB5B43C35257}"
@@ -146,6 +148,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPasses", "GameRen
 		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
 		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
 		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
+		Assets\RenderPass\TextRenderPass.json = Assets\RenderPass\TextRenderPass.json
 		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
 	EndProjectSection
 EndProject
@@ -172,14 +175,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPipelines", "Game
 		Assets\Pipelines\LevelShader2DWireframePipeline.json = Assets\Pipelines\LevelShader2DWireframePipeline.json
 		Assets\Pipelines\LinePipeline.json = Assets\Pipelines\LinePipeline.json
 		Assets\Pipelines\PrefilterPipeline.json = Assets\Pipelines\PrefilterPipeline.json
-		Assets\Pipelines\SDFLevelShadowPipeline.json = Assets\Pipelines\SDFLevelShadowPipeline.json
-		Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json = Assets\Pipelines\SDFSpriteInstanceShadowPipeline.json
 		Assets\Pipelines\SelectedObjectPickerPipeline.json = Assets\Pipelines\SelectedObjectPickerPipeline.json
-		Assets\Pipelines\ShadowDebugPipeline.json = Assets\Pipelines\ShadowDebugPipeline.json
 		Assets\Pipelines\SkyBoxPipeline.json = Assets\Pipelines\SkyBoxPipeline.json
-		Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json = Assets\Pipelines\SpriteInstanceDirectionalShadowPipeline.json
 		Assets\Pipelines\SpriteInstancePipeline.json = Assets\Pipelines\SpriteInstancePipeline.json
 		Assets\Pipelines\SpriteInstanceWireFramePipeline.json = Assets\Pipelines\SpriteInstanceWireFramePipeline.json
+		Assets\Pipelines\TextRenderPipeline.json = Assets\Pipelines\TextRenderPipeline.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolPipelines", "ToolPipelines", "{8D34E3E3-CDD0-4AA9-B679-2DFA572C9BC4}"
