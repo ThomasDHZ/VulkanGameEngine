@@ -177,6 +177,15 @@
     <ClInclude Include="TextSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryPoolSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
+    <ClInclude Include="CSharpScriptSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -283,6 +292,15 @@
     </ClCompile>
     <ClCompile Include="TextSystem.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPoolSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="CSharpScriptSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

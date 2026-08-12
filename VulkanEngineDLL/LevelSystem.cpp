@@ -38,21 +38,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
     gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
 
     LoadSkyBox();
-    brdfRenderPassId = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
-    textureSystem.GenerateTexture(brdfRenderPassId);
-    Vector<Texture> textures = textureSystem.RenderedTextureListMap[brdfRenderPassId];
-
-    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
-    textureSystem.GenerateTexture(environmentToCubeMapRenderPassId);
-
+    brdfRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
+    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId                = renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
-    /*verticalGaussianBlurRenderPassId = renderSystem.LoadRenderPass("RenderPass/VertGaussianBlurRenderPass.json");
-    horizontalGaussianBlurRenderPassId = renderSystem.LoadRenderPass("RenderPass/HorizontalGaussianBlurRenderPass.json");
-    bloomRenderPassId                  = renderSystem.LoadRenderPass("RenderPass/BloomRenderPass.json");*/
     hdrRenderPassId                    = renderSystem.LoadRenderPass("RenderPass/HdrRenderPass.json");
-    textRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/TextRenderPass.json");
+   // textRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/TextRenderPass.json");
     //objectPickerRenderPassId         =   renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
     //selectedObjectPickerRenderPassId =   renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
 
@@ -88,8 +80,7 @@ Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const f
         irradianceMapRenderPassId,
         prefilterMapRenderPassId,
         gBufferRenderPassId,
-        hdrRenderPassId,
-        textRenderPassId
+        hdrRenderPassId
     };
 
     Vector<RenderPassNode> renderPassNodeList;
@@ -305,29 +296,6 @@ void LevelSystem::LoadSkyBox()
     };
 
     meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, indexList, VkGuid());
-}
-
-const Vector<MeshDrawMessage> LevelSystem::DrawSpriteMesh()
-{
-    Vector<MeshDrawMessage> meshDrawMessageList;
-    for (const auto& layer : spriteSystem.SpriteLayerList)
-    {
-        const Mesh& spriteMesh = meshSystem.FindMesh(spriteSystem.SpriteMeshId);
-        const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-        meshDrawMessageList.emplace_back(MeshDrawMessage
-            {
-                .MeshId = spriteSystem.SpriteMeshId,
-                .VertexCount = meshAsset.VertexCount,
-                .IndexCount = meshAsset.IndexCount,
-                .InstanceCount = layer.InstanceCount,
-                .FirstIndex = 0,
-                .StartInstanceIndex = 0,
-                .VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-                .VertexBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer(),
-                .IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
-            });
-    }
-    return meshDrawMessageList;
 }
 
 void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)

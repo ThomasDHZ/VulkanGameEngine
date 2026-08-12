@@ -156,6 +156,7 @@
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="ComponentSystem.h" />
     <ClInclude Include="CSharpScriptSystem.h" />
+    <ClInclude Include="CSharpScriptSystemDLL.h" />
     <ClInclude Include="DebugSystem.h" />
     <ClInclude Include="DLLSystem.h" />
     <ClInclude Include="EngineConfigSystem.h" />
@@ -166,9 +167,11 @@
     <ClInclude Include="GameObjectSystemDLL.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="LevelSystem.h" />
+    <ClInclude Include="LevelSystemDLL.h" />
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="LuaScriptingSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
+    <ClInclude Include="MemoryPoolSystemDLL.h" />
     <ClInclude Include="PushConstantRegistry.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SkyBox.h" />
@@ -197,6 +200,7 @@
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="ComponentSystem.cpp" />
     <ClCompile Include="CSharpScriptSystem.cpp" />
+    <ClCompile Include="CSharpScriptSystemDLL.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
     <ClCompile Include="DLLSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
@@ -206,9 +210,11 @@
     <ClCompile Include="GameObjectSystemDLL.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="LevelSystem.cpp" />
+    <ClCompile Include="LevelSystemDLL.cpp" />
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="LuaScriptingSystem.cpp" />
     <ClCompile Include="MemoryPoolSystem.cpp" />
+    <ClCompile Include="MemoryPoolSystemDLL.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="PushConstantRegistry.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
