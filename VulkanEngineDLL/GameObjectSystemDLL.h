@@ -19,6 +19,8 @@ struct GameObjectVariableDLL
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+    DLL_EXPORT void                   GameObjectSystem_Update(const float& deltaTime);
     DLL_EXPORT uint                   GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
     DLL_EXPORT IntPtr                 GameObjectSystem_GetGameObjectPtr(uint gameObjectId);

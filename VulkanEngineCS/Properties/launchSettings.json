@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VulkanEngineCS": {
+      "commandName": "Project",
+      "debugEngines": "managed,native"
+    }
+  }
+}

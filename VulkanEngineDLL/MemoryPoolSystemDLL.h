@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 	DLL_EXPORT void											 MemoryPoolSystem_StartUp();
+	DLL_EXPORT void											 MemoryPoolSystem_Update();
 #ifdef __cplusplus
 }
 #endif

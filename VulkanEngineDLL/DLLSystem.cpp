@@ -32,11 +32,21 @@ bool DLLSystem::LoadHostFxr()
 
 bool DLLSystem::InitializeDLLRuntime(const String& assemblyPath)
 {
+    if (m_runtimeInitialized) return true;
+
+    if (GetModuleHandleW(L"coreclr.dll") != nullptr ||
+        GetModuleHandleW(L"hostpolicy.dll") != nullptr)
+    {
+        std::cout << "[DLLSystem] CLR already loaded — skip hostfxr.\n";
+        m_runtimeInitialized = true;
+        m_hostedByManaged = true;
+        return true;
+    }
+
     std::filesystem::path path = std::filesystem::path(assemblyPath);
     path.replace_extension(".runtimeconfig.json");
     string_t runtimeConfigPathT = ToStringT(path.string());
 
-    if (m_runtimeInitialized) return true;
     if (!LoadHostFxr())
     {
         LoadHostFxr();

@@ -19,7 +19,7 @@ private:
 
 public:
 
-    DLL_EXPORT void Update(float deltaTime);
+    DLL_EXPORT void Update(const float& deltaTime);
     DLL_EXPORT bool IsKeyDown(int key) const;
     DLL_EXPORT bool IsKeyPressed(int key) const;
     DLL_EXPORT bool IsKeyReleased(int key) const;

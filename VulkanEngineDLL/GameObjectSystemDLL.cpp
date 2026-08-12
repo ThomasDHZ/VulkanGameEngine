@@ -2,6 +2,11 @@
 #include "SpriteSystem.h"
 #include "LightSystem.h"
 
+void GameObjectSystem_Update(const float& deltaTime)
+{
+    gameObjectSystem.Update(deltaTime);
+}
+
 uint32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
     entt::entity parentGameObject = static_cast<entt::entity>(parentGameObjectId);

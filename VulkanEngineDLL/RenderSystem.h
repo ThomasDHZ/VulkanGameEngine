@@ -36,7 +36,6 @@ struct RenderPassNode
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PreRenderPassCmd;
     std::function<void(VkCommandBuffer, RenderPassNode&)>         PostRenderPassCmd;
     uint32                                                        MipCount = 0;
-
 };
 
 class RenderSystem

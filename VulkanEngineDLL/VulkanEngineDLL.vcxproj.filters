@@ -186,6 +186,21 @@
     <ClInclude Include="LevelSystemDLL.h">
       <Filter>Header Files\Interop</Filter>
     </ClInclude>
+    <ClInclude Include="CollisionSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
+    <ClInclude Include="InputSystemDLL.h">
+      <Filter>Header Files\Interop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -300,6 +315,21 @@
       <Filter>Source Files\Interop</Filter>
     </ClCompile>
     <ClCompile Include="LevelSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystemDLL.cpp">
+      <Filter>Source Files\Interop</Filter>
+    </ClCompile>
+    <ClCompile Include="InputSystemDLL.cpp">
       <Filter>Source Files\Interop</Filter>
     </ClCompile>
   </ItemGroup>

@@ -18,11 +18,12 @@ class DLLSystem
         DLLSystem(DLLSystem&&) = delete;
         DLLSystem& operator=(DLLSystem&&) = delete;
 
-        bool m_runtimeInitialized = false;
         hostfxr_initialize_for_runtime_config_fn  m_initFn = nullptr;
         hostfxr_get_runtime_delegate_fn           m_getDelegateFn = nullptr;
         hostfxr_close_fn                          m_closeFn = nullptr;
         load_assembly_and_get_function_pointer_fn m_loadAssemblyAndGetFnPtr = nullptr;
+        bool                                      m_runtimeInitialized = false;
+        bool                                      m_hostedByManaged = false;
 
         bool LoadHostFxr();
         std::wstring  ToWString(const std::string& str);

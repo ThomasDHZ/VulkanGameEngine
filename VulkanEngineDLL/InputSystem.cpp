@@ -7,7 +7,7 @@
 
 InputSystem& inputSystem = InputSystem::Get();
 
-void InputSystem::Update(float deltaTime)
+void InputSystem::Update(const float& deltaTime)
 {
 #ifndef PLATFORM_ANDROID
     int joy = GLFW_JOYSTICK_1;
