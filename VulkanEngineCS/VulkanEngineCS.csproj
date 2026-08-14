@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
    <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -13,6 +13,7 @@
    <ItemGroup>
      <ProjectReference Include="..\..\VulkanEngineCore\VulkanEngineCoreCS\VulkanEngineCoreCS.csproj" />
      <ProjectReference Include="..\..\VulkanEngineCore\VulkanEngineCore\VulkanEngineCore.vcxproj" />
+     <ProjectReference Include="..\GameScriptLibraryDLL\GameScriptLibraryDLL.csproj" />
      <ProjectReference Include="..\VulkanEngineDLL\VulkanEngineDLL.vcxproj" />
    </ItemGroup>
 

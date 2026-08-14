@@ -12,15 +12,16 @@ namespace GameScriptLibraryDLL.GameObjects
 {
     public interface IGameObject
     {
-        public abstract IntPtr Create();
-        public abstract void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId);
-        public abstract void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
-        public abstract void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
-        public abstract void Update(IntPtr instancePtr, float deltaTime);
-        public abstract void Destroy(IntPtr instance);
+        public IntPtr Create();
+        public void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId);
+        public void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
+        public void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
+        public void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
+        public void Update(IntPtr instancePtr, float deltaTime);
+        public void Destroy(IntPtr instance);
     }
 
-    public unsafe class GameObject
+    public unsafe class GameObject : IGameObject
     {
         public uint ParentGameObjectId;
         public uint GameObjectId;
@@ -70,6 +71,37 @@ namespace GameScriptLibraryDLL.GameObjects
         //    //    return null;
         //    //}
         //}
+
+        public virtual IntPtr Create()
+        {
+            return IntPtr.Zero;
+        }
+
+        public virtual void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
+        {
+
+        }
+
+        public virtual void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        {
+
+        }
+
+        public virtual void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        {
+        }
+
+        public virtual void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        {
+        }
+
+        public virtual void Update(IntPtr instancePtr, float deltaTime)
+        {
+        }
+
+        public virtual void Destroy(IntPtr instance)
+        {
+        }
 
         public static void DestroyGameObject(uint gameObjectId)
         {

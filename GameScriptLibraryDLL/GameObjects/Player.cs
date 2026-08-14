@@ -1,4 +1,5 @@
 ﻿using GameScriptLibraryDLL.Components;
+using GameScriptLibraryDLL.GameObjects;
 using GlmSharp;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -29,16 +30,14 @@ namespace GameScriptLibraryDLL.GameObjects
         public uint PlayerShotCount { get; set; }
         public float CoolDownTime { get; set; } = 0;
 
-        [UnmanagedCallersOnly]
-        public static IntPtr Create()
+        public override IntPtr Create()
         {
             var instance = new Player();
             GCHandle handle = GCHandle.Alloc(instance, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
 
-        [UnmanagedCallersOnly]
-        public static void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
+        public override void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
 
@@ -47,27 +46,22 @@ namespace GameScriptLibraryDLL.GameObjects
             instance.GameObjectId = gameObjectId;
         }
 
-
-        [UnmanagedCallersOnly]
-        public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
             Console.WriteLine("[Player Object] Object has entered collision zone.");
         }
 
-        [UnmanagedCallersOnly]
-        public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
             Console.WriteLine("[Player Object] Object is still in collision zone.");
         }
 
-        [UnmanagedCallersOnly]
-        public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
             Console.WriteLine("[Player Object] Object has exited collision zone.");
         }
 
-        [UnmanagedCallersOnly]
-        public static void Update(IntPtr instancePtr, float deltaTime)
+        public override void Update(IntPtr instancePtr, float deltaTime)
         {
             if (instancePtr == IntPtr.Zero) return;
 
@@ -117,8 +111,7 @@ namespace GameScriptLibraryDLL.GameObjects
             transform->Dirty = true;
         }
 
-        [UnmanagedCallersOnly]
-        public static void Destroy(IntPtr instance)
+        public override void Destroy(IntPtr instance)
         {
             if (instance != IntPtr.Zero)
             {
@@ -126,5 +119,12 @@ namespace GameScriptLibraryDLL.GameObjects
                 handle.Free();
             }
         }
+    }
+    public static class PlayerScript
+    {
+        [UnmanagedCallersOnly] public static IntPtr Create() => GameObjectScript<Player>.CreateNativePtr();
+        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObjectScript<Player>.StartupNativePtr(instancePtr, id, parent);
+        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObjectScript<Player>.UpdateNativePtr(instancePtr, dt);
+        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObjectScript<Player>.DestroyNativePtr(instancePtr);
     }
 }

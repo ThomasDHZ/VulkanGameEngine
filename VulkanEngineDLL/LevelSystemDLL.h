@@ -7,6 +7,8 @@ extern "C" {
 #endif
     DLL_EXPORT void                           LevelSystem_LoadLevel(const char* levelPath);
     DLL_EXPORT void                           LevelSystem_Update(const float& deltaTime);
+    DLL_EXPORT void                           LevelSystem_RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
+  //  DLL_EXPORT Vector<RenderPassNode>         LevelSystem_Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
 #ifdef __cplusplus
 }
 #endif

@@ -78,18 +78,6 @@ public:
     static LevelSystem& Get();
 
 private:
-    template <typename T>
-    ComponentTypeEnum GetComponentEnum()
-    {
-        if constexpr (std::is_same_v<T, InputComponent>)         return kInputComponent;
-        if constexpr (std::is_same_v<T, Sprite>)        return kSpriteComponent;
-        if constexpr (std::is_same_v<T, Transform2DComponent>)   return kTransform2DComponent;
-        if constexpr (std::is_same_v<T, Transform3DComponent>)   return kTransform3DComponent;
-        if constexpr (std::is_same_v<T, CameraFollowComponent>)  return kCameraFollowComponent;
-        return kEndOfEnum;
-    }
-
-private:
     LevelSystem() = default;
     ~LevelSystem() = default;
     LevelSystem(const LevelSystem&) = delete;
