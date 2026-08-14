@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "MemorySystem.h"
 #include "Transform2DComponent.h"
@@ -138,15 +139,15 @@ private:
 public:
     GameObjectRegistry                                      EntityRegistry;
 
-    DLL_EXPORT void                                         LoadGameObjectTempletes(Vector<String>& gameObjectJson);
-    DLL_EXPORT void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
-    DLL_EXPORT entt::entity                                 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
+     void                                         LoadGameObjectTempletes(Vector<String>& gameObjectJson);
+     void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
+     entt::entity                                 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
 
-    DLL_EXPORT void                                         Update(const float& deltaTime);
-    DLL_EXPORT void                                         DestroyGameObject(entt::entity gameObjectId);
-    DLL_EXPORT entt::entity                                 FindGameObject(uint gameObjectId);
-    DLL_EXPORT const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
-    DLL_EXPORT bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);
+     void                                         Update(const float& deltaTime);
+     void                                         DestroyGameObject(entt::entity gameObjectId);
+     entt::entity                                 FindGameObject(uint gameObjectId);
+     const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
+     bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);
 
 
     template<typename T>
@@ -162,7 +163,7 @@ public:
         EntityRegistry.emplace<T>(gameObjectId, *gameObjectComponent);
     }
 };
-extern DLL_EXPORT GameObjectSystem& gameObjectSystem;
+extern  GameObjectSystem& gameObjectSystem;
 inline GameObjectSystem& GameObjectSystem::Get()
 {
     static GameObjectSystem instance;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include <VulkanSystem.h>
 #include "SpriteSystem.h"
@@ -128,17 +129,17 @@ public:
     RenderPassGuid                             objectPickerRenderPassId;
     RenderPassGuid                             selectedObjectPickerRenderPassId;
 
-    DLL_EXPORT void                            LoadLevel(const char* levelPath);
-    DLL_EXPORT void                            Update(const float& deltaTime);
-    DLL_EXPORT void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
+     void                            LoadLevel(const char* levelPath);
+     void                            Update(const float& deltaTime);
+     void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
 
-    DLL_EXPORT Vector<RenderPassNode>          Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
-    DLL_EXPORT LevelLayout                     GetLevelLayout();
-    DLL_EXPORT Vector<LevelLayer>              GetLevelLayerList();
-    DLL_EXPORT Vector<Vector<uint>>            GetLevelTileMapList();
-    DLL_EXPORT Vector<LevelTileSet>            GetLevelTileSetList();
+     Vector<RenderPassNode>          Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+     LevelLayout                     GetLevelLayout();
+     Vector<LevelLayer>              GetLevelLayerList();
+     Vector<Vector<uint>>            GetLevelTileMapList();
+     Vector<LevelTileSet>            GetLevelTileSetList();
 };
-extern DLL_EXPORT LevelSystem& levelSystem;
+extern  LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()
 {
     static LevelSystem instance;

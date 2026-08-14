@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "MemorySystem.h"
 #include <ktx/include/ktx.h>
@@ -33,29 +34,29 @@ private:
 #endif
 
 public:
-	DLL_EXPORT const char*		  ReadFile(const String& filePath);
-	DLL_EXPORT Vector<byte>		  LoadAssetFile(const String& filePath);
-	DLL_EXPORT bool				  WriteFile(void* fileInfo, size_t size, const String& filePath);
-	DLL_EXPORT String			  GetFileExtention(const char* fileName);
-	DLL_EXPORT String			  GetFileNameFromPath(const String& filePath);
-	DLL_EXPORT time_t			  LastModifiedTime(const String& filePath);
-	DLL_EXPORT String			  RemoveFileExtention(const String& filePath);
-	DLL_EXPORT bool				  FileExists(const String& filePath);
-    DLL_EXPORT nlohmann::json	  LoadConfig(const String& configPath);
-	DLL_EXPORT nlohmann::json	  LoadJsonFile(const String& filePath);
-	DLL_EXPORT Vector<byte>		  LoadPNG(const String& filePath, uint& width, uint& height, uint& bitsPerChannel, int& channelCount);
-    DLL_EXPORT Vector<byte>		  LoadImageFile(const String& filePath, int& width, int& height, int& channelCount);
-	DLL_EXPORT ktxVulkanTexture   LoadKTX2File(const String& filePath);
-	//DLL_EXPORT void				  ExportTexture(VkGuid& renderPassId, const String& filePath);
-	DLL_EXPORT String			  File_GetFileExtention(const char* fileName);
-	DLL_EXPORT Vector<String>	  GetFilesFromDirectory(const String& fileDirectory);
-	DLL_EXPORT Vector<String>	  GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
+	 const char*		  ReadFile(const String& filePath);
+	 Vector<byte>		  LoadAssetFile(const String& filePath);
+	 bool				  WriteFile(void* fileInfo, size_t size, const String& filePath);
+	 String			  GetFileExtention(const char* fileName);
+	 String			  GetFileNameFromPath(const String& filePath);
+	 time_t			  LastModifiedTime(const String& filePath);
+	 String			  RemoveFileExtention(const String& filePath);
+	 bool				  FileExists(const String& filePath);
+     nlohmann::json	  LoadConfig(const String& configPath);
+	 nlohmann::json	  LoadJsonFile(const String& filePath);
+	 Vector<byte>		  LoadPNG(const String& filePath, uint& width, uint& height, uint& bitsPerChannel, int& channelCount);
+     Vector<byte>		  LoadImageFile(const String& filePath, int& width, int& height, int& channelCount);
+	 ktxVulkanTexture   LoadKTX2File(const String& filePath);
+	// void				  ExportTexture(VkGuid& renderPassId, const String& filePath);
+	 String			  File_GetFileExtention(const char* fileName);
+	 Vector<String>	  GetFilesFromDirectory(const String& fileDirectory);
+	 Vector<String>	  GetFilesFromDirectory(const String& fileDirectory, const Vector<String>& fileExtensionList);
 
 #if defined(__ANDROID__)
-	DLL_EXPORT void LoadAndroidAssetManager(AAssetManager* androidAssetManager);
+	 void LoadAndroidAssetManager(AAssetManager* androidAssetManager);
 #endif
 };
-extern DLL_EXPORT FileSystem& fileSystem;
+extern  FileSystem& fileSystem;
 inline FileSystem& FileSystem::Get()
 {
 	static FileSystem instance;

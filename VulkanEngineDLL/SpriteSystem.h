@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
@@ -90,16 +91,16 @@ public:
     Vector<SpriteLayer>                               SpriteLayerList;
     bool                                              SpriteListDirty = true;
 
-    DLL_EXPORT VramSpriteGuid                         LoadSpriteVRAM(const nlohmann::json& json);
-    DLL_EXPORT void                                   CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId);
-    DLL_EXPORT void                                   Update(const float& deltaTime);
-    DLL_EXPORT void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-    DLL_EXPORT SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
-    DLL_EXPORT Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
-    DLL_EXPORT bool                                   SpriteVramExists(const VkGuid& vramId);
-    DLL_EXPORT void                                   Destroy(Sprite& sprite);
+     VramSpriteGuid                         LoadSpriteVRAM(const nlohmann::json& json);
+     void                                   CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId);
+     void                                   Update(const float& deltaTime);
+     void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
+     SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
+     Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+     bool                                   SpriteVramExists(const VkGuid& vramId);
+     void                                   Destroy(Sprite& sprite);
 };
-extern DLL_EXPORT SpriteSystem& spriteSystem;
+extern  SpriteSystem& spriteSystem;
 inline SpriteSystem& SpriteSystem::Get()
 {
     static SpriteSystem instance;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "ShaderSystem.h"
 #include "MemoryPoolSystem.h"
@@ -172,30 +173,30 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
-	DLL_EXPORT uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
-	DLL_EXPORT uint CreateSpriteLayer(uint32 spriteMeshId);
-	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
-	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);
-	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor);
-	DLL_EXPORT uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor);
-	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color);
-	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
-	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
-	DLL_EXPORT uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
-	DLL_EXPORT const Vector<Mesh> FindMeshByMeshKey(const String& meshKey);
-	DLL_EXPORT const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-	DLL_EXPORT const Vector<MeshDrawMessage> DrawMesh(const String& meshKey);
-	DLL_EXPORT const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
-	DLL_EXPORT const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
+	 uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
+	 uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	 uint CreateSpriteLayer(uint32 spriteMeshId);
+	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
+	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);
+	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor);
+	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor);
+	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color);
+	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
+	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
+	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
+	 const Vector<Mesh> FindMeshByMeshKey(const String& meshKey);
+	 const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
+	 const Vector<MeshDrawMessage> DrawMesh(const String& meshKey);
+	 const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
+	 const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
 
-	DLL_EXPORT void Update(const float& deltaTime);
-	DLL_EXPORT void Destroy(uint meshId);
-	DLL_EXPORT void DestroyAllGameObjects();
-	DLL_EXPORT const Mesh& FindMesh(const uint& meshId);
-	DLL_EXPORT MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
+	 void Update(const float& deltaTime);
+	 void Destroy(uint meshId);
+	 void DestroyAllGameObjects();
+	 const Mesh& FindMesh(const uint& meshId);
+	 MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
 };
-extern DLL_EXPORT MeshSystem& meshSystem;
+extern  MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()
 {
 	static MeshSystem instance;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "ShaderSystem.h"
 
@@ -159,37 +160,37 @@ public:
 	bool													 IsHeaderDirty = true;
 	bool													 IsDescriptorSetDirty = true;
 
-	DLL_EXPORT void											 StartUp();
-	DLL_EXPORT uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
-	DLL_EXPORT void											 UpdateMemoryPool();
-	DLL_EXPORT void											 UpdateTextureDescriptorSet(Texture& texture, uint binding);
-	DLL_EXPORT void											 UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
-	DLL_EXPORT MeshPropertiesStruct&						 UpdateMesh(uint32 index);
-	DLL_EXPORT GPUMaterial&									 UpdateMaterial(uint32 index);
-	DLL_EXPORT DirectionalLightComponent&					 UpdateDirectionalLight(uint32 index);
-	DLL_EXPORT PointLightComponent&							 UpdatePointLight(uint32 index);
-	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture2DMetadataHeader(uint32 index);
-	DLL_EXPORT TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
-	DLL_EXPORT TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
-	DLL_EXPORT SpriteInstance&								 UpdateSpriteInstance(uint32 index);
-	DLL_EXPORT SceneDataBuffer&								 UpdateSceneDataBuffer();
+	 void											 StartUp();
+	 uint32										 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
+	 void											 UpdateMemoryPool();
+	 void											 UpdateTextureDescriptorSet(Texture& texture, uint binding);
+	 void											 UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding);
+	 MeshPropertiesStruct&						 UpdateMesh(uint32 index);
+	 GPUMaterial&									 UpdateMaterial(uint32 index);
+	 DirectionalLightComponent&					 UpdateDirectionalLight(uint32 index);
+	 PointLightComponent&							 UpdatePointLight(uint32 index);
+	 TextureMetadataHeader&						 UpdateTexture2DMetadataHeader(uint32 index);
+	 TextureMetadataHeader&						 UpdateTexture3DMetadataHeader(uint32 index);
+	 TextureMetadataHeader&						 UpdateTextureCubeMapMetadataHeader(uint32 index);
+	 SpriteInstance&								 UpdateSpriteInstance(uint32 index);
+	 SceneDataBuffer&								 UpdateSceneDataBuffer();
 
-	DLL_EXPORT Vector<SpriteInstance*>						 GetActiveSpriteInstancePointers();
+	 Vector<SpriteInstance*>						 GetActiveSpriteInstancePointers();
 
-	DLL_EXPORT Vector<MeshPropertiesStruct>					 MeshBufferList();
-	DLL_EXPORT Vector<GPUMaterial>							 MaterialBufferList();
-	DLL_EXPORT Vector<DirectionalLightComponent>			 DirectionalLightBufferList();
-	DLL_EXPORT Vector<PointLightComponent>					 PointLightBufferList();
-	DLL_EXPORT Vector<SpriteInstance>						 SpriteInstanceBufferList();
+	 Vector<MeshPropertiesStruct>					 MeshBufferList();
+	 Vector<GPUMaterial>							 MaterialBufferList();
+	 Vector<DirectionalLightComponent>			 DirectionalLightBufferList();
+	 Vector<PointLightComponent>					 PointLightBufferList();
+	 Vector<SpriteInstance>						 SpriteInstanceBufferList();
 
-	DLL_EXPORT void											 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
+	 void											 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
 
-	DLL_EXPORT const MemoryPoolSubBufferHeader				 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
-	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetSceneDataBufferDescriptor() const;
-	DLL_EXPORT const Vector<VkDescriptorBufferInfo>			 GetBindlessDataBufferDescriptor() const;
-	DLL_EXPORT const Vector<VkDescriptorImageInfo>			 GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const;
+	 const MemoryPoolSubBufferHeader				 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
+	 const Vector<VkDescriptorBufferInfo>			 GetSceneDataBufferDescriptor() const;
+	 const Vector<VkDescriptorBufferInfo>			 GetBindlessDataBufferDescriptor() const;
+	 const Vector<VkDescriptorImageInfo>			 GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const;
 };
-extern DLL_EXPORT MemoryPoolSystem& memoryPoolSystem;
+extern  MemoryPoolSystem& memoryPoolSystem;
 inline MemoryPoolSystem& MemoryPoolSystem::Get()
 {
 	static MemoryPoolSystem instance;

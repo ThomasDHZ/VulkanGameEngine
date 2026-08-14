@@ -37,12 +37,6 @@
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{a1d6e5bb-3594-4903-bae1-77e882612d94}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Interop">
-      <UniqueIdentifier>{1e77c8cf-db1a-4406-96a3-c948490bae0f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Interop">
-      <UniqueIdentifier>{ab6b2d68-7db7-451d-b6c3-ae9ffe7e41fa}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLL.h">
@@ -94,9 +88,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MemoryPoolSystem.h">
@@ -168,38 +159,11 @@
     <ClInclude Include="ComponentSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjectSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
     <ClInclude Include="InputSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="TextSystem.h">
       <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryPoolSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="CSharpScriptSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
-    </ClInclude>
-    <ClInclude Include="InputSystemDLL.h">
-      <Filter>Header Files\Interop</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -237,9 +201,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanError.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryPoolSystem.cpp">
@@ -299,38 +260,11 @@
     <ClCompile Include="ComponentSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjectSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
     <ClCompile Include="InputSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="TextSystem.cpp">
       <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryPoolSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="CSharpScriptSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="LevelSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
-    </ClCompile>
-    <ClCompile Include="InputSystemDLL.cpp">
-      <Filter>Source Files\Interop</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

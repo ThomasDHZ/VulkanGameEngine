@@ -29,14 +29,14 @@
 //
 //public:
 //
-//    DLL_EXPORT void StartUp();
-//    DLL_EXPORT void Update(float deltaTime);
-//    DLL_EXPORT void ShutDown();
+//     void StartUp();
+//     void Update(float deltaTime);
+//     void ShutDown();
 //
-//    DLL_EXPORT entt::entity CreateEntityFromScript(const std::string& scriptPath, const std::string& entityName);
-//    DLL_EXPORT sol::state& GetLuaState() { return lua; }
+//     entt::entity CreateEntityFromScript(const std::string& scriptPath, const std::string& entityName);
+//     sol::state& GetLuaState() { return lua; }
 //};
-//extern DLL_EXPORT LuaScriptingSystem& luaScriptingSystem;
+//extern  LuaScriptingSystem& luaScriptingSystem;
 //inline LuaScriptingSystem& LuaScriptingSystem::Get()
 //{
 //    static LuaScriptingSystem instance;

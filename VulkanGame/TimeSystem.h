@@ -29,10 +29,10 @@ public:
     double UncappedFPS = TargetFPS;
     float DeltaTime = 1.0f / TargetFPS;
 
-    DLL_EXPORT void StartFrameTimer();
-    DLL_EXPORT void EndFrameTimer();
+    void StartFrameTimer();
+    void EndFrameTimer();
 };
-extern DLL_EXPORT TimeSystem& timeSystem;
+extern TimeSystem& timeSystem;
 inline TimeSystem& TimeSystem::Get()
 {
     static TimeSystem instance;

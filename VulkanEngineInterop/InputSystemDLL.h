@@ -1,6 +1,6 @@
 #pragma once
-#include <Platform.h>
-#include "InputSystem.h"
+#include <InputSystem.h>
+#include "DLL.h"
 
 #ifdef __cplusplus
 extern "C" {

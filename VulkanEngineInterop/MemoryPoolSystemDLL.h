@@ -1,6 +1,6 @@
 #pragma once
-#include <Platform.h>
-#include "MemoryPoolSystem.h"
+#include <MemoryPoolSystem.h>
+#include "DLL.h" 
 
 #ifdef __cplusplus
 extern "C" {

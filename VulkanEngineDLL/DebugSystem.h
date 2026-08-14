@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #if defined(_WIN32)
 #include <C:\Program Files\RenderDoc\renderdoc_app.h>
@@ -25,12 +26,12 @@ private:
 #if defined(_WIN32)
 		RENDERDOC_API_1_6_0* RenderDocAPI = nullptr;
 		bool UsingRenderDoc = false;
-		DLL_EXPORT bool IsRenderDocInjected();
+		 bool IsRenderDocInjected();
 #endif
-		DLL_EXPORT void SetRootDirectory(const String& engineRoot);
-		DLL_EXPORT VkResult                 DumpVMAStats() const;
+		 void SetRootDirectory(const String& engineRoot);
+		 VkResult                 DumpVMAStats() const;
 };
-extern DLL_EXPORT DebugSystem& debugSystem;
+extern  DebugSystem& debugSystem;
 inline DebugSystem& DebugSystem::Get()
 {
 	static DebugSystem instance;
@@ -41,9 +42,9 @@ inline DebugSystem& DebugSystem::Get()
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT void Debug_SetRootDirectory(const char* engineRoot);
+	 void Debug_SetRootDirectory(const char* engineRoot);
 #if defined(_WIN32)
-	DLL_EXPORT bool	Debug_IsRenderDocInjected();
+	 bool	Debug_IsRenderDocInjected();
 #endif
 #ifdef __cplusplus
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "GameObjectSystem.h"
+#include <GameObjectSystem.h>
+#include "DLL.h"
 
 struct GameObjectComponentContainer
 {

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include <VulkanShader.h>
 #include <VulkanPipeline.h>
@@ -39,26 +40,26 @@ public:
 	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
     UnorderedMap<int, ShaderStruct>                         PipelineShaderStructMap;
     
-    DLL_EXPORT VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
-    DLL_EXPORT void                                         LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
-    DLL_EXPORT Vector<SpvReflectSpecializationConstant*>    LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
-    DLL_EXPORT bool                                         CompileShaders(const String& fileDirectory, const String& outputDirectory);
-    DLL_EXPORT void                                         UpdatePushConstantBuffer(const String& pushConstantName);
-    DLL_EXPORT void                                         UpdatePushConstantBuffer(ShaderPushConstant& pushConstantStruct);
-    DLL_EXPORT ShaderStruct                                 CopyShaderStructProtoType(const String& structName);
-    DLL_EXPORT ShaderPushConstant&                          FindShaderPushConstant(const String& pushConstantName);
-    DLL_EXPORT ShaderStruct                                 FindShaderProtoTypeStruct(const String& shaderKey);
-    DLL_EXPORT ShaderStruct&                                FindShaderStruct(int vulkanBufferId);
-    DLL_EXPORT ShaderVariable&                              FindShaderPipelineStructVariable(ShaderStruct& shaderStruct, const String& variableName);
-    DLL_EXPORT ShaderVariable&                              FindShaderPushConstantStructVariable(ShaderPushConstant& shaderPushConstant, const String& variableName);
-    DLL_EXPORT Vector<SpvReflectSpecializationConstant*>    FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
-    DLL_EXPORT bool                                         ShaderModuleExists(const String& shaderFile);
-    DLL_EXPORT bool                                         ShaderPushConstantExists(const String& pushConstantName);
-    DLL_EXPORT bool                                         ShaderStructPrototypeExists(const String& structKey);
-    DLL_EXPORT bool                                         ShaderPipelineStructExists(uint vulkanBufferKey);
-    DLL_EXPORT bool                                         SearchShaderConstantBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
-    DLL_EXPORT bool                                         SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
-    DLL_EXPORT bool                                         SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
+     VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
+     void                                         LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
+     Vector<SpvReflectSpecializationConstant*>    LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
+     bool                                         CompileShaders(const String& fileDirectory, const String& outputDirectory);
+     void                                         UpdatePushConstantBuffer(const String& pushConstantName);
+     void                                         UpdatePushConstantBuffer(ShaderPushConstant& pushConstantStruct);
+     ShaderStruct                                 CopyShaderStructProtoType(const String& structName);
+     ShaderPushConstant&                          FindShaderPushConstant(const String& pushConstantName);
+     ShaderStruct                                 FindShaderProtoTypeStruct(const String& shaderKey);
+     ShaderStruct&                                FindShaderStruct(int vulkanBufferId);
+     ShaderVariable&                              FindShaderPipelineStructVariable(ShaderStruct& shaderStruct, const String& variableName);
+     ShaderVariable&                              FindShaderPushConstantStructVariable(ShaderPushConstant& shaderPushConstant, const String& variableName);
+     Vector<SpvReflectSpecializationConstant*>    FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
+     bool                                         ShaderModuleExists(const String& shaderFile);
+     bool                                         ShaderPushConstantExists(const String& pushConstantName);
+     bool                                         ShaderStructPrototypeExists(const String& structKey);
+     bool                                         ShaderPipelineStructExists(uint vulkanBufferKey);
+     bool                                         SearchShaderConstantBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
+     bool                                         SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
+     bool                                         SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
 
     template<typename T>
     void UpdatePushConstantValue(ShaderPushConstant& pushConst, const String& valueName, const T& value)
@@ -77,7 +78,7 @@ public:
     }
 };
 
-extern DLL_EXPORT ShaderSystem& shaderSystem;
+extern  ShaderSystem& shaderSystem;
 inline ShaderSystem& ShaderSystem::Get()
 {
     static ShaderSystem instance;

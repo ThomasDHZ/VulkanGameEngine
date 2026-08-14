@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -146,7 +146,6 @@
     <ClInclude Include="..\External\LodePNG\lodepng.h" />
     <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
-    <ClInclude Include="..\External\VulkanMemoryAllocator\src\VmaUsage.h" />
     <ClInclude Include="..\External\xxHash\xxh3.h" />
     <ClInclude Include="..\External\xxHash\xxhash.h" />
     <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h" />
@@ -154,10 +153,8 @@
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="Collider2DComponent.h" />
     <ClInclude Include="CollisionSystem.h" />
-    <ClInclude Include="CollisionSystemDLL.h" />
     <ClInclude Include="ComponentSystem.h" />
     <ClInclude Include="CSharpScriptSystem.h" />
-    <ClInclude Include="CSharpScriptSystemDLL.h" />
     <ClInclude Include="DebugSystem.h" />
     <ClInclude Include="DLLSystem.h" />
     <ClInclude Include="EngineConfigSystem.h" />
@@ -165,22 +162,15 @@
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GameObjectSystem.h" />
-    <ClInclude Include="GameObjectSystemDLL.h" />
     <ClInclude Include="InputSystem.h" />
-    <ClInclude Include="InputSystemDLL.h" />
     <ClInclude Include="LevelSystem.h" />
-    <ClInclude Include="LevelSystemDLL.h" />
     <ClInclude Include="LightSystem.h" />
     <ClInclude Include="LuaScriptingSystem.h" />
     <ClInclude Include="MemoryPoolSystem.h" />
-    <ClInclude Include="MemoryPoolSystemDLL.h" />
-    <ClInclude Include="MeshSystemDLL.h" />
     <ClInclude Include="PushConstantRegistry.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="RenderSystemDLL.h" />
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="SpriteSystem.h" />
-    <ClInclude Include="SpriteSystemDLL.h" />
     <ClInclude Include="TextSystem.h" />
     <ClInclude Include="VulkanError.h" />
     <ClInclude Include="DLL.h" />
@@ -197,39 +187,29 @@
   <ItemGroup>
     <ClCompile Include="..\External\LodePNG\lodepng.cpp" />
     <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp" />
-    <ClCompile Include="..\External\VulkanMemoryAllocator\src\VmaUsage.cpp" />
     <ClCompile Include="..\External\xxHash\xxhash.c" />
     <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
-    <ClCompile Include="CollisionSystemDLL.cpp" />
     <ClCompile Include="ComponentSystem.cpp" />
     <ClCompile Include="CSharpScriptSystem.cpp" />
-    <ClCompile Include="CSharpScriptSystemDLL.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
     <ClCompile Include="DLLSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
-    <ClCompile Include="GameObjectSystemDLL.cpp" />
     <ClCompile Include="InputSystem.cpp" />
-    <ClCompile Include="InputSystemDLL.cpp" />
     <ClCompile Include="LevelSystem.cpp" />
-    <ClCompile Include="LevelSystemDLL.cpp" />
     <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="LuaScriptingSystem.cpp" />
     <ClCompile Include="MemoryPoolSystem.cpp" />
-    <ClCompile Include="MemoryPoolSystemDLL.cpp" />
-    <ClCompile Include="MeshSystemDLL.cpp" />
     <ClCompile Include="Pixel.cpp" />
     <ClCompile Include="PushConstantRegistry.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
-    <ClCompile Include="RenderSystemDLL.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="SpriteSystem.cpp" />
-    <ClCompile Include="SpriteSystemDLL.cpp" />
     <ClCompile Include="TextSystem.cpp" />
     <ClCompile Include="Transform2DComponent.cpp" />
     <ClCompile Include="VulkanError.cpp" />

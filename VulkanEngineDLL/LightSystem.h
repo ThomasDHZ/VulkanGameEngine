@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
@@ -40,12 +41,12 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-    DLL_EXPORT uint32                            LoadLight(const nlohmann::json& json);
-    DLL_EXPORT uint32                            AllocateLight(GameObjectTypeEnum lightType);
-    DLL_EXPORT DirectionalLightComponent&        GetDirectionalLight(uint directionalLightId);
-    DLL_EXPORT PointLightComponent&              GetPointLight(uint pointLightId);
+     uint32                            LoadLight(const nlohmann::json& json);
+     uint32                            AllocateLight(GameObjectTypeEnum lightType);
+     DirectionalLightComponent&        GetDirectionalLight(uint directionalLightId);
+     PointLightComponent&              GetPointLight(uint pointLightId);
 };
-extern DLL_EXPORT LightSystem& lightSystem;
+extern  LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()
 {
     static LightSystem instance;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "JsonStruct.h"
 #include <VulkanSystem.h>
@@ -56,28 +57,28 @@ private:
     UnorderedMap<VkGuid, VulkanPipelinePackage>                        RenderPipelinePackageMap;
     UnorderedMap<VkGuid, VulkanPipeline>                               RenderPipelineMap;
 
-    DLL_EXPORT void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
-    DLL_EXPORT void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
-    DLL_EXPORT void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+     void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
+     void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
+     void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
 public:
     bool                                                               WireFrameFlag = false;
 
-    DLL_EXPORT RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
-    DLL_EXPORT RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
-    DLL_EXPORT void                                                    Update(void* windowHandle, const float& deltaTime);
-    DLL_EXPORT const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
-    DLL_EXPORT const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
-    DLL_EXPORT const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
-    DLL_EXPORT bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineType pipelineType);
-    DLL_EXPORT uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
+     RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
+     RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
+     void                                                    Update(void* windowHandle, const float& deltaTime);
+     const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
+     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
+     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
+     bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineType pipelineType);
+     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
-    DLL_EXPORT void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
+     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
-    DLL_EXPORT void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
-    DLL_EXPORT void                                                    DestroyBuffer(VkBuffer& buffer);
+     void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
+     void                                                    DestroyBuffer(VkBuffer& buffer);
 };
-extern DLL_EXPORT RenderSystem& renderSystem;
+extern  RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()
 {
     static RenderSystem instance;

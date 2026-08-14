@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "JsonStruct.h"
 #include "ShaderSystem.h"
@@ -30,11 +31,11 @@ private:
 	UnorderedMap<String, UpdateFunc> registry;
 
 public:
-    DLL_EXPORT void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);
-    DLL_EXPORT void ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext);
-    DLL_EXPORT void RegisterDefaultPushConstantRules();
+     void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);
+     void ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext);
+     void RegisterDefaultPushConstantRules();
 };
-extern DLL_EXPORT PushConstantRegistry& pushConstantRegistry;
+extern  PushConstantRegistry& pushConstantRegistry;
 inline PushConstantRegistry& PushConstantRegistry::Get()
 {
     static PushConstantRegistry instance;

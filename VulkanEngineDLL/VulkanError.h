@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <vulkan/vulkan.h>
 #include <SPIRV-Reflect/spirv_reflect.h>
 #include <string>

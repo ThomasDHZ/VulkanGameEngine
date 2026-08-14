@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H  
@@ -31,11 +32,11 @@ private:
 
 public:
 
-    DLL_EXPORT void StartUp();
-    DLL_EXPORT void SetFont(String font);
-    DLL_EXPORT void RenderText(String& text, vec2 textPosition, float scale, vec3 color);
+     void StartUp();
+     void SetFont(String font);
+     void RenderText(String& text, vec2 textPosition, float scale, vec3 color);
 };
-extern DLL_EXPORT TextSystem& textSystem;
+extern  TextSystem& textSystem;
 inline TextSystem& TextSystem::Get()
 {
     static TextSystem instance;

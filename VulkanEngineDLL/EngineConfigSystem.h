@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <Platform.h>
 #include "FileSystem.h"
 
@@ -56,4 +57,4 @@ public:
 #endif
 };
 
-extern DLL_EXPORT ConfigSystem configSystem;
+extern  ConfigSystem configSystem;

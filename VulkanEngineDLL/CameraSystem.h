@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 
 enum CameraTypeEnum
@@ -56,10 +57,10 @@ public:
 	uint ActiveCameraIndex = 0;
     Vector<Camera> CameraList;
 
-    DLL_EXPORT void CreateCamera(CameraTypeEnum cameraType, const ivec2& renderResolution, const vec2& position = vec2(0.0f));
-	DLL_EXPORT void Update();
+     void CreateCamera(CameraTypeEnum cameraType, const ivec2& renderResolution, const vec2& position = vec2(0.0f));
+	 void Update();
 };
-extern DLL_EXPORT CameraSystem& cameraSystem;
+extern  CameraSystem& cameraSystem;
 inline CameraSystem& CameraSystem::Get()
 {
     static CameraSystem instance;

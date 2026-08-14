@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include <InputEnum.h>
 
@@ -19,12 +20,12 @@ private:
 
 public:
 
-    DLL_EXPORT void Update(const float& deltaTime);
-    DLL_EXPORT bool IsKeyDown(int key) const;
-    DLL_EXPORT bool IsKeyPressed(int key) const;
-    DLL_EXPORT bool IsKeyReleased(int key) const;
+     void Update(const float& deltaTime);
+     bool IsKeyDown(int key) const;
+     bool IsKeyPressed(int key) const;
+     bool IsKeyReleased(int key) const;
 };
-extern DLL_EXPORT InputSystem& inputSystem;
+extern  InputSystem& inputSystem;
 inline InputSystem& InputSystem::Get()
 {
     static InputSystem instance;

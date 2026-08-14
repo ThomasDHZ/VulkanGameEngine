@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Platform.h>
 #include "nethost.h"
 #include "hostfxr.h"
@@ -30,10 +31,10 @@ class DLLSystem
         string_t ToStringT(const std::string& str);
 
     public:
-        DLL_EXPORT bool InitializeDLLRuntime(const String& assemblyPath);
-        DLL_EXPORT void GetDLLFunctionPtr(const String& assemblyPath, const String& typeNameString, const char_t* functionName, void** outFunctionPtr);
+         bool InitializeDLLRuntime(const String& assemblyPath);
+         void GetDLLFunctionPtr(const String& assemblyPath, const String& typeNameString, const char_t* functionName, void** outFunctionPtr);
 };
-extern DLL_EXPORT DLLSystem& dllSystem;
+extern  DLLSystem& dllSystem;
 inline DLLSystem& DLLSystem::Get()
 {
     static DLLSystem instance;
