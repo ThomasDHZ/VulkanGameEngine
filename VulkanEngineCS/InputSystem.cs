@@ -15,6 +15,6 @@ namespace VulkanEngineCS
             DLLSystem.CallDLLFunc(() => InputSystem_LoadRenderPass(deltaTime));
         }
 
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void InputSystem_LoadRenderPass(float deltaTime);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void InputSystem_LoadRenderPass(float deltaTime);
     }
 }

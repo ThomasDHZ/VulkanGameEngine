@@ -10,8 +10,6 @@ namespace GameScriptLibraryDLL
 {
     public static class Module
     {
-        public const String VulkanEngineDLL = "VulkanEngineDLL.dll";
-        public const String VulkanEngineCoreDLL = "VulkanEngineCore.dll";
 
         [ModuleInitializer]
         internal static void Initialize()

@@ -1,6 +1,6 @@
 #pragma once
-#include <LevelSystem.h>
 #include "DLL.h"
+#include <LevelSystem.h>
 
 #ifdef __cplusplus
 extern "C" {

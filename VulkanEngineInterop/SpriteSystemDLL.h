@@ -1,6 +1,6 @@
 #pragma once
-#include <SpriteSystem.h>
 #include "DLL.h"
+#include <SpriteSystem.h>
 
 #ifdef __cplusplus
 extern "C" {

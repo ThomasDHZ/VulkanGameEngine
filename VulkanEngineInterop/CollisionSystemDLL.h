@@ -1,6 +1,6 @@
 #pragma once
-#include <CollisionSystem.h>
 #include "DLL.h"
+#include <CollisionSystem.h>
 
 #ifdef __cplusplus
 extern "C" {

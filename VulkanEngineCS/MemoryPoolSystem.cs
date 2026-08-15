@@ -21,7 +21,7 @@ namespace VulkanEngineCS
             DLLSystem.CallDLLFunc(() => MemoryPoolSystem_Update());
         }
 
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void MemoryPoolSystem_StartUp();
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void MemoryPoolSystem_Update();
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void MemoryPoolSystem_StartUp();
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void MemoryPoolSystem_Update();
     }
 }

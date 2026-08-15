@@ -14,6 +14,6 @@ namespace VulkanEngineCS
         {
             DLLSystem.CallDLLFunc(() => CollisionSystem_Update());
         }
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void CollisionSystem_Update();
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void CollisionSystem_Update();
     }
 }

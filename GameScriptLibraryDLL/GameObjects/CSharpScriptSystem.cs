@@ -27,7 +27,7 @@ namespace GameScriptLibraryDLL.GameObjects
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void UpdateFn(IntPtr instance, float deltaTime);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void DestroyFn(IntPtr instance);
-        [DllImport("GameScriptLibraryDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern bool CSharpScriptSystem_Initialize();
-        [DllImport("GameScriptLibraryDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_RegisterBehavior([MarshalAs(UnmanagedType.LPUTF8Str)] string behaviorName, IntPtr create, IntPtr startup, IntPtr update, IntPtr destroy);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern bool CSharpScriptSystem_Initialize();
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_RegisterBehavior([MarshalAs(UnmanagedType.LPUTF8Str)] string behaviorName, IntPtr create, IntPtr startup, IntPtr update, IntPtr destroy);
     }
 }

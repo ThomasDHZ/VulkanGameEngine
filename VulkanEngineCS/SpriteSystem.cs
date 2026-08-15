@@ -14,6 +14,6 @@ namespace VulkanEngineCS
         {
             DLLSystem.CallDLLFunc(() => SpriteSystem_Update(deltaTime));
         }
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void SpriteSystem_Update(float deltaTime);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void SpriteSystem_Update(float deltaTime);
     }
 }

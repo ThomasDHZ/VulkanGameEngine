@@ -1,6 +1,6 @@
 #include "GameObjectSystemDLL.h"
-#include "SpriteSystem.h"
-#include "LightSystem.h"
+#include <SpriteSystem.h>
+#include <LightSystem.h>
 
 void GameObjectSystem_Update(const float& deltaTime)
 {

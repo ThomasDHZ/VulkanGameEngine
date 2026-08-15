@@ -20,7 +20,7 @@ namespace VulkanEngineCS
             DLLSystem.CallDLLFunc(() => RenderSystem_Update(windowHandle, deltaTime));
         }
 
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern Guid RenderSystem_LoadRenderPass([MarshalAs(UnmanagedType.LPStr)] string jsonPath);
-        [DllImport("VulkanEngineDLL.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Update(void* windowHandle, float deltaTime);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern Guid RenderSystem_LoadRenderPass([MarshalAs(UnmanagedType.LPStr)] string jsonPath);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Update(void* windowHandle, float deltaTime);
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
-#include <CSharpScriptSystem.h>
 #include "DLL.h"
+#include <CSharpScriptSystem.h>
 
 #ifdef __cplusplus
 extern "C" {

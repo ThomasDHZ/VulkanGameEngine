@@ -1,6 +1,6 @@
 #pragma once
-#include <BufferSystem.h>
 #include "DLL.h"
+#include <BufferSystem.h>
 
 #ifdef __cplusplus
 extern "C" {

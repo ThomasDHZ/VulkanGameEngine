@@ -1,6 +1,6 @@
 #pragma once
-#include <VulkanRenderPass.h>
 #include "DLL.h"
+#include <VulkanRenderPass.h>
 
 #ifdef __cplusplus
 extern "C" {

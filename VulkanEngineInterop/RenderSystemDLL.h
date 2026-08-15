@@ -1,6 +1,6 @@
 #pragma once
-#include <RenderSystem.h>
 #include "DLL.h"
+#include <RenderSystem.h>
 
 #ifdef __cplusplus
 extern "C" {
