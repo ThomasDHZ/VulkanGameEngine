@@ -1,5 +1,4 @@
 ﻿using GameScriptLibraryDLL.Components;
-using GlmSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,30 +8,14 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public class GameEnemy : GameObject, IGameObjectType
+    public unsafe class PointLight : GameObject, IGameObjectType
     {
-        public enum MegaManAnimationEnum
-        {
-            kStanding,
-            kWalking,
-            kSlide,
-            kJump,
-            kClimb,
-            kClimbEnd,
-            kDamage,
-            kShoot,
-            kShootWalk,
-            kShootJump,
-            kClimbShoot
-        };
-
-        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectEnemy;
-
+        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectPointLight;
 
         [UnmanagedCallersOnly]
         public static IntPtr Create()
         {
-            var instance = new GameEnemy();
+            var instance = new PointLight();
             GCHandle handle = GCHandle.Alloc(instance, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
@@ -40,44 +23,27 @@ namespace GameScriptLibraryDLL.GameObjects
         [UnmanagedCallersOnly]
         public static void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
         {
-            if (instancePtr == IntPtr.Zero) return;
-
-            var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
-            instance.ParentGameObjectId = parentGameObjectId;
-            instance.GameObjectId = gameObjectId;
         }
-
 
         [UnmanagedCallersOnly]
         public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-            if (instancePtr == IntPtr.Zero) return;
-            var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
-            var parentGameObject = GameObject.GetById<GameObject>(gameObjectId);
-            var hitGameObject = GameObject.GetById<GameObject>(collidingGameObjectId);
-          //  DestroyGameObject(instance.GameObjectId);
-
-            Console.WriteLine("[Player Object] Object has entered collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-            Console.WriteLine("[Player Object] Object is still in collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
-            Console.WriteLine("[Player Object] Object has exited collision zone.");
         }
 
         [UnmanagedCallersOnly]
         public static void Update(IntPtr instancePtr, float deltaTime)
         {
-            if (instancePtr == IntPtr.Zero) return;
 
-            var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
         }
 
         [UnmanagedCallersOnly]

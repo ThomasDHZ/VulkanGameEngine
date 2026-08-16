@@ -188,6 +188,11 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
     return gameObjectEntity;
 }
 
+void GameObjectSystem::AddGameObjectBehavior(GameObjectTypeEnum gameObjectType, const GameObjectBehavior& gameObjectBehavior)
+{
+    GameObjectBehaviorMap[gameObjectType] = gameObjectBehavior;
+}
+
 void GameObjectSystem::Update(const float& deltaTime)
 {
     auto view = gameObjectSystem.EntityRegistry.view<GameObject>();

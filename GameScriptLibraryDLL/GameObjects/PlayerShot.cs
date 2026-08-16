@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public unsafe class PlayerShot : GameObject
+    public unsafe class PlayerShot : GameObject, IGameObjectType
     {
         public float Speed { get; } = 200.0f;
-        public override GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaManShot;
+        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaManShot;
 
         [UnmanagedCallersOnly]
         public static IntPtr Create()
@@ -42,7 +42,7 @@ namespace GameScriptLibraryDLL.GameObjects
             var instance = GameObject.GetFromPtr<PlayerShot>(instancePtr);
             var parentGameObject = GameObject.GetById<GameObject>(gameObjectId);
             var hitGameObject = GameObject.GetById<GameObject>(collidingGameObjectId);
-            if (parentGameObject.ObjectType == hitGameObject.ObjectType) return;
+            if (parentGameObject.GameObjectId == hitGameObject.GameObjectId) return;
 
             Console.WriteLine("[Player Shot Object] Object has entered collision zone.");
         }

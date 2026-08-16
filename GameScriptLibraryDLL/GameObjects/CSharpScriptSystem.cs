@@ -15,9 +15,15 @@ namespace GameScriptLibraryDLL.GameObjects
             return DLLSystem.CallDLLFunc(() => CSharpScriptSystem_Initialize());
         }
 
-        public static void RegisterBehavior<T>() where T : GameObject, new()
+        public static void RegisterBehavior<T>() where T : GameObject, IGameObjectType, new()
         {
-            DLLSystem.CallDLLFunc(() => GameObjectSystem_RegisterBehavior(typeof(T).Name, GameObjectScript<T>.CreatePtr, GameObjectScript<T>.StartupPtr, GameObjectScript<T>.UpdatePtr, GameObjectScript<T>.DestroyPtr));
+            DLLSystem.CallDLLFunc(() =>
+                GameObjectSystem_RegisterBehavior(
+                    T.ObjectType,
+                    GameObjectScript<T>.CreatePtr,
+                    GameObjectScript<T>.StartupPtr,
+                    GameObjectScript<T>.UpdatePtr,
+                    GameObjectScript<T>.DestroyPtr));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate IntPtr CreateObjectFn();
@@ -28,6 +34,6 @@ namespace GameScriptLibraryDLL.GameObjects
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void DestroyFn(IntPtr instance);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern bool CSharpScriptSystem_Initialize();
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_RegisterBehavior([MarshalAs(UnmanagedType.LPUTF8Str)] string behaviorName, IntPtr create, IntPtr startup, IntPtr update, IntPtr destroy);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr create, IntPtr startup, IntPtr update, IntPtr destroy);
     }
 }

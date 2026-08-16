@@ -145,6 +145,7 @@ public:
 
      void                                         Update(const float& deltaTime);
      void                                         DestroyGameObject(entt::entity gameObjectId);
+     void                                         AddGameObjectBehavior(GameObjectTypeEnum gameObjectType, const GameObjectBehavior& gameObjectBehavior);
      entt::entity                                 FindGameObject(uint gameObjectId);
      const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
      bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);

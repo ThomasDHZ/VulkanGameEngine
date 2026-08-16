@@ -86,7 +86,7 @@ private:
     LevelSystem(LevelSystem&&) = delete;
     LevelSystem& operator=(LevelSystem&&) = delete;
 
-    bool WireframeModeFlag = false;
+    bool                                       WireframeModeFlag = false;
 
     LevelLayer                                 LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
     VkGuid                                     LoadTileSetVRAM(const char* tileSetPath);

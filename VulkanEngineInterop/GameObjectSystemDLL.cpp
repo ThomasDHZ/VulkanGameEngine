@@ -98,3 +98,13 @@ void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTyp
     default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");
     }
 }
+
+void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr (*CreateObject)(), void  (*startup)(IntPtr, entt::entity, entt::entity), void  (*update)(IntPtr, float), void  (*destroy)(IntPtr))
+{
+    gameObjectSystem.AddGameObjectBehavior(gameObjectType, GameObjectBehavior{
+            .CreateObject = CreateObject,
+            .Startup = startup,
+            .Update = update,
+            .Destroy = destroy
+        });
+}

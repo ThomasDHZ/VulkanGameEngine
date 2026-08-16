@@ -7,15 +7,15 @@ using static GameScriptLibraryDLL.GameObjects.GameObjectVariableDLL;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public static class PlayerScript
-    {
-        [UnmanagedCallersOnly] public static IntPtr Create() => GameObjectScript<Player>.CreateNativePtr();
-        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObjectScript<Player>.StartupNativePtr(instancePtr, id, parent);
-        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObjectScript<Player>.UpdateNativePtr(instancePtr, dt);
-        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObjectScript<Player>.DestroyNativePtr(instancePtr);
-    }
+    //public static class PlayerScript
+    //{
+    //    [UnmanagedCallersOnly] public static IntPtr Create() => GameObjectScript<Player>.CreateNativePtr();
+    //    [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObjectScript<Player>.StartupNativePtr(instancePtr, id, parent);
+    //    [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObjectScript<Player>.UpdateNativePtr(instancePtr, dt);
+    //    [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObjectScript<Player>.DestroyNativePtr(instancePtr);
+    //}
 
-    public unsafe class Player : GameObject
+    public unsafe class Player : GameObject, IGameObjectType
     {
         public enum MegaManAnimationEnum
         {
@@ -34,7 +34,7 @@ namespace GameScriptLibraryDLL.GameObjects
         public const uint PlayerSpeed = 600;
         public const float CoolDownTimer = 2.0f;
         public const uint PlayerShotMaximum = 5;
-        public override GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaMan;
+        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaMan;
         public uint PlayerShotCount { get; set; }
         public float CoolDownTime { get; set; } = 0;
 

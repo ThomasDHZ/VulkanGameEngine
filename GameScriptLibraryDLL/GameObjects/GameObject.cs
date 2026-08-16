@@ -10,6 +10,11 @@ using VulkanEngineCoreCS;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
+    public interface IGameObjectType
+    {
+        static abstract GameObjectTypeEnum ObjectType { get; }
+    }
+
     public interface IGameObject
     {
         public IntPtr Create();
@@ -26,7 +31,7 @@ namespace GameScriptLibraryDLL.GameObjects
         public uint ParentGameObjectId;
         public uint GameObjectId;
         public IntPtr GameObjectPtr = IntPtr.Zero;
-        public virtual GameObjectTypeEnum ObjectType { get; protected set; } = GameObjectTypeEnum.kGameObjectNone;
+        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectNone;
         public bool GameObjectAlive = true;
 
         public GameObject() { }
