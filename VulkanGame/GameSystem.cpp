@@ -206,10 +206,10 @@ void GameSystem::DebugUpdate(float deltaTime)
 
 void GameSystem::Draw(float deltaTime)
 {
-    vulkan.Swapchain().StartFrame();
+    VkCommandBuffer commandBuffer = vulkan.Swapchain().StartFrame();
     commandBuffer = vulkan.CommandBufferList()[vulkan.Swapchain().CommandIndex()];
    // materialBakerSystem.Draw(commandBuffer);
-    Vector<RenderPassNode> renderNodes = levelSystem.Draw(commandBuffer, deltaTime);
+    Vector<RenderPassNode> renderNodes = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
     renderSystem.Draw(commandBuffer, renderNodes);
     levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
     imGuiSystem.Draw(commandBuffer);

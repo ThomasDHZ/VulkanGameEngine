@@ -133,7 +133,7 @@ public:
      void                            Update(const float& deltaTime);
      void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
 
-     Vector<RenderPassNode>          Draw(VkCommandBuffer& commandBuffer, const float& deltaTime);
+     Vector<RenderPassNode>          CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
      LevelLayout                     GetLevelLayout();
      Vector<LevelLayer>              GetLevelLayerList();
      Vector<Vector<uint>>            GetLevelTileMapList();

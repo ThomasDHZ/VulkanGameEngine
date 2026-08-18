@@ -73,7 +73,7 @@ void LevelSystem::Update(const float& deltaTime)
     cameraSystem.Update();
 }
 
-Vector<RenderPassNode> LevelSystem::Draw(VkCommandBuffer& commandBuffer, const float& deltaTime)
+Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
     Vector<VkGuid> renderPassesToDraw
     {

@@ -22,34 +22,48 @@ namespace VulkanEngineCS
             DLLSystem.CallDLLFunc(() => LevelSystem_Update(deltaTime));
         }
 
-        public static void Draw(VkCommandBuffer commandBuffer, float deltaTime)
+        public static void RenderFrameBuffer(VkCommandBuffer commandBuffer, Guid renderPassId)
         {
-            RenderPassNodeDLL* nodes = LevelSystem_Draw(ref commandBuffer, deltaTime, out size_t count);
-            if (nodes == null || count == 0)  return;
+            DLLSystem.CallDLLFunc(() => LevelSystem_RenderFrameBuffer(ref commandBuffer, renderPassId));
+        }
+
+        public static List<RenderPassNode> CreateDrawCommands(VkCommandBuffer commandBuffer, float deltaTime)
+        {
+            List<RenderPassNode> renderPassNodeList = new List<RenderPassNode>();
+            RenderPassNodeDLL* nodes = LevelSystem_CreateDrawCommands(ref commandBuffer, deltaTime, out size_t count);
+            if (nodes == null || count == 0) return new List<RenderPassNode>();
 
             for (size_t x = 0; x < count; x++)
             {
+                List<List<VulkanDrawMessage>> subPassDrawList = new List<List<VulkanDrawMessage>>();
                 ref RenderPassNodeDLL node = ref nodes[x];
-
-                IntPtr preCmd = node.PreRenderPassCmd;
-                IntPtr postCmd = node.PostRenderPassCmd;
-
-                for (size_t s = 0; s < node.SubPassDrawMessage_RenderPassCount; s++)
+                for (size_t y = 0; y < node.SubPassDrawMessage_RenderPassCount; y++)
                 {
-                    size_t drawCount = node.SubPassDrawMessage_SubPassCounts[s];
-                    VulkanDrawMessageDLL* draws = node.SubPassDrawMessage[s];
+                    size_t drawCount = node.SubPassDrawMessage_SubPassCounts[y];
+                    VulkanDrawMessageDLL* draws = node.SubPassDrawMessage[y];
 
                     List<VulkanDrawMessage> drawMeshMessage = new List<VulkanDrawMessage>();
-                    for (size_t d = 0; d < drawCount; d++)
+                    for (size_t z = 0; z < drawCount; z++)
                     {
-                        drawMeshMessage.Add(VulkanDrawMessage.FromDLL(draws[d]));
+                        drawMeshMessage.Add(VulkanDrawMessage.FromDLL(draws[z]));
                     }
+                    subPassDrawList.Add(drawMeshMessage);
                 }
+                renderPassNodeList.Add(new RenderPassNode
+                {
+                    RenderPassGuid = node.RenderPassGuid,
+                    MipCount = node.MipCount,
+                    PostRenderPassCmd = node.PostRenderPassCmd,
+                    PreRenderPassCmd = node.PreRenderPassCmd,
+                    SubPassDrawMessage = subPassDrawList,
+                });
             }
+            return renderPassNodeList;
         }
 
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern RenderPassNodeDLL* LevelSystem_Draw(ref VkCommandBuffer commandBuffer, float deltaTime, out size_t renderPassNodeDllCount);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_RenderFrameBuffer(ref VkCommandBuffer commandBuffer, Guid renderPassId);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern RenderPassNodeDLL* LevelSystem_CreateDrawCommands(ref VkCommandBuffer commandBuffer, float deltaTime, out size_t renderPassNodeDllCount);
     }
 }

@@ -22,6 +22,7 @@
     <ClCompile Include="BufferSystemDLL.cpp" />
     <ClCompile Include="CollisionSystemDLL.cpp" />
     <ClCompile Include="CSharpScriptSystemDLL.cpp" />
+    <ClCompile Include="DllHelper.cpp" />
     <ClCompile Include="GameObjectSystemDLL.cpp" />
     <ClCompile Include="InputSystemDLL.cpp" />
     <ClCompile Include="LevelSystemDLL.cpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="CollisionSystemDLL.h" />
     <ClInclude Include="CSharpScriptSystemDLL.h" />
     <ClInclude Include="DLL.h" />
+    <ClInclude Include="DllHelper.h" />
     <ClInclude Include="GameObjectSystemDLL.h" />
     <ClInclude Include="InputSystemDLL.h" />
     <ClInclude Include="LevelSystemDLL.h" />

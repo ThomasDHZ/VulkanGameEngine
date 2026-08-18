@@ -25,17 +25,18 @@ struct VulkanDrawMessageDLL
 
 struct RenderPassNodeDLL
 {
-     VkGuid                 RenderPassGuid;
-     VulkanDrawMessageDLL** SubPassDrawMessage;
-     size_t                 SubPassDrawMessage_RenderPassCount; //number of subpasses (outer size);
-     size_t*                SubPassDrawMessage_SubPassCounts;   //array of sizes for each subpass (inner size);
-     void*                  PreRenderPassCmd = nullptr;
-     void*                  PostRenderPassCmd = nullptr;
-     uint                   MipCount = 0;
+    VkGuid                 RenderPassGuid;
+    VulkanDrawMessageDLL** SubPassDrawMessage;
+    size_t                 SubPassDrawMessage_RenderPassCount; //number of subpasses (outer size);
+    size_t* SubPassDrawMessage_SubPassCounts;   //array of sizes for each subpass (inner size);
+    void* PreRenderPassCmd = nullptr;
+    void* PostRenderPassCmd = nullptr;
+    uint                   MipCount = 0;
 };
 
-using PushConstantsCmdFunction  = std::function<void(VkCommandBuffer, VulkanDrawMessage&, uint32, ivec2, uint32)>;
-using PreDrawCmdFunction        = std::function<void(VkCommandBuffer, VulkanDrawMessage)>;
+using PushConstantsCmdFunction = std::function<void(VkCommandBuffer, VulkanDrawMessage&, uint32, ivec2, uint32)>;
+using PreDrawCmdFunction = std::function<void(VkCommandBuffer, VulkanDrawMessage)>;
+
 using CustomDrawCmdFunction     = std::function<void(VkCommandBuffer, VulkanDrawMessage)>;
 using PostDrawCmdFunction       = std::function<void(VkCommandBuffer, VulkanDrawMessage)>;
 using PreRenderPassCmdFunction  = std::function<void(VkCommandBuffer, RenderPassNode&)>;
@@ -47,7 +48,7 @@ extern "C" {
     DLL_EXPORT void                           LevelSystem_LoadLevel(const char* levelPath);
     DLL_EXPORT void                           LevelSystem_Update(const float& deltaTime);
     DLL_EXPORT void                           LevelSystem_RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
-    DLL_EXPORT RenderPassNodeDLL*             LevelSystem_Draw(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount);
+    DLL_EXPORT RenderPassNodeDLL*             LevelSystem_CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount);
 #ifdef __cplusplus
 }
 #endif

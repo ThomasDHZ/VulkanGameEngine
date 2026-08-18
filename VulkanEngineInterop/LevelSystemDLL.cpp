@@ -15,9 +15,9 @@ void LevelSystem_RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rende
 	levelSystem.RenderFrameBuffer(commandBuffer, renderPassId);
 }
 
-RenderPassNodeDLL* LevelSystem_Draw(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount)
+RenderPassNodeDLL* LevelSystem_CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount)
 {
-    Vector<RenderPassNode> renderPassNodeList = levelSystem.Draw(commandBuffer, deltaTime);
+    Vector<RenderPassNode> renderPassNodeList = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
     RenderPassNodeDLL* dllList = memorySystem.AddPtrBuffer<RenderPassNodeDLL>(renderPassNodeList.size(), __FILE__, __LINE__, __func__);
 
     if (!dllList && !renderPassNodeList.empty()) return nullptr;

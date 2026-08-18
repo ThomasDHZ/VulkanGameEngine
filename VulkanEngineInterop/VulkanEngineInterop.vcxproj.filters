@@ -54,6 +54,9 @@
     <ClCompile Include="VulkanSystemDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DllHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VulkanSystemDLL.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CSharpScriptSystemDLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DllHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

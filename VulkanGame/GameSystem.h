@@ -23,7 +23,7 @@ public:
         return instance;
     }
 #endif
-    VkCommandBuffer commandBuffer;
+   // VkCommandBuffer commandBuffer;
     void StartUp();
 
 #ifndef __ANDROID__
