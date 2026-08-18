@@ -13,10 +13,6 @@ LevelSystem& levelSystem = LevelSystem::Get();
 
 void LevelSystem::LoadLevel(const char* levelPath)
 {
-//#if defined(_WIN32)
-//    shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-//#endif
-
     cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec2(0.0f, 0.0f));
     PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec3(0.0f, 0.0f, 0.0f)));
     pushConstantRegistry.RegisterDefaultPushConstantRules();
@@ -38,8 +34,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
     gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
 
     LoadSkyBox();
-    brdfRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
-    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
+    brdfRenderPassId = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
+    textureSystem.GenerateTexture(brdfRenderPassId);
+    Vector<Texture> textures = textureSystem.RenderedTextureListMap[brdfRenderPassId];
+
+    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
+    textureSystem.GenerateTexture(environmentToCubeMapRenderPassId);
+
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId                = renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
@@ -301,6 +302,50 @@ void LevelSystem::LoadSkyBox()
 void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
 {
     Texture& srcTexture = textureSystem.FindRenderedTextureList(hdrRenderPassId).back();
+    VkImage srcImage = srcTexture.texture.TextureImage();
+    VkImage dstImage = vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().ImageIndex()];
+
+    Vector<VkImageMemoryBarrier> barriers = Vector<VkImageMemoryBarrier>
+    {
+        VkImageMemoryBarrier
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .srcAccessMask = 0,
+            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = srcImage,
+            .subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+            }
+        },
+        VkImageMemoryBarrier
+        {
+             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .srcAccessMask = 0,
+            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = dstImage,
+            .subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+            }
+        }
+    };
+    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
+
     VkImageBlit blitRegion
     {
         .srcSubresource =
@@ -348,7 +393,27 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             }
         }
     };
-    vkCmdBlitImage(commandBuffer, srcTexture.texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().ImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
+    vkCmdBlitImage(commandBuffer, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_LINEAR);
+
+    VkImageMemoryBarrier presentBarrier = 
+    {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+        .dstAccessMask = 0,
+        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = dstImage,
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        }
+    };
+    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
 }
 
 LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)

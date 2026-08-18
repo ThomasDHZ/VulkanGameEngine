@@ -596,11 +596,10 @@ void MemoryPoolSystem::FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 ind
 
 void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding)
 {
-    VkDescriptorImageInfo textureUpdate = VkDescriptorImageInfo
-    {
-        .sampler = texture.texture.TextureSampler(),
-        .imageView = texture.texture.TextureViews().front(),
-        .imageLayout = texture.texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    VkDescriptorImageInfo textureUpdate = {
+          .sampler = texture.texture.TextureSampler(),
+          .imageView = texture.texture.TextureViews().front(),
+          .imageLayout = texture.texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     };
 
     VkWriteDescriptorSet descriptorUpdate = VkWriteDescriptorSet

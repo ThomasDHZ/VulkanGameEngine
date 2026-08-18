@@ -47,7 +47,6 @@ void GameSystem::StartUp()
     cSharpScriptSystem.Initialize();
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
-    // materialBakerSystem.Run();
 #endif
     levelSystem.LoadLevel("Levels/TestLevel.json");
     //String text = String("asdfasdf");
@@ -207,7 +206,6 @@ void GameSystem::DebugUpdate(float deltaTime)
 void GameSystem::Draw(float deltaTime)
 {
     VkCommandBuffer commandBuffer = vulkan.Swapchain().StartFrame();
-    commandBuffer = vulkan.CommandBufferList()[vulkan.Swapchain().CommandIndex()];
    // materialBakerSystem.Draw(commandBuffer);
     Vector<RenderPassNode> renderNodes = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
     renderSystem.Draw(commandBuffer, renderNodes);

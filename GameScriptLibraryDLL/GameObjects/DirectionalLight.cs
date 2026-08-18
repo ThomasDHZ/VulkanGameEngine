@@ -11,42 +11,35 @@ namespace GameScriptLibraryDLL.GameObjects
     {
         public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectDirectionalLight;
 
-        [UnmanagedCallersOnly]
-        public static IntPtr Create()
+        public override IntPtr Create()
         {
             var instance = new DirectionalLight();
             GCHandle handle = GCHandle.Alloc(instance, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
 
-        [UnmanagedCallersOnly]
-        public static void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
+        public override void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
         {
         }
 
-        [UnmanagedCallersOnly]
-        public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
         }
 
-        [UnmanagedCallersOnly]
-        public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
         }
 
-        [UnmanagedCallersOnly]
-        public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
         }
 
-        [UnmanagedCallersOnly]
-        public static void Update(IntPtr instancePtr, float deltaTime)
+        public override void Update(IntPtr instancePtr, float deltaTime)
         {
 
         }
 
-        [UnmanagedCallersOnly]
-        public static void Destroy(IntPtr instance)
+        public override void Destroy(IntPtr instance)
         {
             if (instance != IntPtr.Zero)
             {

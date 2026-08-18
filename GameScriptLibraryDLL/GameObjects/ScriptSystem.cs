@@ -19,7 +19,12 @@ namespace GameScriptLibraryDLL.GameObjects
 
         static IntPtr Create() => GCHandle.ToIntPtr(GCHandle.Alloc(new T()));
         static void Startup(IntPtr instance, uint id, uint parent) => FromPtr(instance).StartUp(instance, id, parent);
-        static void Update(IntPtr instance, float dt) => FromPtr(instance).Update(instance, dt);
+        static void Update(IntPtr instance, float dt)
+        {
+            Console.WriteLine("GameObject Update called");
+            FromPtr(instance).Update(instance, dt);
+        }
+
         static void Destroy(IntPtr instance)
         {
             FromPtr(instance).Destroy(instance);
