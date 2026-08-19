@@ -433,7 +433,7 @@
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
       "SrcStageMask": 1,
-      "DstStageMask": 128,
+      "DstStageMask": 1792,
       "SrcAccessMask": 0,
       "DstAccessMask": 1280,
       "DependencyFlags": 1
@@ -441,8 +441,8 @@
     {
       "SrcSubpass": 0,
       "DstSubpass": 1,
-      "SrcStageMask": 128,
-      "DstStageMask": 128,
+      "SrcStageMask": 1792,
+      "DstStageMask": 1792,
       "SrcAccessMask": 1280,
       "DstAccessMask": 1280,
       "DependencyFlags": 1
@@ -450,7 +450,7 @@
     {
       "SrcSubpass": 1,
       "DstSubpass": 4294967295,
-      "SrcStageMask": 128,
+      "SrcStageMask": 1792,
       "DstStageMask": 8192,
       "SrcAccessMask": 1280,
       "DstAccessMask": 0,

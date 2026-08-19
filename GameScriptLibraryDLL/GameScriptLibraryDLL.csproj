@@ -17,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\VulkanCS\VulkanCS\VulkanCS.csproj" />
     <ProjectReference Include="..\..\VulkanEngineCore\VulkanEngineCoreCS\VulkanEngineCoreCS.csproj" />
-    <ProjectReference Include="..\..\VulkanEngineCore\VulkanEngineCore\VulkanEngineCore.vcxproj" />
     <ProjectReference Include="..\VulkanEngineDLL\VulkanEngineDLL.vcxproj" />
   </ItemGroup>
   <ItemGroup>

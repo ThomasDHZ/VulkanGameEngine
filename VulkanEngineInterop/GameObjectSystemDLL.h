@@ -26,10 +26,10 @@ extern "C" {
     DLL_EXPORT GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
     DLL_EXPORT IntPtr                 GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
     DLL_EXPORT void                   GameObjectSystem_DestroyGameObject(uint gameObjectId);
-
     DLL_EXPORT void                   GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
     DLL_EXPORT void*                  GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
     DLL_EXPORT void                   GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr(*CreateObject)(), void  (*startup)(IntPtr, entt::entity, entt::entity), void  (*update)(IntPtr, float), void  (*destroy)(IntPtr));
+    DLL_EXPORT ComponentTypeEnum*     GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, size_t& returnCount);
 #ifdef __cplusplus
 }
 #endif

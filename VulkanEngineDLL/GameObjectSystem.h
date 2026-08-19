@@ -150,7 +150,6 @@ public:
      const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
      bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);
 
-
     template<typename T>
     T* GetGameObjectComponent(entt::entity entity)
     {

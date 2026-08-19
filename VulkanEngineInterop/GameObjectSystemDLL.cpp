@@ -108,3 +108,20 @@ void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr
             .Destroy = destroy
         });
 }
+
+ComponentTypeEnum* GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, size_t& returnCount)
+{
+    Vector<ComponentTypeEnum> componentList;
+    entt::entity gameObjectEntity = static_cast<entt::entity>(gameObjectId);
+    for (uint x = 0; x < ComponentTypeEnum::kEndOfEnum; x++)
+    {
+        void* componentPtr = GameObjectSystem_UpdateGameObjectComponent(static_cast<uint>(gameObjectEntity), (ComponentTypeEnum)x);
+        if (componentPtr)
+        {
+            componentList.emplace_back(static_cast<ComponentTypeEnum>(x));
+        }
+    }
+
+    returnCount = componentList.size();
+    return memorySystem.AddPtrBuffer(componentList.data(), componentList.size(), __FILE__, __LINE__, __func__);
+}
