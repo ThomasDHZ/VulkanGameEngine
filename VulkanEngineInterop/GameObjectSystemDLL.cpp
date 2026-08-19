@@ -54,6 +54,23 @@ GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId
     return memorySystem.AddPtrBuffer(tempList.data(), returnCount * sizeof(GameObjectVariableDLL), __FILE__, __LINE__, __func__);
 }
 
+GameObject* GameObjectSystem_GetGameObjectList(size_t& returnGameObjectCount)
+{
+    auto view = gameObjectSystem.EntityRegistry.view<GameObject>();
+
+    returnGameObjectCount = view.size();
+    if (returnGameObjectCount == 0) return nullptr;
+
+    size_t x = 0;
+    GameObject* list = memorySystem.AddPtrBuffer<GameObject>(view.size(), __FILE__, __LINE__, __func__);
+    for (auto entity : view)
+    {
+        list[x++] = view.get<GameObject>(entity);
+    }
+
+    return list;
+}
+
 IntPtr GameObjectSystem_GetGameObjectPtr(uint gameObjectId)
 {
     entt::entity gameObjectEntity = gameObjectSystem.FindGameObject(gameObjectId);

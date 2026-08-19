@@ -99,20 +99,20 @@ namespace VulkanEngineCS
             return ptr;
         }
 
-        public static List<GameObject> GetGameObjectList()
+        public static unsafe List<GameObject> GetGameObjectList()
         {
             try
             {
-                GameObject* gameObjectList = GameObjectSystem_GetGameObjectList(out size_t gameObjectCount);
+                IntPtr ptr = GameObjectSystem_GetGameObjectList(out size_t count);
+                if (ptr == IntPtr.Zero || count == 0) return new List<GameObject>();
 
-                if (gameObjectList == null || gameObjectCount == 0) return new List<GameObject>();
-
-                var result = new List<GameObject>((int)gameObjectCount);
-                for (int x = 0; x < (int)gameObjectCount; x++)
+                GameObject** list = (GameObject**)ptr;
+                var result = new List<GameObject>((int)count);
+                for (int x = 0; x < (int)count; x++)
                 {
-                    result.Add(gameObjectList[x]);
+                    GameObject* goPtr = list[x];
+                    if (goPtr != null) result.Add(*goPtr); 
                 }
-
                 return result;
             }
             catch (Exception ex)
@@ -156,7 +156,7 @@ namespace VulkanEngineCS
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, out size_t returnCount);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern GameObject* GameObjectSystem_GetGameObjectList(out size_t returnCount);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_GetGameObjectList(out size_t returnCount);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);

@@ -24,6 +24,7 @@ extern "C" {
     DLL_EXPORT void                   GameObjectSystem_Update(const float& deltaTime);
     DLL_EXPORT uint                   GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId = UINT32_MAX);
     DLL_EXPORT GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount);
+    DLL_EXPORT GameObject*            GameObjectSystem_GetGameObjectList(size_t& returnGameObjectCount);
     DLL_EXPORT IntPtr                 GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
     DLL_EXPORT void                   GameObjectSystem_DestroyGameObject(uint gameObjectId);
     DLL_EXPORT void                   GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
