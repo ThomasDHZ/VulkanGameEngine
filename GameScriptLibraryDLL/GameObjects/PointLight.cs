@@ -8,6 +8,17 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
+    public static class PointLightScript
+    {
+        [UnmanagedCallersOnly] public static IntPtr Create() => GCHandle.ToIntPtr(GCHandle.Alloc(new PointLight()));
+        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObject.GetFromPtr<PointLight>(instancePtr).StartUp(instancePtr, id, parent);
+        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObject.GetFromPtr<PointLight>(instancePtr).Update(instancePtr, dt);
+        [UnmanagedCallersOnly] public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<PointLight>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<PointLight>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<PointLight>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObject.GetFromPtr<PointLight>(instancePtr).Destroy(instancePtr);
+    }
+
     public unsafe class PointLight : GameObject, IGameObjectType
     {
         public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectPointLight;

@@ -7,6 +7,17 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
+    public static class DirectionalLightScript
+    {
+        [UnmanagedCallersOnly] public static IntPtr Create() => GCHandle.ToIntPtr(GCHandle.Alloc(new DirectionalLight()));
+        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObject.GetFromPtr<DirectionalLight>(instancePtr).StartUp(instancePtr, id, parent);
+        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObject.GetFromPtr<DirectionalLight>(instancePtr).Update(instancePtr, dt);
+        [UnmanagedCallersOnly] public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<DirectionalLight>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<DirectionalLight>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<DirectionalLight>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObject.GetFromPtr<DirectionalLight>(instancePtr).Destroy(instancePtr);
+    }
+
     public class DirectionalLight : GameObject, IGameObjectType
     {
         public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectDirectionalLight;

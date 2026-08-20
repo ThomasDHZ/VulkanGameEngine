@@ -7,13 +7,16 @@ using static GameScriptLibraryDLL.GameObjects.GameObjectVariableDLL;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    //public static class PlayerScript
-    //{
-    //    [UnmanagedCallersOnly] public static IntPtr Create() => GameObjectScript<Player>.CreateNativePtr();
-    //    [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObjectScript<Player>.StartupNativePtr(instancePtr, id, parent);
-    //    [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObjectScript<Player>.UpdateNativePtr(instancePtr, dt);
-    //    [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObjectScript<Player>.DestroyNativePtr(instancePtr);
-    //}
+    public static class PlayerScript
+    {
+        [UnmanagedCallersOnly] public static IntPtr Create()=> GCHandle.ToIntPtr(GCHandle.Alloc(new Player()));
+        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObject.GetFromPtr<Player>(instancePtr).StartUp(instancePtr, id, parent);
+        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObject.GetFromPtr<Player>(instancePtr).Update(instancePtr, dt);
+        [UnmanagedCallersOnly] public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<Player>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<Player>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<Player>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObject.GetFromPtr<Player>(instancePtr).Destroy(instancePtr);
+    }
 
     public unsafe class Player : GameObject, IGameObjectType
     {

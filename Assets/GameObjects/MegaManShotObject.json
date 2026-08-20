@@ -1,6 +1,6 @@
 {
   "GameObjectType": 2,
-  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerShot, GameScriptLibraryDLL",
+  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerShotScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
   "GameObjectVariableStruct": [
     {

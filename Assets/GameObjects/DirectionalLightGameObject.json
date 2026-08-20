@@ -1,6 +1,6 @@
 {
   "GameObjectType": 3,
-  "GameObjectLightPath": "Lights/DirectionalLight.json",
+  "GameObjectLightPath": "Lights/DirectionalLightScript.json",
   "GameObjectComponentList": [
     {
       "ComponentType": 5,

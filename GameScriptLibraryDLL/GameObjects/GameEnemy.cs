@@ -9,7 +9,17 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
-    public class GameEnemy : GameObject, IGameObjectType
+    public static class GameEnemyScript
+    {
+        [UnmanagedCallersOnly] public static IntPtr Create() => GCHandle.ToIntPtr(GCHandle.Alloc(new GameEnemy()));
+        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObject.GetFromPtr<GameEnemy>(instancePtr).StartUp(instancePtr, id, parent);
+        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObject.GetFromPtr<GameEnemy>(instancePtr).Update(instancePtr, dt);
+        [UnmanagedCallersOnly] public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<GameEnemy>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<GameEnemy>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<GameEnemy>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObject.GetFromPtr<GameEnemy>(instancePtr).Destroy(instancePtr);
+    }
+    public unsafe class GameEnemy : GameObject, IGameObjectType
     {
         public enum MegaManAnimationEnum
         {
@@ -28,17 +38,14 @@ namespace GameScriptLibraryDLL.GameObjects
 
         public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectEnemy;
 
-
-        [UnmanagedCallersOnly]
-        public static IntPtr Create()
+        public override IntPtr Create()
         {
             var instance = new GameEnemy();
             GCHandle handle = GCHandle.Alloc(instance, GCHandleType.Normal);
             return GCHandle.ToIntPtr(handle);
         }
 
-        [UnmanagedCallersOnly]
-        public static void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
+        public override void StartUp(IntPtr instancePtr, uint gameObjectId, uint parentGameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
 
@@ -47,9 +54,7 @@ namespace GameScriptLibraryDLL.GameObjects
             instance.GameObjectId = gameObjectId;
         }
 
-
-        [UnmanagedCallersOnly]
-        public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
             if (instancePtr == IntPtr.Zero) return;
             var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
@@ -60,8 +65,7 @@ namespace GameScriptLibraryDLL.GameObjects
             Console.WriteLine("[Player Object] Object has entered collision zone.");
         }
 
-        [UnmanagedCallersOnly]
-        public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
+        public override void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId)
         {
             Console.WriteLine("[Player Object] Object is still in collision zone.");
         }
@@ -72,16 +76,14 @@ namespace GameScriptLibraryDLL.GameObjects
             Console.WriteLine("[Player Object] Object has exited collision zone.");
         }
 
-        [UnmanagedCallersOnly]
-        public static void Update(IntPtr instancePtr, float deltaTime)
+        public override void Update(IntPtr instancePtr, float deltaTime)
         {
             if (instancePtr == IntPtr.Zero) return;
 
             var instance = GameObject.GetFromPtr<GameEnemy>(instancePtr);
         }
 
-        [UnmanagedCallersOnly]
-        public static void Destroy(IntPtr instance)
+        public override void Destroy(IntPtr instance)
         {
             if (instance != IntPtr.Zero)
             {

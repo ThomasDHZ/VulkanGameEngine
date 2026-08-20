@@ -12,7 +12,7 @@ class CSharpScriptSystem
 {
 public:
     static CSharpScriptSystem& Get();
-    static bool CSharpScriptSystemInitialized;
+   // static bool CSharpScriptSystemInitialized;
 
 private:
     CSharpScriptSystem() = default;

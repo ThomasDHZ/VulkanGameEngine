@@ -1,6 +1,6 @@
 {
   "GameObjectType": 5,
-  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.GameEnemy, GameScriptLibraryDLL",
+  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.GameEnemyScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
   "GameObjectVariableStruct": [
     {

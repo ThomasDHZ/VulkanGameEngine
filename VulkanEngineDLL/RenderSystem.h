@@ -70,7 +70,7 @@ public:
      const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
      const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
      const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
-     bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineType pipelineType);
+     bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType);
      uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
      void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);

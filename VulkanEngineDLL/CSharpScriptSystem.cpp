@@ -4,14 +4,14 @@
 #include "EngineConfigSystem.h"
 
 CSharpScriptSystem& cSharpScriptSystem = CSharpScriptSystem::Get();
-bool CSharpScriptSystem::CSharpScriptSystemInitialized = false;
+//bool CSharpScriptSystem::CSharpScriptSystemInitialized = false;
 
 bool CSharpScriptSystem::Initialize()
 {
-        if (CSharpScriptSystemInitialized) return true;
+       // if (CSharpScriptSystemInitialized) return true;
     
         bool success = dllSystem.InitializeDLLRuntime(configSystem.GameScriptLibraryDLL);
-        if (success) CSharpScriptSystemInitialized = true;
+      //  if (success) CSharpScriptSystemInitialized = true;
         return success;
 }
 

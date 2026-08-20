@@ -9,6 +9,17 @@ using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.GameObjects
 {
+    public static class PlayerShotScript
+    {
+        [UnmanagedCallersOnly] public static IntPtr Create() => GCHandle.ToIntPtr(GCHandle.Alloc(new PlayerShot()));
+        [UnmanagedCallersOnly] public static void StartUp(IntPtr instancePtr, uint id, uint parent) => GameObject.GetFromPtr<PlayerShot>(instancePtr).StartUp(instancePtr, id, parent);
+        [UnmanagedCallersOnly] public static void Update(IntPtr instancePtr, float dt) => GameObject.GetFromPtr<PlayerShot>(instancePtr).Update(instancePtr, dt);
+        [UnmanagedCallersOnly] public static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<PlayerShot>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<PlayerShot>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => GameObject.GetFromPtr<PlayerShot>(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        [UnmanagedCallersOnly] public static void Destroy(IntPtr instancePtr) => GameObject.GetFromPtr<PlayerShot>(instancePtr).Destroy(instancePtr);
+    }
+
     public unsafe class PlayerShot : GameObject, IGameObjectType
     {
         public float Speed { get; } = 200.0f;

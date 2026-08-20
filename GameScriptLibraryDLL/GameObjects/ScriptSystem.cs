@@ -35,12 +35,13 @@ namespace GameScriptLibraryDLL.GameObjects
 
         static T FromPtr(IntPtr p) => (T)GCHandle.FromIntPtr(p).Target!;
 
+
         public static IntPtr CreatePtr => Marshal.GetFunctionPointerForDelegate(s_create);
         public static IntPtr StartupPtr => Marshal.GetFunctionPointerForDelegate(s_startup);
         public static IntPtr UpdatePtr => Marshal.GetFunctionPointerForDelegate(s_update);
-        public static IntPtr OnCollisionEnterPtr => Marshal.GetFunctionPointerForDelegate(s_create);
-        public static IntPtr OnCollisionStayPtr => Marshal.GetFunctionPointerForDelegate(s_create);
-        public static IntPtr OnCollisionExitPtr => Marshal.GetFunctionPointerForDelegate(s_create);
+        public static IntPtr OnCollisionEnterPtr => Marshal.GetFunctionPointerForDelegate(s_onCollisionEnter);
+        public static IntPtr OnCollisionStayPtr => Marshal.GetFunctionPointerForDelegate(s_onCollisionStay);
+        public static IntPtr OnCollisionExitPtr => Marshal.GetFunctionPointerForDelegate(s_onCollisionExit);
         public static IntPtr DestroyPtr => Marshal.GetFunctionPointerForDelegate(s_destroy);
     }
 }
