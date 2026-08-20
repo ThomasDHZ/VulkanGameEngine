@@ -1,6 +1,6 @@
 {
   "GameObjectType": 1,
-  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerScript, GameScriptLibraryDLL",
+  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.Player, GameScriptLibraryDLL",
   "GameObjectLuaScript": "GameScripts\\Player.lua",
   "GameObjectVariableStruct": [
     {

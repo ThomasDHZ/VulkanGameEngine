@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using VulkanEngineCoreCS;
@@ -17,17 +18,17 @@ namespace GameScriptLibraryDLL.GameObjects
 
         public static void RegisterBehavior<T>() where T : GameObject, IGameObjectType, new()
         {
-            DLLSystem.CallDLLFunc(() => GameObjectSystem_RegisterBehavior(T.ObjectType, GameObjectScript<T>.CreatePtr, GameObjectScript<T>.StartupPtr, GameObjectScript<T>.UpdatePtr, GameObjectScript<T>.DestroyPtr));
+            DLLSystem.CallDLLFunc(() => GameObjectSystem_RegisterBehavior(T.ObjectType, GameObjectScript<T>.CreatePtr, GameObjectScript<T>.StartupPtr, GameObjectScript<T>.UpdatePtr, GameObjectScript<T>.OnCollisionEnterPtr, GameObjectScript<T>.OnCollisionStayPtr, GameObjectScript<T>.OnCollisionExitPtr, GameObjectScript<T>.DestroyPtr));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate IntPtr CreateObjectFn();
-
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void StartupFn(IntPtr instance, uint gameObjectId, uint parentId);
-
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void UpdateFn(IntPtr instance, float deltaTime);
-
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnCollisionEnterFn(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnCollisionStayFn(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnCollisionExitFn(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void DestroyFn(IntPtr instance);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern bool CSharpScriptSystem_Initialize();
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr create, IntPtr startup, IntPtr update, IntPtr destroy);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr create, IntPtr startup, IntPtr update, IntPtr collisionEnter, IntPtr collisionStay, IntPtr collisionExit, IntPtr destroy);
     }
 }

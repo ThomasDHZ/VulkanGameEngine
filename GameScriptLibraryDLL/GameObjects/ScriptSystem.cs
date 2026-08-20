@@ -14,17 +14,19 @@ namespace GameScriptLibraryDLL.GameObjects
         static readonly CreateObjectFn s_create = Create;
         static readonly StartupFn s_startup = Startup;
         static readonly UpdateFn s_update = Update;
+        static readonly OnCollisionEnterFn s_onCollisionEnter = OnCollisionEnter;
+        static readonly OnCollisionStayFn s_onCollisionStay = OnCollisionStay;
+        static readonly OnCollisionExitFn s_onCollisionExit = OnCollisionExit;
         static readonly DestroyFn s_destroy = Destroy;
-        static readonly Delegate[] s_roots = { s_create, s_startup, s_update, s_destroy };
+
+        static readonly Delegate[] s_roots = { s_create, s_startup, s_update, s_onCollisionEnter, s_onCollisionStay, s_onCollisionExit, s_destroy };
 
         static IntPtr Create() => GCHandle.ToIntPtr(GCHandle.Alloc(new T()));
-        static void Startup(IntPtr instance, uint id, uint parent) => FromPtr(instance).StartUp(instance, id, parent);
-        static void Update(IntPtr instance, float dt)
-        {
-            Console.WriteLine("GameObject Update called");
-            FromPtr(instance).Update(instance, dt);
-        }
-
+        static void Startup(IntPtr instancePtr, uint id, uint parent) => FromPtr(instancePtr).StartUp(instancePtr, id, parent);
+        static void Update(IntPtr instancePtr, float dt) => FromPtr(instancePtr).Update(instancePtr, dt);
+        static void OnCollisionEnter(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => FromPtr(instancePtr).OnCollisionEnter(instancePtr, gameObjectId, collidingGameObjectId);
+        static void OnCollisionStay(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => FromPtr(instancePtr).OnCollisionStay(instancePtr, gameObjectId, collidingGameObjectId);
+        static void OnCollisionExit(IntPtr instancePtr, uint gameObjectId, uint collidingGameObjectId) => FromPtr(instancePtr).OnCollisionExit(instancePtr, gameObjectId, collidingGameObjectId);
         static void Destroy(IntPtr instance)
         {
             FromPtr(instance).Destroy(instance);
@@ -36,6 +38,9 @@ namespace GameScriptLibraryDLL.GameObjects
         public static IntPtr CreatePtr => Marshal.GetFunctionPointerForDelegate(s_create);
         public static IntPtr StartupPtr => Marshal.GetFunctionPointerForDelegate(s_startup);
         public static IntPtr UpdatePtr => Marshal.GetFunctionPointerForDelegate(s_update);
+        public static IntPtr OnCollisionEnterPtr => Marshal.GetFunctionPointerForDelegate(s_create);
+        public static IntPtr OnCollisionStayPtr => Marshal.GetFunctionPointerForDelegate(s_create);
+        public static IntPtr OnCollisionExitPtr => Marshal.GetFunctionPointerForDelegate(s_create);
         public static IntPtr DestroyPtr => Marshal.GetFunctionPointerForDelegate(s_destroy);
     }
 }

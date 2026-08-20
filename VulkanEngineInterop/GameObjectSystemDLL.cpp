@@ -116,11 +116,14 @@ void* GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTyp
     }
 }
 
-void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr (*CreateObject)(), void  (*startup)(IntPtr, entt::entity, entt::entity), void  (*update)(IntPtr, float), void  (*destroy)(IntPtr))
+void GameObjectSystem_RegisterBehavior(GameObjectTypeEnum gameObjectType, IntPtr(*CreateObject)(), void  (*startup)(IntPtr, entt::entity, entt::entity), void  (*update)(IntPtr, float), void (*onCollisionEnter)(IntPtr, entt::entity, entt::entity), void (*onCollisionStay)(IntPtr, entt::entity, entt::entity), void (*onCollisionExit)(IntPtr, entt::entity, entt::entity), void  (*destroy)(IntPtr))
 {
     gameObjectSystem.AddGameObjectBehavior(gameObjectType, GameObjectBehavior{
             .CreateObject = CreateObject,
             .Startup = startup,
+            .OnCollisionEnter = onCollisionEnter,
+            .OnCollisionStay = onCollisionStay,
+            .OnCollisionExit = onCollisionExit,
             .Update = update,
             .Destroy = destroy
         });

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GameScriptLibraryDLL": {
+      "commandName": "Project",
+      "debugEngines": "managed,native"
+    }
+  }
+}
