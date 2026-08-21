@@ -23,9 +23,9 @@
     ]
   ],
   "UseGlobalBindlessSet": true,
-  "UseCubeMapMultiView": false,
+  "UseVkMultiview": false,
   "IsRenderedToSwapchain": false,
-  "IsCubeMapRenderPass": false,
+  "RenderAsCubemap": false,
   "SampleCount": 8,
   "RenderAttachmentList": [
     {

@@ -361,8 +361,8 @@ namespace nlohmann
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("SampleCount").get_to(model.SampleCount);
         j.at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);
-        j.at("UseCubeMapMultiView").get_to(model.UseCubeMapMultiView);
-        j.at("IsCubeMapRenderPass").get_to(model.IsCubeMapRenderPass);
+        j.at("UseVkMultiview").get_to(model.UseVkMultiview);
+        j.at("RenderAsCubemap").get_to(model.RenderAsCubemap);
 
         if (j.contains("SubPasses") && j["SubPasses"].is_array()) 
         {

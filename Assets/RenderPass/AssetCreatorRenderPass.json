@@ -8,9 +8,9 @@
   "SubPassCount": 1,
   "UseGlobalBindlessSet": false,
   "UseDefaultRenderResolution": false,
-  "UseCubeMapMultiView": false,
+  "UseVkMultiview": false,
   "IsRenderedToSwapchain": false,
-  "IsCubeMapRenderPass": false,
+  "RenderAsCubemap": false,
   "InputTextureList": [],
   "SampleCount": 1,
   "RenderAttachmentList": [

@@ -103,7 +103,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                 }
 
                 Vector<MeshDrawMessage> meshList;
-                meshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.IsCubeMapRenderPass() ? meshSystem.DrawMesh("__SkyBoxMesh__") : meshSystem.DrawMesh(subPass.MeshType);
+                meshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.RenderAsCubemap() ? meshSystem.DrawMesh("__SkyBoxMesh__") : meshSystem.DrawMesh(subPass.MeshType);
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassGuid,

@@ -8,7 +8,7 @@
   "SubPassCount": 1,
   "UseGlobalBindlessSet": true,
   "UseDefaultRenderResolution": true,
-  "UseCubeMapMultiView": false,
+  "UseVkMultiview": false,
   "IsRenderedToSwapchain": false,
   "InputTextureList": [
     "ca62ddec-30ff-49e2-b168-3cfeddcedb8e",
