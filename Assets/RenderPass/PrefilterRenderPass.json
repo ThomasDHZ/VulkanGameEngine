@@ -2,7 +2,7 @@
   "Name": "PrefilterRenderPass",
   "RenderPassId": "0abf1fc3-d3a1-4de0-89dd-92f699f8f340",
   "RenderPassResolution": [ 32, 32 ],
-  "SubPasses": [
+  "SubPassList": [
     [
       {
         "PipelinePackage": {
@@ -27,7 +27,7 @@
   "IsRenderedToSwapchain": false,
   "RenderAsCubemap": true,
   "SampleCount": 1,
-  "RenderAttachmentList": [
+  "AttachmentList": [
     {
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
       "MipMapCount": 3,

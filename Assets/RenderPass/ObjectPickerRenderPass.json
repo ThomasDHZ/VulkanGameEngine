@@ -28,7 +28,7 @@
   "IsRenderedToSwapchain": false,
   "RenderAsCubemap": false,
   "SampleCount": 1,
-  "RenderAttachmentList": [
+  "AttachmentList": [
     {
       "RenderedTextureId": "7047804f-d32e-4cb5-ba95-90783b28d1df",
       "MipMapCount": 1,

@@ -15,7 +15,7 @@
     "a1c68b00-3fc5-4454-a639-852db3f82ce2"
   ],
   "SampleCount": 1,
-  "RenderAttachmentList": [
+  "AttachmentList": [
     {
       "RenderedTextureId": "2a87d23c-a051-4f43-8f2f-a36b6b5162e6",
       "MipMapCount": 1,

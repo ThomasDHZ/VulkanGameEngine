@@ -8,7 +8,13 @@
 
 ShaderSystem& shaderSystem = ShaderSystem::Get();
 
- VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, VkShaderStageFlagBits shaderStages)
+VulkanShader ShaderSystem::LoadShader(const String& fileName)
+{
+    Vector<byte> shaderData = fileSystem.LoadAssetFile(fileName.c_str());
+    return VulkanShader(shaderData);
+}
+
+VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, VkShaderStageFlagBits shaderStages)
  {
    //  VulkanShader vulkanShader
      Vector<byte> file = fileSystem.LoadAssetFile(filename);

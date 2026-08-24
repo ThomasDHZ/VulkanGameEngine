@@ -2,7 +2,7 @@
   "Name": "BRDFRenderPass",
   "RenderPassId": "1c8acdab-f34f-41a1-977b-597ee9bd17ed",
   "RenderPassResolution": [ 256, 256 ],
-  "SubPasses": [
+  "SubPassList": [
     [
       {
         "PipelinePackage": {
@@ -28,7 +28,7 @@
   "IsRenderedToSwapchain": false,
   "RenderAsCubemap": false,
   "SampleCount": 1,
-  "RenderAttachmentList": [
+  "AttachmentList": [
     {
       "RenderedTextureId": "6958e3e9-4d24-408c-893a-bf53fbd53806",
       "MipMapCount": 1,

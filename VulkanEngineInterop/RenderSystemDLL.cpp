@@ -44,8 +44,7 @@ void RenderSystem_Update(void* windowHandle, const float& deltaTime)
 //}
 void RenderSystem_Draw(VkCommandBuffer& commandBuffer, RenderPassNodeDLL* renderPassNodeListPtr, size_t renderPassNodeCount)
 {
-    if (!renderPassNodeListPtr || renderPassNodeCount == 0)
-        return;
+    if (!renderPassNodeListPtr || renderPassNodeCount == 0) return;
 
     Vector<RenderPassNode> renderPassNodes;
     renderPassNodes.reserve(renderPassNodeCount);

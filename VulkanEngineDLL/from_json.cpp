@@ -354,9 +354,10 @@ namespace nlohmann
     
     void from_json(const json& j, RenderPassLoader& model)
     {
+        auto a = j.dump();
         j.at("RenderPassId").get_to(model.RenderPassId);
         model.RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]) ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
-        j.at("RenderAttachmentList").get_to(model.AttachmentList);
+        j.at("AttachmentList").get_to(model.AttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("SampleCount").get_to(model.SampleCount);
@@ -364,9 +365,9 @@ namespace nlohmann
         j.at("UseVkMultiview").get_to(model.UseVkMultiview);
         j.at("RenderAsCubemap").get_to(model.RenderAsCubemap);
 
-        if (j.contains("SubPasses") && j["SubPasses"].is_array()) 
+        if (j.contains("SubPassList") && j["SubPassList"].is_array()) 
         {
-            for (const auto& subPass : j["SubPasses"]) 
+            for (const auto& subPass : j["SubPassList"]) 
             {
                 Vector<VulkanSubPassLoader> subPassLoader;
                 if (subPass.is_array()) 
@@ -410,10 +411,7 @@ namespace nlohmann
         {
             for (auto& shader : j["ShaderList"])
             {
-                auto s = shader.dump();
                 ShaderLoader shaderLoader = shader.get<ShaderLoader>();
-                shaderLoader.ShaderCode = fileSystem.LoadAssetFile(shaderLoader.ShaderFile.c_str());
-                
                 model.ShaderLoaderList.emplace_back(shaderLoader);
             }
         }

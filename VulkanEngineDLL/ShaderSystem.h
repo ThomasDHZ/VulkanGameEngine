@@ -40,6 +40,8 @@ public:
 	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
     UnorderedMap<int, ShaderStruct>                         PipelineShaderStructMap;
     
+    VulkanShader                                  LoadShader(const String& fileName);
+
      VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
      void                                         LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
      Vector<SpvReflectSpecializationConstant*>    LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);

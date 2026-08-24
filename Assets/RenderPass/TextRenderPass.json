@@ -2,7 +2,7 @@
   "Name": "TextRenderPass",
   "RenderPassId": "0132bbf5-621c-40f7-88de-2d2182e8a229",
   "RenderPassResolution": [ 0, 0 ],
-  "SubPasses": [
+  "SubPassList": [
     [
       {
         "PipelinePackage": {
@@ -27,7 +27,7 @@
   "IsRenderedToSwapchain": false,
   "RenderAsCubemap": false,
   "SampleCount": 8,
-  "RenderAttachmentList": [
+  "AttachmentList": [
     {
       "RenderedTextureId": "c0235021-cd25-4c15-80d4-9541992b29e2",
       "MipMapCount": 1,
