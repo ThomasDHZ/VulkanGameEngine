@@ -2,6 +2,12 @@
   "Name": "HdrRenderPass",
   "RenderPassId": "a09e644d-b726-467f-97f9-ad9e1325a13b",
   "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true
+  },
   "SubPassList": [
     [
       {
@@ -23,10 +29,6 @@
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": false,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": false,
   "SampleCount": 1,
   "AttachmentList": [
     {

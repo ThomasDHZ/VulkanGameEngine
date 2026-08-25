@@ -2,6 +2,12 @@
   "Name": "BRDFRenderPass",
   "RenderPassId": "1c8acdab-f34f-41a1-977b-597ee9bd17ed",
   "RenderPassResolution": [ 256, 256 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": false
+  },
   "SubPassList": [
     [
       {
@@ -23,10 +29,6 @@
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": false,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": false,
   "SampleCount": 1,
   "AttachmentList": [
     {

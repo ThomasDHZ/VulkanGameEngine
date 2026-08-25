@@ -2,6 +2,12 @@
   "Name": "IrradiancePipeline",
   "RenderPassId": "05b2b809-c7f9-4000-bf96-1ca970d88a45",
   "RenderPassResolution": [ 256, 256 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": true,
+    "RenderAsCubemap": true,
+    "UseDefaultRenderResolution": false
+  },
   "SubPassList": [
     [
       {
@@ -23,10 +29,6 @@
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": true,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": true,
   "SampleCount": 1,
   "AttachmentList": [
     {

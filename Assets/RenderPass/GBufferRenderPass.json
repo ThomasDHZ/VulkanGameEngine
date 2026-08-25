@@ -2,6 +2,13 @@
   "Name": "GBufferRenderPass",
   "RenderPassId": "d5b5ad49-d004-4d5e-8260-4ba9e248f863",
   "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true
+  },
+    
   "SubPassList": [
     [
       {
@@ -69,10 +76,6 @@
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": false,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": false,
   "SampleCount": 1,
   "AttachmentList": [
     {

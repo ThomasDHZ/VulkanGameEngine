@@ -2,6 +2,13 @@
   "Name": "GameObjectPickerRenderPass",
   "RenderPassId": "40183518-063f-449b-8a0a-4cef7938958c",
   "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "IsRenderedToSwapchain": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true
+  },
   "SubPasses": [
     [
       {

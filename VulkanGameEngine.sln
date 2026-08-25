@@ -140,16 +140,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorRenderPasses", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPasses", "GameRenderPasses", "{E2B08794-FF4F-4047-9E5E-8E20C713C02A}"
 	ProjectSection(SolutionItems) = preProject
-		Assets\RenderPass\BloomRenderPass.json = Assets\RenderPass\BloomRenderPass.json
 		Assets\RenderPass\BRDFRenderPass.json = Assets\RenderPass\BRDFRenderPass.json
 		Assets\RenderPass\EnvironmentToCubeMapRenderPass.json = Assets\RenderPass\EnvironmentToCubeMapRenderPass.json
 		Assets\RenderPass\GBufferRenderPass.json = Assets\RenderPass\GBufferRenderPass.json
 		Assets\RenderPass\HdrRenderPass.json = Assets\RenderPass\HdrRenderPass.json
-		Assets\RenderPass\HorizontalGaussianBlurRenderPass.json = Assets\RenderPass\HorizontalGaussianBlurRenderPass.json
 		Assets\RenderPass\IrradianceRenderPass.json = Assets\RenderPass\IrradianceRenderPass.json
 		Assets\RenderPass\PrefilterRenderPass.json = Assets\RenderPass\PrefilterRenderPass.json
 		Assets\RenderPass\TextRenderPass.json = Assets\RenderPass\TextRenderPass.json
-		Assets\RenderPass\VertGaussianBlurRenderPass.json = Assets\RenderPass\VertGaussianBlurRenderPass.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorPipelines", "LevelEditorPipelines", "{9BB7C5EA-EE89-4991-B910-1A4B3C49BF76}"

@@ -2,6 +2,12 @@
   "Name": "TextRenderPass",
   "RenderPassId": "0132bbf5-621c-40f7-88de-2d2182e8a229",
   "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true
+  },
   "SubPassList": [
     [
       {
@@ -22,10 +28,6 @@
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": false,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": false,
   "SampleCount": 8,
   "AttachmentList": [
     {

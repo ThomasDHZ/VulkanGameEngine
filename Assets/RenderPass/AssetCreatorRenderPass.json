@@ -5,12 +5,14 @@
     "Pipelines/AssetCreatorPipeline.json"
   ],
   "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "IsRenderedToSwapchain": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true
+  },
   "SubPassCount": 1,
-  "UseGlobalBindlessSet": false,
-  "UseDefaultRenderResolution": false,
-  "UseVkMultiview": false,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": false,
   "InputTextureList": [],
   "SampleCount": 1,
   "AttachmentList": [

@@ -2,6 +2,12 @@
   "Name": "PrefilterRenderPass",
   "RenderPassId": "0abf1fc3-d3a1-4de0-89dd-92f699f8f340",
   "RenderPassResolution": [ 32, 32 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": true,
+    "RenderAsCubemap": true,
+    "UseDefaultRenderResolution": false
+  },
   "SubPassList": [
     [
       {
@@ -22,10 +28,6 @@
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": true,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": true,
   "SampleCount": 1,
   "AttachmentList": [
     {

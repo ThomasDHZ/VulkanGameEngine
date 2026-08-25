@@ -88,21 +88,21 @@ namespace nlohmann
     void from_json(const json& j, VkClearValue& clearValue) {
         if (j.contains("Color")) {
             auto& color = j.at("Color");
-            if (j.contains("Int32_0")) 
+            if (color.contains("Int32_0"))
             {
                 color.at("Int32_0").get_to(clearValue.color.int32[0]);
                 color.at("Int32_1").get_to(clearValue.color.int32[1]);
                 color.at("Int32_2").get_to(clearValue.color.int32[2]);
                 color.at("Int32_3").get_to(clearValue.color.int32[3]);
             }
-            if (j.contains("Float32_0"))
+            if (color.contains("Float32_0"))
             {
                 color.at("Float32_0").get_to(clearValue.color.float32[0]);
                 color.at("Float32_1").get_to(clearValue.color.float32[1]);
                 color.at("Float32_2").get_to(clearValue.color.float32[2]);
                 color.at("Float32_3").get_to(clearValue.color.float32[3]);
             }
-            if (j.contains("Uint32_0"))
+            if (color.contains("Uint32_0"))
             {
                 color.at("Uint32_0").get_to(clearValue.color.uint32[0]);
                 color.at("Uint32_1").get_to(clearValue.color.uint32[1]);
@@ -356,14 +356,15 @@ namespace nlohmann
     {
         auto a = j.dump();
         j.at("RenderPassId").get_to(model.RenderPassId);
-        model.RenderPassResolution = ivec2(INT32_MAX, INT32_MAX) == ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]) ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
+        j["RenderFlags"].at("UseDefaultRenderResolution").get_to(model.UseDefaultRenderResolution);
+        j["RenderFlags"].at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);
+        j["RenderFlags"].at("UseVkMultiview").get_to(model.UseVkMultiview);
+        j["RenderFlags"].at("RenderAsCubemap").get_to(model.RenderAsCubemap);
+        model.RenderPassResolution = model.UseDefaultRenderResolution ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         j.at("AttachmentList").get_to(model.AttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("SampleCount").get_to(model.SampleCount);
-        j.at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);
-        j.at("UseVkMultiview").get_to(model.UseVkMultiview);
-        j.at("RenderAsCubemap").get_to(model.RenderAsCubemap);
 
         if (j.contains("SubPassList") && j["SubPassList"].is_array()) 
         {
