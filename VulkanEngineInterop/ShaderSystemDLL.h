@@ -65,7 +65,7 @@ struct VulkanShaderDLL
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT VulkanShaderDLL ShaderSystem_LoadShader(const char* shaderFile);
+	DLL_EXPORT VulkanShaderDLL ShaderSystem_LoadShader(VkGuid& shaderGuid, const char* shaderFile);
 #ifdef __cplusplus
 }
 #endif

@@ -335,8 +335,8 @@ namespace nlohmann
 
     void from_json(const json& j, VulkanSubPassLoader& model)
     {
-        auto a = j.at("PipelinePackage").at("PipelinePackageId").get_to(model.PipelinePackageGuid);
         j.at("MeshType").get_to(model.MeshType);
+        j.at("PipelinePackageId").get_to(model.PipelinePackageId);
         j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
         j.at("InputTextureList").get_to(model.InputTextureList);
         j.at("OutputTextureList").get_to(model.OutputTextureList);
@@ -366,6 +366,27 @@ namespace nlohmann
         j.at("ClearValueList").get_to(model.ClearValueList);
         j.at("SampleCount").get_to(model.SampleCount);
 
+        if (j.contains("ShaderList") && j["ShaderList"].is_array())
+        {
+            for (const auto& shader : j["ShaderList"])
+            {
+                model.ShaderList.push_back(shader.get<ShaderLoader>());
+            }
+        }
+        if (j.contains("PipelineList") && j["PipelineList"].is_array())
+        {
+            for (const auto& pipeline : j["PipelineList"])
+            {
+                model.PipelineList.push_back(pipeline.get<String>());
+            }
+        }
+        if (j.contains("PipelinePackageList") && j["PipelinePackageList"].is_array())
+        {
+            for (const auto& pipelinePackage : j["PipelinePackageList"])
+            {
+                model.PipelinePackageList.push_back(pipelinePackage.get<VulkanPipelinePackage>());
+            }
+        }
         if (j.contains("SubPassList") && j["SubPassList"].is_array()) 
         {
             for (const auto& subPass : j["SubPassList"]) 
@@ -375,22 +396,23 @@ namespace nlohmann
                 {
                     for (const auto& item : subPass)
                     {
-                        model.PipelinePackageList.emplace_back(item["PipelinePackage"].get<VulkanPipelinePackageLoader>());
                         subPassLoader.push_back(item.get<VulkanSubPassLoader>());
                     }
                 }
-                model.SubPassList.emplace_back(subPassLoader);
+                model.SubPassList.push_back(subPassLoader);
             }
         }
     }
 
-    void from_json(const json& j, VulkanPipelinePackageLoader& model)
+    void from_json(const json& j, VulkanPipelinePackage& model)
     {
         j.at("PipelinePackageId").get_to(model.PipelinePackageId);
-        for (auto& pipeline : j["Pipelines"])
+        if (j.contains("PipelineList") && j["PipelineList"].is_array())
         {
-            nlohmann::json pipelineJson = fileSystem.LoadJsonFile(pipeline["Pipeline"].get<String>());
-            model.PipelineMap[pipeline["PipelineType"]] = pipelineJson.get<VulkanPipelineLoader>();
+            for (const auto& pipeline : j["PipelineList"])
+            {
+                model.PipelineMap[pipeline["PipelineType"].get<PipelineTypeEnum>()] = pipeline["PipelineId"].get<VkGuid>();
+            }
         }
     }
 
@@ -398,24 +420,15 @@ namespace nlohmann
     {
         j.at("PipelineId").get_to(model.PipelineId);
         j.at("SubPassId").get_to(model.SubPassId);
-        j.at("UseDynamicColorWrite").get_to(model.UseDynamicColorWrite);
         j.at("PipelineRasterizationStateCreateInfo").get_to(model.PipelineRasterizationStateCreateInfo);
         j.at("PipelineMultisampleStateCreateInfo").get_to(model.PipelineMultisampleStateCreateInfo);
         j.at("PipelineDepthStencilStateCreateInfo").get_to(model.PipelineDepthStencilStateCreateInfo);
         j.at("PipelineInputAssemblyStateCreateInfo").get_to(model.PipelineInputAssemblyStateCreateInfo);
         j.at("PipelineColorBlendStateCreateInfoModel").get_to(model.PipelineColorBlendStateCreateInfoModel);
+        for (auto& shader : j.at("ShaderList"))                                                       model.ShaderIdList.emplace_back(shader);
         for (auto& pipelineColorBlendAttachmentState : j.at("PipelineColorBlendAttachmentStateList")) model.PipelineColorBlendAttachmentStateList.emplace_back(pipelineColorBlendAttachmentState);
         for (auto& viewPort : j.at("ViewportList"))                                                   model.ViewportList.emplace_back(viewPort);
         for (auto& scissor : j.at("ScissorList"))                                                     model.ScissorList.emplace_back(scissor);
-
-        if (j.contains("ShaderList") && j["ShaderList"].is_array())
-        {
-            for (auto& shader : j["ShaderList"])
-            {
-                ShaderLoader shaderLoader = shader.get<ShaderLoader>();
-                model.ShaderLoaderList.emplace_back(shaderLoader);
-            }
-        }
     }
 
     void from_json(const json& j, TextureLoader& model)

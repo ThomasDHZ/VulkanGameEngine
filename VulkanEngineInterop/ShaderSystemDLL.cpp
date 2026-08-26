@@ -1,8 +1,8 @@
 #include "ShaderSystemDLL.h"
 
-VulkanShaderDLL ShaderSystem_LoadShader(const char* shaderFile)
+VulkanShaderDLL ShaderSystem_LoadShader(VkGuid& shaderGuid, const char* shaderFile)
 {
-	VulkanShader vulkanShader = shaderSystem.LoadShader(shaderFile);
+	VulkanShader vulkanShader = shaderSystem.LoadShader(shaderGuid, shaderFile);
 
 	ShaderPushConstant pushConstant = vulkanShader.PushConstant();
 

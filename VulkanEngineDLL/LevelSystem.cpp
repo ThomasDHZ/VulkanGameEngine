@@ -19,10 +19,10 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
     VkGuid tileSetId = VkGuid();
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    for (auto& texture : json["LoadTextures"])    textureSystem.LoadTexture(texture);
-    for (auto& ktxTexture : json["LoadKTXTextures"]) textureSystem.LoadTexture(ktxTexture);
-    for (auto& material : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
-    for (auto& spriteVRAM : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    for (auto& texture     : json["LoadTextures"])    textureSystem.LoadTexture(texture);
+    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadTexture(ktxTexture);
+    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
+    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
 
     Vector<String> gameObjectTempleteList;
@@ -45,9 +45,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId                = renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
     hdrRenderPassId                    = renderSystem.LoadRenderPass("RenderPass/HdrRenderPass.json");
-   // textRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/TextRenderPass.json");
-    //objectPickerRenderPassId         =   renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
-    //selectedObjectPickerRenderPassId =   renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
+    //textRenderPassId                 = renderSystem.LoadRenderPass("RenderPass/TextRenderPass.json");
+    //objectPickerRenderPassId         = renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
+    //selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
 
     //shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
@@ -107,7 +107,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassGuid,
-                        .PipelinePackageGuid = subPass.PipelinePackageGuid,
+                        .PipelinePackageGuid = subPass.PipelinePackageId,
                         .PushConstant = subPass.ShaderPushConstant,
                         .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                         .RenderPassInputs = subPass.InputTextureList,

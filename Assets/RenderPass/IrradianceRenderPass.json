@@ -8,19 +8,37 @@
     "RenderAsCubemap": true,
     "UseDefaultRenderResolution": false
   },
+  "ShaderList": [
+    {
+      "ShaderId": "10df2925-5a94-421d-b30f-d329449be7fe",
+      "ShaderFile": "Shaders/IrradianceShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "f8434c2d-bf70-48e1-8f30-e4699bdb96b5",
+      "ShaderFile": "Shaders/IrradianceShaderFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/IrradiancePipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "af0105b6-650a-4f4f-8163-ed7fdd9dadc9",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "69460750-fbe5-4e3a-825d-c7467363f883"
+        }
+      ]
+    }
+  ],
   "SubPassList": [
     [
       {
-        "PipelinePackage": {
-          "PipelinePackageId": "af0105b6-650a-4f4f-8163-ed7fdd9dadc9",
-          "Pipelines": [
-            {
-              "PipelineType": 0,
-              "Pipeline": "Pipelines/IrradiancePipeline.json"
-            }
-          ]
-        },
         "MeshType": 1,
+        "PipelinePackageId": "af0105b6-650a-4f4f-8163-ed7fdd9dadc9",
         "ShaderPushConstant": "irradianceShaderConstants",
         "InputTextureList": [],
         "OutputTextureList": [],

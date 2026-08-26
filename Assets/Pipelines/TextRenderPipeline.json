@@ -2,20 +2,11 @@
   "Name": "TextRenderPipeline",
   "PipelineId": "eea4b7a7-b44c-49e0-b72b-cf8435489750",
   "ShaderList": [
-    {
-      "ShaderId": "c3217f02-0e40-4702-b5f8-ae71ac5b5135",
-      "ShaderFile": "Shaders/TextRenderShaderVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "7553ecd0-e7f9-4693-a5fc-cfe7049648f4",
-      "ShaderFile": "Shaders/TextRenderShaderFrag.spv",
-      "ShaderStage": 16
-    }
+    "c3217f02-0e40-4702-b5f8-ae71ac5b5135",
+    "7553ecd0-e7f9-4693-a5fc-cfe7049648f4"
   ],
   "VertexType": 1,
   "SubPassId": 0,
-  "UseDynamicColorWrite": false,
   "ViewportList": [
     {
       "x": 0.0,

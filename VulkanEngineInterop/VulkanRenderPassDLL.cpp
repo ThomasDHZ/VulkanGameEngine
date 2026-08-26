@@ -1,6 +1,7 @@
 #pragma once
 #include "VulkanRenderPassDLL.h"
 #include <MemorySystem.h>
+#include <RenderSystem.h>
 
 VulkanRenderPass* VulkanRenderPass_Create()
 {
@@ -98,7 +99,7 @@ ivec2 VulkanRenderPass_RenderPassResolution(VulkanRenderPass* renderPass)
     VulkanPipeline* pipelinePtr = memorySystem.AddPtrBuffer<VulkanPipeline>(outCount, __FILE__, __LINE__, __func__);
     for (size_t x = 0; x < outCount; ++x)
     {
-        pipelinePtr[x] = renderPass->PipelineList().data()[x];
+        pipelinePtr[x] = renderSystem.FindRenderPipeline(renderPass->PipelineList().data()[x]);
     }
     return pipelinePtr;
 }

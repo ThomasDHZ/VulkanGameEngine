@@ -2,20 +2,11 @@
   "Name": "LevelShader2DPipeline",
   "PipelineId": "72cb20b1-fe7b-488d-8e4b-f3642d41b423",
   "ShaderList": [
-    {
-      "ShaderId": "724e6ed5-9b2a-42dc-8f5f-fc1ddaff4982",
-      "ShaderFile": "Shaders/GBufferLevelShader2DVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "c6368e56-6584-4c04-8b58-39b082ab9f03",
-      "ShaderFile": "Shaders/GBufferLevelShader2DFrag.spv",
-      "ShaderStage": 16
-    }
+    "724e6ed5-9b2a-42dc-8f5f-fc1ddaff4982",
+    "c6368e56-6584-4c04-8b58-39b082ab9f03"
   ],
   "VertexType": 1,
   "SubPassId": 0,
-  "UseDynamicColorWrite": false,
   "ViewportList": [
     {
       "x": 0.0,

@@ -2,20 +2,11 @@
   "Name": "BRDFPipeline",
   "PipelineId": "17c19348-95de-4405-99cf-ea16fa9e1002",
   "ShaderList": [
-    {
-      "ShaderId": "d1fc81ce-b70b-487e-913c-54ab94e2c11b",
-      "ShaderFile": "Shaders/BRDFShaderVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "63e524e3-5aa5-43bf-a6be-81dced7bc184",
-      "ShaderFile": "Shaders/BRDFShaderFrag.spv",
-      "ShaderStage": 16
-    }
+    "d1fc81ce-b70b-487e-913c-54ab94e2c11b",
+    "63e524e3-5aa5-43bf-a6be-81dced7bc184"
   ],
   "VertexType": 0,
   "SubPassId": 0,
-  "UseDynamicColorWrite": false,
   "ViewportList": [],
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [

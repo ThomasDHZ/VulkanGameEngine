@@ -2,20 +2,11 @@
   "Name": "PrefilterPipeline",
   "PipelineId": "7670444e-a7e1-45cd-aaa8-a77b26b85145",
   "ShaderList": [
-    {
-      "ShaderId": "8ee7d9f6-9fda-4fca-b10f-0bc1acfb2f8f",
-      "ShaderFile": "Shaders/PrefilterShaderVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "270671bd-2fe6-43ba-a414-83594cd94a16",
-      "ShaderFile": "Shaders/PrefilterShaderFrag.spv",
-      "ShaderStage": 16
-    }
+    "8ee7d9f6-9fda-4fca-b10f-0bc1acfb2f8f",
+    "270671bd-2fe6-43ba-a414-83594cd94a16"
   ],
   "VertexType": 0,
   "SubPassId": 0,
-  "UseDynamicColorWrite": false,
   "ViewportList": [],
   "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [

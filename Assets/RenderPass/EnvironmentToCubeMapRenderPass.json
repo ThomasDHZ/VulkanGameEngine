@@ -8,19 +8,37 @@
     "RenderAsCubemap": true,
     "UseDefaultRenderResolution": false
   },
+  "ShaderList": [
+    {
+      "ShaderId": "de32705a-3a06-4ab5-820b-7389a533216f",
+      "ShaderFile": "Shaders/EnvironmentToCubeMapShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "42b95563-9887-44d7-b3dd-43c3e8013367",
+      "ShaderFile": "Shaders/EnvironmentToCubeMapShaderFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/EnvironmentToCubeMapPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "1af890da-3ca5-4172-a8e1-5703f74a66b9",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "82f8c702-47e9-41e2-b670-755f963d1b8d"
+        }
+      ]
+    }
+  ],
   "SubPassList": [
     [
       {
-        "PipelinePackage": {
-          "PipelinePackageId": "1af890da-3ca5-4172-a8e1-5703f74a66b9",
-          "Pipelines": [
-            {
-              "PipelineType": 0,
-              "Pipeline": "Pipelines/EnvironmentToCubeMapPipeline.json"
-            }
-          ]
-        },
         "MeshType": 1,
+        "PipelinePackageId": "1af890da-3ca5-4172-a8e1-5703f74a66b9",
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [],

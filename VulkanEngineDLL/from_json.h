@@ -34,7 +34,7 @@ namespace nlohmann
      void from_json(const json& j, PushConstantUpdateRule& model);
      void from_json(const json& j, VulkanSubPassLoader& model);
      void from_json(const json& j, RenderPassLoader& model);
-     void from_json(const json& j, VulkanPipelinePackageLoader& model);
+     void from_json(const json& j, VulkanPipelinePackage& model);
      void from_json(const json& j, VulkanPipelineLoader& model);
      void from_json(const json& j, BlendConstantsModel& model);
      void from_json(const json& j, TextureLoader& model);

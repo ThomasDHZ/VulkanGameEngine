@@ -40,7 +40,7 @@ public:
 	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
     UnorderedMap<int, ShaderStruct>                         PipelineShaderStructMap;
     
-    VulkanShader                                  LoadShader(const String& fileName);
+    VulkanShader                                  LoadShader(VkGuid& shaderGuid, const String& fileName);
 
      VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
      void                                         LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
@@ -79,7 +79,6 @@ public:
         std::memcpy(variable.Value.data(), &value, variable.Value.size());
     }
 };
-
 extern  ShaderSystem& shaderSystem;
 inline ShaderSystem& ShaderSystem::Get()
 {

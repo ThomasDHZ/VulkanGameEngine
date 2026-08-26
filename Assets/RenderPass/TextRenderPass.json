@@ -8,19 +8,37 @@
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": true
   },
+  "ShaderList": [
+    {
+      "ShaderId": "c3217f02-0e40-4702-b5f8-ae71ac5b5135",
+      "ShaderFile": "Shaders/TextRenderShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "7553ecd0-e7f9-4693-a5fc-cfe7049648f4",
+      "ShaderFile": "Shaders/TextRenderShaderFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/TextRenderPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "b3a2bad9-306f-498b-80ec-cceff2253a56",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "eea4b7a7-b44c-49e0-b72b-cf8435489750"
+        }
+      ]
+    }
+  ],
   "SubPassList": [
     [
       {
-        "PipelinePackage": {
-          "PipelinePackageId": "b3a2bad9-306f-498b-80ec-cceff2253a56",
-          "Pipelines": [
-            {
-              "PipelineType": 0,
-              "Pipeline": "Pipelines/TextRenderPipeline.json"
-            }
-          ]
-        },
         "MeshType": 1,
+        "PipelinePackageId": "b3a2bad9-306f-498b-80ec-cceff2253a56",
         "ShaderPushConstant": null,
         "InputTextureList": [],
         "OutputTextureList": [],

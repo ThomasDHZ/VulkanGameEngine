@@ -30,47 +30,10 @@ RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 
 RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
-    auto BuildPipelineLoader = [&](VulkanPipelinePackageLoader& pipelinePackageLoader, VulkanPipelineLoader& pipelineLoader)
-        {
-            for (auto& shader : pipelineLoader.ShaderLoaderList)
-            {
-                Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shader.ShaderFile.c_str());
-                VulkanShader shader = VulkanShader(vertexShaderCode);
-                pipelineLoader.VulkanShaderList.emplace_back(shader);
-            }
-        };
-
-    for (auto& pipelinePackageLoader : renderPassLoader.PipelinePackageList)
-    {
-        pipelinePackageLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
-        pipelinePackageLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
-        pipelinePackageLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
-        for (auto& pipelineLoader : pipelinePackageLoader.PipelineMap)
-        {
-            BuildPipelineLoader(pipelinePackageLoader, pipelineLoader.second);
-        }
-    }
 
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
-
-    for (auto& pipelinePackage : vulkanRenderPass.PipelinePackageList())
-    {
-        RenderPipelinePackageMap[pipelinePackage.PipelinePackageId] = pipelinePackage;
-    }
-    for (auto& vulkanPipeline : vulkanRenderPass.PipelineList())
-    {
-        RenderPipelineMap[vulkanPipeline.PipelineId()] = vulkanPipeline;
-        for (auto& pushConstant : vulkanPipeline.ShaderPushConstantList())
-        {
-            if (!pushConstant.PushConstantName.empty() &&
-                !shaderSystem.ShaderPushConstantExists(pushConstant.PushConstantName))
-            {
-                shaderSystem.ShaderPushConstantMap[pushConstant.PushConstantName] = pushConstant;
-            }
-        }
-    }
 
     Texture depthTexture;
     Vector<Texture> renderedTextureList;
@@ -96,7 +59,80 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
     if (depthTexture.texture.TextureImage() != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId(), depthTexture);
+
+    for (auto& shader : renderPassLoader.ShaderList)
+    {
+        LoadShader(shader);
+    }
+    for (auto& pipelinePackage : renderPassLoader.PipelinePackageList)
+    {
+        if (RenderPipelinePackageExists(pipelinePackage.PipelinePackageId)) continue;
+        RenderPipelinePackageMap[pipelinePackage.PipelinePackageId] = pipelinePackage;
+    }
+    for (auto& pipelineLoaderJsonPath : renderPassLoader.PipelineList)
+    {
+        VulkanPipelineLoader pipelineLoader = fileSystem.LoadJsonFile<VulkanPipelineLoader>(pipelineLoaderJsonPath);
+        LoadPipeline(renderPassLoader, pipelineLoader);
+    }
     return renderPassLoader.RenderPassId;
+}
+
+VkGuid RenderSystem::LoadShader(ShaderLoader& shaderLoader)
+{
+    if (VulkanShaderExists(shaderLoader.ShaderId)) return shaderLoader.ShaderId;
+
+    Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shaderLoader.ShaderFile.c_str());
+    VulkanShader shader = VulkanShader(shaderLoader.ShaderId, vertexShaderCode);
+    if (!shader.PushConstant().PushConstantName.empty() &&
+        !shaderSystem.ShaderPushConstantExists(shader.PushConstant().PushConstantName))
+    {
+        shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
+    }
+    VulkanShaderMap[shader.ShaderId()] = shader;
+}
+
+VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader)
+{
+    if (RenderPipelineExists(pipelineLoader.PipelineId)) return pipelineLoader.PipelineId;
+
+    Vector<VkDescriptorImageInfo> descriptorSetInfoList;
+    for (auto& attachment : RenderPassMap[renderPassLoader.RenderPassId].AttachmentList())
+    {
+        descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
+            {
+                .sampler = attachment.m_textureSampler,
+                .imageView = attachment.m_textureViewList.front(),
+                .imageLayout = attachment.m_textureImageLayout
+            });
+    }
+
+    auto CreateShaderList = [&](VulkanPipelineLoader& pipelineLoader)
+        {
+            Vector<VulkanShader> shaderList;
+            for (auto& shaderId : pipelineLoader.ShaderIdList)
+            {
+                shaderList.emplace_back(VulkanShaderMap[shaderId]);
+            }
+            return shaderList;
+        };
+
+    pipelineLoader.VulkanShaderList = CreateShaderList(pipelineLoader);
+    pipelineLoader.RenderPassId = renderPassLoader.RenderPassId;
+    pipelineLoader.RenderPass = RenderPassMap[renderPassLoader.RenderPassId].RenderPassHandle();
+    pipelineLoader.RenderPassResolution = RenderPassMap[renderPassLoader.RenderPassId].RenderPassResolution();
+    pipelineLoader.RenderPassInputTextures = descriptorSetInfoList;
+    pipelineLoader.BindlessDescriptorSetIndex = pipelineLoader.BindlessDescriptorSetIndex;
+    pipelineLoader.UseGlobalBindlessSet = renderPassLoader.UseGlobalBindlessSet;
+    pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
+    pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
+    pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+    pipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = RenderPassMap[renderPassLoader.RenderPassId].SampleCount();
+    pipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (RenderPassMap[renderPassLoader.RenderPassId].SampleCount() > VK_SAMPLE_COUNT_1_BIT);
+
+    VulkanPipeline vulkanPipeline(pipelineLoader);
+    RenderPipelineMap[vulkanPipeline.PipelineId()] = vulkanPipeline;
+    RenderPassMap[renderPassLoader.RenderPassId].AddRenderPipeline(vulkanPipeline.PipelineId());
+    return vulkanPipeline.PipelineId();
 }
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
@@ -112,41 +148,6 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
     //    BuildFrameBuffer(renderPass);
     //}
     // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
-}
-
-const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
-{
-    auto it = RenderPassMap.find(renderPassGuid);
-    if (it == RenderPassMap.end())
-    {
-        throw std::runtime_error("RenderPass not found: " + renderPassGuid.ToString());
-    }
-    return it->second;
-}
-
-const VulkanPipelinePackage& RenderSystem::FindPipelinePackage(const VkGuid& pipelinePackageGuid)
-{
-    auto it = RenderPipelinePackageMap.find(pipelinePackageGuid);
-    if (it == RenderPipelinePackageMap.end())
-    {
-        throw std::runtime_error("PipelinePackage not found: " + pipelinePackageGuid.ToString());
-    }
-    return it->second;
-}
-
-const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGuid)
-{
-    auto it = RenderPipelineMap.find(pipelineGuid);
-    if (it == RenderPipelineMap.end())
-    {
-        throw std::runtime_error("Pipeline not found: " + pipelineGuid.ToString());
-    }
-    return it->second;
-}
-
-bool RenderSystem::FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType)
-{
-    return RenderPipelinePackageMap[pipelinePackageGuid].PipelineMap.contains(pipelineType);
 }
 
 void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
@@ -298,6 +299,51 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     vmaDestroyBuffer(bufferSystem.VmaAllocatorHandle(), stagingBuffer, stagingAlloc);
 
     return pickedId;
+}
+
+const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
+{
+    return RenderPassMap[renderPassGuid];
+}
+
+const VulkanPipelinePackage& RenderSystem::FindPipelinePackage(const VkGuid& pipelinePackageGuid)
+{
+    return RenderPipelinePackageMap[pipelinePackageGuid];
+}
+
+const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGuid)
+{
+    return RenderPipelineMap[pipelineGuid];
+}
+
+const VulkanShader& RenderSystem::FindVulkanShader(const VkGuid& shaderGuid)
+{
+    return VulkanShaderMap[shaderGuid];
+}
+
+bool RenderSystem::FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType)
+{
+    return RenderPipelinePackageMap[pipelinePackageGuid].PipelineMap.contains(pipelineType);
+}
+
+bool RenderSystem::RenderPassExists(const VkGuid& renderPassId)
+{
+    return RenderPassMap.contains(renderPassId);
+}
+
+bool RenderSystem::RenderPipelinePackageExists(const VkGuid& pipelinePackageId)
+{
+    return RenderPipelinePackageMap.contains(pipelinePackageId);
+}
+
+bool RenderSystem::RenderPipelineExists(const VkGuid& pipelineId)
+{
+    return RenderPipelineMap.contains(pipelineId);
+}
+
+bool RenderSystem::VulkanShaderExists(const VkGuid& vulkanShaderId)
+{
+    return VulkanShaderMap.contains(vulkanShaderId);
 }
 
 void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)

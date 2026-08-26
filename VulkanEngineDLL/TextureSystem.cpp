@@ -479,7 +479,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	subPassDrawList.emplace_back(VulkanDrawMessage
 		{
 			.RenderPassGuid = renderPass.RenderPassId(),
-			.PipelinePackageGuid = subPass.PipelinePackageGuid,
+			.PipelinePackageGuid = subPass.PipelinePackageId,
 			.PushConstant = subPass.ShaderPushConstant,
 			.DrawMeshList = subPass.MeshType == MeshTypeEnum::kMesh_StaticMesh ? meshSystem.DrawMesh(subPass.MeshType) : Vector<MeshDrawMessage>(),
 			.RenderPassInputs = subPass.InputTextureList,

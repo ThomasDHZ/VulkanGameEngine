@@ -8,19 +8,37 @@
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": true
   },
+  "ShaderList": [
+    {
+      "ShaderId": "99b2108a-599b-4e80-8188-5048968da0fc",
+      "ShaderFile": "Shaders/HdrShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "ff8b2b1c-f99c-4b3e-bc2d-f827bdee00ba",
+      "ShaderFile": "Shaders/HdrShaderFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/HdrPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "1b048bb2-f49a-4f2b-b6d1-7a3e5dac5bb6",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "837bb197-773e-4352-ae43-b4f377527318"
+        }
+      ]
+    }
+  ],
   "SubPassList": [
     [
       {
-        "PipelinePackage": {
-          "PipelinePackageId": "1b048bb2-f49a-4f2b-b6d1-7a3e5dac5bb6",
-          "Pipelines": [
-            {
-              "PipelineType": 0,
-              "Pipeline": "Pipelines/HdrPipeline.json"
-            }
-          ]
-        },
         "MeshType": 5,
+        "PipelinePackageId": "1b048bb2-f49a-4f2b-b6d1-7a3e5dac5bb6",
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [ "c836201c-8413-4185-a37c-3a43d8c9bb67" ],

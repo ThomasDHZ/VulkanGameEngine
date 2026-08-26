@@ -15,7 +15,6 @@
   ],
   "VertexType": 1,
   "SubPassId": 0,
-  "UseDynamicColorWrite": false,
   "ViewportList": [
     {
       "x": 0.0,

@@ -2,16 +2,8 @@
   "Name": "LevelShader2DWireFramePipeline",
   "PipelineId": "c83a983b-de16-41aa-99f5-1237fa35adbd",
   "ShaderList": [
-    {
-      "ShaderId": "35542ad6-0640-4c87-88dd-1a3c6c1d4a0a",
-      "ShaderFile": "Shaders/GBufferLevelShader2DWireFrameVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "cddd9532-0905-47d2-9fd3-fc263651f39d",
-      "ShaderFile": "Shaders/GBufferLevelShader2DWireFrameFrag.spv",
-      "ShaderStage": 16
-    }
+    "35542ad6-0640-4c87-88dd-1a3c6c1d4a0a",
+    "cddd9532-0905-47d2-9fd3-fc263651f39d"
   ],
   "VertexType": 1,
   "SubPassId": 0,

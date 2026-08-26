@@ -53,30 +53,39 @@ private:
     RenderSystem(RenderSystem&&) = delete;
     RenderSystem& operator=(RenderSystem&&) = delete;
 
-    UnorderedMap<VkGuid, VulkanRenderPass>                             RenderPassMap;
-    UnorderedMap<VkGuid, VulkanPipelinePackage>                        RenderPipelinePackageMap;
-    UnorderedMap<VkGuid, VulkanPipeline>                               RenderPipelineMap;
+    UnorderedMap<VkGuid, VulkanRenderPass>                  RenderPassMap;
+    UnorderedMap<VkGuid, VulkanPipelinePackage>             RenderPipelinePackageMap;
+    UnorderedMap<VkGuid, VulkanPipeline>                    RenderPipelineMap;
+    UnorderedMap<VkGuid, VulkanShader>                      VulkanShaderMap;
 
-     void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
-     void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
-     void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
+    VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader);
+    void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
+    void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
+    void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
 public:
-    bool                                                               WireFrameFlag = false;
+    bool                                                    WireFrameFlag = false;
 
-     RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
-     RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
-     void                                                    Update(void* windowHandle, const float& deltaTime);
-     const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
-     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
-     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
-     bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType);
-     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
+    RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
+    RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
+    void                                                    Update(void* windowHandle, const float& deltaTime);
+    uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
-     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
+    void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
-     void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
-     void                                                    DestroyBuffer(VkBuffer& buffer);
+    const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
+    const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
+    const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
+    const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);
+    bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType);
+    bool                                                    RenderPassExists(const VkGuid& renderPassId);
+    bool                                                    RenderPipelinePackageExists(const VkGuid& pipelinePackageId);
+    bool                                                    RenderPipelineExists(const VkGuid& pipelineId);
+    bool                                                    VulkanShaderExists(const VkGuid& vulkanShaderId);
+
+    void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
+    void                                                    DestroyBuffer(VkBuffer& buffer);
 };
 extern  RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

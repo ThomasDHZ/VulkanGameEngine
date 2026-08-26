@@ -8,19 +8,37 @@
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false
   },
+  "ShaderList": [
+    {
+      "ShaderId": "d1fc81ce-b70b-487e-913c-54ab94e2c11b",
+      "ShaderFile": "Shaders/BRDFShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "63e524e3-5aa5-43bf-a6be-81dced7bc184",
+      "ShaderFile": "Shaders/BRDFShaderFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/BRDFPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "834b3dc4-a38d-4bc8-a02a-fe349d5c61d9",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "17c19348-95de-4405-99cf-ea16fa9e1002"
+        }
+      ]
+    }
+  ],
   "SubPassList": [
     [
       {
-        "PipelinePackage": {
-          "PipelinePackageId": "834b3dc4-a38d-4bc8-a02a-fe349d5c61d9",
-          "Pipelines": [
-            {
-              "PipelineType": 0,
-              "Pipeline": "Pipelines/BRDFPipeline.json"
-            }
-          ]
-        },
         "MeshType": 5,
+        "PipelinePackageId": "834b3dc4-a38d-4bc8-a02a-fe349d5c61d9",
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
         "InputTextureList": [],
