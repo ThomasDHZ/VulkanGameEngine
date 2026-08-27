@@ -32,8 +32,6 @@ struct Texture
     TextureGuid           textureGuid = TextureGuid();
     TextureHandle         textureId;
     VulkanTexture         texture;
-    TextureTypeEnum       textureType = TextureTypeEnum::kTextureType_Undefined;
-    TextureUsageTypeEnum  textureUsageType = TextureUsageTypeEnum::kUsageType_Undefined;
     VkDescriptorSet       imGuiDescriptorSet = VK_NULL_HANDLE;
 };
 

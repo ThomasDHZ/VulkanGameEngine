@@ -75,6 +75,7 @@ public:
     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
     const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
+    const VulkanTexture&                                    FindRenderPassAttachment(const RenderPassGuid& renderPassGuid, const VkGuid& renderPassAttachmentGuid);
     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);

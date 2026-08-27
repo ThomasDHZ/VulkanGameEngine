@@ -43,13 +43,11 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
         {
            .textureGuid = renderPassLoader.AttachmentList[x].RenderedTextureId,
            .texture = attachment,
-           .textureType = attachment.m_textureType,
-           .textureUsageType = TextureUsageTypeEnum::kUsageType_Undefined,
            .imGuiDescriptorSet = VK_NULL_HANDLE
         };
         renderedTextureList.emplace_back(texture);
         textureSystem.AddToMemoryPool(texture);
-        if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
@@ -148,15 +146,12 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
             {
                .textureGuid = id,
                .texture = attachment,
-               .textureType = attachment.m_textureType,
-               .textureUsageType = TextureUsageTypeEnum::kUsageType_Undefined,
                .imGuiDescriptorSet = VK_NULL_HANDLE
             };
             renderedTextureList.emplace_back(texture);
-            if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
             else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
         }
-        textureSystem.RenderedTextureListMap[renderPass.RenderPassId()] = renderedTextureList;
     }
     imGuiSystem.RebuildSwapChain();
     vulkanWindow.ResetFramebufferResized();

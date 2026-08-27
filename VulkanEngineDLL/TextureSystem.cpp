@@ -57,8 +57,6 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 	{
 		.textureGuid = textureLoader.TextureId,
 		.texture = VulkanTexture(vulkanLoader),
-		.textureType = textureLoader.TextureType,
-		.textureUsageType = textureLoader.TextureUsageType,
 		.imGuiDescriptorSet = nullptr
 	};
 
