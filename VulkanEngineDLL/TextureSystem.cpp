@@ -292,7 +292,7 @@ void TextureSystem::AddToMemoryPool(Texture& texture)
 		textureMetaDataHeader.Type = 1;
 
 		CubeMapTextureList.emplace_back(texture);
-		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+		memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
 	}
 	else
 	{
@@ -307,7 +307,7 @@ void TextureSystem::AddToMemoryPool(Texture& texture)
 		textureMetaDataHeader.Format = (uint32)texture.texture.TextureImageLayout();
 		textureMetaDataHeader.Type = 0;
 		TextureList.emplace_back(texture);
-		memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+		memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.Texture2DBinding);
 	}
 }
 

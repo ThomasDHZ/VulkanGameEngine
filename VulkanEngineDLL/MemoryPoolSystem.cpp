@@ -594,12 +594,12 @@ void MemoryPoolSystem::FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 ind
     }
 }
 
-void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding)
+void MemoryPoolSystem::UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding)
 {
     VkDescriptorImageInfo textureUpdate = {
-          .sampler = texture.texture.TextureSampler(),
-          .imageView = texture.texture.TextureViews().front(),
-          .imageLayout = texture.texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+          .sampler = texture.TextureSampler(),
+          .imageView = texture.TextureViews().front(),
+          .imageLayout = texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     };
 
     VkWriteDescriptorSet descriptorUpdate = VkWriteDescriptorSet
@@ -607,7 +607,7 @@ void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
         .dstBinding = binding,
-        .dstArrayElement = static_cast<uint32>(texture.textureId.id),
+        .dstArrayElement = textureGpuBufferIndex,
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .pImageInfo = &textureUpdate,
@@ -615,11 +615,11 @@ void MemoryPoolSystem::UpdateTextureDescriptorSet(Texture& texture, uint binding
     vkUpdateDescriptorSets(vulkan.LogicalDevice(), 1, &descriptorUpdate, 0, nullptr);
 }
 
-void MemoryPoolSystem::UpdateDataBufferDescriptorSet(uint32 vulkanBufferIndex, uint binding)
+void MemoryPoolSystem::UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding)
 {
     VkDescriptorBufferInfo bufferUpdate = VkDescriptorBufferInfo
     {
-        .buffer = bufferSystem.FindVulkanBuffer(vulkanBufferIndex).Buffer(),
+        .buffer = bufferSystem.FindVulkanBuffer(vulkanGpuBufferIndex).Buffer(),
         .offset = 0,
         .range = VK_WHOLE_SIZE
     };

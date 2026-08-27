@@ -47,8 +47,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
         };
         renderedTextureList.emplace_back(texture);
         textureSystem.AddToMemoryPool(texture);
-        if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
-        else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+        if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        else memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.Texture2DBinding);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
 
@@ -149,8 +149,8 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
                .imGuiDescriptorSet = VK_NULL_HANDLE
             };
             renderedTextureList.emplace_back(texture);
-            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
-            else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
+            else memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.Texture2DBinding);
         }
     }
     imGuiSystem.RebuildSwapChain();
