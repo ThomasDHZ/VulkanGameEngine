@@ -82,7 +82,6 @@ public:
 
     Texture                  LoadTexture(const String& texturePath);
     Texture                  LoadTexture(const TextureLoader& textureLoader);
-    Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachmentList);
     void                     GenerateTexture(VkGuid& renderPassId);
     void                     AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
     void                     AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture);
