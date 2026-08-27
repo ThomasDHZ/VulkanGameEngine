@@ -80,23 +80,24 @@ public:
     Vector<Texture>                                                Texture3DList;
     Vector<Texture>                                                CubeMapTextureList;
 
-     Texture                  LoadTexture(const String& texturePath);
-     Texture                  LoadTexture(const TextureLoader& textureLoader);
-     Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachmentList);
-     void                     GenerateTexture(VkGuid& renderPassId);
-     void                     AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
-     void                     AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture);
+    Texture                  LoadTexture(const String& texturePath);
+    Texture                  LoadTexture(const TextureLoader& textureLoader);
+    Texture                  CreateRenderPassTexture(VulkanRenderPass& vulkanRenderPass, RenderPassAttachmentLoader& attachmentList);
+    void                     GenerateTexture(VkGuid& renderPassId);
+    void                     AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
+    void                     AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture);
 
-     Texture                  FindTexture(const VkGuid& textureId);
-     Texture&                 FindDepthTexture(const RenderPassGuid& renderPassGuid);
-     Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);
-     Vector<Texture>&         FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
+    Texture                  FindTexture(const VkGuid& textureId);
+    Texture&                 FindDepthTexture(const RenderPassGuid& renderPassGuid);
+    Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);
+    Vector<Texture>&         FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
 
-     const bool               TextureExists(const TextureGuid& textureGuid) const;
-     const bool               DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
-     const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
-     const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
-    void                                AddToMemoryPool(Texture& texture);
+    const bool               TextureExists(const TextureGuid& textureGuid) const;
+    const bool               DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
+    const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
+    const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
+    void                     AddToMemoryPool(Texture& texture);
+    void                     Destroy();
 };
 extern  TextureSystem& textureSystem;
 inline TextureSystem& TextureSystem::Get()

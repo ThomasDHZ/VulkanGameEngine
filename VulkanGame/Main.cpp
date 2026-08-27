@@ -58,20 +58,7 @@ int main(int argc, char** argv)
             gameSystem.Draw(frameTime);
             deltaTime.EndFrameTime();
         }
-        vkDeviceWaitIdle(vulkan.LogicalDevice());
-        imGuiSystem.Destroy();
-
-        
-      //  textureSystem.DestroyAllTextures();
-        meshSystem.DestroyAllGameObjects();
-        materialSystem.DestroyAllMaterials();
-       // bufferSystem.DestroyAllBuffers();
-
-        memorySystem.ReportLeaks();
-     //   debugSystem.DumpVMAStats();
-
-        vulkan.Destroy();
-        vulkanWindow.Close();
+        gameSystem.Destroy();
     }
     catch (const VulkanError& e)
     {

@@ -24,6 +24,7 @@ GameSystem gameSystem = GameSystem();
 #include <NetworkSystem.h>
 #include <InputSystem.h>
 #include <TextSystem.h>
+#include <VulkanSystem.h>
 
 GameSystem::GameSystem()
 {
@@ -58,6 +59,7 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
 {
 
     //luaScriptingSystem.Update(deltaTime);
+   
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
     collisionSystem.Update();
@@ -206,7 +208,12 @@ void GameSystem::DebugUpdate(float deltaTime)
 void GameSystem::Draw(float deltaTime)
 {
     VkCommandBuffer commandBuffer = vulkan.Swapchain().StartFrame();
-   // materialBakerSystem.Draw(commandBuffer);
+    if (commandBuffer == VK_NULL_HANDLE)
+    {
+        renderSystem.RecreateSwapchain(vulkanWindow.GetWindowHandle(), deltaTime);
+        return;
+    }
+
     Vector<RenderPassNode> renderNodes = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
     renderSystem.Draw(commandBuffer, renderNodes);
     levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
@@ -216,6 +223,16 @@ void GameSystem::Draw(float deltaTime)
 
 void GameSystem::Destroy()
 {
-   
+    vkDeviceWaitIdle(vulkan.LogicalDevice());
 
+    imGuiSystem.Destroy();
+    renderSystem.Destroy();   
+    textureSystem.Destroy();    
+    meshSystem.DestroyAllGameObjects();
+    materialSystem.DestroyAllMaterials();
+    // bufferSystem.DestroyAllBuffers();
+
+    memorySystem.ReportLeaks();
+    vulkan.Destroy();
+    vulkanWindow.Close();
 }

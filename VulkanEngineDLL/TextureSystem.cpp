@@ -501,3 +501,33 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	renderSystem.Draw(commandBuffer, node);
 	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer);
 }
+
+void TextureSystem::Destroy()
+{
+	for (auto& texture : TextureList)
+	{
+		if (!texture.texture.IsRenderPassAttachment())
+		{
+			texture.texture.DestroyTexture();
+			texture.imGuiDescriptorSet = VK_NULL_HANDLE;
+		}
+	}
+	TextureList.clear();
+
+	for (auto& texture3D : Texture3DList)
+	{
+		texture3D.texture.DestroyTexture();
+		texture3D.imGuiDescriptorSet = VK_NULL_HANDLE;
+	}
+	Texture3DList.clear();
+
+	for (auto& cubeMap : CubeMapTextureList)
+	{
+		if (!cubeMap.texture.IsRenderPassAttachment())
+		{
+			cubeMap.texture.DestroyTexture();
+			cubeMap.imGuiDescriptorSet = VK_NULL_HANDLE;
+		}
+	}
+	CubeMapTextureList.clear();
+}

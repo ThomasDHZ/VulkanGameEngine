@@ -60,7 +60,6 @@ private:
 
     VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader);
-    void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -72,6 +71,7 @@ public:
     void                                                    Update(void* windowHandle, const float& deltaTime);
     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
 
+    void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
     const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
@@ -84,8 +84,7 @@ public:
     bool                                                    RenderPipelineExists(const VkGuid& pipelineId);
     bool                                                    VulkanShaderExists(const VkGuid& vulkanShaderId);
 
-    void                                                    DestroyCommandBuffers(Vector<VkCommandBuffer>& commandBuffer);
-    void                                                    DestroyBuffer(VkBuffer& buffer);
+    void                                                    Destroy();
 };
 extern  RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()

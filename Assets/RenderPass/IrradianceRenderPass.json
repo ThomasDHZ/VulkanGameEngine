@@ -1,7 +1,7 @@
 {
   "Name": "IrradiancePipeline",
   "RenderPassId": "62504413-f55d-4a4f-9afe-71c915bf8e8b",
-  "RenderPassResolution": [ 128, 128 ],
+  "RenderPassResolution": [ 32, 32 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": true,

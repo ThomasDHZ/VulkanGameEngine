@@ -10,16 +10,14 @@
 #include <unordered_set>
 #include <algorithm>
 #include "PushConstantRegistry.h"
+#include <ImGuiSystem.h>
+#include <VulkanWindow.h>
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
 void RenderSystem::Update(void* windowHandle, const float& deltaTime)
 {
-    //if (vulkan.RebuildRendererFlag)
-    //{
-    //    RecreateSwapchain(windowHandle, deltaTime);
-    //    vulkan.RebuildRendererFlag = false;
-    //}
+    RecreateSwapchain(windowHandle, deltaTime);
 }
 
 RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
@@ -30,14 +28,12 @@ RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
 
 RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
 {
-
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
 
     Texture depthTexture;
     Vector<Texture> renderedTextureList;
-    Vector<Texture> frameBufferTextureList;
     VulkanTexture vulkanTexture = VulkanTexture();
     for (int x = 0; x < vulkanRenderPass.AttachmentList().size(); x++)
     {
@@ -52,13 +48,11 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
            .imGuiDescriptorSet = VK_NULL_HANDLE
         };
         renderedTextureList.emplace_back(texture);
-        frameBufferTextureList.emplace_back(texture);
         textureSystem.AddToMemoryPool(texture);
         if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
         else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
-    if (depthTexture.texture.TextureImage() != VK_NULL_HANDLE) textureSystem.AddDepthTexture(vulkanRenderPass.RenderPassId(), depthTexture);
 
     for (auto& shader : renderPassLoader.ShaderList)
     {
@@ -137,17 +131,35 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
-    //vkDeviceWaitIdle(vulkan.LogicalDevice());
-    //for (auto& renderPass : renderSystem.RenderPassList()) vulkanSystem.DestroyFrameBuffers(vulkan.LogicalDevice(), renderPass.FrameBufferList);
-    //vulkanSystem.DestroySwapChainImageView(vulkan.LogicalDevice(), vulkanSystem.SwapChainImageViews);
-    //vulkanSystem.DestroySwapChain(vulkan.LogicalDevice(), &vulkanSystem.Swapchain);
+    if (!vulkanWindow.WasFramebufferResized()) return;
 
-    //vulkanSystem.SetUpSwapChain(windowHandle);
-    //for (auto& renderPass : renderSystem.RenderPassList())
-    //{
-    //    BuildFrameBuffer(renderPass);
-    //}
-    // ImGui_RebuildSwapChain(renderer, imGuiRenderer);
+    vkDeviceWaitIdle(vulkan.LogicalDevice());
+    vulkan.Swapchain().RebuildSwapChain(windowHandle);
+    for (auto& [id, renderPass] : RenderPassMap)
+    {
+        renderPass.RebuildRenderPass();
+     
+        Vector<Texture> renderedTextureList;
+        for (int x = 0; x < renderPass.AttachmentList().size(); x++)
+        {
+            VulkanTexture attachment = renderPass.AttachmentList()[x];
+            ivec2 renderPassSize = ivec2(attachment.TextureSize().x, attachment.TextureSize().y);
+            Texture texture = Texture
+            {
+               .textureGuid = id,
+               .texture = attachment,
+               .textureType = attachment.m_textureType,
+               .textureUsageType = TextureUsageTypeEnum::kUsageType_Undefined,
+               .imGuiDescriptorSet = VK_NULL_HANDLE
+            };
+            renderedTextureList.emplace_back(texture);
+            if (texture.textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.CubeMapDescriptorBinding);
+            else memoryPoolSystem.UpdateTextureDescriptorSet(texture, memoryPoolSystem.Texture2DBinding);
+        }
+        textureSystem.RenderedTextureListMap[renderPass.RenderPassId()] = renderedTextureList;
+    }
+    imGuiSystem.RebuildSwapChain();
+    vulkanWindow.ResetFramebufferResized();
 }
 
 void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
@@ -346,14 +358,18 @@ bool RenderSystem::VulkanShaderExists(const VkGuid& vulkanShaderId)
     return VulkanShaderMap.contains(vulkanShaderId);
 }
 
-void RenderSystem::DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture)
+void RenderSystem::Destroy()
 {
-    Vector<Texture> renderedTextureList = Vector<Texture>(&renderedTextureListPtr, &renderedTextureListPtr + renderedTextureCount);
-    for (auto& renderedTexture : renderedTextureList)
+    for (auto& shader : VulkanShaderMap)
     {
-        // textureSystem.DestroyTexture(renderedTexture);
+        shader.second.Destroy();
     }
-    std::memset(static_cast<void*>(&renderedTextureListPtr), 0x00, sizeof(Texture) * renderedTextureCount);
-    renderedTextureCount = 0;
-    renderedTextureList.clear();
+    for (auto& renderPipeline : RenderPipelineMap)
+    {
+        renderPipeline.second.Destroy();
+    }
+    for (auto& renderPass : RenderPassMap)
+    {
+        renderPass.second.Destroy();
+    }
 }
