@@ -21,16 +21,10 @@ struct TextureLoader
     bool IsSkyBox;
 };
 
-struct TextureHandle
-{
-    uint32 id = 0;
-    uint32 generation = 0;
-};
-
 struct Texture
 {
     TextureGuid           textureGuid = TextureGuid();
-    TextureHandle         textureId;
+    uint32                gpuTextureBufferIndex;
     VulkanTexture         texture;
     VkDescriptorSet       imGuiDescriptorSet = VK_NULL_HANDLE;
 };
@@ -72,7 +66,6 @@ private:
 
 public:
 
-    UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     Vector<Texture>                                                TextureList;
     Vector<Texture>                                                Texture3DList;
     Vector<Texture>                                                CubeMapTextureList;
@@ -80,15 +73,9 @@ public:
     Texture                  LoadTexture(const String& texturePath);
     Texture                  LoadTexture(const TextureLoader& textureLoader);
     void                     GenerateTexture(VkGuid& renderPassId);
-    void                     AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
 
     Texture                  FindTexture(const VkGuid& textureId);
-    Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);
-    Vector<Texture>&         FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
-
     const bool               TextureExists(const TextureGuid& textureGuid) const;
-    const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
-    const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
     void                     Destroy();
 };
 extern  TextureSystem& textureSystem;

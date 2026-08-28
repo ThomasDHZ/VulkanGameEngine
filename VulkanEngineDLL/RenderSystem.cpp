@@ -42,13 +42,14 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
         Texture texture = Texture
         {
            .textureGuid = renderPassLoader.AttachmentList[x].RenderedTextureId,
+           .gpuTextureBufferIndex = memoryPoolSystem.AddToMemoryPool(attachment),
            .texture = attachment,
            .imGuiDescriptorSet = VK_NULL_HANDLE
         };
         renderedTextureList.emplace_back(texture);
-        memoryPoolSystem.AddToMemoryPool(attachment);
+        
     }
-    if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
+    if (!renderedTextureList.empty()) AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
 
     for (auto& shader : renderPassLoader.ShaderList)
     {
@@ -78,7 +79,7 @@ VkGuid RenderSystem::LoadShader(ShaderLoader& shaderLoader)
     {
         shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
     }
-    VulkanShaderMap[shader.ShaderId()] = shader;
+    RenderShaderMap[shader.ShaderId()] = shader;
 }
 
 VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader)
@@ -101,7 +102,7 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
             Vector<VulkanShader> shaderList;
             for (auto& shaderId : pipelineLoader.ShaderIdList)
             {
-                shaderList.emplace_back(VulkanShaderMap[shaderId]);
+                shaderList.emplace_back(RenderShaderMap[shaderId]);
             }
             return shaderList;
         };
@@ -147,8 +148,8 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
                .imGuiDescriptorSet = VK_NULL_HANDLE
             };
             renderedTextureList.emplace_back(texture);
-            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
-            else memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.Texture2DBinding);
+            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.gpuTextureBufferIndex, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
+            else memoryPoolSystem.UpdateTextureDescriptorSet(texture.gpuTextureBufferIndex, texture.texture, memoryPoolSystem.Texture2DBinding);
         }
     }
     imGuiSystem.RebuildSwapChain();
@@ -209,7 +210,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                     }*/
                     renderPass.BindRenderPassPipeline(commandBuffer, pipeline, 0);
 
-                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = textureSystem.FindRenderedTexture(renderPassLayer.RenderPassInputs[0]);
+                    if (!renderPassLayer.RenderPassInputs.empty()) inputTexture = renderSystem.FindRenderPassAttachment(renderPassLayer.RenderPassInputs[0]);
                     if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
                     if (renderPassLayer.OffScreenRenderPass && renderPassLayer.DrawMeshList.empty())
                     {
@@ -235,7 +236,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
 
 uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
-    Texture* texture = &textureSystem.FindRenderedTexture(textureGuid);
+    Texture* texture = &FindRenderPassAttachment(textureGuid);
     if (!texture || texture->texture.TextureImage() == VK_NULL_HANDLE)
     {
         std::cout << "[SamplePixel] Texture not found" << std::endl;
@@ -246,7 +247,6 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     int y = std::clamp(mousePosition.y, 0, texture->texture.TextureSize().y - 1);
 
     VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
-
     VkImageMemoryBarrier barrier =
     {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -323,12 +323,38 @@ const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGui
 
 const VulkanShader& RenderSystem::FindVulkanShader(const VkGuid& shaderGuid)
 {
-    return VulkanShaderMap[shaderGuid];
+    return RenderShaderMap[shaderGuid];
 }
 
 bool RenderSystem::FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType)
 {
     return RenderPipelinePackageMap[pipelinePackageGuid].PipelineMap.contains(pipelineType);
+}
+
+void RenderSystem::AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList)
+{
+    RenderAttachmentMap[renderPassGuid] = renderedTextureList;
+}
+
+Texture& RenderSystem::FindRenderPassAttachment(const TextureGuid& textureGuid)
+{
+    for (auto& pair : RenderAttachmentMap)
+    {
+        auto& textureList = pair.second;
+        auto it = std::find_if(textureList.begin(), textureList.end(),
+            [&textureGuid](const Texture& texture)
+            {
+                return texture.textureGuid == textureGuid;
+            });
+        if (it != textureList.end())
+            return *it;
+    }
+    throw std::out_of_range("Texture with Id: " + textureGuid.ToString() + " not found");
+}
+
+Vector<Texture>& RenderSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
+{
+    return RenderAttachmentMap.at(renderPassGuid);
 }
 
 bool RenderSystem::RenderPassExists(const VkGuid& renderPassId)
@@ -348,12 +374,12 @@ bool RenderSystem::RenderPipelineExists(const VkGuid& pipelineId)
 
 bool RenderSystem::VulkanShaderExists(const VkGuid& vulkanShaderId)
 {
-    return VulkanShaderMap.contains(vulkanShaderId);
+    return RenderShaderMap.contains(vulkanShaderId);
 }
 
 void RenderSystem::Destroy()
 {
-    for (auto& shader : VulkanShaderMap)
+    for (auto& shader : RenderShaderMap)
     {
         shader.second.Destroy();
     }

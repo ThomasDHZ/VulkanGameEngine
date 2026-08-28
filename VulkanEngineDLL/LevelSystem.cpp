@@ -96,7 +96,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
             {
                 for (auto& inputTexture : subPass.InputTextureList)
                 {
-                    const Texture& texture = textureSystem.FindRenderedTexture(inputTexture);
+                    const Texture& texture = renderSystem.FindRenderPassAttachment(inputTexture);
                     if (maxMipLevelCount < texture.texture.MipMapLevels()) maxMipLevelCount = texture.texture.MipMapLevels() - 1;
                 }
 

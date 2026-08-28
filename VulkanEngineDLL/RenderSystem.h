@@ -56,7 +56,8 @@ private:
     UnorderedMap<VkGuid, VulkanRenderPass>                  RenderPassMap;
     UnorderedMap<VkGuid, VulkanPipelinePackage>             RenderPipelinePackageMap;
     UnorderedMap<VkGuid, VulkanPipeline>                    RenderPipelineMap;
-    UnorderedMap<VkGuid, VulkanShader>                      VulkanShaderMap;
+    UnorderedMap<VkGuid, Vector<Texture>>                   RenderAttachmentMap;
+    UnorderedMap<VkGuid, VulkanShader>                      RenderShaderMap;
 
     VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader);
@@ -70,15 +71,18 @@ public:
     RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
     void                                                    Update(void* windowHandle, const float& deltaTime);
     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
+    void                                                    AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
 
     void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
     const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
-    const VulkanTexture&                                    FindRenderPassAttachment(const RenderPassGuid& renderPassGuid, const VkGuid& renderPassAttachmentGuid);
     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);
+    Texture&                                                FindRenderPassAttachment(const TextureGuid& textureGuid);
+    Vector<Texture>&                                        FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
+
     bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType);
     bool                                                    RenderPassExists(const VkGuid& renderPassId);
     bool                                                    RenderPipelinePackageExists(const VkGuid& pipelinePackageId);

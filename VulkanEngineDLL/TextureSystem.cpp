@@ -63,14 +63,14 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 	SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
 	switch (textureLoader.TextureUsageType)
 	{
-	case kUsageType_CubeMap:            sceneData.CubeMapId = texture.textureId.id; break;
-	case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.textureId.id; break;
-	case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.textureId.id; break;
-	case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.textureId.id; break;
+	case kUsageType_CubeMap:            sceneData.CubeMapId = texture.gpuTextureBufferIndex; break;
+	case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.gpuTextureBufferIndex; break;
+	case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.gpuTextureBufferIndex; break;
+	case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.gpuTextureBufferIndex; break;
 	default: break;
 	}
 
-	texture.textureId.id = memoryPoolSystem.AddToMemoryPool(texture.texture);
+	texture.gpuTextureBufferIndex = memoryPoolSystem.AddToMemoryPool(texture.texture);
 	if (texture.texture.IsCubeMap()) CubeMapTextureList.emplace_back(texture);
 	else TextureList.emplace_back(texture);
 	return texture;
@@ -291,32 +291,6 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId)
 	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
 }
 
-void TextureSystem::AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList)
-{
-	RenderedTextureListMap[renderPassGuid] = renderedTextureList;
-}
-
-Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
-{
-	for (auto& pair : RenderedTextureListMap)
-	{
-		auto& textureList = pair.second;
-		auto it = std::find_if(textureList.begin(), textureList.end(),
-			[&textureGuid](const Texture& texture)
-			{
-				return texture.textureGuid == textureGuid;
-			});
-		if (it != textureList.end())
-			return *it;
-	}
-	throw std::out_of_range("Texture with Id: " + textureGuid.ToString() + " not found");
-}
-
-Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
-{
-	return RenderedTextureListMap.at(renderPassGuid);
-}
-
 const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
 {
 	auto it = std::find_if(TextureList.begin(), TextureList.end(),
@@ -325,22 +299,6 @@ const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
 			return texture.textureGuid == textureGuid;
 		});
 	return it != TextureList.end();
-}
-
-const bool TextureSystem::RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const
-{
-	auto it = RenderedTextureListMap.find(renderPassGuid);
-	if (it != RenderedTextureListMap.end())
-	{
-		return std::any_of(it->second.begin(), it->second.end(),
-			[&textureGuid](const Texture& texture) { return texture.textureGuid == textureGuid; });
-	}
-	return RenderedTextureListMap.contains(textureGuid);
-}
-
-const bool TextureSystem::RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const
-{
-	return RenderedTextureListMap.find(renderPassGuid) != RenderedTextureListMap.end();
 }
 
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
@@ -354,7 +312,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	}
 
 	uint32 maxMipLevelCount = 1;
-	Vector<Texture> textureList = textureSystem.FindRenderedTextureList(renderPassId);
+	Vector<Texture> textureList = renderSystem.FindRenderedTextureList(renderPassId);
 	for (auto& inputTexture : textureList)
 	{
 		if (maxMipLevelCount < inputTexture.texture.MipMapLevels()) maxMipLevelCount = inputTexture.texture.MipMapLevels() - 1;
