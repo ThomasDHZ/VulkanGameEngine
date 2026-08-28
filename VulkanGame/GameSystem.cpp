@@ -216,7 +216,7 @@ void GameSystem::Draw(float deltaTime)
 
     Vector<RenderPassNode> renderNodes = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
     renderSystem.Draw(commandBuffer, renderNodes);
-    levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.frameBufferId);
+    levelSystem.RenderFrameBuffer(commandBuffer, levelSystem.hdrRenderPassId);
     imGuiSystem.Draw(commandBuffer);
     vulkan.Swapchain().EndFrame(commandBuffer);
 }

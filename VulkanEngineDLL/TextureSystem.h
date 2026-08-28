@@ -72,7 +72,6 @@ private:
 
 public:
 
-    UnorderedMap<RenderPassGuid, Texture>                          DepthTextureMap;
     UnorderedMap<RenderPassGuid, Vector<Texture>>                  RenderedTextureListMap;
     Vector<Texture>                                                TextureList;
     Vector<Texture>                                                Texture3DList;
@@ -82,15 +81,12 @@ public:
     Texture                  LoadTexture(const TextureLoader& textureLoader);
     void                     GenerateTexture(VkGuid& renderPassId);
     void                     AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
-    void                     AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture);
 
     Texture                  FindTexture(const VkGuid& textureId);
-    Texture&                 FindDepthTexture(const RenderPassGuid& renderPassGuid);
     Texture&                 FindRenderedTexture(const TextureGuid& textureGuid);
     Vector<Texture>&         FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
 
     const bool               TextureExists(const TextureGuid& textureGuid) const;
-    const bool               DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
     const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
     const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
     void                     Destroy();

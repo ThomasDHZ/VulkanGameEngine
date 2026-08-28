@@ -34,13 +34,11 @@ void LevelSystem::LoadLevel(const char* levelPath)
     gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
 
     LoadSkyBox();
-    brdfRenderPassId = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
-    textureSystem.GenerateTexture(brdfRenderPassId);
-    Vector<Texture> textures = textureSystem.RenderedTextureListMap[brdfRenderPassId];
+    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
+    LoadLevelMesh(tileSetId);
 
-    environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
-    textureSystem.GenerateTexture(environmentToCubeMapRenderPassId);
-
+    brdfRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
+    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
     irradianceMapRenderPassId          = renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
     prefilterMapRenderPassId           = renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
     gBufferRenderPassId                = renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
@@ -49,9 +47,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     //objectPickerRenderPassId         = renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
     //selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
 
+    textureSystem.GenerateTexture(brdfRenderPassId);
+    textureSystem.GenerateTexture(environmentToCubeMapRenderPassId);
     //shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
-    LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
-    LoadLevelMesh(tileSetId);
 }
 
 void LevelSystem::Update(const float& deltaTime)
@@ -301,8 +299,8 @@ void LevelSystem::LoadSkyBox()
 
 void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
 {
-    Texture& srcTexture = textureSystem.FindRenderedTextureList(hdrRenderPassId).back();
-    VkImage srcImage = srcTexture.texture.TextureImage();
+    VulkanTexture srcTexture = renderSystem.FindRenderPass(hdrRenderPassId).AttachmentList().front();
+    VkImage srcImage = srcTexture.TextureImage();
     VkImage dstImage = vulkan.Swapchain().SwapChainImages()[vulkan.Swapchain().ImageIndex()];
 
     Vector<VkImageMemoryBarrier> barriers = Vector<VkImageMemoryBarrier>
@@ -365,8 +363,8 @@ void LevelSystem::RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& rend
             },
             VkOffset3D
             {
-                .x = srcTexture.texture.TextureSize().x,
-                .y = srcTexture.texture.TextureSize().y,
+                .x = srcTexture.TextureSize().x,
+                .y = srcTexture.TextureSize().y,
                 .z = 1
             }
         },

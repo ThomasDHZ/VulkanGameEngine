@@ -281,25 +281,6 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 
 Texture TextureSystem::FindTexture(const VkGuid& textureId)
 {
-	for (auto& pair : RenderedTextureListMap)
-	{
-		for (auto& texture : pair.second)
-		{
-			if (texture.textureGuid == textureId)
-			{
-				return texture;
-			}
-		}
-	}
-
-	for (auto& pair : DepthTextureMap)
-	{
-		if (pair.second.textureGuid == textureId)
-		{
-			return pair.second;
-		}
-	}
-
 	for (auto& texture : TextureList)
 	{
 		if (texture.textureGuid == textureId)
@@ -313,16 +294,6 @@ Texture TextureSystem::FindTexture(const VkGuid& textureId)
 void TextureSystem::AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList)
 {
 	RenderedTextureListMap[renderPassGuid] = renderedTextureList;
-}
-
-void TextureSystem::AddDepthTexture(RenderPassGuid renderPassGuid, Texture& depthTexture)
-{
-	DepthTextureMap[renderPassGuid] = depthTexture;
-}
-
-Texture& TextureSystem::FindDepthTexture(const RenderPassGuid& renderPassGuid)
-{
-	return DepthTextureMap.at(renderPassGuid);
 }
 
 Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
@@ -344,11 +315,6 @@ Texture& TextureSystem::FindRenderedTexture(const TextureGuid& textureGuid)
 Vector<Texture>& TextureSystem::FindRenderedTextureList(const RenderPassGuid& renderPassGuid)
 {
 	return RenderedTextureListMap.at(renderPassGuid);
-}
-
-const bool TextureSystem::DepthTextureExists(const RenderPassGuid& renderPassGuid) const
-{
-	return DepthTextureMap.contains(renderPassGuid);
 }
 
 const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
