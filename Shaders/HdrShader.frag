@@ -65,6 +65,11 @@ const float Exposure = 1.0;
 void main() 
 {
 
+	vec4 a = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	for(int x = 0; x < bindlessBuffer.Texture2DCount; x++)
+	{
+	vec3 hdrColor2 = texture(TextureMap[x], TexCoords).rgb;
+	}
     vec3 hdrColor = texture(TextureMap[sceneDataBuffer.HDRMapIndex], TexCoords).rgb;
     vec3 finalColor = hdrColor;
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));

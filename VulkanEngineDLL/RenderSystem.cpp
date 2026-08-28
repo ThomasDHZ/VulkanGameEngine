@@ -46,9 +46,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
            .imGuiDescriptorSet = VK_NULL_HANDLE
         };
         renderedTextureList.emplace_back(texture);
-        textureSystem.AddToMemoryPool(texture);
-        if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
-        else memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.Texture2DBinding);
+        memoryPoolSystem.AddToMemoryPool(attachment);
     }
     if (!renderedTextureList.empty()) textureSystem.AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
 

@@ -93,7 +93,6 @@ public:
     const bool               DepthTextureExists(const RenderPassGuid& renderPassGuid) const;
     const bool               RenderedTextureExists(const RenderPassGuid& renderPassGuid, const TextureGuid& textureGuid) const;
     const bool               RenderedTextureListExists(const RenderPassGuid& renderPassGuid) const;
-    void                     AddToMemoryPool(Texture& texture);
     void                     Destroy();
 };
 extern  TextureSystem& textureSystem;

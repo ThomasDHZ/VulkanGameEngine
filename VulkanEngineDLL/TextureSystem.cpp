@@ -70,7 +70,9 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 	default: break;
 	}
 
-	AddToMemoryPool(texture);
+	texture.textureId.id = memoryPoolSystem.AddToMemoryPool(texture.texture);
+	if (texture.texture.IsCubeMap()) CubeMapTextureList.emplace_back(texture);
+	else TextureList.emplace_back(texture);
 	return texture;
 }
 
@@ -275,40 +277,6 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 		.TextureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = false
 	};
-}
-
-void TextureSystem::AddToMemoryPool(Texture& texture)
-{
-	if (texture.texture.IsCubeMap())
-	{
-		texture.textureId.id = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId.id);
-		textureMetaDataHeader.Width = texture.texture.TextureSize().x;
-		textureMetaDataHeader.Height = texture.texture.TextureSize().y;
-		textureMetaDataHeader.Depth = texture.texture.TextureSize().z;
-		textureMetaDataHeader.MipLevels = texture.texture.MipMapLevels();
-		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
-		textureMetaDataHeader.Format = (uint32)texture.texture.TextureImageLayout();
-		textureMetaDataHeader.Type = 1;
-
-		CubeMapTextureList.emplace_back(texture);
-		memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
-	}
-	else
-	{
-		texture.textureId.id = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
-		SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-		TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(texture.textureId.id);
-		textureMetaDataHeader.Width = texture.texture.TextureSize().x;
-		textureMetaDataHeader.Height = texture.texture.TextureSize().y;
-		textureMetaDataHeader.Depth = texture.texture.TextureSize().z;
-		textureMetaDataHeader.MipLevels = texture.texture.MipMapLevels();
-		textureMetaDataHeader.LayerCount = texture.texture.TextureArrayLayers();
-		textureMetaDataHeader.Format = (uint32)texture.texture.TextureImageLayout();
-		textureMetaDataHeader.Type = 0;
-		TextureList.emplace_back(texture);
-		memoryPoolSystem.UpdateTextureDescriptorSet(texture.textureId.id, texture.texture, memoryPoolSystem.Texture2DBinding);
-	}
 }
 
 Texture TextureSystem::FindTexture(const VkGuid& textureId)

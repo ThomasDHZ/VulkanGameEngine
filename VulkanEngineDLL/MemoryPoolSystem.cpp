@@ -484,6 +484,39 @@ SceneDataBuffer& MemoryPoolSystem::UpdateSceneDataBuffer()
     return *reinterpret_cast<SceneDataBuffer*>(SceneDataPtr);
 }
 
+uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)
+{
+    if (texture.IsCubeMap())
+    {
+        uint32 gpuTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
+        TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(gpuTextureIndex);
+        textureMetaDataHeader.Width = texture.TextureSize().x;
+        textureMetaDataHeader.Height = texture.TextureSize().y;
+        textureMetaDataHeader.Depth = texture.TextureSize().z;
+        textureMetaDataHeader.MipLevels = texture.MipMapLevels();
+        textureMetaDataHeader.LayerCount = texture.TextureArrayLayers();
+        textureMetaDataHeader.Format = (uint32)texture.TextureImageLayout();
+        textureMetaDataHeader.Type = 1;
+        memoryPoolSystem.UpdateTextureDescriptorSet(gpuTextureIndex, texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        return gpuTextureIndex;
+    }
+    else
+    {
+        uint32 gpuTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
+        SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+        TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(gpuTextureIndex);
+        textureMetaDataHeader.Width = texture.TextureSize().x;
+        textureMetaDataHeader.Height = texture.TextureSize().y;
+        textureMetaDataHeader.Depth = texture.TextureSize().z;
+        textureMetaDataHeader.MipLevels = texture.MipMapLevels();
+        textureMetaDataHeader.LayerCount = texture.TextureArrayLayers();
+        textureMetaDataHeader.Format = (uint32)texture.TextureImageLayout();
+        textureMetaDataHeader.Type = 0;
+        memoryPoolSystem.UpdateTextureDescriptorSet(gpuTextureIndex, texture, memoryPoolSystem.Texture2DBinding);
+        return gpuTextureIndex;
+    }
+}
+
 Vector<SpriteInstance*>	MemoryPoolSystem::GetActiveSpriteInstancePointers()
 {
     const auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
