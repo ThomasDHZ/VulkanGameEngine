@@ -627,7 +627,7 @@ void MemoryPoolSystem::FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 ind
     }
 }
 
-void MemoryPoolSystem::UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding)
+void MemoryPoolSystem::UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, const VulkanTexture& texture, uint binding)
 {
     VkDescriptorImageInfo textureUpdate = {
           .sampler = texture.TextureSampler(),

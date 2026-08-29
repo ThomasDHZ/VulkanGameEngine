@@ -128,30 +128,32 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
-    if (!vulkanWindow.WasFramebufferResized()) return;
+    if (!vulkanWindow.WasFramebufferResized())
+        return;
 
     vkDeviceWaitIdle(vulkan.LogicalDevice());
     vulkan.Swapchain().RebuildSwapChain(windowHandle);
-    for (auto& [id, renderPass] : RenderPassMap)
+
+    for (auto& [id, pass] : RenderPassMap)
     {
-        renderPass.RebuildRenderPass();
-     
-        Vector<Texture> renderedTextureList;
-        for (int x = 0; x < renderPass.AttachmentList().size(); x++)
+        pass.RebuildRenderPass();
+
+        auto& slots = RenderAttachmentMap[pass.RenderPassId()];
+        const auto& atts = pass.AttachmentList(); // must be const Vector&
+
+        for (size_t i = 0; i < atts.size() && i < slots.size(); ++i)
         {
-            VulkanTexture attachment = renderPass.AttachmentList()[x];
-            ivec2 renderPassSize = ivec2(attachment.TextureSize().x, attachment.TextureSize().y);
-            Texture texture = Texture
-            {
-               .textureGuid = id,
-               .texture = attachment,
-               .imGuiDescriptorSet = VK_NULL_HANDLE
-            };
-            renderedTextureList.emplace_back(texture);
-            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.gpuTextureBufferIndex, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
-            else memoryPoolSystem.UpdateTextureDescriptorSet(texture.gpuTextureBufferIndex, texture.texture, memoryPoolSystem.Texture2DBinding);
+            const uint32 binding = atts[i].IsCubeMap()
+                ? memoryPoolSystem.CubeMapDescriptorBinding
+                : memoryPoolSystem.Texture2DBinding;
+
+            memoryPoolSystem.UpdateTextureDescriptorSet(
+                slots[i].gpuTextureBufferIndex,
+                atts[i],   // const&
+                binding);
         }
     }
+
     imGuiSystem.RebuildSwapChain();
     vulkanWindow.ResetFramebufferResized();
 }

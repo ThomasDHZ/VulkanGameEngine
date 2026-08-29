@@ -163,7 +163,7 @@ public:
 	 void													 StartUp();
 	 uint32													 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
 	 void													 UpdateMemoryPool();
-	 void													 UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding);
+	 void													 UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, const VulkanTexture& texture, uint binding);
 	 void													 UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding);
 	 MeshPropertiesStruct&									 UpdateMesh(uint32 index);
 	 GPUMaterial&											 UpdateMaterial(uint32 index);
