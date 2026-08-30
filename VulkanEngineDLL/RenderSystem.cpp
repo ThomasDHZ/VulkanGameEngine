@@ -138,17 +138,41 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
     if (!vulkanWindow.WasFramebufferResized()) return;
 
+    ivec2 framebufferSize = vulkanWindow.GetFramebufferSize();
+    while (framebufferSize.x == 0 || framebufferSize.y == 0)
+    {
+        glfwWaitEvents();
+        framebufferSize = vulkanWindow.GetFramebufferSize();
+    }
+
     vkDeviceWaitIdle(vulkan.LogicalDevice());
     vulkan.Swapchain().RebuildSwapChain(windowHandle);
     for (auto& [id, renderPass] : RenderPassMap)
     {
+        const ivec2 resolutionBeforeRebuild = renderPass.RenderPassResolution();
         renderPass.RebuildRenderPass();
-        for (int x = 0; x < renderPass.AttachmentList().size(); x++)
+
+        auto attachmentIt = RenderAttachmentMap.find(renderPass.RenderPassId());
+        if (attachmentIt == RenderAttachmentMap.end())
+            continue;
+
+        const bool attachmentsRebuilt = renderPass.RenderPassResolution() != resolutionBeforeRebuild ||
+            (!renderPass.AttachmentList().empty() &&
+             (renderPass.AttachmentList()[0].TextureSize().x != resolutionBeforeRebuild.x ||
+              renderPass.AttachmentList()[0].TextureSize().y != resolutionBeforeRebuild.y));
+
+        if (!attachmentsRebuilt)
+            continue;
+
+        Vector<Texture>& renderedTextures = attachmentIt->second;
+        const size_t attachmentCount = std::min(renderedTextures.size(), renderPass.AttachmentList().size());
+        for (size_t x = 0; x < attachmentCount; x++)
         {
-            VulkanTexture attachment = renderPass.AttachmentList()[x];
-            RenderAttachmentMap[renderPass.RenderPassId()][x].texture = attachment;
-            if (RenderAttachmentMap[renderPass.RenderPassId()][x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(RenderAttachmentMap[renderPass.RenderPassId()][x].gpuTextureBufferIndex, RenderAttachmentMap[renderPass.RenderPassId()][x].texture, memoryPoolSystem.CubeMapDescriptorBinding);
-            else memoryPoolSystem.UpdateTextureDescriptorSet(RenderAttachmentMap[renderPass.RenderPassId()][x].gpuTextureBufferIndex, RenderAttachmentMap[renderPass.RenderPassId()][x].texture, memoryPoolSystem.Texture2DBinding);
+            renderedTextures[x].texture = renderPass.AttachmentList()[x];
+            const uint32 binding = renderedTextures[x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap
+                ? memoryPoolSystem.CubeMapDescriptorBinding
+                : memoryPoolSystem.Texture2DBinding;
+            memoryPoolSystem.UpdateTextureDescriptorSet(renderedTextures[x].gpuTextureBufferIndex, renderedTextures[x].texture, binding);
         }
     }
     imGuiSystem.RebuildSwapChain();
