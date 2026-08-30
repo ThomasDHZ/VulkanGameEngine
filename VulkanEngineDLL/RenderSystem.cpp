@@ -46,8 +46,18 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
            .texture = attachment,
            .imGuiDescriptorSet = VK_NULL_HANDLE
         };
+
+        SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
+        switch (renderPassLoader.AttachmentList[x].TextureUsageType)
+        {
+            case kUsageType_CubeMap:            sceneData.CubeMapId = texture.gpuTextureBufferIndex; break;
+            case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.gpuTextureBufferIndex; break;
+            case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.gpuTextureBufferIndex; break;
+            case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.gpuTextureBufferIndex; break;
+            case kUsageType_HDRTexture:         sceneData.HDRMapIndex = texture.gpuTextureBufferIndex; break;
+            default: break;
+        }
         renderedTextureList.emplace_back(texture);
-        
     }
     if (!renderedTextureList.empty()) AddRenderedTexture(vulkanRenderPass.RenderPassId(), renderedTextureList);
 
@@ -135,21 +145,12 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
     for (auto& [id, renderPass] : RenderPassMap)
     {
         renderPass.RebuildRenderPass();
-     
-        Vector<Texture> renderedTextureList;
         for (int x = 0; x < renderPass.AttachmentList().size(); x++)
         {
             VulkanTexture attachment = renderPass.AttachmentList()[x];
-            ivec2 renderPassSize = ivec2(attachment.TextureSize().x, attachment.TextureSize().y);
-            Texture texture = Texture
-            {
-               .textureGuid = id,
-               .texture = attachment,
-               .imGuiDescriptorSet = VK_NULL_HANDLE
-            };
-            renderedTextureList.emplace_back(texture);
-            if (texture.texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(texture.gpuTextureBufferIndex, texture.texture, memoryPoolSystem.CubeMapDescriptorBinding);
-            else memoryPoolSystem.UpdateTextureDescriptorSet(texture.gpuTextureBufferIndex, texture.texture, memoryPoolSystem.Texture2DBinding);
+            RenderAttachmentMap[renderPass.RenderPassId()][x].texture = attachment;
+            if (RenderAttachmentMap[renderPass.RenderPassId()][x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap) memoryPoolSystem.UpdateTextureDescriptorSet(RenderAttachmentMap[renderPass.RenderPassId()][x].gpuTextureBufferIndex, RenderAttachmentMap[renderPass.RenderPassId()][x].texture, memoryPoolSystem.CubeMapDescriptorBinding);
+            else memoryPoolSystem.UpdateTextureDescriptorSet(RenderAttachmentMap[renderPass.RenderPassId()][x].gpuTextureBufferIndex, RenderAttachmentMap[renderPass.RenderPassId()][x].texture, memoryPoolSystem.Texture2DBinding);
         }
     }
     imGuiSystem.RebuildSwapChain();

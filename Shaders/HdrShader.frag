@@ -70,6 +70,10 @@ void main()
 	{
 	vec3 hdrColor2 = texture(TextureMap[x], TexCoords).rgb;
 	}
+		for(int x = 0; x < bindlessBuffer.TextureCubeMapCount; x++)
+	{
+	vec3 hdrColor2 = texture(CubeMap[x], vec3(0.0f)).rgb;
+	}
     vec3 hdrColor = texture(TextureMap[sceneDataBuffer.HDRMapIndex], TexCoords).rgb;
     vec3 finalColor = hdrColor;
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));

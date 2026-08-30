@@ -61,14 +61,6 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 	};
 
 	SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
-	switch (textureLoader.TextureUsageType)
-	{
-	case kUsageType_CubeMap:            sceneData.CubeMapId = texture.gpuTextureBufferIndex; break;
-	case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.gpuTextureBufferIndex; break;
-	case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.gpuTextureBufferIndex; break;
-	case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.gpuTextureBufferIndex; break;
-	default: break;
-	}
 
 	texture.gpuTextureBufferIndex = memoryPoolSystem.AddToMemoryPool(texture.texture);
 	if (texture.texture.IsCubeMap()) CubeMapTextureList.emplace_back(texture);
