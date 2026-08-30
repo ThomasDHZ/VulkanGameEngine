@@ -136,14 +136,23 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
-    if (!vulkanWindow.WasFramebufferResized()) return;
+    if (!vulkan.WasFramebufferResized()) return;
 
-    ivec2 framebufferSize = vulkanWindow.GetFramebufferSize();
-    while (framebufferSize.x == 0 || framebufferSize.y == 0)
+    ivec2 size;
+    if (vulkan.CustomSurface())
     {
-        glfwWaitEvents();
-        framebufferSize = vulkanWindow.GetFramebufferSize();
+        size = vulkan.WindowResolution();
     }
+    else
+    {
+        size = vulkanWindow.GetFramebufferSize();
+        while (size.x == 0 || size.y == 0)
+        {
+            glfwWaitEvents();
+            size = vulkanWindow.GetFramebufferSize();
+        }
+    }
+    if (size.x == 0 || size.y == 0) return;
 
     vkDeviceWaitIdle(vulkan.LogicalDevice());
     vulkan.Swapchain().RebuildSwapChain(windowHandle);
@@ -169,14 +178,12 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
         for (size_t x = 0; x < attachmentCount; x++)
         {
             renderedTextures[x].texture = renderPass.AttachmentList()[x];
-            const uint32 binding = renderedTextures[x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap
-                ? memoryPoolSystem.CubeMapDescriptorBinding
-                : memoryPoolSystem.Texture2DBinding;
+            const uint32 binding = renderedTextures[x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap ? memoryPoolSystem.CubeMapDescriptorBinding: memoryPoolSystem.Texture2DBinding;
             memoryPoolSystem.UpdateTextureDescriptorSet(renderedTextures[x].gpuTextureBufferIndex, renderedTextures[x].texture, binding);
         }
     }
     imGuiSystem.RebuildSwapChain();
-    vulkanWindow.ResetFramebufferResized();
+    vulkan.ResetFramebufferResized();
 }
 
 void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)

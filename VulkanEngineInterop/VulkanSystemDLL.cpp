@@ -20,6 +20,11 @@ VkCommandBuffer VulkanSystem_StartFrame()
     return vulkan.StartFrame();
 }
 
+void VulkanSystem_SetCustomFrameBufferSize(ivec2 size)
+{
+    return vulkan.SetCustomFrameBufferSize(size);
+}
+
 void VulkanSystem_EndFrame(VkCommandBuffer& commandBuffer)
 {
     vulkan.EndFrame(commandBuffer);
