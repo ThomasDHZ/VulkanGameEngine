@@ -50,10 +50,11 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
+      "Name": "HDR Attachment",
       "RenderedTextureId": "de6ca646-874f-4986-9daf-912dbc3aa7d0",
       "MipMapCount": 1,
       "TextureType": 1,
-      "TextureUsageType": 9,
+      "TextureUsageType": 1,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 44,
       "LoadOp": 1,

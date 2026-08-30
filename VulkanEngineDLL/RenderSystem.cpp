@@ -31,7 +31,6 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
     RenderPassMap[renderPassLoader.RenderPassId] = vulkanRenderPass;
-
     Texture depthTexture;
     Vector<Texture> renderedTextureList;
     VulkanTexture vulkanTexture = VulkanTexture();
@@ -54,7 +53,6 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
             case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.gpuTextureBufferIndex; break;
             case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.gpuTextureBufferIndex; break;
             case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.gpuTextureBufferIndex; break;
-            case kUsageType_HDRTexture:         sceneData.HDRMapIndex = texture.gpuTextureBufferIndex; break;
             default: break;
         }
         renderedTextureList.emplace_back(texture);

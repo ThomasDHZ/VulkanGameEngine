@@ -9,7 +9,7 @@
 #include "MaterialPropertiesBuffer.glsl" 
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 	uint HDRMapIndex;
+{ 	uint HDRMapInputIndex;
 	uint FrameBufferIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
@@ -74,7 +74,7 @@ void main()
 	{
 	vec3 hdrColor2 = texture(CubeMap[x], vec3(0.0f)).rgb;
 	}
-    vec3 hdrColor = texture(TextureMap[sceneDataBuffer.HDRMapIndex], TexCoords).rgb;
+    vec3 hdrColor = texture(TextureMap[sceneDataBuffer.HDRMapInputIndex], TexCoords).rgb;
     vec3 finalColor = hdrColor;
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
     mapped = pow(mapped, vec3(1.0 / Gamma));

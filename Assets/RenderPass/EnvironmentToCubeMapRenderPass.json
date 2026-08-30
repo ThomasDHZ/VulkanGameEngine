@@ -1,5 +1,5 @@
 {
-  "Name": "IrradiancePipeline",
+  "Name": "EnvironmentToCubeMapRenderPass",
   "RenderPassId": "05b2b809-c7f9-4000-bf96-1ca970d88a45",
   "RenderPassResolution": [ 256, 256 ],
   "RenderFlags": {
@@ -50,6 +50,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
+      "Name": "Environment To CubeMap RenderPass Attachment",
       "RenderedTextureId": "08e2c754-78d3-4066-b4f0-b6883dcbfec7",
       "MipMapCount": 1,
       "TextureType": 5,

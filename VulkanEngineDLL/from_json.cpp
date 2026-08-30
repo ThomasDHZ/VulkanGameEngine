@@ -145,6 +145,7 @@ namespace nlohmann
     }
 
     void from_json(const json& j, RenderPassAttachmentLoader& model) {
+        j.at("Name").get_to(model.Name);
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);
@@ -355,6 +356,7 @@ namespace nlohmann
     void from_json(const json& j, RenderPassLoader& model)
     {
         auto a = j.dump();
+        j.at("Name").get_to(model.Name);
         j.at("RenderPassId").get_to(model.RenderPassId);
         j["RenderFlags"].at("UseDefaultRenderResolution").get_to(model.UseDefaultRenderResolution);
         j["RenderFlags"].at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);

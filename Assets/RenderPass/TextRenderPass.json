@@ -49,6 +49,7 @@
   "SampleCount": 8,
   "AttachmentList": [
     {
+      "Name": "Text Attachment",
       "RenderedTextureId": "c0235021-cd25-4c15-80d4-9541992b29e2",
       "MipMapCount": 1,
       "TextureType": 1,

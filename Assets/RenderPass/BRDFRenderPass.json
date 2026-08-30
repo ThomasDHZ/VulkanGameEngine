@@ -50,6 +50,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
+      "Name": "BRDFAttachment",
       "RenderedTextureId": "6958e3e9-4d24-408c-893a-bf53fbd53806",
       "MipMapCount": 1,
       "TextureType": 4,

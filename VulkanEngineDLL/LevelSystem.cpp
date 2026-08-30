@@ -63,7 +63,7 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
     sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
     sceneDataBuffer.ViewDirection = ViewDirection;
-    sceneDataBuffer.HDRMapIndex = 23;
+    sceneDataBuffer.HDRMapInputIndex = 23;
     sceneDataBuffer.FrameBufferIndex = UINT32_MAX;
     cameraSystem.Update();
 }

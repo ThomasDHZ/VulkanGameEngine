@@ -59,6 +59,10 @@ private:
     UnorderedMap<VkGuid, Vector<Texture>>                   RenderAttachmentMap;
     UnorderedMap<VkGuid, VulkanShader>                      RenderShaderMap;
 
+#ifndef NDEBUG
+    UnorderedMap<VkGuid, String>                            RenderAttachmentNameMap;
+#endif
+
     VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader);
     void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);

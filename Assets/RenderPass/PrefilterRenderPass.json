@@ -49,6 +49,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
+      "Name": "Prefilter Attachment",
       "RenderedTextureId": "1d68f22f-77a7-4c53-9650-edec72bb6687",
       "MipMapCount": 3,
       "TextureType": 5,
