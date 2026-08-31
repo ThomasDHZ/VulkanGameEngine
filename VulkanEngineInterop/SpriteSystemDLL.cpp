@@ -1,6 +1,6 @@
 #include "SpriteSystemDLL.h"
 
-void SpriteSystem_Update(const float& deltaTime)
+void SpriteSystem_Update(float deltaTime)
 {
 	spriteSystem.Update(deltaTime);
 }

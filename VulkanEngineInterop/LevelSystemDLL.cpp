@@ -10,11 +10,6 @@ void LevelSystem_Update(const float& deltaTime)
 	levelSystem.Update(deltaTime);
 }
 
-void LevelSystem_RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId)
-{
-	levelSystem.RenderFrameBuffer(commandBuffer, renderPassId);
-}
-
 RenderPassNodeDLL* LevelSystem_CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount)
 {
     Vector<RenderPassNode> renderPassNodeList = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);

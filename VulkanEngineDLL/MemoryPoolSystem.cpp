@@ -704,7 +704,7 @@ const Vector<VkDescriptorBufferInfo> MemoryPoolSystem::GetBindlessDataBufferDesc
 const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const
 {
     Vector<VkDescriptorImageInfo> descriptorSetInfoList;
-    Vector<Texture> inputTextureList = renderSystem.FindRenderedTextureList(renderPassId);
+    Vector<Texture> inputTextureList = renderSystem.FindRenderPassAttachmentList(renderPassId);
     for (auto& texture : inputTextureList)
     {
         descriptorSetInfoList.emplace_back(VkDescriptorImageInfo

@@ -304,7 +304,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	}
 
 	uint32 maxMipLevelCount = 1;
-	Vector<Texture> textureList = renderSystem.FindRenderedTextureList(renderPassId);
+	Vector<Texture> textureList = renderSystem.FindRenderPassAttachmentList(renderPassId);
 	for (auto& inputTexture : textureList)
 	{
 		if (maxMipLevelCount < inputTexture.texture.MipMapLevels()) maxMipLevelCount = inputTexture.texture.MipMapLevels() - 1;

@@ -1,5 +1,6 @@
 #include "RenderSystemDLL.h"
 #include "DllHelper.h"
+#include "MemorySystemDLL.h"
 
 RenderPassGuid RenderSystem_LoadRenderPass(const char* jsonPath)
 {
@@ -11,37 +12,6 @@ void RenderSystem_Update(void* windowHandle, const float& deltaTime)
     renderSystem.Update(windowHandle, deltaTime);
 }
 
-//void RenderSystem_Draw(VkCommandBuffer& commandBuffer, RenderPassNodeDLL* renderPassNodeListPtr, size_t renderPassNodeCount)
-//{
-//    Vector<RenderPassNode> renderPassNodeL;
-//    Span<RenderPassNodeDLL> renderPassNodeList = Span<RenderPassNodeDLL>(renderPassNodeListPtr, renderPassNodeCount);
-//    for (auto& renderPassNode : renderPassNodeList)
-//    {
-//        Vector<Vector<VulkanDrawMessage>> vulkanDrawMessageList;
-//        Vector<Vector<VulkanDrawMessageDLL>> renderPassListList = Vector<Vector<VulkanDrawMessageDLL>>(renderPassNode.SubPassDrawMessage, renderPassNode.SubPassDrawMessage + renderPassNode.SubPassDrawMessage_RenderPassCount);
-//        for (int x = 0; x < renderPassListList.size(); x++)
-//        {
-//            Vector<VulkanDrawMessage> vulkanDrawMessage;
-//            Vector<size_t> subPassCountList = Vector<size_t>(renderPassNode.SubPassDrawMessage[x], renderPassNode.SubPassDrawMessage[x] + renderPassNode.SubPassDrawMessage_SubPassCounts[x]);
-//            Vector<VulkanDrawMessageDLL> subPassList = Vector<VulkanDrawMessageDLL>(renderPassListList[x], renderPassListList[x] + subPassCountList[x]);
-//            for (auto& subPass : subPassList)
-//            {
-//                size_t subPassCountList = subPass;
-//
-//            }
-//        }
-//        VulkanDrawMessageDLL** SubPassDrawMessage;
-//
-//        renderPassNodeL.emplace_back(RenderPassNode
-//            {
-//                .RenderPassGuid = renderPassNode.RenderPassGuid,
-//                .SubPassDrawMessage = vulkanDrawMessageList,
-//                .PreRenderPassCmd = DllHelper::ExtractDllFunction<PostRenderPassCmdFunction>(renderPassNode.PreRenderPassCmd),
-//                .PostRenderPassCmd = DllHelper::ExtractDllFunction<PostRenderPassCmdFunction>(renderPassNode.PostRenderPassCmd),
-//                .MipCount = renderPassNode.MipCount
-//            });
-//    }
-//}
 void RenderSystem_Draw(VkCommandBuffer& commandBuffer, RenderPassNodeDLL* renderPassNodeListPtr, size_t renderPassNodeCount)
 {
     if (!renderPassNodeListPtr || renderPassNodeCount == 0) return;
@@ -87,6 +57,26 @@ void RenderSystem_Draw(VkCommandBuffer& commandBuffer, RenderPassNodeDLL* render
         renderPassNodes.emplace_back(std::move(dst));
     }
     renderSystem.Draw(commandBuffer, renderPassNodes);
+}
+
+void RenderSystem_PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid& renderPassTextureGuid)
+{
+    renderSystem.PresentToSwapChain(commandBuffer, renderPassTextureGuid);
+}
+
+VkGuid* RenderSystem_FindRenderPassAttachmentList(const VkGuid& renderPassGuid, uint32* returnTextureCount)
+{
+    Vector<Texture> attachmentList = renderSystem.FindRenderPassAttachmentList(renderPassGuid);
+
+    Vector<VkGuid> attachmentIdList;
+    attachmentIdList.reserve(attachmentList.size());
+    for (auto& attachmentTexture : attachmentList)
+    {
+        attachmentIdList.emplace_back(attachmentTexture.textureGuid);
+    }
+
+    *returnTextureCount = attachmentList.size();
+    return memorySystem.AddPtrBuffer(attachmentIdList.data(), attachmentIdList.size(), __FILE__, __LINE__, __func__);
 }
 
 //const VulkanRenderPass& RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)

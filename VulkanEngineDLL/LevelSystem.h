@@ -131,7 +131,6 @@ public:
 
      void                            LoadLevel(const char* levelPath);
      void                            Update(const float& deltaTime);
-     void                            RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
 
      Vector<RenderPassNode>          CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
      LevelLayout                     GetLevelLayout();

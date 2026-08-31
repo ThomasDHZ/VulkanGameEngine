@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,14 +13,19 @@ namespace VulkanEngineCS
 {
     public unsafe class RenderSystem
     {
+        public Guid HdrRenderPassId { get; } = new Guid();
         public static Guid LoadRenderPass(string jsonPath)
         {
-           return DLLSystem.CallDLLFunc(() => RenderSystem_LoadRenderPass(jsonPath));
+            return DLLSystem.CallDLLFunc(() => RenderSystem_LoadRenderPass(jsonPath));
         }
 
         public static void Update(void* windowHandle, float deltaTime)
         {
             DLLSystem.CallDLLFunc(() => RenderSystem_Update(windowHandle, deltaTime));
+        }
+        public static void PresentToSwapChain(VkCommandBuffer commandBuffer, Guid renderPassTextureGuid)
+        {
+            DLLSystem.CallDLLFunc(() => RenderSystem_PresentToSwapChain(ref commandBuffer, renderPassTextureGuid));
         }
 
         public static unsafe void Draw(VkCommandBuffer commandBuffer, List<RenderPassNode> renderPassNodes)
@@ -95,8 +101,29 @@ namespace VulkanEngineCS
             }
         }
 
+        public static List<Guid> FindRenderPassAttachmentList(Guid renderPassGuid)
+        {
+            Guid* ptrList = RenderSystem_FindRenderPassAttachmentList(renderPassGuid, out uint count);
+            try
+            {
+                List<Guid> attachmentIdList = new List<Guid>();
+                for (int x = 0; x < count; x++)
+                {
+                    ref Guid attachmentId = ref ptrList[x];
+                    attachmentIdList.Add(attachmentId);
+                }
+                return attachmentIdList;
+            }
+            finally
+            {
+                MemorySystem.DeletePtr<Guid>(ptrList);
+            }
+        }
+
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern Guid RenderSystem_LoadRenderPass([MarshalAs(UnmanagedType.LPStr)] string jsonPath);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Update(void* windowHandle, float deltaTime);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_PresentToSwapChain(ref VkCommandBuffer commandBuffer, Guid renderPassTextureGuid);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Draw(ref VkCommandBuffer commandBuffer, RenderPassNodeDLL* renderPassNodeListPtr, size_t renderPassNodeCount);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern Guid* RenderSystem_FindRenderPassAttachmentList(Guid renderPassGuid, out uint returnTextureCount);
     }
 }

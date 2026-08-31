@@ -28,7 +28,6 @@ void SpriteSystem::CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId
             .CurrentFrameTime = 0.0f
         });
     SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
-    spriteInstance = SpriteInstance();
 
     AddSpriteBatchLayer();
     SpriteListDirty = true;
@@ -131,17 +130,16 @@ void SpriteSystem::Update(const float& deltaTime)
 
         sprite.CurrentFrameTime += deltaTime;
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationId);
-        const auto& currentFrame = animation.FrameList[sprite.CurrentFrame];
-        if (sprite.CurrentFrameTime >= animation.FrameHoldTime)
+        if (animation.FrameList.empty()) continue;
+
+        sprite.CurrentFrameTime += deltaTime;
+        if (animation.FrameHoldTime > 0.0f && sprite.CurrentFrameTime >= animation.FrameHoldTime)
         {
-            sprite.CurrentFrame += 1;
             sprite.CurrentFrameTime = 0.0f;
-            if (sprite.CurrentFrame >= animation.FrameList.size())
-            {
-                sprite.CurrentFrame = 0;
-            }
-            spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * currentFrame.x, vram.SpriteUVSize.y * currentFrame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
+            sprite.CurrentFrame = (sprite.CurrentFrame + 1) % (uint32)animation.FrameList.size();
         }
+        const ivec2 frame = animation.FrameList[sprite.CurrentFrame];
+        spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * frame.x, vram.SpriteUVSize.y * frame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
     }
 }
 

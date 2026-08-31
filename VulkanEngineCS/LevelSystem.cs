@@ -22,11 +22,6 @@ namespace VulkanEngineCS
             DLLSystem.CallDLLFunc(() => LevelSystem_Update(deltaTime));
         }
 
-        public static void RenderFrameBuffer(VkCommandBuffer commandBuffer, Guid renderPassId)
-        {
-            DLLSystem.CallDLLFunc(() => LevelSystem_RenderFrameBuffer(ref commandBuffer, renderPassId));
-        }
-
         public static List<RenderPassNode> CreateDrawCommands(VkCommandBuffer commandBuffer, float deltaTime)
         {
             List<RenderPassNode> renderPassNodeList = new List<RenderPassNode>();
@@ -63,7 +58,6 @@ namespace VulkanEngineCS
 
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_RenderFrameBuffer(ref VkCommandBuffer commandBuffer, Guid renderPassId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern RenderPassNodeDLL* LevelSystem_CreateDrawCommands(ref VkCommandBuffer commandBuffer, float deltaTime, out size_t renderPassNodeDllCount);
     }
 }

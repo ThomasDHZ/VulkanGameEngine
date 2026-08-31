@@ -65,7 +65,6 @@ private:
 
     VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader);
-    void                                                    DestoryRenderPassSwapChainTextures(Texture& renderedTextureListPtr, size_t& renderedTextureCount, Texture& depthTexture);
     void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
 public:
@@ -78,6 +77,7 @@ public:
     void                                                    AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
 
     void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
+    void                                                    PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid& renderPassTextureGuid);
     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
     const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
@@ -85,7 +85,7 @@ public:
     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);
     Texture&                                                FindRenderPassAttachment(const TextureGuid& textureGuid);
-    Vector<Texture>&                                        FindRenderedTextureList(const RenderPassGuid& renderPassGuid);
+    Vector<Texture>&                                        FindRenderPassAttachmentList(const RenderPassGuid& renderPassGuid);
 
     bool                                                    FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType);
     bool                                                    RenderPassExists(const VkGuid& renderPassId);

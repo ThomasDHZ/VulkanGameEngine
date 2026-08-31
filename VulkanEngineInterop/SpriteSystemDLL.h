@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	DLL_EXPORT void											 SpriteSystem_Update(const float& deltaTime);
+	DLL_EXPORT void											 SpriteSystem_Update(float deltaTime);
 #ifdef __cplusplus
 }
 #endif
