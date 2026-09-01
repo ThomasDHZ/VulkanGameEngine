@@ -8,6 +8,7 @@
 #include "PushConstantRegistry.h"
 #include "Camera.h"
 #include <algorithm>
+#include "InputSystem.h"
 
 
 LevelSystem& levelSystem = LevelSystem::Get();
@@ -48,9 +49,26 @@ void LevelSystem::LoadLevel(const char* levelPath)
             textureSystem.GenerateTexture(renderPassId);
         }
     }
+    LevelEditorRenderPass(levelPath);
+
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);
     PresentingAttachmentTextureId = VkGuid(temp.c_str());
+}
+
+void LevelSystem::LevelEditorRenderPass(const char* levelPath)
+{
+    nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
+    for (auto& renderPass : json["LevelEditorRenderPass"])
+    {
+        auto a = renderPass.dump();
+        if (!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"]));
+        else
+        {
+            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"]);
+            textureSystem.GenerateTexture(renderPassId);
+        }
+    }
 }
 
 void LevelSystem::Update(const float& deltaTime)

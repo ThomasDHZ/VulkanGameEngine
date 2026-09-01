@@ -113,14 +113,15 @@ public:
     float                                      HeightScale = 0.079f;
     vec3                                       ViewDirection = vec3(-0.037f, -0.062f, 1.0f);
 
-     void                                       LoadLevel(const char* levelPath);
-     void                                       Update(const float& deltaTime);
+    void                                       LoadLevel(const char* levelPath);
+    void                                       LevelEditorRenderPass(const char* levelPath);
+    void                                       Update(const float& deltaTime);
 
-     Vector<RenderPassNode>                     CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
-     LevelLayout                                GetLevelLayout();
-     Vector<LevelLayer>                         GetLevelLayerList();
-     Vector<Vector<uint>>                       GetLevelTileMapList();
-     Vector<LevelTileSet>                       GetLevelTileSetList();
+    Vector<RenderPassNode>                     CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
+    LevelLayout                                GetLevelLayout();
+    Vector<LevelLayer>                         GetLevelLayerList();
+    Vector<Vector<uint>>                       GetLevelTileMapList();
+    Vector<LevelTileSet>                       GetLevelTileSetList();
 };
 extern  LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()

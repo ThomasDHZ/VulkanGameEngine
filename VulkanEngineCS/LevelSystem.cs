@@ -21,6 +21,10 @@ namespace VulkanEngineCS
         {
             DLLSystem.CallDLLFunc(() => LevelSystem_Update(deltaTime));
         }
+        public static void LevelEditorRenderPass(string levelPath)
+        {
+            DLLSystem.CallDLLFunc(() => LevelSystem_LevelEditorRenderPass(levelPath));
+        }
 
         public static List<RenderPassNode> CreateDrawCommands(VkCommandBuffer commandBuffer, float deltaTime)
         {
@@ -57,7 +61,8 @@ namespace VulkanEngineCS
         }
 
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_Update(float deltaTime); 
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_LevelEditorRenderPass([MarshalAs(UnmanagedType.LPStr)] string levelPath);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern RenderPassNodeDLL* LevelSystem_CreateDrawCommands(ref VkCommandBuffer commandBuffer, float deltaTime, out size_t renderPassNodeDllCount);
     }
 }

@@ -5,39 +5,51 @@
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
-    "IsRenderedToSwapchain": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": true
   },
-  "SubPasses": [
+  "ShaderList": [
+    {
+      "ShaderId": "7ae0296e-0ea3-4235-90d4-3327bfd50300",
+      "ShaderFile": "Shaders/GameObjectPickerVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "19662536-6958-44de-b9c6-2ecc1fa931da",
+      "ShaderFile": "Shaders/GameObjectPickerFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/ObjectPickerPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "f1cc6e98-1874-49eb-812b-950d0f5f4cdb",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "766fdbb9-67c5-4ff0-af29-04f55afc7717"
+        }
+      ]
+    }
+  ],
+  "SubPassList": [
     [
       {
-        "PipelinePackage": {
-          "PipelinePackageId": "f1cc6e98-1874-49eb-812b-950d0f5f4cdb",
-          "Pipelines": [
-            {
-              "PipelineType": 0,
-              "Pipeline": "Pipelines/ObjectPickerPipeline.json"
-            }
-          ]
-        },
-        "MeshType": 5,
+        "MeshType": 2,
+        "PipelinePackageId": "f1cc6e98-1874-49eb-812b-950d0f5f4cdb",
         "ShaderPushConstant": null,
-        "PushConstantUpdates": [],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false
       }
     ]
   ],
-  "UseGlobalBindlessSet": true,
-  "UseVkMultiview": false,
-  "IsRenderedToSwapchain": false,
-  "RenderAsCubemap": false,
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name" "",
+      "Name": "GameObjectPickerRenderPassAttachment",
       "RenderedTextureId": "7047804f-d32e-4cb5-ba95-90783b28d1df",
       "MipMapCount": 1,
       "TextureType": 4,

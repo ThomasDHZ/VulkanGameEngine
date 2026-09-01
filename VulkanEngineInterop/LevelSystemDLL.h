@@ -47,7 +47,7 @@ extern "C" {
 #endif
     DLL_EXPORT void                           LevelSystem_LoadLevel(const char* levelPath);
     DLL_EXPORT void                           LevelSystem_Update(const float& deltaTime);
-    DLL_EXPORT void                           LevelSystem_RenderFrameBuffer(VkCommandBuffer& commandBuffer, VkGuid& renderPassId);
+    DLL_EXPORT void                           LevelSystem_LevelEditorRenderPass(const char* levelPath);
     DLL_EXPORT RenderPassNodeDLL*             LevelSystem_CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount);
 #ifdef __cplusplus
 }
