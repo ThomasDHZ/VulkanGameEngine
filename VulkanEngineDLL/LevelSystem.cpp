@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include <algorithm>
 
+
 LevelSystem& levelSystem = LevelSystem::Get();
 
 void LevelSystem::LoadLevel(const char* levelPath)
@@ -37,19 +38,19 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 
-    brdfRenderPassId                   = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json");
-    environmentToCubeMapRenderPassId   = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json");
-    irradianceMapRenderPassId          = renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json");
-    prefilterMapRenderPassId           = renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json");
-    gBufferRenderPassId                = renderSystem.LoadRenderPass("RenderPass/GBufferRenderPass.json");
-    hdrRenderPassId                    = renderSystem.LoadRenderPass("RenderPass/HdrRenderPass.json");
-    //textRenderPassId                 = renderSystem.LoadRenderPass("RenderPass/TextRenderPass.json");
-    //objectPickerRenderPassId         = renderSystem.LoadRenderPass("RenderPass/ObjectPickerRenderPass.json");
-    //selectedObjectPickerRenderPassId = renderSystem.LoadRenderPass("RenderPass/SelectedGameObjectPickerRenderPass.json");
-
-    textureSystem.GenerateTexture(brdfRenderPassId);
-    textureSystem.GenerateTexture(environmentToCubeMapRenderPassId);
-    //shaderSystem.LoadShaderPipelineStructPrototypes(json["LoadRenderPasses"]);
+    for (auto& renderPass : json["MainRenderPassList"])
+    {
+        auto a = renderPass.dump();
+        if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"]));
+        else
+        {
+            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"]);
+            textureSystem.GenerateTexture(renderPassId);
+        }
+    }
+    std::string temp;
+    json["PresentingAttachmentTextureId"].get_to(temp);
+    PresentingAttachmentTextureId = VkGuid(temp.c_str());
 }
 
 void LevelSystem::Update(const float& deltaTime)
@@ -70,16 +71,8 @@ void LevelSystem::Update(const float& deltaTime)
 
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
-    Vector<VkGuid> renderPassesToDraw
-    {
-        irradianceMapRenderPassId,
-        prefilterMapRenderPassId,
-        gBufferRenderPassId,
-        hdrRenderPassId
-    };
-
     Vector<RenderPassNode> renderPassNodeList;
-    for (auto& renderPassGuid : renderPassesToDraw)
+    for (auto& renderPassGuid : RenderPassDrawList)
     {
         const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassGuid);
 

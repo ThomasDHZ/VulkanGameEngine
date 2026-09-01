@@ -86,6 +86,7 @@ private:
     LevelSystem(LevelSystem&&) = delete;
     LevelSystem& operator=(LevelSystem&&) = delete;
 
+    Vector<VkGuid>                             RenderPassDrawList;
     bool                                       WireframeModeFlag = false;
 
     LevelLayer                                 LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
@@ -94,11 +95,11 @@ private:
     LevelTileSet                               LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture);
     void                                       LoadTileSets(const char* tileSetPath, LevelTileSet& levelTileSet);
     LevelLayout                                LoadLevelInfo(const char* levelLayoutPath);
-    Vector<Vector<uint>>                       LoadLevelLayout(const String& levelLayoutPath);
     void                                       LoadLevelMesh(VkGuid& tileSetId);
     void                                       LoadSkyBox();
 
 public:
+    VkGuid                                     PresentingAttachmentTextureId;
     LevelLayout                                levelLayout;
     Vector<LevelLayer>                         LevelLayerList;
     Vector<Vector<uint>>                       LevelTileMapList;
@@ -111,32 +112,15 @@ public:
     int                                        UseHeightMap = 1;
     float                                      HeightScale = 0.079f;
     vec3                                       ViewDirection = vec3(-0.037f, -0.062f, 1.0f);
-    RenderPassGuid                             environmentToCubeMapRenderPassId;
-    RenderPassGuid                             brdfRenderPassId;
-    RenderPassGuid                             irradianceMapRenderPassId;
-    RenderPassGuid                             prefilterMapRenderPassId;
-    RenderPassGuid                             gBufferRenderPassId;
-    RenderPassGuid                             verticalGaussianBlurRenderPassId;
-    RenderPassGuid                             horizontalGaussianBlurRenderPassId;
-    RenderPassGuid                             bloomRenderPassId;
-    RenderPassGuid                             hdrRenderPassId;
-    RenderPassGuid                             textRenderPassId;
-    RenderPassGuid                             frameBufferId;
-    RenderPassGuid                             shadowDebugRenderPassId;
 
-    RenderPassGuid                             levelWireFrameRenderPass2DId;
-    RenderPassGuid                             spriteWireFrameRenderPass2DId;
-    RenderPassGuid                             objectPickerRenderPassId;
-    RenderPassGuid                             selectedObjectPickerRenderPassId;
+     void                                       LoadLevel(const char* levelPath);
+     void                                       Update(const float& deltaTime);
 
-     void                            LoadLevel(const char* levelPath);
-     void                            Update(const float& deltaTime);
-
-     Vector<RenderPassNode>          CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
-     LevelLayout                     GetLevelLayout();
-     Vector<LevelLayer>              GetLevelLayerList();
-     Vector<Vector<uint>>            GetLevelTileMapList();
-     Vector<LevelTileSet>            GetLevelTileSetList();
+     Vector<RenderPassNode>                     CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
+     LevelLayout                                GetLevelLayout();
+     Vector<LevelLayer>                         GetLevelLayerList();
+     Vector<Vector<uint>>                       GetLevelTileMapList();
+     Vector<LevelTileSet>                       GetLevelTileSetList();
 };
 extern  LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()

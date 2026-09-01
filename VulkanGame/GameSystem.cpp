@@ -207,8 +207,6 @@ void GameSystem::DebugUpdate(float deltaTime)
 
 void GameSystem::Draw(float deltaTime)
 {
-    VkGuid renderTextureId = renderSystem.FindRenderPassAttachmentList(levelSystem.hdrRenderPassId).front().textureGuid;
-
     VkCommandBuffer commandBuffer = vulkan.Swapchain().StartFrame();
     if (commandBuffer == VK_NULL_HANDLE)
     {
@@ -217,7 +215,7 @@ void GameSystem::Draw(float deltaTime)
     }
     Vector<RenderPassNode> renderNodes = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
     renderSystem.Draw(commandBuffer, renderNodes);
-    renderSystem.PresentToSwapChain(commandBuffer, renderTextureId);
+    renderSystem.PresentToSwapChain(commandBuffer, levelSystem.PresentingAttachmentTextureId);
     imGuiSystem.Draw(commandBuffer);
     vulkan.Swapchain().EndFrame(commandBuffer);
 }

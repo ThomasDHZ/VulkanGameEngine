@@ -43,7 +43,6 @@ class RenderSystem
 {
 public:
     static RenderSystem& Get();
-    friend class MaterialBakerSystem;
 
 private:
     RenderSystem() = default;

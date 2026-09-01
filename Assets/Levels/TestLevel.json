@@ -12,18 +12,42 @@
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
   ],
-  "LoadRenderPasses": [
-    "RenderPass/BRDFRenderPass.json",
-    "RenderPass/IrradianceRenderPass.json",
-    "RenderPass/PrefilterRenderPass.json",
-    "RenderPass/GBufferRenderPass.json",
-    "RenderPass/GBufferLightingRenderPass.json",
-    "RenderPass/VertGaussianBlurRenderPass.json",
-    "RenderPass/HorizontalGaussianBlurRenderPass.json",
-    "RenderPass/BloomRenderPass.json",
-    "RenderPass/HdrRenderPass.json",
-    "RenderPass/FrameBufferRenderPass.json",
-    "RenderPass/SelectedGameObjectPickerRenderPass.json"
+  "PresentingAttachmentTextureId": "de6ca646-874f-4986-9daf-912dbc3aa7d0",
+  "MainRenderPassList": [
+    {
+      "RenderPass": "RenderPass/BRDFRenderPass.json",
+      "OneTimeDraw": true
+    },
+    {
+      "RenderPass": "RenderPass/EnvironmentToCubeMapRenderPass.json",
+      "OneTimeDraw": true
+    },
+    {
+      "RenderPass": "RenderPass/IrradianceRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
+      "RenderPass": "RenderPass/PrefilterRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
+      "RenderPass": "RenderPass/GBufferRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
+      "RenderPass": "RenderPass/HdrRenderPass.json",
+      "OneTimeDraw": false
+    }
+  ],
+  "LevelEditorRenderPass": [
+    {
+      "RenderPass": "RenderPass/ObjectPickerRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
+      "RenderPass": "RenderPass/SelectedGameObjectPickerRenderPass.json",
+      "OneTimeDraw": false
+    }
   ],
   "LoadGameObjects": [
     "GameObjects/TestGameObject.json",
