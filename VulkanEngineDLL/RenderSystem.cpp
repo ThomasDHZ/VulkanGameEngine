@@ -385,71 +385,86 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
 {
     Texture* texture = &FindRenderPassAttachment(textureGuid);
     if (!texture || texture->texture.TextureImage() == VK_NULL_HANDLE)
-    {
-        std::cout << "[SamplePixel] Texture not found" << std::endl;
-        return UINT32_MAX;
-    }
+        return 0;
 
-    int x = std::clamp(mousePosition.x, 0, texture->texture.TextureSize().x - 1);
-    int y = std::clamp(mousePosition.y, 0, texture->texture.TextureSize().y - 1);
+    const int w = texture->texture.TextureSize().x;
+    const int h = texture->texture.TextureSize().y;
+    const int x = std::clamp(mousePosition.x, 0, w - 1);
+    const int y = std::clamp(mousePosition.y, 0, h - 1);
 
-    VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
-    VkImageMemoryBarrier barrier =
-    {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT,
-        .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-        .oldLayout = texture->texture.TextureImageLayout(),
-        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = texture->texture.TextureImage(),
-        .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
-    };
-    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    const VkImageLayout oldLayout = texture->texture.TextureImageLayout();
 
-    VkDeviceSize bufferSize = static_cast<VkDeviceSize>(texture->texture.TextureSize().x) * texture->texture.TextureSize().y * 4;
-    VkBufferCreateInfo bufferInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = bufferSize,
-        .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
-    };
+    // 1) GPU must finish the pass that WROTE this image
+    vkDeviceWaitIdle(vulkan.LogicalDevice());
 
-    VmaAllocationCreateInfo allocInfo =
-    {
-        .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
-        .usage = VMA_MEMORY_USAGE_AUTO
-    };
-
-    VmaAllocationInfo allocOut = {};
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingAlloc = VK_NULL_HANDLE;
-    if (vmaCreateBuffer(bufferSystem.VmaAllocatorHandle(), &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
-    {
-        std::cout << "[SamplePixel] Failed to create staging buffer" << std::endl;
-        vulkan.CommandBuffer().EndSingleUseCommand(cmd);
-        return UINT32_MAX;
-    }
+    VmaAllocationInfo allocOut{};
 
-    VkBufferImageCopy region = {
-        .bufferOffset = 0,
-        .bufferRowLength = 0,
-        .bufferImageHeight = 0,
-        .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 },
-        .imageOffset = { 0, 0, 0 },
-        .imageExtent = { static_cast<uint32>(texture->texture.TextureSize().x), static_cast<uint32>(texture->texture.TextureSize().y), 1 }
-    };
-    vkCmdCopyImageToBuffer(cmd, texture->texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+    VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    bufferInfo.size = 4;
+    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    VmaAllocationCreateInfo allocInfo{};
+    allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
+        | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+    if (vmaCreateBuffer(bufferSystem.VmaAllocatorHandle(), &bufferInfo, &allocInfo,
+        &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
+        return 0;
+
+    VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
+
+    VkImageMemoryBarrier toSrc{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    toSrc.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        | VK_ACCESS_SHADER_WRITE_BIT
+        | VK_ACCESS_SHADER_READ_BIT;
+    toSrc.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    toSrc.oldLayout = oldLayout;
+    toSrc.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    toSrc.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    toSrc.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    toSrc.image = texture->texture.TextureImage();
+    toSrc.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+    vkCmdPipelineBarrier(cmd,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &toSrc);
+
+    VkBufferImageCopy region{};
+    region.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+    region.imageOffset = { x, y, 0 };
+    region.imageExtent = { 1, 1, 1 };
+
+    vkCmdCopyImageToBuffer(cmd,
+        texture->texture.TextureImage(),
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        stagingBuffer, 1, &region);
+
+    VkImageMemoryBarrier toOld = toSrc;
+    toOld.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    toOld.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        | VK_ACCESS_SHADER_READ_BIT;
+    toOld.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    toOld.newLayout = oldLayout;
+
+    vkCmdPipelineBarrier(cmd,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &toOld);
 
     vulkan.CommandBuffer().EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkan.LogicalDevice());
 
-    const uint32* pData = static_cast<const uint32*>(allocOut.pMappedData);
-    uint32 pickedId = pData[y * texture->texture.TextureSize().x + x];
+    vmaInvalidateAllocation(bufferSystem.VmaAllocatorHandle(),
+        stagingAlloc, 0, VK_WHOLE_SIZE);
 
+    const uint32 pickedId = *static_cast<const uint32*>(allocOut.pMappedData);
     vmaDestroyBuffer(bufferSystem.VmaAllocatorHandle(), stagingBuffer, stagingAlloc);
-
     return pickedId;
 }
 

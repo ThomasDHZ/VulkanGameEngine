@@ -59,9 +59,9 @@ void RenderSystem_Draw(VkCommandBuffer& commandBuffer, RenderPassNodeDLL* render
     renderSystem.Draw(commandBuffer, renderPassNodes);
 }
 
-void RenderSystem_PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid& renderPassTextureGuid)
+void RenderSystem_PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid* renderPassTextureGuid)
 {
-    renderSystem.PresentToSwapChain(commandBuffer, renderPassTextureGuid);
+    renderSystem.PresentToSwapChain(commandBuffer, *renderPassTextureGuid);
 }
 
 VkGuid* RenderSystem_FindRenderPassAttachmentList(const VkGuid& renderPassGuid, uint32* returnTextureCount)
@@ -79,27 +79,14 @@ VkGuid* RenderSystem_FindRenderPassAttachmentList(const VkGuid& renderPassGuid, 
     return memorySystem.AddPtrBuffer(attachmentIdList.data(), attachmentIdList.size(), __FILE__, __LINE__, __func__);
 }
 
-//const VulkanRenderPass& RenderSystem_FindRenderPass(const RenderPassGuid& renderPassGuid)
-//{
-//    // TODO: insert return statement here
-//}
-//
-//const VulkanPipelinePackage& RenderSystem_FindPipelinePackage(const VkGuid& pipelinePackageGuid)
-//{
-//    // TODO: insert return statement here
-//}
-//
-//const VulkanPipeline& RenderSystem_FindRenderPipeline(const VkGuid& pipelineGuid)
-//{
-//    // TODO: insert return statement here
-//}
-//
-//bool RenderSystem_FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineType pipelineType)
-//{
-//    return false;
-//}
-//
-//uint32 RenderSystem_SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
-//{
-//    return uint32();
-//}
+uint32 RenderSystem_SampleRenderPassPixel(const VkGuid& attachmentGuid, ivec2 mousePosition)
+{
+    return renderSystem.SampleRenderPassPixel(attachmentGuid, mousePosition);
+}
+
+void RenderSystem_GetAttachmentSize(const VkGuid& attachmentGuid, int* outX, int* outY)
+{
+    ivec2 size = renderSystem.FindRenderPassAttachment(attachmentGuid).texture.TextureSize();
+    *outX = size.x;
+    *outY = size.y;
+}

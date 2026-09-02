@@ -6,7 +6,8 @@
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": true,
     "RenderAsCubemap": true,
-    "UseDefaultRenderResolution": false
+    "UseDefaultRenderResolution": false,
+    "UseFrameBufferResolution": false
   },
   "ShaderList": [
     {

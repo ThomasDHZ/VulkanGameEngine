@@ -97,10 +97,10 @@ namespace nlohmann
             if (color.contains("Float32_1")) color.at("Float32_1").get_to(clearValue.color.float32[1]);
             if (color.contains("Float32_2")) color.at("Float32_2").get_to(clearValue.color.float32[2]);
             if (color.contains("Float32_3")) color.at("Float32_3").get_to(clearValue.color.float32[3]);
-            if (color.contains("Uint32_1"))  color.at("Uint32_0").get_to(clearValue.color.uint32[0]);
-            if (color.contains("Uint32_2"))  color.at("Uint32_1").get_to(clearValue.color.uint32[1]);
-            if (color.contains("Uint32_3"))  color.at("Uint32_2").get_to(clearValue.color.uint32[2]);
-            if (color.contains("Uint32_4"))  color.at("Uint32_3").get_to(clearValue.color.uint32[3]);
+            if (color.contains("Uint32_0")) color.at("Uint32_0").get_to(clearValue.color.uint32[0]);
+            if (color.contains("Uint32_1")) color.at("Uint32_1").get_to(clearValue.color.uint32[1]);
+            if (color.contains("Uint32_2")) color.at("Uint32_2").get_to(clearValue.color.uint32[2]);
+            if (color.contains("Uint32_3")) color.at("Uint32_3").get_to(clearValue.color.uint32[3]);
         }
         else if (j.contains("DepthStencil")) 
         {
@@ -354,6 +354,7 @@ namespace nlohmann
         j["RenderFlags"].at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);
         j["RenderFlags"].at("UseVkMultiview").get_to(model.UseVkMultiview);
         j["RenderFlags"].at("RenderAsCubemap").get_to(model.RenderAsCubemap);
+        j["RenderFlags"].at("UseFrameBufferResolution").get_to(model.UseFrameBufferResolution);
         model.RenderPassResolution = model.UseDefaultRenderResolution ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         j.at("AttachmentList").get_to(model.AttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);

@@ -35,3 +35,10 @@ void VulkanSystem_EndFrame(VkCommandBuffer& commandBuffer)
 //{
 //    vulkan.Destroy();
 //}
+
+void VulkanSystem_GetSwapChainSize(int* outX, int* outY)
+{
+	VkExtent2D size = vulkan.SwapChainResolution();
+	*outX = size.width;
+	*outY = size.height;
+}
