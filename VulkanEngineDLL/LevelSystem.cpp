@@ -49,7 +49,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
             textureSystem.GenerateTexture(renderPassId);
         }
     }
-   // LevelEditorRenderPass(levelPath);
+    LevelEditorRenderPass(levelPath);
 
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);

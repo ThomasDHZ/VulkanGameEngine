@@ -154,6 +154,7 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
     }
     if (size.x == 0 || size.y == 0) return;
 
+    int x = 0;
     vkDeviceWaitIdle(vulkan.LogicalDevice());
     vulkan.Swapchain().RebuildSwapChain(windowHandle);
     for (auto& [id, renderPass] : RenderPassMap)
@@ -163,15 +164,20 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 
         auto attachmentIt = RenderAttachmentMap.find(renderPass.RenderPassId());
         if (attachmentIt == RenderAttachmentMap.end())
+        {
+            x++;
             continue;
-
+        }
         const bool attachmentsRebuilt = renderPass.RenderPassResolution() != resolutionBeforeRebuild ||
             (!renderPass.AttachmentList().empty() &&
              (renderPass.AttachmentList()[0].TextureSize().x != resolutionBeforeRebuild.x ||
               renderPass.AttachmentList()[0].TextureSize().y != resolutionBeforeRebuild.y));
 
         if (!attachmentsRebuilt)
+        {
+            x++;
             continue;
+        }
 
         Vector<Texture>& renderedTextures = attachmentIt->second;
         const size_t attachmentCount = std::min(renderedTextures.size(), renderPass.AttachmentList().size());
@@ -181,6 +187,7 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
             const uint32 binding = renderedTextures[x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap ? memoryPoolSystem.CubeMapDescriptorBinding: memoryPoolSystem.Texture2DBinding;
             memoryPoolSystem.UpdateTextureDescriptorSet(renderedTextures[x].gpuTextureBufferIndex, renderedTextures[x].texture, binding);
         }
+        x++;
     }
     imGuiSystem.RebuildSwapChain();
     vulkan.ResetFramebufferResized();
@@ -334,6 +341,10 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
 {
     for (auto& renderPassNode : renderPassNodeList)
     {
+        if (renderPassNode.RenderPassGuid == VkGuid("40183518-063f-449b-8a0a-4cef7938958c"))
+        {
+            int a = 34;
+        }
         VulkanRenderPass renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
         uint32 mipCount = std::max(1u, renderPassNode.MipCount);
