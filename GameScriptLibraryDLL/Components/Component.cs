@@ -11,7 +11,7 @@ using static GameScriptLibraryDLL.GameObjects.GameObjectVariableDLL;
 
 namespace GameScriptLibraryDLL.Components
 {
-    public enum ComponentTypeEnum : uint
+    public enum ComponentTypeEnum : UInt64
     {
         kInputComponent,
         kSpriteComponent,
@@ -21,8 +21,9 @@ namespace GameScriptLibraryDLL.Components
         kDirectionalLightComponent,
         kPointLightComponent,
         kDebugObjectComponent,
+        kCollisionComponent,
         kEndOfEnum
-    }
+    };
 
     public unsafe class Component
     {

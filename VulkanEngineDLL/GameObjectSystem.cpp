@@ -10,11 +10,11 @@
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
-void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
+void GameObjectSystem::LoadGameObjectTemplete(const Vector<String>& gameObjectJsonList)
 {
     Vector<String> uniqueJsonSet;
     std::unordered_set<String> seen;
-    std::for_each(gameObjectJson.begin(), gameObjectJson.end(),
+    std::for_each(gameObjectJsonList.begin(), gameObjectJsonList.end(),
         [&](const String& str)
         {
             if (!str.empty() && seen.insert(str).second)
@@ -25,63 +25,70 @@ void GameObjectSystem::LoadGameObjectTempletes(Vector<String>& gameObjectJson)
 
     for (const auto& jsonString : uniqueJsonSet)
     {
-        nlohmann::json json = fileSystem.LoadJsonFile(jsonString.c_str());
-        GameObject gameObject = GameObject
-        {
-            .GameObjectType = json["GameObjectType"]
-        };
+        LoadGameObjectTemplete(jsonString);
+    }
+}
 
-            GameObjectStruct gameObjectStruct;
-            if (json.contains("GameObjectVariableStruct"))
+void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
+{
+    nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
+    if (GameObjectComponentTempleteMap.contains(json["GameObjectType"])) return;
+
+    GameObject gameObject = GameObject
+    {
+        .GameObjectType = json["GameObjectType"]
+    };
+
+    GameObjectStruct gameObjectStruct;
+    if (json.contains("GameObjectVariableStruct"))
+    {
+        for (auto& gameObjectVar : json["GameObjectVariableStruct"])
+        {
+            gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]] = GameObjectVariable
             {
-                for (auto& gameObjectVar : json["GameObjectVariableStruct"])
-                {
-                    gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]] = GameObjectVariable
-                    {
-                        .VariableName = gameObjectVar["VariableName"],
-                        .MemberTypeEnum = gameObjectVar["MemberTypeEnum"],
-                        .VariableByteSize = gameObjectVar["VariableByteSize"].get<size_t>(),
-                        .ConstVariable = gameObjectVar["ConstVariable"]
-                    };
+                .VariableName = gameObjectVar["VariableName"],
+                .MemberTypeEnum = gameObjectVar["MemberTypeEnum"],
+                .VariableByteSize = gameObjectVar["VariableByteSize"].get<size_t>(),
+                .ConstVariable = gameObjectVar["ConstVariable"]
+            };
 
-                    if (!gameObjectVar.is_null())
-                    {
-                        float value = gameObjectVar["Value"].get<float>();
-                        gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].Value.resize(gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].VariableByteSize);
-                        std::memcpy(gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].Value.data(), &value, sizeof(float));
-                    }
-                }
-            }
-            GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
-
-        if (json.contains("GameObjectMaterial")) materialSystem.LoadMaterial(json["GameObjectMaterial"]);
-        if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
-        if (json.contains("GameObjectDLLType"))
-        {
-            String dllType = json["GameObjectDLLType"].get<String>();
-            if (!GameObjectBehaviorExists(gameObject.GameObjectType)) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(configSystem.GameScriptLibraryDLL, dllType);
-
-        }
-        else if (json.contains("GameObjectLuaScript"))
-        {
-            String luaPath = json["GameObjectLuaScript"].get<String>();
-            if (fileSystem.GetFileExtention(luaPath.c_str()) == "lua")
+            if (!gameObjectVar.is_null())
             {
-                //luaScriptingSystem.CreateEntityFromScript(luaPath, "asdfad");
+                float value = gameObjectVar["Value"].get<float>();
+                gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].Value.resize(gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].VariableByteSize);
+                std::memcpy(gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]].Value.data(), &value, sizeof(float));
             }
         }
+    }
+    GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
 
-        const auto& componentList = json["GameObjectComponentList"];
-        if (componentList.is_array())
+    if (json.contains("GameObjectMaterial")) materialSystem.LoadMaterial(json["GameObjectMaterial"]);
+    if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
+    if (json.contains("GameObjectDLLType"))
+    {
+        String dllType = json["GameObjectDLLType"].get<String>();
+        if (!GameObjectBehaviorExists(gameObject.GameObjectType)) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(configSystem.GameScriptLibraryDLL, dllType);
+
+    }
+    else if (json.contains("GameObjectLuaScript"))
+    {
+        String luaPath = json["GameObjectLuaScript"].get<String>();
+        if (fileSystem.GetFileExtention(luaPath.c_str()) == "lua")
         {
-            GameObjectComponentTempleteMap[gameObject.GameObjectType] = componentList;
+            //luaScriptingSystem.CreateEntityFromScript(luaPath, "asdfad");
         }
-        else if (componentList.is_object())
-        {
-            nlohmann::json wrappedArray = nlohmann::json::array();
-            wrappedArray.push_back(componentList);
-            GameObjectComponentTempleteMap[gameObject.GameObjectType] = wrappedArray;
-        }
+    }
+
+    const auto& componentList = json["GameObjectComponentList"];
+    if (componentList.is_array())
+    {
+        GameObjectComponentTempleteMap[gameObject.GameObjectType] = componentList;
+    }
+    else if (componentList.is_object())
+    {
+        nlohmann::json wrappedArray = nlohmann::json::array();
+        wrappedArray.push_back(componentList);
+        GameObjectComponentTempleteMap[gameObject.GameObjectType] = wrappedArray;
     }
 }
 
@@ -103,6 +110,7 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
     entt::entity gameObjectEntity = EntityRegistry.create();
     GameObject& gameObject = EntityRegistry.emplace<GameObject>(gameObjectEntity, GameObject
         {
+            .GameObjectId = static_cast<uint32>(gameObjectEntity),
             .GameObjectPtr = 0,
             .GameObjectType = gameObjectType,
             .GameObjectAlive = true
@@ -174,6 +182,7 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
         default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
         }
     }
+
     if (GameObjectBehaviorMap.contains(gameObject.GameObjectType) &&
         gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject)
     {

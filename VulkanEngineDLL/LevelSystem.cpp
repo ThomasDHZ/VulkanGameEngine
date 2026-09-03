@@ -32,7 +32,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     {
         gameObjectTempleteList.emplace_back(json["LoadGameObjects"][x]);
     }
-    gameObjectSystem.LoadGameObjectTempletes(gameObjectTempleteList);
+    gameObjectSystem.LoadGameObjectTemplete(gameObjectTempleteList);
     gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
 
     LoadSkyBox();
@@ -49,7 +49,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
             textureSystem.GenerateTexture(renderPassId);
         }
     }
-    LevelEditorRenderPass(levelPath);
+   // LevelEditorRenderPass(levelPath);
 
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);

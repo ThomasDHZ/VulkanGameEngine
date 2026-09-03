@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BufferSystemDLL.cpp" />
+    <ClCompile Include="CameraSystemDLL.cpp" />
     <ClCompile Include="CollisionSystemDLL.cpp" />
     <ClCompile Include="CSharpScriptSystemDLL.cpp" />
     <ClCompile Include="DllHelper.cpp" />
@@ -38,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BufferSystemDLL.h" />
+    <ClInclude Include="CameraSystemDLL.h" />
     <ClInclude Include="CollisionSystemDLL.h" />
     <ClInclude Include="CSharpScriptSystemDLL.h" />
     <ClInclude Include="DLL.h" />

@@ -115,6 +115,7 @@ struct GameObjectStruct
 
 struct DebugObjectComponent
 {
+    int a = 0;
 };
 
 typedef entt::registry GameObjectRegistry;
@@ -139,7 +140,8 @@ private:
 public:
     GameObjectRegistry                                      EntityRegistry;
 
-     void                                         LoadGameObjectTempletes(Vector<String>& gameObjectJson);
+     void                                         LoadGameObjectTemplete(const String& gameObjectJson);
+     void                                         LoadGameObjectTemplete(const Vector<String>& gameObjectJsonList);
      void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
      entt::entity                                 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
 

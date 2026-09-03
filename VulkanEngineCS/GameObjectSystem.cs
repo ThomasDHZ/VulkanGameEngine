@@ -1,4 +1,5 @@
-﻿using GameScriptLibraryDLL.GameObjects;
+﻿using GameScriptLibraryDLL.Components;
+using GameScriptLibraryDLL.GameObjects;
 using GlmSharp;
 using System;
 using System.Collections.Generic;
@@ -38,20 +39,6 @@ namespace VulkanEngineCS
         kGameObjectEnemy
     };
 
-    public enum ComponentTypeEnum : UInt64
-    {
-        kInputComponent,
-        kSpriteComponent,
-        kTransform2DComponent,
-        kTransform3DComponent,
-        kCameraFollowComponent,
-        kDirectionalLightComponent,
-        kPointLightComponent,
-        kDebugObjectComponent,
-        kCollisionComponent,
-        kEndOfEnum
-    };
-
     public unsafe struct GameObjectVariableDLL
     {
         String VariableName;
@@ -64,6 +51,17 @@ namespace VulkanEngineCS
         {
         }
     };
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GameObjecLevelEditor
+    {
+        public uint ParentGameObjectId;
+        public uint GameObjectId;
+        public IntPtr GameObjectPtr;
+        public GameObjectTypeEnum GameObjectType;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool GameObjectAlive;
+    }
 
     public unsafe class GameObjectSystem
     {
@@ -82,11 +80,11 @@ namespace VulkanEngineCS
         //    return DLLSystem.CallDLLFunc(() => GameObjectSystem_GetGameObjectVariables(gameObjectId, gameObjectPosition, parentGameObjectId));
         //}
 
-        public static unsafe GameObject* GetGameObjectPtr(uint gameObjectId)
+        public static unsafe GameObjecLevelEditor* GetGameObjectPtr(uint gameObjectId)
         {
             IntPtr ptr = DLLSystem.CallDLLFunc(() => GameObjectSystem_GetGameObjectPtr(gameObjectId));
             if (ptr == IntPtr.Zero) return null;
-            return (GameObject*)ptr;
+            return (GameObjecLevelEditor*)ptr;
         }
 
         public static IntPtr GetGameObjectComponentPtr(uint gameObjectId, ComponentTypeEnum componentType)
@@ -99,20 +97,24 @@ namespace VulkanEngineCS
             return ptr;
         }
 
-        public static unsafe List<GameObject> GetGameObjectList()
+        public static unsafe List<GameObjecLevelEditor> GetGameObjectList()
         {
             try
             {
-                IntPtr ptr = GameObjectSystem_GetGameObjectList(out size_t count);
-                if (ptr == IntPtr.Zero || count == 0) return new List<GameObject>();
-
-                GameObject** list = (GameObject**)ptr;
-                var result = new List<GameObject>((int)count);
-                for (int x = 0; x < (int)count; x++)
+                IntPtr ptr = GameObjectSystem_GetGameObjectList(out nuint count);
+                if (ptr == IntPtr.Zero || count == 0)
                 {
-                    GameObject* goPtr = list[x];
-                    if (goPtr != null) result.Add(*goPtr); 
+                    return new List<GameObjecLevelEditor>();
                 }
+
+                var list = (GameObjecLevelEditor*)ptr;
+                var result = new List<GameObjecLevelEditor>((int)count);
+                for (int i = 0; i < (int)count; i++)
+                {
+                    result.Add(list[i]);
+                }
+
+                MemorySystem.DeletePtr((GameObjecLevelEditor*)ptr.ToPointer());
                 return result;
             }
             catch (Exception ex)
@@ -137,6 +139,17 @@ namespace VulkanEngineCS
             return DLLSystem.CallDLLFunc(() => GameObjectSystem_UpdateGameObjectComponent(gameObjectId, componentType));
         }
 
+        public static unsafe ref T UpdateGameObjectComponent<T>(uint gameObjectId, ComponentTypeEnum componentType) where T : unmanaged
+        {
+            IntPtr ptr = DLLSystem.CallDLLFunc(() =>
+                GameObjectSystem_UpdateGameObjectComponent(gameObjectId, componentType));
+
+            if (ptr == IntPtr.Zero)
+                throw new InvalidOperationException($"No {typeof(T).Name} on {gameObjectId}");
+
+            return ref *(T*)ptr;
+        }
+
         public static List<ComponentTypeEnum> GetGameObjectComponentList(uint gameObjectId)
         {
             try
@@ -159,7 +172,7 @@ namespace VulkanEngineCS
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_GetGameObjectList(out size_t returnCount);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_UpdateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern ComponentTypeEnum* GameObjectSystem_GetGameObjectComponentList(size_t gameObjectId, out size_t returnCount);
     }
 }

@@ -341,10 +341,6 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
 {
     for (auto& renderPassNode : renderPassNodeList)
     {
-        if (renderPassNode.RenderPassGuid == VkGuid("40183518-063f-449b-8a0a-4cef7938958c"))
-        {
-            int a = 34;
-        }
         VulkanRenderPass renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
 
         uint32 mipCount = std::max(1u, renderPassNode.MipCount);
@@ -405,7 +401,6 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
 
     const VkImageLayout oldLayout = texture->texture.TextureImageLayout();
 
-    // 1) GPU must finish the pass that WROTE this image
     vkDeviceWaitIdle(vulkan.LogicalDevice());
 
     VkBuffer stagingBuffer = VK_NULL_HANDLE;
@@ -416,34 +411,30 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     bufferInfo.size = 4;
     bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-    VmaAllocationCreateInfo allocInfo{};
-    allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
-        | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    VmaAllocationCreateInfo allocInfo
+    {
+        .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+        .usage = VMA_MEMORY_USAGE_AUTO
+    };
 
-    if (vmaCreateBuffer(bufferSystem.VmaAllocatorHandle(), &bufferInfo, &allocInfo,
-        &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS)
-        return 0;
+    if (vmaCreateBuffer(bufferSystem.VmaAllocatorHandle(), &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &allocOut) != VK_SUCCESS) return UINT32_MAX;
 
     VkCommandBuffer cmd = vulkan.CommandBuffer().BeginSingleUseCommand();
 
-    VkImageMemoryBarrier toSrc{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-    toSrc.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        | VK_ACCESS_SHADER_WRITE_BIT
-        | VK_ACCESS_SHADER_READ_BIT;
-    toSrc.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-    toSrc.oldLayout = oldLayout;
-    toSrc.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    toSrc.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    toSrc.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    toSrc.image = texture->texture.TextureImage();
-    toSrc.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    VkImageMemoryBarrier src = VkImageMemoryBarrier 
+    { 
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT,
+        .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+        .oldLayout = oldLayout,
+        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = texture->texture.TextureImage(),
+        .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+    };
 
-    vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,
-        0, 0, nullptr, 0, nullptr, 1, &toSrc);
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &src);
 
     VkBufferImageCopy region{};
     region.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
@@ -455,7 +446,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         stagingBuffer, 1, &region);
 
-    VkImageMemoryBarrier toOld = toSrc;
+    VkImageMemoryBarrier toOld = src;
     toOld.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
     toOld.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
         | VK_ACCESS_SHADER_READ_BIT;
