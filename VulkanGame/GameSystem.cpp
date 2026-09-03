@@ -169,16 +169,16 @@ void GameSystem::DebugUpdate(float deltaTime)
 
 
     imGuiSystem.Separator();
-    ivec2 fb = vulkanWindow.GetFramebufferSize(); // or RenderBox size
-    ivec2 tex = renderSystem.FindRenderPassAttachment(VkGuid("7047804F-D32E-4CB5-BA95-90783B28D1DF")).texture.TextureSize();
-    int x = mouse.X;
-    int y = mouse.Y;
-    uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804F-D32E-4CB5-BA95-90783B28D1DF"), ivec2(x, y));
+    //ivec2 fb = vulkanWindow.GetFramebufferSize(); // or RenderBox size
+    //ivec2 tex = renderSystem.FindRenderPassAttachment(VkGuid("7047804F-D32E-4CB5-BA95-90783B28D1DF")).texture.TextureSize();
+    //int x = mouse.X;
+    //int y = mouse.Y;
+    //uint32_t hoverId = renderSystem.SampleRenderPassPixel(VkGuid("7047804F-D32E-4CB5-BA95-90783B28D1DF"), ivec2(x, y));
     imGuiSystem.Checkbox("Show Wireframe View", &renderSystem.WireFrameFlag);
 
     imGuiSystem.Text("Mouse Position: (%.1f, %.1f)", mouse.X, mouse.Y);
     imGuiSystem.Text("Mouse Wheel Offset: (%.1f)", mouse.WheelOffset);
-    imGuiSystem.Text("Mouse Hover Id: %u", hoverId);
+   // imGuiSystem.Text("Mouse Hover Id: %u", hoverId);
     imGuiSystem.Text("Left Button: %s", mouse.MouseButtonState[0] ? "Pressed" : "Released");
     imGuiSystem.Text("Right Button: %s", mouse.MouseButtonState[1] ? "Pressed" : "Released");
     imGuiSystem.Text("Middle Button: %s", mouse.MouseButtonState[2] ? "Pressed" : "Released");

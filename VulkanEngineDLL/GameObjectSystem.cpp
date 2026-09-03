@@ -10,6 +10,126 @@
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
+entt::entity GameObjectSystem::CreateGameObject(nlohmann::json& gameObjectJson, entt::entity parentGameObjectId)
+{
+    vec2 positionOverride = vec2(0.0f);
+    if (gameObjectJson.contains("GameObjectPositionOverride"))
+    {
+        positionOverride = vec2(gameObjectJson["GameObjectPositionOverride"][0], gameObjectJson["GameObjectPositionOverride"][1]);
+    }
+    return CreateGameObject(gameObjectJson["GameObjectType"], positionOverride, parentGameObjectId);
+}
+
+entt::entity GameObjectSystem::CreateGameObject(nlohmann::json& gameObjectJson, vec2 gameObjectPosition, entt::entity parentGameObjectId)
+{
+    return CreateGameObject(gameObjectJson["GameObjectType"].get<GameObjectTypeEnum>(), gameObjectPosition, parentGameObjectId);
+}
+
+void GameObjectSystem::CreateGameObjects(nlohmann::json& gameObjectJson)
+{
+    for (const auto& json : gameObjectJson)
+    {
+        vec2 positionOverride = vec2(0.0f);
+        if (json.contains("GameObjectPositionOverride"))
+        {
+            positionOverride = vec2(json["GameObjectPositionOverride"][0], json["GameObjectPositionOverride"][1]);
+        }
+        CreateGameObject(json["GameObjectType"], positionOverride);
+    }
+}
+
+entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId)
+{
+    entt::entity gameObjectEntity = EntityRegistry.create();
+    GameObject& gameObject = EntityRegistry.emplace<GameObject>(gameObjectEntity, GameObject
+        {
+            .GameObjectId = static_cast<uint32>(gameObjectEntity),
+            .GameObjectPtr = 0,
+            .GameObjectType = gameObjectType,
+            .GameObjectAlive = true
+        });
+
+    auto it = GameObjectBehaviorMap.find(gameObjectType);
+    if (it != GameObjectBehaviorMap.end() && it->second.CreateObject)
+    {
+        gameObject.GameObjectPtr = FindGameObjectBehavior(gameObjectType).CreateObject();
+    }
+
+    if (parentGameObjectId != entt::null)
+    {
+        EntityRegistry.emplace<GameObjectHierarchy>(gameObjectEntity, GameObjectHierarchy
+            {
+                .Parent = parentGameObjectId
+            });
+    }
+
+    nlohmann::json gameObjectComponentJson = GameObjectComponentTempleteMap[gameObjectType];
+    for (const auto& json : gameObjectComponentJson)
+    {
+        uint64 componentType = json["ComponentType"].get<uint64>();
+        switch (componentType)
+        {
+        case kInputComponent: EntityRegistry.emplace<InputComponent>(gameObjectEntity, InputComponent{ }); break;
+        case kSpriteComponent:
+        {
+            VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
+            spriteSystem.CreateSprite(gameObjectEntity, vramId);
+            break;
+        }
+        case kTransform2DComponent:
+        {
+            EntityRegistry.emplace<Transform2DComponent>(gameObjectEntity, Transform2DComponent
+                {
+                    .GameObjectPosition = gameObjectPosition,
+                    .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
+                    .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
+                });
+            break;
+        }
+        case kTransform3DComponent:
+        {
+            EntityRegistry.emplace<Transform3DComponent>(gameObjectEntity, Transform3DComponent
+                {
+                    .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
+                    .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
+                    .GameObjectScale = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
+                });
+            break;
+        }
+        case kCollisionComponent:
+        {
+            Collider2DComponent collider{
+                    .Size = ivec2{ json["ColliderSize"][0], json["ColliderSize"][1] },
+                    .Offset = ivec2{ json["ColliderOffset"][0], json["ColliderOffset"][1] },
+                    .Enabled = json.value("Enabled", true),
+                    .IsTrigger = json.value("IsTrigger", false)
+            };
+            EntityRegistry.emplace<Collider2DComponent>(gameObjectEntity, collider);
+            collisionSystem.AddListener(gameObjectEntity, collider);
+            break;
+        }
+        case kCameraFollowComponent:     EntityRegistry.emplace<CameraFollowComponent>(gameObjectEntity, CameraFollowComponent{ }); break;
+        case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObjectEntity, lightSystem.GetDirectionalLight(lightSystem.LoadLight(json))); break;
+        case kPointLightComponent:       EntityRegistry.emplace<PointLightComponent>(gameObjectEntity, lightSystem.GetPointLight(lightSystem.LoadLight(json))); break;
+        case kDebugObjectComponent:      EntityRegistry.emplace<DebugObjectComponent>(gameObjectEntity); break;
+        default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
+        }
+    }
+
+    if (GameObjectBehaviorMap.contains(gameObject.GameObjectType) &&
+        gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject)
+    {
+        if (gameObject.GameObjectPtr) gameObject.GameObjectPtr = gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject();
+        GameObjectBehaviorMap[gameObject.GameObjectType].Startup(gameObject.GameObjectPtr, gameObjectEntity, parentGameObjectId);
+    }
+    if (GameObjectVarTemplateMap.contains(gameObject.GameObjectType))
+    {
+        //  EntityRegistry.emplace<GameObjectStruct>(gameObject.GameObjectComponents, GameObjectVarTemplateMap[gameObject.GameObjectType]);
+    }
+
+    return gameObjectEntity;
+}
+
 void GameObjectSystem::LoadGameObjectTemplete(const Vector<String>& gameObjectJsonList)
 {
     Vector<String> uniqueJsonSet;
@@ -90,111 +210,6 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
         wrappedArray.push_back(componentList);
         GameObjectComponentTempleteMap[gameObject.GameObjectType] = wrappedArray;
     }
-}
-
-void GameObjectSystem::CreateGameObjects(nlohmann::json& gameObjectJson)
-{
-    for (const auto& json : gameObjectJson)
-    {
-        vec2 positionOverride = vec2(0.0f);
-        if (json.contains("GameObjectPositionOverride"))
-        {
-            positionOverride = vec2(json["GameObjectPositionOverride"][0], json["GameObjectPositionOverride"][1]);
-        }
-        CreateGameObject(json["GameObjectType"], positionOverride);
-    }
-}
-
-entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId)
-{
-    entt::entity gameObjectEntity = EntityRegistry.create();
-    GameObject& gameObject = EntityRegistry.emplace<GameObject>(gameObjectEntity, GameObject
-        {
-            .GameObjectId = static_cast<uint32>(gameObjectEntity),
-            .GameObjectPtr = 0,
-            .GameObjectType = gameObjectType,
-            .GameObjectAlive = true
-        });
-    
-    auto it = GameObjectBehaviorMap.find(gameObjectType);
-    if (it != GameObjectBehaviorMap.end() && it->second.CreateObject)
-    {
-        gameObject.GameObjectPtr = FindGameObjectBehavior(gameObjectType).CreateObject();
-    }
-
-    if (parentGameObjectId != entt::null)
-    {
-        EntityRegistry.emplace<GameObjectHierarchy>(gameObjectEntity, GameObjectHierarchy
-            {
-                .Parent = parentGameObjectId
-            });
-    }
-
-    nlohmann::json gameObjectComponentJson = GameObjectComponentTempleteMap[gameObjectType];
-    for (const auto& json : gameObjectComponentJson)
-    {
-        uint64 componentType = json["ComponentType"].get<uint64>();
-        switch (componentType)
-        {
-        case kInputComponent: EntityRegistry.emplace<InputComponent>(gameObjectEntity, InputComponent{ }); break;
-        case kSpriteComponent:
-        {
-            VkGuid vramId = VkGuid(json["VramSpriteId"].get<String>().c_str());
-            spriteSystem.CreateSprite(gameObjectEntity, vramId);
-            break;
-        }
-        case kTransform2DComponent:
-        {
-            EntityRegistry.emplace<Transform2DComponent>(gameObjectEntity, Transform2DComponent
-                {
-                    .GameObjectPosition = gameObjectPosition,
-                    .GameObjectRotation = vec2{ json["GameObjectRotation"][0], json["GameObjectRotation"][1] },
-                    .GameObjectScale = vec2{ json["GameObjectScale"][0], json["GameObjectScale"][1] }
-                });
-            break;
-        }
-        case kTransform3DComponent:
-        {
-            EntityRegistry.emplace<Transform3DComponent>(gameObjectEntity, Transform3DComponent
-                {
-                    .GameObjectPosition = vec3{ gameObjectPosition.x, gameObjectPosition.y, 0.0f },
-                    .GameObjectRotation = vec3{ json["GameObjectRotation"][0], json["GameObjectRotation"][1], 0.0f },
-                    .GameObjectScale = vec3{ json["GameObjectScale"][0], json["GameObjectScale"][1], 0.0f }
-                });
-            break;
-        }
-        case kCollisionComponent:
-        {
-            Collider2DComponent collider{
-                    .Size = ivec2{ json["ColliderSize"][0], json["ColliderSize"][1] },
-                    .Offset = ivec2{ json["ColliderOffset"][0], json["ColliderOffset"][1] },
-                    .Enabled = json.value("Enabled", true),
-                    .IsTrigger = json.value("IsTrigger", false)
-            };
-            EntityRegistry.emplace<Collider2DComponent>(gameObjectEntity, collider);
-            collisionSystem.AddListener(gameObjectEntity, collider);
-            break;
-        }
-        case kCameraFollowComponent:     EntityRegistry.emplace<CameraFollowComponent>(gameObjectEntity, CameraFollowComponent{ }); break;
-        case kDirectionalLightComponent: EntityRegistry.emplace<DirectionalLightComponent>(gameObjectEntity, lightSystem.GetDirectionalLight(lightSystem.LoadLight(json))); break;
-        case kPointLightComponent:       EntityRegistry.emplace<PointLightComponent>(gameObjectEntity, lightSystem.GetPointLight(lightSystem.LoadLight(json))); break;
-        case kDebugObjectComponent:      EntityRegistry.emplace<DebugObjectComponent>(gameObjectEntity); break;
-        default:  std::cerr << "GameObjectComponent not implemented yet: " << componentType << std::endl;
-        }
-    }
-
-    if (GameObjectBehaviorMap.contains(gameObject.GameObjectType) &&
-        gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject)
-    {
-        if (gameObject.GameObjectPtr) gameObject.GameObjectPtr = gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].CreateObject();
-        GameObjectBehaviorMap[gameObject.GameObjectType].Startup(gameObject.GameObjectPtr, gameObjectEntity, parentGameObjectId);
-    }
-    if (GameObjectVarTemplateMap.contains(gameObject.GameObjectType))
-    {
-      //  EntityRegistry.emplace<GameObjectStruct>(gameObject.GameObjectComponents, GameObjectVarTemplateMap[gameObject.GameObjectType]);
-    }
-
-    return gameObjectEntity;
 }
 
 void GameObjectSystem::AddGameObjectBehavior(GameObjectTypeEnum gameObjectType, const GameObjectBehavior& gameObjectBehavior)

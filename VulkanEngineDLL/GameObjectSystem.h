@@ -142,6 +142,8 @@ public:
 
      void                                         LoadGameObjectTemplete(const String& gameObjectJson);
      void                                         LoadGameObjectTemplete(const Vector<String>& gameObjectJsonList);
+     entt::entity                                 CreateGameObject(nlohmann::json& gameObjectJson, entt::entity parentGameObjectId = entt::null);
+     entt::entity                                 CreateGameObject(nlohmann::json& gameObjectJson, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
      void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
      entt::entity                                 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
 

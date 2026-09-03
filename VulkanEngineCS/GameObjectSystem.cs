@@ -70,9 +70,14 @@ namespace VulkanEngineCS
             DLLSystem.CallDLLFunc(() => GameObjectSystem_Update(deltaTime));
         }
 
-        public static void CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
-        { 
-            DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(gameObjectJson, gameObjectPosition, parentGameObjectId));
+        public static uint CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
+        {
+            return DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(gameObjectJson, gameObjectPosition, parentGameObjectId));
+        }
+
+        public static uint CreateGameObject(string gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
+        {
+            return DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObjectJson(gameObjectJson, gameObjectPosition, parentGameObjectId));
         }
 
         //public static GameObjectVariableDLL* GetGameObjectVariables(uint gameObjectId)
@@ -80,11 +85,10 @@ namespace VulkanEngineCS
         //    return DLLSystem.CallDLLFunc(() => GameObjectSystem_GetGameObjectVariables(gameObjectId, gameObjectPosition, parentGameObjectId));
         //}
 
-        public static unsafe GameObjecLevelEditor* GetGameObjectPtr(uint gameObjectId)
+        public static unsafe GameObjecLevelEditor* GetGameObject(uint gameObjectId)
         {
-            IntPtr ptr = DLLSystem.CallDLLFunc(() => GameObjectSystem_GetGameObjectPtr(gameObjectId));
-            if (ptr == IntPtr.Zero) return null;
-            return (GameObjecLevelEditor*)ptr;
+            GameObjecLevelEditor* ptr = GameObjectSystem_GetGameObject(gameObjectId);
+            return ptr;
         }
 
         public static IntPtr GetGameObjectComponentPtr(uint gameObjectId, ComponentTypeEnum componentType)
@@ -166,9 +170,10 @@ namespace VulkanEngineCS
         }
 
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_Update(float deltaTime);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern uint GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern uint GameObjectSystem_CreateGameObjectJson([MarshalAs(UnmanagedType.LPStr)] string gameObjectJson, vec2 gameObjectPosition, uint parentGameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, out size_t returnCount);
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern GameObjecLevelEditor* GameObjectSystem_GetGameObject(uint gameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_GetGameObjectList(out size_t returnCount);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentTypeEnum componentType, void* componentData);

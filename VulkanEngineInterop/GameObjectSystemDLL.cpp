@@ -7,11 +7,16 @@ void GameObjectSystem_Update(const float& deltaTime)
     gameObjectSystem.Update(deltaTime);
 }
 
-uint32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint32 parentGameObjectId)
+uint GameObjectSystem_CreateGameObjectJson(const char* gameObjectJson, vec2 gameObjectPosition, uint32 parentGameObjectId)
+{
+    nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson);
+    return static_cast<uint32>(gameObjectSystem.CreateGameObject(json, gameObjectPosition, static_cast<entt::entity>(parentGameObjectId)));
+}
+
+uint GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint32 parentGameObjectId)
 {
     entt::entity parentGameObject = static_cast<entt::entity>(parentGameObjectId);
-    uint gameObjectId = static_cast<uint32>(gameObjectSystem.CreateGameObject(gameObjectType, gameObjectPosition, parentGameObject));
-    return gameObjectId;
+    return static_cast<uint32>(gameObjectSystem.CreateGameObject(gameObjectType, gameObjectPosition, parentGameObject));
 }
 
 GameObjectVariableDLL* GameObjectSystem_GetGameObjectVariables(uint gameObjectId, size_t& returnCount)
@@ -69,6 +74,13 @@ GameObject* GameObjectSystem_GetGameObjectList(size_t& returnGameObjectCount)
     }
 
     return list;
+}
+
+GameObject* GameObjectSystem_GetGameObject(uint gameObjectId)
+{
+    entt::entity entity = gameObjectSystem.FindGameObject(gameObjectId);
+    if (entity == entt::null || !gameObjectSystem.EntityRegistry.valid(entity) || !gameObjectSystem.EntityRegistry.all_of<GameObject>(entity)) return nullptr;
+    return &gameObjectSystem.EntityRegistry.get<GameObject>(entity);
 }
 
 IntPtr GameObjectSystem_GetGameObjectPtr(uint gameObjectId)
