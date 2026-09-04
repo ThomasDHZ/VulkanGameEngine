@@ -27,6 +27,7 @@ namespace GameScriptLibraryDLL.Components
 
     public unsafe class Component
     {
+        public ComponentTypeEnum ComponentType { get; private set; } = ComponentTypeEnum.kInputComponent;
         public static T* GetGameObjectComponent<T>(uint gameObjectId, ComponentTypeEnum componentType) where T : struct
         {
             IntPtr ptr = GameObjectSystem_UpdateGameObjectComponent(gameObjectId, componentType);
