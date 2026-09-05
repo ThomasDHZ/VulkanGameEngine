@@ -92,7 +92,7 @@ public:
     bool                                              SpriteListDirty = true;
 
      VramSpriteGuid                         LoadSpriteVRAM(const nlohmann::json& json);
-     void                                   CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId);
+     void                                   CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId);
      void                                   Update(const float& deltaTime);
      void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
      SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);

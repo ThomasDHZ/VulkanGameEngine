@@ -9,7 +9,7 @@
 #include "Camera.h"
 #include <algorithm>
 #include "InputSystem.h"
-
+#include "GameObjectComponentRegistry.h"
 
 LevelSystem& levelSystem = LevelSystem::Get();
 
@@ -18,6 +18,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec2(0.0f, 0.0f));
     PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec3(0.0f, 0.0f, 0.0f)));
     pushConstantRegistry.RegisterDefaultPushConstantRules();
+    gameObjectComponentRegistry.RegisterDefaultGameObjectComponents();
 
     VkGuid tileSetId = VkGuid();
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);

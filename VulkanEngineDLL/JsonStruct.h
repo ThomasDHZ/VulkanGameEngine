@@ -16,8 +16,6 @@ enum PushConstantResolverEnum
     kPushConst_SampleDelta
 };
 
-
-
 struct RenderedTextureInfoModel
 {
     String RenderedTextureInfoName;

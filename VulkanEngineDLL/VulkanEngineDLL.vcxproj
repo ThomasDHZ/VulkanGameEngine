@@ -161,6 +161,7 @@
     <ClInclude Include="enum.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="CHelper.h" />
+    <ClInclude Include="GameObjectComponentRegistry.h" />
     <ClInclude Include="GameObjectSystem.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="LevelSystem.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="CHelper.cpp" />
+    <ClCompile Include="GameObjectComponentRegistry.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="LevelSystem.cpp" />

@@ -45,6 +45,9 @@ public:
      uint32                            AllocateLight(GameObjectTypeEnum lightType);
      DirectionalLightComponent&        GetDirectionalLight(uint directionalLightId);
      PointLightComponent&              GetPointLight(uint pointLightId);
+
+      uint FindDirectionalLightIndex(void* ptr);
+      uint FindPointLightIndex(void* ptr);
 };
 extern  LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()

@@ -318,6 +318,13 @@ void MemoryPoolSystem::UpdateMemoryPool()
             {
                 vmaFlushAllocation(bufferSystem.VmaAllocatorHandle(), buffer.BufferAllocation(), start, len);
             }
+
+            if (kDirectionalLightBuffer == type ||
+                kPointLightBuffer == type)
+            {
+                int a = 324;
+            }
+            
             sub.IsDirty = false;
         }
     }
@@ -417,6 +424,7 @@ DirectionalLightComponent& MemoryPoolSystem::UpdateDirectionalLight(uint32 index
 
     uint32 offset = directionalLightSubPool.Offset + (index * sizeof(DirectionalLightComponent));
     directionalLightSubPool.IsDirty = true;
+    auto a = reinterpret_cast<DirectionalLightComponent*>(static_cast<byte*>(MappedBufferPtr) + offset);
     return *reinterpret_cast<DirectionalLightComponent*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
@@ -428,6 +436,7 @@ PointLightComponent& MemoryPoolSystem::UpdatePointLight(uint32 index)
 
     uint32 offset = pointLightSubPool.Offset + (index * sizeof(PointLightComponent));
     pointLightSubPool.IsDirty = true;
+    auto a = reinterpret_cast<PointLightComponent*>(static_cast<byte*>(MappedBufferPtr) + offset);
     return *reinterpret_cast<PointLightComponent*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
@@ -482,6 +491,30 @@ SceneDataBuffer& MemoryPoolSystem::UpdateSceneDataBuffer()
 {
     IsSceneBufferDirty = true;
     return *reinterpret_cast<SceneDataBuffer*>(SceneDataPtr);
+}
+
+uint MemoryPoolSystem::FindDirectionalLightIndex(void* ptr)
+{
+    MemoryPoolSubBufferHeader& directionalLightSubPool = MemorySubPoolHeader[kDirectionalLightBuffer];
+    for (int x = 0; x < directionalLightSubPool.ActiveCount; x++)
+    {
+        uint32 offset = directionalLightSubPool.Offset + (x * sizeof(DirectionalLightComponent));
+        void* directionalLightAddress = reinterpret_cast<void*>(static_cast<byte*>(MappedBufferPtr) + offset);
+        if (directionalLightAddress == ptr) return x;
+    }
+    return UINT32_MAX;
+}
+
+uint MemoryPoolSystem::FindPointLightIndex(void* ptr)
+{
+    MemoryPoolSubBufferHeader& pointLightSubPool = MemorySubPoolHeader[kPointLightBuffer];
+    for (int x = 0; x < pointLightSubPool.ActiveCount; x++)
+    {
+        uint32 offset = pointLightSubPool.Offset + (x * sizeof(PointLightComponent));
+        void* pointLightAddress = reinterpret_cast<void*>(static_cast<byte*>(MappedBufferPtr) + offset);
+        if (pointLightAddress == ptr) return x;
+    }
+    return UINT32_MAX;
 }
 
 uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)

@@ -165,6 +165,9 @@
     <ClInclude Include="TextSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="GameObjectComponentRegistry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -265,6 +268,9 @@
     </ClCompile>
     <ClCompile Include="TextSystem.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectComponentRegistry.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

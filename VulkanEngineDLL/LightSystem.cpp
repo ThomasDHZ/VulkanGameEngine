@@ -64,7 +64,19 @@ DirectionalLightComponent& LightSystem::GetDirectionalLight(uint directionalLigh
     return memoryPoolSystem.UpdateDirectionalLight(directionalLightId);
 }
 
+
 PointLightComponent& LightSystem::GetPointLight(uint pointLightId)
 {
     return memoryPoolSystem.UpdatePointLight(pointLightId);
 }
+
+uint LightSystem::FindDirectionalLightIndex(void* ptr)
+{
+    return memoryPoolSystem.FindDirectionalLightIndex(ptr);
+}
+
+uint LightSystem::FindPointLightIndex(void* ptr)
+{
+    return memoryPoolSystem.FindPointLightIndex(ptr);
+}
+

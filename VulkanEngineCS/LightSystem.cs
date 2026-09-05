@@ -45,19 +45,31 @@ namespace VulkanEngineCS
             return DLLSystem.CallDLLFunc(() => LightSystem_GetPointLight(lightId));
         }
 
-        public static ref PointLight GetPointLightById(uint lightId)
+        public static uint FindDirectionalLightIndex(void* ptr)
         {
-            IntPtr ptr = DLLSystem.CallDLLFunc(() => LightSystem_GetPointLight(lightId));
-            if (ptr == IntPtr.Zero)
-            {
-                return ref Unsafe.NullRef<PointLight>();
-            }
-            return ref Unsafe.AsRef<PointLight>(ptr.ToPointer());
+            return DLLSystem.CallDLLFunc(() => LightSystem_FindDirectionalLightIndex(ptr));
         }
+
+        public static uint FindPointLightIndex(void* ptr)
+        {
+            return DLLSystem.CallDLLFunc(() => LightSystem_FindPointLightIndex(ptr));
+        }
+
+        //public static ref PointLight GetPointLightById(uint lightId)
+        //{
+        //    IntPtr ptr = DLLSystem.CallDLLFunc(() => LightSystem_GetPointLight(lightId));
+        //    if (ptr == IntPtr.Zero)
+        //    {
+        //        return ref Unsafe.NullRef<PointLight>();
+        //    }
+        //    return ref Unsafe.AsRef<PointLight>(ptr.ToPointer());
+        //}
 
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern uint LightSystem_LoadLight([MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] string lightJson);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern uint LightSystem_AllocateLight(LightTypeEnum lightType);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr LightSystem_GetDirectionalLight(uint directionalLightId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr LightSystem_GetPointLight(uint pointLightId);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern uint LightSystem_FindDirectionalLightIndex(void* ptr);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern uint LightSystem_FindPointLightIndex(void* ptr);
     }
 }

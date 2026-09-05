@@ -174,7 +174,11 @@ public:
 	 TextureMetadataHeader&									 UpdateTextureCubeMapMetadataHeader(uint32 index);
 	 SpriteInstance&										 UpdateSpriteInstance(uint32 index);
 	 SceneDataBuffer&										 UpdateSceneDataBuffer();
-	 uint32 AddToMemoryPool(VulkanTexture& texture);
+
+	 uint FindDirectionalLightIndex(void* ptr);
+	 uint FindPointLightIndex(void* ptr);
+
+	 uint32													 AddToMemoryPool(VulkanTexture& texture);
 	 Vector<SpriteInstance*>								 GetActiveSpriteInstancePointers();
 
 	 Vector<MeshPropertiesStruct>							 MeshBufferList();

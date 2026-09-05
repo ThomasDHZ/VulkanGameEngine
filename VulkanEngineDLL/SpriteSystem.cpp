@@ -14,7 +14,7 @@ void SpriteSystem::AddSpriteBatchLayer()
         });
 }
 
-void SpriteSystem::CreateSprite(entt::entity& gameObjectId, VkGuid& spriteVramId)
+void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
 {
     Sprite sprite = gameObjectSystem.EntityRegistry.emplace<Sprite>(gameObjectId, Sprite
         {
