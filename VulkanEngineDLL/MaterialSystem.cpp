@@ -91,7 +91,7 @@ void MaterialSystem::Destroy(const MaterialGuid& materialGuid)
     //}
 }
 
-void MaterialSystem::DestroyAllMaterials()
+void MaterialSystem::Destroy()
 {
     //MaterialList.clear();
     //MaterialPool.clear();

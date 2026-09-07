@@ -11,8 +11,9 @@ extern "C" {
 	DLL_EXPORT VkCommandBuffer				 VulkanSystem_StartFrame();
 	DLL_EXPORT void							 VulkanSystem_SetCustomFrameBufferSize(ivec2 size);
 	DLL_EXPORT void							 VulkanSystem_EndFrame(VkCommandBuffer& commandBuffer);
-	DLL_EXPORT void                         VulkanSystem_GetSwapChainSize(int* outX, int* outY);
-	//DLL_EXPORT void							 VulkanSystem_Shutdown();
+	DLL_EXPORT void                          VulkanSystem_GetSwapChainSize(int* outX, int* outY);
+	DLL_EXPORT void							 VulkanSystem_DeviceWaitIdle();
+	DLL_EXPORT void							 VulkanSystem_Destroy();
 #ifdef __cplusplus
 }
 #endif

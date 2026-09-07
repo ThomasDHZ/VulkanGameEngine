@@ -13,6 +13,7 @@ extern "C" {
     DLL_EXPORT VkGuid*                      RenderSystem_FindRenderPassAttachmentList(const VkGuid& renderPassGuid, uint32* returnTextureCount);
     DLL_EXPORT uint32                       RenderSystem_SampleRenderPassPixel(const VkGuid& attachmentGuid, ivec2 mousePosition);
     DLL_EXPORT void                         RenderSystem_GetAttachmentSize(const VkGuid& attachmentGuid, int* outX, int* outY);
+    DLL_EXPORT void                         RenderSystem_Destroy();
 #ifdef __cplusplus
 }
 #endif

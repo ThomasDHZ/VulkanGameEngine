@@ -28,6 +28,7 @@
     <ClCompile Include="InputSystemDLL.cpp" />
     <ClCompile Include="LevelSystemDLL.cpp" />
     <ClCompile Include="LightSystemDLL.cpp" />
+    <ClCompile Include="MaterialSystemDLL.cpp" />
     <ClCompile Include="MemoryPoolSystemDLL.cpp" />
     <ClCompile Include="MemorySystemDLL.cpp" />
     <ClCompile Include="MeshSystemDLL.cpp" />
@@ -35,6 +36,7 @@
     <ClCompile Include="RenderSystemDLL.cpp" />
     <ClCompile Include="ShaderSystemDLL.cpp" />
     <ClCompile Include="SpriteSystemDLL.cpp" />
+    <ClCompile Include="TextureSystem.cpp" />
     <ClCompile Include="VulkanRenderPassDLL.cpp" />
     <ClCompile Include="VulkanSystemDLL.cpp" />
   </ItemGroup>
@@ -49,6 +51,7 @@
     <ClInclude Include="InputSystemDLL.h" />
     <ClInclude Include="LevelSystemDLL.h" />
     <ClInclude Include="LightSystemDLL.h" />
+    <ClInclude Include="MaterialSystemDLL.h" />
     <ClInclude Include="MemoryPoolSystemDLL.h" />
     <ClInclude Include="MemorySystemDLL.h" />
     <ClInclude Include="MeshSystemDLL.h" />
@@ -56,6 +59,7 @@
     <ClInclude Include="RenderSystemDLL.h" />
     <ClInclude Include="ShaderSystemDLL.h" />
     <ClInclude Include="SpriteSystemDLL.h" />
+    <ClInclude Include="TextureSystem.h" />
     <ClInclude Include="VulkanRenderPassDLL.h" />
     <ClInclude Include="VulkanSystemDLL.h" />
   </ItemGroup>

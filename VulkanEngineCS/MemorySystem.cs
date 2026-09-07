@@ -44,6 +44,13 @@ namespace VulkanEngineCS
                 Console.WriteLine(ex.ToString());
             }
         }
+
+        public static void ReportLeaks()
+        {
+            DLLSystem.CallDLLFunc(() => MemorySystem_ReportLeaks());
+        }
+
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern void MemorySystem_DeletePtr(void* ptr);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern void MemorySystem_ReportLeaks();
     }
 }

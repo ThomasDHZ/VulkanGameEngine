@@ -106,8 +106,8 @@ void GameObjectSystem_CreateGameObjectComponent(uint gameObjectId, ComponentType
         case kTransform2DComponent:      gameObjectSystem.CreateGameObjectComponent<Transform2DComponent>(gameObjectEntity, static_cast<Transform2DComponent*>(componentData)); break;
         case kTransform3DComponent:      gameObjectSystem.CreateGameObjectComponent<Transform3DComponent>(gameObjectEntity, static_cast<Transform3DComponent*>(componentData)); break;
         case kCameraFollowComponent:     gameObjectSystem.CreateGameObjectComponent<CameraFollowComponent>(gameObjectEntity, static_cast<CameraFollowComponent*>(componentData)); break;
-        case kDirectionalLightComponent: gameObjectSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectEntity, static_cast<DirectionalLightComponent*>(componentData)); break;
-        case kPointLightComponent:       gameObjectSystem.CreateGameObjectComponent<PointLightComponent>(gameObjectEntity, static_cast<PointLightComponent*>(componentData)); break;
+        //case kDirectionalLightComponent: gameObjectSystem.CreateGameObjectComponent<DirectionalLightComponent>(gameObjectEntity, static_cast<DirectionalLightComponent*>(componentData)); break;
+        //case kPointLightComponent:       gameObjectSystem.CreateGameObjectComponent<PointLightComponent>(gameObjectEntity, static_cast<PointLightComponent*>(componentData)); break;
         case kDebugObjectComponent:      gameObjectSystem.CreateGameObjectComponent<DebugObjectComponent>(gameObjectEntity, static_cast<DebugObjectComponent*>(componentData)); break;
         case kCollisionComponent:        gameObjectSystem.CreateGameObjectComponent<Collider2DComponent>(gameObjectEntity, static_cast<Collider2DComponent*>(componentData)); break;
         default: throw std::runtime_error("GameObject_GetComponent: unknown or unsupported component type: " + std::to_string(static_cast<int>(componentType)) + " (gameObjectId=" + std::to_string(gameObjectId) + ")");

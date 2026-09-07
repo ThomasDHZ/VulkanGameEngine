@@ -90,3 +90,8 @@ void RenderSystem_GetAttachmentSize(const VkGuid& attachmentGuid, int* outX, int
     *outX = size.x;
     *outY = size.y;
 }
+
+void RenderSystem_Destroy()
+{
+    renderSystem.Destroy();
+}

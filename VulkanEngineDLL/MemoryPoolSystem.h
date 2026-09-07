@@ -16,6 +16,27 @@ enum MemoryPoolTypes
 	kEndofPool
 };
 
+struct DirectionalLight
+{
+	vec3   LightColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3   LightDirection = vec3(0.3f, 0.3f, 1.0f);
+	float  LightIntensity = 1.5f;
+	float  ShadowStrength = 1.0f;
+	float  ShadowBias = 0.012f;
+	float  ShadowSoftness = 0.008f;
+};
+
+struct PointLight
+{
+	vec3   LightPosition = vec3(0.0f);
+	vec3   LightColor = vec3(1.0f, 0.95f, 0.8f);
+	float  LightRadius = 200.0f;
+	float  LightIntensity = 2.0f;
+	float  ShadowStrength = 1.0f;
+	float  ShadowBias = 0.012f;
+	float  ShadowSoftness = 0.008f;
+};
+
 struct SpriteInstance
 {
 	vec2  SpritePosition;
@@ -106,8 +127,6 @@ struct MemoryPoolBufferHeader
 
 struct MeshPropertiesStruct;
 struct GPUMaterial;
-struct DirectionalLightComponent;
-struct PointLightComponent;
 class MemoryPoolSystem
 {
 public:
@@ -167,8 +186,8 @@ public:
 	 void													 UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding);
 	 MeshPropertiesStruct&									 UpdateMesh(uint32 index);
 	 GPUMaterial&											 UpdateMaterial(uint32 index);
-	 DirectionalLightComponent&								 UpdateDirectionalLight(uint32 index);
-	 PointLightComponent&									 UpdatePointLight(uint32 index);
+	 DirectionalLight&										 UpdateDirectionalLight(uint32 index);
+	 PointLight&											 UpdatePointLight(uint32 index);
 	 TextureMetadataHeader&									 UpdateTexture2DMetadataHeader(uint32 index);
 	 TextureMetadataHeader&									 UpdateTexture3DMetadataHeader(uint32 index);
 	 TextureMetadataHeader&									 UpdateTextureCubeMapMetadataHeader(uint32 index);
@@ -183,8 +202,8 @@ public:
 
 	 Vector<MeshPropertiesStruct>							 MeshBufferList();
 	 Vector<GPUMaterial>									 MaterialBufferList();
-	 Vector<DirectionalLightComponent>						 DirectionalLightBufferList();
-	 Vector<PointLightComponent>							 PointLightBufferList();
+	 Vector<DirectionalLight>								 DirectionalLightBufferList();
+	 Vector<PointLight>										 PointLightBufferList();
 	 Vector<SpriteInstance>									 SpriteInstanceBufferList();
 
 	 void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);

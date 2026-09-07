@@ -149,7 +149,7 @@ void GameSystem::DebugUpdate(float deltaTime)
 
     for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
     {
-        DirectionalLightComponent& directionalLight = memoryPoolSystem.UpdateDirectionalLight(x);
+        DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(x);
         if (ImGui::SliderFloat3("DLightColor ",     &directionalLight.LightColor.x, 0.0f, 1.0f));
         if (ImGui::SliderFloat3("DLightDirection ", &directionalLight.LightDirection.x, -1.0f, 1.0f));
         if (ImGui::SliderFloat("DLightIntensity ",  &directionalLight.LightIntensity, 0.0f, 10.0f));
@@ -233,11 +233,11 @@ void GameSystem::Destroy()
     imGuiSystem.Destroy();
     renderSystem.Destroy();   
     textureSystem.Destroy();    
-    meshSystem.DestroyAllGameObjects();
-    materialSystem.DestroyAllMaterials();
+    meshSystem.Destroy();
+    materialSystem.Destroy();
     // bufferSystem.DestroyAllBuffers();
-
     memorySystem.ReportLeaks();
+
     vulkan.Destroy();
     vulkanWindow.Close();
 }

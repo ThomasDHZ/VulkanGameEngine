@@ -348,7 +348,7 @@ void MeshSystem::Destroy(uint meshId)
 	FreeMeshIds.push_back(meshId);
 }
 
-void MeshSystem::DestroyAllGameObjects()
+void MeshSystem::Destroy()
 {
 	for (auto& mesh : MeshList)
 	{

@@ -73,16 +73,43 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
 
     RegisterGameObjectComponent(kDirectionalLightComponent, [](const ComponentInitContext& ctx)
         {
-            ctx.Registry.emplace<DirectionalLightComponent>(
-                ctx.Entity,
-                lightSystem.GetDirectionalLight(lightSystem.LoadLight(ctx.Json)));
+            DirectionalLightComponent directionalLightComponent = DirectionalLightComponent
+            {
+                .DirectionalLightMemoryPoolIndex = memoryPoolSystem.AllocateObject(kDirectionalLightBuffer)
+            };
+            ctx.Registry.emplace<DirectionalLightComponent>(ctx.Entity, directionalLightComponent);
+
+            DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(directionalLightComponent.DirectionalLightMemoryPoolIndex);
+            directionalLight = DirectionalLight
+            {
+                .LightColor =     vec3(ctx.Json["LightColor"][0], ctx.Json["LightColor"][1], ctx.Json["LightColor"][2]),
+                .LightDirection = vec3(ctx.Json["LightDirection"][0], ctx.Json["LightDirection"][1], ctx.Json["LightDirection"][2]),
+                .LightIntensity = ctx.Json["LightIntensity"],
+                .ShadowStrength = ctx.Json["ShadowStrength"],
+                .ShadowBias =     ctx.Json["ShadowBias"],
+                .ShadowSoftness = ctx.Json["ShadowSoftness"],
+            };
         });
 
     RegisterGameObjectComponent(kPointLightComponent, [](const ComponentInitContext& ctx)
         {
-            ctx.Registry.emplace<PointLightComponent>(
-                ctx.Entity,
-                lightSystem.GetPointLight(lightSystem.LoadLight(ctx.Json)));
+            PointLightComponent pointLightComponent = PointLightComponent
+            {
+                .PointLightMemoryPoolIndex = memoryPoolSystem.AllocateObject(kPointLightBuffer)
+            };
+            ctx.Registry.emplace<PointLightComponent>(ctx.Entity, pointLightComponent);
+
+            PointLight& pointLight = memoryPoolSystem.UpdatePointLight(pointLightComponent.PointLightMemoryPoolIndex);
+            pointLight = PointLight
+            {
+                .LightPosition = vec3(ctx.Json["LightPosition"][0], ctx.Json["LightPosition"][1], ctx.Json["LightPosition"][2]),
+                .LightColor = vec3(ctx.Json["LightColor"][0], ctx.Json["LightColor"][1], ctx.Json["LightColor"][2]),
+                .LightRadius = ctx.Json["LightRadius"],
+                .LightIntensity = ctx.Json["LightIntensity"],
+                .ShadowStrength = ctx.Json["ShadowStrength"],
+                .ShadowBias = ctx.Json["ShadowBias"],
+                .ShadowSoftness = ctx.Json["ShadowSoftness"],
+            };
         });
 
     RegisterGameObjectComponent(kDebugObjectComponent, [](const ComponentInitContext& ctx)

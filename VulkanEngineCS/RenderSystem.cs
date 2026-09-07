@@ -132,6 +132,11 @@ namespace VulkanEngineCS
             return new ivec2(width, height);
         }
 
+        public static void Destroy()
+        {
+            DLLSystem.CallDLLFunc(() => RenderSystem_Destroy());
+        }
+
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern Guid RenderSystem_LoadRenderPass([MarshalAs(UnmanagedType.LPStr)] string jsonPath);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Update(void* windowHandle, float deltaTime);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Draw(ref VkCommandBuffer commandBuffer, RenderPassNodeDLL* renderPassNodeListPtr, size_t renderPassNodeCount);
@@ -139,5 +144,6 @@ namespace VulkanEngineCS
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern uint RenderSystem_SampleRenderPassPixel(Guid attachmentGuid, ivec2 mousePosition);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_GetAttachmentSize(Guid attachmentGuid, out int width, out int height);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_PresentToSwapChain(ref VkCommandBuffer commandBuffer, Guid renderPassTextureGuid);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void RenderSystem_Destroy();
     }
 }

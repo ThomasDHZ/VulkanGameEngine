@@ -6,25 +6,14 @@
 #include "GameObjectSystem.h"
 #include "ComponentSystem.h"
 
-struct DirectionalLightComponent
-{
-    vec3   LightColor = vec3(1.0f, 1.0f, 1.0f);
-    vec3   LightDirection = vec3(0.3f, 0.3f, 1.0f);
-    float  LightIntensity = 1.5f;
-    float  ShadowStrength = 1.0f;
-    float  ShadowBias = 0.012f;
-    float  ShadowSoftness = 0.008f;
-};
-
 struct PointLightComponent
 {
-    vec3   LightPosition = vec3(0.0f);
-    vec3   LightColor = vec3(1.0f, 0.95f, 0.8f);
-    float  LightRadius = 200.0f;
-    float  LightIntensity = 2.0f;
-    float  ShadowStrength = 1.0f;
-    float  ShadowBias = 0.012f;
-    float  ShadowSoftness = 0.008f;
+    uint PointLightMemoryPoolIndex = UINT32_MAX;
+};
+
+struct DirectionalLightComponent
+{
+    uint DirectionalLightMemoryPoolIndex = UINT32_MAX;
 };
 
 class LightSystem
@@ -41,13 +30,13 @@ private:
     LightSystem& operator=(LightSystem&&) = delete;
 
 public:
-     uint32                            LoadLight(const nlohmann::json& json);
-     uint32                            AllocateLight(GameObjectTypeEnum lightType);
-     DirectionalLightComponent&        GetDirectionalLight(uint directionalLightId);
-     PointLightComponent&              GetPointLight(uint pointLightId);
+     uint32                   LoadLight(const nlohmann::json& json);
+     uint32                   AllocateLight(GameObjectTypeEnum lightType);
+     DirectionalLight&        GetDirectionalLight(uint directionalLightId);
+     PointLight&              GetPointLight(uint pointLightId);
 
-      uint FindDirectionalLightIndex(void* ptr);
-      uint FindPointLightIndex(void* ptr);
+      uint                    FindDirectionalLightIndex(void* ptr);
+      uint                    FindPointLightIndex(void* ptr);
 };
 extern  LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()

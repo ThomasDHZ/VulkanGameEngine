@@ -15,8 +15,8 @@ uint32 LightSystem::LoadLight(const nlohmann::json& json)
         case kDirectionalLightComponent:
         {
             uint32 poolIndex = memoryPoolSystem.AllocateObject(kDirectionalLightBuffer);
-            DirectionalLightComponent& directionalLight = memoryPoolSystem.UpdateDirectionalLight(poolIndex);
-            directionalLight = DirectionalLightComponent
+            DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(poolIndex);
+            directionalLight = DirectionalLight
             {
                 .LightColor = vec3(json["LightColor"][0], json["LightColor"][1], json["LightColor"][2]),
                 .LightDirection = vec3(json["LightDirection"][0], json["LightDirection"][1], json["LightDirection"][2]),
@@ -30,8 +30,8 @@ uint32 LightSystem::LoadLight(const nlohmann::json& json)
         case kPointLightComponent:
         {
             uint32 poolIndex = memoryPoolSystem.AllocateObject(kPointLightBuffer);
-            PointLightComponent& pointLight = memoryPoolSystem.UpdatePointLight(poolIndex);
-            pointLight = PointLightComponent
+            PointLight& pointLight = memoryPoolSystem.UpdatePointLight(poolIndex);
+            pointLight = PointLight
             {
                 .LightPosition = vec3(json["LightPosition"][0], json["LightPosition"][1], json["LightPosition"][2]),
                 .LightColor = vec3(json["LightColor"][0], json["LightColor"][1], json["LightColor"][2]),
@@ -59,13 +59,13 @@ uint LightSystem::AllocateLight(GameObjectTypeEnum lightType)
     return UINT32_MAX;
 }
 
-DirectionalLightComponent& LightSystem::GetDirectionalLight(uint directionalLightId)
+DirectionalLight& LightSystem::GetDirectionalLight(uint directionalLightId)
 {
     return memoryPoolSystem.UpdateDirectionalLight(directionalLightId);
 }
 
 
-PointLightComponent& LightSystem::GetPointLight(uint pointLightId)
+PointLight& LightSystem::GetPointLight(uint pointLightId)
 {
     return memoryPoolSystem.UpdatePointLight(pointLightId);
 }

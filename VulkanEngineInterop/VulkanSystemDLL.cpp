@@ -42,3 +42,13 @@ void VulkanSystem_GetSwapChainSize(int* outX, int* outY)
 	*outX = size.width;
 	*outY = size.height;
 }
+
+void VulkanSystem_DeviceWaitIdle()
+{
+    vkDeviceWaitIdle(vulkan.LogicalDevice());
+}
+
+void VulkanSystem_Destroy()
+{
+    vulkan.Destroy();
+}

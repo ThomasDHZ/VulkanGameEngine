@@ -6,6 +6,7 @@
 extern "C" {
 #endif
     DLL_EXPORT void                   MeshSystem_Update(const float& deltaTime);
+    DLL_EXPORT void                   MeshSystem_Destroy(); 
 #ifdef __cplusplus
 }
 #endif

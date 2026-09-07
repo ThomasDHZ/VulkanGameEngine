@@ -56,7 +56,7 @@ private:
          Material& FindMaterial(const MaterialGuid& materialGuid);
          uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
          void Destroy(const MaterialGuid& materialGuid);
-         void DestroyAllMaterials();
+         void Destroy();
          Vector<Material> GetMaterialList() { return MaterialList; }
 }; 
 extern  MaterialSystem& materialSystem;

@@ -192,7 +192,7 @@ public:
 
 	 void Update(const float& deltaTime);
 	 void Destroy(uint meshId);
-	 void DestroyAllGameObjects();
+	 void Destroy();
 	 const Mesh& FindMesh(const uint& meshId);
 	 MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
 };
