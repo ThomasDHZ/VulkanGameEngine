@@ -30,6 +30,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{93
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{77A09C99-A7BD-47E1-8EF3-661C0B9B55E0}"
 	ProjectSection(SolutionItems) = preProject
+		Assets\TextureLoader\007_hdrmaps_com_free_4K.json = Assets\TextureLoader\007_hdrmaps_com_free_4K.json
+		Assets\TextureLoader\041_hdrmaps_com_free_4K.json = Assets\TextureLoader\041_hdrmaps_com_free_4K.json
+		Assets\TextureLoader\076_hdrmaps_com_free_4K.json = Assets\TextureLoader\076_hdrmaps_com_free_4K.json
+		Assets\TextureLoader\129_hdrmaps_com_free_4K.json = Assets\TextureLoader\129_hdrmaps_com_free_4K.json
+		Assets\TextureLoader\133_hdrmaps_com_free_4K.json = Assets\TextureLoader\133_hdrmaps_com_free_4K.json
+		Assets\TextureLoader\162_hdrmaps_com_free_4K.json = Assets\TextureLoader\162_hdrmaps_com_free_4K.json
 		Assets\TextureLoader\HDRITexture.json = Assets\TextureLoader\HDRITexture.json
 		Assets\TextureLoader\LavaCubeMapTexture.json = Assets\TextureLoader\LavaCubeMapTexture.json
 		Assets\TextureLoader\OceanSkyBoxTexture.json = Assets\TextureLoader\OceanSkyBoxTexture.json

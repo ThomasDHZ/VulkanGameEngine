@@ -55,6 +55,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);
     PresentingAttachmentTextureId = VkGuid(temp.c_str());
+    renderSystem.SwitchEnvironmentMap();
 }
 
 void LevelSystem::LevelEditorRenderPass(const char* levelPath)

@@ -134,6 +134,15 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
     return vulkanPipeline.PipelineId();
 }
 
+void RenderSystem::SwitchEnvironmentMap()
+{
+    VulkanRenderPass environmentToCubeMapRenderPass = FindRenderPass(VkGuid("05b2b809-c7f9-4000-bf96-1ca970d88a45"));
+    environmentToCubeMapRenderPass.SubPassList().front().front().InputTextureList.clear();
+    environmentToCubeMapRenderPass.SubPassList().front().front().InputTextureList.emplace_back("c8612fb8-ceb5-498b-aef3-1d25da9fe78e");
+    VkGuid renderPassGuid = environmentToCubeMapRenderPass.RenderPassId();
+    textureSystem.GenerateTexture(renderPassGuid);
+}
+
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
 {
     if (!vulkan.WasFramebufferResized()) return;

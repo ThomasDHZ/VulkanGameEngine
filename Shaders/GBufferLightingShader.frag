@@ -366,20 +366,20 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, vec3 R, vec2 finalUV, Material materi
         float disneyDiff = DisneyDiffuse(NdotV, NdotL, LdotH, material.Roughness);
         vec3  diffuse = material.Albedo * disneyDiff;
 
-        float subsurfaceStrength = 0.7f;
-        float subsurfaceWrap = 0.5f;
+        vec3 kS = F;
+        vec3 kD = (vec3(1.0) - kS) * (1.0 - material.Metallic);
+
+        float subsurfaceStrength = 0.7;
+        float subsurfaceWrap = 0.5;
         float NdotL_wrap = max(NdotL + subsurfaceWrap, 0.0) / (1.0 + subsurfaceWrap);
-        vec3  sssColor = material.Albedo * material.SubSurfaceScattering;
-        vec3  sssContrib = sssColor * subsurfaceStrength * NdotL_wrap;
+        vec3 sssColor = material.Albedo * material.SubSurfaceScattering;
+        vec3 sssContrib = sssColor * subsurfaceStrength * NdotL_wrap * (1.0 - material.Metallic);
 
-        vec3  baseDiffuse = mix(diffuse, sssContrib, subsurfaceStrength) * (1.0 - material.Metallic);
-
-        float sheenIntensity = 0.4f;
-        vec3  sheenColor = mix(material.Sheen, material.Albedo, 0.5);
+        vec3 sheenColor = mix(material.Sheen, material.Albedo, 0.5);
         float sheenFactor = pow(1.0 - NdotV, 5.0);
-        vec3  sheenContrib = sheenColor * material.SheenIntensity * sheenFactor;
+        vec3 sheenContrib = sheenColor * material.SheenIntensity * sheenFactor * (1.0 - material.Metallic);
 
-        Lo += (diffuse + specular + clearcoatContrib + sheenContrib + sssContrib) * radiance * NdotL;
+        Lo += (kD * material.Albedo / PI + specular + clearcoatContrib + sheenContrib + sssContrib) * radiance * NdotL;
     }
     return Lo;
 }

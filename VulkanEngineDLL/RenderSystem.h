@@ -72,6 +72,7 @@ public:
     RenderPassGuid                                          LoadRenderPass(const String& jsonPath);
     RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader);
     void                                                    Update(void* windowHandle, const float& deltaTime);
+    void                                                    SwitchEnvironmentMap();
     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
     void                                                    AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
 

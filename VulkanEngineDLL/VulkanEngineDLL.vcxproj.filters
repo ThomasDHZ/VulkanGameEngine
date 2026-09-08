@@ -168,6 +168,9 @@
     <ClInclude Include="GameObjectComponentRegistry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IblRenderSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -271,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="GameObjectComponentRegistry.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IblRenderSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

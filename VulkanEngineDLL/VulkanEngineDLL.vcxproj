@@ -163,6 +163,7 @@
     <ClInclude Include="CHelper.h" />
     <ClInclude Include="GameObjectComponentRegistry.h" />
     <ClInclude Include="GameObjectSystem.h" />
+    <ClInclude Include="IblRenderSystem.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="LevelSystem.h" />
     <ClInclude Include="LightSystem.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="CHelper.cpp" />
     <ClCompile Include="GameObjectComponentRegistry.cpp" />
     <ClCompile Include="GameObjectSystem.cpp" />
+    <ClCompile Include="IblRenderSystem.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="LevelSystem.cpp" />
     <ClCompile Include="LightSystem.cpp" />
