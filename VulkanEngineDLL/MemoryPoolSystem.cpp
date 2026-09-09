@@ -522,7 +522,7 @@ uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)
     if (texture.IsCubeMap())
     {
         uint32 gpuTextureIndex = memoryPoolSystem.AllocateObject(kTextureCubeMapMetadataBuffer);
-        TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(gpuTextureIndex);
+        TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTextureCubeMapMetadataHeader(gpuTextureIndex);
         textureMetaDataHeader.Width = texture.TextureSize().x;
         textureMetaDataHeader.Height = texture.TextureSize().y;
         textureMetaDataHeader.Depth = texture.TextureSize().z;
@@ -536,7 +536,6 @@ uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)
     else
     {
         uint32 gpuTextureIndex = memoryPoolSystem.AllocateObject(kTexture2DMetadataBuffer);
-        SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
         TextureMetadataHeader& textureMetaDataHeader = memoryPoolSystem.UpdateTexture2DMetadataHeader(gpuTextureIndex);
         textureMetaDataHeader.Width = texture.TextureSize().x;
         textureMetaDataHeader.Height = texture.TextureSize().y;
@@ -658,6 +657,14 @@ void MemoryPoolSystem::FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 ind
     {
         sub.ActiveCount--;
     }
+}
+
+void MemoryPoolSystem::ResetMemoryPool()
+{
+    GpuDataBufferMemoryPoolSize = UINT32_MAX;
+    MemorySubPoolHeader.clear();
+    GpuDataMemoryPoolHeader = MemoryPoolBufferHeader();
+    GpuDataBufferMemoryPool.clear();
 }
 
 void MemoryPoolSystem::UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding)

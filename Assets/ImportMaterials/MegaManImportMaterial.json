@@ -34,6 +34,7 @@
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
+    "TextureUsageType": 2,
     "MipMapCount": 1,
     "IsSkyBox": false,
     "SamplerCreateInfo": {
@@ -62,6 +63,7 @@
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
+    "TextureUsageType": 2,
     "MipMapCount": 1,
     "IsSkyBox": false,
     "SamplerCreateInfo": {
@@ -95,6 +97,7 @@
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
+    "TextureUsageType": 2,
     "MipMapCount": 1,
     "IsSkyBox": false,
     "SamplerCreateInfo": {
@@ -123,6 +126,7 @@
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
+    "TextureUsageType": 2,
     "MipMapCount": 1,
     "IsSkyBox": false,
     "SamplerCreateInfo": {

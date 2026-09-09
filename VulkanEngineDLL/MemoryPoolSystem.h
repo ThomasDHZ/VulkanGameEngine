@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Platform.h>
 #include "ShaderSystem.h"
 
@@ -207,6 +206,7 @@ public:
 	 Vector<SpriteInstance>									 SpriteInstanceBufferList();
 
 	 void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
+	 void													 ResetMemoryPool();
 
 	 const MemoryPoolSubBufferHeader						 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
 	 const Vector<VkDescriptorBufferInfo>					 GetSceneDataBufferDescriptor() const;
