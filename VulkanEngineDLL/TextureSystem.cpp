@@ -343,6 +343,7 @@ void TextureSystem::Destroy()
 	{
 		if (!texture.texture.IsRenderPassAttachment())
 		{
+			if (texture.gpuTextureBufferIndex != UINT32_MAX) memoryPoolSystem.FreeObject(kTexture2DMetadataBuffer, texture.gpuTextureBufferIndex);
 			texture.texture.DestroyTexture();
 			texture.imGuiDescriptorSet = VK_NULL_HANDLE;
 		}
@@ -351,6 +352,7 @@ void TextureSystem::Destroy()
 
 	for (auto& texture3D : Texture3DList)
 	{
+		if (texture3D.gpuTextureBufferIndex != UINT32_MAX) memoryPoolSystem.FreeObject(kTexture3DMetadataBuffer, texture3D.gpuTextureBufferIndex);
 		texture3D.texture.DestroyTexture();
 		texture3D.imGuiDescriptorSet = VK_NULL_HANDLE;
 	}
@@ -360,6 +362,7 @@ void TextureSystem::Destroy()
 	{
 		if (!cubeMap.texture.IsRenderPassAttachment())
 		{
+			if (cubeMap.gpuTextureBufferIndex != UINT32_MAX) memoryPoolSystem.FreeObject(kTextureCubeMapMetadataBuffer, cubeMap.gpuTextureBufferIndex);
 			cubeMap.texture.DestroyTexture();
 			cubeMap.imGuiDescriptorSet = VK_NULL_HANDLE;
 		}

@@ -8,6 +8,7 @@
 #include "CollisionSystem.h"
 #include "ComponentSystem.h"
 #include "GameObjectComponentRegistry.h"
+#include <unordered_set>
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
