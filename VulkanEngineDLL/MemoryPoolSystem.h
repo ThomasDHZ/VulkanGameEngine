@@ -146,6 +146,10 @@ private:
 	static constexpr size_t									 SpriteInstanceInitialCapacity = 1024;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
+	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
+	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
+	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
+
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();
@@ -162,9 +166,6 @@ public:
 	static constexpr uint32									 Texture3DInitialCapacity = 128; 
 	static constexpr uint32									 TextureCubeMapInitialCapacity = 128;
 
-	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
-	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
-	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;
 	void*													 SceneDataPtr = nullptr;
@@ -212,6 +213,7 @@ public:
 	 const Vector<VkDescriptorBufferInfo>					 GetSceneDataBufferDescriptor() const;
 	 const Vector<VkDescriptorBufferInfo>					 GetBindlessDataBufferDescriptor() const;
 	 const Vector<VkDescriptorImageInfo>					 GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const;
+	 const MemoryPoolLoader									 GetMemoryPoolInfo();
 };
 extern  MemoryPoolSystem& memoryPoolSystem;
 inline MemoryPoolSystem& MemoryPoolSystem::Get()

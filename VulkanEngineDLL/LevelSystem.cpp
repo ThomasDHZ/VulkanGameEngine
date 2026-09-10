@@ -40,13 +40,15 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 
+    std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
+
     for (auto& renderPass : json["MainRenderPassList"])
     {
         auto a = renderPass.dump();
-        if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"]));
+        if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));
         else
         {
-            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"]);
+            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool);
             textureSystem.GenerateTexture(renderPassId);
         }
     }

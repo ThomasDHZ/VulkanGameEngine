@@ -20,13 +20,13 @@ void RenderSystem::Update(void* windowHandle, const float& deltaTime)
     RecreateSwapchain(windowHandle, deltaTime);
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath)
+RenderPassGuid RenderSystem::LoadRenderPass(const String& jsonPath, std::optional<MemoryPoolLoader> memoryPoolLoader)
 {
     RenderPassLoader renderPassLoader = fileSystem.LoadJsonFile(jsonPath).get<RenderPassLoader>();
-    return LoadRenderPass(renderPassLoader);
+    return LoadRenderPass(renderPassLoader, memoryPoolLoader);
 }
 
-RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
+RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, std::optional<MemoryPoolLoader> memoryPoolLoader)
 {
     VulkanRenderPass vulkanRenderPass = VulkanRenderPass();
     vulkanRenderPass.LoadRenderPass(renderPassLoader);
@@ -71,7 +71,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader)
     for (auto& pipelineLoaderJsonPath : renderPassLoader.PipelineList)
     {
         VulkanPipelineLoader pipelineLoader = fileSystem.LoadJsonFile<VulkanPipelineLoader>(pipelineLoaderJsonPath);
-        LoadPipeline(renderPassLoader, pipelineLoader);
+        LoadPipeline(renderPassLoader, pipelineLoader, memoryPoolLoader);
     }
     return renderPassLoader.RenderPassId;
 }
@@ -90,7 +90,7 @@ VkGuid RenderSystem::LoadShader(ShaderLoader& shaderLoader)
     RenderShaderMap[shader.ShaderId()] = shader;
 }
 
-VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader)
+VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader, std::optional<MemoryPoolLoader> memoryPoolLoader)
 {
     if (RenderPipelineExists(pipelineLoader.PipelineId)) return pipelineLoader.PipelineId;
 
@@ -122,9 +122,7 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
     pipelineLoader.RenderPassInputTextures = descriptorSetInfoList;
     pipelineLoader.BindlessDescriptorSetIndex = pipelineLoader.BindlessDescriptorSetIndex;
     pipelineLoader.UseGlobalBindlessSet = renderPassLoader.UseGlobalBindlessSet;
-    pipelineLoader.GlobalBindlessPool = memoryPoolSystem.GlobalBindlessPool;
-    pipelineLoader.GlobalBindlessDescriptorSet = memoryPoolSystem.GlobalBindlessDescriptorSet;
-    pipelineLoader.GlobalBindlessDescriptorSetLayout = memoryPoolSystem.GlobalBindlessDescriptorSetLayout;
+    pipelineLoader.MemoryPoolLoader = memoryPoolLoader.has_value() ? memoryPoolLoader.value() : std::optional<MemoryPoolLoader>();
     pipelineLoader.PipelineMultisampleStateCreateInfo.rasterizationSamples = RenderPassMap[renderPassLoader.RenderPassId].SampleCount();
     pipelineLoader.PipelineMultisampleStateCreateInfo.sampleShadingEnable = (RenderPassMap[renderPassLoader.RenderPassId].SampleCount() > VK_SAMPLE_COUNT_1_BIT);
 

@@ -756,3 +756,13 @@ const Vector<VkDescriptorImageInfo> MemoryPoolSystem::GetSubPassInputTextureDesc
     }
     return descriptorSetInfoList;
 }
+
+const MemoryPoolLoader MemoryPoolSystem::GetMemoryPoolInfo()
+{
+    return MemoryPoolLoader
+    {
+        .GlobalBindlessPool = GlobalBindlessPool,
+        .GlobalBindlessDescriptorSet = GlobalBindlessDescriptorSet,
+        .GlobalBindlessDescriptorSetLayout = GlobalBindlessDescriptorSetLayout
+    };
+}
