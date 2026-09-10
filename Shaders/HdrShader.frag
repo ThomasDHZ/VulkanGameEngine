@@ -60,23 +60,26 @@ layout(binding = 4) uniform sampler3D Texture3DMap[];
 layout(location = 0) in vec2 TexCoords;
 layout(location = 0) out vec4 outColor;
 
-const float Gamma = 2.2;
-const float Exposure = 1.0;
-void main() 
-{
+const float Gamma    = 2.2;
+const float Exposure = 0.6;   // start here; your cube is hot
 
-	vec4 a = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	for(int x = 0; x < bindlessBuffer.Texture2DCount; x++)
-	{
-	vec3 hdrColor2 = texture(TextureMap[x], TexCoords).rgb;
-	}
-		for(int x = 0; x < bindlessBuffer.TextureCubeMapCount; x++)
-	{
-	vec3 hdrColor2 = texture(CubeMap[x], vec3(0.0f)).rgb;
-	}
-    vec3 hdrColor = texture(TextureMap[sceneDataBuffer.HDRMapInputIndex], TexCoords).rgb;
-    vec3 finalColor = hdrColor;
-    vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
+vec3 ACESFilm(vec3 x)
+{
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
+void main()
+{
+    vec3 hdr = texture(TextureMap[sceneDataBuffer.HDRMapInputIndex], TexCoords).rgb;
+    hdr *= Exposure;
+
+    vec3 mapped = ACESFilm(hdr);
     mapped = pow(mapped, vec3(1.0 / Gamma));
+
     outColor = vec4(mapped, 1.0);
 }

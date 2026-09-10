@@ -95,12 +95,6 @@ vec4 SampleTexture(uint textureIndex, vec2 uv)
     return vec4(1.0, 0.0, 1.0, 1.0);
 }
 
-mat3 TBN = mat3(
-    vec3(1.0, 0.0, 0.0),   // Tangent   (along X/UV.x)
-    vec3(0.0, 1.0, 0.0),   // Bitangent (along Y/UV.y)
-    vec3(0.0, 0.0, 1.0)    // Normal    (+Z)
-);
-
 vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
     if (sceneData.UseHeightMap == 0) return uv;
@@ -177,7 +171,12 @@ void main()
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
     if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-    vec3 viewDirWS = normalize(sceneDataBuffer.ViewDirection);
+    vec3 N = normalize(sceneDataBuffer.CameraPosition - WorldPos); // or the instance facing
+    vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
+    vec3 B = cross(N, T);
+    mat3 TBN = mat3(T, B, N);
+
+    vec3 viewDirWS = normalize(sceneDataBuffer.CameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId);
 

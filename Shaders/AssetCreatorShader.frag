@@ -162,10 +162,10 @@ void main()
     tangentNormal = normalize(tangentNormal);
     vec2 encodedNormal = OctahedronEncode(tangentNormal);
 
-    outAlbedo        = albedo;
-    outNormalData    = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
-    outPackedMRO     = vec4(Pack8bitPair(metallic, roughness), Pack8bitPair(ambientOcclusion, clearcoatTint), Pack8bitPair(material.ClearcoatStrength, material.ClearcoatRoughness), 1.0f);
-    outPackedSheenSSS = vec4(Pack8bitPair(sheenColor.r, sheenColor.g), Pack8bitPair(sheenColor.b, material.SheenIntensity),  Pack8bitPair(sssColor.r, sssColor.g),  Pack8bitPair(sssColor.b, thickness));
-    outUnused        = vec4(0.0);   
-    outEmission      = vec4(emission, 1.0);
+    outAlbedo         = vec4(albedo.rgb, albedo.a);
+    outNormalData     = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
+    outPackedMRO = vec4(metallic, roughness, ambientOcclusion, 1.0);
+    outPackedSheenSSS = vec4(sheenColor, material.SheenIntensity);
+    outUnused         = vec4(material.ClearcoatStrength, material.ClearcoatRoughness, material.Anisotropy, material.AnisotropyRotation);
+    outEmission       = vec4(emission, 1.0);
 }
