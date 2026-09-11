@@ -207,8 +207,8 @@ void main()
 
     outPosition      = vec4(WorldPos, 1.0);
     outAlbedo        = albedoData;
-    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, heightRaw);
-    outPackedMRO  = vec4(packedMROData, selfShadow);
+    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, selfShadow);
+    outPackedMRO = vec4(packedMROData, 1.0f);
     outPackedSheenSSS = packedSheenSSSData;
     outTempMap       = tempMapData;
     outParallaxInfo  = vec4(finalUV - TexCoords, 0.0, 1.0);

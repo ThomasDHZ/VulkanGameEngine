@@ -74,8 +74,7 @@ struct Material
     float ClearcoatStrength;
     float ClearcoatRoughness;
     float SheenIntensity;
-    float Thickness;      
-    float ShiftedHeight;
+    float Thickness;
     float SelfShadow;
 };
 
