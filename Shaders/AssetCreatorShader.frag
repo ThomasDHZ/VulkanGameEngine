@@ -164,7 +164,7 @@ void main()
 
     outAlbedo         = vec4(albedo.rgb, albedo.a);
     outNormalData     = vec4(encodedNormal * 0.5 + 0.5, material.NormalStrength, height);
-    outPackedMRO = vec4(metallic, roughness, ambientOcclusion, 1.0);
+    outPackedMRO      = vec4(metallic, roughness, ambientOcclusion, 1.0);
     outPackedSheenSSS = vec4(sheenColor, material.SheenIntensity);
     outUnused         = vec4(material.ClearcoatStrength, material.ClearcoatRoughness, material.Anisotropy, material.AnisotropyRotation);
     outEmission       = vec4(emission, 1.0);

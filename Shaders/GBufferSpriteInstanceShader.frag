@@ -122,8 +122,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     vec2  prevUV       = currentUV + deltaUV;
     float afterDepth   = height - currentDepth;
-    float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV, 0.0).a) 
-                         - (currentDepth - 1.0/numLayers);
+    float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV, 0.0).a) - (currentDepth - 1.0/numLayers);
 
     float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
     vec2  finalUV      = mix(currentUV, prevUV, weight);
@@ -135,6 +134,31 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
     return finalUV;
 }
  
+float HeightSelfShadow(vec2 uv, vec3 Lts, uint heightIdx, float startH, vec2 minUV, vec2 maxUV)
+{
+    if (Lts.z <= 0.0)
+        return 1.0;
+
+    const int steps = 20;
+    float step = max(sceneData.HeightScale, 0.05) * 0.02;
+    vec2  dUV  = Lts.xy * step;
+    float rayH = startH;
+    vec2  p    = uv;
+
+    for (int i = 0; i < steps; ++i)
+    {
+        p    += dUV;
+        rayH += Lts.z * step;
+        if (any(lessThan(p, minUV)) || any(greaterThan(p, maxUV)))
+            break;
+
+        float h = textureLod(TextureMap[heightIdx], p, 0.0).a; // raw, same as startH
+        if (h > rayH + 0.02)
+            return mix(0.45, 1.0, float(i) / float(steps));
+    }
+    return 1.0;
+}
+
 vec2 OctahedronEncode(vec3 normal) 
 {
     vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
@@ -171,8 +195,11 @@ void main()
     if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
     if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-    vec3 N = normalize(sceneDataBuffer.CameraPosition - WorldPos); // or the instance facing
+
+    vec3 N = normalize(sceneDataBuffer.CameraPosition - WorldPos); // toward camera — correct for a billboard
     vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
+    if (dot(T, T) < 1e-6) T = normalize(cross(vec3(1.0, 0.0, 0.0), N));
+    T = normalize(T);
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
 
@@ -182,11 +209,11 @@ void main()
 
     vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            finalUV, -0.5f).rgba;    
     vec3 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgb;    
-    vec4 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgba;   
+    vec3 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgb;   
     vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
     vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
     vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;
-    float height              = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).a;
+    float heightRaw           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).a;
     if (albedoData.a < 0.1f) discard; 
 
     vec2 f = normalData.xy * 2.0f - 1.0f;
@@ -199,10 +226,18 @@ void main()
     vec3 normalWS = normalize(TBN * tangentNormal);
     vec2 encodedNormalWS = OctahedronEncode(normalWS);
 
+    vec2 minUV = PS_UVOffset.xy;
+    vec2 maxUV = PS_UVOffset.xy + PS_UVOffset.zw;
+    vec3 Lws = normalize(-GetDirectionalLight(0).LightDirection);
+    vec3 Lts = normalize(transpose(TBN) * Lws);
+
+    float height = 1.0 - heightRaw;
+    float selfShadow = HeightSelfShadow(finalUV, Lts, material.NormalDataId, heightRaw, minUV, maxUV);
+
     outPosition = vec4(WorldPos, 1.0);
     outAlbedo = albedoData;
-    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, height);
-    outPackedMRO = packedMROData;
+    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, heightRaw);
+    outPackedMRO = vec4(packedMROData, selfShadow);
     outPackedSheenSSS = packedSheenSSSData;
     outTempMap = tempMapData;
     outParallaxInfo = vec4(finalUV - UV, 0.0f, 1.0);

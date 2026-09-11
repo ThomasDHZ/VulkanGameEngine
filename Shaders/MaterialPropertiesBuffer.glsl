@@ -76,6 +76,7 @@ struct Material
     float SheenIntensity;
     float Thickness;      
     float ShiftedHeight;
+    float SelfShadow;
 };
 
 struct CubeMapMaterial

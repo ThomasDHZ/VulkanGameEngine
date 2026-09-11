@@ -130,6 +130,7 @@ void main()
         vec3 ndc = vec3(gl_FragCoord.xy * sceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
         vec4 viewPos = sceneDataBuffer.InverseProjection * vec4(ndc, 1.0);
         viewPos /= viewPos.w;
+
         vec3 viewDir  = normalize(viewPos.xyz);
         vec3 worldDir = normalize((sceneDataBuffer.InverseView * vec4(viewDir, 0.0)).xyz);
         vec3 sky      = textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb;
@@ -175,6 +176,7 @@ Material UnpackMaterial()
     material.Metallic         = packedMRO.r;
     material.Roughness        = clamp(packedMRO.g, 0.04, 1.0);
     material.AmbientOcclusion = packedMRO.b;
+    material.SelfShadow       = packedMRO.a; 
 
     material.Normal = normalize(OctahedronDecode(normalData.xy * 2.0 - 1.0));
     return material;
@@ -187,17 +189,16 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
     {
         const DirectionalLightBuffer light = GetDirectionalLight(i);
 
-        // If this vector is "sun travels toward", flip the sign
-        vec3 L = normalize(light.LightDirection);
+        vec3 L = normalize(-light.LightDirection);
         vec3 H = normalize(V + L);
 
         float NdotL = max(dot(material.Normal, L), 0.0);
-        if (NdotL <= 0.0)
-            continue;
+        if (NdotL <= 0.0) continue;
 
         float NdotV = max(dot(material.Normal, V), 0.0);
 
         vec3 radiance = light.LightColor * light.LightIntensity;
+        radiance *= material.SelfShadow;
 
         float NDF = DistributionGGX(material.Normal, H, material.Roughness);
         float G   = GeometrySmith(material.Normal, V, L, material.Roughness);
@@ -219,20 +220,19 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
 
         vec3  toLight  = light.LightPosition - material.Position;
         float distance = length(toLight);
-        if (distance > light.LightRadius)
-            continue;
+        if (distance > light.LightRadius) continue;
 
         vec3 L = toLight / max(distance, 1e-4);
         vec3 H = normalize(V + L);
 
         float NdotL = max(dot(material.Normal, L), 0.0);
-        if (NdotL <= 0.0)
-            continue;
+        if (NdotL <= 0.0) continue;
 
         float atten = 1.0 - clamp(distance / light.LightRadius, 0.0, 1.0);
         atten *= atten;
 
         vec3 radiance = light.LightColor * light.LightIntensity * atten;
+        radiance *= material.SelfShadow;
 
         float NdotV = max(dot(material.Normal, V), 0.0);
         float NDF   = DistributionGGX(material.Normal, H, material.Roughness);
@@ -263,4 +263,67 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N, vec3 R, Material material)
 
     vec3 ambient = (kD * diffuseIBL + specularIBL) * material.AmbientOcclusion;
     return max(ambient, vec3(0.02) * material.Albedo);
+}
+
+float DirectionalSelfShadow(vec2 finalUV, vec3 normalWS, uint lightIndex, float currentHeight)
+{
+//    if (currentHeight < 0.001f) return 1.0f;
+//
+//    const DirectionalLightBuffer light = GetDirectionalLight(lightIndex);
+//    mat3 worldToTangent = transpose(ReconstructTBN(normalWS));
+//    vec3 lightDirWS = normalize(light.LightDirection);
+//    vec3 lightDirTS = normalize(worldToTangent * lightDirWS);
+//
+//    if (dot(lightDirTS, vec3(0,0,1)) < 0.1f) return 0.5f;  // softer backface
+//
+//    const int maxSteps = 48;
+//    const float stepSize = 0.04f;
+//    float shadow = 1.0f;
+//    vec2 marchUV = finalUV;
+//    vec2 deltaUV = lightDirTS.xy * stepSize;
+//    float bias = light.ShadowBias * 0.5f;
+//    float rayHeight = currentHeight;
+//
+//    for (int x = 0; x < maxSteps; ++x)
+//    {
+//        marchUV += deltaUV;
+//        rayHeight += stepSize;
+//        if (rayHeight > currentHeight + bias)
+//        {
+//            shadow = mix(0.3f, 1.0f, float(x) / float(maxSteps));  // soft falloff
+//            break;
+//        }
+//    }
+    return 0.0f;
+}
+
+float PointSelfShadow(vec2 finalUV, vec3 lightDirTS, uint lightIndex, float currentHeight)
+{
+    if (currentHeight < 0.001f) return 1.0f;
+
+    const PointLightBuffer light = GetPointLight(lightIndex);
+    float NdotLTS = dot(lightDirTS, vec3(0,0,1));
+    if (NdotLTS < 0.1f) return 0.6f;
+
+    const int maxSteps = 32;
+    const float stepSize = 0.04f;
+    float shadow = 1.0f;
+    vec2 marchUV = finalUV;
+    vec2 deltaUV = lightDirTS.xy * stepSize;
+    float bias = 0.02f;
+    float rayHeight = currentHeight;
+
+    for (int x = 0; x < maxSteps; ++x)
+    {
+        marchUV += deltaUV;
+        if (any(lessThan(marchUV, vec2(0.0))) || any(greaterThan(marchUV, vec2(1.0)))) break;
+
+        rayHeight += stepSize;
+        if (rayHeight > currentHeight + bias)
+        {
+            shadow = mix(0.4f, 1.0f, float(x) / float(maxSteps));
+            break;
+        }
+    }
+    return shadow;
 }
