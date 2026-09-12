@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "MemorySystem.h"
 #include <ktx/include/ktx.h>
@@ -16,7 +16,7 @@ typedef struct fileState
 	bool Valid;
 }FileState;
 
-class FileSystem
+class ENGINE_DLL_EXPORT FileSystem
 {
 public:
 	static FileSystem& Get();
@@ -63,7 +63,7 @@ public:
 	void LoadAndroidAssetManager(AAssetManager* androidAssetManager);
 #endif
 };
-extern  FileSystem& fileSystem;
+ENGINE_DLL_EXPORT extern  FileSystem& fileSystem;
 inline FileSystem& FileSystem::Get()
 {
 	static FileSystem instance;

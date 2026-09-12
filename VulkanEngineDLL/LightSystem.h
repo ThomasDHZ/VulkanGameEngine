@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
@@ -16,7 +16,7 @@ struct DirectionalLightComponent
     uint DirectionalLightMemoryPoolIndex = UINT32_MAX;
 };
 
-class LightSystem
+class ENGINE_DLL_EXPORT  LightSystem
 {
 public:
     static LightSystem& Get();
@@ -38,7 +38,7 @@ public:
       uint                    FindDirectionalLightIndex(void* ptr);
       uint                    FindPointLightIndex(void* ptr);
 };
-extern  LightSystem& lightSystem;
+ENGINE_DLL_EXPORT extern  LightSystem& lightSystem;
 inline LightSystem& LightSystem::Get()
 {
     static LightSystem instance;

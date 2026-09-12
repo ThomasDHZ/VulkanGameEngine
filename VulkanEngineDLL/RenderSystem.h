@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "JsonStruct.h"
 #include <VulkanSystem.h>
@@ -39,7 +39,7 @@ struct RenderPassNode
     uint32                                                        MipCount = 0;
 };
 
-class RenderSystem
+class ENGINE_DLL_EXPORT RenderSystem
 {
 public:
     static RenderSystem& Get();
@@ -95,7 +95,7 @@ public:
 
     void                                                    Destroy();
 };
-extern  RenderSystem& renderSystem;
+ENGINE_DLL_EXPORT extern RenderSystem& renderSystem;
 inline RenderSystem& RenderSystem::Get()
 {
     static RenderSystem instance;

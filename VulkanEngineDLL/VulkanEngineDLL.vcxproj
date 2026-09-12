@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;ktx.lib;ktx_read.lib;lua.lib;nethost.lib;VulkanEngineCore.lib;freetype28.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;ktx.lib;ktx_read.lib;lua.lib;nethost.lib;freetype28.lib;VulkanEngineCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -197,6 +197,7 @@
     <ClCompile Include="ComponentSystem.cpp" />
     <ClCompile Include="CSharpScriptSystem.cpp" />
     <ClCompile Include="DebugSystem.cpp" />
+    <ClCompile Include="DLL.cpp" />
     <ClCompile Include="DLLSystem.cpp" />
     <ClCompile Include="EngineConfigSystem.cpp" />
     <ClCompile Include="FileSystem.cpp" />
@@ -216,6 +217,7 @@
     <ClCompile Include="SpriteSystem.cpp" />
     <ClCompile Include="TextSystem.cpp" />
     <ClCompile Include="Transform2DComponent.cpp" />
+    <ClCompile Include="VmaImplementation.cpp" />
     <ClCompile Include="VulkanError.cpp" />
     <ClCompile Include="from_json.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />

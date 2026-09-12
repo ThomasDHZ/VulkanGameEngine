@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include <VulkanShader.h>
 #include <VulkanPipeline.h>
@@ -8,7 +8,7 @@
 #include "BufferSystem.h"
 #include <cstdlib>
 
-class ShaderSystem
+class ENGINE_DLL_EXPORT ShaderSystem
 {
 public:
     static ShaderSystem& Get();
@@ -79,7 +79,7 @@ public:
         std::memcpy(variable.Value.data(), &value, variable.Value.size());
     }
 };
-extern  ShaderSystem& shaderSystem;
+ENGINE_DLL_EXPORT extern ShaderSystem& shaderSystem;
 inline ShaderSystem& ShaderSystem::Get()
 {
     static ShaderSystem instance;

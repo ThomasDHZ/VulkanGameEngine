@@ -1,4 +1,5 @@
 #pragma once
+#include "DLL.h"
 #include <Platform.h>
 #include "ShaderSystem.h"
 
@@ -126,7 +127,7 @@ struct MemoryPoolBufferHeader
 
 struct MeshPropertiesStruct;
 struct GPUMaterial;
-class MemoryPoolSystem
+class ENGINE_DLL_EXPORT MemoryPoolSystem
 {
 public:
 	static MemoryPoolSystem& Get();
@@ -215,7 +216,7 @@ public:
 	 const Vector<VkDescriptorImageInfo>					 GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const;
 	 const MemoryPoolLoader									 GetMemoryPoolInfo();
 };
-extern  MemoryPoolSystem& memoryPoolSystem;
+ENGINE_DLL_EXPORT extern  MemoryPoolSystem& memoryPoolSystem;
 inline MemoryPoolSystem& MemoryPoolSystem::Get()
 {
 	static MemoryPoolSystem instance;

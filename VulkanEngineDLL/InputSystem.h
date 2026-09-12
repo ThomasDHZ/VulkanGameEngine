@@ -1,9 +1,9 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include <InputEnum.h>
 
-class InputSystem
+class ENGINE_DLL_EXPORT InputSystem
 {
 public:
     static InputSystem& Get();
@@ -25,7 +25,7 @@ public:
      bool IsKeyPressed(int key) const;
      bool IsKeyReleased(int key) const;
 };
-extern  InputSystem& inputSystem;
+ENGINE_DLL_EXPORT extern  InputSystem& inputSystem;
 inline InputSystem& InputSystem::Get()
 {
     static InputSystem instance;

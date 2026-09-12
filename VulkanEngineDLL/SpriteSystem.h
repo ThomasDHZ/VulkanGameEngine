@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "GameObjectSystem.h"
 #include "Transform2DComponent.h"
@@ -56,7 +56,7 @@ enum TileColliderTypeEnum
 
 struct RenderableTag {};
 
-class SpriteSystem
+class ENGINE_DLL_EXPORT SpriteSystem
 {
 public:
     static SpriteSystem& Get();
@@ -100,7 +100,7 @@ public:
      bool                                   SpriteVramExists(const VkGuid& vramId);
      void                                   Destroy(Sprite& sprite);
 };
-extern  SpriteSystem& spriteSystem;
+ENGINE_DLL_EXPORT extern  SpriteSystem& spriteSystem;
 inline SpriteSystem& SpriteSystem::Get()
 {
     static SpriteSystem instance;

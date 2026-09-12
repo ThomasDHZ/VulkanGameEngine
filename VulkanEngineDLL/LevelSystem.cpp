@@ -52,7 +52,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
             textureSystem.GenerateTexture(renderPassId);
         }
     }
-   // LevelEditorRenderPass(levelPath);
+    //LevelEditorRenderPass(levelPath);
 
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);
@@ -63,13 +63,13 @@ void LevelSystem::LoadLevel(const char* levelPath)
 void LevelSystem::LevelEditorRenderPass(const char* levelPath)
 {
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
+    std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
     for (auto& renderPass : json["LevelEditorRenderPass"])
-    {
-        auto a = renderPass.dump();
-        if (!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"]));
+    { 
+        if (!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));
         else
         {
-            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"]);
+            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool);
             textureSystem.GenerateTexture(renderPassId);
         }
     }

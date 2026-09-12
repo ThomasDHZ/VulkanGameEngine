@@ -58,24 +58,52 @@
   ],
   "GameObjectList": [
     {
-      "GameObjectType": 1,
-      "GameObjectPositionOverride": [
-        1450.0,
-        100.0
-      ]
-    },
-    {
-      "GameObjectType": 5,
-      "GameObjectPositionOverride": [
-        2425.0,
-        1200.0
-      ]
-    },
-    {
       "GameObjectType": 3,
       "GameObjectPositionOverride": [
         0.0,
         0.0
+      ]
+    },
+    {
+      "GameObjectType": 1,
+      "GameObjectPositionOverride": [
+        527.6328,
+        217.1766
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        569.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        1169.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        1769.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        2369.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        3069.6525,
+        592.9432
       ]
     }
   ],

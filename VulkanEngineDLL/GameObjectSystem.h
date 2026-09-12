@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "MemorySystem.h"
 #include "Transform2DComponent.h"
@@ -11,6 +11,7 @@
 #include <InputEnum.h>
 #include <glfw3.h>
 #include <GameController.h>
+#include "../VulkanEngineInterop/DLL.h"
 
 struct InputComponent
 {
@@ -120,7 +121,7 @@ struct DebugObjectComponent
 
 typedef entt::registry GameObjectRegistry;
 typedef entt::entity   Entity;
-class GameObjectSystem
+class ENGINE_DLL_EXPORT GameObjectSystem
 {
 public:
     static GameObjectSystem& Get();
@@ -153,6 +154,7 @@ public:
      entt::entity                                 FindGameObject(uint gameObjectId);
      const GameObjectBehavior                     FindGameObjectBehavior(GameObjectTypeEnum gameObjectClass);
      bool                                         GameObjectBehaviorExists(GameObjectTypeEnum gameObjectClass);
+     const GameObjectRegistry* GetEntityRegistry();
 
     template<typename T>
     T* GetGameObjectComponent(entt::entity entity)
@@ -167,9 +169,10 @@ public:
         EntityRegistry.emplace<T>(gameObjectId, *gameObjectComponent);
     }
 };
-extern  GameObjectSystem& gameObjectSystem;
+ENGINE_DLL_EXPORT extern  GameObjectSystem& gameObjectSystem;
 inline GameObjectSystem& GameObjectSystem::Get()
 {
     static GameObjectSystem instance;
     return instance;
 }
+ENGINE_DLL_EXPORT entt::registry& GameObjectSystem_Registry();

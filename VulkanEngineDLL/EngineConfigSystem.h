@@ -1,9 +1,9 @@
 ﻿#pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "FileSystem.h"
 
-class ConfigSystem
+class ENGINE_DLL_EXPORT ConfigSystem
 {
 private:
     ivec2 ParseWindowResolution(const nlohmann::json& j);
@@ -56,5 +56,4 @@ public:
     ConfigSystem LoadConfig(const String& configPath);
 #endif
 };
-
-extern  ConfigSystem configSystem;
+ENGINE_DLL_EXPORT extern  ConfigSystem configSystem;

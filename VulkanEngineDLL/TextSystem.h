@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H  
@@ -14,7 +14,7 @@ struct TextCharacter
     vec2   UVMax;
 };
 
-class TextSystem
+class ENGINE_DLL_EXPORT TextSystem
 {
 public:
     static TextSystem& Get();
@@ -36,7 +36,7 @@ public:
      void SetFont(String font);
      void RenderText(String& text, vec2 textPosition, float scale, vec3 color);
 };
-extern  TextSystem& textSystem;
+ENGINE_DLL_EXPORT extern  TextSystem& textSystem;
 inline TextSystem& TextSystem::Get()
 {
     static TextSystem instance;

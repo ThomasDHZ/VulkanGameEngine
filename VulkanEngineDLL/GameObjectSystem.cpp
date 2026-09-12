@@ -50,7 +50,7 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
             .GameObjectType = gameObjectType,
             .GameObjectAlive = true
         });
-
+    void* aafaf = (void*)&EntityRegistry;
     auto it = GameObjectBehaviorMap.find(gameObjectType);
     if (it != GameObjectBehaviorMap.end() && it->second.CreateObject)
     {
@@ -212,6 +212,11 @@ bool GameObjectSystem::GameObjectBehaviorExists(GameObjectTypeEnum gameObjectTyp
     return GameObjectBehaviorMap.contains(gameObjectType);
 }
 
+const GameObjectRegistry* GameObjectSystem::GetEntityRegistry()
+{
+    return &EntityRegistry;
+}
+
 void GameObjectSystem::DestroyGameObject(entt::entity entity)
 {
     if (!EntityRegistry.valid(entity)) return;
@@ -236,4 +241,9 @@ void GameObjectSystem::DestroyGameObject(entt::entity entity)
         }
     }
     EntityRegistry.destroy(entity);
+}
+
+entt::registry& GameObjectSystem_Registry()
+{
+     return gameObjectSystem.EntityRegistry; 
 }

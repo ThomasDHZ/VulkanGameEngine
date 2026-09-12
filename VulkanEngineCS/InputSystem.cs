@@ -12,9 +12,9 @@ namespace VulkanEngineCS
     {
         public static void Update(float deltaTime)
         {
-            DLLSystem.CallDLLFunc(() => InputSystem_LoadRenderPass(deltaTime));
+            DLLSystem.CallDLLFunc(() => InputSystem_Update(deltaTime));
         }
 
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void InputSystem_LoadRenderPass(float deltaTime);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void InputSystem_Update(float deltaTime);
     }
 }

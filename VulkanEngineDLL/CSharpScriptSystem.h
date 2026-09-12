@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "DLLSystem.h"
 #include "GameObjectSystem.h"
@@ -8,7 +8,7 @@
 #include <cstdint>
 
 #include "enum.h"
-class CSharpScriptSystem
+class  ENGINE_DLL_EXPORT CSharpScriptSystem
 {
 public:
     static CSharpScriptSystem& Get();
@@ -26,7 +26,7 @@ public:
      bool Initialize();
      GameObjectBehavior LoadGameObjectScript(const String& assemblyPath, const String& typeNameString);
 };
-extern  CSharpScriptSystem& cSharpScriptSystem;
+ENGINE_DLL_EXPORT extern  CSharpScriptSystem& cSharpScriptSystem;
 inline CSharpScriptSystem& CSharpScriptSystem::Get()
 {
     static CSharpScriptSystem instance;

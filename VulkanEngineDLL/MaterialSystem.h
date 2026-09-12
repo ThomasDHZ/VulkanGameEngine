@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "BufferSystem.h"
 #include "JsonStruct.h"
@@ -32,7 +32,7 @@ struct GPUMaterial
     GPUMaterial& operator=(const GPUMaterial&) = default;
 };
 
-class MaterialSystem
+class ENGINE_DLL_EXPORT MaterialSystem
 {
     public:
         static MaterialSystem& Get();
@@ -59,7 +59,7 @@ private:
          void Destroy();
          Vector<Material> GetMaterialList() { return MaterialList; }
 }; 
-extern  MaterialSystem& materialSystem;
+ENGINE_DLL_EXPORT extern  MaterialSystem& materialSystem;
 inline MaterialSystem& MaterialSystem::Get()
 {
     static MaterialSystem instance;

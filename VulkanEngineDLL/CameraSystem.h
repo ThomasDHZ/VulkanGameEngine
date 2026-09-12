@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 
 enum CameraTypeEnum
@@ -36,7 +36,7 @@ struct Camera
 	mat4 ViewMatrix;
 };
 
-class CameraSystem
+class ENGINE_DLL_EXPORT CameraSystem
 {
 public:
     static CameraSystem& Get();
@@ -60,7 +60,7 @@ public:
      void CreateCamera(CameraTypeEnum cameraType, const ivec2& renderResolution, const vec2& position = vec2(0.0f));
 	 void Update();
 };
-extern  CameraSystem& cameraSystem;
+ENGINE_DLL_EXPORT extern  CameraSystem& cameraSystem;
 inline CameraSystem& CameraSystem::Get()
 {
     static CameraSystem instance;

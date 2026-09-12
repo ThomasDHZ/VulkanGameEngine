@@ -1,6 +1,7 @@
 #include "GameObjectSystemDLL.h"
 #include <SpriteSystem.h>
 #include <LightSystem.h>
+#include <Collider2DComponent.h>
 
 void GameObjectSystem_Update(const float& deltaTime)
 {

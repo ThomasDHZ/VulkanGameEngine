@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include <VulkanSystem.h>
 #include "SpriteSystem.h"
@@ -73,7 +73,7 @@ struct LevelLayout
     ivec2					  TileSizeinPixels;
 };
 
-class LevelSystem
+class ENGINE_DLL_EXPORT LevelSystem
 {
 public:
     static LevelSystem& Get();
@@ -123,7 +123,7 @@ public:
     Vector<Vector<uint>>                       GetLevelTileMapList();
     Vector<LevelTileSet>                       GetLevelTileSetList();
 };
-extern  LevelSystem& levelSystem;
+ENGINE_DLL_EXPORT extern  LevelSystem& levelSystem;
 inline LevelSystem& LevelSystem::Get()
 {
     static LevelSystem instance;

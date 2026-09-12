@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "ShaderSystem.h"
 #include "MemoryPoolSystem.h"
@@ -151,7 +151,7 @@ struct VertexLayout
 	void* VertexData = nullptr;
 };
 
-class MeshSystem
+class ENGINE_DLL_EXPORT MeshSystem
 {
 public:
 	static MeshSystem& Get();
@@ -196,7 +196,7 @@ public:
 	 const Mesh& FindMesh(const uint& meshId);
 	 MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
 };
-extern  MeshSystem& meshSystem;
+ENGINE_DLL_EXPORT extern  MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()
 {
 	static MeshSystem instance;

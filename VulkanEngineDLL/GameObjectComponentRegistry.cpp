@@ -102,7 +102,7 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
             PointLight& pointLight = memoryPoolSystem.UpdatePointLight(pointLightComponent.PointLightMemoryPoolIndex);
             pointLight = PointLight
             {
-                .LightPosition = vec3(ctx.Json["LightPosition"][0], ctx.Json["LightPosition"][1], ctx.Json["LightPosition"][2]),
+                .LightPosition = vec3(ctx.Position2DOverride.x, ctx.Position2DOverride.y, ctx.Json["LightPosition"][2]),
                 .LightColor = vec3(ctx.Json["LightColor"][0], ctx.Json["LightColor"][1], ctx.Json["LightColor"][2]),
                 .LightRadius = ctx.Json["LightRadius"],
                 .LightIntensity = ctx.Json["LightIntensity"],

@@ -1,8 +1,9 @@
 #pragma once
+#include "DLL.h"
 #include <Platform.h>
 #include "RenderSystem.h"
 
-class IblRenderSystem
+class ENGINE_DLL_EXPORT IblRenderSystem
 {
 public:
 	static IblRenderSystem& Get();
@@ -27,7 +28,7 @@ public:
 	Vector<RenderPassNode> CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
 	void SetEnvironment(VkGuid environmentMapGuid);
 };
-extern  IblRenderSystem& iblRenderSystem;
+ENGINE_DLL_EXPORT extern  IblRenderSystem& iblRenderSystem;
 inline IblRenderSystem& IblRenderSystem::Get()
 {
 	static IblRenderSystem instance;

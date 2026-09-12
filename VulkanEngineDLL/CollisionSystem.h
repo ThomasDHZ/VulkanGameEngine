@@ -1,9 +1,10 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "GameObjectSystem.h"
 #include "ComponentSystem.h"
 #include <entt/entt.hpp>
+#include "Collider2DComponent.h"
 
 struct CollisionEvent
 {
@@ -14,7 +15,7 @@ struct CollisionEvent
     bool IsTrigger = false;
 };
 
-class CollisionSystem
+class ENGINE_DLL_EXPORT CollisionSystem
 {
 public:
     static CollisionSystem& Get();
@@ -38,7 +39,7 @@ public:
      bool FindListener(entt::entity entity);
      void RemoveListener(entt::entity entity);
 };
-extern  CollisionSystem& collisionSystem;
+ENGINE_DLL_EXPORT extern  CollisionSystem& collisionSystem;
 inline CollisionSystem& CollisionSystem::Get()
 {
     static CollisionSystem instance;

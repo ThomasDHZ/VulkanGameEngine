@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include <VulkanTexture.h>
 #include "Pixel.h"
@@ -46,7 +46,7 @@ struct TextureReturnFileData
 
 struct VulkanRenderPass;
 struct RenderAttachmentLoader;
-class TextureSystem
+class ENGINE_DLL_EXPORT TextureSystem
 {
 public:
     static TextureSystem& Get();
@@ -78,7 +78,7 @@ public:
     const bool               TextureExists(const TextureGuid& textureGuid) const;
     void                     Destroy();
 };
-extern  TextureSystem& textureSystem;
+ENGINE_DLL_EXPORT extern  TextureSystem& textureSystem;
 inline TextureSystem& TextureSystem::Get()
 {
     static TextureSystem instance;

@@ -1,12 +1,12 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #include "nethost.h"
 #include "hostfxr.h"
 #include "coreclr_delegates.h"
 
 using string_t = std::basic_string<char_t>;
-class DLLSystem
+class ENGINE_DLL_EXPORT DLLSystem
 {
     public:
         static DLLSystem& Get();
@@ -34,7 +34,7 @@ class DLLSystem
          bool InitializeDLLRuntime(const String& assemblyPath);
          void GetDLLFunctionPtr(const String& assemblyPath, const String& typeNameString, const char_t* functionName, void** outFunctionPtr);
 };
-extern  DLLSystem& dllSystem;
+ENGINE_DLL_EXPORT extern  DLLSystem& dllSystem;
 inline DLLSystem& DLLSystem::Get()
 {
     static DLLSystem instance;

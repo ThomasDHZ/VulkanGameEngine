@@ -1,11 +1,11 @@
 #pragma once
-
+#include "DLL.h"
 #include <Platform.h>
 #if defined(_WIN32)
 #include <C:\Program Files\RenderDoc\renderdoc_app.h>
 #endif
 
-class DebugSystem
+class ENGINE_DLL_EXPORT DebugSystem
 {
 public:
 	static DebugSystem& Get();
@@ -31,7 +31,7 @@ private:
 		 void SetRootDirectory(const String& engineRoot);
 		 VkResult                 DumpVMAStats() const;
 };
-extern  DebugSystem& debugSystem;
+ENGINE_DLL_EXPORT extern  DebugSystem& debugSystem;
 inline DebugSystem& DebugSystem::Get()
 {
 	static DebugSystem instance;
