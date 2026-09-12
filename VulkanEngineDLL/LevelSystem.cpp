@@ -41,10 +41,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
-
+    iblRenderSystem.StartUp("TextureLoader/007_hdrmaps_com_free_4K.json");
     for (auto& renderPass : json["MainRenderPassList"])
     {
-        auto a = renderPass.dump();
         if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));
         else
         {
@@ -94,6 +93,7 @@ void LevelSystem::Update(const float& deltaTime)
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
     Vector<RenderPassNode> renderPassNodeList;
+    if (UseIblLighting) renderPassNodeList = iblRenderSystem.CreateDrawCommands(commandBuffer, deltaTime);
     for (auto& renderPassGuid : RenderPassDrawList)
     {
         const VulkanRenderPass& renderPass = renderSystem.FindRenderPass(renderPassGuid);

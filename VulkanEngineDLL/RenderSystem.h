@@ -80,7 +80,7 @@ public:
     void                                                    PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid& renderPassTextureGuid);
     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
-    const VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
+    VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);

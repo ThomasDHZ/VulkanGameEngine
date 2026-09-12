@@ -273,12 +273,45 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 
 Texture TextureSystem::FindTexture(const VkGuid& textureId)
 {
-	for (auto& texture : TextureList)
-	{
-		if (texture.textureGuid == textureId)
+	auto it = std::find_if(TextureList.begin(), TextureList.end(),
+		[&textureId](const Texture& texture)
 		{
-			return texture;
-		}
+			return texture.textureGuid == textureId;
+		});
+
+	if (it != TextureList.end())
+	{
+		return *it;
+	}
+	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
+}
+
+Texture TextureSystem::FindTexture3D(const VkGuid& textureId)
+{
+	auto it = std::find_if(Texture3DList.begin(), Texture3DList.end(),
+		[&textureId](const Texture& texture)
+		{
+			return texture.textureGuid == textureId;
+		});
+
+	if (it != Texture3DList.end())
+	{
+		return *it;
+	}
+	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
+}
+
+Texture TextureSystem::FindCubeMapTexture(const VkGuid& textureId)
+{
+	auto it = std::find_if(CubeMapTextureList.begin(), CubeMapTextureList.end(),
+		[&textureId](const Texture& texture)
+		{
+			return texture.textureGuid == textureId;
+		});
+
+	if (it != CubeMapTextureList.end())
+	{
+		return *it;
 	}
 	throw std::out_of_range("Texture not found: TextureId: " + textureId.ToString());
 }
@@ -291,6 +324,26 @@ const bool TextureSystem::TextureExists(const TextureGuid& textureGuid) const
 			return texture.textureGuid == textureGuid;
 		});
 	return it != TextureList.end();
+}
+
+const bool TextureSystem::Texture3DExists(const TextureGuid& textureGuid) const
+{
+	auto it = std::find_if(Texture3DList.begin(), Texture3DList.end(),
+		[&textureGuid](const Texture& texture)
+		{
+			return texture.textureGuid == textureGuid;
+		});
+	return it != Texture3DList.end();
+}
+
+const bool TextureSystem::CubeMapTextureExists(const TextureGuid& textureGuid) const
+{
+	auto it = std::find_if(CubeMapTextureList.begin(), CubeMapTextureList.end(),
+		[&textureGuid](const Texture& texture)
+		{
+			return texture.textureGuid == textureGuid;
+		});
+	return it != CubeMapTextureList.end();
 }
 
 void TextureSystem::GenerateTexture(VkGuid& renderPassId)
@@ -335,6 +388,54 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 	VkCommandBuffer commandBuffer = vulkan.CommandBuffer().BeginSingleUseCommand();
 	renderSystem.Draw(commandBuffer, node);
 	vulkan.CommandBuffer().EndSingleUseCommand(commandBuffer);
+}
+
+void TextureSystem::DestroyTexture(const VkGuid& textureId)
+{
+	if (TextureExists(textureId))
+	{
+		Texture texture = FindTexture(textureId);
+		if (!texture.texture.IsRenderPassAttachment())
+		{
+			if (texture.gpuTextureBufferIndex != UINT32_MAX) memoryPoolSystem.FreeObject(kTexture2DMetadataBuffer, texture.gpuTextureBufferIndex);
+			texture.texture.DestroyTexture();
+			texture.imGuiDescriptorSet = VK_NULL_HANDLE;
+		}
+		TextureList.erase(std::remove_if(TextureList.begin(), TextureList.end(), [&textureId](const Texture& texture)
+			{
+				return texture.textureGuid == textureId;
+			}),
+			TextureList.end());
+	}
+
+	for (auto& texture3D : Texture3DList)
+	{
+		Texture texture = FindTexture3D(textureId);
+		if (texture3D.gpuTextureBufferIndex != UINT32_MAX) memoryPoolSystem.FreeObject(kTexture3DMetadataBuffer, texture3D.gpuTextureBufferIndex);
+		texture3D.texture.DestroyTexture();
+		texture3D.imGuiDescriptorSet = VK_NULL_HANDLE;
+		Texture3DList.erase(std::remove_if(Texture3DList.begin(), Texture3DList.end(), [&textureId](const Texture& texture)
+			{
+				return texture.textureGuid == textureId;
+			}),
+			Texture3DList.end());
+	}
+
+	for (auto& cubeMap : CubeMapTextureList)
+	{
+		Texture texture = FindCubeMapTexture(textureId);
+		if (!cubeMap.texture.IsRenderPassAttachment())
+		{
+			if (cubeMap.gpuTextureBufferIndex != UINT32_MAX) memoryPoolSystem.FreeObject(kTextureCubeMapMetadataBuffer, cubeMap.gpuTextureBufferIndex);
+			cubeMap.texture.DestroyTexture();
+			cubeMap.imGuiDescriptorSet = VK_NULL_HANDLE;
+		}
+		CubeMapTextureList.erase(std::remove_if(CubeMapTextureList.begin(), CubeMapTextureList.end(), [&textureId](const Texture& texture)
+			{
+				return texture.textureGuid == textureId;
+			}),
+			CubeMapTextureList.end());
+	}
 }
 
 void TextureSystem::Destroy()

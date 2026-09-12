@@ -25,6 +25,7 @@
     <ClCompile Include="CSharpScriptSystemDLL.cpp" />
     <ClCompile Include="DllHelper.cpp" />
     <ClCompile Include="GameObjectSystemDLL.cpp" />
+    <ClCompile Include="IblRenderSystemDLL.cpp" />
     <ClCompile Include="InputSystemDLL.cpp" />
     <ClCompile Include="LevelSystemDLL.cpp" />
     <ClCompile Include="LightSystemDLL.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="DLL.h" />
     <ClInclude Include="DllHelper.h" />
     <ClInclude Include="GameObjectSystemDLL.h" />
+    <ClInclude Include="IblRenderSystemDLL.h" />
     <ClInclude Include="InputSystemDLL.h" />
     <ClInclude Include="LevelSystemDLL.h" />
     <ClInclude Include="LightSystemDLL.h" />

@@ -10,11 +10,13 @@ public:
 
 private:
 
-	VkGuid _environmentMap;
-	VkGuid _brdfRenderPassId;
-	VkGuid _environmentToCubeMapRenderPassId;
-	VkGuid _irradianceMapRenderPassId;
-	VkGuid _prefilterMapRenderPassId;
+	VkGuid		   _environmentMap;
+	VkGuid		   _brdfRenderPassId;
+	VkGuid		   _environmentToCubeMapRenderPassId;
+	VkGuid		   _irradianceMapRenderPassId;
+	VkGuid		   _prefilterMapRenderPassId;
+	Vector<VkGuid> _renderPassDrawList;
+
 
 public:
 	IblRenderSystem() = default;
@@ -22,11 +24,11 @@ public:
 	IblRenderSystem(const IblRenderSystem&) = delete;
 	IblRenderSystem& operator=(const IblRenderSystem&) = delete;
 	IblRenderSystem(IblRenderSystem&&) = delete;
+	Vector<RenderPassNode> CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
 	IblRenderSystem& operator=(IblRenderSystem&&) = delete;
 
-	void StartUp();
-	Vector<RenderPassNode> CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
-	void SetEnvironment(VkGuid environmentMapGuid);
+	void StartUp(const String& texturePath);
+	void SetEnvironmentMap(const String& texturePath);
 };
 ENGINE_DLL_EXPORT extern  IblRenderSystem& iblRenderSystem;
 inline IblRenderSystem& IblRenderSystem::Get()

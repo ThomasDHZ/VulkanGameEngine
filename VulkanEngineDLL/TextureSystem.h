@@ -75,7 +75,12 @@ public:
     void                     GenerateTexture(VkGuid& renderPassId);
 
     Texture                  FindTexture(const VkGuid& textureId);
+    Texture                  FindTexture3D(const VkGuid& textureId);
+    Texture                  FindCubeMapTexture(const VkGuid& textureId);
     const bool               TextureExists(const TextureGuid& textureGuid) const;
+    const bool               Texture3DExists(const TextureGuid& textureGuid) const;
+    const bool               CubeMapTextureExists(const TextureGuid& textureGuid) const;
+    void                     DestroyTexture(const VkGuid& textureId);
     void                     Destroy();
 };
 ENGINE_DLL_EXPORT extern  TextureSystem& textureSystem;

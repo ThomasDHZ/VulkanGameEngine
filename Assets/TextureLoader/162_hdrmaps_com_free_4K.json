@@ -1,0 +1,29 @@
+{
+  "TextureFilePath": [ "3dpea.com_162_hdrmaps_com_free_4K.ktx2" ],
+  "TextureId": "7750a037-584d-45eb-92b9-8ac4bd630349",
+  "TextureByteFormat": 109,
+  "SampleCount": 1,
+  "ImageType": 1,
+  "TextureType": 5,
+  "TextureUsageType": 7,
+  "MipMapCount": 1,
+  "IsSkyBox": false,
+  "SamplerCreateInfo": {
+    "SType": 31,
+    "MagFilter": 1,
+    "MinFilter": 1,
+    "MipmapMode": 1,
+    "AddressModeU": 0,
+    "AddressModeV": 2,
+    "AddressModeW": 2,
+    "MipLodBias": 0.0,
+    "AnisotropyEnable": true,
+    "MaxAnisotropy": 16.0,
+    "CompareEnable": false,
+    "CompareOp": 7,
+    "MinLod": 0.0,
+    "MaxLod": 1000.0,
+    "BorderColor": 2,
+    "UnnormalizedCoordinates": false
+  }
+}

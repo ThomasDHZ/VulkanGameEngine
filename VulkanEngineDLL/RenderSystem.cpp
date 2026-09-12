@@ -477,7 +477,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     return pickedId;
 }
 
-const VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
+VulkanRenderPass& RenderSystem::FindRenderPass(const RenderPassGuid& renderPassGuid)
 {
     return RenderPassMap[renderPassGuid];
 }

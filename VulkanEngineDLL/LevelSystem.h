@@ -12,6 +12,7 @@
 #ifndef PLATFORM_ANDROID
 #pragma comment(lib, "vulkan-1.lib")
 #endif
+#include "IblRenderSystem.h"
 
 struct Tile
 {
@@ -88,6 +89,7 @@ private:
 
     Vector<VkGuid>                             RenderPassDrawList;
     bool                                       WireframeModeFlag = false;
+    bool                                       UseIblLighting    = true;
 
     LevelLayer                                 LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
     VkGuid                                     LoadTileSetVRAM(const char* tileSetPath);
