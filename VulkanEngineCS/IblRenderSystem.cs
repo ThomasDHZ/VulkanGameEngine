@@ -50,7 +50,7 @@ namespace VulkanEngineCS
             return renderPassNodeList;
         }
 
-        void SetEnvironmentMap(string texturePath)
+        public static void SetEnvironmentMap(string texturePath)
         {
             DLLSystem.CallDLLFunc(() => IblRenderSystem_SetEnvironmentMap(texturePath));
         }

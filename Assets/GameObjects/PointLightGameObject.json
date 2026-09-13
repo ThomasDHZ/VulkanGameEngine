@@ -4,7 +4,7 @@
     {
       "ComponentType": 6,
       "LightPosition": [ 960, 540, 0.0 ],
-      "LightColor": [ 0.0000, 1.00, 0.000 ],
+      "LightColor": [ 1.0, 0.78, 0.48 ],
       "LightRadius": 700.0,
       "LightIntensity": 10.0,
       "ShadowStrength": 0.70,
