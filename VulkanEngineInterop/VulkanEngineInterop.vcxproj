@@ -38,6 +38,7 @@
     <ClCompile Include="ShaderSystemDLL.cpp" />
     <ClCompile Include="SpriteSystemDLL.cpp" />
     <ClCompile Include="TextureSystem.cpp" />
+    <ClCompile Include="ToDLL.cpp" />
     <ClCompile Include="VulkanRenderPassDLL.cpp" />
     <ClCompile Include="VulkanSystemDLL.cpp" />
   </ItemGroup>
@@ -62,6 +63,7 @@
     <ClInclude Include="ShaderSystemDLL.h" />
     <ClInclude Include="SpriteSystemDLL.h" />
     <ClInclude Include="TextureSystem.h" />
+    <ClInclude Include="ToDLL.h" />
     <ClInclude Include="VulkanRenderPassDLL.h" />
     <ClInclude Include="VulkanSystemDLL.h" />
   </ItemGroup>

@@ -64,29 +64,30 @@ Vector<RenderPassNode> IblRenderSystem::CreateDrawCommands(VkCommandBuffer& comm
 void IblRenderSystem::SetEnvironmentMap(const String& texturePath)
 {
     vkDeviceWaitIdle(vulkan.LogicalDevice());
-    if (_environmentMap != VkGuid())
-    {
-        textureSystem.DestroyTexture(_environmentMap);
-        Texture texture = textureSystem.LoadTexture(texturePath);
-        _environmentMap = texture.textureGuid;
+    //if (_environmentMap != VkGuid())
+    //{
+    //    Texture atexture = textureSystem.LoadTexture(texturePath);
+    //    textureSystem.DestroyTexture(_environmentMap);
+    //    Texture texture = textureSystem.LoadTexture(texturePath);
+    //    _environmentMap = texture.textureGuid;
 
-        VulkanRenderPass& renderPass = renderSystem.FindRenderPass(_environmentToCubeMapRenderPassId);
-        VkGuid pipelinePackage = renderPass.SubPassList().front().front().PipelinePackageId;
+    //    VulkanRenderPass& renderPass = renderSystem.FindRenderPass(_environmentToCubeMapRenderPassId);
+    //    VkGuid pipelinePackage = renderPass.SubPassList().front().front().PipelinePackageId;
 
-        renderPass.SubPassList().clear();
-        renderPass.SubPassList().emplace_back(Vector<VulkanSubPass>
-        {
-            VulkanSubPass
-            {
-                .RenderPassGuid = _environmentToCubeMapRenderPassId,
-                .PipelinePackageId = pipelinePackage,
-                .MeshType = MeshTypeEnum::kMesh_StaticMesh,
-                .ShaderPushConstant = std::nullopt,
-                .InputTextureList = Vector<VkGuid>(),
-                .OutputTextureList = Vector<VkGuid>(),
-                .OffScreenFrameBuffer = true
-            }
-        });
-    }
+    //    renderPass.SubPassList().clear();
+    //    renderPass.SubPassList().emplace_back(Vector<VulkanSubPass>
+    //    {
+    //        VulkanSubPass
+    //        {
+    //            .RenderPassGuid = _environmentToCubeMapRenderPassId,
+    //            .PipelinePackageId = pipelinePackage,
+    //            .MeshType = MeshTypeEnum::kMesh_StaticMesh,
+    //            .ShaderPushConstant = std::nullopt,
+    //            .InputTextureList = Vector<VkGuid>(),
+    //            .OutputTextureList = Vector<VkGuid>(),
+    //            .OffScreenFrameBuffer = true
+    //        }
+    //    });
+    //}
     textureSystem.GenerateTexture(_environmentToCubeMapRenderPassId);
 }
