@@ -9,8 +9,9 @@
 #include "MaterialPropertiesBuffer.glsl" 
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 	uint HDRMapInputIndex;
-	uint FrameBufferIndex;
+{ 	
+    uint HDRMapInputIndex;
+	uint EnvironmentMapIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
 	uint IrradianceMapId;
@@ -75,6 +76,6 @@ void main()
 {
     vec2 uv = SampleSphericalMap(normalize(pos));
     
-    vec3 color = texture(TextureMap[0], uv).rgb;
+    vec3 color = texture(TextureMap[sceneDataBuffer.EnvironmentMapIndex], uv).rgb;
     FragColor = vec4(color, 1.0f);
 }

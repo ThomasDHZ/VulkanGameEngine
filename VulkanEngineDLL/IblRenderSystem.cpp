@@ -8,11 +8,11 @@ IblRenderSystem& iblRenderSystem = IblRenderSystem::Get();
 void IblRenderSystem::StartUp(const String& texturePath)
 {
     std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
-    _environmentMap = fileSystem.LoadJsonFile(texturePath.c_str())["TextureId"].get<VkGuid>();
-    _brdfRenderPassId = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json", memoryPool);
+    _environmentMap                   = fileSystem.LoadJsonFile(texturePath.c_str())["TextureId"].get<VkGuid>();
+    _brdfRenderPassId                 = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json", memoryPool);
     _environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json", memoryPool);
-    _irradianceMapRenderPassId = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json", memoryPool));
-    _prefilterMapRenderPassId = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json", memoryPool));
+    _irradianceMapRenderPassId        = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json", memoryPool));
+    _prefilterMapRenderPassId         = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json", memoryPool));
     textureSystem.GenerateTexture(_brdfRenderPassId);
     SetEnvironmentMap(texturePath);
 }
@@ -64,30 +64,18 @@ Vector<RenderPassNode> IblRenderSystem::CreateDrawCommands(VkCommandBuffer& comm
 void IblRenderSystem::SetEnvironmentMap(const String& texturePath)
 {
     vkDeviceWaitIdle(vulkan.LogicalDevice());
-    //if (_environmentMap != VkGuid())
-    //{
-    //    Texture atexture = textureSystem.LoadTexture(texturePath);
-    //    textureSystem.DestroyTexture(_environmentMap);
-    //    Texture texture = textureSystem.LoadTexture(texturePath);
-    //    _environmentMap = texture.textureGuid;
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    if (_environmentMap != VkGuid())
+    {
+        textureSystem.DestroyTexture(_environmentMap);
+        if(_cubeMapId != VkGuid()) textureSystem.DestroyTexture(_cubeMapId);
 
-    //    VulkanRenderPass& renderPass = renderSystem.FindRenderPass(_environmentToCubeMapRenderPassId);
-    //    VkGuid pipelinePackage = renderPass.SubPassList().front().front().PipelinePackageId;
+        Texture texture = textureSystem.LoadTexture(texturePath);
+        _environmentMap = texture.textureGuid;
 
-    //    renderPass.SubPassList().clear();
-    //    renderPass.SubPassList().emplace_back(Vector<VulkanSubPass>
-    //    {
-    //        VulkanSubPass
-    //        {
-    //            .RenderPassGuid = _environmentToCubeMapRenderPassId,
-    //            .PipelinePackageId = pipelinePackage,
-    //            .MeshType = MeshTypeEnum::kMesh_StaticMesh,
-    //            .ShaderPushConstant = std::nullopt,
-    //            .InputTextureList = Vector<VkGuid>(),
-    //            .OutputTextureList = Vector<VkGuid>(),
-    //            .OffScreenFrameBuffer = true
-    //        }
-    //    });
-    //}
+        sceneDataBuffer.EnvironmentMapIndex = texture.gpuTextureBufferIndex;
+    }
     textureSystem.GenerateTexture(_environmentToCubeMapRenderPassId);
+    _cubeMapId = renderSystem.FindRenderPassAttachmentList(_environmentToCubeMapRenderPassId).front().textureGuid;
+    sceneDataBuffer.CubeMapId = renderSystem.FindRenderPassAttachmentList(_environmentToCubeMapRenderPassId).front().gpuTextureBufferIndex;
 }

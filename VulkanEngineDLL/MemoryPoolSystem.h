@@ -74,8 +74,8 @@ struct TextureMetadataHeader
 
 struct SceneDataBuffer
 {
-	uint HDRMapInputIndex = UINT32_MAX;
-	uint FrameBufferIndex = UINT32_MAX;
+	uint32 HDRMapInputIndex = UINT32_MAX;
+	uint32 EnvironmentMapIndex = UINT32_MAX;
 	uint32 BRDFMapId = UINT32_MAX;
 	uint32 CubeMapId = UINT32_MAX;
 	uint32 IrradianceMapId = UINT32_MAX;

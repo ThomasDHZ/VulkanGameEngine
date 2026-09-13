@@ -53,6 +53,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
             case kUsageType_IrradianceTexture:  sceneData.IrradianceMapId = texture.gpuTextureBufferIndex; break;
             case kUsageType_PrefilterTexture:   sceneData.PrefilterMapId = texture.gpuTextureBufferIndex; break;
             case kUsageType_BRDFTexture:        sceneData.BRDFMapId = texture.gpuTextureBufferIndex; break;
+            case kUsageType_HdrTexture:         sceneData.HDRMapInputIndex = texture.gpuTextureBufferIndex; break;
             default: break;
         }
         renderedTextureList.emplace_back(texture);
@@ -130,15 +131,6 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
     RenderPipelineMap[vulkanPipeline.PipelineId()] = vulkanPipeline;
     RenderPassMap[renderPassLoader.RenderPassId].AddRenderPipeline(vulkanPipeline.PipelineId());
     return vulkanPipeline.PipelineId();
-}
-
-void RenderSystem::SwitchEnvironmentMap()
-{
-    VulkanRenderPass environmentToCubeMapRenderPass = FindRenderPass(VkGuid("05b2b809-c7f9-4000-bf96-1ca970d88a45"));
-    environmentToCubeMapRenderPass.SubPassList().front().front().InputTextureList.clear();
-    environmentToCubeMapRenderPass.SubPassList().front().front().InputTextureList.emplace_back("c8612fb8-ceb5-498b-aef3-1d25da9fe78e");
-    VkGuid renderPassGuid = environmentToCubeMapRenderPass.RenderPassId();
-    textureSystem.GenerateTexture(renderPassGuid);
 }
 
 void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
@@ -398,8 +390,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
 uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition)
 {
     Texture* texture = &FindRenderPassAttachment(textureGuid);
-    if (!texture || texture->texture.TextureImage() == VK_NULL_HANDLE)
-        return 0;
+    if (!texture || texture->texture.TextureImage() == VK_NULL_HANDLE) return 0;
 
     const int w = texture->texture.TextureSize().x;
     const int h = texture->texture.TextureSize().y;
@@ -448,10 +439,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     region.imageOffset = { x, y, 0 };
     region.imageExtent = { 1, 1, 1 };
 
-    vkCmdCopyImageToBuffer(cmd,
-        texture->texture.TextureImage(),
-        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        stagingBuffer, 1, &region);
+    vkCmdCopyImageToBuffer(cmd, texture->texture.TextureImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
 
     VkImageMemoryBarrier toOld = src;
     toOld.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -460,11 +448,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
     toOld.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     toOld.newLayout = oldLayout;
 
-    vkCmdPipelineBarrier(cmd,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0, 0, nullptr, 0, nullptr, 1, &toOld);
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toOld);
 
     vulkan.CommandBuffer().EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkan.LogicalDevice());

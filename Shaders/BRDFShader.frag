@@ -10,8 +10,8 @@
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
-	uint HDRMapInputIndex;
-	uint FrameBufferIndex;
+    uint HDRMapInputIndex;
+	uint EnvironmentMapIndex;
 	uint BRDFMapId;
 	uint CubeMapId;
 	uint IrradianceMapId;

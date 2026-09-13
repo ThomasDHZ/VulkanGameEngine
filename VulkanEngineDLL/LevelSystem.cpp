@@ -28,6 +28,9 @@ void LevelSystem::LoadLevel(const char* levelPath)
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
 
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    sceneDataBuffer.EnvironmentMapIndex = 0;
+
     Vector<String> gameObjectTempleteList;
     for (size_t x = 0; x < json["LoadGameObjects"].size(); x++)
     {
@@ -41,7 +44,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
-    iblRenderSystem.StartUp("TextureLoader/HDRITexture.json");
+    iblRenderSystem.StartUp("TextureLoader/189_hdrmaps_com_free_4K.json");
+    iblRenderSystem.SetEnvironmentMap("TextureLoader/HDRITexture.json");
     for (auto& renderPass : json["MainRenderPassList"])
     {
         if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));
@@ -56,7 +60,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);
     PresentingAttachmentTextureId = VkGuid(temp.c_str());
-    renderSystem.SwitchEnvironmentMap();
 }
 
 void LevelSystem::LevelEditorRenderPass(const char* levelPath)
@@ -85,8 +88,6 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
     sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
     sceneDataBuffer.ViewDirection = ViewDirection;
-    sceneDataBuffer.HDRMapInputIndex = 23;
-    sceneDataBuffer.FrameBufferIndex = UINT32_MAX;
     cameraSystem.Update();
 }
 

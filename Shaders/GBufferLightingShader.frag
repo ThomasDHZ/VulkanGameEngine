@@ -10,21 +10,21 @@
 
 layout(std430, binding = 0) buffer SceneDataBuffer
 {
-    uint  HDRMapInputIndex;
-    uint  FrameBufferIndex;
-    uint  BRDFMapId;
-    uint  CubeMapId;
-    uint  IrradianceMapId;
-    uint  PrefilterMapId;
-    mat4  Projection;
-    mat4  View;
-    mat4  InverseProjection;
-    mat4  InverseView;
-    vec3  CameraPosition;
-    vec3  ViewDirection;
+    uint HDRMapInputIndex;
+	uint EnvironmentMapIndex;
+	uint BRDFMapId;
+	uint CubeMapId;
+	uint IrradianceMapId;
+	uint PrefilterMapId;
+	mat4  Projection;
+	mat4  View;
+	mat4  InverseProjection;
+	mat4  InverseView;
+	vec3  CameraPosition;
+	vec3  ViewDirection;
     vec2  InvertResolution;
-    float Time;
-    uint  FrameIndex;
+	float Time;
+	uint  FrameIndex;
 } sceneDataBuffer;
 
 layout(binding = 1) buffer BindlessBuffer

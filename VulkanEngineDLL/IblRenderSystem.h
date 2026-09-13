@@ -11,6 +11,7 @@ public:
 private:
 
 	VkGuid		   _environmentMap;
+	VkGuid		   _cubeMapId;
 	VkGuid		   _brdfRenderPassId;
 	VkGuid		   _environmentToCubeMapRenderPassId;
 	VkGuid		   _irradianceMapRenderPassId;

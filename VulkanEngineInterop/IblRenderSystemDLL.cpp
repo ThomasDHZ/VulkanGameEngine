@@ -1,5 +1,6 @@
 #include "IblRenderSystemDLL.h"
 #include <LevelSystem.h>
+#include "LevelSystemDLL.h"
 
 void IblRenderSystem_StartUp(const char* texturePath)
 {
@@ -8,13 +9,7 @@ void IblRenderSystem_StartUp(const char* texturePath)
 
 RenderPassNodeDLL* IblRenderSystem_CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime, size_t* renderPassNodeCount)
 {
-    Vector<RenderPassNode> renderPassNodeList = levelSystem.CreateDrawCommands(commandBuffer, deltaTime);
-    if (renderPassNodeList.empty())
-    {
-        if (renderPassNodeCount) *renderPassNodeCount = 0;
-        return nullptr;
-    }
-    return ToDLL_RenderPassNodeDLL(renderPassNodeList, commandBuffer, deltaTime, renderPassNodeCount);
+    return LevelSystem_CreateDrawCommands(commandBuffer, deltaTime, renderPassNodeCount);
 }
 
 void IblRenderSystem_SetEnvironmentMap(const char* texturePath)

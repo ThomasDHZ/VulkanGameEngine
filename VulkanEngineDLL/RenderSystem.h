@@ -72,7 +72,6 @@ public:
     RenderPassGuid                                          LoadRenderPass(const String& jsonPath, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);
     RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);
     void                                                    Update(void* windowHandle, const float& deltaTime);
-    void                                                    SwitchEnvironmentMap();
     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
     void                                                    AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
 
@@ -80,7 +79,7 @@ public:
     void                                                    PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid& renderPassTextureGuid);
     void                                                    Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& renderPassNodeList);
 
-    VulkanRenderPass&                                 FindRenderPass(const RenderPassGuid& renderPassGuid);
+    VulkanRenderPass&                                       FindRenderPass(const RenderPassGuid& renderPassGuid);
     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
     const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);
