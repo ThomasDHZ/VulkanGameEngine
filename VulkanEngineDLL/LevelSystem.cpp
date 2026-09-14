@@ -78,16 +78,18 @@ void LevelSystem::LevelEditorRenderPass(const char* levelPath)
 
 void LevelSystem::Update(const float& deltaTime)
 {
-    Camera_PerspectiveUpdate(*PerspectiveCamera.get());
+    Camera_UpdateOrthographicPixelPerfect(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex]);
+    Camera_PerspectiveUpdate(*PerspectiveCamera);
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.Projection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
-    sceneDataBuffer.View = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
+    sceneDataBuffer.OrthoProjection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
+    sceneDataBuffer.OrthoView = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
+    sceneDataBuffer.InverseOrthoProjection = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix);
+    sceneDataBuffer.InverseOrthoView = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix);
     sceneDataBuffer.InversePerspectiveProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
     sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
-    sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
-    sceneDataBuffer.PerspectiveViewDirection = ViewDirection;
-    cameraSystem.Update();
+    sceneDataBuffer.PerspectiveCameraPosition = PerspectiveCamera->Position;
+    sceneDataBuffer.PerspectiveViewDirection = PerspectiveCamera->Front;
 }
 
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
@@ -272,6 +274,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexData = LevelLayerList[x].VertexList.data()
         };
         meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
+
     }
 }
 

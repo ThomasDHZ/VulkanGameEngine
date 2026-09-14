@@ -8,26 +8,31 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
 
-layout(std430, binding = 0) buffer SceneDataBuffer
-{
-    uint  HDRMapInputIndex;
-	uint  EnvironmentMapIndex;
-	uint  BRDFMapId;
-	uint  CubeMapId;
-	uint  IrradianceMapId;
-	uint  PrefilterMapId;
-	mat4  Projection;
-	mat4  View;
-    mat4  InverseOrthoProjection;
-	mat4  InverseOrthoView;
-	mat4  InversePerspectiveProjection;
-	mat4  InversePerspectiveView;
-	vec3  PerspectiveCameraPosition;
-	vec3  PerspectiveViewDirection;
-    vec2  InvertResolution;
-	float Time;
-	uint  FrameIndex;
-} sceneDataBuffer;
+layout(std430, binding = 0)  buffer SceneDataBuffer 
+{ 	
+uint HDRMapInputIndex;
+uint EnvironmentMapIndex;
+uint BRDFMapId;
+uint CubeMapId;
+uint IrradianceMapId;
+uint PrefilterMapId;
+uint _padIds0;
+uint _padIds1;
+
+mat4 OrthoProjection;
+mat4 OrthoView;
+mat4 InverseOrthoProjection;
+mat4 InverseOrthoView;
+mat4 InversePerspectiveProjection;
+mat4 InversePerspectiveView;
+
+vec3  PerspectiveCameraPosition;
+float Time;
+vec3  PerspectiveViewDirection;
+uint  FrameIndex;
+vec2  InvertResolution;
+vec2  _padEnd;
+}sceneDataBuffer;
 
 layout(binding = 1) buffer BindlessBuffer
 {
@@ -139,28 +144,31 @@ vec3 SubSurfaceScatteringData(Material material, vec3 N, vec3 L);
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material);
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material);
 vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N, vec3 R, Material material);
+vec3 ReconstructWorldPos(float depth);
 
 void main()
 {
-    const float depth = subpassLoad(depthInput).r;
+    float depth = subpassLoad(depthInput).r;
     if (depth >= 0.9999)
     {
-        vec3 ndc = vec3(gl_FragCoord.xy * sceneDataBuffer.InvertResolution * 2.0 - 1.0, 1.0);
+        vec2 uv = TexCoords;
+        vec3 ndc = vec3(uv * 2.0 - 1.0, 1.0);
         vec4 viewPos = sceneDataBuffer.InversePerspectiveProjection * vec4(ndc, 1.0);
         viewPos /= viewPos.w;
-
-        vec3 viewDir  = normalize(viewPos.xyz);
-        vec3 worldDir = normalize((sceneDataBuffer.InversePerspectiveView * vec4(viewDir, 0.0)).xyz);
-        vec3 sky      = textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb;
-
-        outColor = vec4(sky, 1.0);
+        vec3 worldDir = normalize(
+            (sceneDataBuffer.InversePerspectiveView * vec4(normalize(viewPos.xyz), 0.0)).xyz);
+        outColor = vec4(textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb, 1.0);
         outBloom = vec4(0.0);
         return;
     }
 
     Material material = UnpackMaterial();
+    material.Position = ReconstructWorldPos(depth);
+    vec3 rebuilt = ReconstructWorldPos(depth);
+vec3 stored  = subpassLoad(positionInput).rgb;
 
     vec3 V = normalize(sceneDataBuffer.PerspectiveCameraPosition - material.Position);
+   
 
     vec3 N = material.Normal;
     vec3 iblN = normalize(mix(material.Normal, V, 0.15));
@@ -173,7 +181,7 @@ void main()
     vec3 ambient = ImageBasedLighting(F0, V, N, R, material);
 
     vec3 color = ambient + Lo + material.Emission;
-    outColor = vec4(color, 1.0f);
+outColor = vec4(rebuilt.xy / vec2(3840.0, 2160.0), 0.0, 1.0);
     outBloom = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
 
@@ -310,6 +318,15 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N, vec3 R, Material material)
     //vec3  SssIBL = subsurfaceStrength * irradiance * (material.Albedo * material.SubSurfaceScattering);
     vec3 ambient = (kD * diffuseIBL + specularIBL + sheenIBL) * material.AmbientOcclusion;
     return max(ambient, vec3(0.02) * material.Albedo);
+}
+
+vec3 ReconstructWorldPos(float depth)
+{
+    vec2 uv = TexCoords; // same UV as sky
+    vec4 clip = vec4(uv * 2.0 - 1.0, depth, 1.0); // ZO
+    vec4 view = sceneDataBuffer.InverseOrthoProjection * clip;
+    view.xyz /= max(view.w, 1e-6);
+    return (sceneDataBuffer.InverseOrthoView * vec4(view.xyz, 1.0)).xyz;
 }
 
 vec3 SheenData(Material material, vec3 N, vec3 V)

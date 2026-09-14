@@ -74,48 +74,30 @@ struct TextureMetadataHeader
 
 struct SceneDataBuffer
 {
-	uint32 HDRMapInputIndex = UINT32_MAX;
-	uint32 EnvironmentMapIndex = UINT32_MAX;
-	uint32 BRDFMapId = UINT32_MAX;
-	uint32 CubeMapId = UINT32_MAX;
-	uint32 IrradianceMapId = UINT32_MAX;
-	uint32 PrefilterMapId = UINT32_MAX;
-	ivec2  _pad2;
-	mat4   Projection;
-	mat4   View;
-	mat4   InverseOrthoProjection;
-	mat4   InverseOrthoView;
-	mat4  InversePerspectiveProjection;
-	mat4  InversePerspectiveView;
-	vec3   CameraPosition;
-	float  _pad0;
-	vec3   PerspectiveViewDirection;
-	float  _pad1;
-	vec2   InvertResolution;
-	float  Time;
-	uint   FrameIndex;
+	uint HDRMapInputIndex = UINT32_MAX;
+	uint EnvironmentMapIndex = UINT32_MAX;
+	uint BRDFMapId = UINT32_MAX;
+	uint CubeMapId = UINT32_MAX;
+	uint IrradianceMapId = UINT32_MAX;
+	uint PrefilterMapId = UINT32_MAX;
+	uint _padIds0;
+	uint _padIds1;
+
+	mat4 OrthoProjection;
+	mat4 OrthoView;
+	mat4 InverseOrthoProjection;
+	mat4 InverseOrthoView;
+	mat4 InversePerspectiveProjection;
+	mat4 InversePerspectiveView;
+
+	vec3  PerspectiveCameraPosition;
+	float Time;
+	vec3  PerspectiveViewDirection;
+	uint  FrameIndex;
+	vec2  InvertResolution;
+	vec2  _padEnd;
 };
 
-
-//uint HDRMapInputIndex;
-//uint EnvironmentMapIndex;
-//uint BRDFMapId;
-//uint CubeMapId;
-//uint IrradianceMapId;
-//uint PrefilterMapId;
-//mat4 OrthoProjection;
-//mat4 OrthoView;
-//mat4 InverseOrthoProjection;
-//mat4 InverseOrthoView;
-//mat4 InversePerspectiveProjection;
-//mat4 InversePerspectiveView;
-//vec3 PerspectiveCameraPosition;
-//float _pad0;
-//vec3 PerspectiveViewDirection;
-//float Time;
-//vec2 InvertResolution;
-//uint FrameIndex;
-//uint _pad1;
 struct MemoryPoolBufferHeader
 {
 	//CPU side: in bytes

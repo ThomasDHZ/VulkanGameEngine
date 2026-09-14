@@ -1,4 +1,11 @@
 #pragma once
+#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#endif
+#ifndef GLM_FORCE_RADIANS
+#define GLM_FORCE_RADIANS
+#endif
+
 #include <inttypes.h>
 #include <ctype.h>
 #include <glm/glm.hpp>

@@ -37,12 +37,14 @@ Camera Camera_PerspectiveCamera(const vec2& viewScreenSize, const glm::vec3& pos
 		.Up = glm::vec3(0.0f, 1.0f, 0.0f),
 		.WorldUp = glm::vec3(0.0f, 1.0f, 0.0f),
 		.Position = position,
-	};
+	}; GLM_FORCE_DEPTH_ZERO_TO_ONE
+
+
 }
 
 void Camera_PerspectiveUpdate(Camera& camera)
 {
-	vec3 front = vec3(0.0f);
+	vec3 front;
 	front.x = cos(glm::radians(camera.Yaw)) * cos(glm::radians(camera.Pitch));
 	front.y = sin(glm::radians(camera.Pitch));
 	front.z = sin(glm::radians(camera.Yaw)) * cos(glm::radians(camera.Pitch));
@@ -53,7 +55,9 @@ void Camera_PerspectiveUpdate(Camera& camera)
 
 	camera.ViewMatrix = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-	const auto 	Aspect = camera.Width / camera.Height;
-	camera.ProjectionMatrix = glm::perspective(glm::radians(90.0f), camera.Width / camera.Height, 0.1f, 10000.0f);
+	const float aspect = camera.Width / camera.Height;
+	camera.ProjectionMatrix = glm::perspective(glm::radians(90.0f), aspect, 0.1f, 10000.0f);
 	camera.ProjectionMatrix[1][1] *= -1;
+	static_assert(GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_RH_ZO,
+		"expected zero-to-one clip Z");
 }
