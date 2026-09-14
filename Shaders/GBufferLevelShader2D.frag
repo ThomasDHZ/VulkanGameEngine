@@ -10,18 +10,20 @@
 
 layout(std430, binding = 0) buffer SceneDataBuffer
 {
-    uint HDRMapInputIndex;
-	uint EnvironmentMapIndex;
-	uint BRDFMapId;
-	uint CubeMapId;
-	uint IrradianceMapId;
-	uint PrefilterMapId;
+    uint  HDRMapInputIndex;
+	uint  EnvironmentMapIndex;
+	uint  BRDFMapId;
+	uint  CubeMapId;
+	uint  IrradianceMapId;
+	uint  PrefilterMapId;
 	mat4  Projection;
 	mat4  View;
-	mat4  InverseProjection;
-	mat4  InverseView;
-	vec3  CameraPosition;
-	vec3  ViewDirection;
+    mat4  InverseOrthoProjection;
+	mat4  InverseOrthoView;
+	mat4  InversePerspectiveProjection;
+	mat4  InversePerspectiveView;
+	vec3  PerspectiveCameraPosition;
+	vec3  PerspectiveViewDirection;
     vec2  InvertResolution;
 	float Time;
 	uint  FrameIndex;
@@ -179,7 +181,7 @@ void main()
 
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);
 
-    vec3 viewDirWS = normalize(sceneDataBuffer.CameraPosition - WorldPos);
+    vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV   = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
 

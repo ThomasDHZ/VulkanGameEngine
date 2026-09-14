@@ -83,17 +83,39 @@ struct SceneDataBuffer
 	ivec2  _pad2;
 	mat4   Projection;
 	mat4   View;
-	mat4   InverseProjection;
-	mat4   InverseView;
+	mat4   InverseOrthoProjection;
+	mat4   InverseOrthoView;
+	mat4  InversePerspectiveProjection;
+	mat4  InversePerspectiveView;
 	vec3   CameraPosition;
 	float  _pad0;
-	vec3   ViewDirection;
+	vec3   PerspectiveViewDirection;
 	float  _pad1;
 	vec2   InvertResolution;
 	float  Time;
 	uint   FrameIndex;
 };
 
+
+//uint HDRMapInputIndex;
+//uint EnvironmentMapIndex;
+//uint BRDFMapId;
+//uint CubeMapId;
+//uint IrradianceMapId;
+//uint PrefilterMapId;
+//mat4 OrthoProjection;
+//mat4 OrthoView;
+//mat4 InverseOrthoProjection;
+//mat4 InverseOrthoView;
+//mat4 InversePerspectiveProjection;
+//mat4 InversePerspectiveView;
+//vec3 PerspectiveCameraPosition;
+//float _pad0;
+//vec3 PerspectiveViewDirection;
+//float Time;
+//vec2 InvertResolution;
+//uint FrameIndex;
+//uint _pad1;
 struct MemoryPoolBufferHeader
 {
 	//CPU side: in bytes

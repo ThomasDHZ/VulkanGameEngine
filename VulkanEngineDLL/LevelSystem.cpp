@@ -83,10 +83,10 @@ void LevelSystem::Update(const float& deltaTime)
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     sceneDataBuffer.Projection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
     sceneDataBuffer.View = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
-    sceneDataBuffer.InverseProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
-    sceneDataBuffer.InverseView = glm::inverse(PerspectiveCamera->ViewMatrix);
+    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
+    sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
     sceneDataBuffer.CameraPosition = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].Position;
-    sceneDataBuffer.ViewDirection = ViewDirection;
+    sceneDataBuffer.PerspectiveViewDirection = ViewDirection;
     cameraSystem.Update();
 }
 

@@ -10,18 +10,20 @@
 
 layout(std430, binding = 0)  buffer SceneDataBuffer 
 { 
-    uint HDRMapInputIndex;
-	uint EnvironmentMapIndex;
-	uint BRDFMapId;
-	uint CubeMapId;
-	uint IrradianceMapId;
-	uint PrefilterMapId;
+    uint  HDRMapInputIndex;
+	uint  EnvironmentMapIndex;
+	uint  BRDFMapId;
+	uint  CubeMapId;
+	uint  IrradianceMapId;
+	uint  PrefilterMapId;
 	mat4  Projection;
 	mat4  View;
-	mat4  InverseProjection;
-	mat4  InverseView;
-	vec3  CameraPosition;
-	vec3  ViewDirection;
+    mat4  InverseOrthoProjection;
+	mat4  InverseOrthoView;
+	mat4  InversePerspectiveProjection;
+	mat4  InversePerspectiveView;
+	vec3  PerspectiveCameraPosition;
+	vec3  PerspectiveViewDirection;
     vec2  InvertResolution;
 	float Time;
 	uint  FrameIndex;
@@ -197,14 +199,14 @@ void main()
     if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
 
-    vec3 N = normalize(sceneDataBuffer.CameraPosition - WorldPos); // toward camera — correct for a billboard
+    vec3 N = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos); // toward camera — correct for a billboard
     vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
     if (dot(T, T) < 1e-6) T = normalize(cross(vec3(1.0, 0.0, 0.0), N));
     T = normalize(T);
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
 
-    vec3 viewDirWS = normalize(sceneDataBuffer.CameraPosition - WorldPos);
+    vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId);
 
