@@ -8,31 +8,31 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 	
-uint HDRMapInputIndex;
-uint EnvironmentMapIndex;
-uint BRDFMapId;
-uint CubeMapId;
-uint IrradianceMapId;
-uint PrefilterMapId;
-uint _padIds0;
-uint _padIds1;
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+    uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+    uint _padIds0;
+    uint _padIds1;
 
-mat4 OrthoProjection;
-mat4 OrthoView;
-mat4 InverseOrthoProjection;
-mat4 InverseOrthoView;
-mat4 InversePerspectiveProjection;
-mat4 InversePerspectiveView;
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
 
-vec3  PerspectiveCameraPosition;
-float Time;
-vec3  PerspectiveViewDirection;
-uint  FrameIndex;
-vec2  InvertResolution;
-vec2  _padEnd;
-}sceneDataBuffer;
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
+    vec2  InvertResolution;
+    vec2  _padEnd;
+} sceneDataBuffer;
 
 layout(binding = 1)  buffer BindlessBuffer 
 { 
@@ -75,14 +75,13 @@ layout (location = 5) in flat uint  PS_MaterialId;
 layout (location = 6) in flat vec4  PS_UVOffset;
 layout (location = 7) in flat uint  PS_SpriteId;
 
-layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
-layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
-layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
-layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
+layout(location = 0) out vec4 outPosition;      //R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;        //R8G8B8A8_SRGB
+layout(location = 2) out vec4 outNormalData;    //R16G16B16A16_UNORM 
+layout(location = 3) out vec4 outMRO;           //R16G16B16A16_UNORM
+layout(location = 4) out vec4 outFeature;       //R16G16B16A16_UNORM
+layout(location = 5) out vec4 outFeature2;      //R16G16B16A16_UNORM
+layout(location = 6) out vec4 outEmission;      //R16G16B16A16_SFLOAT
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -225,6 +224,16 @@ void main()
     float heightRaw           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).a;
     if (albedoData.a < 0.1f) discard; 
 
+//    uint mask = 0u;
+//    if (coatWeight   > 1e-3) mask |= FEAT_COAT;
+//    if (sheenWeight  > 1e-3) mask |= FEAT_SHEEN;
+//    if (sssWeight    > 1e-3) mask |= FEAT_SSS;
+//    if (transmission > 1e-3) mask |= FEAT_TRANSMISSION;
+//    if (anisotropy   > 1e-3) mask |= FEAT_ANISO;
+//    if (filmWeight   > 1e-3) mask |= FEAT_FILM;
+//
+//    uint model = material.ShadingModel;
+
     vec2 f = normalData.xy * 2.0f - 1.0f;
     float normalStrength = normalData.b;
     
@@ -243,12 +252,11 @@ void main()
     float height = 1.0 - heightRaw;
     float selfShadow = HeightSelfShadow(finalUV, Lts, material.NormalDataId, heightRaw, minUV, maxUV);
 
-    outPosition = vec4(WorldPos, 1.0);
-    outAlbedo = albedoData;
+    outPosition   = vec4(WorldPos, 1.0f);
+    outAlbedo     = albedoData;
     outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, selfShadow);
-    outPackedMRO = vec4(packedMROData, 1.0f);
-    outPackedSheenSSS = packedSheenSSSData;
-    outTempMap = tempMapData;
-    outParallaxInfo = vec4(finalUV - UV, 0.0f, 1.0);
-    outEmission = emissionData;
+    outMRO        = vec4(packedMROData, 1.0f);
+    outFeature    = packedSheenSSSData;
+    outFeature2   = packedSheenSSSData;
+    outEmission   = emissionData;
 }

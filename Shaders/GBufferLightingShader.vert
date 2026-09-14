@@ -8,31 +8,31 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 	
-uint HDRMapInputIndex;
-uint EnvironmentMapIndex;
-uint BRDFMapId;
-uint CubeMapId;
-uint IrradianceMapId;
-uint PrefilterMapId;
-uint _padIds0;
-uint _padIds1;
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+    uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+    uint _padIds0;
+    uint _padIds1;
 
-mat4 OrthoProjection;
-mat4 OrthoView;
-mat4 InverseOrthoProjection;
-mat4 InverseOrthoView;
-mat4 InversePerspectiveProjection;
-mat4 InversePerspectiveView;
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
 
-vec3  PerspectiveCameraPosition;
-float Time;
-vec3  PerspectiveViewDirection;
-uint  FrameIndex;
-vec2  InvertResolution;
-vec2  _padEnd;
-}sceneDataBuffer;
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
+    vec2  InvertResolution;
+    vec2  _padEnd;
+} sceneDataBuffer;
 
 layout(binding = 1)  buffer BindlessBuffer 
 { 

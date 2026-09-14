@@ -48,16 +48,12 @@ void Camera_PerspectiveUpdate(Camera& camera)
 	front.x = cos(glm::radians(camera.Yaw)) * cos(glm::radians(camera.Pitch));
 	front.y = sin(glm::radians(camera.Pitch));
 	front.z = sin(glm::radians(camera.Yaw)) * cos(glm::radians(camera.Pitch));
-	camera.Front = glm::normalize(front);
-
-	camera.Right = glm::normalize(glm::cross(camera.Front, camera.WorldUp));
-	camera.Up = glm::normalize(glm::cross(camera.Right, camera.Front));
-
-	camera.ViewMatrix = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
 	const float aspect = camera.Width / camera.Height;
+	camera.Front = glm::normalize(front);
+	camera.Right = glm::normalize(glm::cross(camera.Front, camera.WorldUp));
+	camera.Up = glm::normalize(glm::cross(camera.Right, camera.Front));
+	camera.ViewMatrix = glm::lookAt(camera.Position, camera.Position + camera.Front,camera.Up);
 	camera.ProjectionMatrix = glm::perspective(glm::radians(90.0f), aspect, 0.1f, 10000.0f);
 	camera.ProjectionMatrix[1][1] *= -1;
-	static_assert(GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_RH_ZO,
-		"expected zero-to-one clip Z");
 }

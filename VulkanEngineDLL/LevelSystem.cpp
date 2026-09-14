@@ -90,6 +90,7 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
     sceneDataBuffer.PerspectiveCameraPosition = PerspectiveCamera->Position;
     sceneDataBuffer.PerspectiveViewDirection = PerspectiveCamera->Front;
+    sceneDataBuffer.InvertResolution = glm::vec2(1.0f / configSystem.RenderResolution.x, 1.0f / configSystem.RenderResolution.y);
 }
 
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)

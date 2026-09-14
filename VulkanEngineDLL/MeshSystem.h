@@ -195,6 +195,7 @@ public:
 	 void Destroy();
 	 const Mesh& FindMesh(const uint& meshId);
 	 MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
+	 Mesh& GetMesh(const uint& listIndex) { return MeshList[listIndex]; }
 };
 ENGINE_DLL_EXPORT extern  MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()

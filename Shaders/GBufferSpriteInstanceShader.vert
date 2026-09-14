@@ -37,31 +37,31 @@ layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 
-layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 	
-uint HDRMapInputIndex;
-uint EnvironmentMapIndex;
-uint BRDFMapId;
-uint CubeMapId;
-uint IrradianceMapId;
-uint PrefilterMapId;
-uint _padIds0;
-uint _padIds1;
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+    uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+    uint _padIds0;
+    uint _padIds1;
 
-mat4 OrthoProjection;
-mat4 OrthoView;
-mat4 InverseOrthoProjection;
-mat4 InverseOrthoView;
-mat4 InversePerspectiveProjection;
-mat4 InversePerspectiveView;
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
 
-vec3  PerspectiveCameraPosition;
-float Time;
-vec3  PerspectiveViewDirection;
-uint  FrameIndex;
-vec2  InvertResolution;
-vec2  _padEnd;
-}sceneDataBuffer;
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
+    vec2  InvertResolution;
+    vec2  _padEnd;
+} sceneDataBuffer;
 
 layout(binding = 1)  buffer BindlessBuffer 
 { 
@@ -122,7 +122,8 @@ void main()
         case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    PS_Position = vec3(VS_InstanceTransform * vec4(vertex.Position.xy, 0.0f, 1.0f));
+    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, 0.0, 1.0);
+    PS_Position = world.xyz;
 	PS_UV = vertex.UV;
     PS_SpriteSize = VS_SpriteSize;
 	PS_FlipSprite = VS_FlipSprite;
@@ -131,8 +132,8 @@ void main()
 	PS_UVOffset = VS_UVOffset;
     PS_SpriteId = VS_SpriteId;
 
-    gl_Position = sceneDataBuffer.OrthoProjection * 
-                  sceneDataBuffer.OrthoView *  
-                  VS_InstanceTransform *
-                  vec4(vertex.Position.xy, 0.0f, 1.0f);
+
+    gl_Position = sceneDataBuffer.OrthoProjection *
+                  sceneDataBuffer.OrthoView *
+                  world;
 }

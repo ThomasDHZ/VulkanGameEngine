@@ -312,17 +312,14 @@ void MeshSystem::Update(const float& deltaTime)
 		MeshPropertiesStruct& props = memoryPoolSystem.UpdateMesh(mesh.ObjectDataIndex);
 		if (mesh.IsTransformDirty)
 		{
-			mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(mesh.Position.x, mesh.Position.y, 0.0f));
-			model = glm::rotate(model, glm::radians(mesh.Rotation.x), vec3(1.0f, 0.0f, 0.0f));
-			model = glm::rotate(model, glm::radians(mesh.Rotation.y), vec3(0.0f, 1.0f, 0.0f));
-			model = glm::rotate(model, glm::radians(mesh.Rotation.z), vec3(0.0f, 0.0f, 1.0f));
-			model = glm::scale(glm::mat4(1.0f), glm::vec3(configSystem.RenderResolution.x, configSystem.RenderResolution.y, 1.0f));
+			glm::mat4 model(1.0f);
+			model = glm::translate(model, mesh.Position);
+			model = glm::rotate(model, glm::radians(mesh.Rotation.x), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(mesh.Rotation.y), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(mesh.Rotation.z), glm::vec3(0, 0, 1));
+			model = glm::scale(model, mesh.Scale);
 
-			if (props.MeshTransform != model)
-			{
-				props.MeshTransform = model;
-				changed = true;
-			}
+			props.MeshTransform = model;
 			mesh.IsTransformDirty = false;
 		}
 

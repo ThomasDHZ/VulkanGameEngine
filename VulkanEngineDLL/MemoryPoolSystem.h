@@ -74,14 +74,14 @@ struct TextureMetadataHeader
 
 struct SceneDataBuffer
 {
-	uint HDRMapInputIndex = UINT32_MAX;
-	uint EnvironmentMapIndex = UINT32_MAX;
-	uint BRDFMapId = UINT32_MAX;
-	uint CubeMapId = UINT32_MAX;
-	uint IrradianceMapId = UINT32_MAX;
-	uint PrefilterMapId = UINT32_MAX;
-	uint _padIds0;
-	uint _padIds1;
+	uint32 HDRMapInputIndex;
+	uint32 EnvironmentMapIndex;
+	uint32 BRDFMapId;
+	uint32 CubeMapId;
+	uint32 IrradianceMapId;
+	uint32 PrefilterMapId;
+	uint32 _padIds0;
+	uint32 _padIds1;
 
 	mat4 OrthoProjection;
 	mat4 OrthoView;
@@ -90,12 +90,12 @@ struct SceneDataBuffer
 	mat4 InversePerspectiveProjection;
 	mat4 InversePerspectiveView;
 
-	vec3  PerspectiveCameraPosition;
-	float Time;
-	vec3  PerspectiveViewDirection;
-	uint  FrameIndex;
-	vec2  InvertResolution;
-	vec2  _padEnd;
+	vec3 PerspectiveCameraPosition;
+	float     Time;
+	vec3 PerspectiveViewDirection;
+	uint32  FrameIndex;
+	vec2 InvertResolution;
+	vec2 _padEnd;
 };
 
 struct MemoryPoolBufferHeader
