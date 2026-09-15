@@ -1,37 +1,59 @@
+const float kFeatureEps = 1e-3f;
+const uint FEAT_COAT         = 1u << 0;
+const uint FEAT_SHEEN        = 1u << 1;
+const uint FEAT_SSS          = 1u << 2;
+const uint FEAT_TRANSMISSION = 1u << 3;
+const uint FEAT_ANISO        = 1u << 4;
+const uint FEAT_FILM         = 1u << 5;
+const uint FEAT_TWO_SIDED    = 1u << 6;
+const uint FEAT_COAT_NORMAL  = 1u << 7;
+
 struct ImportMaterial
 {
     vec3  Albedo;
+    vec3  ClearcoatTint;
     vec3  SheenColor;
-    vec3  SubSurfaceScatteringColor;
+    vec3  SSSColor;
+    vec3  AttenuationColor;
     vec3  Emission;
-    float ClearcoatTint;
+
     float Metallic;
     float Roughness;
     float AmbientOcclusion;
-    float ClearcoatStrength;
-    float ClearcoatRoughness;
-    float SheenIntensity;
+    float Specular;
+    float IOR;
+    float SelfShadow;
+    float CoatWeight;
+    float CoatRoughness;
+    float CoatDarkening;
+    float SheenWeight;
+    float SheenRoughness;
+    float SSSWeight;
     float Thickness;
+    float SSSProfile;
+    float TransmissionWeight;
+    float AttenuationDistance;
     float Anisotropy;
     float AnisotropyRotation;
-    float NormalStrength;
-    float HeightScale;
-    float Height;
-    float Alpha;
+    float ThinFilmWeight;
+    float ThinFilmThickness;
 
-    uint AlbedoMap;
-    uint MetallicMap;
-    uint RoughnessMap;
-    uint ThicknessMap;
-    uint SubSurfaceScatteringColorMap;
-    uint SheenMap;
-    uint ClearCoatMap;
-    uint AnisotropyMap;
-    uint AmbientOcclusionMap;
-    uint NormalMap;
-    uint AlphaMap;
-    uint EmissionMap;
-    uint HeightMap;
+    uint  AlbedoMap;
+    uint  MetallicMap;
+    uint  RoughnessMap;
+    uint  ThicknessMap;
+    uint  SSSColorMap;
+    uint  AttenuationColorMap;
+    uint  SheenMap;
+    uint  ClearCoatMap;
+    uint  AnisotropyMap;
+    uint  AmbientOcclusionMap;
+    uint  NormalMap;
+    uint  AlphaMap;
+    uint  EmissionMap;
+    uint  HeightMap;
+    uint  ShadingModel;
+    uint  FeatureMask;
 };
 
 struct TextureMetadata
@@ -48,34 +70,64 @@ struct TextureMetadata
 
 struct PackedMaterial
 {
-    uint AlbedoDataId;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
-    uint NormalDataId;             //Normal/NormalStrength/Height                                                               - R16G16B16A16_UNORM
-    uint PackedMRODataId;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-    uint PackedSheenSSSDataId;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-    uint UnusedDataId;             //vec4(                                                                                    ) - R16G16B16A16_UNORM
-    uint EmissionDataId;           //Emission                                                                                   - R8G8B8A8_SRGB
+    uint AlbedoDataId;     
+    uint NormalDataId;            
+    uint MRODataId;
+    uint ClearCoatDataId;
+    uint FeatureADataId;   
+    uint FeatureBDataId;
+    uint FeatureCDataId;                                                                            
+    uint EmissionDataId;                                                                                  
 };
 
 struct Material
 {
-    vec3 Position;
-    vec3 Albedo;
-    vec3 Normal;
-    vec3 ParallaxInfo;
-    vec3 Emission;
-    vec3 Sheen;
-    vec3 SubSurfaceScattering;
+    vec3  Position;
+    float Depth;
 
-    float Height;
+    vec3  Albedo;
     float Metallic;
+
+    vec3  Normal;
     float Roughness;
+
+    vec3  Emission;
     float AmbientOcclusion;
-    float ClearCoatTint;
-    float ClearcoatStrength;
-    float ClearcoatRoughness;
-    float SheenIntensity;
-    float Thickness;
+
+    float Specular;
+    float IOR;
     float SelfShadow;
+    float _pad0;
+
+    vec3  CoatColor;
+    float CoatWeight;
+    float CoatRoughness;
+    float CoatDarkening;
+    float _pad1;
+    float _pad2;
+
+    vec3  SheenColor;
+    float SheenWeight;
+    float SheenRoughness;
+    float _pad3;
+    float _pad4;
+
+    vec3  SSSColor;
+    float SSSWeight;
+    float Thickness;
+    float SSSProfile;
+    float TransmissionWeight;
+    float AttenuationDistance;
+
+    vec3  AttenuationColor;
+    float Anisotropy;
+    float AnisotropyRotation;
+    float ThinFilmWeight;
+    float ThinFilmThickness;
+    float _pad5;
+
+    uint  ShadingModel;
+    uint  FeatureMask;
 };
 
 struct CubeMapMaterial

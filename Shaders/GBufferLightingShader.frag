@@ -71,8 +71,9 @@ layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput po
 layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput albedoInput;        //R8G8B8A8_SRGB
 layout(set = 1, binding = 2, input_attachment_index = 2) uniform subpassInput normalInput;        //R16G16B16A16_UNORM 
 layout(set = 1, binding = 3, input_attachment_index = 3) uniform subpassInput MROInput;           //R16G16B16A16_UNORM
-layout(set = 1, binding = 4, input_attachment_index = 4) uniform subpassInput featureInput;       //R16G16B16A16_UNORM
-layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput feature2Input;      //R16G16B16A16_UNORM
+layout(set = 1, binding = 4, input_attachment_index = 4) uniform subpassInput featureAInput;      //R16G16B16A16_UNORM
+layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput featureBInput;      //R16G16B16A16_UNORM
+//layout(set = 1, binding = 5, input_attachment_index = 5) uniform subpassInput featureCInput;      //R16G16B16A16_UNORM
 layout(set = 1, binding = 6, input_attachment_index = 6) uniform subpassInput emissionInput;      //R16G16B16A16_SFLOAT
 layout(set = 1, binding = 7, input_attachment_index = 7) uniform subpassInput depthInput;
 
@@ -148,7 +149,6 @@ vec3 ReconstructWorldPos(float depth);
 void main()
 {
     float depth = subpassLoad(depthInput).r;
-
     if (depth >= 0.9999)
     {
         vec2 uv = TexCoords;
@@ -156,47 +156,45 @@ void main()
         vec4 viewPos = sceneDataBuffer.InversePerspectiveProjection * vec4(ndc, 1.0);
         viewPos /= viewPos.w;
 
-        vec3 worldDir = normalize(
-            (sceneDataBuffer.InversePerspectiveView * vec4(normalize(viewPos.xyz), 0.0)).xyz);
-
+        vec3 worldDir = normalize((sceneDataBuffer.InversePerspectiveView * vec4(normalize(viewPos.xyz), 0.0)).xyz);
         outColor = vec4(textureLod(CubeMap[sceneDataBuffer.CubeMapId], worldDir, 0.0).rgb, 1.0);
         outBloom = vec4(0.0);
         return;
     }
 
-
     Material material = UnpackMaterial();
     material.Position = ReconstructWorldPos(depth);
 
-    vec3 stored  = subpassLoad(positionInput).rgb;
+        vec3 stored  = subpassLoad(positionInput).rgb;
 vec3 rebuilt = ReconstructWorldPos(depth);
-vec2 res     = 1.0 / sceneDataBuffer.InvertResolution;
+    if(stored == rebuilt)
+    {
+        outColor(1.0f, 0.0f, 0.0f, 1.0f);
+        outBloom(0.0f);
+        return;
+    }
+    vec3 V    = normalize(sceneDataBuffer.PerspectiveCameraPosition - material.Position);
+    vec3 N    = material.Normal;
+    vec3 iblN = normalize(mix(N, V, 0.15));
+    vec3 R    = reflect(-V, iblN);
+    vec3 F0   = mix(vec3(0.04), material.Albedo, material.Metallic);
 
-// A — reconstruct
-outColor = vec4(stored.xy / res, 0.0, 1.0);
- outBloom = vec4(0.0f);
+    vec3 Lo = DirectionalLightFunc(F0, V, material) + PointLightFunc(F0, V, material);
+    vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
 
-//    vec3 V    = normalize(sceneDataBuffer.PerspectiveCameraPosition - material.Position);
-//    vec3 N    = material.Normal;
-//    vec3 iblN = normalize(mix(material.Normal, V, 0.15));
-//    vec3 R    = reflect(-V, iblN);
-//    vec3 F0   = mix(vec3(0.04), material.Albedo, material.Metallic);
-//
-//    vec3 Lo = vec3(0.0);
-//    Lo += DirectionalLightFunc(F0, V, material);
-//    Lo += PointLightFunc(F0, V, material);
-//    vec3 ambient = ImageBasedLighting(F0, V, N, R, material);
-//
-//    vec3 color = ambient + Lo + material.Emission;
-//    outColor = vec4(color, 1.0);
-//    outBloom = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
+    outColor = vec4(color, 1.0);
+    outBloom = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
 
 Material UnpackMaterial()
 {
     vec4 packedMRO                = subpassLoad(MROInput);
     vec4 normalData               = subpassLoad(normalInput);
-    vec4 sheenSSS                 = subpassLoad(featureInput);
+    vec4 featureData              = subpassLoad(featureInput);
+
+    uint model;
+    uint mask;
+    UnpackBitsU16(subpassLoad(outPosition).a, model, mask);
 
     Material material;
     material.Position             = subpassLoad(positionInput).rgb;
@@ -206,9 +204,20 @@ Material UnpackMaterial()
     material.Metallic             = packedMRO.r;
     material.Roughness            = packedMRO.g;
     material.AmbientOcclusion     = packedMRO.b;
-    material.Sheen                = sheenSSS.rgb;
-    material.SheenIntensity       = sheenSSS.a;
     material.Emission             = subpassLoad(emissionInput).rgb;
+
+    if ((mask & FEAT_COAT)  != 0u) 
+    { /* unpack MRO coat */ 
+    }
+    if ((mask & FEAT_SSS)   != 0u) 
+    { 
+    /* FeatureA = SSS */ 
+    }
+    if ((mask & FEAT_SHEEN) != 0u) 
+    { 
+       material.Sheen                = featureData.rgb;
+       material.SheenIntensity       = featureData.a;
+    }
     return material;
 }
 

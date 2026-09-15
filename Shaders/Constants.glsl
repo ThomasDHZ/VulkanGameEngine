@@ -21,14 +21,5 @@ const uint MemoryPoolDescriptor = 15;
 const uint Texture3DDescriptor = 16;
 const uint SceneDataDescriptor = 17;
 
-const uint FEAT_COAT         = 1u << 0;
-const uint FEAT_SHEEN        = 1u << 1;
-const uint FEAT_SSS          = 1u << 2;
-const uint FEAT_TRANSMISSION = 1u << 3;
-const uint FEAT_ANISO        = 1u << 4;
-const uint FEAT_FILM         = 1u << 5;
-const uint FEAT_TWO_SIDED    = 1u << 6;
-const uint FEAT_COAT_NORMAL  = 1u << 7;
-
 #define saturate(x) clamp(x, 0.0, 1.0)
 #endif

@@ -23,9 +23,10 @@ PackedMaterial GetMaterial(uint index)
     PackedMaterial mat;
     mat.AlbedoDataId          = ~0u;
     mat.NormalDataId          = ~0u;
-    mat.PackedMRODataId       = ~0u;
-    mat.PackedSheenSSSDataId  = ~0u;
-    mat.UnusedDataId          = ~0u;
+    mat.MRODataId             = ~0u;
+    mat.FeatureADataId        = ~0u;
+    mat.FeatureBDataId        = ~0u;
+    mat.FeatureCDataId        = ~0u;
     mat.EmissionDataId        = ~0u;
     if (index >= bindlessBuffer.MaterialCount)
     {
@@ -35,9 +36,10 @@ PackedMaterial GetMaterial(uint index)
     uint baseByteLocation = (uint(bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MaterialSize / 4));
     mat.AlbedoDataId          = bindlessBuffer.Data[baseByteLocation++];
     mat.NormalDataId          = bindlessBuffer.Data[baseByteLocation++];
-    mat.PackedMRODataId       = bindlessBuffer.Data[baseByteLocation++];
-    mat.PackedSheenSSSDataId  = bindlessBuffer.Data[baseByteLocation++];
-    mat.UnusedDataId          = bindlessBuffer.Data[baseByteLocation++];
+    mat.MRODataId             = bindlessBuffer.Data[baseByteLocation++];
+    mat.FeatureADataId        = bindlessBuffer.Data[baseByteLocation++];
+    mat.FeatureBDataId        = bindlessBuffer.Data[baseByteLocation++];
+    mat.FeatureCDataId        = bindlessBuffer.Data[baseByteLocation++];
     mat.EmissionDataId        = bindlessBuffer.Data[baseByteLocation++];
     return mat;
 }
