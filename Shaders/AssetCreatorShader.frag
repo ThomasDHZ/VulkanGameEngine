@@ -190,6 +190,7 @@ void main()
     else if ((mask & FEAT_TRANSMISSION) != 0u) outFeatureA   = vec4(material.TransmissionWeight, material.AttenuationDistance, material.AttenuationDistance, CoatDarkening);
     else                                       outFeatureA   = vec4(0.0, 0.0f, 0.0f, CoatDarkening);
     outFeatureB = vec4(material.Anisotropy, material.AnisotropyRotation, 0.0f, 1.0f);
-    //outFeatureC = vec4(material.ThinFilmWeight, material.ThinFilmThickness, 0.0f, 1.0f);     
-    outEmission   = vec4(emission, 1.0);
+    //outFeatureC = vec4(material.ThinFilmWeight, material.ThinFilmThickness, 0.0f, 1.0f);  
+  
+    outEmission   = vec4(emission, material.EmissionIntensity);
 }

@@ -164,15 +164,15 @@ void main()
 
     Material material = UnpackMaterial();
     material.Position = ReconstructWorldPos(depth);
-
-        vec3 stored  = subpassLoad(positionInput).rgb;
-vec3 rebuilt = ReconstructWorldPos(depth);
-    if(stored == rebuilt)
-    {
-        outColor(1.0f, 0.0f, 0.0f, 1.0f);
-        outBloom(0.0f);
-        return;
-    }
+//
+//        vec3 stored  = subpassLoad(positionInput).rgb;
+//vec3 rebuilt = ReconstructWorldPos(depth);
+//    if(stored == rebuilt)
+//    {
+//        outColor(1.0f, 0.0f, 0.0f, 1.0f);
+//        outBloom(0.0f);
+//        return;
+//    }
     vec3 V    = normalize(sceneDataBuffer.PerspectiveCameraPosition - material.Position);
     vec3 N    = material.Normal;
     vec3 iblN = normalize(mix(N, V, 0.15));

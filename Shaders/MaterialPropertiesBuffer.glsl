@@ -37,6 +37,7 @@ struct ImportMaterial
     float AnisotropyRotation;
     float ThinFilmWeight;
     float ThinFilmThickness;
+    float EmissionIntensity;
 
     uint  AlbedoMap;
     uint  MetallicMap;
@@ -77,7 +78,8 @@ struct PackedMaterial
     uint FeatureADataId;   
     uint FeatureBDataId;
     uint FeatureCDataId;                                                                            
-    uint EmissionDataId;                                                                                  
+    uint EmissionDataId;     
+    float Specular;
 };
 
 struct Material

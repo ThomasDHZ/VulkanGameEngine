@@ -81,8 +81,9 @@ layout(location = 0) out vec4 outPosition;      //R16G16B16A16_SFLOAT
 layout(location = 1) out vec4 outAlbedo;        //R8G8B8A8_SRGB
 layout(location = 2) out vec4 outNormalData;    //R16G16B16A16_UNORM 
 layout(location = 3) out vec4 outMRO;           //R16G16B16A16_UNORM
-layout(location = 4) out vec4 outFeature;       //R16G16B16A16_UNORM
-layout(location = 5) out vec4 outFeature2;      //R16G16B16A16_UNORM
+layout(location = 4) out vec4 outFeatureA;       //R16G16B16A16_UNORM
+layout(location = 5) out vec4 outFeatureB;      //R16G16B16A16_UNORM
+//layout(location = 6) out vec4 outFeatureC;      //R16G16B16A16_UNORM
 layout(location = 6) out vec4 outEmission;      //R16G16B16A16_SFLOAT
 
 #include "BindlessHelpers.glsl"
@@ -197,7 +198,7 @@ void main()
     MeshProperitiesBuffer mesh     = GetMesh(sceneData.MeshBufferIndex);
     PackedMaterial        material = GetMaterial(mesh.MaterialIndex);
 
-    vec3 N = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos); // toward camera — correct for a billboard
+    vec3 N = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
     if (dot(T, T) < 1e-6) T = normalize(cross(vec3(1.0, 0.0, 0.0), N));
     T = normalize(T);
@@ -209,17 +210,21 @@ void main()
     vec2 finalUV   = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
 
     vec4  albedoDataMap      = texture(TextureMap[material.AlbedoDataId],       finalUV, -0.5).rgba;
-    vec3  normalDataMap      = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).rgb;
-    vec3  mroDataMap         = textureLod(TextureMap[material.MRODataId],       finalUV,  0.0).rgba;   
-    vec3  clearCoatDataMap   = textureLod(TextureMap[material.ClearCoatDataId], finalUV,  0.0).rgba;  
+    vec4  normalDataMap      = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).rgba;
+    vec4  mroDataMap         = textureLod(TextureMap[material.MRODataId],       finalUV,  0.0).rgba;   
+    vec4  clearCoatDataMap   = textureLod(TextureMap[material.ClearCoatDataId], finalUV,  0.0).rgba;  
     vec4  featureADataMap    = textureLod(TextureMap[material.FeatureADataId],  finalUV,  0.0).rgba;
     vec4  featureBDataMap    = textureLod(TextureMap[material.FeatureBDataId],  finalUV,  0.0).rgba;
     vec4  featureCDataMap    = textureLod(TextureMap[material.FeatureCDataId],  finalUV,  0.0).rgba;
+    vec4  emissionDataMap    = textureLod(TextureMap[material.EmissionDataId],  finalUV,  0.0).rgba;
     float heightRaw          = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).a;
-    if (albedoData.a < 0.1) discard;
+    if (albedoDataMap.a < 0.1) discard;
 
-    vec3 tangentNormal = OctahedronDecode(normalData.xy * 2.0 - 1.0);
-    tangentNormal.xy  *= normalData.b;
+    uint mask = 0u;
+    uint model =0u;
+
+    vec3 tangentNormal = OctahedronDecode(normalDataMap.xy * 2.0 - 1.0);
+    tangentNormal.xy  *= normalDataMap.b;
     tangentNormal      = normalize(tangentNormal);
 
     vec3 normalWS         = normalize(TBN * tangentNormal);
@@ -231,9 +236,9 @@ void main()
     float selfShadow = HeightSelfShadowTiled(finalUV, Lts, material.NormalDataId, heightRaw);
 
                                            outPosition   = vec4(WorldPos, 1.0f);
-                                           outAlbedo     = vec4(albedoData, mroDataMap.b);
+                                           outAlbedo     = vec4(albedoDataMap.rgb, mroDataMap.b);
                                            outNormalData = vec4(encodedNormalWS * 0.5f + 0.5f, mroDataMap.g, selfShadow);
-                                           outMRO        = vec4(Pack8bitPair(mroDataMap.b, specular), Pack8bitPair(clearCoatDataMap.r, clearCoatDataMap,g), Pack8bitPair(clearCoatDataMap.b, coatColor.a), PackBitsU16(model, mask));
+                                           outMRO        = vec4(Pack8bitPair(mroDataMap.b, material.Specular), Pack8bitPair(clearCoatDataMap.r, clearCoatDataMap.g), Pack8bitPair(clearCoatDataMap.b, clearCoatDataMap.a), Pack8bitPair(model, mask));
                                            outFeatureA   = vec4(0.0f, 0.0f, 0.0f, featureADataMap.a);
                                            outFeatureB   = vec4(0.0f);
 //if ((mask & FEAT_SSS) != 0u)               outFeatureA   = vec4(Pack8bitPair(SSSColor.r, SSSColor.g), Pack8bitPair(SSSColor.b, SSSWeight), Pack8bitPair(Thickness, SSSProfile), featureADataMap);
@@ -244,5 +249,5 @@ void main()
 //else                                       outFeatureB   = vec4(0.0);
 
                                           // outFeatureC   = vec4(Pack8bitPair(Anisotropy, AnisotropyRotation), Pack8bitPair(ThinFilmWeight, ThinFilmThickness), encodedTangent * 0.5 + 0.5, 1.0);
-                                           outEmission   = vec4(emissionData.rgb * emissionData.a * emissiveIntensity, 1.0);
+                                           outEmission   = vec4(emissionDataMap.rgb * emissionDataMap.a, 1.0);
 }
