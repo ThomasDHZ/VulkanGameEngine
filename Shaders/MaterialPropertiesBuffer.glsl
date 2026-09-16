@@ -1,13 +1,3 @@
-const float kFeatureEps = 1e-3f;
-const uint FEAT_COAT         = 1u << 0;
-const uint FEAT_SHEEN        = 1u << 1;
-const uint FEAT_SSS          = 1u << 2;
-const uint FEAT_TRANSMISSION = 1u << 3;
-const uint FEAT_ANISO        = 1u << 4;
-const uint FEAT_FILM         = 1u << 5;
-const uint FEAT_TWO_SIDED    = 1u << 6;
-const uint FEAT_COAT_NORMAL  = 1u << 7;
-
 struct ImportMaterial
 {
     vec3  Albedo;
@@ -20,18 +10,24 @@ struct ImportMaterial
     float Metallic;
     float Roughness;
     float AmbientOcclusion;
-    float Specular;
     float IOR;
+    float NormalStrength;
+    float Height;
+
     float CoatWeight;
     float CoatRoughness;
     float CoatDarkening;
+
     float SheenWeight;
     float SheenRoughness;
+
     float SSSWeight;
     float SSSProfile;
     float Thickness;
+
     float TransmissionWeight;
     float AttenuationDistance;
+
     float Anisotropy;
     float AnisotropyRotation;
     float ThinFilmWeight;
@@ -39,24 +35,29 @@ struct ImportMaterial
     float EmissionIntensity;
 
     uint  AlbedoMap;
+    uint  NormalMap;
+    uint  HeightMap;
+    uint  AlphaMap;
     uint  MetallicMap;
     uint  RoughnessMap;
-    uint  ThicknessMap;
+    uint  AmbientOcclusionMap;
+    uint  EmissionMap;
+    uint  ClearCoatColorMap;
+    uint  ClearCoatPropertiesMap;
+    uint  SheenMap;
+    uint  SheenPropertiesMap;
     uint  SSSColorMap;
     uint  SSSPropertiesMap;
     uint  AttenuationColorMap;
-    uint  SheenMap;
-    uint  SheenPropertiesMap;
-    uint  ClearCoatColorMap;
-    uint  ClearCoatPropertiesMap;
     uint  AnisotropyPropertiesMap;
-    uint  AmbientOcclusionMap;
-    uint  NormalMap;
-    uint  AlphaMap;
-    uint  EmissionMap;
-    uint  HeightMap;
+
     uint  ShadingModel;
     uint  FeatureMask;
+
+    // runtime-only, not packed
+    vec3  NormalTS;
+    float Alpha;
+    float IORNorm;
 };
 
 struct TextureMetadata
@@ -82,9 +83,7 @@ struct PackedMaterial
     uint FeatureCDataId;
     uint EmissionDataId;
     uint ShadingModel;
-    uint FeatureMask;  
-
-
+    uint FeatureMask;
 };
 
 struct Material

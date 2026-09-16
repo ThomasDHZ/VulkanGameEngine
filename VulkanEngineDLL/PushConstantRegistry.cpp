@@ -47,4 +47,10 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
             shaderSystem.UpdatePushConstantValue<float>(pushConstant, "Roughness", roughness);
             shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
+
+    pushConstantRegistry.RegisterPushConstantValue("materialBaker", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
+        {
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MaterialBakerSubPassIndex", context.DrawIndex);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
+        });
 }

@@ -13,7 +13,7 @@ struct PushConstantContext
     ivec2                 RenderPassResolution = { 0, 0 };     // base resolution before mip
 };
 
-class PushConstantRegistry
+class ENGINE_DLL_EXPORT PushConstantRegistry
 {
 public: 
     static PushConstantRegistry& Get();
@@ -30,11 +30,11 @@ private:
 	UnorderedMap<String, UpdateFunc> registry;
 
 public:
-     void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);
-     void ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext);
-     void RegisterDefaultPushConstantRules();
+    void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);
+    void ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext);
+    void RegisterDefaultPushConstantRules();
 };
-extern  PushConstantRegistry& pushConstantRegistry;
+ENGINE_DLL_EXPORT extern  PushConstantRegistry& pushConstantRegistry;
 inline PushConstantRegistry& PushConstantRegistry::Get()
 {
     static PushConstantRegistry instance;
