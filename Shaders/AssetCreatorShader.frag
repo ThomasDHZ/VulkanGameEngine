@@ -153,22 +153,25 @@ ImportMaterial GetImportMaterial()
     return mat;
 }
 
+ImportMaterial MapToMaterial();
+
 void main()
 {
     ImportMaterial material = GetImportMaterial();
-    vec4 albedo =            (material.AlbedoMap != 0xFFFFFFFFu)                    ? textureLod(TextureMap[nonuniformEXT(material.AlbedoMap)], UV, 0.0)                        : vec4(material.Albedo, 1.0);
-    vec3 normalMapRaw =      (material.NormalMap != 0xFFFFFFFFu)                    ? textureLod(TextureMap[nonuniformEXT(material.NormalMap)], UV, 0.0).rgb                    : vec3(0.5, 0.5, 1.0);
-    vec3 clearcoatTint =     (material.ClearCoatMap != 0xFFFFFFFFu)                 ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatMap)], UV, 0.0).r                   : material.ClearcoatTint;
-    vec3 sheenColor =        (material.SheenMap != 0xFFFFFFFFu)                     ? textureLod(TextureMap[nonuniformEXT(material.SheenMap)], UV, 0.0).rgb                     : material.SheenColor;
-    vec3 sssColor =          (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.SubSurfaceScatteringColorMap)], UV, 0.0).rgb : material.SubSurfaceScatteringColor;
-    vec3 AttenuationColor =  (material.AttenuationColorMap != 0xFFFFFFFFu)          ? textureLod(TextureMap[nonuniformEXT(material.AttenuationColorMap)], UV, 0.0).rgb          : material.AttenuationColor;
-    vec3 emission =          (material.EmissionMap != 0xFFFFFFFFu)                  ? textureLod(TextureMap[nonuniformEXT(material.EmissionMap)], UV, 0.0).rgb                  : material.Emission;  
+    vec4 albedo =              (material.AlbedoMap != 0xFFFFFFFFu)                    ? textureLod(TextureMap[nonuniformEXT(material.AlbedoMap)], UV, 0.0)                        : vec4(material.Albedo, 1.0);
+    vec3 normalMapRaw =        (material.NormalMap != 0xFFFFFFFFu)                    ? textureLod(TextureMap[nonuniformEXT(material.NormalMap)], UV, 0.0).rgb                    : vec3(0.5, 0.5, 1.0);
+    vec3 clearCoatTint =       (material.ClearCoatColorMap != 0xFFFFFFFFu)            ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatMap)], UV, 0.0).r                   : material.ClearcoatTint;
+    vec3 clearCoatProperties = (material.ClearCoatPropertiesMap != 0xFFFFFFFFu)       ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatMap)], UV, 0.0).r                   : material.ClearcoatTint;
+    vec3 sheenColor =          (material.SheenMap != 0xFFFFFFFFu)                     ? textureLod(TextureMap[nonuniformEXT(material.SheenMap)], UV, 0.0).rgb                     : material.SheenColor;
+    vec3 sssColor =            (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.SubSurfaceScatteringColorMap)], UV, 0.0).rgb : material.SubSurfaceScatteringColor;
+    vec3 AttenuationColor =    (material.AttenuationColorMap != 0xFFFFFFFFu)          ? textureLod(TextureMap[nonuniformEXT(material.AttenuationColorMap)], UV, 0.0).rgb          : material.AttenuationColor;
+    vec3 emission =            (material.EmissionMap != 0xFFFFFFFFu)                  ? textureLod(TextureMap[nonuniformEXT(material.EmissionMap)], UV, 0.0).rgb                  : material.Emission;  
     
-    float metallic =         (material.MetallicMap != 0xFFFFFFFFu)                  ? textureLod(TextureMap[nonuniformEXT(material.MetallicMap)], UV, 0.0).r                    : material.Metallic;
-    float roughness =        (material.RoughnessMap != 0xFFFFFFFFu)                 ? textureLod(TextureMap[nonuniformEXT(material.RoughnessMap)], UV, 0.0).r                   : material.Roughness;
-    float ambientOcclusion = (material.AmbientOcclusionMap != 0xFFFFFFFFu)          ? textureLod(TextureMap[nonuniformEXT(material.AmbientOcclusionMap)], UV, 0.0).r            : material.AmbientOcclusion;
+    float metallic =           (material.MetallicMap != 0xFFFFFFFFu)                  ? textureLod(TextureMap[nonuniformEXT(material.MetallicMap)], UV, 0.0).r                    : material.Metallic;
+    float roughness =          (material.RoughnessMap != 0xFFFFFFFFu)                 ? textureLod(TextureMap[nonuniformEXT(material.RoughnessMap)], UV, 0.0).r                   : material.Roughness;
+    float ambientOcclusion =   (material.AmbientOcclusionMap != 0xFFFFFFFFu)          ? textureLod(TextureMap[nonuniformEXT(material.AmbientOcclusionMap)], UV, 0.0).r            : material.AmbientOcclusion;
    
-    float thickness =        (material.ThicknessMap != 0xFFFFFFFFu)                 ? textureLod(TextureMap[nonuniformEXT(material.ThicknessMap)], UV, 0.0).r                   : material.Thickness;
+   // float thickness =        (material.ThicknessMap != 0xFFFFFFFFu)                 ? textureLod(TextureMap[nonuniformEXT(material.ThicknessMap)], UV, 0.0).r                   : material.Thickness;
     float height =           (material.HeightMap != 0xFFFFFFFFu)                    ? textureLod(TextureMap[nonuniformEXT(material.HeightMap)], UV, 0.0).r                      : material.Height;
 
     vec3 tangentNormal = normalMapRaw * 2.0 - 1.0;
@@ -193,4 +196,37 @@ void main()
     //outFeatureC = vec4(material.ThinFilmWeight, material.ThinFilmThickness, 0.0f, 1.0f);  
   
     outEmission   = vec4(emission, material.EmissionIntensity);
+}
+
+ImportMaterial MapToMaterial()
+{
+    ImportMaterial material;
+    material.Albedo =           (material.AlbedoMap != 0xFFFFFFFFu)                    ? textureLod(TextureMap[nonuniformEXT(material.AlbedoMap)], UV, 0.0)                        : vec4(material.Albedo, 1.0)
+    material.ClearcoatTint =    (material.ClearCoatColorMap != 0xFFFFFFFFu)            ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatMap)], UV, 0.0).rgb                 : material.ClearcoatTint;
+    material.SheenColor =       (material.SheenMap != 0xFFFFFFFFu)                     ? textureLod(TextureMap[nonuniformEXT(material.SheenMap)], UV, 0.0).rgb                     : material.SheenColor;
+    material.SSSColor =         (material.SubSurfaceScatteringColorMap != 0xFFFFFFFFu) ? textureLod(TextureMap[nonuniformEXT(material.SubSurfaceScatteringColorMap)], UV, 0.0).rgb : material.SubSurfaceScatteringColor;
+    material.AttenuationColor = (material.AttenuationColorMap != 0xFFFFFFFFu)          ? textureLod(TextureMap[nonuniformEXT(material.AttenuationColorMap)], UV, 0.0).rgb          : material.AttenuationColor;
+    material.Emission =         (material.EmissionMap != 0xFFFFFFFFu)                  ? textureLod(TextureMap[nonuniformEXT(material.EmissionMap)], UV, 0.0).rgb                  : material.Emission;
+
+    material.Metallic =         (material.MetallicMap != 0xFFFFFFFFu)                  ? textureLod(TextureMap[nonuniformEXT(material.MetallicMap)], UV, 0.0).r                    : material.Metallic;
+    material.Roughness =        (material.RoughnessMap != 0xFFFFFFFFu)                 ? textureLod(TextureMap[nonuniformEXT(material.RoughnessMap)], UV, 0.0).r                   : material.Roughness;
+    material.AmbientOcclusion = (material.AmbientOcclusionMap != 0xFFFFFFFFu)          ? textureLod(TextureMap[nonuniformEXT(material.AmbientOcclusionMap)], UV, 0.0).r            : material.AmbientOcclusion;
+    material.Specular;
+    material.IOR;
+    material.CoatWeight       = (material.ClearCoatPropertiesMap != 0xFFFFFFFFu)       ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatPropertiesMap)], UV, 0.0).r         : material.CoatWeight;
+    material.CoatRoughness    = (material.ClearCoatPropertiesMap != 0xFFFFFFFFu)       ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatPropertiesMap)], UV, 0.0).g         : material.CoatRoughness;
+    material.CoatDarkening    = (material.ClearCoatPropertiesMap != 0xFFFFFFFFu)       ? textureLod(TextureMap[nonuniformEXT(material.ClearCoatPropertiesMap)], UV, 0.0).b         : material.CoatDarkening;
+    material.SheenWeight;
+    material.SheenRoughness;
+    material.SSSWeight;
+    material.SSSProfile;
+    material.Thickness;
+    material.TransmissionWeight;
+    material.AttenuationDistance;
+    material.Anisotropy;
+    material.AnisotropyRotation;
+    material.ThinFilmWeight;
+    material.ThinFilmThickness;
+    material.EmissionIntensity;
+    return material;
 }

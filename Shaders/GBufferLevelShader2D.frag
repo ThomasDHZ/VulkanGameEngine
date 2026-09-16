@@ -209,15 +209,15 @@ void main()
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV   = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalDataId);
 
-    vec4  albedoDataMap      = texture(TextureMap[material.AlbedoDataId],       finalUV, -0.5).rgba;
-    vec4  normalDataMap      = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).rgba;
-    vec4  mroDataMap         = textureLod(TextureMap[material.MRODataId],       finalUV,  0.0).rgba;   
-    vec4  clearCoatDataMap   = textureLod(TextureMap[material.ClearCoatDataId], finalUV,  0.0).rgba;  
-    vec4  featureADataMap    = textureLod(TextureMap[material.FeatureADataId],  finalUV,  0.0).rgba;
-    vec4  featureBDataMap    = textureLod(TextureMap[material.FeatureBDataId],  finalUV,  0.0).rgba;
-    vec4  featureCDataMap    = textureLod(TextureMap[material.FeatureCDataId],  finalUV,  0.0).rgba;
-    vec4  emissionDataMap    = textureLod(TextureMap[material.EmissionDataId],  finalUV,  0.0).rgba;
-    float heightRaw          = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).a;
+    vec4  albedoDataMap              = texture(TextureMap[material.AlbedoDataId],       finalUV, -0.5).rgba;
+    vec4  normalDataMap              = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).rgba;
+    vec4  mroDataMap                 = textureLod(TextureMap[material.MRODataId],       finalUV,  0.0).rgba;   
+    vec4  clearCoatColorDataMap      = textureLod(TextureMap[material.ClearCoatDataId], finalUV,  0.0).rgba;
+    vec4  featureADataMap            = textureLod(TextureMap[material.FeatureADataId],  finalUV,  0.0).rgba;
+    vec4  featureBDataMap            = textureLod(TextureMap[material.FeatureBDataId],  finalUV,  0.0).rgba;
+    vec4  featureCDataMap            = textureLod(TextureMap[material.FeatureCDataId],  finalUV,  0.0).rgba;
+    vec4  emissionDataMap            = textureLod(TextureMap[material.EmissionDataId],  finalUV,  0.0).rgba;
+    float heightRaw                  = textureLod(TextureMap[material.NormalDataId],    finalUV,  0.0).a;
     if (albedoDataMap.a < 0.1) discard;
 
     uint mask = 0u;

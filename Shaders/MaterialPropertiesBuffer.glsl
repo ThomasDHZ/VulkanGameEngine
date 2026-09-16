@@ -22,15 +22,14 @@ struct ImportMaterial
     float AmbientOcclusion;
     float Specular;
     float IOR;
-    float SelfShadow;
     float CoatWeight;
     float CoatRoughness;
     float CoatDarkening;
     float SheenWeight;
     float SheenRoughness;
     float SSSWeight;
-    float Thickness;
     float SSSProfile;
+    float Thickness;
     float TransmissionWeight;
     float AttenuationDistance;
     float Anisotropy;
@@ -46,7 +45,8 @@ struct ImportMaterial
     uint  SSSColorMap;
     uint  AttenuationColorMap;
     uint  SheenMap;
-    uint  ClearCoatMap;
+    uint  ClearCoatColorMap;
+    uint  ClearCoatPropertiesMap;
     uint  AnisotropyMap;
     uint  AmbientOcclusionMap;
     uint  NormalMap;
