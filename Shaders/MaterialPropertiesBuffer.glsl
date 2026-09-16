@@ -43,11 +43,13 @@ struct ImportMaterial
     uint  RoughnessMap;
     uint  ThicknessMap;
     uint  SSSColorMap;
+    uint  SSSPropertiesMap;
     uint  AttenuationColorMap;
     uint  SheenMap;
+    uint  SheenPropertiesMap;
     uint  ClearCoatColorMap;
     uint  ClearCoatPropertiesMap;
-    uint  AnisotropyMap;
+    uint  AnisotropyPropertiesMap;
     uint  AmbientOcclusionMap;
     uint  NormalMap;
     uint  AlphaMap;
@@ -71,15 +73,18 @@ struct TextureMetadata
 
 struct PackedMaterial
 {
-    uint AlbedoDataId;     
-    uint NormalDataId;            
+    uint AlbedoDataId;
+    uint NormalDataId;
     uint MRODataId;
     uint ClearCoatDataId;
-    uint FeatureADataId;   
+    uint FeatureADataId;
     uint FeatureBDataId;
-    uint FeatureCDataId;                                                                            
-    uint EmissionDataId;     
-    float Specular;
+    uint FeatureCDataId;
+    uint EmissionDataId;
+    uint ShadingModel;
+    uint FeatureMask;  
+
+
 };
 
 struct Material

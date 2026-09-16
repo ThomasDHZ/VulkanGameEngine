@@ -247,16 +247,16 @@ void main()
                                            outAlbedo     = vec4(albedoDataMap.rgb, mroDataMap.b);
                                            outNormalData = vec4(encodedNormalWS * 0.5f + 0.5f, mroDataMap.g, selfShadow);
                                            outMRO        = vec4(Pack8bitPair(mroDataMap.b, material.Specular), Pack8bitPair(clearCoatDataMap.r, clearCoatDataMap.g), Pack8bitPair(clearCoatDataMap.b, clearCoatDataMap.a), Pack8bitPair(model, mask));
-                                           outFeatureA   = vec4(0.0f, 0.0f, 0.0f, featureADataMap.a);
-                                           outFeatureB   = vec4(0.0f);
-//if ((mask & FEAT_SSS) != 0u)               outFeatureA   = vec4(Pack8bitPair(SSSColor.r, SSSColor.g), Pack8bitPair(SSSColor.b, SSSWeight), Pack8bitPair(Thickness, SSSProfile), featureADataMap);
-//else if ((mask & FEAT_TRANSMISSION) != 0u) outFeatureA   = vec4(Pack8bitPair(TransmissionWeight, Thickness), Pack8bitPair(AttenuationColor.r, AttenuationColor.g), Pack8bitPair(AttenuationColor.b, IORNormalized), featureADataMap);
-//else                                       outFeatureA   = vec4(0.0f, 0.0f, 0.0f, featureADataMap.a);
-//
-//if ((mask & FEAT_SHEEN) != 0u)             outFeatureB   = vec4(Pack8bitPair(SheenColor.r, SheenColor.g), Pack8bitPair(SheenColor.b, SheenRoughness), Pack8bitPair(SheenWeight, 0.0), 1.0);
-//else                                       outFeatureB   = vec4(0.0);
+//                                           outFeatureA   = vec4(0.0f, 0.0f, 0.0f, featureADataMap.a);
+//                                           outFeatureB   = vec4(0.0f);
+if ((mask & FEAT_SSS) != 0u)               outFeatureA   = vec4(Pack8bitPair(SSSColor.r, SSSColor.g), Pack8bitPair(SSSColor.b, SSSWeight), Pack8bitPair(Thickness, SSSProfile), featureADataMap);
+else if ((mask & FEAT_TRANSMISSION) != 0u) outFeatureA   = vec4(Pack8bitPair(TransmissionWeight, Thickness), Pack8bitPair(AttenuationColor.r, AttenuationColor.g), Pack8bitPair(AttenuationColor.b, IORNormalized), featureADataMap);
+else                                       outFeatureA   = vec4(0.0f, 0.0f, 0.0f, featureADataMap.a);
 
-                                          // outFeatureC   = vec4(Pack8bitPair(Anisotropy, AnisotropyRotation), Pack8bitPair(ThinFilmWeight, ThinFilmThickness), encodedTangent * 0.5 + 0.5, 1.0);
+if ((mask & FEAT_SHEEN) != 0u)             outFeatureB   = vec4(Pack8bitPair(SheenColor.r, SheenColor.g), Pack8bitPair(SheenColor.b, SheenRoughness), Pack8bitPair(SheenWeight, 0.0), 1.0);
+else                                       outFeatureB   = vec4(0.0);
+
+                                           outFeatureC   = vec4(Pack8bitPair(Anisotropy, AnisotropyRotation), Pack8bitPair(ThinFilmWeight, ThinFilmThickness), encodedTangent * 0.5 + 0.5, 1.0);
                                            outEmission   = vec4(emissionDataMap.rgb * emissionDataMap.a, 1.0);
 
 }
