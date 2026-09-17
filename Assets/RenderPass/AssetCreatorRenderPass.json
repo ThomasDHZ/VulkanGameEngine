@@ -4,7 +4,7 @@
   "RenderPipelineList": [
     "Pipelines/AssetCreatorPipeline.json"
   ],
-  "RenderPassResolution": [ 0, 0 ],
+  "RenderPassResolution": [ 3248, 1376 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
@@ -43,10 +43,11 @@
       {
         "MeshType": 5,
         "PipelinePackageId": "6a478b69-fa2c-449f-ae4a-cc7d553df9f7",
-        "ShaderPushConstant": null,
+        "ShaderPushConstant": "materialBaker",
         "PushConstantUpdates": [],
         "InputTextureList": [],
-        "OutputTextureList": [],
+        "OutputTextureList": [
+        ],
         "OffScreenRenderPass": true
       }
     ]
@@ -54,39 +55,41 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "AlbedoMap",
+      "Name": "Albedo",
       "RenderedTextureId": "a1b9565e-2a3e-4605-91ae-c650b9a97c90",
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 37,
+      "Format": 43,
       "LoadOp": 1,
-      "StoreOp": 2,
+      "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
       "SamplerCreateInfo": {
-        "SType": 37,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
         "MipLodBias": 0.0,
-        "AnisotropyEnable": true,
-        "MaxAnisotropy": 16.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
     },
     {
-      "Name": "NormalData",
+      "Name": "Normal",
       "RenderedTextureId": "7b9721cd-7133-4fe5-ac24-6009ad677f6e",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -94,7 +97,7 @@
       "RenderAttachmentTypes": [ 0 ],
       "Format": 91,
       "LoadOp": 1,
-      "StoreOp": 2,
+      "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
@@ -102,9 +105,9 @@
       "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
@@ -114,13 +117,13 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
     },
     {
-      "Name": "PackedMRO",
+      "Name": "MRO",
       "RenderedTextureId": "434e63f8-57d3-4c2e-80f7-86bb0f7ff3f6",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -128,7 +131,7 @@
       "RenderAttachmentTypes": [ 0 ],
       "Format": 91,
       "LoadOp": 1,
-      "StoreOp": 2,
+      "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
@@ -136,9 +139,9 @@
       "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
@@ -148,13 +151,13 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
     },
     {
-      "Name": "PackedSheenSSS",
+      "Name": "Coat",
       "RenderedTextureId": "1b8bb2b2-bf95-4557-9e7a-243e285fb45a",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -162,7 +165,7 @@
       "RenderAttachmentTypes": [ 0 ],
       "Format": 91,
       "LoadOp": 1,
-      "StoreOp": 2,
+      "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
@@ -170,9 +173,9 @@
       "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
@@ -182,13 +185,13 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
     },
     {
-      "Name": "UnusedMap",
+      "Name": "FeatureA",
       "RenderedTextureId": "c98eb24f-ccba-4dfe-8e31-6d76a9622d76",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -196,7 +199,7 @@
       "RenderAttachmentTypes": [ 0 ],
       "Format": 91,
       "LoadOp": 1,
-      "StoreOp": 2,
+      "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
@@ -204,9 +207,9 @@
       "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
@@ -216,21 +219,21 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
     },
     {
-      "Name": "EmissionMap",
-      "RenderedTextureId": "0f9cd196-62cc-4ad1-95ca-13af53d93d4d",
+      "Name": "FeatureB",
+      "RenderedTextureId": "dcec4e36-3332-4829-a8c0-8800715eb599",
       "MipMapCount": 1,
-      "TextureType": 1,
+      "TextureType": 4,
       "TextureUsageType": 2,
       "RenderAttachmentTypes": [ 0 ],
       "Format": 91,
       "LoadOp": 1,
-      "StoreOp": 2,
+      "StoreOp": 0,
       "FinalLayout": 5,
       "UseSampler": true,
       "UseMipMaps": false,
@@ -238,9 +241,9 @@
       "IsTextureToExport": true,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 1,
-        "MinFilter": 1,
-        "MipmapMode": 1,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
@@ -250,8 +253,76 @@
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1000.0,
-        "BorderColor": 1,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "Name": "FeatureB",
+      "RenderedTextureId": "e7cafd5c-23a8-4a99-93b6-f9d776a41681",
+      "MipMapCount": 1,
+      "TextureType": 4,
+      "TextureUsageType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 91,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "Name": "Emission",
+      "RenderedTextureId": "119c53c1-9060-45f8-9b5c-b8f2edf749ef",
+      "MipMapCount": 1,
+      "TextureType": 1,
+      "TextureUsageType": 2,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 97,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "IsCubeMapAttachment": false,
+      "IsTextureToExport": true,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 0,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 0.0,
+        "BorderColor": 2,
         "UnnormalizedCoordinates": false
       }
     }
@@ -271,7 +342,7 @@
     {
       "TextureAttachment": 0,
       "Color": {
-        "Float32_0": 1.0,
+        "Float32_0": 0.0,
         "Float32_1": 0.0,
         "Float32_2": 0.0,
         "Float32_3": 0.0
@@ -280,46 +351,64 @@
     {
       "TextureAttachment": 1,
       "Color": {
-        "Float32_0": 1.0,
-        "Float32_1": 1.0,
-        "Float32_2": 0.0,
-        "Float32_3": 1.0
+        "Float32_0": 0.5,
+        "Float32_1": 0.5,
+        "Float32_2": 1.0,
+        "Float32_3": 0.0
       }
     },
     {
       "TextureAttachment": 2,
       "Color": {
         "Float32_0": 0.0,
-        "Float32_1": 0.0,
+        "Float32_1": 0.5,
         "Float32_2": 1.0,
-        "Float32_3": 1.0
+        "Float32_3": 0.225
       }
     },
     {
       "TextureAttachment": 3,
       "Color": {
-        "Float32_0": 1.0,
-        "Float32_1": 0.5,
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
         "Float32_2": 1.0,
-        "Float32_3": 1.0
+        "Float32_3": 0.0
       }
     },
     {
       "TextureAttachment": 4,
       "Color": {
         "Float32_0": 0.0,
-        "Float32_1": 1.0,
-        "Float32_2": 1.0,
-        "Float32_3": 1.0
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
       }
     },
     {
       "TextureAttachment": 5,
       "Color": {
         "Float32_0": 0.0,
-        "Float32_1": 1.0,
-        "Float32_2": 1.0,
-        "Float32_3": 1.0
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 6,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      }
+    },
+    {
+      "TextureAttachment": 7,
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
       }
     }
   ]

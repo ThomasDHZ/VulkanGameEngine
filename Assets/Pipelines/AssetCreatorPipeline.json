@@ -31,7 +31,7 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "_comment": "Attachment 0 - PositionData (RGB = world pos, A = ?)",
+      "_comment": "Attachment 0 - Albedo",
       "BlendEnable": true,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -42,7 +42,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 1 - Albedo (RGBA = color + opacity)",
+      "_comment": "Attachment 1 - Normal",
       "BlendEnable": true,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -53,7 +53,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 2 - NormalMap (RG = encoded normal, B = strength, A = height)",
+      "_comment": "Attachment 2 - MRO",
       "BlendEnable": true,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -64,7 +64,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 3 - Packed MRO/Emissive/Advanced (RGBA packed)",
+      "_comment": "Attachment 3 - Coat",
       "BlendEnable": true,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -75,7 +75,7 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 3 - Packed MRO/Emissive/Advanced (RGBA packed)",
+      "_comment": "Attachment 4 - FeatureA",
       "BlendEnable": true,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,
@@ -86,7 +86,29 @@
       "ColorWriteMask": 15
     },
     {
-      "_comment": "Attachment 3 - Packed MRO/Emissive/Advanced (RGBA packed)",
+      "_comment": "Attachment 5 - FeatureB",
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 6 - FeatureC",
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 1,
+      "DstColorBlendFactor": 0,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 0,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "_comment": "Attachment 7 - Emission",
       "BlendEnable": true,
       "SrcColorBlendFactor": 1,
       "DstColorBlendFactor": 0,

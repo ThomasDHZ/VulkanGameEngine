@@ -54,7 +54,7 @@ struct ImportMaterial
     uint  ShadingModel;
     uint  FeatureMask;
 
-    // runtime-only, not packed
+    // runtime-only — never stored in the pool
     vec3  NormalTS;
     float Alpha;
     float IORNorm;
