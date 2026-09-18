@@ -68,56 +68,56 @@ ImportMaterial GetImportMaterial()
     ImportMaterial m;
     m.Alpha = 1.0;
 
-    m.Albedo.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Albedo.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Albedo.b = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Albedo.r                 = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Albedo.g                 = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Albedo.b                 = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.ClearcoatTint.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.ClearcoatTint.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.ClearcoatTint.b = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.ClearcoatTint.r          = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.ClearcoatTint.g          = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.ClearcoatTint.b          = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.SheenColor.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.SheenColor.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.SheenColor.b = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SheenColor.r             = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SheenColor.g             = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SheenColor.b             = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.SSSColor.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.SSSColor.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.SSSColor.b = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SSSColor.r               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SSSColor.g               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SSSColor.b               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.AttenuationColor.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.AttenuationColor.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.AttenuationColor.b = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.AttenuationColor.r       = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.AttenuationColor.g       = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.AttenuationColor.b       = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.Emission.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Emission.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Emission.b = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Emission.r               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Emission.g               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Emission.b               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.Metallic         = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Roughness        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.AmbientOcclusion = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.IOR              = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.NormalStrength   = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Height           = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Metallic                 = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Roughness                = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.AmbientOcclusion         = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.IOR                      = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.NormalStrength           = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Height                   = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.CoatWeight    = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.CoatRoughness = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.CoatDarkening = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.CoatWeight               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.CoatRoughness            = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.CoatDarkening            = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.SheenWeight    = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.SheenRoughness = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SheenWeight              = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SheenRoughness           = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.SSSWeight  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.SSSProfile = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.Thickness  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SSSWeight                = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.SSSProfile               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Thickness                = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.TransmissionWeight  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.AttenuationDistance = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.TransmissionWeight       = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.AttenuationDistance      = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.Anisotropy         = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.AnisotropyRotation = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.ThinFilmWeight     = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.ThinFilmThickness  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
-    m.EmissionIntensity  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.Anisotropy               = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.AnisotropyRotation       = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.ThinFilmWeight           = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.ThinFilmThickness        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    m.EmissionIntensity        = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
     m.AlbedoMap                = bindlessBuffer.Data[offset++];
     m.NormalMap                = bindlessBuffer.Data[offset++];
