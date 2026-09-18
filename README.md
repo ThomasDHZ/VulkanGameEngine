@@ -49,3 +49,6 @@ Open `VulkanGameEngine.sln` in Visual Studio 2022 or later.
 mkdir build && cd build
 cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 ninja
+
+
+<img width="3840" height="2160" alt="image" src="https://github.com/user-attachments/assets/50ee19af-be21-40f3-879b-790685c4d50f" />
