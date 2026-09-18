@@ -24,13 +24,13 @@ layout(location = 0) in vec2 UV;
 layout(location = 0) out vec4 outAlbedo;
 layout(location = 1) out vec4 outNormalData;
 layout(location = 2) out vec4 outMRO;
-layout(location = 3) out vec4 outCoat;
-layout(location = 4) out vec4 outFeatureA;
-layout(location = 5) out vec4 outFeatureB;
-layout(location = 6) out vec4 outFeatureC;
+layout(location = 3) out vec4 outFeatureA;
+layout(location = 4) out vec4 outFeatureB;
+layout(location = 5) out vec4 outFeatureC;
+layout(location = 6) out vec4 outFeatureD;
 layout(location = 7) out vec4 outEmission;
 
-layout(binding = 0) buffer BindlessBuffer
+layout(std430, binding = 0) buffer BindlessBuffer
 {
     uint64_t MaterialOffset;
     uint     MaterialCount;
@@ -45,7 +45,7 @@ layout(binding = 1) uniform sampler2D TextureMap[];
 
 layout(push_constant) uniform MaterialBakerRenderPass
 {
-    int   MaterialBakerSubPassIndex;
+    int MaterialBakerSubPassIndex;
 } materialBaker;
 
 vec2 OctahedronEncode(vec3 normal)
@@ -56,14 +56,17 @@ vec2 OctahedronEncode(vec3 normal)
 
 vec4 SampleOr(uint id, vec4 fallback)
 {
-    if (id == NO_MAP) return fallback;
+    if (id == NO_MAP)
+        return fallback;
     return textureLod(TextureMap[nonuniformEXT(id)], UV, 0.0);
 }
 
 ImportMaterial GetImportMaterial()
 {
-    uint offset = uint(bindlessBuffer.MaterialOffset / 4u);
+    const uint kHeaderBytes = 32u;
+    uint offset = uint((bindlessBuffer.MaterialOffset - kHeaderBytes) / 4u);
     ImportMaterial m;
+    m.Alpha = 1.0;
 
     m.Albedo.r = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     m.Albedo.g = uintBitsToFloat(bindlessBuffer.Data[offset++]);
@@ -116,22 +119,24 @@ ImportMaterial GetImportMaterial()
     m.ThinFilmThickness  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     m.EmissionIntensity  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
 
-    m.AlbedoMap               = bindlessBuffer.Data[offset++];
-    m.NormalMap               = bindlessBuffer.Data[offset++];
-    m.HeightMap               = bindlessBuffer.Data[offset++];
-    m.AlphaMap                = bindlessBuffer.Data[offset++];
-    m.MetallicMap             = bindlessBuffer.Data[offset++];
-    m.RoughnessMap            = bindlessBuffer.Data[offset++];
-    m.AmbientOcclusionMap     = bindlessBuffer.Data[offset++];
-    m.EmissionMap             = bindlessBuffer.Data[offset++];
-    m.ClearCoatColorMap       = bindlessBuffer.Data[offset++];
-    m.ClearCoatPropertiesMap  = bindlessBuffer.Data[offset++];
-    m.SheenMap                = bindlessBuffer.Data[offset++];
-    m.SheenPropertiesMap      = bindlessBuffer.Data[offset++];
-    m.SSSColorMap             = bindlessBuffer.Data[offset++];
-    m.SSSPropertiesMap        = bindlessBuffer.Data[offset++];
-    m.AttenuationColorMap     = bindlessBuffer.Data[offset++];
-    m.AnisotropyPropertiesMap = bindlessBuffer.Data[offset++];
+    m.AlbedoMap                = bindlessBuffer.Data[offset++];
+    m.NormalMap                = bindlessBuffer.Data[offset++];
+    m.HeightMap                = bindlessBuffer.Data[offset++];
+    m.AlphaMap                 = bindlessBuffer.Data[offset++];
+    m.MetallicMap              = bindlessBuffer.Data[offset++];
+    m.RoughnessMap             = bindlessBuffer.Data[offset++];
+    m.AmbientOcclusionMap      = bindlessBuffer.Data[offset++];
+    m.EmissionMap              = bindlessBuffer.Data[offset++];
+    m.ClearCoatColorMap        = bindlessBuffer.Data[offset++];
+    m.ClearCoatPropertiesMap   = bindlessBuffer.Data[offset++];
+    m.SheenMap                 = bindlessBuffer.Data[offset++];
+    m.SheenPropertiesMap       = bindlessBuffer.Data[offset++];
+    m.SSSColorMap              = bindlessBuffer.Data[offset++];
+    m.SSSPropertiesMap         = bindlessBuffer.Data[offset++];
+    m.AttenuationColorMap      = bindlessBuffer.Data[offset++];
+    m.AttenuationPropertiesMap = bindlessBuffer.Data[offset++];
+    m.AnisotropyPropertiesMap  = bindlessBuffer.Data[offset++];
+    m.IORMap                   = bindlessBuffer.Data[offset++];
 
     m.ShadingModel = bindlessBuffer.Data[offset++];
     m.FeatureMask  = bindlessBuffer.Data[offset++];
@@ -141,14 +146,14 @@ ImportMaterial GetImportMaterial()
 
 ImportMaterial MapToMaterial()
 {
-    ImportMaterial m   = GetImportMaterial();
+    ImportMaterial m = GetImportMaterial();
 
-    vec4 albedoSamp    = SampleOr(m.AlbedoMap, vec4(m.Albedo, m.Alpha));
-    m.Albedo           = albedoSamp.rgb;
-    m.Alpha            = SampleOr(m.AlphaMap, vec4(albedoSamp.a)).r;
+    vec4 albedoSamp = SampleOr(m.AlbedoMap, vec4(m.Albedo, m.Alpha));
+    m.Albedo = albedoSamp.rgb;
+    m.Alpha  = SampleOr(m.AlphaMap, vec4(albedoSamp.a)).r;
 
-    vec3 nrm           = SampleOr(m.NormalMap, vec4(0.5f, 0.5f, 1.0f, 1.0f)).rgb;
-    m.NormalTS         = normalize(nrm * 2.0f - 1.0f);
+    vec3 nrm = SampleOr(m.NormalMap, vec4(0.5, 0.5, 1.0, 1.0)).rgb;
+    m.NormalTS = normalize(nrm * 2.0 - 1.0);
 
     m.Height           = SampleOr(m.HeightMap,           vec4(m.Height)).r;
     m.Metallic         = SampleOr(m.MetallicMap,         vec4(m.Metallic)).r;
@@ -159,34 +164,38 @@ ImportMaterial MapToMaterial()
     m.SheenColor       = SampleOr(m.SheenMap,            vec4(m.SheenColor, 1.0)).rgb;
     m.SSSColor         = SampleOr(m.SSSColorMap,         vec4(m.SSSColor, 1.0)).rgb;
     m.AttenuationColor = SampleOr(m.AttenuationColorMap, vec4(m.AttenuationColor, 1.0)).rgb;
-    m.Emission         = SampleOr(m.EmissionMap,         vec4(m.Emission, 1.0)).rgb;
 
-    vec4 coatProp      = SampleOr(m.ClearCoatPropertiesMap, vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 0.0f));
-    m.CoatWeight       = coatProp.r;
-    m.CoatRoughness    = coatProp.g;
-    m.CoatDarkening    = coatProp.b;
+    vec4 em = SampleOr(m.EmissionMap, vec4(m.Emission, m.EmissionIntensity));
+    m.Emission          = em.rgb;
+    m.EmissionIntensity = em.a;
 
-    vec4 sheenProp     = SampleOr(m.SheenPropertiesMap, vec4(m.SheenWeight, m.SheenRoughness, 0.0f, 0.0f));
-    m.SheenWeight      = sheenProp.r;   
-    m.SheenRoughness   = sheenProp.g;
+    vec4 coatProp = SampleOr(m.ClearCoatPropertiesMap, vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0));
+    m.CoatWeight    = coatProp.r;
+    m.CoatRoughness = coatProp.g;
+    m.CoatDarkening = coatProp.b;
 
-    vec4 sssProp       = SampleOr(m.SSSPropertiesMap, vec4(m.SSSWeight, m.SSSProfile, m.Thickness, 0.0f));
-    m.SSSWeight        = sssProp.r;
-    m.SSSProfile       = sssProp.g;
-    m.Thickness        = sssProp.b;
+    vec4 sheenProp = SampleOr(m.SheenPropertiesMap, vec4(m.SheenWeight, m.SheenRoughness, 0.0, 1.0));
+    m.SheenWeight    = sheenProp.r;
+    m.SheenRoughness = sheenProp.g;
 
-    vec4 anisotropyProperties = SampleOr(m.AnisotropyPropertiesMap, vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness));
-    m.Anisotropy         = anisotropyProperties.r;
-    m.AnisotropyRotation = anisotropyProperties.g;
-    m.ThinFilmWeight     = anisotropyProperties.b;
-    m.ThinFilmThickness  = anisotropyProperties.a;
+    vec4 sssProp = SampleOr(m.SSSPropertiesMap, vec4(m.SSSWeight, m.SSSProfile, m.Thickness, 1.0));
+    m.SSSWeight  = sssProp.r;
+    m.SSSProfile = sssProp.g;
+    m.Thickness  = sssProp.b;
 
-    m.IORNorm          = clamp((m.IOR - 1.0f) / 2.0f, 0.0f, 1.0f);
+    vec4 attenProp = SampleOr(m.AttenuationPropertiesMap, vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0));
+    m.TransmissionWeight  = attenProp.r;
+    m.AttenuationDistance = attenProp.b;
+    if (m.AttenuationPropertiesMap != NO_MAP) m.Thickness = attenProp.g;
 
+    vec4 aniso = SampleOr(m.AnisotropyPropertiesMap, vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness));
+    m.Anisotropy         = aniso.r;
+    m.AnisotropyRotation = aniso.g;
+    m.ThinFilmWeight     = aniso.b;
+    m.ThinFilmThickness  = aniso.a;
 
-//    material.TransmissionWeight;
-//    material.AttenuationDistance;
-//    material.EmissionIntensity;
+    m.IOR     = SampleOr(m.IORMap, vec4(m.IOR)).r;
+    m.IORNorm = clamp((m.IOR - 1.0) / 2.0, 0.0, 1.0);
 
     return m;
 }
@@ -196,26 +205,31 @@ void main()
     ImportMaterial m = MapToMaterial();
 
     uint mask = m.FeatureMask;
-    if (m.CoatWeight  > kFeatureEps || m.ClearCoatPropertiesMap != NO_MAP) mask |= FEAT_COAT;
-    if (m.SheenWeight > kFeatureEps || m.SheenMap != NO_MAP)               mask |= FEAT_SHEEN;
-    if (m.SSSWeight   > kFeatureEps || m.SSSColorMap != NO_MAP)            mask |= FEAT_SSS;
-    if (m.TransmissionWeight > kFeatureEps)                                mask |= FEAT_TRANSMISSION;
-    if (m.Anisotropy > kFeatureEps || m.AnisotropyPropertiesMap != NO_MAP) mask |= FEAT_ANISO;
-    if (m.ThinFilmWeight > kFeatureEps)                                    mask |= FEAT_FILM;
+    if (m.CoatWeight         > kFeatureEps) mask |= FEAT_COAT;
+    if (m.SheenWeight        > kFeatureEps) mask |= FEAT_SHEEN;
+    if (m.SSSWeight          > kFeatureEps) mask |= FEAT_SSS;
+    if (m.TransmissionWeight > kFeatureEps) mask |= FEAT_TRANSMISSION;
+    if (m.Anisotropy         > kFeatureEps) mask |= FEAT_ANISO;
+    if (m.ThinFilmWeight     > kFeatureEps) mask |= FEAT_FILM;
 
-//    if (materialBaker.MaterialBakerSubPassIndex == BAKE_CORE)
-//    {
-        vec2 encN = OctahedronEncode(m.NormalTS);
+    vec2 encN = OctahedronEncode(m.NormalTS);
 
-        outAlbedo     = vec4(m.Albedo, m.Alpha);
-        outNormalData = vec4(encN * 0.5 + 0.5, m.NormalStrength, m.Height);
-        outMRO        = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
-        outCoat       = vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 0.0);
-        outFeatureA = ((mask & FEAT_SSS) != 0u) ? vec4(m.SSSColor, m.Thickness) : vec4(0.0);
-        outFeatureB = ((mask & FEAT_SHEEN) != 0u) ? vec4(m.SheenColor, m.SheenWeight) : vec4(0.0);
-        outFeatureC = vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness);
-        outEmission = vec4(m.Emission, m.EmissionIntensity);
- //       return;
-//    }
-//    else outFeatureA = ((mask & FEAT_TRANSMISSION) != 0u) ? vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 0.0) : vec4(0.0);
+    outAlbedo     = vec4(m.Albedo, m.Alpha);
+    outNormalData = vec4(encN * 0.5 + 0.5, m.NormalStrength, m.Height);
+    outMRO        = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
+    outEmission   = vec4(m.Emission, m.EmissionIntensity);
+    if (materialBaker.MaterialBakerSubPassIndex == int(BAKE_CORE))
+    {
+        outFeatureA = ((mask & FEAT_COAT) != 0u) ? vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 0.0) : vec4(0.0);
+        outFeatureB = ((mask & FEAT_SSS) != 0u) ? vec4(m.SSSColor, m.Thickness) : vec4(0.0);
+        outFeatureC = ((mask & FEAT_SHEEN) != 0u) ? vec4(m.SheenColor, m.SheenWeight) : vec4(0.0);
+        outFeatureD = vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness);
+    }
+    else
+    {
+        outFeatureA = ((mask & FEAT_TRANSMISSION) != 0u) ? vec4(m.AttenuationColor, 1.0) : vec4(0.0);
+        outFeatureB = ((mask & FEAT_TRANSMISSION) != 0u) ? vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 0.0) : vec4(0.0);
+        outFeatureC = vec4(0.0);
+        outFeatureD = vec4(0.0);
+    }
 }

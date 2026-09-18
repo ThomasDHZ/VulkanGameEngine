@@ -49,7 +49,9 @@ struct ImportMaterial
     uint  SSSColorMap;
     uint  SSSPropertiesMap;
     uint  AttenuationColorMap;
+    uint  AttenuationPropertiesMap;
     uint  AnisotropyPropertiesMap;
+    uint  IORMap;
 
     uint  ShadingModel;
     uint  FeatureMask;
