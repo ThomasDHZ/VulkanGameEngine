@@ -22,9 +22,6 @@
     <Filter Include="Header Files\External">
       <UniqueIdentifier>{64398007-2efd-4601-b096-040e6de1c989}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\spirv">
-      <UniqueIdentifier>{6e7cf11a-ca1e-4d76-b2d5-9d09da5013d6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Systems">
       <UniqueIdentifier>{b0409ff5-6189-4028-979f-f510acea2542}</UniqueIdentifier>
     </Filter>
@@ -36,6 +33,9 @@
     </Filter>
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{a1d6e5bb-3594-4903-bae1-77e882612d94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\External">
+      <UniqueIdentifier>{eac6be49-4a60-4b95-a885-e487303aaab7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -84,12 +84,6 @@
     <ClInclude Include="DebugSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryPoolSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -102,9 +96,6 @@
     <ClInclude Include="..\External\LodePNG\lodepng.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files\External</Filter>
-    </ClInclude>
     <ClInclude Include="..\External\ktx\include\ktx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -113,12 +104,6 @@
     </ClInclude>
     <ClInclude Include="..\External\xxHash\xxhash.h">
       <Filter>Header Files\External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\xxHash\xxh3.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CameraSystem.h">
       <Filter>Header Files\Systems</Filter>
@@ -171,6 +156,15 @@
     <ClInclude Include="GameObjectComponentRegistry.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External\xxHash\xxh3.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files\External</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">
@@ -206,9 +200,6 @@
     <ClCompile Include="Pixel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanError.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MemoryPoolSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -220,15 +211,6 @@
     </ClCompile>
     <ClCompile Include="..\External\LodePNG\lodepng.cpp">
       <Filter>Header Files\External</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\SPIRV-Reflect\spirv_reflect.cpp">
-      <Filter>Header Files\External</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\xxHash\xxhash.c">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CameraSystem.cpp">
       <Filter>Source Files\Systems</Filter>
@@ -275,14 +257,20 @@
     <ClCompile Include="DLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VmaImplementation.cpp">
-      <Filter>Header Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="PushConstantRegistry.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="GameObjectComponentRegistry.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
+      <Filter>Source Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\xxHash\xxhash.c">
+      <Filter>Source Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c">
+      <Filter>Source Files\External</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

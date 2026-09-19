@@ -156,7 +156,6 @@
     <ClInclude Include="..\External\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\External\imgui\imstb_textedit.h" />
     <ClInclude Include="..\External\imgui\imstb_truetype.h" />
-    <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h" />
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="InputSystem.h" />

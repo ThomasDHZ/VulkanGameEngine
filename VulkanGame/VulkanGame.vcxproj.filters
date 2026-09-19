@@ -45,9 +45,6 @@
     <ClInclude Include="FrameTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\VulkanMemoryAllocator\include\vk_mem_alloc.h">
-      <Filter>Header Files\External</Filter>
-    </ClInclude>
     <ClInclude Include="..\External\imgui\imconfig.h">
       <Filter>Header Files\External\ImGui</Filter>
     </ClInclude>
