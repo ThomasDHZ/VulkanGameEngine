@@ -263,13 +263,13 @@
     <ClCompile Include="GameObjectComponentRegistry.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
-      <Filter>Source Files\External</Filter>
-    </ClCompile>
     <ClCompile Include="..\External\xxHash\xxhash.c">
       <Filter>Source Files\External</Filter>
     </ClCompile>
     <ClCompile Include="..\External\xxHash\xxh_x86dispatch.c">
+      <Filter>Source Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Source Files\External</Filter>
     </ClCompile>
   </ItemGroup>

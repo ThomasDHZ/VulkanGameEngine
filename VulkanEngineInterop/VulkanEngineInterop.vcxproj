@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp" />
     <ClCompile Include="BufferSystemDLL.cpp" />
     <ClCompile Include="CameraSystemDLL.cpp" />
     <ClCompile Include="CollisionSystemDLL.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="VulkanSystemDLL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h" />
     <ClInclude Include="BufferSystemDLL.h" />
     <ClInclude Include="CameraSystemDLL.h" />
     <ClInclude Include="CollisionSystemDLL.h" />

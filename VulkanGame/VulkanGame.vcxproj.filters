@@ -75,6 +75,9 @@
     <ClInclude Include="..\External\imgui\imstb_truetype.h">
       <Filter>Header Files\External\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AndroidMain.cpp">
@@ -118,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="..\External\imgui\imgui_tables.cpp">
       <Filter>Source Files\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
