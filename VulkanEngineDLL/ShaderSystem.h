@@ -62,6 +62,7 @@ public:
      bool                                         SearchShaderConstantBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
      bool                                         SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
      bool                                         SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
+     bool                                         SearchPushConstantForVariableExists(const String& structKey, const String& variableName);
 
     template<typename T>
     void UpdatePushConstantValue(ShaderPushConstant& pushConst, const String& valueName, const T& value)
@@ -77,6 +78,83 @@ public:
             );
         }
         std::memcpy(variable.Value.data(), &value, variable.Value.size());
+    }
+
+    template <typename T>
+    T GetPushConstantValue(const PushConstantUpdateRule& pushConstantVariable)
+    {
+        const auto& values = pushConstantVariable.Value;
+        auto as_int = [&](std::size_t i) { return std::stoi(values.at(i)); };
+        auto as_float = [&](std::size_t i) { return std::stof(values.at(i)); };
+
+        if constexpr (std::is_same_v<T, int>) return as_int(0);
+        else if constexpr (std::is_same_v<T, uint>) return static_cast<uint>(std::stoul(values.at(0)));
+        else if constexpr (std::is_same_v<T, float>) return as_float(0);
+        else if constexpr (std::is_same_v<T, bool>) return as_int(0) != 0;
+        else if constexpr (std::is_same_v<T, glm::ivec2>)
+        {
+            glm::ivec2 v{};
+            const int n = std::min<int>(static_cast<int>(values.size()), 2);
+            for (int x = 0; x < n; ++x) v[x] = as_int(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::ivec3>)
+        {
+            glm::ivec3 v{};
+            const int n = std::min<int>(static_cast<int>(values.size()), 3);
+            for (int x = 0; x < n; ++x) v[x] = as_int(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::ivec4>)
+        {
+            glm::ivec4 v{};
+            const int n = std::min<int>(static_cast<int>(values.size()), 4);
+            for (int x = 0; x < n; ++x) v[x] = as_int(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::vec2>)
+        {
+            glm::vec2 v{};
+            const int n = std::min<int>(static_cast<int>(values.size()), 2);
+            for (int x = 0; x < n; ++x) v[x] = as_float(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::vec3>)
+        {
+            glm::vec3 v{};
+            const int n = std::min<int>(static_cast<int>(values.size()), 3);
+            for (int x = 0; x < n; ++x) v[x] = as_float(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::vec4>)
+        {
+            glm::vec4 v{};
+            const int n = std::min<int>(static_cast<int>(values.size()), 4);
+            for (int x = 0; x < n; ++x) v[x] = as_float(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::mat2>)
+        {
+            glm::mat2 v{ 0.0f };
+            const int n = std::min<int>(static_cast<int>(values.size()), 4);
+            for (int x = 0; x < n; ++x) v[x / 2][x % 2] = as_float(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::mat3>)
+        {
+            glm::mat3 v{ 0.0f };
+            const int n = std::min<int>(static_cast<int>(values.size()), 9);
+            for (int x = 0; x < n; ++x) v[x / 3][x % 3] = as_float(x);
+            return v;
+        }
+        else if constexpr (std::is_same_v<T, glm::mat4>)
+        {
+            glm::mat4 v{ 0.0f };
+            const int n = std::min<int>(static_cast<int>(values.size()), 16);
+            for (int x = 0; x < n; ++x) v[x / 4][x % 4] = as_float(x);
+            return v;
+        }
+        else static_assert(sizeof(T) == 0, "unsupported push-constant type");
     }
 };
 ENGINE_DLL_EXPORT extern ShaderSystem& shaderSystem;

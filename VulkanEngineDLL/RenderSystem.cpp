@@ -329,7 +329,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
             .MipCount = mipCount,
             .RenderPassResolution = renderPass.RenderPassResolution()
         };
-
+        
         ShaderPushConstant shaderPushConstant = shaderSystem.FindShaderPushConstant(drawMessage.PushConstant.value());
         pushConstantRegistry.ApplyPushConstantRules(shaderPushConstant, pushConstantContext);
         vkCmdPushConstants(commandBuffer, pipeline.PipelineLayout(), stages, 0, shaderPushConstant.PushConstantSize, shaderPushConstant.PushConstantBuffer.data());

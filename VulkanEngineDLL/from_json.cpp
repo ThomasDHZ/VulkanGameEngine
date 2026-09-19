@@ -321,9 +321,14 @@ namespace nlohmann
     void from_json(const json& j, PushConstantUpdateRule& model)
     {
         j.at("Variable").get_to(model.Variable);
-        j.at("Source").get_to(model.SourceId);
-        j.at("Value").get_to(model.Value);
-        j.at("ConstValue").get_to(model.ConstValue);
+        j.at("VariableType").get_to(model.VariableType);
+        if (j.contains("Value") && j["Value"].is_array())
+        {
+            for (const auto& value : j["Value"])
+            {
+                model.Value.push_back(value.get<String>());
+            }
+        }
     }
 
     void from_json(const json& j, VulkanSubPassLoader& model)
