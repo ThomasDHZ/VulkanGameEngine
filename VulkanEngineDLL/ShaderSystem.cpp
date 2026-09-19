@@ -639,6 +639,23 @@ VkPipelineShaderStageCreateInfo ShaderSystem::LoadShader(const char* filename, V
      return it != shaderStructList.end();
  }
 
+ bool ShaderSystem::SearchPushConstantForVariableExists(const String& structKey, const String& variableName)
+ {
+     auto itMap = ShaderPushConstantMap.find(structKey);
+     if (itMap == ShaderPushConstantMap.end())
+     {
+         return false;
+     }
+
+     const auto& pushConstant = itMap->second;
+     auto itVar = std::find_if(pushConstant.PushConstantVariableList.begin(), pushConstant.PushConstantVariableList.end(), [&](const ShaderVariable& var)
+         {
+             return var.Name == variableName;
+         });
+
+     return itVar != pushConstant.PushConstantVariableList.end();
+ }
+
  bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
  {
      return shaderSystem.ShaderPushConstantMap.contains(pushConstantName);

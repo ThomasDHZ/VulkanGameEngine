@@ -323,11 +323,12 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
         PushConstantContext pushConstantContext = PushConstantContext
         {
             .RenderPassGuid = drawMessage.RenderPassGuid,
-            .MeshId = drawMessage.DrawMeshList[drawIndex].MeshId,
+            .MeshId = drawMessage.DrawMeshList.empty() ? 0 : drawMessage.DrawMeshList[drawIndex].MeshId,
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
             .MipCount = mipCount,
-            .RenderPassResolution = renderPass.RenderPassResolution()
+            .RenderPassResolution = renderPass.RenderPassResolution(),
+            .PushConstantUpdateRules = drawMessage.PushConstantUpdateRules
         };
 
         ShaderPushConstant shaderPushConstant = shaderSystem.FindShaderPushConstant(drawMessage.PushConstant.value());
@@ -367,6 +368,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                     if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
                     if (renderPassLayer.OffScreenRenderPass && renderPassLayer.DrawMeshList.empty())
                     {
+                        BindPushConstants(commandBuffer, renderPassLayer, 0, mip, mipCount);
                         vkCmdDraw(commandBuffer, 3, 1, 0, 0);
                     }
                     else
