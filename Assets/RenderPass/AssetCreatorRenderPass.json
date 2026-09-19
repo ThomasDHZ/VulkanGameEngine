@@ -44,7 +44,35 @@
         "MeshType": 5,
         "PipelinePackageId": "6a478b69-fa2c-449f-ae4a-cc7d553df9f7",
         "ShaderPushConstant": "materialBaker",
-        "PushConstantUpdates": [],
+        "PushConstantUpdates": [
+          {
+            "Variable": "RenderPassIndex",
+            "MemberType": 2,
+            "Value": 0
+          }
+        ],
+        "InputTextureList": [],
+        "OutputTextureList": [
+        ],
+        "OffScreenRenderPass": true
+      }
+    ],
+    [
+      {
+        "MeshType": 5,
+        "PipelinePackageId": "6a478b69-fa2c-449f-ae4a-cc7d553df9f7",
+        "ShaderPushConstant": "materialBaker",
+        "PushConstantUpdates": [
+          {
+            "Variable": "RenderPassIndex",
+            "MemberType": 2,
+            "Value": 1
+          }
+          "j.at(\"Variable\").get_to(model.Variable);",
+          "j.at(\"Source\").get_to(model.SourceId);",
+          "j.at(\"Value\").get_to(model.Value);",
+          "j.at(\"ConstValue\").get_to(model.ConstValue);"
+        ],
         "InputTextureList": [],
         "OutputTextureList": [
         ],

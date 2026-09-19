@@ -13,11 +13,11 @@ void PushConstantRegistry::RegisterPushConstantValue(const String& sourceName, U
 
 void PushConstantRegistry::ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext)
 {
-		auto it = registry.find(pushConstant.PushConstantName);
-		if (it != registry.end())
-		{
-            it->second(pushConstant, pushConstantContext);
-		}
+    auto it = registry.find(pushConstant.PushConstantName);
+    if (it != registry.end())
+    {
+        it->second(pushConstant, pushConstantContext);
+    }
 }
 
 void PushConstantRegistry::RegisterDefaultPushConstantRules()
