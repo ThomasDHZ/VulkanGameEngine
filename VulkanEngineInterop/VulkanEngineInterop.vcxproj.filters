@@ -81,9 +81,6 @@
     <ClCompile Include="ToDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VulkanSystemDLL.h">

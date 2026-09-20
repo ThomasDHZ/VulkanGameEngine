@@ -9,7 +9,6 @@
 #include <stb/stb_image.h> 
 #include <stb/stb_image_write.h>
 #include "JsonStruct.h"
-#include <imgui/backends/imgui_impl_vulkan.h>
 #include "MemoryPoolSystem.h"
 #include "MeshSystem.h"
 #include <lodepng.h>

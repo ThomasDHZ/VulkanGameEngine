@@ -19,12 +19,6 @@
     <Filter Include="Header Files\External\ImGui">
       <UniqueIdentifier>{b717f93b-6619-4eef-b477-fa2f030724a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\External">
-      <UniqueIdentifier>{05b54427-fbe9-4a84-97d1-83122225db2c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\External\ImGui">
-      <UniqueIdentifier>{7f73c66f-4799-426e-8bae-9bc81aad8206}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeSystem.h">
@@ -51,18 +45,6 @@
     <ClInclude Include="..\External\imgui\imgui.h">
       <Filter>Header Files\External\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_glfw.h">
-      <Filter>Header Files\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_glut.h">
-      <Filter>Header Files\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_vulkan.h">
-      <Filter>Header Files\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_win32.h">
-      <Filter>Header Files\External\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="..\External\imgui\imgui_internal.h">
       <Filter>Header Files\External\ImGui</Filter>
     </ClInclude>
@@ -74,9 +56,6 @@
     </ClInclude>
     <ClInclude Include="..\External\imgui\imstb_truetype.h">
       <Filter>Header Files\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,30 +76,6 @@
     </ClCompile>
     <ClCompile Include="TimeSystem.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_widgets.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_demo.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_draw.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_vulkan.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_win32.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\imgui\imgui_tables.cpp">
-      <Filter>Source Files\External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Header Files</Filter>

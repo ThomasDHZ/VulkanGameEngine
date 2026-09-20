@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)packages\freetype.2.8.0.1\build\native\include;C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\8.0.26\runtimes\win-x64\native;$(SolutionDir)External\lua\src;$(SolutionDir)External\sol2/include;$(SolutionDir)External\xxHash;$(SolutionDir)External\ktx\include;$(SolutionDir)External\LodePNG;$(SolutionDir)External\entt\src\;$(SolutionDir)..\VulkanEngineCore\External\VulkanMemoryAllocator\include;$(SolutionDir)\External\imgui\backends;$(SolutionDir)\External\imgui;$(SolutionDir)External\glfw;$(SolutionDir)External\glfw\include\GLFW;$(SolutionDir)External\glfw\include;$(SolutionDir)\External\stb;$(SolutionDir)\Physics2DDLL;$(SolutionDir)\ComponentDLL;$(SolutionDir)\MaterialBakerDLL;$(SolutionDir)..\VulkanEngineCore\VulkanEngineCore;$(SolutionDir)\VulkanEngineDLL;$(SolutionDir)External\json\include;$(SolutionDir)External\ImPlot;$(SolutionDir)..\VulkanEngineCore\External\SPIRV-Reflect;$(SolutionDir)External\glm;$(SolutionDir)External\;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)packages\freetype.2.8.0.1\build\native\lib\x64\v141\static\Release;C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\8.0.26\runtimes\win-x64\native;$(SolutionDir)External\lua\src;$(SolutionDir)External\ktx\Release;$(SolutionDir)External\glfw\src\Release;$(SolutionDir)x64\Debug;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\VulkanGameEngine\External\ktx\include;$(SolutionDir)..\VulkanEngineCore\External\glfw\include\GLFW;$(SolutionDir)..\VulkanEngineCore\VulkanEngineCore;$(SolutionDir)..\VulkanEngineCore\External\imgui;$(SolutionDir)..\VulkanEngineCore\External\imgui\backends;$(SolutionDir)..\VulkanEngineCore\External\glfw\include;$(SolutionDir)..\VulkanEngineCore\External\VulkanMemoryAllocator\include;$(SolutionDir)..\VulkanEngineCore\External\SPIRV-Reflect;$(SolutionDir)..\VulkanEngineCore\External\json\include;$(SolutionDir)VulkanEngineDLL;$(SolutionDir)External;$(SolutionDir)External\lua\src;$(SolutionDir)External\sol2\include;$(SolutionDir)External\xxHash;$(SolutionDir)External\entt\src;$(SolutionDir)External\stb;$(SolutionDir)External\glm;$(SolutionDir)External\LodePNG;$(SolutionDir)packages\freetype.2.8.0.1\build\native\include;C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\8.0.26\runtimes\win-x64\native;C:\VulkanSDK\1.4.328.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\VulkanEngineCore\x64\Debug;$(SolutionDir)x64\Debug;$(SolutionDir)packages\freetype.2.8.0.1\build\native\lib\x64\v141\static\Release;C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Host.win-x64\8.0.26\runtimes\win-x64\native;$(SolutionDir)External\lua\src;$(SolutionDir)External\ktx\Release;$(SolutionDir)..\VulkanEngineCore\External\glfw\src\Release;C:\VulkanSDK\1.4.328.1\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -146,11 +146,6 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h" />
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_glfw.h" />
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_glut.h" />
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_vulkan.h" />
-    <ClInclude Include="..\External\imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="..\External\imgui\imconfig.h" />
     <ClInclude Include="..\External\imgui\imgui.h" />
     <ClInclude Include="..\External\imgui\imgui_internal.h" />
@@ -166,14 +161,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp" />
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="..\External\imgui\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\External\imgui\imgui.cpp" />
-    <ClCompile Include="..\External\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\External\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\External\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\External\imgui\imgui_widgets.cpp" />
     <ClCompile Include="AndroidMain.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="GameSystem.cpp" />
