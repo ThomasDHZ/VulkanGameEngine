@@ -41,3 +41,6 @@
 [submodule "External/sol2"]
 	path = External/sol2
 	url = https://github.com/ThePhD/sol2.git
+[submodule "External/fmt"]
+	path = External/fmt
+	url = https://github.com/fmtlib/fmt.git
