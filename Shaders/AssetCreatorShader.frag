@@ -220,7 +220,7 @@ void main()
     outEmission   = vec4(m.Emission, m.EmissionIntensity);
     if (materialBaker.MaterialBakerSubPassIndex == int(BAKE_CORE))
     {
-        outFeatureA = vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 0.0);
+        outFeatureA = vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0);
         outFeatureB = vec4(m.SSSColor, m.Thickness);
         outFeatureC = vec4(m.SheenColor, m.SheenWeight);
         outFeatureD = vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness);
@@ -228,7 +228,7 @@ void main()
     else
     {
         outFeatureA = vec4(m.AttenuationColor, 1.0);
-        outFeatureB =  vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 0.0);
+        outFeatureB =  vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0);
         outFeatureC = vec4(0.0);
         outFeatureD = vec4(0.0);
     }

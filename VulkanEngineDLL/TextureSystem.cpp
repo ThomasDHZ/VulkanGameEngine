@@ -369,7 +369,6 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId, Vector<PushConstantUpd
 			.PipelinePackageGuid = subPass.PipelinePackageId,
 			.PushConstant = subPass.ShaderPushConstant,
 			.PushConstantUpdateRules = pushConstantUpdates == nullptr ? subPass.PushConstantUpdates : *pushConstantUpdates,
-			.DrawMeshList = subPass.MeshType == MeshTypeEnum::kMesh_StaticMesh ? meshSystem.DrawMesh(subPass.MeshType) : Vector<MeshDrawMessage>(),
 			.RenderPassInputs = subPass.InputTextureList,
 			.RenderPassOutputs = subPass.OutputTextureList,
 			.OffScreenRenderPass = subPass.OffScreenFrameBuffer
