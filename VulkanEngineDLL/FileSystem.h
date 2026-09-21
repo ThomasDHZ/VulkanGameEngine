@@ -2,8 +2,8 @@
 #include "DLL.h"
 #include <Platform.h>
 #include "MemorySystem.h"
-#include <ktx/include/ktx.h>
-#include <ktx/include/ktxvulkan.h>
+#include <ktx.h>
+#include <ktxvulkan.h>
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>

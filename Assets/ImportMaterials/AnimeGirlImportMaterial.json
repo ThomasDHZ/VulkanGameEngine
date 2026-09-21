@@ -421,7 +421,7 @@
       "UnnormalizedCoordinates": false
     }
   },
-  "ClearCoatPropertyMap": {
+  "ClearCoatPropertiesMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_ClearCoatPropertyDataTexture.png" ],
     "TextureId": "4b824b8a-3ffb-47fe-99c6-02e1c63db4eb",
     "TextureByteFormat": 37,
@@ -479,7 +479,7 @@
       "UnnormalizedCoordinates": false
     }
   },
-  "AttenuationTexture": {
+  "AttenuationColorMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_AttenuationColorTexture.png" ],
     "TextureId": "fb03c283-dbd2-42e5-8353-0fa0e69633c3",
     "TextureByteFormat": 43,
@@ -538,7 +538,7 @@
     }
   },
   "IORTexture": {
-    "TextureFilePath": [ "ImportTextures/AnimeGirl_IORTextureTexture.png" ],
+    "TextureFilePath": [ "ImportTextures/AnimeGirl_IORTexture.png" ],
     "TextureId": "519133b9-1191-4a2e-81b9-4c524e0455cf",
     "TextureByteFormat": 37,
     "SampleCount": 1,

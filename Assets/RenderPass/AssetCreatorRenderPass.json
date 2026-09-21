@@ -55,22 +55,6 @@
         "OutputTextureList": [
         ],
         "OffScreenRenderPass": true
-      },
-      {
-        "MeshType": 5,
-        "PipelinePackageId": "6a478b69-fa2c-449f-ae4a-cc7d553df9f7",
-        "ShaderPushConstant": "materialBaker",
-        "PushConstantUpdates": [
-          {
-            "Variable": "MaterialBakerSubPassIndex",
-            "VariableType": 2,
-            "Value": [ "1" ]
-          }
-        ],
-        "InputTextureList": [],
-        "OutputTextureList": [
-        ],
-        "OffScreenRenderPass": true
       }
     ]
   ],

@@ -4,6 +4,7 @@
 #include <VulkanPipelineLoader.h>
 #include "Collider2DComponent.h"
 #include "Transform2DComponent.h"
+#include <variant>
 
 namespace nlohmann
 {
@@ -42,4 +43,35 @@ namespace nlohmann
     ENGINE_DLL_EXPORT void from_json(const json& j, Collider2DComponent& model);
     ENGINE_DLL_EXPORT void from_json(const json& j, Transform2DComponent& model);
     ENGINE_DLL_EXPORT void from_json(const json& j, ShaderLoader& model);
+    
+    //template <typename T>
+    //T GetPushConstantValue(const nlohmann::json& value)
+    //{
+    //    if constexpr (std::is_same_v<T, bool>) return value.is_array() ? value.at(0).get<int>() != 0 : value.get<bool>();
+    //    else if constexpr (std::is_arithmetic_v<T>) return value.is_array() ? value.at(0).get<T>() : value.get<T>();
+    //    else return value.get<T>();
+    //}
+
+    //std::variant<int, uint32, float, bool, ivec2, ivec3, ivec4, vec2, vec3, vec4, mat2, mat3, mat4>
+    //LoadPushConstant(const nlohmann::json& update)
+    //{
+    //    const auto& value = update.at("Value");
+    //    switch (update.at("VariableType").get<int>())
+    //    {
+    //        case 0: return GetPushConstantValue<int>(value);
+    //        case 1: return GetPushConstantValue<uint32_t>(value);
+    //        case 2: return GetPushConstantValue<float>(value);
+    //        case 3: return GetPushConstantValue<bool>(value);
+    //        case 4: return GetPushConstantValue<ivec2>(value);
+    //        case 5: return GetPushConstantValue<ivec3>(value);
+    //        case 6: return GetPushConstantValue<ivec4>(value);
+    //        case 7: return GetPushConstantValue<vec2>(value);
+    //        case 8: return GetPushConstantValue<vec3>(value);
+    //        case 9: return GetPushConstantValue<vec4>(value);
+    //        case 10: return GetPushConstantValue<mat2>(value);
+    //        case 11: return GetPushConstantValue<mat3>(value);
+    //        case 12: return GetPushConstantValue<mat4>(value);
+    //        default: throw std::runtime_error("unsupported push-constant type");
+    //    }
+    //}
 }
