@@ -33,6 +33,7 @@ struct ImportMaterial
     float ThinFilmWeight;
     float ThinFilmThickness;
     float EmissionIntensity;
+    float AlphaCutoff;
 
     uint  AlbedoMap;
     uint  NormalMap;
@@ -76,16 +77,24 @@ struct TextureMetadata
 
 struct PackedMaterial
 {
-    uint AlbedoDataId;
-    uint NormalDataId;
-    uint MRODataId;
-    uint ClearCoatDataId;
-    uint FeatureADataId;
-    uint FeatureBDataId;
-    uint FeatureCDataId;
-    uint EmissionDataId;
+    uint AlbedoTextureId;
+    uint NormalTextureId;
+    uint MROTextureId;
+    uint ClearCoatOrTranslucentTextureId;
+    uint SubSurfaceScatteringOrTranslucentPropertiesTextureId;
+    uint SheenTextureId;
+    uint AnisotropyTextureId;
+    uint EmissionTextureId;
     uint ShadingModel;
     uint FeatureMask;
+    uint _pad0;
+    uint _pad1;
+    vec3  ClearcoatTint;
+    float SheenRoughness;
+    float SSSWeight;
+    float SSSProfile;
+    float IOR;
+    float AlphaCutOff;
 };
 
 struct Material

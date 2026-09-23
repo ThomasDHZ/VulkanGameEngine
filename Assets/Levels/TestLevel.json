@@ -35,7 +35,6 @@
   ],
   "LoadGameObjects": [
     "GameObjects/TestGameObject.json",
-    "GameObjects/MegaManObject.json",
     "GameObjects/MegaManShotObject.json",
     "GameObjects/DirectionalLightGameObject.json",
     "GameObjects/PointLightGameObject.json"

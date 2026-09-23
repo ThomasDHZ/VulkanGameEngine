@@ -9,22 +9,26 @@
 #endif
 
 #ifndef PLATFORM_ANDROID
-ConfigSystem::ConfigSystem() :
-    WindowResolution(ivec2(1280, 720)),
-    RenderResolution(ivec2(1920, 1080)),
-    EngineBasePath(),
-    AssetDirectory("../Assets/"),
-    ShaderSourceDirectory("../Assets/Shaders"),
-    MaterialSourceDirectory("../Assets/Materials"),
-    MaterialDstDirectory("../Assets/Material2"),
-    TextureAssetRenderer("../Assets/RenderPass/AssetCreatorRenderPass.json"),
-    CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
-    CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
-    CompiledShaderOutputDirectory("../Assets/Shaders/"),
-    GameScriptLibraryDLL("../x64/Debug/GameScriptLibraryDLL.dll"),
-    NvidiaTextureTool("C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe")
-{
-}
+    ConfigSystem::ConfigSystem() :
+        WindowResolution(ivec2(1280, 720)),
+        RenderResolution(ivec2(1920, 1080)),
+        EngineBasePath(),
+        AssetDirectory("../Assets/"),
+        ShaderSourceDirectory("../Assets/Shaders"),
+        MaterialSourceDirectory("../Assets/Materials"),
+        MaterialDstDirectory("../Assets/Material2"),
+        TextureAssetRenderer("../Assets/RenderPass/AssetCreatorRenderPass.json"),
+        CompilerLocation("C:/VulkanSDK/1.4.318.0/Bin/glslc.exe"),
+        CompilerBuildParams("--target-env=vulkan1.4 --target-spv=spv1.6"),
+        CompiledShaderOutputDirectory("../Assets/Shaders/"),
+        GameScriptLibraryDLL("../x64/Debug/GameScriptLibraryDLL.dll"),
+        NvidiaTextureTool("C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe"),
+        BakerImportMaterialPath("ImportMaterial\\"),
+        BakerExportMaterialPath("Materials\\"),
+        BakerImportTexturePath("ImportTextures\\"),
+        BakerExportTexturePath("Textures\\")
+    {
+    }
 
 ConfigSystem::ConfigSystem(const nlohmann::json& j) :
     WindowResolution(ParseWindowResolution(j)),
@@ -38,7 +42,11 @@ ConfigSystem::ConfigSystem(const nlohmann::json& j) :
     CompilerBuildParams(j.at("CompilerBuildParams").get<String>()),
     GameScriptLibraryDLL(j.at("GameScriptLibraryDLL").get<String>()),
     CompiledShaderOutputDirectory(j.at("CompiledShaderOutputDirectory").get<String>()),
-    NvidiaTextureTool(j.at("NvidiaTextureTool").get<String>())
+    NvidiaTextureTool(j.at("NvidiaTextureTool").get<String>()),
+    BakerImportMaterialPath(j.at("BakerImportMaterialPath").get<String>()),
+    BakerExportMaterialPath(j.at("BakerExportMaterialPath").get<String>()),
+    BakerImportTexturePath(j.at("BakerImportTexturePath").get<String>()),
+    BakerExportTexturePath(j.at("BakerExportTexturePath").get<String>())
 {
 }
 #else

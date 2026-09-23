@@ -24,7 +24,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     for (auto& texture     : json["LoadTextures"])    textureSystem.LoadTexture(texture);
     for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadTexture(ktxTexture);
-    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
+    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<String>());
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
 
@@ -229,7 +229,7 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
     }
 
     const Material& material = materialSystem.FindMaterial(materialId);
-    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoDataId);
+    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoTextureId);
 
     LevelTileSetMap[tileSetId] = LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
     LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);

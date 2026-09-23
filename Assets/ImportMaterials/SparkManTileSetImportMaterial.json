@@ -32,6 +32,7 @@
   "HeightScale": 0.051,
   "Height": 0.051,
   "Alpha": 1.0,
+  "AlphaCutoff": 0.1,
   "ExportMipMapCount": 1,
   "IsTiled": true,
   "AlbedoAttachmentId": "b0ff96c7-0a22-445c-831d-7a04bee6c836",
