@@ -217,8 +217,8 @@ void main()
     vec4  normalDataMap                         = textureLod(TextureMap[material.NormalTextureId],                                       finalUV,  0.0).rgba;
     vec4  mroDataMap                            = textureLod(TextureMap[material.MROTextureId],                                          finalUV,  0.0).rgba;   
     vec4  clearCoatColorDataMap                 = textureLod(TextureMap[material.ClearCoatOrTranslucentTextureId],                       finalUV,  0.0).rgba;
-    vec4  subSurfaceScatteringDataMap           = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId],  finalUV,  0.0).rgba;
-    vec4  subSurfaceScatteringPropertiesDataMap = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
+    vec4  sssDataMap                            = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId],  finalUV,  0.0).rgba;
+    vec4  sssPropertiesDataMap                  = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
     vec4  sheenDataMap                          = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
     vec4  anisotropyDataMap                     = textureLod(TextureMap[material.AnisotropyTextureId],                                   finalUV,  0.0).rgba;
     vec4  emissionDataMap                       = textureLod(TextureMap[material.EmissionTextureId],                                     finalUV,  0.0);
@@ -247,8 +247,8 @@ void main()
     outAlbedo     = vec4(albedoDataMap.rgb, albedoDataMap.a);
     outNormalData = vec4(encodedNormalWS * 0.5f + 0.5f, 0.0f, selfShadow);
     outMRO        = mroDataMap;
-    outFeatureA   = vec4(sheenDataMap.rgb, Pack8bitPair(sheenDataMap.a, clearCoatColorDataMap.r));
-    outFeatureB   = vec4(subSurfaceScatteringDataMap.rgb, Pack8bitPair(subSurfaceScatteringDataMap.a, clearCoatColorDataMap.g));
-    outFeatureC   = vec4(Pack8bitPair(anisotropyDataMap.r, anisotropyDataMap.g), Pack8bitPair(anisotropyDataMap.b, anisotropyDataMap.a), Pack8bitPair(clearCoatColorDataMap.b, subSurfaceScatteringPropertiesDataMap.r), Pack8bitPair(subSurfaceScatteringPropertiesDataMap.g, subSurfaceScatteringPropertiesDataMap.b));
+    outFeatureA   = vec4(sheenDataMap.rgb, Pack8bitPair(sheenDataMap.a, clearCoatColorDataMap.r));        
+    outFeatureB   = vec4(sssDataMap.rgb,   Pack8bitPair(sssDataMap.a, clearCoatColorDataMap.g));    
+    outFeatureC   = vec4(Pack8bitPair(anisotropyDataMap.r, anisotropyDataMap.g), Pack8bitPair(anisotropyDataMap.b, anisotropyDataMap.a), Pack8bitPair(clearCoatColorDataMap.b, sssPropertiesDataMap.g), Pack8bitPair(sssPropertiesDataMap.r, sssPropertiesDataMap.b));    
     outEmission   = vec4(emissionDataMap.rgb * emissionDataMap.a, 1.0f);
 }

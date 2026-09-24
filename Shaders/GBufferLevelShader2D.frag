@@ -97,18 +97,15 @@ mat3 CalculateTBN(vec3 worldPos, vec2 uv)
 
     vec3 N = normalize(cross(dp1, dp2));
     vec3 T = duv1.y * dp2 - duv2.y * dp1;
-    if (dot(T, T) < 1e-8)
-        T = normalize(cross(abs(N.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0), N));
-    else
-        T = normalize(T);
+    if (dot(T, T) < 1e-8) T = normalize(cross(abs(N.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0), N));
+    else T = normalize(T);
     vec3 B = normalize(cross(N, T));
     return mat3(T, B, N);
 }
 
 vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 {
-    if (sceneData.UseHeightMap == 0)
-        return uv;
+    if (sceneData.UseHeightMap == 0) return uv;
 
     vec2 tileUV     = fract(uv);
     vec2 tileOrigin = uv - tileUV;
@@ -125,8 +122,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
         currentUV    -= deltaUV;
         height        = 1.0 - textureLod(TextureMap[heightIdx], currentUV + tileOrigin, 0.0).a;
         currentDepth += 1.0 / numLayers;
-        if (currentDepth >= height)
-            break;
+        if (currentDepth >= height) break;
     }
 
     vec2  prevUV      = currentUV + deltaUV;
@@ -213,8 +209,8 @@ void main()
     vec4  normalDataMap                         = textureLod(TextureMap[material.NormalTextureId],                                       finalUV,  0.0).rgba;
     vec4  mroDataMap                            = textureLod(TextureMap[material.MROTextureId],                                          finalUV,  0.0).rgba;   
     vec4  clearCoatColorDataMap                 = textureLod(TextureMap[material.ClearCoatOrTranslucentTextureId],                       finalUV,  0.0).rgba;
-    vec4  subSurfaceScatteringDataMap           = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId],  finalUV,  0.0).rgba;
-    vec4  subSurfaceScatteringPropertiesDataMap = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
+    vec4  sssDataMap                            = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId],  finalUV,  0.0).rgba;
+    vec4  sssPropertiesDataMap                  = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
     vec4  sheenDataMap                          = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
     vec4  anisotropyDataMap                     = textureLod(TextureMap[material.AnisotropyTextureId],                                   finalUV,  0.0).rgba;
     vec4  emissionDataMap                       = textureLod(TextureMap[material.EmissionTextureId],                                     finalUV,  0.0);
@@ -237,8 +233,8 @@ void main()
     outAlbedo     = vec4(albedoDataMap.rgb, albedoDataMap.a);
     outNormalData = vec4(encodedNormalWS * 0.5f + 0.5f, 0.0f, selfShadow);
     outMRO        = mroDataMap;
-    outFeatureA   = vec4(sheenDataMap.rgb, Pack8bitPair(sheenDataMap.a, clearCoatColorDataMap.r));
-    outFeatureB   = vec4(subSurfaceScatteringDataMap.rgb, Pack8bitPair(subSurfaceScatteringDataMap.a, clearCoatColorDataMap.g));
-    outFeatureC   = vec4(Pack8bitPair(anisotropyDataMap.r, anisotropyDataMap.g), Pack8bitPair(anisotropyDataMap.b, anisotropyDataMap.a), Pack8bitPair(clearCoatColorDataMap.b, subSurfaceScatteringPropertiesDataMap.r), Pack8bitPair(subSurfaceScatteringPropertiesDataMap.g, subSurfaceScatteringPropertiesDataMap.b));
+    outFeatureA   = vec4(sheenDataMap.rgb, Pack8bitPair(sheenDataMap.a, clearCoatColorDataMap.r));        
+    outFeatureB   = vec4(sssDataMap.rgb,   Pack8bitPair(sssDataMap.a, clearCoatColorDataMap.g));    
+    outFeatureC   = vec4(Pack8bitPair(anisotropyDataMap.r, anisotropyDataMap.g), Pack8bitPair(anisotropyDataMap.b, anisotropyDataMap.a), Pack8bitPair(clearCoatColorDataMap.b, sssPropertiesDataMap.g), Pack8bitPair(sssPropertiesDataMap.r, sssPropertiesDataMap.b));    
     outEmission   = vec4(emissionDataMap.rgb * emissionDataMap.a, 1.0f);
 }
