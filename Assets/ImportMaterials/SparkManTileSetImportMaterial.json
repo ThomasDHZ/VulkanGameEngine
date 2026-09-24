@@ -1,7 +1,7 @@
 {
   "Name": "SparkManTiles",
   "TextureSetResolution": [ 672, 16 ],
-  "MaterialGuid": "1654a0b5-9a07-4e54-9ac5-7a13acae8d13",
+  "MaterialGuid": "e1ffa023-a0d4-4a8a-821e-42a38ccaae04",
   "Albedo": [ 0.8, 0.8, 0.8 ],
   "Metallic": 0.0,
   "Roughness": 0.6,
