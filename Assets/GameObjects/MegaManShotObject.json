@@ -2,6 +2,7 @@
   "GameObjectType": 2,
   "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerShotScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
+  "MaterialId": "8B29C645-4E30-4DD7-AC1B-0735D4F86DFE",
   "GameObjectVariableStruct": [
     {
       "VariableName": "ShotSpeed",

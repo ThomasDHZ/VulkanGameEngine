@@ -82,7 +82,7 @@ void main()
    if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
    if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
 
-   vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            PS_UV, -0.5f).rgba;    
+   vec4 albedoData           = texture(TextureMap[material.AlbedoTextureId],            PS_UV, -0.5f).rgba;    
    if (albedoData.a < 0.1f) discard; 
    if (selectedGameObjectPickerId.gameObjectIndex == PS_SpriteId) outGameObjectId = vec4(1.0f, 0.0f, 0.0f, 0.01f);
    else outGameObjectId = vec4(0.0f, 0.0f, 0.0f, 0.0f);

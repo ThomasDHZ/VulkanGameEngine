@@ -21,8 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{4CCF9A80-6215-4938-8BF7-38F42B25CDFB}"
 	ProjectSection(SolutionItems) = preProject
+		Assets\Materials\AnimeGirlMaterial.json = Assets\Materials\AnimeGirlMaterial.json
+		Assets\Materials\HDRIMaterial.json = Assets\Materials\HDRIMaterial.json
 		Assets\Materials\LavaCubeMapMaterial.json = Assets\Materials\LavaCubeMapMaterial.json
 		Assets\Materials\LightIconMaterial.json = Assets\Materials\LightIconMaterial.json
+		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
 		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
 	EndProjectSection
 EndProject
@@ -109,10 +112,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameShaders", "GameShaders"
 		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
 		Shaders\GBufferLevelShader2D.frag = Shaders\GBufferLevelShader2D.frag
 		Shaders\GBufferLevelShader2D.vert = Shaders\GBufferLevelShader2D.vert
+		Shaders\GBufferLevelShader2DWireFrame.frag = Shaders\GBufferLevelShader2DWireFrame.frag
+		Shaders\GBufferLevelShader2DWireFrame.vert = Shaders\GBufferLevelShader2DWireFrame.vert
 		Shaders\GBufferLightingShader.frag = Shaders\GBufferLightingShader.frag
 		Shaders\GBufferLightingShader.vert = Shaders\GBufferLightingShader.vert
+		Shaders\GBufferLightingShaderWireFrame.frag = Shaders\GBufferLightingShaderWireFrame.frag
+		Shaders\GBufferLightingShaderWireFrame.vert = Shaders\GBufferLightingShaderWireFrame.vert
 		Shaders\GBufferSpriteInstanceShader.frag = Shaders\GBufferSpriteInstanceShader.frag
 		Shaders\GBufferSpriteInstanceShader.vert = Shaders\GBufferSpriteInstanceShader.vert
+		Shaders\GBufferSpriteInstanceShaderWireFrame.frag = Shaders\GBufferSpriteInstanceShaderWireFrame.frag
+		Shaders\GBufferSpriteInstanceShaderWireFrame.vert = Shaders\GBufferSpriteInstanceShaderWireFrame.vert
 		Shaders\HdrShader.frag = Shaders\HdrShader.frag
 		Shaders\HdrShader.vert = Shaders\HdrShader.vert
 		Shaders\IrradianceShader.frag = Shaders\IrradianceShader.frag

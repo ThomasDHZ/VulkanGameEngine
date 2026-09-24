@@ -26,7 +26,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_AlbedoTexture.ktx2"
     ],
-    "TextureId": "{2F4C6C70-FA2E-41A5-9141-EC13E57778F2}",
+    "TextureId": "{3FBEA852-27BA-4779-A5FE-9D672E2AF6ED}",
     "TextureType": 1,
     "TextureUsageType": 9
   },
@@ -58,7 +58,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_AnisotropyTexture.ktx2"
     ],
-    "TextureId": "{0291F070-F615-4367-BBD0-08002BC82B4A}",
+    "TextureId": "{73CC9150-0A95-4039-87C1-C49D62D6C564}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
@@ -89,7 +89,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_ClearCoatTexture.ktx2"
     ],
-    "TextureId": "{59D3A376-93CF-47A0-B823-FB81F0227EE5}",
+    "TextureId": "{477B70B3-8C41-4BBC-92A6-C08E9312E8FB}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
@@ -125,7 +125,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_EmissionTexture.ktx2"
     ],
-    "TextureId": "{446FF850-B7D3-4E21-92FF-6824528185B9}",
+    "TextureId": "{38AFB797-83A4-4E3D-A72E-C690A3C75CCE}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
@@ -158,11 +158,11 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_MROTexture.ktx2"
     ],
-    "TextureId": "{D4875CAE-0C1E-4C19-9697-3C87355DB5CB}",
+    "TextureId": "{B22A6D9A-3E39-4059-B67F-E2E920588737}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
-  "MaterialId": "{6A02AEAB-4521-498C-AAA5-33DE149D691D}",
+  "MaterialId": "{16C70CB9-B00E-4B61-93A4-DA74849EC96E}",
   "NormalTexture": {
     "ImageType": 1,
     "IsSkyBox": false,
@@ -190,14 +190,11 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_NormalTexture.ktx2"
     ],
-    "TextureId": "{BD33E018-3DC8-45D9-BD61-4796DEDB19BB}",
+    "TextureId": "{BDCE1FA7-D679-43B3-BE96-5918B1EF4026}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
-  "SSSProfile": 0.0,
-  "SSSWeight": 0.4000000059604645,
   "ShadingModel": 0,
-  "SheenRoughness": 0.550000011920929,
   "SheenTexture": {
     "ImageType": 1,
     "IsSkyBox": false,
@@ -225,7 +222,38 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_SheenTexture.ktx2"
     ],
-    "TextureId": "{D039FB99-F313-4F03-8831-76B0F6BD1E70}",
+    "TextureId": "{22B4882F-FE7F-4679-B8A0-FCD795034B61}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "SubSurfaceScatteringPropertiesTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\AnimeGirlMaterial_SubSurfaceScatteringPropertiesTexture.ktx2"
+    ],
+    "TextureId": "{949BA3DE-843A-48DD-81D1-97A24994044F}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
@@ -256,7 +284,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_SubSurfaceScatteringTexture.ktx2"
     ],
-    "TextureId": "{99AEC92A-4661-48E2-8521-BE00325F3391}",
+    "TextureId": "{CBD113AD-AD87-448C-8DE3-B6E1C1218006}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
@@ -287,7 +315,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_TranslucentPropertiesTexture.ktx2"
     ],
-    "TextureId": "{C66D39B6-6CA6-429C-8DF3-9A2B8A70BB86}",
+    "TextureId": "{315C5CD9-BC8D-43AB-B4A5-159D9E071D7F}",
     "TextureType": 4,
     "TextureUsageType": 9
   },
@@ -318,7 +346,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_TranslucentTexture.ktx2"
     ],
-    "TextureId": "{468A8B50-50C4-4E83-8A1C-ADE053C85DB8}",
+    "TextureId": "{997CD654-2305-4133-8A5E-D6014ED0C8B9}",
     "TextureType": 4,
     "TextureUsageType": 9
   }

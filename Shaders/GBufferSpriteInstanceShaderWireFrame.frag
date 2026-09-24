@@ -66,14 +66,14 @@ layout (location = 5) in flat uint  PS_MaterialId;
 layout (location = 6) in flat vec4  PS_UVOffset;
 layout (location = 7) in flat uint  PS_SpriteId;
 
-layout(location = 0) out vec4 outPosition;           //Position                                                                                   - R16G16B16A16_SFLOAT
-layout(location = 1) out vec4 outAlbedo;             //Albedo/Alpha                                                                               - R8G8B8A8_SRGB
-layout(location = 2) out vec4 outNormalData;         //Normal/Height/unused                                                                       - R16G16B16A16_UNORM 
-layout(location = 3) out vec4 outPackedMRO;          //vec4(Metallic/Rough, AO/ClearcoatTint, ClearcoatStrength/ClearcoatRoughness, unused)       - R16G16B16A16_UNORM
-layout(location = 4) out vec4 outPackedSheenSSS;     //vec4(sheenColor.r/sheenColor.g, sheenColor.b/sheenIntensity, sss.r/sss.g, sss.b/thickness) - R16G16B16A16_UNORM
-layout(location = 5) out vec4 outTempMap;            //vec4(                                                                                    ) - R16G16B16A16_UNORM
-layout(location = 6) out vec4 outParallaxInfo;       //ParallaxUV/Height                                                                          - R16G16B16A16_UNORM
-layout(location = 7) out vec4 outEmission;           //Emission                                                                                   - R16G16B16A16_UNORM
+layout(location = 0) out vec4 outPosition;      //R16G16B16A16_SFLOAT
+layout(location = 1) out vec4 outAlbedo;        //R8G8B8A8_SRGB
+layout(location = 2) out vec4 outNormalData;    //R16G16B16A16_UNORM 
+layout(location = 3) out vec4 outMRO;           //R16G16B16A16_UNORM
+layout(location = 4) out vec4 outFeatureA;      //R16G16B16A16_UNORM
+layout(location = 5) out vec4 outFeatureB;      //R16G16B16A16_UNORM
+layout(location = 6) out vec4 outFeatureC;      //R16G16B16A16_UNORM
+layout(location = 7) out vec4 outEmission;      //R16G16B16A16_SFLOAT
 
 layout(push_constant) uniform SceneDataBuffer
 {
@@ -84,162 +84,14 @@ layout(push_constant) uniform SceneDataBuffer
 
 #include "BindlessHelpers.glsl"
 
-vec4 SampleTexture(uint textureIndex, vec2 uv)
-{
-    TextureMetadata meta = Get2DTextureMetadata(textureIndex);
-
-    if (meta.TextureType == 0) 
-    {
-        return texture(TextureMap[meta.ArrayIndex], uv);
-    }
-    return vec4(1.0, 0.0, 1.0, 1.0);
-}
-
-vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
-{
-    if (sceneData.UseHeightMap == 0) return uv;
-
-    const float minLayers = 16.0;
-    const float maxLayers = 64.0;
-    float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-
-    vec2 shiftDirection = viewDirTS.xy * sceneData.HeightScale * -1.0;
-    vec2 deltaUV        = shiftDirection / numLayers;
-
-    vec2  currentUV      = uv;
-    float currentDepth   = 0.0;
-    float height         = 1.0 - textureLod(TextureMap[heightIdx], currentUV, 0.0).a;
-
-    int maxSteps = 96;
-    for (int i = 0; i < maxSteps; ++i)
-    {
-        currentUV    -= deltaUV;
-        height        = 1.0 - textureLod(TextureMap[heightIdx], currentUV, 0.0).a;
-        currentDepth += 1.0 / numLayers;
-
-        if (currentDepth >= height) break;
-    }
-
-    vec2  prevUV       = currentUV + deltaUV;
-    float afterDepth   = height - currentDepth;
-    float beforeDepth  = (1.0 - textureLod(TextureMap[heightIdx], prevUV, 0.0).a) - (currentDepth - 1.0/numLayers);
-
-    float weight       = afterDepth / (afterDepth - beforeDepth + 1e-5);
-    vec2  finalUV      = mix(currentUV, prevUV, weight);
-
-     vec2 edgeDist = min(finalUV, 1.0 - finalUV);
-     float edgeFade = smoothstep(0.0, 0.05, min(edgeDist.x, edgeDist.y));
-     finalUV = uv + (finalUV - uv) * edgeFade;
-
-    return finalUV;
-}
- 
-float HeightSelfShadow(vec2 uv, vec3 Lts, uint heightIdx, float startH, vec2 minUV, vec2 maxUV)
-{
-    if (Lts.z <= 0.0)
-        return 1.0;
-
-    const int steps = 20;
-    float step = max(sceneData.HeightScale, 0.05) * 0.02;
-    vec2  dUV  = Lts.xy * step;
-    float rayH = startH;
-    vec2  p    = uv;
-
-    for (int i = 0; i < steps; ++i)
-    {
-        p    += dUV;
-        rayH += Lts.z * step;
-        if (any(lessThan(p, minUV)) || any(greaterThan(p, maxUV)))
-            break;
-
-        float h = textureLod(TextureMap[heightIdx], p, 0.0).a; // raw, same as startH
-        if (h > rayH + 0.02)
-            return mix(0.45, 1.0, float(i) / float(steps));
-    }
-    return 1.0;
-}
-
-vec2 OctahedronEncode(vec3 normal) 
-{
-    vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
-    return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
-}
-
-vec3 OctahedronDecode(vec2 f)
-{
-    vec3 n;
-    n.xy = f.xy;
-    n.z = 1.0 - abs(f.x) - abs(f.y);
-    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
-    return normalize(n);
-}
-
-float Pack8bitPair(float high, float low) {
-    uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
-    uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
-    uint combined = (u_high << 8) | u_low;  // high in MSBs, low in LSBs
-    return float(combined) / 65535.0;
-}
-vec2 Unpack8bitPair(float packed) {
-    uint combined = uint(packed * 65535.0 + 0.5);
-    float high = float((combined >> 8) & 0xFFu) / 255.0;
-    float low  = float(combined & 0xFFu) / 255.0;
-    return vec2(high, low);
-}
-
 void main() 
 {
-    PackedMaterial material = GetMaterial(PS_MaterialId);
-
-    vec2 UV = PS_UV;
-    if (PS_FlipSprite.x == 1) UV.x = PS_UVOffset.x + PS_UVOffset.z - (UV.x - PS_UVOffset.x);
-    if (PS_FlipSprite.y == 1) UV.y = PS_UVOffset.y + PS_UVOffset.w - (UV.y - PS_UVOffset.y);
-
-
-    vec3 N = normalize(sceneDataBuffer.CameraPosition - WorldPos); // toward camera — correct for a billboard
-    vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
-    if (dot(T, T) < 1e-6) T = normalize(cross(vec3(1.0, 0.0, 0.0), N));
-    T = normalize(T);
-    vec3 B = cross(N, T);
-    mat3 TBN = mat3(T, B, N);
-
-    vec3 viewDirWS = normalize(sceneDataBuffer.CameraPosition - WorldPos);
-    vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV = ParallaxOcclusionMapping(UV, viewDirTS, material.NormalDataId);
-
-    vec4 albedoData           = texture(TextureMap[material.AlbedoDataId],            finalUV, -0.5f).rgba;    
-    vec3 normalData           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).rgb;    
-    vec3 packedMROData        = textureLod(TextureMap[material.PackedMRODataId],      finalUV, 0.0f).rgb;   
-    vec4 packedSheenSSSData   = textureLod(TextureMap[material.PackedSheenSSSDataId], finalUV, 0.0f).rgba;    
-    vec4 tempMapData          = textureLod(TextureMap[material.UnusedDataId],         finalUV, 0.0f).rgba;    
-    vec4 emissionData         = textureLod(TextureMap[material.EmissionDataId],       finalUV, 0.0f).rgba;
-    float heightRaw           = textureLod(TextureMap[material.NormalDataId],         finalUV, 0.0f).a;
-    if (albedoData.a < 0.1f) discard; 
-
-    vec2 f = normalData.xy * 2.0f - 1.0f;
-    float normalStrength = normalData.b;
-    
-    vec3 tangentNormal = OctahedronDecode(f);
-    tangentNormal.xy *= normalStrength;
-    tangentNormal = normalize(tangentNormal);
-
-    vec3 normalWS = normalize(TBN * tangentNormal);
-    vec2 encodedNormalWS = OctahedronEncode(normalWS);
-
-    vec2 minUV = PS_UVOffset.xy;
-    vec2 maxUV = PS_UVOffset.xy + PS_UVOffset.zw;
-    vec3 Lws = normalize(-GetDirectionalLight(0).LightDirection);
-    vec3 Lts = normalize(transpose(TBN) * Lws);
-
-    float height = 1.0 - heightRaw;
-    float selfShadow = HeightSelfShadow(finalUV, Lts, material.NormalDataId, heightRaw, minUV, maxUV);
-
-    outPosition = vec4(WorldPos, 1.0);
-    outAlbedo = albedoData;
-    outNormalData = vec4(encodedNormalWS * 0.5 + 0.5, normalData.b, heightRaw);
-    outPackedMRO = vec4(packedMROData, selfShadow);
-    outPackedSheenSSS = packedSheenSSSData;
-    outTempMap = tempMapData;
-    outParallaxInfo = vec4(finalUV - UV, 0.0f, 1.0);
-    outEmission = emissionData;
+    outPosition   = vec4(WorldPos, 1.0);
+    outAlbedo     = vec4(1.0f);
+    outNormalData = vec4(0.0f);
+    outMRO        = vec4(0.0f);
+    outFeatureA   = vec4(0.0f);
+    outFeatureB   = vec4(0.0f);
+    outFeatureC   = vec4(0.0f);
+    outEmission   = vec4(0.0f);
 }

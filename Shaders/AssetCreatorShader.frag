@@ -25,8 +25,8 @@ layout(location = 0) out vec4 outAlbedoTexture;
 layout(location = 1) out vec4 outNormalTexture;
 layout(location = 2) out vec4 outMROTexture;
 layout(location = 3) out vec4 outClearCoatOrTranslucentTexture;
-layout(location = 4) out vec4 outSubSurfaceScatteringOrTranslucentPropertiesTexture;
-layout(location = 5) out vec4 outSheenTexture;
+layout(location = 4) out vec4 outSssOrTranslucentPropertiesTexture;
+layout(location = 5) out vec4 outSheenOrSssPropertiesTexture;
 layout(location = 6) out vec4 outAnisotropyTexture;
 layout(location = 7) out vec4 outEmissionTexture;
 
@@ -221,15 +221,15 @@ void main()
     if (materialBaker.MaterialBakerSubPassIndex == int(BAKE_CORE))
     {
         outClearCoatOrTranslucentTexture = vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0);
-        outSubSurfaceScatteringOrTranslucentPropertiesTexture = vec4(m.SSSColor, m.Thickness);
-        outSheenTexture = vec4(m.SheenColor, m.SheenWeight);
+        outSssOrTranslucentPropertiesTexture = vec4(m.SSSColor, m.Thickness);
+        outSheenOrSssPropertiesTexture = vec4(m.SheenColor, m.SheenWeight);
         outAnisotropyTexture = vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness);
     }
     else
     {
         outClearCoatOrTranslucentTexture = vec4(m.AttenuationColor, 1.0);
-        outSubSurfaceScatteringOrTranslucentPropertiesTexture =  vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0);
-        outSheenTexture = vec4(0.0);
+        outSssOrTranslucentPropertiesTexture =  vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0);
+        outSheenOrSssPropertiesTexture = vec4(m.SheenRoughness, m.SSSWeight, m.SSSProfile, 1.0f);
         outAnisotropyTexture = vec4(0.0);
     }
 }

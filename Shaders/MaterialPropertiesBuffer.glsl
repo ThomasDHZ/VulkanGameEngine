@@ -82,6 +82,7 @@ struct PackedMaterial
     uint MROTextureId;
     uint ClearCoatOrTranslucentTextureId;
     uint SubSurfaceScatteringOrTranslucentPropertiesTextureId;
+    uint SubSurfaceScatteringPropertiesTextureId;
     uint SheenTextureId;
     uint AnisotropyTextureId;
     uint EmissionTextureId;
@@ -90,9 +91,6 @@ struct PackedMaterial
     uint _pad0;
     uint _pad1;
     vec3  ClearcoatTint;
-    float SheenRoughness;
-    float SSSWeight;
-    float SSSProfile;
     float IOR;
     float AlphaCutOff;
 };

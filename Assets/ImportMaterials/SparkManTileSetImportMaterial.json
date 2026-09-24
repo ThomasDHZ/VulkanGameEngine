@@ -134,7 +134,7 @@
   "SheenMap": null,
   "ClearCoatMap": null,
   "AmbientOcclusionMap": {
-    "TextureFilePath": [ "ImportTextures/AnimeGirl_AOTexture.png" ],
+    "TextureFilePath": [ "ImportTextures/SparkMan_AOTexture.png" ],
     "TextureId": "69cbf740-e41a-4c45-901b-58d209b12272",
     "TextureByteFormat": 37,
     "SampleCount": 1,

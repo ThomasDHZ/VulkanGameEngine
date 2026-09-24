@@ -2,6 +2,7 @@
   "GameObjectType": 5,
   "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.GameEnemyScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": null,
+  "MaterialId": "16C70CB9-B00E-4B61-93A4-DA74849EC96E",
   "GameObjectVariableStruct": [
     {
       "VariableName": "PlayerSpeed",

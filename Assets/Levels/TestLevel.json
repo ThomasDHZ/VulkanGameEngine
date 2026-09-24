@@ -6,8 +6,10 @@
     "TextureLoader/HDRITexture.json"
   ],
   "LoadMaterials": [
-    "Materials/SparkManTileSetMaterial.json",
-    "Materials/LavaCubeMapMaterial.json"
+    "Materials/AnimeGirlMaterial.json",
+    "Materials/MegaManShotMaterial.json",
+    "Materials/LightIconMaterial.json",
+    "Materials/SparkManTileSetMaterial.json"
   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
