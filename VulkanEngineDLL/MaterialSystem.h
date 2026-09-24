@@ -33,30 +33,24 @@ struct Material
 
 struct GPUMaterial
 {
-    uint MaterialGuid                            = UINT32_MAX;
-    uint AlbedoTextureId                         = UINT32_MAX;
-    uint NormalTextureId                         = UINT32_MAX;
-    uint MroTextureId                            = UINT32_MAX;
-    uint ClearCoatTextureId                      = UINT32_MAX;
-    uint SubSurfaceScatteringTextureId           = UINT32_MAX;
+    uint AlbedoTextureId = UINT32_MAX;
+    uint NormalTextureId = UINT32_MAX;
+    uint MroTextureId = UINT32_MAX;
+    uint ClearCoatTextureId = UINT32_MAX;
+    uint SubSurfaceScatteringTextureId = UINT32_MAX;
     uint SubSurfaceScatteringPropertiesTextureId = UINT32_MAX;
-    uint SheenTextureId                          = UINT32_MAX;
-    uint AnisotropyTextureId                     = UINT32_MAX;
-    uint EmissionTextureId                       = UINT32_MAX;
-    uint TranslucentTextureId                    = UINT32_MAX;
-    uint TranslucentPropertiesTextureId          = UINT32_MAX;
-    uint ShadingModel;
-    uint FeatureMask;
-    uint _pad0;
-    uint _pad1;
-    vec4  ClearcoatTint;
-    float IOR;
-    float AlphaCutOff;
-
-    GPUMaterial() = default;
-    GPUMaterial(const GPUMaterial&) = default;
-    GPUMaterial& operator=(const GPUMaterial&) = default;
+    uint SheenTextureId = UINT32_MAX;
+    uint AnisotropyTextureId = UINT32_MAX;
+    uint EmissionTextureId = UINT32_MAX;
+    uint TranslucentTextureId = UINT32_MAX;
+    uint TranslucentPropertiesTextureId = UINT32_MAX;
+    uint ShadingModel = 0;
+    uint FeatureMask = 0;
+    vec3 ClearcoatTint = vec3(1.0f);
+    float IOR = 1.45f;
+    float AlphaCutOff = 0.1f;
 };
+static_assert(sizeof(GPUMaterial) == 18 * 4);
 
 class ENGINE_DLL_EXPORT MaterialSystem
 {

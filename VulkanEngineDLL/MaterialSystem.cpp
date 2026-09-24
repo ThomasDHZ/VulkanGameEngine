@@ -36,8 +36,8 @@ VkGuid MaterialSystem::LoadMaterial(const nlohmann::json& json)
     material.EmissionTextureId                        = json.contains("EmissionTexture") ? textureSystem.LoadTexture(json["EmissionTexture"].get<TextureLoader>()).textureGuid : VkGuid();
     material.TranslucentTextureId                     = json.contains("TranslucentTexture") ? textureSystem.LoadTexture(json["TranslucentTexture"].get<TextureLoader>()).textureGuid : VkGuid();
     material.TranslucentPropertiesTextureId           = json.contains("TranslucentPropertiesTexture") ? textureSystem.LoadTexture(json["TranslucentPropertiesTexture"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.ShadingModel                             = json.value("ShadingModel", 0.0f);
-    material.FeatureMask                              = json.value("FeatureMask", 0.0f);
+    material.ShadingModel                             = json.value("ShadingModel", 0u);
+    material.FeatureMask                              = json.value("FeatureMask", 0u);
     material.ClearcoatTint                            = vec4(json["ClearcoatTint"].at(0).get<float>(), json["ClearcoatTint"].at(1).get<float>(), json["ClearcoatTint"].at(2).get<float>(), 0.0f);
     material.IOR                                      = json.value("IOR", 1.45f);
     material.AlphaCutOff                              = json.value("AlphaCutoff", json.value("AlphaCutOff", 0.1f));

@@ -86,11 +86,11 @@ struct PackedMaterial
     uint SheenTextureId;
     uint AnisotropyTextureId;
     uint EmissionTextureId;
+    uint TranslucentTextureId;
+    uint TranslucentPropertiesTextureId;
     uint ShadingModel;
     uint FeatureMask;
-    uint _pad0;
-    uint _pad1;
-    vec3  ClearcoatTint;
+    vec3 ClearcoatTint;
     float IOR;
     float AlphaCutOff;
 };
