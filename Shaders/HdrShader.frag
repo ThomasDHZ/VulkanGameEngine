@@ -42,7 +42,9 @@ layout(binding = 1)  buffer BindlessBuffer
     uint64_t MaterialOffset; 
     uint MaterialCount;
     uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
+    uint64_t 
+    
+    LightOffset; 
     uint DirectionalLightCount;
     uint DirectionalLightSize;   
     uint64_t PointLightOffset; 

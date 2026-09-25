@@ -13,7 +13,7 @@ void CameraSystem::CreatePixelPerfectOrthographicCamera(const ivec2& renderResol
     cam.Position = vec3(worldPosition.x, worldPosition.y, 0.0f);
     cam.ViewScreenSize = vec2(renderResolution);
     cam.ProjectionMatrix = glm::ortho(0.0f, cam.Width, cam.Height, 0.0f, -1000.0f, 1000.0f);
-    cam.ViewMatrix = glm::translate(glm::mat4(1.0f), -cam.Position);
+    cam.ViewMatrix = glm::translate(mat4(1.0f), -cam.Position);
 
     CameraList.emplace_back(std::move(cam));
 }

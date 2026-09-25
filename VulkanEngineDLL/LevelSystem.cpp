@@ -81,16 +81,31 @@ void LevelSystem::Update(const float& deltaTime)
     Camera_UpdateOrthographicPixelPerfect(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex]);
     Camera_PerspectiveUpdate(*PerspectiveCamera);
 
+    const Camera& ortho = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex];
+    const Camera& persp = *PerspectiveCamera;
+
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.OrthoProjection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
-    sceneDataBuffer.OrthoView = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
-    sceneDataBuffer.InverseOrthoProjection = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix);
-    sceneDataBuffer.InverseOrthoView = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix);
-    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
-    sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
-    sceneDataBuffer.PerspectiveCameraPosition = PerspectiveCamera->Position;
-    sceneDataBuffer.PerspectiveViewDirection = PerspectiveCamera->Front;
-    sceneDataBuffer.InvertResolution = glm::vec2(1.0f / configSystem.RenderResolution.x, 1.0f / configSystem.RenderResolution.y);
+    //sceneDataBuffer.OrthoProjection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
+    //sceneDataBuffer.OrthoView = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
+    //sceneDataBuffer.InverseOrthoProjection = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix);
+    //sceneDataBuffer.InverseOrthoView = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix);
+    //sceneDataBuffer.InversePerspectiveProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
+    //sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
+    //sceneDataBuffer.PerspectiveCameraPosition = PerspectiveCamera->Position;
+    //sceneDataBuffer.PerspectiveViewDirection = PerspectiveCamera->Front;
+    //sceneDataBuffer.InvertResolution = glm::vec2(1.0f / configSystem.RenderResolution.x, 1.0f / configSystem.RenderResolution.y);
+
+    sceneDataBuffer.OrthoProjection = ortho.ProjectionMatrix;
+    sceneDataBuffer.OrthoView = ortho.ViewMatrix;
+    sceneDataBuffer.InverseOrthoProjection = glm::inverse(ortho.ProjectionMatrix);
+    sceneDataBuffer.InverseOrthoView = glm::inverse(ortho.ViewMatrix);
+
+    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(persp.ProjectionMatrix);
+    sceneDataBuffer.InversePerspectiveView = glm::inverse(persp.ViewMatrix);
+    sceneDataBuffer.PerspectiveCameraPosition = persp.Position;
+    sceneDataBuffer.PerspectiveViewDirection = persp.Front;
+
+    sceneDataBuffer.InvertResolution = vec2(1.0f / (float)vulkan.RenderPassResolution().x, 1.0f / (float)vulkan.RenderPassResolution().y);
 }
 
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
