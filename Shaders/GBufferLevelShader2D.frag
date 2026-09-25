@@ -197,9 +197,7 @@ void main()
     vec3 N = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
     if (dot(T, T) < 1e-6) T = normalize(cross(vec3(1.0, 0.0, 0.0), N));
-    T = normalize(T);
-    vec3 B = cross(N, T);
-    mat3 TBN = mat3(T, B, N);
+    mat3 TBN = CalculateTBN(WorldPos, TexCoords);
 
     vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
@@ -210,7 +208,7 @@ void main()
     vec4  mroDataMap                            = textureLod(TextureMap[material.MROTextureId],                                          finalUV,  0.0).rgba;   
     vec4  clearCoatColorDataMap                 = textureLod(TextureMap[material.ClearCoatOrTranslucentTextureId],                       finalUV,  0.0).rgba;
     vec4  sssDataMap                            = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId],  finalUV,  0.0).rgba;
-    vec4  sssPropertiesDataMap                  = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
+    vec4  sssPropertiesDataMap                  = textureLod(TextureMap[material.SubSurfaceScatteringPropertiesTextureId],               finalUV,  0.0).rgba;
     vec4  sheenDataMap                          = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
     vec4  anisotropyDataMap                     = textureLod(TextureMap[material.AnisotropyTextureId],                                   finalUV,  0.0).rgba;
     vec4  emissionDataMap                       = textureLod(TextureMap[material.EmissionTextureId],                                     finalUV,  0.0);

@@ -148,7 +148,13 @@ vec3 ReconstructWorldPos(float depth);
 
 void main()
 {
-    Material material = UnpackMaterial();
+//    Material material = UnpackMaterial();
+        Material material = UnpackMaterial();
+    material.Position = ReconstructWorldPos(material.Depth);
+
+    vec3 stored  = subpassLoad(PositionInput).rgb;
+vec3 rebuilt = ReconstructWorldPos(material.Depth);
+vec2 res     = 1.0 / sceneDataBuffer.InvertResolution;
     if (material.Depth >= 0.9999f)
     {
         vec2 uv = TexCoords;
@@ -162,6 +168,13 @@ void main()
         return;
     }
 
+// A — reconstruct
+
+vec3 d = rebuilt - stored;
+
+// black = match. anything colored = residual in that axis
+outColor = vec4(abs(d) / vec3(8.0, 8.0, 1.0), 1.0);
+
    // material.Position = ReconstructWorldPos(depth);
 //
 //        vec3 stored  = subpassLoad(positionInput).rgb;
@@ -172,17 +185,17 @@ void main()
 //        outBloom(0.0f);
 //        return;
 //    }
-    vec3 V     = normalize(sceneDataBuffer.PerspectiveCameraPosition - material.Position);
-    vec3 N     = material.Normal;
-    vec3 iblN  = normalize(mix(N, V, 0.15f));
-    vec3 R     = reflect(-V, iblN);
-    vec3 F0    = mix(vec3(0.04), material.Albedo, material.Metallic);
-
-    vec3 Lo    = DirectionalLightFunc(F0, V, material) + PointLightFunc(F0, V, material);
-    vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
-
-    outColor   = vec4(color, 1.0);
-    outBloom   = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
+//    vec3 V     = normalize(sceneDataBuffer.PerspectiveCameraPosition - material.Position);
+//    vec3 N     = material.Normal;
+//    vec3 iblN  = normalize(mix(N, V, 0.15f));
+//    vec3 R     = reflect(-V, iblN);
+//    vec3 F0    = mix(vec3(0.04), material.Albedo, material.Metallic);
+//
+//    vec3 Lo    = DirectionalLightFunc(F0, V, material) + PointLightFunc(F0, V, material);
+//    vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
+//
+//    outColor = vec4(color, 1.0);
+//    outBloom   = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
 
 const float kFeatureEps = 1e-3;
@@ -212,8 +225,9 @@ Material UnpackMaterial()
     vec2 sheenR_prof  = Unpack8bitPair(featureCAttachment.a);
 
     Material m;
-    m.Position         = positionAttachment.rgb;
-    m.Depth            = depthAttachment.r;
+   // m.Position         = positionAttachment.rgb;
+   m.Depth            = depthAttachment.r;
+   m.Position = ReconstructWorldPos(m.Depth);
 
     m.Albedo           = albedoAttachment.rgb;
     m.Metallic         = mroAttachment.r;
@@ -221,7 +235,7 @@ Material UnpackMaterial()
     m.AmbientOcclusion = mroAttachment.b;
     m.IOR              = mroAttachment.a * 2.0 + 1.0;
 
-    m.Normal           = normalize(OctahedronDecode(albedoAttachment.xy * 2.0 - 1.0));
+    m.Normal           = normalize(OctahedronDecode(normalAttachment.xy * 2.0 - 1.0));
     m.SelfShadow       = normalAttachment.a;
     m.Emission         = emissionAttachment.rgb;
 
@@ -280,15 +294,15 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
         vec3  spec = (NDF * G * F) / max(4.0 * NdotV * NdotL, 1e-4);
 
         vec3 kD = (vec3(1.0) - F) * (1.0 - material.Metallic);
-        vec3 sheenContrib = SheenData(material, material.Normal, V);
-        vec3 subSurfaceScattering = SubSurfaceScatteringData(material, N, L);
-        if (NdotL <= 0.0)
-        {
-            Lo += subSurfaceScattering;
-            continue;
-        }
+       // vec3 sheenContrib = SheenData(material, material.Normal, V);
+       // vec3 subSurfaceScattering = SubSurfaceScatteringData(material, N, L);
+//        if (NdotL <= 0.0)
+//        {
+//            Lo += subSurfaceScattering;
+//            continue;
+//        }
 
-        Lo += (kD * material.Albedo / PI + spec) * radiance * NdotL + sheenContrib * radiance * NdotL; + subSurfaceScattering;
+        Lo += (kD * material.Albedo / PI + spec) * radiance * NdotL  * radiance * NdotL;
     }
     return Lo;
 }
@@ -323,15 +337,15 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         vec3  spec  = (NDF * G * F) / max(4.0 * NdotV * NdotL, 1e-4);
 
         vec3 kD = (vec3(1.0) - F) * (1.0 - material.Metallic);
-        vec3 sheenContrib = SheenData(material, material.Normal, V);
-        vec3 subSurfaceScattering = SubSurfaceScatteringData(material, N, L);
-        if (NdotL <= 0.0)
-        {
-            Lo += subSurfaceScattering;
-            continue;
-        }
+      //  vec3 sheenContrib = SheenData(material, material.Normal, V);
+     //   vec3 subSurfaceScattering = SubSurfaceScatteringData(material, N, L);
+//        if (NdotL <= 0.0)
+//        {
+//            Lo += subSurfaceScattering;
+//            continue;
+//        }
 
-        Lo += (kD * material.Albedo / PI + spec) * radiance * NdotL + sheenContrib * radiance * NdotL; + subSurfaceScattering;
+        Lo += (kD * material.Albedo / PI + spec) * radiance * NdotL * radiance * NdotL;
     }
     return Lo;
 }
@@ -351,18 +365,23 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N, vec3 R, Material material)
     vec2 brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N, V), 0.0), material.Roughness)).rg;
     vec3 specularIBL = prefiltered * (F * brdf.x + brdf.y) * IBL_EXPOSURE;
 
-    vec3 sheenIBL = SheenData(material, N, V) * irradiance * IBL_EXPOSURE;
+    //vec3 sheenIBL = SheenData(material, N, V) * irradiance * IBL_EXPOSURE;
 
     float subsurfaceStrength = 0.7f;
-    vec3  SssIBL = subsurfaceStrength * irradiance * (material.Albedo * material.SSSColor);
-    vec3 ambient = (kD * diffuseIBL + specularIBL + sheenIBL) * material.AmbientOcclusion;
+    vec3 SssIBL = material.SSSWeight * irradiance * material.SSSColor * IBL_EXPOSURE;
+    vec3 ambient = (kD * diffuseIBL + specularIBL) * material.AmbientOcclusion;
     return max(ambient, vec3(0.02) * material.Albedo);
 }
 
 vec3 ReconstructWorldPos(float depth)
 {
-    vec2 uv = TexCoords; // same UV as sky
-    vec4 clip = vec4(uv * 2.0 - 1.0, depth, 1.0); // ZO, GLM_FORCE_DEPTH_ZERO_TO_ONE
+    vec2 resolution = 1.0 / sceneDataBuffer.InvertResolution;
+    vec2 uv = gl_FragCoord.xy * sceneDataBuffer.InvertResolution; // pixel center
+
+    vec2 ndc = uv * 2.0 - 1.0;
+    ndc.y = -ndc.y; // fullscreen tri vs glm::ortho(0, W, H, 0) in Vulkan
+
+    vec4 clip = vec4(ndc, depth, 1.0); // only if GLM_FORCE_DEPTH_ZERO_TO_ONE is on
     vec4 view = sceneDataBuffer.InverseOrthoProjection * clip;
     view.xyz /= max(view.w, 1e-6);
     return (sceneDataBuffer.InverseOrthoView * vec4(view.xyz, 1.0)).xyz;
@@ -372,7 +391,7 @@ vec3 SheenData(Material material, vec3 N, vec3 V)
 {
     float NdotV = max(dot(N, V), 0.0);
     float sheenFresnel = pow(1.0 - NdotV, 2.0);
-    return material.SheenColor * 0.08 * sheenFresnel * (1.0 - material.Metallic);
+    return material.SheenColor * material.SheenWeight * 0.08 * sheenFresnel * (1.0 - material.Metallic);
 }
 
 vec3 SubSurfaceScatteringData(Material material, vec3 N, vec3 L)

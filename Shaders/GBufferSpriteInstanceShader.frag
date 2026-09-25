@@ -218,7 +218,7 @@ void main()
     vec4  mroDataMap                            = textureLod(TextureMap[material.MROTextureId],                                          finalUV,  0.0).rgba;   
     vec4  clearCoatColorDataMap                 = textureLod(TextureMap[material.ClearCoatOrTranslucentTextureId],                       finalUV,  0.0).rgba;
     vec4  sssDataMap                            = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId],  finalUV,  0.0).rgba;
-    vec4  sssPropertiesDataMap                  = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
+    vec4  sssPropertiesDataMap                  = textureLod(TextureMap[material.SubSurfaceScatteringPropertiesTextureId],               finalUV,  0.0).rgba;
     vec4  sheenDataMap                          = textureLod(TextureMap[material.SheenTextureId],                                        finalUV,  0.0).rgba;
     vec4  anisotropyDataMap                     = textureLod(TextureMap[material.AnisotropyTextureId],                                   finalUV,  0.0).rgba;
     vec4  emissionDataMap                       = textureLod(TextureMap[material.EmissionTextureId],                                     finalUV,  0.0);
