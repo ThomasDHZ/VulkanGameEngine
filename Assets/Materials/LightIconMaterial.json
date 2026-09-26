@@ -129,7 +129,7 @@
     "TextureType": 4,
     "TextureUsageType": 9
   },
-  "FeatureMask": 0,
+  "FeatureMask": 256,
   "IOR": 1.4500000476837158,
   "MROTexture": {
     "ImageType": 1,

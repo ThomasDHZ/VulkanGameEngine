@@ -3,7 +3,7 @@
   "MaterialId": "{6A222A9B-1AAE-4B44-BDF8-2069F88190C1}",
   "TextureSetResolution": [ 128, 128 ],
   "ShadingModel": 0,
-  "FeatureMask": 0,
+  "FeatureMask": 256,
   "ClearcoatTint": [ 1.0, 1.0, 1.0 ],
   "SSSProfile": 0.0,
   "SSSWeight": 0.0,

@@ -76,6 +76,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImportMaterial", "ImportMaterial", "{0E442112-3B0F-4DB3-B0D9-47D168D921CB}"
 	ProjectSection(SolutionItems) = preProject
 		Assets\ImportMaterials\AnimeGirlImportMaterial.json = Assets\ImportMaterials\AnimeGirlImportMaterial.json
+		Assets\ImportMaterials\LightIconImportMaterial.json = Assets\ImportMaterials\LightIconImportMaterial.json
 		Assets\ImportMaterials\MegaManImportMaterial.json = Assets\ImportMaterials\MegaManImportMaterial.json
 		Assets\ImportMaterials\MegaManShotImportMaterial.json = Assets\ImportMaterials\MegaManShotImportMaterial.json
 		Assets\ImportMaterials\SparkManTileSetImportMaterial.json = Assets\ImportMaterials\SparkManTileSetImportMaterial.json

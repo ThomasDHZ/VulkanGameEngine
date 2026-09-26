@@ -152,8 +152,8 @@ ImportMaterial MapToMaterial()
     m.Albedo = albedoSamp.rgb;
     m.Alpha  = SampleOr(m.AlphaMap, vec4(albedoSamp.a)).r;
 
-    vec3 nrm = SampleOr(m.NormalMap, vec4(0.5, 0.5, 1.0, 1.0)).rgb;
-    m.NormalTS = normalize(nrm * 2.0 - 1.0);
+    vec3 n = SampleOr(m.NormalMap, vec4(0.5, 0.5, 1.0, 1.0)).rgb * 2.0 - 1.0;
+    m.NormalTS = normalize(n);
 
     m.Height           = SampleOr(m.HeightMap,           vec4(m.Height)).r;
     m.Metallic         = SampleOr(m.MetallicMap,         vec4(m.Metallic)).r;
@@ -212,10 +212,14 @@ void main()
     if (m.Anisotropy         > kFeatureEps) mask |= FEAT_ANISO;
     if (m.ThinFilmWeight     > kFeatureEps) mask |= FEAT_FILM;
 
-    vec2 encN = OctahedronEncode(m.NormalTS);
+    vec3 n = SampleOr(m.NormalMap, vec4(0.5, 0.5, 1.0, 1.0)).rgb * 2.0 - 1.0;
+    n = normalize(n);
+
+    vec2 enc = OctahedronEncode(n) * 0.5 + 0.5;
+    float height = SampleOr(m.HeightMap, vec4(m.Height)).r;
 
     outAlbedoTexture     = vec4(m.Albedo, m.Alpha);
-    outNormalTexture     = vec4(encN * 0.5 + 0.5, m.NormalStrength, m.Height);
+    outNormalTexture = vec4(enc, clamp(m.NormalStrength, 0.0, 1.0), height);
     outMROTexture        = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
     outEmissionTexture   = vec4(m.Emission, m.EmissionIntensity);
     if (materialBaker.MaterialBakerSubPassIndex == int(BAKE_CORE))

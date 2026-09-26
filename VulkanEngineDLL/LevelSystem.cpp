@@ -85,16 +85,6 @@ void LevelSystem::Update(const float& deltaTime)
     const Camera& persp = *PerspectiveCamera;
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    //sceneDataBuffer.OrthoProjection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
-    //sceneDataBuffer.OrthoView = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
-    //sceneDataBuffer.InverseOrthoProjection = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix);
-    //sceneDataBuffer.InverseOrthoView = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix);
-    //sceneDataBuffer.InversePerspectiveProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
-    //sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
-    //sceneDataBuffer.PerspectiveCameraPosition = PerspectiveCamera->Position;
-    //sceneDataBuffer.PerspectiveViewDirection = PerspectiveCamera->Front;
-    //sceneDataBuffer.InvertResolution = glm::vec2(1.0f / configSystem.RenderResolution.x, 1.0f / configSystem.RenderResolution.y);
-
     sceneDataBuffer.OrthoProjection = ortho.ProjectionMatrix;
     sceneDataBuffer.OrthoView = ortho.ViewMatrix;
     sceneDataBuffer.InverseOrthoProjection = glm::inverse(ortho.ProjectionMatrix);

@@ -11,9 +11,9 @@ MeshProperitiesBuffer GetMesh(uint index)
     uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
     mesh.MaterialIndex = bindlessBuffer.Data[baseByteLocation++];
     mesh.MeshTransform = mat4(
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),  uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
     return mesh;
 }
