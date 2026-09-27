@@ -9,7 +9,6 @@
 #include <stb/stb_image.h> 
 #include <stb/stb_image_write.h>
 #include "JsonStruct.h"
-#include <imgui/backends/imgui_impl_vulkan.h>
 #include "MemoryPoolSystem.h"
 #include "MeshSystem.h"
 #include <lodepng.h>
@@ -346,7 +345,7 @@ const bool TextureSystem::CubeMapTextureExists(const TextureGuid& textureGuid) c
 	return it != CubeMapTextureList.end();
 }
 
-void TextureSystem::GenerateTexture(VkGuid& renderPassId)
+void TextureSystem::GenerateTexture(VkGuid& renderPassId, Vector<PushConstantUpdateRule>* pushConstantUpdates)
 {
 	const VulkanRenderPass renderPass = renderSystem.FindRenderPass(renderPassId);
 	const VulkanSubPass subPass = renderPass.SubPassList().front().front();
@@ -369,7 +368,7 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId)
 			.RenderPassGuid = renderPass.RenderPassId(),
 			.PipelinePackageGuid = subPass.PipelinePackageId,
 			.PushConstant = subPass.ShaderPushConstant,
-			.DrawMeshList = subPass.MeshType == MeshTypeEnum::kMesh_StaticMesh ? meshSystem.DrawMesh(subPass.MeshType) : Vector<MeshDrawMessage>(),
+			.PushConstantUpdateRules = pushConstantUpdates == nullptr ? subPass.PushConstantUpdates : *pushConstantUpdates,
 			.RenderPassInputs = subPass.InputTextureList,
 			.RenderPassOutputs = subPass.OutputTextureList,
 			.OffScreenRenderPass = subPass.OffScreenFrameBuffer

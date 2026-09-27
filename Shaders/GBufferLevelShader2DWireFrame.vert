@@ -8,50 +8,59 @@
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 
-layout(std430, binding = 0)  buffer SceneDataBuffer 
-{ 	uint HDRMapIndex;
-	uint FrameBufferIndex;
-	uint BRDFMapId;
-	uint CubeMapId;
-	uint IrradianceMapId;
-	uint PrefilterMapId;
-	mat4  Projection;
-	mat4  View;
-	mat4  InverseProjection;
-	mat4  InverseView;
-	vec3  CameraPosition;
-	vec3  ViewDirection;
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+   uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+    uint _padIds0;
+    uint _padIds1;
+
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
+
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
     vec2  InvertResolution;
-	float Time;
-	uint  FrameIndex;
-}sceneDataBuffer;
+    vec2  _padEnd;
+} sceneDataBuffer;
+
 layout(binding = 1)  buffer BindlessBuffer 
 { 
-    uint64_t MeshOffset;     
+    uint64_t MeshOffset;
     uint MeshCount;
-    uint MeshSize;   
-    uint64_t MaterialOffset; 
+    uint MeshSize;
+    uint64_t MaterialOffset;
     uint MaterialCount;
-    uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
+    uint MaterialSize;
+    uint64_t DirectionalLightOffset;
     uint DirectionalLightCount;
-    uint DirectionalLightSize;   
-    uint64_t PointLightOffset; 
+    uint DirectionalLightSize;
+    uint64_t PointLightOffset;
     uint PointLightCount;
-    uint PointLightSize;     
+    uint PointLightSize;
     uint64_t Texture2DOffset;
-	uint Texture2DCount;
-	uint Texture2DSize;
-	uint64_t Texture3DOffset;
-	uint Texture3DCount;
-	uint Texture3DSize;
-	uint64_t TextureCubeMapOffset;
-	uint TextureCubeMapCount;
-	uint TextureCubeMapSize;
+    uint Texture2DCount;
+    uint Texture2DSize;
+    uint64_t Texture3DOffset;
+    uint Texture3DCount;
+    uint Texture3DSize;
+    uint64_t TextureCubeMapOffset;
+    uint TextureCubeMapCount;
+    uint TextureCubeMapSize;
     uint64_t SpriteInstanceOffset;
-	uint SpriteInstanceCount;
+    uint SpriteInstanceCount;
     uint SpriteInstanceSize;
-    uint Data[]; 
+    uint Data[];
 } bindlessBuffer;
 layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
@@ -88,13 +97,12 @@ vec4 SampleTexture(uint textureIndex, vec2 uv)
 void main()
 {
     MeshProperitiesBuffer mesh = GetMesh(sceneData.MeshBufferIndex);
-    PackedMaterial material = GetMaterial(mesh.MaterialIndex);
 
-    PS_Position = vec3(mesh.MeshTransform * vec4(VS_Position.xy, 0.0f, 1.0f));
-	PS_UV = VS_UV.xy;
+    vec4 world = mesh.MeshTransform * vec4(VS_Position.xy, 0.0, 1.0);
+    PS_Position = world.xyz;
+    PS_UV       = VS_UV;
 
-    gl_Position = sceneDataBuffer.Projection * 
-                  sceneDataBuffer.View *  
-                  mesh.MeshTransform *
-                  vec4(VS_Position.xy, 0.0f, 1.0f);
+    gl_Position = sceneDataBuffer.OrthoProjection *
+                  sceneDataBuffer.OrthoView *
+                  world;
 }

@@ -6,6 +6,7 @@
 #include "enum.h"
 #include "FileSystem.h"
 #include <vk_mem_alloc.h>
+#include "VulkanRenderPass.h"
 
 
 struct TextureLoader
@@ -72,7 +73,7 @@ public:
 
     Texture                  LoadTexture(const String& texturePath);
     Texture                  LoadTexture(const TextureLoader& textureLoader);
-    void                     GenerateTexture(VkGuid& renderPassId);
+    void                     GenerateTexture(VkGuid& renderPassId, Vector<PushConstantUpdateRule>* pushConstantUpdates = nullptr);
 
     Texture                  FindTexture(const VkGuid& textureId);
     Texture                  FindTexture3D(const VkGuid& textureId);

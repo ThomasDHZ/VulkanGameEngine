@@ -10,5 +10,9 @@
   "CompilerBuildParams": "--target-env=vulkan1.4 --target-spv=spv1.6",
   "CompiledShaderOutputDirectory": "../Assets/Shaders/",
   "GameScriptLibraryDLL": "../x64/Debug/GameScriptLibraryDLL.dll",
-  "NvidiaTextureTool": "C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe"
+  "NvidiaTextureTool": "C:\\Program Files\\NVIDIA Corporation\\NVIDIA Texture Tools\\nvtt_export.exe",
+  "BakerImportMaterialPath": "ImportMaterials\\",
+  "BakerExportMaterialPath": "Materials\\",
+  "BakerImportTexturePath": "ImportTextures\\",
+  "BakerExportTexturePath": "Textures\\"
 }

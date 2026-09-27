@@ -1,0 +1,353 @@
+{
+  "AlbedoTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 146,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_AlbedoTexture.ktx2"
+    ],
+    "TextureId": "{CCB71C5E-86BA-419D-831E-08930410B08C}",
+    "TextureType": 1,
+    "TextureUsageType": 9
+  },
+  "AlphaCutOff": 0.10000000149011612,
+  "AnisotropyTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_AnisotropyTexture.ktx2"
+    ],
+    "TextureId": "{DD4B1F9D-555D-4FDF-8128-40A7DA623FD0}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "ClearCoatTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_ClearCoatTexture.ktx2"
+    ],
+    "TextureId": "{182B966D-2493-4CA4-9120-55A3A2706870}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "ClearcoatTint": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "EmissionTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 143,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_EmissionTexture.ktx2"
+    ],
+    "TextureId": "{7CDAC730-D676-4469-B853-3E6B274FDC97}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "FeatureMask": 0,
+  "IOR": 1.4500000476837158,
+  "MROTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_MROTexture.ktx2"
+    ],
+    "TextureId": "{39A9F29D-9687-49C2-A502-E515EF56C08D}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "MaterialId": "{8B29C645-4E30-4DD7-AC1B-0735D4F86DFE}",
+  "NormalTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_NormalTexture.ktx2"
+    ],
+    "TextureId": "{D3B793F0-B53D-4B81-97B3-ADFC4DA74753}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "ShadingModel": 0,
+  "SheenTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_SheenTexture.ktx2"
+    ],
+    "TextureId": "{6B330400-3D34-439B-9C68-4234444DDACB}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "SubSurfaceScatteringPropertiesTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_SubSurfaceScatteringPropertiesTexture.ktx2"
+    ],
+    "TextureId": "{F31A4E44-C9E1-43DA-9619-6118DDAB821F}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "SubSurfaceScatteringTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_SubSurfaceScatteringTexture.ktx2"
+    ],
+    "TextureId": "{EB0D3328-D9C1-4E8C-B476-449CF3C8D948}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "TranslucentPropertiesTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_TranslucentPropertiesTexture.ktx2"
+    ],
+    "TextureId": "{CE70F359-E212-40D5-B7E8-390AD3053544}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "TranslucentTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\MegaManShotMaterial_TranslucentTexture.ktx2"
+    ],
+    "TextureId": "{AA8007E4-3B0A-4131-9BD3-89CAE9658FED}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  }
+}

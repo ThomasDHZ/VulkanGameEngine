@@ -24,7 +24,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     for (auto& texture     : json["LoadTextures"])    textureSystem.LoadTexture(texture);
     for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadTexture(ktxTexture);
-    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<std::string>());
+    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<String>());
     for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
     for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
 
@@ -81,16 +81,21 @@ void LevelSystem::Update(const float& deltaTime)
     Camera_UpdateOrthographicPixelPerfect(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex]);
     Camera_PerspectiveUpdate(*PerspectiveCamera);
 
+    const Camera& ortho = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex];
+    const Camera& persp = *PerspectiveCamera;
+
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.OrthoProjection = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix;
-    sceneDataBuffer.OrthoView = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix;
-    sceneDataBuffer.InverseOrthoProjection = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ProjectionMatrix);
-    sceneDataBuffer.InverseOrthoView = glm::inverse(cameraSystem.CameraList[cameraSystem.ActiveCameraIndex].ViewMatrix);
-    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(PerspectiveCamera->ProjectionMatrix);
-    sceneDataBuffer.InversePerspectiveView = glm::inverse(PerspectiveCamera->ViewMatrix);
-    sceneDataBuffer.PerspectiveCameraPosition = PerspectiveCamera->Position;
-    sceneDataBuffer.PerspectiveViewDirection = PerspectiveCamera->Front;
-    sceneDataBuffer.InvertResolution = glm::vec2(1.0f / configSystem.RenderResolution.x, 1.0f / configSystem.RenderResolution.y);
+    sceneDataBuffer.OrthoProjection = ortho.ProjectionMatrix;
+    sceneDataBuffer.OrthoView = ortho.ViewMatrix;
+    sceneDataBuffer.InverseOrthoProjection = glm::inverse(ortho.ProjectionMatrix);
+    sceneDataBuffer.InverseOrthoView = glm::inverse(ortho.ViewMatrix);
+
+    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(persp.ProjectionMatrix);
+    sceneDataBuffer.InversePerspectiveView = glm::inverse(persp.ViewMatrix);
+    sceneDataBuffer.PerspectiveCameraPosition = persp.Position;
+    sceneDataBuffer.PerspectiveViewDirection = persp.Front;
+
+    sceneDataBuffer.InvertResolution = vec2(1.0f / (float)vulkan.RenderPassResolution().x, 1.0f / (float)vulkan.RenderPassResolution().y);
 }
 
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
@@ -121,6 +126,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                         .RenderPassGuid = renderPassGuid,
                         .PipelinePackageGuid = subPass.PipelinePackageId,
                         .PushConstant = subPass.ShaderPushConstant,
+                        .PushConstantUpdateRules = subPass.PushConstantUpdates,
                         .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
@@ -228,7 +234,7 @@ VkGuid LevelSystem::LoadTileSetVRAM(const char* tileSetPath)
     }
 
     const Material& material = materialSystem.FindMaterial(materialId);
-    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoDataId);
+    const Texture& tileSetTexture = textureSystem.FindTexture(material.AlbedoTextureId);
 
     LevelTileSetMap[tileSetId] = LoadTileSetVRAM(tileSetPath, material, tileSetTexture);
     LoadTileSets(tileSetPath, LevelTileSetMap[tileSetId]);

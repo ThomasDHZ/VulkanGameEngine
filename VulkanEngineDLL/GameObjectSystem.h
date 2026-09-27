@@ -9,7 +9,6 @@
 #include "nethost.h"
 #include "enum.h"
 #include <InputEnum.h>
-#include <glfw3.h>
 #include <GameController.h>
 #include "../VulkanEngineInterop/DLL.h"
 

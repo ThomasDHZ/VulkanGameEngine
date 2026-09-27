@@ -21,8 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Levels", "Levels", "{23E8B8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{4CCF9A80-6215-4938-8BF7-38F42B25CDFB}"
 	ProjectSection(SolutionItems) = preProject
+		Assets\Materials\AnimeGirlMaterial.json = Assets\Materials\AnimeGirlMaterial.json
+		Assets\Materials\HDRIMaterial.json = Assets\Materials\HDRIMaterial.json
 		Assets\Materials\LavaCubeMapMaterial.json = Assets\Materials\LavaCubeMapMaterial.json
 		Assets\Materials\LightIconMaterial.json = Assets\Materials\LightIconMaterial.json
+		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
 		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
 	EndProjectSection
 EndProject
@@ -73,6 +76,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImportMaterial", "ImportMaterial", "{0E442112-3B0F-4DB3-B0D9-47D168D921CB}"
 	ProjectSection(SolutionItems) = preProject
 		Assets\ImportMaterials\AnimeGirlImportMaterial.json = Assets\ImportMaterials\AnimeGirlImportMaterial.json
+		Assets\ImportMaterials\LightIconImportMaterial.json = Assets\ImportMaterials\LightIconImportMaterial.json
 		Assets\ImportMaterials\MegaManImportMaterial.json = Assets\ImportMaterials\MegaManImportMaterial.json
 		Assets\ImportMaterials\MegaManShotImportMaterial.json = Assets\ImportMaterials\MegaManShotImportMaterial.json
 		Assets\ImportMaterials\SparkManTileSetImportMaterial.json = Assets\ImportMaterials\SparkManTileSetImportMaterial.json
@@ -109,10 +113,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameShaders", "GameShaders"
 		Shaders\GaussianBlurShader.vert = Shaders\GaussianBlurShader.vert
 		Shaders\GBufferLevelShader2D.frag = Shaders\GBufferLevelShader2D.frag
 		Shaders\GBufferLevelShader2D.vert = Shaders\GBufferLevelShader2D.vert
+		Shaders\GBufferLevelShader2DWireFrame.frag = Shaders\GBufferLevelShader2DWireFrame.frag
+		Shaders\GBufferLevelShader2DWireFrame.vert = Shaders\GBufferLevelShader2DWireFrame.vert
 		Shaders\GBufferLightingShader.frag = Shaders\GBufferLightingShader.frag
 		Shaders\GBufferLightingShader.vert = Shaders\GBufferLightingShader.vert
+		Shaders\GBufferLightingShaderWireFrame.frag = Shaders\GBufferLightingShaderWireFrame.frag
+		Shaders\GBufferLightingShaderWireFrame.vert = Shaders\GBufferLightingShaderWireFrame.vert
 		Shaders\GBufferSpriteInstanceShader.frag = Shaders\GBufferSpriteInstanceShader.frag
 		Shaders\GBufferSpriteInstanceShader.vert = Shaders\GBufferSpriteInstanceShader.vert
+		Shaders\GBufferSpriteInstanceShaderWireFrame.frag = Shaders\GBufferSpriteInstanceShaderWireFrame.frag
+		Shaders\GBufferSpriteInstanceShaderWireFrame.vert = Shaders\GBufferSpriteInstanceShaderWireFrame.vert
 		Shaders\HdrShader.frag = Shaders\HdrShader.frag
 		Shaders\HdrShader.vert = Shaders\HdrShader.vert
 		Shaders\IrradianceShader.frag = Shaders\IrradianceShader.frag
@@ -217,6 +227,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanCS", "..\VulkanCS\VulkanCS\VulkanCS.csproj", "{BD95CC9F-3D89-E7B6-6B93-F04B5D7E5E7D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VulkanGameEngineLevelEditor", "..\VulkanGameEngineLevelEditor\VulkanGameEngineLevelEditor\VulkanGameEngineLevelEditor.csproj", "{2E35621A-9CE8-FE7B-686A-F45A8D6FC37A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{27B62C4A-F1F6-4546-BC4F-C8AE19A27754} = {27B62C4A-F1F6-4546-BC4F-C8AE19A27754}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaterialBakerDLL", "..\VulkanGameEngineLevelEditor\MaterialBakerDLL\MaterialBakerDLL.vcxproj", "{690C7396-C308-4B1D-85AB-1A82EE9774CB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{526BFF96-6C33-482D-9BEC-29A6D553F16A} = {526BFF96-6C33-482D-9BEC-29A6D553F16A}
+		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -336,6 +355,18 @@ Global
 		{2E35621A-9CE8-FE7B-686A-F45A8D6FC37A}.Release|x64.Build.0 = Release|Any CPU
 		{2E35621A-9CE8-FE7B-686A-F45A8D6FC37A}.Release|x86.ActiveCfg = Release|Any CPU
 		{2E35621A-9CE8-FE7B-686A-F45A8D6FC37A}.Release|x86.Build.0 = Release|Any CPU
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Debug|Any CPU.Build.0 = Debug|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Debug|x64.ActiveCfg = Debug|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Debug|x64.Build.0 = Debug|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Debug|x86.ActiveCfg = Debug|Win32
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Debug|x86.Build.0 = Debug|Win32
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Release|Any CPU.ActiveCfg = Release|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Release|Any CPU.Build.0 = Release|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Release|x64.ActiveCfg = Release|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Release|x64.Build.0 = Release|x64
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Release|x86.ActiveCfg = Release|Win32
+		{690C7396-C308-4B1D-85AB-1A82EE9774CB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

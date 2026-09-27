@@ -145,7 +145,6 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     }
     GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
 
-    if (json.contains("GameObjectMaterial")) materialSystem.LoadMaterial(json["GameObjectMaterial"]);
     if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
     if (json.contains("GameObjectDLLType"))
     {

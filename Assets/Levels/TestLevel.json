@@ -6,8 +6,10 @@
     "TextureLoader/HDRITexture.json"
   ],
   "LoadMaterials": [
-    "Materials/SparkManTileSetMaterial.json",
-    "Materials/LavaCubeMapMaterial.json"
+    "Materials/AnimeGirlMaterial.json",
+    "Materials/MegaManShotMaterial.json",
+    "Materials/LightIconMaterial.json",
+    "Materials/SparkManTileSetMaterial.json"
   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
@@ -35,7 +37,6 @@
   ],
   "LoadGameObjects": [
     "GameObjects/TestGameObject.json",
-    "GameObjects/MegaManObject.json",
     "GameObjects/MegaManShotObject.json",
     "GameObjects/DirectionalLightGameObject.json",
     "GameObjects/PointLightGameObject.json"

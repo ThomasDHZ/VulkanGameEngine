@@ -9,11 +9,11 @@ void IblRenderSystem::StartUp(const String& texturePath)
 {
     std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
     _environmentMap                   = fileSystem.LoadJsonFile(texturePath.c_str())["TextureId"].get<VkGuid>();
-    _brdfRenderPassId                 = renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json", memoryPool);
-    _environmentToCubeMapRenderPassId = renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json", memoryPool);
+    _brdfRenderPassId                 = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/BRDFRenderPass.json", memoryPool));
+    _environmentToCubeMapRenderPassId = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/EnvironmentToCubeMapRenderPass.json", memoryPool));
     _irradianceMapRenderPassId        = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/IrradianceRenderPass.json", memoryPool));
     _prefilterMapRenderPassId         = _renderPassDrawList.emplace_back(renderSystem.LoadRenderPass("RenderPass/PrefilterRenderPass.json", memoryPool));
-    textureSystem.GenerateTexture(_brdfRenderPassId);
+   // textureSystem.GenerateTexture(_brdfRenderPassId);
     SetEnvironmentMap(texturePath);
 }
 
@@ -75,7 +75,7 @@ void IblRenderSystem::SetEnvironmentMap(const String& texturePath)
 
         sceneDataBuffer.EnvironmentMapIndex = texture.gpuTextureBufferIndex;
     }
-    textureSystem.GenerateTexture(_environmentToCubeMapRenderPassId);
+ //   textureSystem.GenerateTexture(_environmentToCubeMapRenderPassId);
     _cubeMapId = renderSystem.FindRenderPassAttachmentList(_environmentToCubeMapRenderPassId).front().textureGuid;
     sceneDataBuffer.CubeMapId = renderSystem.FindRenderPassAttachmentList(_environmentToCubeMapRenderPassId).front().gpuTextureBufferIndex;
 }

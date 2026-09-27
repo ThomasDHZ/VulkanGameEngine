@@ -35,7 +35,7 @@ void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
 
 VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
 {
-    VkGuid materialId = VkGuid(json["GameObjectMaterial"]["MaterialId"].get<String>());
+    VkGuid materialId = VkGuid(json["MaterialId"].get<String>());
     nlohmann::json gameObjectSpriteJson = json["GameObjectSprite"];
     VramSpriteGuid vramId = VramSpriteGuid(gameObjectSpriteJson["VramSpriteId"].get<String>().c_str());
     if (SpriteVramExists(vramId))
@@ -44,7 +44,7 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
     }
 
     const Material& material  = materialSystem.FindMaterial(materialId);
-    const Texture& texture    = textureSystem.FindTexture(material.AlbedoDataId);
+    const Texture& texture    = textureSystem.FindTexture(material.AlbedoTextureId);
 
     ivec2 spritePixelSize = ivec2{ gameObjectSpriteJson["SpritePixelSize"][0], gameObjectSpriteJson["SpritePixelSize"][1] };
     ivec2 spriteCells     = ivec2( texture.texture.m_textureSize.x / spritePixelSize.x, texture.texture.m_textureSize.y / spritePixelSize.y);

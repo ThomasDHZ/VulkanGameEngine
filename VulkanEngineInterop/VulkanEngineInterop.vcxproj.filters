@@ -152,5 +152,8 @@
     <ClInclude Include="ToDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

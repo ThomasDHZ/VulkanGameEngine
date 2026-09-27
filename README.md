@@ -1,70 +1,51 @@
 # Vulkan Game Engine
 
-Hybrid **.NET 8 + native C++ Vulkan** runtime: C# for systems, ECS, and tools; native C++ for rendering and hot memory.
+A high-performance, cross-platform game engine built with **.NET 8** and native **C++ Vulkan** rendering.
 
-The C# side loads native DLLs through an explicit interop layer (P/Invoke, ownership rules, memory pools). The desktop editor lives in a sibling repo and hosts this runtime inside WinForms.
+The engine uses a hybrid architecture: high-level systems, ECS, and tools are written in C#, while performance-critical rendering runs in native C++ through custom interop DLLs.
 
-## Screenshots
+## Key Features
 
-C# editor hosting this runtime (object list, embedded viewport, component inspector):
+- **Hybrid .NET 8 + C++ Architecture**  
+  Clean managed/native boundaries with custom interop DLLs. High-level logic in C#, critical paths in native C++.
 
-![Editor hosting the runtime](https://github.com/user-attachments/assets/f01fb2c7-f7ed-456c-acf6-230501243db8)
+- **Entity Component System (ECS)**  
+  Implemented in C# using reflection for dynamic component management.
 
-Point lights / HDRI driven from the C# property panel:
+- **Cross-Platform Support**  
+  - Windows  
+  - Linux (Ubuntu) via CMake + Ninja  
+  - Android (Vulkan + Android NDK)
 
-![Lighting from the editor](https://github.com/user-attachments/assets/1b533940-0f0c-461e-a481-b1fc21c60a0d)
+- **Rendering**  
+  - Custom C# Vulkan bindings  
+  - Physically Based Rendering (PBR) pipelines  
+  - Sprite-based lighting (current focus)  
+  - Automated material baker with NVIDIA texture compression
 
-Full editor: [VulkanGameEngineLevelEditor](https://github.com/ThomasDHZ/VulkanGameEngineLevelEditor)
+- **Performance**  
+  - Memory pooling to reduce GC pressure  
+  - Efficient C#/C++ interop layer
 
-## Architecture
+- **Tools**  
+  - Dynamic properties panel (Unity-style inspector)  
+  - Supporting editor systems
 
-```text
-Level editor (C# WinForms)
-  → C# wrappers + ECS / config
-    → ListPtr<> + P/Invoke
-      → native Vulkan runtime + material baker
-```
+## Tech Stack
 
-Core types and the interop boundary: [VulkanEngineCore](https://github.com/ThomasDHZ/VulkanEngineCore)
+- **Managed**: C# / .NET 8, ECS, Reflection
+- **Native**: C++, Vulkan, GLFW
+- **Interop**: Custom DLLs with unsafe code and Marshal
+- **Build**: CMake, Ninja, Visual Studio
+- **Platforms**: Windows, Linux, Android
 
-## Features
-
-- Hybrid .NET 8 + C++ with explicit DLL boundaries
-- ECS on the C# side
-- Memory pooling to cut managed-heap / GC pressure
-- Custom C# Vulkan bindings + native Vulkan renderer
-- PBR path and sprite lighting
-- Material baker (packed textures + JSON)
-- Windows, Linux (CMake + Ninja), Android (NDK)
-
-## Tech stack
-
-| Layer | Tech |
-|---|---|
-| Managed | C# / .NET 8, ECS |
-| Native | C++, Vulkan, GLFW |
-| Interop | Custom DLLs, unsafe, Marshal, ListPtr<> |
-| Build | Visual Studio, CMake, Ninja |
-| Platforms | Windows, Linux, Android |
-
-## Related repos
-
-- [VulkanEngineCore](https://github.com/ThomasDHZ/VulkanEngineCore) — interop + memory core
-- [VulkanGameEngineLevelEditor](https://github.com/ThomasDHZ/VulkanGameEngineLevelEditor) — C# WinForms editor
-- [ListPtr](https://github.com/ThomasDHZ/ListPtr) — dense C# ↔ native buffers
-- [MemoryLeakReporterDemo](https://github.com/ThomasDHZ/MemoryLeakReporterDemo) — leak reports for native DLLs called from C#
-
-## Build
+## Build Instructions
 
 **Windows**  
 Open `VulkanGameEngine.sln` in Visual Studio 2022 or later.
 
-**Linux (Ubuntu)**
-
+**Linux (Ubuntu)**  
 ```bash
 mkdir build && cd build
 cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 ninja
-```
-
-Sibling repos (`VulkanEngineCore`, editor) need to sit next to this tree if you are building the full editor + runtime path.

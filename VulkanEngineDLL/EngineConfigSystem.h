@@ -24,6 +24,10 @@ public:
     const String CompiledShaderOutputDirectory;
     const String GameScriptLibraryDLL;
     const String NvidiaTextureTool;
+    const String BakerImportMaterialPath;
+    const String BakerExportMaterialPath;
+    const String BakerImportTexturePath;
+    const String BakerExportTexturePath;
 #else
     ivec2 WindowResolution;
     String EngineBasePath;

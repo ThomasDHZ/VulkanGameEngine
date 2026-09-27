@@ -4,41 +4,56 @@ MeshProperitiesBuffer GetMesh(uint index)
     if (index >= bindlessBuffer.MeshCount) 
     {
         mesh.MaterialIndex = 0u;
-        mesh.MeshTransform = mat4(0.0);
+        mesh.MeshTransform = mat4(1.0);
         return mesh;
     }
 
     uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
     mesh.MaterialIndex = bindlessBuffer.Data[baseByteLocation++];
     mesh.MeshTransform = mat4(
-        bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++],
-        bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++],
-        bindlessBuffer.Data[baseByteLocation++],  bindlessBuffer.Data[baseByteLocation++], bindlessBuffer.Data[baseByteLocation++], bindlessBuffer.Data[baseByteLocation++],
-        bindlessBuffer.Data[baseByteLocation++], bindlessBuffer.Data[baseByteLocation++], bindlessBuffer.Data[baseByteLocation++], bindlessBuffer.Data[baseByteLocation++]);
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
     return mesh;
 }
 
 PackedMaterial GetMaterial(uint index)
 {
     PackedMaterial mat;
-    mat.AlbedoDataId          = ~0u;
-    mat.NormalDataId          = ~0u;
-    mat.PackedMRODataId       = ~0u;
-    mat.PackedSheenSSSDataId  = ~0u;
-    mat.UnusedDataId          = ~0u;
-    mat.EmissionDataId        = ~0u;
-    if (index >= bindlessBuffer.MaterialCount)
-    {
-        return mat;
-    }
+    mat.AlbedoTextureId                                      = ~0u;
+    mat.NormalTextureId                                      = ~0u;
+    mat.MROTextureId                                         = ~0u;
+    mat.ClearCoatOrTranslucentTextureId                      = ~0u;
+    mat.SubSurfaceScatteringOrTranslucentPropertiesTextureId = ~0u;
+    mat.SubSurfaceScatteringPropertiesTextureId              = ~0u;
+    mat.SheenTextureId                                       = ~0u;
+    mat.AnisotropyTextureId                                  = ~0u;
+    mat.EmissionTextureId                                    = ~0u;
+    mat.ShadingModel                                         = ~0u;
+    mat.FeatureMask                                          = ~0u;
+    mat.ClearcoatTint                                        = vec3(0.0f);
+    mat.IOR                                                  = 0.0f;
+    mat.AlphaCutOff                                          = 0.0f;
+    if (index >= bindlessBuffer.MaterialCount) return mat;
 
-    uint baseByteLocation = (uint(bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MaterialSize / 4));
-    mat.AlbedoDataId          = bindlessBuffer.Data[baseByteLocation++];
-    mat.NormalDataId          = bindlessBuffer.Data[baseByteLocation++];
-    mat.PackedMRODataId       = bindlessBuffer.Data[baseByteLocation++];
-    mat.PackedSheenSSSDataId  = bindlessBuffer.Data[baseByteLocation++];
-    mat.UnusedDataId          = bindlessBuffer.Data[baseByteLocation++];
-    mat.EmissionDataId        = bindlessBuffer.Data[baseByteLocation++];
+    uint offset                                              = (uint(bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4u) + index * (bindlessBuffer.MaterialSize / 4u);
+    mat.AlbedoTextureId                                      = bindlessBuffer.Data[offset++];
+    mat.NormalTextureId                                      = bindlessBuffer.Data[offset++];
+    mat.MROTextureId                                         = bindlessBuffer.Data[offset++];
+    mat.ClearCoatOrTranslucentTextureId                      = bindlessBuffer.Data[offset++];
+    mat.SubSurfaceScatteringOrTranslucentPropertiesTextureId = bindlessBuffer.Data[offset++];
+    mat.SubSurfaceScatteringPropertiesTextureId              = bindlessBuffer.Data[offset++];
+    mat.SheenTextureId                                       = bindlessBuffer.Data[offset++];
+    mat.AnisotropyTextureId                                  = bindlessBuffer.Data[offset++];
+    mat.EmissionTextureId                                    = bindlessBuffer.Data[offset++];
+    mat.TranslucentTextureId                                 = bindlessBuffer.Data[offset++];
+    mat.TranslucentPropertiesTextureId                       = bindlessBuffer.Data[offset++];
+    mat.ShadingModel                                         = bindlessBuffer.Data[offset++];
+    mat.FeatureMask                                          = bindlessBuffer.Data[offset++];
+    mat.ClearcoatTint                                        = vec3(uintBitsToFloat(bindlessBuffer.Data[offset++]), uintBitsToFloat(bindlessBuffer.Data[offset++]), uintBitsToFloat(bindlessBuffer.Data[offset++]));
+    mat.IOR                                                  = uintBitsToFloat(bindlessBuffer.Data[offset++]);
+    mat.AlphaCutOff                                          = uintBitsToFloat(bindlessBuffer.Data[offset++]);
     return mat;
 }
 

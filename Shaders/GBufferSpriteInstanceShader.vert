@@ -39,7 +39,7 @@ layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 
 layout(std430, binding = 0) buffer SceneDataBuffer
 {
-    uint HDRMapInputIndex;
+   uint HDRMapInputIndex;
     uint EnvironmentMapIndex;
     uint BRDFMapId;
     uint CubeMapId;
@@ -65,31 +65,31 @@ layout(std430, binding = 0) buffer SceneDataBuffer
 
 layout(binding = 1)  buffer BindlessBuffer 
 { 
-    uint64_t MeshOffset;     
+    uint64_t MeshOffset;
     uint MeshCount;
-    uint MeshSize;   
-    uint64_t MaterialOffset; 
+    uint MeshSize;
+    uint64_t MaterialOffset;
     uint MaterialCount;
-    uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
+    uint MaterialSize;
+    uint64_t DirectionalLightOffset;
     uint DirectionalLightCount;
-    uint DirectionalLightSize;   
-    uint64_t PointLightOffset; 
+    uint DirectionalLightSize;
+    uint64_t PointLightOffset;
     uint PointLightCount;
-    uint PointLightSize;     
+    uint PointLightSize;
     uint64_t Texture2DOffset;
-	uint Texture2DCount;
-	uint Texture2DSize;
-	uint64_t Texture3DOffset;
-	uint Texture3DCount;
-	uint Texture3DSize;
-	uint64_t TextureCubeMapOffset;
-	uint TextureCubeMapCount;
-	uint TextureCubeMapSize;
+    uint Texture2DCount;
+    uint Texture2DSize;
+    uint64_t Texture3DOffset;
+    uint Texture3DCount;
+    uint Texture3DSize;
+    uint64_t TextureCubeMapOffset;
+    uint TextureCubeMapCount;
+    uint TextureCubeMapSize;
     uint64_t SpriteInstanceOffset;
-	uint SpriteInstanceCount;
+    uint SpriteInstanceCount;
     uint SpriteInstanceSize;
-    uint Data[]; 
+    uint Data[];
 } bindlessBuffer;
 layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];

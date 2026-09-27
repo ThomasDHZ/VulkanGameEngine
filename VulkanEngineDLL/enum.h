@@ -18,6 +18,24 @@ enum GameObjectMemberType
    GameObjectVarBool
 };
 
+enum PushConstantMemberType
+{
+    kPushConstantVarUnknown,
+    kPushConstantVarInt,
+    kPushConstantVarUint,
+    kPushConstantVarFloat,
+    kPushConstantVarIvec2,
+    kPushConstantVarIvec3,
+    kPushConstantVarIvec4,
+    kPushConstantVarVec2,
+    kPushConstantVarVec3,
+    kPushConstantVarVec4,
+    kPushConstantVarMat2,
+    kPushConstantVarMat3,
+    kPushConstantVarMat4,
+    kPushConstantVarBool
+};
+
 enum DescriptorBindingTypeEnum
 {
     kMeshPropertiesDescriptor,

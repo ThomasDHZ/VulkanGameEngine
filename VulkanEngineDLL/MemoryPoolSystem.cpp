@@ -41,7 +41,7 @@ void MemoryPoolSystem::StartUp()
             MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
                 .ActiveCount = 0,
                 .Count = DirectionalLightInitialCapacity,
-                .Size = sizeof(PointLight),
+                .Size = sizeof(DirectionalLight),
                 .IsActive = Vector<byte>(DirectionalLightInitialCapacity, 0x00),
                 .FreeIndices = Vector<uint32>(),
                 .IsDirty = true
@@ -318,13 +318,6 @@ void MemoryPoolSystem::UpdateMemoryPool()
             {
                 vmaFlushAllocation(bufferSystem.VmaAllocatorHandle(), buffer.BufferAllocation(), start, len);
             }
-
-            if (kDirectionalLightBuffer == type ||
-                kPointLightBuffer == type)
-            {
-                int a = 324;
-            }
-            
             sub.IsDirty = false;
         }
     }
