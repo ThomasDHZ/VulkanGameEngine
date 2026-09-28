@@ -264,7 +264,7 @@ void main()
     outEmission   = vec4(m.Emission, 1.0);
     outNormalData = vec4(OctahedronEncode(normalWS) * 0.5 + 0.5, float(m.FeatureMask) / 65535.0, selfShadow);
     outMRO        = vec4(m.Metallic, m.Roughness, m.AO, m.IORNorm);
-    outFeatureA = vec4(m.SheenColor, Pack8bitPair(m.SSSWeight, m.CoatWeight));
-    outFeatureB = vec4(m.SSSColor,   Pack8bitPair(m.Thickness, m.CoatRoughness));
-    outFeatureC = vec4(Pack8bitPair(m.Anisotropy, m.AnisotropyRotation), Pack8bitPair(m.ThinFilmWeight, m.ThinFilmThickness), Pack8bitPair(m.CoatDarkening, m.SSSProfile), Pack8bitPair(m.SheenRoughness, m.SheenWeight));
+    outFeatureA   = vec4(m.SheenColor, Pack8bitPair(m.SSSWeight, m.CoatWeight));
+    outFeatureB   = vec4(m.SSSColor,   Pack8bitPair(m.Thickness, m.CoatRoughness));
+    outFeatureC   = vec4(Pack8bitPair(m.Anisotropy, m.AnisotropyRotation), Pack8bitPair(m.ThinFilmWeight, m.ThinFilmThickness), Pack8bitPair(m.CoatDarkening, m.SSSProfile), Pack8bitPair(m.SheenRoughness, m.SheenWeight));
 }
