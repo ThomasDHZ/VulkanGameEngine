@@ -75,6 +75,24 @@ struct TextureMetadata
     uint ArrayIndex;
 };
 
+struct BakedMaps
+{
+    vec3  Albedo;
+    float Alpha;
+    vec3  Emission;
+    vec3  TangentNormal;
+    float NormalStrength;
+    float Height;
+    float Metallic, Roughness, AO, IORNorm;
+    vec3  SheenColor;
+    float SheenWeight;
+    vec3  SSSColor;
+    float SSSWeight, SSSProfile, Thickness, SheenRoughness;
+    float CoatWeight, CoatRoughness, CoatDarkening;
+    float Anisotropy, AnisotropyRotation, ThinFilmWeight, ThinFilmThickness;
+    uint  FeatureMask;
+};
+
 struct PackedMaterial
 {
     uint AlbedoTextureId;

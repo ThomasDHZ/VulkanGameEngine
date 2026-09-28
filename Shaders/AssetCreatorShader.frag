@@ -51,13 +51,13 @@ layout(push_constant) uniform MaterialBakerRenderPass
 vec2 OctahedronEncode(vec3 normal)
 {
     vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
-    return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
+    return (normal.z < 0.0f) ? (1.0f - abs(f.yx)) * sign(f) : f;
 }
 
 vec4 SampleOr(uint id, vec4 fallback)
 {
     if (id == NO_MAP) return fallback;
-    return textureLod(TextureMap[nonuniformEXT(id)], UV, 0.0);
+    return textureLod(TextureMap[nonuniformEXT(id)], UV, 0.0f);
 }
 
 ImportMaterial GetImportMaterial()
@@ -152,7 +152,7 @@ ImportMaterial MapToMaterial()
     m.Albedo = albedoSamp.rgb;
     m.Alpha  = SampleOr(m.AlphaMap, vec4(albedoSamp.a)).r;
 
-    vec3 n = SampleOr(m.NormalMap, vec4(0.5, 0.5, 1.0, 1.0)).rgb * 2.0 - 1.0;
+    vec3 n = SampleOr(m.NormalMap, vec4(0.5f, 0.5f, 1.0f, 1.0f)).rgb * 2.0f - 1.0f;
     m.NormalTS = normalize(n);
 
     m.Height           = SampleOr(m.HeightMap,           vec4(m.Height)).r;
@@ -160,30 +160,30 @@ ImportMaterial MapToMaterial()
     m.Roughness        = SampleOr(m.RoughnessMap,        vec4(m.Roughness)).r;
     m.AmbientOcclusion = SampleOr(m.AmbientOcclusionMap, vec4(m.AmbientOcclusion)).r;
 
-    m.ClearcoatTint    = SampleOr(m.ClearCoatColorMap,   vec4(m.ClearcoatTint, 1.0)).rgb;
-    m.SheenColor       = SampleOr(m.SheenMap,            vec4(m.SheenColor, 1.0)).rgb;
-    m.SSSColor         = SampleOr(m.SSSColorMap,         vec4(m.SSSColor, 1.0)).rgb;
-    m.AttenuationColor = SampleOr(m.AttenuationColorMap, vec4(m.AttenuationColor, 1.0)).rgb;
+    m.ClearcoatTint    = SampleOr(m.ClearCoatColorMap,   vec4(m.ClearcoatTint, 1.0f)).rgb;
+    m.SheenColor       = SampleOr(m.SheenMap,            vec4(m.SheenColor, 1.0f)).rgb;
+    m.SSSColor         = SampleOr(m.SSSColorMap,         vec4(m.SSSColor, 1.0f)).rgb;
+    m.AttenuationColor = SampleOr(m.AttenuationColorMap, vec4(m.AttenuationColor, 1.0f)).rgb;
 
     vec4 em = SampleOr(m.EmissionMap, vec4(m.Emission, m.EmissionIntensity));
     m.Emission          = em.rgb;
     m.EmissionIntensity = em.a;
 
-    vec4 coatProp = SampleOr(m.ClearCoatPropertiesMap, vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0));
+    vec4 coatProp = SampleOr(m.ClearCoatPropertiesMap, vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0f));
     m.CoatWeight    = coatProp.r;
     m.CoatRoughness = coatProp.g;
     m.CoatDarkening = coatProp.b;
 
-    vec4 sheenProp = SampleOr(m.SheenPropertiesMap, vec4(m.SheenWeight, m.SheenRoughness, 0.0, 1.0));
+    vec4 sheenProp = SampleOr(m.SheenPropertiesMap, vec4(m.SheenWeight, m.SheenRoughness, 0.0f, 1.0f));
     m.SheenWeight    = sheenProp.r;
     m.SheenRoughness = sheenProp.g;
 
-    vec4 sssProp = SampleOr(m.SSSPropertiesMap, vec4(m.SSSWeight, m.SSSProfile, m.Thickness, 1.0));
+    vec4 sssProp = SampleOr(m.SSSPropertiesMap, vec4(m.SSSWeight, m.SSSProfile, m.Thickness, 1.0f));
     m.SSSWeight  = sssProp.r;
     m.SSSProfile = sssProp.g;
     m.Thickness  = sssProp.b;
 
-    vec4 attenProp = SampleOr(m.AttenuationPropertiesMap, vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0));
+    vec4 attenProp = SampleOr(m.AttenuationPropertiesMap, vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0f));
     m.TransmissionWeight  = attenProp.r;
     m.AttenuationDistance = attenProp.b;
     if (m.AttenuationPropertiesMap != NO_MAP) m.Thickness = attenProp.g;
@@ -195,7 +195,7 @@ ImportMaterial MapToMaterial()
     m.ThinFilmThickness  = aniso.a;
 
     m.IOR     = SampleOr(m.IORMap, vec4(m.IOR)).r;
-    m.IORNorm = clamp((m.IOR - 1.0) / 2.0, 0.0, 1.0);
+    m.IORNorm = clamp((m.IOR - 1.0f) / 2.0f, 0.0f, 1.0f);
 
     return m;
 }
@@ -212,28 +212,28 @@ void main()
     if (m.Anisotropy         > kFeatureEps) mask |= FEAT_ANISO;
     if (m.ThinFilmWeight     > kFeatureEps) mask |= FEAT_FILM;
 
-    vec3 n = SampleOr(m.NormalMap, vec4(0.5, 0.5, 1.0, 1.0)).rgb * 2.0 - 1.0;
+    vec3 n = SampleOr(m.NormalMap, vec4(0.5f, 0.5f, 1.0f, 1.0f)).rgb * 2.0f - 1.0f;
     n = normalize(n);
 
-    vec2 enc = OctahedronEncode(n) * 0.5 + 0.5;
+    vec2 enc = OctahedronEncode(n) * 0.5f + 0.5f;
     float height = SampleOr(m.HeightMap, vec4(m.Height)).r;
 
-    outAlbedoTexture     = vec4(m.Albedo, m.Alpha);
-    outNormalTexture = vec4(enc, clamp(m.NormalStrength, 0.0, 1.0), height);
-    outMROTexture        = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
-    outEmissionTexture   = vec4(m.Emission, m.EmissionIntensity);
+    outAlbedoTexture   = vec4(m.Albedo, m.Alpha);
+    outNormalTexture   = vec4(enc, clamp(m.NormalStrength, 0.0, 1.0), height);
+    outMROTexture      = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
+    outEmissionTexture = vec4(m.Emission, m.EmissionIntensity);
     if (materialBaker.MaterialBakerSubPassIndex == int(BAKE_CORE))
     {
-        outClearCoatOrTranslucentTexture = vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0);
-        outSssOrTranslucentPropertiesTexture = vec4(m.SSSColor, m.Thickness);
-        outSheenOrSssPropertiesTexture = vec4(m.SheenColor, m.SheenWeight);
-        outAnisotropyTexture = vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness);
+        outClearCoatOrTranslucentTexture     = vec4(m.CoatWeight, m.CoatRoughness, m.CoatDarkening, 1.0);
+        outSssOrTranslucentPropertiesTexture = vec4(m.SSSColor, 1.0);       
+        outSheenOrSssPropertiesTexture       = vec4(m.SheenColor, m.SheenWeight); 
+        outAnisotropyTexture                 = vec4(m.Anisotropy, m.AnisotropyRotation, m.ThinFilmWeight, m.ThinFilmThickness);
     }
     else
     {
-        outClearCoatOrTranslucentTexture = vec4(m.AttenuationColor, 1.0);
-        outSssOrTranslucentPropertiesTexture =  vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0);
-        outSheenOrSssPropertiesTexture = vec4(m.SheenRoughness, m.SSSWeight, m.SSSProfile, 1.0f);
-        outAnisotropyTexture = vec4(0.0);
+        outClearCoatOrTranslucentTexture     = vec4(m.AttenuationColor, 1.0);
+        outSssOrTranslucentPropertiesTexture = vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0);
+        outSheenOrSssPropertiesTexture       = vec4(m.SSSWeight, m.SSSProfile, m.Thickness, m.SheenRoughness);
+        outAnisotropyTexture                 = vec4(0.0);
     }
 }

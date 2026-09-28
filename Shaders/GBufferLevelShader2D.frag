@@ -132,8 +132,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx)
 
     vec2  prevUV      = currentUV + deltaUV;
     float afterDepth  = height - currentDepth;
-    float beforeDepth = SampleHeight(heightIdx, prevUV + tileOrigin)
-                        - (currentDepth - 1.0 / numLayers);
+    float beforeDepth = SampleHeight(heightIdx, prevUV + tileOrigin) - (currentDepth - 1.0 / numLayers);
     float weight      = afterDepth / (afterDepth - beforeDepth + 1e-5);
     vec2  localUV     = clamp(mix(currentUV, prevUV, weight), 0.0, 1.0);
 
@@ -196,42 +195,84 @@ vec2 Unpack8bitPair(float packed)
     return vec2(high, low);
 }
 
+BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
+{
+    vec4 albedo = texture(TextureMap[p.AlbedoTextureId], uv, -0.5);
+    vec4 nrm    = textureLod(TextureMap[p.NormalTextureId], uv, 0.0);
+    vec4 mro    = textureLod(TextureMap[p.MROTextureId], uv, 0.0);
+    vec4 coat   = textureLod(TextureMap[p.ClearCoatOrTranslucentTextureId], uv, 0.0);
+    vec4 sssCol = textureLod(TextureMap[p.SubSurfaceScatteringOrTranslucentPropertiesTextureId], uv, 0.0);
+    vec4 sssPr  = textureLod(TextureMap[p.SubSurfaceScatteringPropertiesTextureId], uv, 0.0);
+    vec4 sheen  = textureLod(TextureMap[p.SheenTextureId], uv, 0.0);
+    vec4 aniso  = textureLod(TextureMap[p.AnisotropyTextureId], uv, 0.0);
+    vec4 emis   = textureLod(TextureMap[p.EmissionTextureId], uv, 0.0);
+
+    BakedMaps m;
+    m.Albedo = albedo.rgb;
+    m.Alpha  = albedo.a;
+    m.Emission = emis.rgb * emis.a;
+
+    m.TangentNormal  = OctahedronDecode(nrm.xy * 2.0 - 1.0);
+    m.NormalStrength = nrm.b;
+    m.Height         = nrm.a;
+
+    m.Metallic = mro.r;
+    m.Roughness = mro.g;
+    m.AO = mro.b;
+    m.IORNorm = mro.a;
+
+    m.SheenColor     = sheen.rgb;
+    m.SheenWeight    = sheen.a;
+    m.SSSColor       = sssCol.rgb;
+    m.SSSWeight      = sssPr.r;
+    m.SSSProfile     = sssPr.g;
+    m.Thickness      = sssPr.b;
+    m.SheenRoughness = sssPr.a;
+
+    m.CoatWeight     = coat.r;
+    m.CoatRoughness  = coat.g;
+    m.CoatDarkening  = coat.b;
+
+    m.Anisotropy         = aniso.r;
+    m.AnisotropyRotation = aniso.g;
+    m.ThinFilmWeight     = aniso.b;
+    m.ThinFilmThickness  = aniso.a;
+
+    m.FeatureMask = p.FeatureMask;
+    return m;
+}
+
 void main()
 {
-    MeshProperitiesBuffer mesh     = GetMesh(sceneData.MeshBufferIndex);
-    PackedMaterial        material = GetMaterial(mesh.MaterialIndex);
+    MeshProperitiesBuffer mesh           = GetMesh(sceneData.MeshBufferIndex);
+    PackedMaterial        packedMaterial = GetMaterial(mesh.MaterialIndex);
 
     mat3 TBN = CalculateTBN(WorldPos, TexCoords);
     vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV   = ParallaxOcclusionMapping(TexCoords, viewDirTS, material.NormalTextureId);
+    vec2 finalUV   = ParallaxOcclusionMapping(TexCoords, viewDirTS, packedMaterial.NormalTextureId);
 
-    vec4 albedoDataMap         = texture(TextureMap[material.AlbedoTextureId], finalUV, -0.5);
-    vec4 normalDataMap         = textureLod(TextureMap[material.NormalTextureId], finalUV, 0.0);
-    vec4 mroDataMap            = textureLod(TextureMap[material.MROTextureId], finalUV, 0.0);
-    vec4 clearCoatColorDataMap = textureLod(TextureMap[material.ClearCoatOrTranslucentTextureId], finalUV, 0.0);
-    vec4 sssDataMap            = textureLod(TextureMap[material.SubSurfaceScatteringOrTranslucentPropertiesTextureId], finalUV, 0.0);
-    vec4 sssPropertiesDataMap  = textureLod(TextureMap[material.SubSurfaceScatteringPropertiesTextureId], finalUV, 0.0);
-    vec4 sheenDataMap          = textureLod(TextureMap[material.SheenTextureId], finalUV, 0.0);
-    vec4 anisotropyDataMap     = textureLod(TextureMap[material.AnisotropyTextureId], finalUV, 0.0);
-    vec4 emissionDataMap       = textureLod(TextureMap[material.EmissionTextureId], finalUV, 0.0);
-    if (albedoDataMap.a < material.AlphaCutOff) discard;
+    BakedMaps m = UnpackBakedMaterial(packedMaterial, finalUV);
+    if (m.Alpha < packedMaterial.AlphaCutOff) discard;
 
-    vec3 tangentNormal = OctahedronDecode(normalDataMap.xy * 2.0 - 1.0);
-    tangentNormal.xy  *= normalDataMap.b;
-    tangentNormal      = normalize(tangentNormal);
+    vec3 tN = m.TangentNormal;
+    tN.xy *= m.NormalStrength;
+    tN = normalize(tN);
 
-    vec3 normalWS = normalize(TBN * tangentNormal);
+    vec3 normalWS = normalize(TBN * tN);
     vec3 Lws = normalize(-GetDirectionalLight(0).LightDirection);
     vec3 Lts = normalize(transpose(TBN) * Lws);
-    float selfShadow = HeightSelfShadowTiled(finalUV, Lts, material.NormalTextureId, normalDataMap.a);
+    
+    float selfShadow = 1.0f;
+    //if (sceneData.UseHeightMap != 0)
+    selfShadow = HeightSelfShadowTiled(finalUV, Lts, packedMaterial.NormalTextureId, m.Height);
 
     outPosition   = vec4(WorldPos, 1.0);
-    outAlbedo     = vec4(albedoDataMap.rgb, albedoDataMap.a);
-    outNormalData = vec4(OctahedronEncode(normalWS) * 0.5 + 0.5, 0.0, selfShadow);
-    outMRO        = mroDataMap;
-    outFeatureA   = vec4(sheenDataMap.rgb, Pack8bitPair(sheenDataMap.a, clearCoatColorDataMap.r));
-    outFeatureB   = vec4(sssDataMap.rgb,   Pack8bitPair(sssDataMap.a, clearCoatColorDataMap.g));
-    outFeatureC   = vec4(Pack8bitPair(anisotropyDataMap.r, anisotropyDataMap.g), Pack8bitPair(anisotropyDataMap.b, anisotropyDataMap.a), Pack8bitPair(clearCoatColorDataMap.b, sssPropertiesDataMap.g), Pack8bitPair(sssPropertiesDataMap.r, sssPropertiesDataMap.b));
-    outEmission   = vec4(emissionDataMap.rgb * emissionDataMap.a, 1.0);
+    outAlbedo     = vec4(m.Albedo, m.Alpha);
+    outEmission   = vec4(m.Emission, 1.0);
+    outNormalData = vec4(OctahedronEncode(normalWS) * 0.5 + 0.5, float(m.FeatureMask) / 65535.0, selfShadow);
+    outMRO        = vec4(m.Metallic, m.Roughness, m.AO, m.IORNorm);
+    outFeatureA   = vec4(m.SheenColor, Pack8bitPair(m.SSSWeight, m.CoatWeight));
+    outFeatureB   = vec4(m.SSSColor,   Pack8bitPair(m.Thickness, m.CoatRoughness));
+    outFeatureC   = vec4(Pack8bitPair(m.Anisotropy, m.AnisotropyRotation), Pack8bitPair(m.ThinFilmWeight, m.ThinFilmThickness),  Pack8bitPair(m.CoatDarkening, m.SSSProfile), Pack8bitPair(m.SheenRoughness, m.SheenWeight));
 }

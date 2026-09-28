@@ -5,7 +5,7 @@
   "GameObjectComponentList": [
     {
       "ComponentType": 5,
-      "LightColor": [ 1.00, 0.95, 0.90 ],
+      "LightColor": [ 0.50, 0.55, 0.50 ],
       "LightDirection": [ 1.0, 0.345, 0.346 ],
       "LightIntensity": 3.2,
       "ShadowStrength": 0.70,
