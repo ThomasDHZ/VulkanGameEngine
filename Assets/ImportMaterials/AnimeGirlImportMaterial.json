@@ -14,7 +14,7 @@
   "ClearcoatWeight": 0.0,
   "ClearcoatRoughness": 0.08,
   "ClearcoatStrength": 0.0,
-  "CoatDarkening": 1.0,
+  "CoatDarkening": 0.0,
   "SheenColor": [ 1.0, 1.0, 1.0 ],
   "SheenWeight": 0.3,
   "SheenRoughness": 0.55,

@@ -147,12 +147,39 @@ vec2 Unpack8bitPair(float packed)
                 float(combined & 0xFFu) / 255.0);
 }
 
+void AnisoFrame(vec3 N, float rotation, out vec3 T, out vec3 B)
+{
+    vec3 up = abs(N.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    T = normalize(cross(up, N));
+    B = cross(N, T);
+    float a = rotation * 6.2831853;
+    float c = cos(a), s = sin(a);
+    vec3 T2 = normalize(c * T + s * B);
+    B = cross(N, T2);
+    T = T2;
+}
+
+float DistributionGGX_Aniso(vec3 N, vec3 T, vec3 B, vec3 H, float rough, float aniso)
+{
+    float at = max(rough * (1.0 + aniso), 0.001);
+    float ab = max(rough * (1.0 - aniso), 0.001);
+    float ToH = dot(T, H);
+    float BoH = dot(B, H);
+    float NoH = max(dot(N, H), 0.0);
+    float d = ToH * ToH / (at * at) + BoH * BoH / (ab * ab) + NoH * NoH;
+    return 1.0 / max(3.14159265 * at * ab * d * d, 1e-6);
+}
+
+
 Material UnpackMaterial();
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material);
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material);
 vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N, vec3 R, Material material);
 vec3 SheenData(Material material, vec3 N, vec3 V);
 vec3 SubSurfaceScatteringData(Material material, vec3 N, vec3 L);
+vec3 ThinFilm(vec3 spec, Material m, float HdotV);
+vec3 ClearCoat(Material m, vec3 N, vec3 V, vec3 L, vec3 H, vec3 radiance, float NdotL);
+vec3 ReconstructWorldPos(float depth);
 
 void main()
 {
@@ -179,17 +206,10 @@ void main()
     vec3 R  = reflect(-V, normalize(mix(N, V, 0.15)));
     vec3 F0 = mix(vec3(0.04), material.Albedo, material.Metallic);
 //
-    vec3 Lo    = DirectionalLightFunc(F0, V, material) + PointLightFunc(F0, V, material);
-  //   Lo    += DirectionalLightFunc(F0, V, material) + PointLightFunc(F0, V, material);
+    vec3 Lo    = DirectionalLightFunc(F0, V, material);
+     Lo    += PointLightFunc(F0, V, material);
     vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
-////
-//       const DirectionalLightBuffer light = GetDirectionalLight(0);
-//        vec3 L = normalize(-light.LightDirection);
-//        float wrap     = mix(0.25, 0.65, clamp(material.SSSProfile, 0.0, 1.0));
-//          float NdotL    = dot(N, L);
-//    float wrapped  = max(NdotL + wrap, 0.0) / (1.0 + wrap);
-//       float scatter  = wrapped * mix(0.35, 1.0, clamp(material.Thickness, 0.0, 1.0));
-//    scatter       *= material.SSSWeight * (1.0 - material.Metallic);
+
     outColor = vec4(color, 1.0);
     outBloom = vec4(material.Emission + max(Lo - vec3(1.0), vec3(0.0)), 1.0);
 }
@@ -215,7 +235,7 @@ Material UnpackMaterial()
 
     Material m;
     m.Depth            = depthAttachment.r;
-    m.Position         = positionAttachment.xyz;
+    m.Position         = ReconstructWorldPos(m.Depth);
     m.Albedo           = albedoAttachment.rgb;
     m.Metallic         = mroAttachment.r;
     m.Roughness        = mroAttachment.g;
@@ -223,27 +243,28 @@ Material UnpackMaterial()
     m.IOR              = mroAttachment.a * 2.0 + 1.0;
 
     m.Normal       = normalize(OctahedronDecode(normalAttachment.xy * 2.0 - 1.0));
-    m.FeatureMask  = uint(normalAttachment.b * 65535.0 + 0.5);
-    m.SelfShadow   = normalAttachment.a;
     m.Emission     = emissionAttachment.rgb;
 
     m.SheenColor     = featureAAttachment.rgb;
+    m.SheenRoughness = sheenR_sheenW.x;
+    m.SheenWeight    = sheenR_sheenW.y;
 
     m.SSSColor       = featureBAttachment.rgb;
     m.SSSWeight      = sssW_coatW.x;
-    m.CoatWeight     = sssW_coatW.y;
+    m.SSSProfile     = coatD_prof.y;
     m.Thickness      = thick_coatR.x;
+
+    m.CoatWeight     = sssW_coatW.y;
     m.CoatRoughness  = thick_coatR.y;
     m.CoatDarkening  = coatD_prof.x;
-    m.SSSProfile     = coatD_prof.y;
-    m.SheenRoughness = sheenR_sheenW.x;
-    m.SheenWeight    = sheenR_sheenW.y;
 
     m.Anisotropy         = aniso.x;
     m.AnisotropyRotation = aniso.y;
     m.ThinFilmWeight     = film.x;
     m.ThinFilmThickness  = film.y;
 
+    m.FeatureMask  = uint(normalAttachment.b * 65535.0 + 0.5);
+    m.SelfShadow   = normalAttachment.a;
     m.ShadingModel = 0u;
     return m;
 } 
@@ -257,19 +278,25 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
         vec3 L = normalize(-light.LightDirection);
         vec3 H = normalize(V + L);
         vec3 N = material.Normal;
+        vec3 T = vec3(0.0f);
+        vec3 B = vec3(0.0f);
 
         vec3 radiance = light.LightColor * light.LightIntensity * material.SelfShadow;
         float NdotL = max(dot(N, L), 0.0);
         if (NdotL <= 0.0) continue;
 
+        AnisoFrame(N, material.AnisotropyRotation, T, B);
+        //float NDF  = DistributionGGX(N, H, material.Roughness);
+        float NDF = DistributionGGX_Aniso(N, T, B, H, material.Roughness, material.Anisotropy);
         Lo += SubSurfaceScatteringData(material, N, L) * radiance;
 
-        float NdotV = max(dot(N, V), 0.0);
-        float NDF  = DistributionGGX(N, H, material.Roughness);
         float G    = GeometrySmith(N, V, L, material.Roughness);
         vec3  F    = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, material.Roughness);
-        vec3  spec = (NDF * G * F) / max(4.0 * NdotV * NdotL, 1e-4);
         vec3  kD   = (vec3(1.0) - F) * (1.0 - material.Metallic);
+        
+        float NdotV = max(dot(N, V), 0.0);
+        vec3  spec = (NDF * G * F) / max(4.0 * NdotV * NdotL, 1e-4);
+        spec = ThinFilm(spec, material, max(dot(H, V), 0.0));
 
         Lo += SheenData(material, N, V) * radiance * NdotL;
         Lo += (kD * material.Albedo / PI + spec) * radiance * NdotL;
@@ -290,6 +317,8 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         vec3 L = toLight / max(distance, 1e-4);
         vec3 H = normalize(V + L);
         vec3 N = material.Normal;
+        vec3 T = vec3(0.0f);
+        vec3 B = vec3(0.0f);
 
         float atten = 1.0 - clamp(distance / light.LightRadius, 0.0, 1.0);
         atten *= atten;
@@ -298,14 +327,17 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         float NdotL = max(dot(N, L), 0.0);
         if (NdotL <= 0.0) continue;
 
+        AnisoFrame(N, material.AnisotropyRotation, T, B);
+        float NDF = DistributionGGX_Aniso(N, T, B, H, material.Roughness, material.Anisotropy);
         Lo += SubSurfaceScatteringData(material, N, L) * radiance;
 
-        float NdotV = max(dot(material.Normal, V), 0.0);
-        float NDF   = DistributionGGX(material.Normal, H, material.Roughness);
         float G     = GeometrySmith(material.Normal, V, L, material.Roughness);
         vec3  F     = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, material.Roughness);
-        vec3  spec  = (NDF * G * F) / max(4.0 * NdotV * NdotL, 1e-4);
         vec3  kD    = (vec3(1.0) - F) * (1.0 - material.Metallic);
+
+        float NdotV = max(dot(material.Normal, V), 0.0);
+        vec3  spec = (NDF * G * F) / max(4.0 * NdotV * NdotL, 1e-4);
+        spec = ThinFilm(spec, material, max(dot(H, V), 0.0));
          
         Lo += SheenData(material, N, V) * radiance * NdotL;
         Lo += (kD * material.Albedo / PI + spec) * radiance * NdotL;
@@ -327,6 +359,7 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N, vec3 R, Material material)
 
     vec2 brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N, V), 0.0), material.Roughness)).rg;
     vec3 specularIBL = prefiltered * (F * brdf.x + brdf.y) * IBL_EXPOSURE;
+    specularIBL = ThinFilm(specularIBL, material, max(dot(N, V), 0.0));
 
     vec3 ambient = (kD * diffuseIBL + specularIBL) * material.AmbientOcclusion;
     ambient += SheenData(material, N, V) * irradiance * IBL_EXPOSURE * 0.25;
@@ -353,4 +386,34 @@ vec3 SubSurfaceScatteringData(Material material, vec3 N, vec3 L)
     scatter       *= material.SSSWeight * (1.0 - material.Metallic);
 
     return material.Albedo * material.SSSColor * scatter;
+}
+
+vec3 ThinFilm(vec3 spec, Material m, float HdotV)
+{
+   // if (m.ThinFilmWeight < 1e-3) return spec;
+    float t = mix(300.0, 800.0, clamp(m.ThinFilmThickness, 0.0, 1.0));
+    vec3  phase = vec3(t) / vec3(580.0, 550.0, 440.0);
+    vec3  irid  = 0.5 + 0.5 * cos(6.2831853 * phase * HdotV);
+    return mix(spec, spec * irid, m.ThinFilmWeight);
+}
+
+vec3 ClearCoat(Material m, vec3 N, vec3 V, vec3 L, vec3 H, vec3 radiance, float NdotL)
+{
+    if (m.CoatWeight < 1e-3) return vec3(0.0);
+
+    float NdotV = max(dot(N, V), 0.0);
+    float NDF   = DistributionGGX(N, H, max(m.CoatRoughness, 0.04));
+    float G     = GeometrySmith(N, V, L, m.CoatRoughness);
+    vec3  Fc    = fresnelSchlickRoughness(max(dot(H, V), 0.0), vec3(0.04), m.CoatRoughness);
+    vec3  spec  = (NDF * G * Fc) / max(4.0 * NdotV * NdotL, 1e-4);
+    return spec * m.CoatColor * m.CoatWeight * radiance * NdotL;
+}
+
+vec3 ReconstructWorldPos(float depth)
+{
+    vec2 uv  = gl_FragCoord.xy * sceneDataBuffer.InvertResolution;
+    vec2 ndc = uv * 2.0 - 1.0; 
+    vec4 view = sceneDataBuffer.InverseOrthoProjection * vec4(ndc, depth, 1.0);
+    view.xyz /= max(view.w, 1e-6);
+    return (sceneDataBuffer.InverseOrthoView * vec4(view.xyz, 1.0)).xyz;
 }

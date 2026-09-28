@@ -223,6 +223,7 @@ BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
 
     m.SheenColor     = sheen.rgb;
     m.SheenWeight    = sheen.a;
+
     m.SSSColor       = sssCol.rgb;
     m.SSSWeight      = sssPr.r;
     m.SSSProfile     = sssPr.g;
