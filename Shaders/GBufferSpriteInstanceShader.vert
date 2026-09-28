@@ -26,6 +26,9 @@ layout (location = 4) out vec4  PS_Color;
 layout (location = 5) out uint  PS_MaterialId;
 layout (location = 6) out vec4  PS_UVOffset;
 layout (location = 7) out uint  PS_SpriteId;
+layout (location = 8) out vec3  PS_T;
+layout (location = 9) out vec3  PS_B;
+layout (location = 10) out vec3 PS_N;
 
 layout(constant_id = 1)  const uint VertexInputRate = 1;
 layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
@@ -123,6 +126,15 @@ void main()
     }
 
     vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, 0.0, 1.0);
+    
+    vec3 T = normalize((VS_InstanceTransform * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
+    if (VS_FlipSprite.x == 1) T = -T;
+    
+    vec3 B = normalize((VS_InstanceTransform * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+    if (VS_FlipSprite.y == 1) B = -B;
+    
+    vec3 N = normalize(cross(T, B));
+    
     PS_Position = world.xyz;
 	PS_UV = vertex.UV;
     PS_SpriteSize = VS_SpriteSize;
@@ -131,7 +143,9 @@ void main()
 	PS_MaterialId = VS_MaterialId;
 	PS_UVOffset = VS_UVOffset;
     PS_SpriteId = VS_SpriteId;
-
+    PS_T = T;
+    PS_B = B;
+    PS_N = N;
 
     gl_Position = sceneDataBuffer.OrthoProjection *
                   sceneDataBuffer.OrthoView *

@@ -76,6 +76,9 @@ layout(push_constant) uniform Push
 
 layout(location = 0) in vec3 WorldPos;
 layout(location = 1) in vec2 TexCoords;
+layout(location = 2) in vec3  PS_T;
+layout(location = 3) in vec3  PS_B;
+layout(location = 4) in vec3  PS_N;
 
 layout(location = 0) out vec4 outPosition;      // R16G16B16A16_SFLOAT
 layout(location = 1) out vec4 outAlbedo;        // R8G8B8A8_SRGB
@@ -248,7 +251,7 @@ void main()
     MeshProperitiesBuffer mesh           = GetMesh(sceneData.MeshBufferIndex);
     PackedMaterial        packedMaterial = GetMaterial(mesh.MaterialIndex);
 
-    mat3 TBN = CalculateTBN(WorldPos, TexCoords);
+    mat3 TBN = mat3(normalize(PS_T), normalize(PS_B), normalize(PS_N));
     vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV   = ParallaxOcclusionMapping(TexCoords, viewDirTS, packedMaterial.NormalTextureId);
@@ -259,14 +262,10 @@ void main()
     vec3 tN = m.TangentNormal;
     tN.xy *= m.NormalStrength;
     tN = normalize(tN);
-
     vec3 normalWS = normalize(TBN * tN);
-    vec3 Lws = normalize(-GetDirectionalLight(0).LightDirection);
-    vec3 Lts = normalize(transpose(TBN) * Lws);
-    
-    float selfShadow = 1.0f;
-    //if (sceneData.UseHeightMap != 0)
-    selfShadow = HeightSelfShadowTiled(finalUV, Lts, packedMaterial.NormalTextureId, m.Height);
+
+    vec3 Lts = normalize(transpose(TBN) * normalize(-GetDirectionalLight(0).LightDirection));
+    float selfShadow = HeightSelfShadowTiled(finalUV, Lts, packedMaterial.NormalTextureId, m.Height);
 
     outPosition   = vec4(WorldPos, 1.0);
     outAlbedo     = vec4(m.Albedo, m.Alpha);

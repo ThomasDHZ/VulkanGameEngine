@@ -67,14 +67,17 @@ layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
-layout(location = 0) in vec3       WorldPos;
-layout(location = 1) in vec2       PS_UV;
-layout(location = 2) in vec2       PS_SpriteSize;
-layout(location = 3) in flat ivec2 PS_FlipSprite;
-layout(location = 4) in vec4       PS_Color;
-layout(location = 5) in flat uint  PS_MaterialId;
-layout(location = 6) in flat vec4  PS_UVOffset;
-layout(location = 7) in flat uint  PS_SpriteId;
+layout(location = 0)  in vec3       WorldPos;
+layout(location = 1)  in vec2       PS_UV;
+layout(location = 2)  in vec2       PS_SpriteSize;
+layout(location = 3)  in flat ivec2 PS_FlipSprite;
+layout(location = 4)  in vec4       PS_Color;
+layout(location = 5)  in flat uint  PS_MaterialId;
+layout(location = 6)  in flat vec4  PS_UVOffset;
+layout(location = 7)  in flat uint  PS_SpriteId;
+layout(location = 8)  in vec3       PS_T;
+layout(location = 9)  in vec3       PS_B;
+layout(location = 10) in vec3       PS_N;
 
 layout(location = 0) out vec4 outPosition;
 layout(location = 1) out vec4 outAlbedo;
@@ -106,8 +109,7 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx, vec2 minU
     const float minLayers = 16.0;
     const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-
-    vec2 deltaUV = (viewDirTS.xy * sceneData.HeightScale * -1.0) / numLayers;
+    vec2  deltaUV   = (viewDirTS.xy * sceneData.HeightScale * -1.0) / numLayers;
 
     vec2  currentUV    = uv;
     float currentDepth = 0.0;
@@ -132,7 +134,6 @@ vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx, vec2 minU
     vec2  edgeDist   = min(finalUV - minUV, maxUV - finalUV) / spriteSize;
     float edgeFade   = smoothstep(0.0, 0.05, min(edgeDist.x, edgeDist.y));
     finalUV = uv + (finalUV - uv) * edgeFade;
-
     return clamp(finalUV, minUV, maxUV);
 }
 
@@ -153,7 +154,8 @@ float HeightSelfShadow(vec2 uv, vec3 Lts, uint heightIdx, float startH, vec2 min
         if (any(lessThan(p, minUV)) || any(greaterThan(p, maxUV))) break;
 
         float h = SampleHeight(heightIdx, p);
-        if (h > rayH + 0.02) return mix(0.45, 1.0, float(i) / float(steps));
+        if (h > rayH + 0.02)
+            return mix(0.45, 1.0, float(i) / float(steps));
     }
     return 1.0;
 }
@@ -177,8 +179,7 @@ float Pack8bitPair(float high, float low)
 {
     uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
     uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
-    uint combined = (u_high << 8) | u_low;
-    return float(combined) / 65535.0;
+    return float((u_high << 8) | u_low) / 65535.0;
 }
 
 BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
@@ -194,19 +195,16 @@ BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
     vec4 emis   = textureLod(TextureMap[p.EmissionTextureId], uv, 0.0);
 
     BakedMaps m;
-    m.Albedo = albedo.rgb;
-    m.Alpha  = albedo.a;
-    m.Emission = emis.rgb * emis.a;
-
+    m.Albedo         = albedo.rgb;
+    m.Alpha          = albedo.a;
+    m.Emission       = emis.rgb * emis.a;
     m.TangentNormal  = OctahedronDecode(nrm.xy * 2.0 - 1.0);
     m.NormalStrength = nrm.b;
     m.Height         = nrm.a;
-
-    m.Metallic = mro.r;
-    m.Roughness = mro.g;
-    m.AO = mro.b;
-    m.IORNorm = mro.a;
-
+    m.Metallic       = mro.r;
+    m.Roughness      = mro.g;
+    m.AO             = mro.b;
+    m.IORNorm        = mro.a;
     m.SheenColor     = sheen.rgb;
     m.SheenWeight    = sheen.a;
     m.SSSColor       = sssCol.rgb;
@@ -214,16 +212,13 @@ BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
     m.SSSProfile     = sssPr.g;
     m.Thickness      = sssPr.b;
     m.SheenRoughness = sssPr.a;
-
     m.CoatWeight     = coat.r;
     m.CoatRoughness  = coat.g;
     m.CoatDarkening  = coat.b;
-
     m.Anisotropy         = aniso.r;
     m.AnisotropyRotation = aniso.g;
     m.ThinFilmWeight     = aniso.b;
     m.ThinFilmThickness  = aniso.a;
-
     m.FeatureMask = p.FeatureMask;
     return m;
 }
@@ -239,13 +234,10 @@ void main()
     if (PS_FlipSprite.x == 1) UV.x = minUV.x + maxUV.x - UV.x;
     if (PS_FlipSprite.y == 1) UV.y = minUV.y + maxUV.y - UV.y;
 
-    vec3 N = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
-    vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), N));
-    if (dot(T, T) < 1e-6) T = normalize(cross(vec3(1.0, 0.0, 0.0), N));
-    vec3 B = normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
+    mat3 TBN = mat3(normalize(PS_T), normalize(PS_B), normalize(PS_N));
 
-    vec3 viewDirTS = normalize(transpose(TBN) * N);
+    vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
+    vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV   = ParallaxOcclusionMapping(UV, viewDirTS, packedMaterial.NormalTextureId, minUV, maxUV);
 
     BakedMaps m = UnpackBakedMaterial(packedMaterial, finalUV);

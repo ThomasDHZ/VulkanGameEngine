@@ -332,7 +332,6 @@ LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Materia
     return tileSet;
 }
 
-
 void LevelSystem::LoadTileSets(const char* tileSetPath, LevelTileSet& tileSet)
 {
     nlohmann::json json = fileSystem.LoadJsonFile(tileSetPath);
