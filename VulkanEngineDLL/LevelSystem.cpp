@@ -44,7 +44,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     LoadLevelMesh(tileSetId);
 
     std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
-    iblRenderSystem.StartUp("TextureLoader/189_hdrmaps_com_free_4K.json");
+    iblRenderSystem.StartUp("TextureLoader/HDRITexture.json");
     for (auto& renderPass : json["MainRenderPassList"])
     {
         if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));

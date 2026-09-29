@@ -204,7 +204,7 @@ void main()
     vec3  F0  = mix(vec3(F0d), material.Albedo, material.Metallic);
 
     vec3 Lo    = DirectionalLightFunc(F0, V, material);
-    // Lo     += PointLightFunc(F0, V, material);
+   // Lo     += PointLightFunc(F0, V, material);
     vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
 
     outColor = vec4(color, 1.0);
@@ -279,6 +279,8 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
         float NdotL   = max(dot(N, L), 0.0);
 
         Lo += SubSurfaceScatteringData(material, N, L) * radiance;
+        float back = max(-dot(N, L), 0.0);
+        Lo += material.Albedo * material.SSSColor * material.SSSWeight * back * material.Thickness * radiance *exp(-1.0 / max(material.Thickness, 0.05));
 
         if (NdotL <= 0.0) continue;
 
@@ -329,6 +331,9 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         float NdotL   = max(dot(N, L), 0.0);
 
         Lo += SubSurfaceScatteringData(material, N, L) * radiance;
+        float back = max(-dot(N, L), 0.0);
+        Lo += material.Albedo * material.SSSColor * material.SSSWeight * back * material.Thickness * radiance *exp(-1.0 / max(material.Thickness, 0.05));
+
         if (NdotL <= 0.0) continue;
 
         AnisoFrame(N, material.AnisotropyRotation, T, B);
