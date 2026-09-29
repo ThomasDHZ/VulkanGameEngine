@@ -41,6 +41,7 @@
         "MeshType": 1,
         "PipelinePackageId": "9f34ee82-4e8e-4512-816f-acfb8a7ca800",
         "ShaderPushConstant": "prefilterSamplerProperties",
+        "InputAttachmentList": [],
         "InputTextureList": [ "1d68f22f-77a7-4c53-9650-edec72bb6687" ],
         "OutputTextureList": [],
         "OffScreenRenderPass": false

@@ -41,6 +41,7 @@
         "MeshType": 1,
         "PipelinePackageId": "af0105b6-650a-4f4f-8163-ed7fdd9dadc9",
         "ShaderPushConstant": "irradianceShaderConstants",
+        "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false

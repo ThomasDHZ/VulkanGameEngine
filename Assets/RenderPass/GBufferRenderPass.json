@@ -121,6 +121,7 @@
         "MeshType": 1,
         "PipelinePackageId": "4a2850b3-7e58-4fb7-968b-370ba31929b0",
         "ShaderPushConstant": "sceneData",
+        "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false
@@ -129,6 +130,7 @@
         "MeshType": 2,
         "PipelinePackageId": "1027ed19-e1c6-4755-9bb4-005eee58c809",
         "ShaderPushConstant": null,
+        "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false
@@ -139,6 +141,17 @@
         "MeshType": 0,
         "PipelinePackageId": "385c8a12-ece1-4017-86e1-58a301930b3a",
         "ShaderPushConstant": null,
+        "InputAttachmentList": [
+          "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
+          "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
+          "f7084167-9c9f-47bf-b1f6-e6723c20c352",
+          "238a1bae-32af-4076-98aa-a4440bb09dff",
+          "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
+          "30994c6d-772e-4622-b4dd-7f5e6fa475ad",
+          "6452db9d-7601-48c4-9f89-9cba28804789",
+          "f4fa0605-e15a-4d65-8337-869f108deeb3",
+          "d80e3a20-88fb-4a21-87bb-e38d2a214567"
+        ],
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],
@@ -150,6 +163,7 @@
         "MeshType": 0,
         "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
         "ShaderPushConstant": null,
+        "InputAttachmentList": [],
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],
@@ -161,6 +175,10 @@
         "MeshType": 0,
         "PipelinePackageId": "340e9cde-1364-4a6d-a79e-236154900788",
         "ShaderPushConstant": null,
+        "InputAttachmentList": [
+          "c836201c-8413-4185-a37c-3a43d8c9bb67",
+          "f4e743d7-2dbc-4c34-ad54-0ee462e5dad2"
+        ],
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],

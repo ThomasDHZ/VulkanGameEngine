@@ -41,6 +41,7 @@
         "MeshType": 1,
         "PipelinePackageId": "b3a2bad9-306f-498b-80ec-cceff2253a56",
         "ShaderPushConstant": null,
+        "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": false

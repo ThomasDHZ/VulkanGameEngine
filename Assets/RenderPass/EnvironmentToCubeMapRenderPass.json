@@ -42,6 +42,7 @@
         "PipelinePackageId": "1af890da-3ca5-4172-a8e1-5703f74a66b9",
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],
+        "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
         "OffScreenRenderPass": true

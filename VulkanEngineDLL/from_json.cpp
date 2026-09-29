@@ -336,6 +336,7 @@ namespace nlohmann
         j.at("MeshType").get_to(model.MeshType);
         j.at("PipelinePackageId").get_to(model.PipelinePackageId);
         j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
+        j.at("InputAttachmentList").get_to(model.InputAttachmentList);
         j.at("InputTextureList").get_to(model.InputTextureList);
         j.at("OutputTextureList").get_to(model.OutputTextureList);
         j.at("OffScreenRenderPass").get_to(model.OffScreenRenderPass);

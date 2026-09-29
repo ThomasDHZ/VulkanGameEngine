@@ -96,16 +96,21 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
     if (RenderPipelineExists(pipelineLoader.PipelineId)) return pipelineLoader.PipelineId;
 
     Vector<VkDescriptorImageInfo> descriptorSetInfoList;
-    for (auto& attachment : RenderPassMap[renderPassLoader.RenderPassId].AttachmentList())
+    for (const auto& subpass : renderPassLoader.SubPassList[pipelineLoader.SubPassId])
     {
-        descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
-            {
-                .sampler = attachment.m_textureSampler,
-                .imageView = attachment.m_textureViewList.front(),
-                .imageLayout = attachment.m_textureImageLayout
-            });
+        for (const auto& attachmentId : subpass.InputAttachmentList)
+        {
+            const VulkanTexture& texture = RenderPassMap[renderPassLoader.RenderPassId].FindRenderPassAttachment(attachmentId);
+            descriptorSetInfoList.emplace_back(VkDescriptorImageInfo
+                {
+                .sampler = texture.m_textureSampler,
+                .imageView = texture.m_textureViewList.front(),
+                .imageLayout = texture.m_textureImageLayout
+                });
+        }
     }
 
+    pipelineLoader.RenderPassInputTextures = descriptorSetInfoList;
     auto CreateShaderList = [&](VulkanPipelineLoader& pipelineLoader)
         {
             Vector<VulkanShader> shaderList;
