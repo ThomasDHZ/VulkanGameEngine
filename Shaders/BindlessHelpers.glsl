@@ -68,6 +68,7 @@ DirectionalLightBuffer GetDirectionalLight(uint index)
         light.ShadowStrength = 0.0;
         light.ShadowBias     = 0.0;
         light.ShadowSoftness = 0.0;
+        light.LightActive    = 0;
         return light;
     }
 
@@ -78,6 +79,7 @@ DirectionalLightBuffer GetDirectionalLight(uint index)
     light.ShadowStrength = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowBias     = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowSoftness = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightActive    = bindlessBuffer.Data[baseByteLocation++];
     return light;
 }
 
@@ -93,6 +95,7 @@ PointLightBuffer GetPointLight(uint index)
         light.ShadowStrength = 0.0;
         light.ShadowBias     = 0.0;
         light.ShadowSoftness = 0.0;
+        light.LightActive    = 0;
         return light;
     }
 
@@ -104,6 +107,7 @@ PointLightBuffer GetPointLight(uint index)
     light.ShadowStrength = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowBias     = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowSoftness = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightActive    = bindlessBuffer.Data[baseByteLocation++];
     return light;
 }
 

@@ -6,6 +6,7 @@ struct DirectionalLightBuffer
     float ShadowStrength;       
     float ShadowBias;          
     float ShadowSoftness;
+    uint  LightActive;
 };
 
 struct PointLightBuffer
@@ -17,4 +18,5 @@ struct PointLightBuffer
     float ShadowStrength;      
     float ShadowBias;          
     float ShadowSoftness;
+    uint  LightActive;
 };

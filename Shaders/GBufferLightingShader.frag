@@ -265,9 +265,11 @@ Material UnpackMaterial()
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
 {
     vec3 Lo = vec3(0.0);
-    for (uint x = 0; x < 1; ++x)
+    for (uint x = 0; x < bindlessBuffer.DirectionalLightCount; ++x)
     {
         const DirectionalLightBuffer light = GetDirectionalLight(x);
+        if(light.LightActive != 1u) continue;
+
         vec3 L = normalize(-light.LightDirection);
         vec3 H = normalize(V + L);
         vec3 N = material.Normal;
@@ -310,6 +312,8 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
     for (uint x = 0; x < bindlessBuffer.PointLightCount; ++x)
     {
         const PointLightBuffer light = GetPointLight(x);
+        if(light.LightActive != 1u) continue;
+
         vec3  toLight  = light.LightPosition - material.Position;
         float distance = length(toLight);
         if (distance > light.LightRadius) continue;

@@ -82,12 +82,13 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
             DirectionalLight& directionalLight = memoryPoolSystem.UpdateDirectionalLight(directionalLightComponent.DirectionalLightMemoryPoolIndex);
             directionalLight = DirectionalLight
             {
-                .LightColor =     vec3(ctx.Json["LightColor"][0], ctx.Json["LightColor"][1], ctx.Json["LightColor"][2]),
+                .LightColor = vec3(ctx.Json["LightColor"][0], ctx.Json["LightColor"][1], ctx.Json["LightColor"][2]),
                 .LightDirection = vec3(ctx.Json["LightDirection"][0], ctx.Json["LightDirection"][1], ctx.Json["LightDirection"][2]),
                 .LightIntensity = ctx.Json["LightIntensity"],
                 .ShadowStrength = ctx.Json["ShadowStrength"],
-                .ShadowBias =     ctx.Json["ShadowBias"],
+                .ShadowBias = ctx.Json["ShadowBias"],
                 .ShadowSoftness = ctx.Json["ShadowSoftness"],
+                .LightActive = 1
             };
         });
 
@@ -109,6 +110,7 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
                 .ShadowStrength = ctx.Json["ShadowStrength"],
                 .ShadowBias = ctx.Json["ShadowBias"],
                 .ShadowSoftness = ctx.Json["ShadowSoftness"],
+                 .LightActive = 1
             };
         });
 

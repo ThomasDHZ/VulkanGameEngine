@@ -24,6 +24,7 @@ struct DirectionalLight
 	float  ShadowStrength = 1.0f;
 	float  ShadowBias = 0.012f;
 	float  ShadowSoftness = 0.008f;
+	uint   LightActive = 1;
 };
 
 struct PointLight
@@ -35,6 +36,7 @@ struct PointLight
 	float  ShadowStrength = 1.0f;
 	float  ShadowBias = 0.012f;
 	float  ShadowSoftness = 0.008f;
+	uint   LightActive = 1;
 };
 
 struct SpriteInstance
@@ -53,9 +55,9 @@ struct MemoryPoolSubBufferHeader
 {
 	uint32					ActiveCount = UINT32_MAX;
 	size_t					Offset = UINT32_MAX;
-	uint32					Count = UINT32_MAX;
+	uint32					Capacity = UINT32_MAX;
 	uint32					Size = UINT32_MAX;
-	Vector<byte>			IsActive;         // 0 = inactive, 1 = active
+	Vector<byte>			IsSlotActive;         // 0 = inactive, 1 = active
 	Vector<uint32>			FreeIndices;
 	bool					IsDirty = true;
 };
