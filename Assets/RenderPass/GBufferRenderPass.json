@@ -39,12 +39,34 @@
       "ShaderId": "43ac685e-cc94-4ea4-b747-65f222dbef90",
       "ShaderFile": "Shaders/GBufferLightingShaderFrag.spv",
       "ShaderStage": 16
+    },
+    {
+      "ShaderId": "19880631-f395-4325-842e-fbcb4bcbedff",
+      "ShaderFile": "Shaders/GBufferAlphaPassShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "50485036-fe9d-4bd1-9550-6b3a98bb1fc9",
+      "ShaderFile": "Shaders/GBufferAlphaPassShaderFrag.spv",
+      "ShaderStage": 16
+    },
+    {
+      "ShaderId": "38ac286c-2a18-4549-a02e-37ef38205a2b",
+      "ShaderFile": "Shaders/GBufferSpecialEffectsPassShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "55000347-ebf2-4d55-83b1-8c6968e92230",
+      "ShaderFile": "Shaders/GBufferSpecialEffectsPassShaderFrag.spv",
+      "ShaderStage": 16
     }
   ],
   "PipelineList": [
     "Pipelines/GBufferLevelShader2DPipeline.json",
     "Pipelines/GBufferSpriteInstancePipeline.json",
-    "Pipelines/GBufferLightingPipeline.json"
+    "Pipelines/GBufferLightingPipeline.json",
+    "Pipelines/GBufferAlphaPassPipeline.json",
+    "Pipelines/GBufferSpecialEffectsPipeline.json"
   ],
   "PipelinePackageList": [
     {
@@ -71,6 +93,24 @@
         {
           "PipelineType": 0,
           "PipelineId": "1c9d6cfd-7339-494d-b666-681e58973d17"
+        }
+      ]
+    },
+    {
+      "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "12620dde-acd3-474b-8746-6a6596bfd2e9"
+        }
+      ]
+    },
+    {
+      "PipelinePackageId": "340e9cde-1364-4a6d-a79e-236154900788",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "9505e13c-394c-4a02-b448-73f48d1d7968"
         }
       ]
     }
@@ -104,6 +144,28 @@
         "OutputTextureList": [],
         "OffScreenRenderPass": true
       }
+    ],
+    [
+      {
+        "MeshType": 0,
+        "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
+        "ShaderPushConstant": null,
+        "InputTextureList": [],
+        "ResolveTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": true
+      }
+    ],
+    [
+      {
+        "MeshType": 0,
+        "PipelinePackageId": "340e9cde-1364-4a6d-a79e-236154900788",
+        "ShaderPushConstant": null,
+        "InputTextureList": [],
+        "ResolveTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": true
+      }
     ]
   ],
   "SampleCount": 1,
@@ -114,7 +176,7 @@
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 2,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 109,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -146,7 +208,7 @@
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 43,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -178,7 +240,7 @@
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 91,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -210,7 +272,7 @@
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 91,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -242,7 +304,7 @@
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 97,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -274,7 +336,7 @@
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 97,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -306,7 +368,7 @@
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 91,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -338,7 +400,7 @@
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 4,
-      "RenderAttachmentTypes": [ 0, 1 ],
+      "RenderAttachmentTypes": [ 0, 1, 4, 4 ],
       "Format": 97,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -370,7 +432,7 @@
       "MipMapCount": 1,
       "TextureType": 2,
       "TextureUsageType": 3,
-      "RenderAttachmentTypes": [ 3, 1 ],
+      "RenderAttachmentTypes": [ 3, 1, 4, 4 ],
       "Format": 124,
       "LoadOp": 1,
       "StoreOp": 1,
@@ -402,7 +464,7 @@
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 10,
-      "RenderAttachmentTypes": [ 4, 0 ],
+      "RenderAttachmentTypes": [ 4, 0, 0, 1 ],
       "Format": 43,
       "LoadOp": 1,
       "StoreOp": 0,
@@ -434,7 +496,71 @@
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 2,
-      "RenderAttachmentTypes": [ 4, 0 ],
+      "RenderAttachmentTypes": [ 4, 0, 0, 1 ],
+      "Format": 97,
+      "LoadOp": 2,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 0,
+        "MinFilter": 0,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "Name": "GBuffer Attachment 11: OutColor",
+      "RenderedTextureId": "49790b9c-8cc0-40c3-8909-0fa14adf669a",
+      "MipMapCount": 1,
+      "TextureType": 1,
+      "TextureUsageType": 10,
+      "RenderAttachmentTypes": [ 4, 4, 4, 0 ],
+      "Format": 43,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1000.0,
+        "BorderColor": 1,
+        "UnnormalizedCoordinates": false
+      }
+    },
+    {
+      "Name": "GBuffer Attachment 12: OutBloom",
+      "RenderedTextureId": "f359bfa9-6dfc-4fa2-b837-40c0de82fc16",
+      "MipMapCount": 1,
+      "TextureType": 1,
+      "TextureUsageType": 2,
+      "RenderAttachmentTypes": [ 4, 4, 4, 0 ],
       "Format": 97,
       "LoadOp": 2,
       "StoreOp": 0,
@@ -482,6 +608,24 @@
     },
     {
       "SrcSubpass": 1,
+      "DstSubpass": 2,
+      "SrcStageMask": 1792,
+      "DstStageMask": 1792,
+      "SrcAccessMask": 1280,
+      "DstAccessMask": 1280,
+      "DependencyFlags": 1
+    },
+    {
+      "SrcSubpass": 2,
+      "DstSubpass": 3,
+      "SrcStageMask": 1792,
+      "DstStageMask": 1792,
+      "SrcAccessMask": 1280,
+      "DstAccessMask": 1280,
+      "DependencyFlags": 1
+    },
+    {
+      "SrcSubpass": 3,
       "DstSubpass": 4294967295,
       "SrcStageMask": 1792,
       "DstStageMask": 8192,
@@ -581,6 +725,24 @@
     },
     {
       "TextureAttachment": "Attachment 10: OutBloom",
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 11: FinalColor",
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 1.0
+      }
+    },
+    {
+      "TextureAttachment": "Attachment 12: FinalBloom",
       "Color": {
         "Float32_0": 0.0,
         "Float32_1": 0.0,

@@ -1,0 +1,120 @@
+{
+  "Name": "GBufferSpecialEffectsPassPipeline",
+  "PipelineId": "9505e13c-394c-4a02-b448-73f48d1d7968",
+  "ShaderList": [
+    "38ac286c-2a18-4549-a02e-37ef38205a2b",
+    "55000347-ebf2-4d55-83b1-8c6968e92230"
+  ],
+  "VertexType": 0,
+  "SubPassId": 3,
+  "ViewportList": [
+    {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "minDepth": 0.0,
+      "maxDepth": 1.0
+    }
+  ],
+  "ScissorList": [
+    {
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "extent": {
+        "width": 0,
+        "height": 0
+      }
+    }
+  ],
+  "PipelineColorBlendAttachmentStateList": [
+    {
+      "TextureAttachment": "Attachment 11: OutColor",
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 6,
+      "DstColorBlendFactor": 7,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 6,
+      "DstAlphaBlendFactor": 7,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    },
+    {
+      "TextureAttachment": "Attachment 12: OutBloom",
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 6,
+      "DstColorBlendFactor": 1,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 1,
+      "DstAlphaBlendFactor": 1,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    }
+  ],
+  "PipelineColorBlendStateCreateInfoModel": {
+    "BlendConstants": { "FixedElementField": 0.0 },
+    "SType": 26,
+    "LogicOpEnable": false,
+    "LogicOp": 5,
+    "AttachmentCount": 1
+  },
+  "PipelineRasterizationStateCreateInfo": {
+    "sType": 23,
+    "depthClampEnable": 0,
+    "rasterizerDiscardEnable": 0,
+    "polygonMode": 0,
+    "cullMode": 0,
+    "frontFace": 0,
+    "depthBiasEnable": 0,
+    "depthBiasConstantFactor": 0.0,
+    "depthBiasClamp": 0.0,
+    "depthBiasSlopeFactor": 0.0,
+    "lineWidth": 1.0,
+    "flags": 0
+  },
+  "PipelineMultisampleStateCreateInfo": {
+    "sType": 24,
+    "rasterizationSamples": 1,
+    "sampleShadingEnable": false,
+    "minSampleShading": 0.0,
+    "alphaToCoverageEnable": false,
+    "alphaToOneEnable": false,
+    "flags": 0
+  },
+  "PipelineDepthStencilStateCreateInfo": {
+    "sType": 25,
+    "depthTestEnable": true,
+    "depthWriteEnable": true,
+    "depthCompareOp": 3,
+    "depthBoundsTestEnable": false,
+    "stencilTestEnable": false,
+    "front": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "back": {
+      "failOp": 0,
+      "passOp": 0,
+      "depthFailOp": 0,
+      "compareOp": 0,
+      "compareMask": 0,
+      "writeMask": 0,
+      "reference": 0
+    },
+    "minDepthBounds": 0.0,
+    "maxDepthBounds": 0.0,
+    "flags": 0
+  },
+  "PipelineInputAssemblyStateCreateInfo": {
+    "sType": 20,
+    "topology": 3,
+    "primitiveRestartEnable": 0
+  }
+}
