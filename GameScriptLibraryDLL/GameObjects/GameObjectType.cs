@@ -13,6 +13,7 @@ namespace GameScriptLibraryDLL.GameObjects
         kGameObjectMegaManShot,
         kGameObjectDirectionalLight,
         kGameObjectPointLight,
-        kGameObjectEnemy
+        kGameObjectEnemy,
+        kGameObjectWindowTest
     };
 }

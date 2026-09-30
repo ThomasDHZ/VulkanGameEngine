@@ -1,0 +1,55 @@
+{
+  "GameObjectType": 6,
+  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.WindowTestScript, GameScriptLibraryDLL",
+  "GameObjectLuaScript": null,
+  "GameObjectVariableStruct": [],
+  "GameObjectComponentList": [
+    {
+      "ComponentType": 0
+    },
+    {
+      "ComponentType": 1,
+      "VramSpriteId": "54f15cac-bd8d-4ca6-80f5-dc7ea49a6099"
+    },
+    {
+      "ComponentType": 2,
+      "GameObjectPosition": [
+        0.0,
+        0.0
+      ],
+      "GameObjectRotation": [
+        0.0,
+        0.0
+      ],
+      "GameObjectScale": [
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "MaterialId": "84464DF4-3B73-4A4F-93DD-B049F461CE54",
+  "GameObjectSprite": {
+    "VramSpriteId": "54f15cac-bd8d-4ca6-80f5-dc7ea49a6099",
+    "SpriteLayer": 0,
+    "SpriteScale": [ 1.0, 1.0 ],
+    "SpritePixelSize": [
+      1995,
+      2000
+    ],
+    "SpriteColor": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "AnimationList": [
+      {
+        "AnimationId": 0,
+        "FrameHoldTime": 0.2,
+        "FrameList": [
+          [ 0, 0 ]
+        ]
+      }
+    ]
+  }
+}

@@ -169,6 +169,7 @@ vec3 ClearCoat(Material m, vec3 N, vec3 V, vec3 L, vec3 H, vec3 radiance, float 
 
 void main()
 {
+return;
     outAlphaColor = vec4(1.0f, 0.0f, 0.0f, 0.5f);
     outAlphaBloom = vec4(0.0f, 1.0f, 0.0f, 1.0f);
 }

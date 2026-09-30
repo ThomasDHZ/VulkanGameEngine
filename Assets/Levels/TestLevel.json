@@ -9,7 +9,8 @@
     "Materials/AnimeGirlMaterial.json",
     "Materials/MegaManShotMaterial.json",
     "Materials/LightIconMaterial.json",
-    "Materials/SparkManTileSetMaterial.json"
+    "Materials/SparkManTileSetMaterial.json",
+    "Materials/WindowSpriteMaterial.json"
   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
@@ -39,7 +40,8 @@
     "GameObjects/TestGameObject.json",
     "GameObjects/MegaManShotObject.json",
     "GameObjects/DirectionalLightGameObject.json",
-    "GameObjects/PointLightGameObject.json"
+    "GameObjects/PointLightGameObject.json",
+    "GameObjects/WindowTestSpriteObject.json"
   ],
   "GameObjectList": [
     {
@@ -89,6 +91,13 @@
       "GameObjectPositionOverride": [
         3069.6525,
         592.9432
+      ]
+    },
+    {
+      "GameObjectType": 6,
+      "GameObjectPositionOverride": [
+        0.0,
+        200.0
       ]
     }
   ],

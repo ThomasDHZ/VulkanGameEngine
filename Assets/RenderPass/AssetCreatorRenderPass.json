@@ -51,9 +51,9 @@
             "Value": [ "0" ]
           }
         ],
+        "InputAttachmentList": [],
         "InputTextureList": [],
-        "OutputTextureList": [
-        ],
+        "OutputTextureList": [],
         "OffScreenRenderPass": true
       }
     ]

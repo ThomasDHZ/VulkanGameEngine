@@ -176,7 +176,7 @@ void main()
     vec4 lightingColorAttachment = subpassLoad(LightingColor);
     vec4 lightingBloomAttachment = subpassLoad(LightingBloom);
 
-    outAlphaColor = vec4(lightingColorAttachment.rg, 1.0f, 0.5f);
+    outAlphaColor = vec4(lightingColorAttachment);
     outAlphaBloom = vec4(lightingBloomAttachment.rgb, 1.0f);
 }
 

@@ -68,7 +68,8 @@ enum GameObjectTypeEnum
     kGameObjectMegaManShot,
     kGameObjectDirectionalLight,
     kGameObjectPointLight,
-    kGameObjectEnemy
+    kGameObjectEnemy,
+    kGameObjectWindowSprite
 };
 
 struct CameraFollowComponent { int a = 0; };
