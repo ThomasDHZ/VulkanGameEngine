@@ -42,12 +42,22 @@
     },
     {
       "ShaderId": "19880631-f395-4325-842e-fbcb4bcbedff",
-      "ShaderFile": "Shaders/GBufferAlphaPassShaderVert.spv",
+      "ShaderFile": "Shaders/GBufferLevelAlphaPassShaderVert.spv",
       "ShaderStage": 1
     },
     {
       "ShaderId": "50485036-fe9d-4bd1-9550-6b3a98bb1fc9",
-      "ShaderFile": "Shaders/GBufferAlphaPassShaderFrag.spv",
+      "ShaderFile": "Shaders/GBufferLevelAlphaPassShaderFrag.spv",
+      "ShaderStage": 16
+    },
+    {
+      "ShaderId": "be015a14-97d2-48dc-a852-68c1d8512e87",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceAlphaPassShaderVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "593a7fd1-0452-4506-ac14-7fb9f694a8fe",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceAlphaPassShaderFrag.spv",
       "ShaderStage": 16
     },
     {
@@ -65,7 +75,8 @@
     "Pipelines/GBufferLevelShader2DPipeline.json",
     "Pipelines/GBufferSpriteInstancePipeline.json",
     "Pipelines/GBufferLightingPipeline.json",
-    "Pipelines/GBufferAlphaPassPipeline.json",
+    "Pipelines/GBufferLevelAlphaPassPipeline.json",
+    "Pipelines/GBufferSpriteInstanceAlphaPassPipeline.json",
     "Pipelines/GBufferSpecialEffectsPipeline.json"
   ],
   "PipelinePackageList": [
@@ -106,6 +117,15 @@
       ]
     },
     {
+      "PipelinePackageId": "ac1fc14f-b73e-4d2e-96f1-c9b09899a144",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "6f05b059-a890-4eda-8c2f-79c8e2105472"
+        }
+      ]
+    },
+    {
       "PipelinePackageId": "340e9cde-1364-4a6d-a79e-236154900788",
       "PipelineList": [
         {
@@ -119,7 +139,7 @@
     [
       {
         "MeshType": 1,
-        "PipelinePackageId": "4a2850b3-7e58-4fb7-968b-370ba31929b0",
+        "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
         "ShaderPushConstant": "sceneData",
         "InputAttachmentList": [],
         "InputTextureList": [],
@@ -160,14 +180,22 @@
     ],
     [
       {
-        "MeshType": 0,
-        "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
+        "MeshType": 1,
+        "PipelinePackageId": "4a2850b3-7e58-4fb7-968b-370ba31929b0",
+        "ShaderPushConstant": "sceneData",
+        "InputAttachmentList": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false
+      },
+      {
+        "MeshType": 2,
+        "PipelinePackageId": "ac1fc14f-b73e-4d2e-96f1-c9b09899a144",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],
         "InputTextureList": [],
-        "ResolveTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": true
+        "OffScreenRenderPass": false
       }
     ],
     [

@@ -1,5 +1,5 @@
 {
-  "Name": "GBufferAlphaPassPipeline",
+  "Name": "GBufferLevelAlphaPassPipeline",
   "PipelineId": "12620dde-acd3-474b-8746-6a6596bfd2e9",
   "ShaderList": [
     "19880631-f395-4325-842e-fbcb4bcbedff",

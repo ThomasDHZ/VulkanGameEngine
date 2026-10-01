@@ -35,7 +35,7 @@
   "HeightScale": 0.04,
   "Height": 0.0,
   "Alpha": 1.0,
-  "AlphaCutoff": 0.8,
+  "AlphaCutoff": 0.35,
   "ExportMipMapCount": 1,
   "IsTiled": false,
   "IsSkyBox": false,

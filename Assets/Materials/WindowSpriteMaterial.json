@@ -30,7 +30,7 @@
     "TextureType": 1,
     "TextureUsageType": 9
   },
-  "AlphaCutOff": 0.10000000149011612,
+  "AlphaCutOff": 0.35,
   "AnisotropyTexture": {
     "ImageType": 1,
     "IsSkyBox": false,
