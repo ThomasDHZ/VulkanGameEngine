@@ -5,6 +5,20 @@
 #include "JsonStruct.h"
 #include "MemoryPoolSystem.h"
 
+enum MaterialPropertiesEnum : uint
+{
+    kMaterialFeature_None                 = 0,
+    kMaterialFeature_ClearCoat            = 1u << 0,
+    kMaterialFeature_Sheen                = 1u << 1,
+    kMaterialFeature_SubSurfaceScattering = 1u << 2,
+    kMaterialFeature_Transmission         = 1u << 3,
+    kMaterialFeature_Anisotropy           = 1u << 4,
+    kMaterialFeature_FILM                 = 1u << 5,
+    kMaterialFeature_TWO_SIDED            = 1u << 6,
+    kMaterialFeature_ClearCoatNormal      = 1u << 7,
+    kMaterialFeature_AlbedoOnly           = 1u << 8,
+    kMaterialFeature_UsingAlpha           = 1u << 9,
+};
 
 struct Material
 {
@@ -21,7 +35,7 @@ struct Material
     VkGuid TranslucentTextureId                    = VkGuid();
     VkGuid TranslucentPropertiesTextureId          = VkGuid();
     uint ShadingModel;
-    uint FeatureMask;
+    MaterialPropertiesEnum FeatureMask;
     vec4  ClearcoatTint;
     float IOR;
     float AlphaCutOff;
@@ -45,7 +59,7 @@ struct GPUMaterial
     uint TranslucentTextureId = UINT32_MAX;
     uint TranslucentPropertiesTextureId = UINT32_MAX;
     uint ShadingModel = 0;
-    uint FeatureMask = 0;
+    MaterialPropertiesEnum FeatureMask = kMaterialFeature_None;
     vec3 ClearcoatTint = vec3(1.0f);
     float IOR = 1.45f;
     float AlphaCutOff = 0.1f;

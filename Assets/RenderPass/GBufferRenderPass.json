@@ -139,12 +139,13 @@
     [
       {
         "MeshType": 1,
-        "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
+        "PipelinePackageId": "4a2850b3-7e58-4fb7-968b-370ba31929b0",
         "ShaderPushConstant": "sceneData",
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": false
       },
       {
         "MeshType": 2,
@@ -153,7 +154,8 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": false
       }
     ],
     [
@@ -175,18 +177,20 @@
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": true
+        "OffScreenRenderPass": true,
+        "AlphaRenderPass": false
       }
     ],
     [
       {
         "MeshType": 1,
-        "PipelinePackageId": "4a2850b3-7e58-4fb7-968b-370ba31929b0",
+        "PipelinePackageId": "b0fb1ee0-0b07-4088-a558-6d22b10b2be5",
         "ShaderPushConstant": "sceneData",
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": true
       },
       {
         "MeshType": 2,
@@ -195,7 +199,8 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": true
       }
     ],
     [
@@ -210,7 +215,8 @@
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": true
+        "OffScreenRenderPass": true,
+        "AlphaRenderPass": false
       }
     ]
   ],

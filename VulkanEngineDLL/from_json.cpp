@@ -340,6 +340,7 @@ namespace nlohmann
         j.at("InputTextureList").get_to(model.InputTextureList);
         j.at("OutputTextureList").get_to(model.OutputTextureList);
         j.at("OffScreenRenderPass").get_to(model.OffScreenRenderPass);
+        j.at("AlphaRenderPass").get_to(model.AlphaRenderPass);
 
         if (j.contains("PushConstantUpdates") &&
             j["PushConstantUpdates"].is_array())

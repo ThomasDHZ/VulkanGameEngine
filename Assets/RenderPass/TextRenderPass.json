@@ -44,7 +44,8 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": false
       }
     ]
   ],
