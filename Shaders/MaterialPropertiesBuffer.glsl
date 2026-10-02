@@ -268,3 +268,4 @@ vec3 ClearCoat(Material material, vec3 N, vec3 V, vec3 L, vec3 H, vec3 radiance,
     vec3  spec  = (NDF * G * Fc) / max(4.0 * NdotV * NdotL, 1e-4);
     return spec * material.CoatColor * material.CoatWeight * radiance * NdotL;
 }
+

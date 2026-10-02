@@ -8,7 +8,8 @@
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
- 
+ #include "MemoryPoolBindings.glsl"
+
 layout (location = 0)  in vec2  VS_SpritePosition;
 layout (location = 1)  in vec4  VS_UVOffset; // vec4(vec2(StartUV.x, StartUV.y), vec2(UVEnd.x, UVEnd.y))
 layout (location = 2)  in vec2  VS_SpriteSize;
@@ -43,64 +44,6 @@ layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 13) const uint VertexInputRateLocation9 = 1;
 layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 layout(constant_id = 15) const uint VertexInputRateLocation10 = 1;
-
-layout(std430, binding = 0) buffer SceneDataBuffer
-{
-    uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-    uint _padIds0;
-    uint _padIds1;
-
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer;
-
-layout(binding = 1)  buffer BindlessBuffer 
-{ 
-    uint64_t MeshOffset;     
-    uint MeshCount;
-    uint MeshSize;   
-    uint64_t MaterialOffset; 
-    uint MaterialCount;
-    uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
-    uint DirectionalLightCount;
-    uint DirectionalLightSize;   
-    uint64_t PointLightOffset; 
-    uint PointLightCount;
-    uint PointLightSize;     
-    uint64_t Texture2DOffset;
-	uint Texture2DCount;
-	uint Texture2DSize;
-	uint64_t Texture3DOffset;
-	uint Texture3DCount;
-	uint Texture3DSize;
-	uint64_t TextureCubeMapOffset;
-	uint TextureCubeMapCount;
-	uint TextureCubeMapSize;
-    uint64_t SpriteInstanceOffset;
-	uint SpriteInstanceCount;
-    uint SpriteInstanceSize;
-    uint Data[]; 
-} bindlessBuffer;
-layout(binding = 2) uniform samplerCube CubeMap[];
-layout(binding = 3) uniform sampler2D TextureMap[];
-layout(binding = 4) uniform sampler3D Texture3DMap[];
 
 #include "BindlessHelpers.glsl"
 

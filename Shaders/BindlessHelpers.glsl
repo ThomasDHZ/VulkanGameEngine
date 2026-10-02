@@ -194,3 +194,33 @@ TextureMetadata GetCubeMapTextureMetadata(uint index)
     textureMetaData.ArrayIndex  = bindlessBuffer.Data[baseByteLocation++];
     return textureMetaData;
 }
+
+vec2 OctahedronEncode(vec3 normal)
+{
+    vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
+    return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
+}
+
+vec3 OctahedronDecode(vec2 f)
+{
+    vec3 n;
+    n.xy = f.xy;
+    n.z  = 1.0 - abs(f.x) - abs(f.y);
+    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
+    return normalize(n);
+}
+
+vec2 Unpack8bitPair(float packed)
+{
+    uint combined = uint(packed * 65535.0 + 0.5);
+    float high = float((combined >> 8) & 0xFFu) / 255.0;
+    float low  = float(combined & 0xFFu) / 255.0;
+    return vec2(high, low);
+}
+
+float Pack8bitPair(float high, float low)
+{
+    uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
+    uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
+    return float((u_high << 8) | u_low) / 65535.0;
+}

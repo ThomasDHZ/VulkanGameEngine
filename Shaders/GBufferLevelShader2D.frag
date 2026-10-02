@@ -7,65 +7,7 @@
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
-
-layout(std430, binding = 0) buffer SceneDataBuffer
-{
-   uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-    uint _padIds0;
-    uint _padIds1;
-
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer;
-
-layout(binding = 1) buffer BindlessBuffer
-{
-    uint64_t MeshOffset;
-    uint MeshCount;
-    uint MeshSize;
-    uint64_t MaterialOffset;
-    uint MaterialCount;
-    uint MaterialSize;
-    uint64_t DirectionalLightOffset;
-    uint DirectionalLightCount;
-    uint DirectionalLightSize;
-    uint64_t PointLightOffset;
-    uint PointLightCount;
-    uint PointLightSize;
-    uint64_t Texture2DOffset;
-    uint Texture2DCount;
-    uint Texture2DSize;
-    uint64_t Texture3DOffset;
-    uint Texture3DCount;
-    uint Texture3DSize;
-    uint64_t TextureCubeMapOffset;
-    uint TextureCubeMapCount;
-    uint TextureCubeMapSize;
-    uint64_t SpriteInstanceOffset;
-    uint SpriteInstanceCount;
-    uint SpriteInstanceSize;
-    uint Data[];
-} bindlessBuffer;
-
-layout(binding = 2) uniform samplerCube CubeMap[];
-layout(binding = 3) uniform sampler2D TextureMap[];
-layout(binding = 4) uniform sampler3D Texture3DMap[];
+#include "MemoryPoolBindings.glsl"
 
 layout(push_constant) uniform Push
 {
@@ -90,21 +32,6 @@ layout(location = 6) out vec4 outFeatureC;      // R16G16B16A16_UNORM
 layout(location = 7) out vec4 outEmission;      // R16G16B16A16_SFLOAT
 
 #include "BindlessHelpers.glsl"
-
-mat3 CalculateTBN(vec3 worldPos, vec2 uv)
-{
-    vec3 dp1  = dFdx(worldPos);
-    vec3 dp2  = dFdy(worldPos);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
-
-    vec3 N = normalize(cross(dp1, dp2));
-    vec3 T = duv1.y * dp2 - duv2.y * dp1;
-    if (dot(T, T) < 1e-8) T = normalize(cross(abs(N.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0), N));
-    else T = normalize(T);
-    vec3 B = normalize(cross(N, T));
-    return mat3(T, B, N);
-}
 
 float SampleHeight(uint heightIdx, vec2 uv)
 {
@@ -165,37 +92,6 @@ float HeightSelfShadowTiled(vec2 uv, vec3 Lts, uint heightIdx, float startH)
         if (h > rayH + 0.05) return mix(0.35, 1.0, float(i) / float(steps));
     }
     return 1.0;
-}
-
-vec2 OctahedronEncode(vec3 normal)
-{
-    vec2 f = normal.xy / (abs(normal.x) + abs(normal.y) + abs(normal.z));
-    return (normal.z < 0.0) ? (1.0 - abs(f.yx)) * sign(f) : f;
-}
-
-vec3 OctahedronDecode(vec2 f)
-{
-    vec3 n;
-    n.xy = f.xy;
-    n.z  = 1.0 - abs(f.x) - abs(f.y);
-    n.xy = (n.z < 0.0) ? (1.0 - abs(n.yx)) * sign(n.xy) : n.xy;
-    return normalize(n);
-}
-
-float Pack8bitPair(float high, float low)
-{
-    uint u_high = uint(high * 255.0 + 0.5) & 0xFFu;
-    uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
-    uint combined = (u_high << 8) | u_low;
-    return float(combined) / 65535.0;
-}
-
-vec2 Unpack8bitPair(float packed)
-{
-    uint combined = uint(packed * 65535.0 + 0.5);
-    float high = float((combined >> 8) & 0xFFu) / 255.0;
-    float low  = float(combined & 0xFFu) / 255.0;
-    return vec2(high, low);
 }
 
 BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
