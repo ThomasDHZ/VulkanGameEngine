@@ -38,6 +38,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     }
     gameObjectSystem.LoadGameObjectTemplete(gameObjectTempleteList);
     gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
+    meshSystem.CreateSpriteMesh();
 
     LoadSkyBox();
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
@@ -127,7 +128,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                         .PipelinePackageGuid = subPass.PipelinePackageId,
                         .PushConstant = subPass.ShaderPushConstant,
                         .PushConstantUpdateRules = subPass.PushConstantUpdates,
-                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, spriteSystem.SpriteLayerList),
+                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
                         .OffScreenRenderPass = subPass.OffScreenFrameBuffer

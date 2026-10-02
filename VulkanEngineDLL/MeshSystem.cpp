@@ -3,6 +3,8 @@
 #include "MaterialSystem.h"
 #include "RenderSystem.h"
 #include "EngineConfigSystem.h"
+#include "GameObjectSystem.h"
+#include "SpriteSystem.h"
 
 MeshSystem& meshSystem = MeshSystem::Get();
 
@@ -95,33 +97,30 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 	return meshId;
 }
 
-uint MeshSystem::CreateSpriteLayer(uint32 spriteMeshId)
+uint MeshSystem::CreateSpriteMesh()
 {
-	if (spriteMeshId != UINT32_MAX)
+
+	Vector<Vertex2DLayout> spriteVertexList =
 	{
-		Vector<Vertex2DLayout> spriteVertexList =
-		{
-			Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
-			Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
-			Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
-			Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
-		};
+		Vertex2DLayout(vec2(0.0f, 1.0f), vec2(0.0f, 0.0f)),
+		Vertex2DLayout(vec2(1.0f, 1.0f), vec2(1.0f, 0.0f)),
+		Vertex2DLayout(vec2(1.0f, 0.0f), vec2(1.0f, 1.0f)),
+		Vertex2DLayout(vec2(0.0f, 0.0f), vec2(0.0f, 1.0f))
+	};
 
-		Vector<uint32> spriteIndexList =
-		{
-			0, 3, 1,
-			1, 3, 2
-		};
+	Vector<uint32> spriteIndexList =
+	{
+		0, 3, 1,
+		1, 3, 2
+	};
 
-		VertexLayout vertexData =
-		{
-			.VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
-			.VertexData = spriteVertexList.data(),
-		};
+	VertexLayout vertexData =
+	{
+		.VertexDataSize = sizeof(Vertex2DLayout) * spriteVertexList.size(),
+		.VertexData = spriteVertexList.data(),
+	};
 
-		return meshSystem.CreateMesh("__SpriteMesh__", kMesh_InstanceMesh, vertexData, spriteIndexList);
-	}
-	return UINT32_MAX;
+	return meshSystem.CreateMesh("__SpriteMesh__", kMesh_InstanceMesh, vertexData, spriteIndexList);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color)
@@ -443,33 +442,62 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
 	return meshDrawMessageList;
 }
 
-const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList)
+//void SpriteSystem::SortSpriteLayers()
+//{
+//	uint32 currentInstanceIndex = 0;
+//	auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
+//	for (auto [entity, sprite, transform] : view.each())
+//	{
+//		bool spriteLayerExists = false;
+//		auto [sprite, transform] = gameObjectSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entity);
+//		for (auto& layer : SpriteLayerList)
+//		{
+//			if (layer.SpriteDrawLayer == sprite.SpriteLayer)
+//			{
+//				if (layer.InstanceCount == 0) layer.StartInstanceIndex = currentInstanceIndex;
+//				layer.InstanceCount++;
+//				spriteLayerExists = true;
+//				break;
+//			}
+//		}
+//		if (!spriteLayerExists)
+//		{
+//			SpriteLayer newLayer;
+//			newLayer.SpriteDrawLayer = sprite.SpriteLayer;
+//			newLayer.StartInstanceIndex = currentInstanceIndex;
+//			newLayer.InstanceCount = 1;
+//			SpriteLayerList.push_back(newLayer);
+//		}
+//		currentInstanceIndex++;
+//	}
+//}
+
+const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId)
 {
 	Vector<MeshDrawMessage> meshDrawMessageList;
-	for (auto& spriteInstanceLayer : spriteLayerList)
-	{
-		if (spriteInstanceLayer.InstanceCount == 0) continue;
 
-		const Mesh& spriteMesh = meshSystem.FindMesh(instanceMeshId);
-		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-		const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer();
-		const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
-		meshDrawMessageList.emplace_back(MeshDrawMessage
-			{
-				.MeshId = spriteMesh.MeshId,
-				.Drawlayer = spriteInstanceLayer.SpriteDrawLayer,
-				.VertexBufferBinding = 0,
-				.VertexCount = meshAsset.VertexCount,
-				.IndexCount = meshAsset.IndexCount,
-				.InstanceCount = spriteInstanceLayer.InstanceCount,
-				.FirstIndex = 0,
-				.StartInstanceIndex = spriteInstanceLayer.StartInstanceIndex,
-				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-				.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-				.VertexBuffer = instanceBuffer.Buffer(),
-				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
-			});
-	}
+	const Mesh& spriteMesh = meshSystem.FindMesh(instanceMeshId);
+	const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
+	const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer();
+	const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
+
+	auto group = gameObjectSystem.EntityRegistry.group<Sprite, Transform2DComponent>();
+	meshDrawMessageList.emplace_back(MeshDrawMessage
+		{
+			.MeshId = spriteMesh.MeshId,
+			.Drawlayer = 0,
+			.VertexBufferBinding = 0,
+			.VertexCount = meshAsset.VertexCount,
+			.IndexCount = meshAsset.IndexCount,
+			.InstanceCount = static_cast<uint32>(group.size()),
+			.FirstIndex = 0,
+			.StartInstanceIndex = 0,
+			.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+			.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+			.VertexBuffer = instanceBuffer.Buffer(),
+			.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
+		});
+
 	return meshDrawMessageList;
 }
 

@@ -3,17 +3,6 @@
 
 SpriteSystem& spriteSystem = SpriteSystem::Get();
 
-void SpriteSystem::AddSpriteBatchLayer(uint32 spriteLayer)
-{
-    meshSystem.CreateSpriteLayer(SpriteMeshId);
-    SpriteLayerList.emplace_back(SpriteLayer
-        {
-            .InstanceCount = 0,
-            .StartInstanceIndex = 0,
-            .SpriteDrawLayer = spriteLayer,
-        });
-}
-
 void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
 {
     Sprite sprite = gameObjectSystem.EntityRegistry.emplace<Sprite>(gameObjectId, Sprite
@@ -27,14 +16,6 @@ void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
             .SpriteVramId = spriteVramId,
             .CurrentFrameTime = 0.0f
         });
-
-    const uint spriteDrawLayer = sprite.SpriteLayer;
-    auto it = std::find_if(SpriteLayerList.begin(), SpriteLayerList.end(), [spriteDrawLayer](const auto& layer)
-        {
-            return layer.SpriteDrawLayer == spriteDrawLayer;
-        });
-    if (it == SpriteLayerList.end()) AddSpriteBatchLayer(sprite.SpriteLayer);
-    SpriteListDirty = true;
 }
 
 VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
@@ -110,7 +91,6 @@ Vector<Animation2D> SpriteSystem::LoadSpriteAnimations(const nlohmann::json& jso
 
 void SpriteSystem::Update(const float& deltaTime)
 {
-    SortSpriteLayers();
     auto view = gameObjectSystem.EntityRegistry.view<GameObject, Sprite, Transform2DComponent>();
     for (auto [entity, gameObject, sprite, transform] : view.each())
     {
@@ -144,36 +124,6 @@ void SpriteSystem::Update(const float& deltaTime)
         }
         const ivec2 frame = animation.FrameList[sprite.CurrentFrame];
         spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * frame.x, vram.SpriteUVSize.y * frame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
-    }
-}
-
-void SpriteSystem::SortSpriteLayers()
-{
-    uint32 currentInstanceIndex = 0;
-    auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
-    for (auto [entity, sprite, transform] : view.each())
-    {
-        bool spriteLayerExists = false;
-        auto [sprite, transform] = gameObjectSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entity);
-        for (auto& layer : SpriteLayerList)
-        {
-            if (layer.SpriteDrawLayer == sprite.SpriteLayer)
-            {
-                if (layer.InstanceCount == 0) layer.StartInstanceIndex = currentInstanceIndex;
-                layer.InstanceCount++;
-                spriteLayerExists = true;
-                break;
-            }
-        }
-        if (!spriteLayerExists)
-        {
-            SpriteLayer newLayer;
-            newLayer.SpriteDrawLayer = sprite.SpriteLayer;
-            newLayer.StartInstanceIndex = currentInstanceIndex;
-            newLayer.InstanceCount = 1;
-            SpriteLayerList.push_back(newLayer);
-        }
-        currentInstanceIndex++;
     }
 }
 

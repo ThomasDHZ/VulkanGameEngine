@@ -114,13 +114,6 @@ struct MeshPropertiesStruct
 	mat4   MeshTransform;
 };
 
-struct SpriteLayer
-{
-	uint32 InstanceCount = 0;
-	uint32 StartInstanceIndex = 0;
-	uint32 SpriteDrawLayer = UINT32_MAX;
-};
-
 struct MeshAssetData
 {
 	Vector<uint32> MeshIdUsageList = Vector<uint32>();
@@ -175,7 +168,7 @@ public:
 
 	 uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
 	 uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
-	 uint CreateSpriteLayer(uint32 spriteMeshId);
+	 uint CreateSpriteMesh();
 	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
 	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);
 	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor);
@@ -188,7 +181,7 @@ public:
 	 const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
 	 const Vector<MeshDrawMessage> DrawMesh(const String& meshKey);
 	 const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
-	 const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, Vector<SpriteLayer>& spriteLayerList);
+	 const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId);
 
 	 void Update(const float& deltaTime);
 	 void Destroy(uint meshId);

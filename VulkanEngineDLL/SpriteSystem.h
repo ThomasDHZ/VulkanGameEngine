@@ -69,36 +69,26 @@ private:
     SpriteSystem(SpriteSystem&&) = delete;
     SpriteSystem& operator=(SpriteSystem&&) = delete;
 
-    struct SpritesToUpdate
-    {
-        entt::entity              entity;
-        Sprite                    sprite;
-        Transform2DComponent      transform2D;
-    };
-
 private:
 
     Vector<uint32>				                      FreeSpriteIndicesList;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
     Vector<Animation2D>                               LoadSpriteAnimations(const nlohmann::json& json);
-    void                                              AddSpriteBatchLayer(uint32 spriteLayer);
-    void                                              SortSpriteLayers();
 
 public:
     uint32                                            SpriteMeshId;
     Vector<SpriteVram>                                SpriteVramList;
-    Vector<SpriteLayer>                               SpriteLayerList;
-    bool                                              SpriteListDirty = true;
 
-     VramSpriteGuid                         LoadSpriteVRAM(const nlohmann::json& json);
-     void                                   CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId);
-     void                                   Update(const float& deltaTime);
-     void                                   SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
-     SpriteVram&                            FindSpriteVram(VramSpriteGuid vramSpriteId);
-     Animation2D&                           FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
-     bool                                   SpriteVramExists(const VkGuid& vramId);
-     void                                   Destroy(Sprite& sprite);
+    void                                              AddSpriteBatchLayer(uint32 spriteLayer);
+     VramSpriteGuid                                   LoadSpriteVRAM(const nlohmann::json& json);
+     void                                             CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId);
+     void                                             Update(const float& deltaTime);
+     void                                             SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
+     SpriteVram&                                      FindSpriteVram(VramSpriteGuid vramSpriteId);
+     Animation2D&                                     FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+     bool                                             SpriteVramExists(const VkGuid& vramId);
+     void                                             Destroy(Sprite& sprite);
 };
 ENGINE_DLL_EXPORT extern  SpriteSystem& spriteSystem;
 inline SpriteSystem& SpriteSystem::Get()
