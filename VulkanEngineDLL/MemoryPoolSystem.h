@@ -49,6 +49,7 @@ struct SpriteInstance
 	mat4  InstanceTransform;
 	uint  MaterialId;
 	uint  SpriteId;
+	uint  SpriteLayer;
 };
 
 struct MemoryPoolSubBufferHeader

@@ -82,7 +82,7 @@ private:
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
     Vector<Animation2D>                               LoadSpriteAnimations(const nlohmann::json& json);
-    void                                              AddSpriteBatchLayer();
+    void                                              AddSpriteBatchLayer(uint32 spriteLayer);
     void                                              SortSpriteLayers();
 
 public:

@@ -3,14 +3,14 @@
 
 SpriteSystem& spriteSystem = SpriteSystem::Get();
 
-void SpriteSystem::AddSpriteBatchLayer()
+void SpriteSystem::AddSpriteBatchLayer(uint32 spriteLayer)
 {
     meshSystem.CreateSpriteLayer(SpriteMeshId);
     SpriteLayerList.emplace_back(SpriteLayer
         {
             .InstanceCount = 0,
             .StartInstanceIndex = 0,
-            .SpriteDrawLayer = UINT32_MAX,
+            .SpriteDrawLayer = spriteLayer,
         });
 }
 
@@ -27,9 +27,13 @@ void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
             .SpriteVramId = spriteVramId,
             .CurrentFrameTime = 0.0f
         });
-    SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
 
-    AddSpriteBatchLayer();
+    const uint spriteDrawLayer = sprite.SpriteLayer;
+    auto it = std::find_if(SpriteLayerList.begin(), SpriteLayerList.end(), [spriteDrawLayer](const auto& layer)
+        {
+            return layer.SpriteDrawLayer == spriteDrawLayer;
+        });
+    if (it == SpriteLayerList.end()) AddSpriteBatchLayer(sprite.SpriteLayer);
     SpriteListDirty = true;
 }
 
@@ -110,9 +114,6 @@ void SpriteSystem::Update(const float& deltaTime)
     auto view = gameObjectSystem.EntityRegistry.view<GameObject, Sprite, Transform2DComponent>();
     for (auto [entity, gameObject, sprite, transform] : view.each())
     {
-        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
-        SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
-
         mat4 spriteMatrix = mat4(1.0f);
         spriteMatrix = glm::translate(spriteMatrix, vec3(transform.GameObjectPosition.x, transform.GameObjectPosition.y, 0.0f));
         spriteMatrix = glm::rotate(spriteMatrix, glm::radians(transform.GameObjectRotation.x), vec3(1.0f, 0.0f, 0.0f));
@@ -120,6 +121,8 @@ void SpriteSystem::Update(const float& deltaTime)
         spriteMatrix = glm::rotate(spriteMatrix, glm::radians(0.0f), vec3(0.0f, 0.0f, 1.0f));
         spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale.x, transform.GameObjectScale.y, 1.0f));
 
+        const auto& vram = FindSpriteVram(sprite.SpriteVramId);
+        SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
         spriteInstance.SpritePosition = transform.GameObjectPosition;
         spriteInstance.InstanceTransform = spriteMatrix;
         spriteInstance.MaterialId = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
@@ -127,6 +130,7 @@ void SpriteSystem::Update(const float& deltaTime)
         spriteInstance.FlipSprite = sprite.FlipSprite;
         //spriteInstance.Color = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
         spriteInstance.SpriteId = static_cast<uint>(entity);
+        spriteInstance.SpriteLayer = sprite.SpriteLayer;
 
         sprite.CurrentFrameTime += deltaTime;
         const auto& animation = FindSpriteAnimation(vram.VramSpriteID, sprite.CurrentAnimationId);
@@ -145,36 +149,12 @@ void SpriteSystem::Update(const float& deltaTime)
 
 void SpriteSystem::SortSpriteLayers()
 {
-    struct SpriteSortStruct
-    {
-        entt::entity entity;
-        uint32       layer;
-    };
+    uint32 currentInstanceIndex = 0;
     auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
-
-    Vector<SpriteSortStruct> entries;
-    entries.reserve(view.size_hint());
     for (auto [entity, sprite, transform] : view.each())
     {
-        entries.push_back({ entity, sprite.SpriteLayer });
-
-    }
-    std::stable_sort(entries.begin(), entries.end(), [](const SpriteSortStruct& a, const SpriteSortStruct& b)
-        {
-            return a.layer < b.layer;
-        });
-
-    for (auto& layer : SpriteLayerList)
-    {
-        layer.StartInstanceIndex = 0;
-        layer.InstanceCount = 0;
-    }
-
-    uint32 currentInstanceIndex = 0;
-    for (const auto& entry : entries)
-    {
         bool spriteLayerExists = false;
-        auto [sprite, transform] = gameObjectSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entry.entity);
+        auto [sprite, transform] = gameObjectSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entity);
         for (auto& layer : SpriteLayerList)
         {
             if (layer.SpriteDrawLayer == sprite.SpriteLayer)

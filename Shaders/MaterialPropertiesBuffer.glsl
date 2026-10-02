@@ -89,6 +89,9 @@ struct BakedMaps
     vec3  SSSColor;
     float SSSWeight, SSSProfile, Thickness, SheenRoughness;
     float CoatWeight, CoatRoughness, CoatDarkening;
+      vec3  AttenuationColor;
+       float AttenuationDistance;
+          float TransmissionWeight;
     float Anisotropy, AnisotropyRotation, ThinFilmWeight, ThinFilmThickness;
     uint  FeatureMask;
 };
@@ -116,9 +119,11 @@ struct PackedMaterial
 struct Material
 {
     vec3  Position;
+
     float Depth;
 
     vec3  Albedo;
+    float Alpha;
     float Metallic;
 
     vec3  Normal;
