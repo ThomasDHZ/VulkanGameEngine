@@ -187,36 +187,6 @@ float Pack8bitPair(float high, float low)
     uint u_low  = uint(low  * 255.0 + 0.5) & 0xFFu;
     return float((u_high << 8) | u_low) / 65535.0;
 }
-
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a     = roughness * roughness;
-    float a2    = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float denom = (NdotH * NdotH * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-    return a2 / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = roughness + 1.0;
-    float k = (r * r) / 8.0;
-    return NdotV / (NdotV * (1.0 - k) + k);
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    return GeometrySchlickGGX(NdotV, roughness) * GeometrySchlickGGX(NdotL, roughness);
-}
-
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-
 vec2 Unpack8bitPair(float packed)
 {
     uint combined = uint(packed * 65535.0 + 0.5);
@@ -224,43 +194,11 @@ vec2 Unpack8bitPair(float packed)
                 float(combined & 0xFFu) / 255.0);
 }
 
-void AnisoFrame(vec3 N, float rotation, out vec3 T, out vec3 B)
-{
-    vec3 up = abs(N.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-    T = normalize(cross(up, N));
-    B = cross(N, T);
-    float a = rotation * 6.2831853;
-    float c = cos(a), s = sin(a);
-    vec3 T2 = normalize(c * T + s * B);
-    B = cross(N, T2);
-    T = T2;
-}
-
-float DistributionGGX_Aniso(vec3 N, vec3 T, vec3 B, vec3 H, float rough, float aniso)
-{
-    float at = max(rough * (1.0 + aniso), 0.001);
-    float ab = max(rough * (1.0 - aniso), 0.001);
-    float ToH = dot(T, H);
-    float BoH = dot(B, H);
-    float NoH = max(dot(N, H), 0.0);
-    float d = ToH * ToH / (at * at) + BoH * BoH / (ab * ab) + NoH * NoH;
-    return 1.0 / max(3.14159265 * at * ab * d * d, 1e-6);
-}
-
-float CoatFresnel(vec3 N, vec3 V, float weight)
-{
-    return weight * fresnelSchlickRoughness(max(dot(N, V), 0.0), vec3(0.04), 0.0).x;
-}
-
 BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv);
 Material UnpackMaterial(BakedMaps m);
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material);
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material);
 vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material);
-vec3 SheenData(Material material, vec3 N, vec3 V);
-vec3 SubSurfaceScatteringData(Material material, vec3 N, vec3 L);
-vec3 ThinFilm(vec3 spec, Material m, float HdotV);
-vec3 ClearCoat(Material m, vec3 N, vec3 V, vec3 L, vec3 H, vec3 radiance, float NdotL);
 
 void main()
 {
@@ -300,21 +238,22 @@ void main()
     float F0d = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
     vec3  F0  = mix(vec3(F0d), material.Albedo, material.Metallic);
 
-    vec3 Lo    = DirectionalLightFunc(F0, V, material);
-    vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
+    vec3 Lo        = DirectionalLightFunc(F0, V, material);
+    vec3 reflected = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
 
-    float T = clamp(material.TransmissionWeight, 0.0, 1.0);
-    if (T > 1e-3)
-    {
-        float NdotV = max(dot(N, V), 0.0);
-        float Ft    = 1.0 - pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
-        Ft          = mix(Ft, 1.0 - NdotV, 0.35);
-        vec3 absorb = exp(-material.AttenuationColor * material.Thickness * 4.0);
-        color += material.Albedo * absorb * Ft * T;
-    }
+    float NdotV = max(dot(N, V), 0.0);
+    vec3  F     = fresnelSchlickRoughness(NdotV, vec3(F0d), material.Roughness);
+    float Ft    = clamp(1.0 - max(F.r, max(F.g, F.b)), 0.0, 1.0);
 
-    outAlphaColor = vec4(color, m.Alpha);
-    outAlphaBloom = vec4(max(color - vec3(1.0), 0.0) * m.Alpha, m.Alpha);
+    float T      = clamp(material.TransmissionWeight, 0.0, 1.0);
+    vec3 absorb  = exp(-material.AttenuationColor * max(material.Thickness, 0.02) * 8.0);
+    vec3 color   = reflected * (1.0 - Ft * T) * absorb;
+
+    float alpha = mix(m.Alpha, 1.0 - Ft * 0.85, T);
+    alpha = clamp(alpha, 0.08, 0.75);
+
+    outAlphaColor = vec4(color, alpha);
+    outAlphaBloom = vec4(max(color - vec3(1.0), 0.0) * alpha, alpha);
 }
 
 const uint NO_MAP = 0xFFFFFFFFu;
@@ -330,13 +269,8 @@ BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
     vec4 sheen  = textureLod(TextureMap[p.SheenTextureId], uv, 0.0);
     vec4 aniso  = textureLod(TextureMap[p.AnisotropyTextureId], uv, 0.0);
     vec4 emis   = textureLod(TextureMap[p.EmissionTextureId], uv, 0.0);
-
-    vec4 atten = (p.TranslucentTextureId != NO_MAP)
-        ? textureLod(TextureMap[p.TranslucentTextureId], uv, 0.0)
-        : vec4(0.0);
-    vec4 trans = (p.TranslucentPropertiesTextureId != NO_MAP)
-        ? textureLod(TextureMap[p.TranslucentPropertiesTextureId], uv, 0.0)
-        : vec4(0.0);
+    vec4 atten = (p.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[p.TranslucentTextureId], uv, 0.0) : vec4(0.0);
+    vec4 trans = (p.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[p.TranslucentPropertiesTextureId], uv, 0.0) : vec4(0.0);
 
     BakedMaps m;
     m.Albedo             = albedo.rgb;
@@ -533,41 +467,4 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material)
     ambient += SheenData(material, N_ibl, V) * irradiance * IBL_EXPOSURE * 0.25;
     ambient += material.SSSWeight * material.SSSColor * material.Albedo * irradiance * IBL_EXPOSURE * 0.25;
     return max(ambient, vec3(0.02) * material.Albedo);
-}
-
-vec3 SheenData(Material material, vec3 N, vec3 V)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float rough = max(material.SheenRoughness, 0.04);
-    float fresnel = pow(1.0 - NdotV, 2.0 + 3.0 * rough);
-    return material.SheenColor * material.SheenWeight * fresnel * (1.0 - material.Metallic);
-}
-
-vec3 SubSurfaceScatteringData(Material material, vec3 N, vec3 L)
-{
-    float wrap    = mix(0.25, 0.65, clamp(material.SSSProfile, 0.0, 1.0));
-    float NdotL   = dot(N, L);
-    float wrapped = max(NdotL + wrap, 0.0) / (1.0 + wrap);
-    float scatter = wrapped * mix(0.35, 1.0, clamp(material.Thickness, 0.0, 1.0));
-    scatter      *= material.SSSWeight * (1.0 - material.Metallic);
-    return material.Albedo * material.SSSColor * scatter;
-}
-
-vec3 ThinFilm(vec3 spec, Material m, float HdotV)
-{
-    float t = mix(300.0, 800.0, clamp(m.ThinFilmThickness, 0.0, 1.0));
-    vec3  phase = vec3(t) / vec3(580.0, 550.0, 440.0);
-    vec3  irid  = 0.5 + 0.5 * cos(6.2831853 * phase * HdotV);
-    return mix(spec, spec * irid, m.ThinFilmWeight);
-}
-
-vec3 ClearCoat(Material m, vec3 N, vec3 V, vec3 L, vec3 H, vec3 radiance, float NdotL)
-{
-    if (m.CoatWeight < 1e-3) return vec3(0.0);
-    float NdotV = max(dot(N, V), 0.0);
-    float NDF   = DistributionGGX(N, H, max(m.CoatRoughness, 0.04));
-    float G     = GeometrySmith(N, V, L, m.CoatRoughness);
-    vec3  Fc    = fresnelSchlickRoughness(max(dot(H, V), 0.0), vec3(0.04), m.CoatRoughness);
-    vec3  spec  = (NDF * G * Fc) / max(4.0 * NdotV * NdotL, 1e-4);
-    return spec * m.CoatColor * m.CoatWeight * radiance * NdotL;
 }

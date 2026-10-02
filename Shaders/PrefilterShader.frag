@@ -90,18 +90,6 @@ vec2 Hammersley(uint i, uint N)
 	return vec2(float(i)/float(N), RadicalInverse_VdC(i));
 }
 
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-    float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0)) + 1.0;
-    denom = (3.1415927410125732421875 * denom) * denom;
-    return nom / denom;
-}
-
 vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 {
 	float a = roughness*roughness;
