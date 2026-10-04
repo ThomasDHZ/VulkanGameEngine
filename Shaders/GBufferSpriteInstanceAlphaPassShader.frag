@@ -116,7 +116,7 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material);
 
 void main()
 {
-    PackedMaterial packedMaterial = GetMaterial(PS_MaterialId);
+    PackedMaterial packed = GetMaterial(PS_MaterialId);
 
     vec2 minUV = PS_UVOffset.xy;
     vec2 maxUV = PS_UVOffset.xy + PS_UVOffset.zw;
@@ -129,21 +129,20 @@ void main()
 
     vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
-    vec2 finalUV   = ParallaxOcclusionMapping(UV, viewDirTS, packedMaterial.NormalTextureId, minUV, maxUV);
+    vec2 finalUV   = ParallaxOcclusionMapping(UV, viewDirTS, packed.NormalTextureId, minUV, maxUV);
 
-    BakedMaps m = UnpackBakedMaterial(packedMaterial, finalUV);
-    if (m.Alpha >= packedMaterial.AlphaCutOff || m.Alpha < 0.01) discard;
+    BakedMaps m = UnpackBakedMaterial(packed, finalUV);
+    if (m.Alpha >= packed.AlphaCutOff || m.Alpha < 0.01) discard;
 
     vec3 tN = m.TangentNormal;
     tN.xy *= m.NormalStrength;
     tN = normalize(tN);
-    vec3 normalWS = normalize(TBN * tN);
 
     Material material = UnpackMaterial(m);
-    material.Normal = normalWS;
+    material.Normal = normalize(TBN * tN);
 
     vec3 Lts = normalize(transpose(TBN) * normalize(-GetDirectionalLight(0).LightDirection));
-    material.SelfShadow = HeightSelfShadow(finalUV, Lts, packedMaterial.NormalTextureId, m.Height, minUV, maxUV);
+    material.SelfShadow = HeightSelfShadow(finalUV, Lts, packed.NormalTextureId, m.Height, minUV, maxUV);
 
     vec3 N = material.Normal;
     vec3 V = normalize(-sceneDataBuffer.PerspectiveViewDirection);
@@ -152,18 +151,19 @@ void main()
     float F0d = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
     vec3  F0  = mix(vec3(F0d), material.Albedo, material.Metallic);
 
-    vec3 Lo        = DirectionalLightFunc(F0, V, material);
-    vec3 reflected = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
+    vec3 reflected = ImageBasedLighting(F0, V, N, R, material)
+                   + DirectionalLightFunc(F0, V, material)
+                   + material.Emission;
 
     float NdotV = max(dot(N, V), 0.0);
     vec3  F     = fresnelSchlickRoughness(NdotV, vec3(F0d), material.Roughness);
     float Ft    = clamp(1.0 - max(F.r, max(F.g, F.b)), 0.0, 1.0);
+    float T     = clamp(material.TransmissionWeight, 0.0, 1.0);
 
-    float T      = clamp(material.TransmissionWeight, 0.0, 1.0);
-    vec3 absorb  = exp(-material.AttenuationColor * max(material.Thickness, 0.02) * 8.0);
-    vec3 color   = reflected * (1.0 - Ft * T) * absorb;
+    vec3 absorb = exp(-material.AttenuationColor * max(material.Thickness, 0.02) * 8.0);
+    vec3 color  = reflected * absorb;
 
-    float alpha = mix(m.Alpha, 1.0 - Ft * 0.85, T);
+    float alpha = mix(m.Alpha, mix(0.55, 0.12, Ft), T);
     alpha = clamp(alpha, 0.08, 0.75);
 
     outAlphaColor = vec4(color, alpha);

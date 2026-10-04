@@ -61,7 +61,8 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
 {
 
     //luaScriptingSystem.Update(deltaTime);
-   
+
+
     gameObjectSystem.Update(deltaTime);
     levelSystem.Update(deltaTime);
     collisionSystem.Update();

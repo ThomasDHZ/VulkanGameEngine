@@ -81,6 +81,7 @@ private:
 
         Vector<Material> MaterialList;
         UnorderedMap<VkGuid, uint32> GuidToPoolIndex;
+        UnorderedMap<uint32, VkGuid> PoolIndexToGuid;
 
     public:
 
@@ -89,6 +90,7 @@ private:
          const bool MaterialExists(const MaterialGuid& materialGuid) const;
          Material& FindMaterial(const MaterialGuid& materialGuid);
          uint FindMaterialPoolIndex(const MaterialGuid& materialGuid);
+         VkGuid FindMemoryPoolIndexByGuid(uint memoryPoolIndex);
          void Destroy(const MaterialGuid& materialGuid);
          void Destroy();
          Vector<Material> GetMaterialList() { return MaterialList; }

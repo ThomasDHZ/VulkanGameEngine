@@ -442,62 +442,38 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
 	return meshDrawMessageList;
 }
 
-//void SpriteSystem::SortSpriteLayers()
-//{
-//	uint32 currentInstanceIndex = 0;
-//	auto view = gameObjectSystem.EntityRegistry.view<Sprite, Transform2DComponent>();
-//	for (auto [entity, sprite, transform] : view.each())
-//	{
-//		bool spriteLayerExists = false;
-//		auto [sprite, transform] = gameObjectSystem.EntityRegistry.get<Sprite, Transform2DComponent>(entity);
-//		for (auto& layer : SpriteLayerList)
-//		{
-//			if (layer.SpriteDrawLayer == sprite.SpriteLayer)
-//			{
-//				if (layer.InstanceCount == 0) layer.StartInstanceIndex = currentInstanceIndex;
-//				layer.InstanceCount++;
-//				spriteLayerExists = true;
-//				break;
-//			}
-//		}
-//		if (!spriteLayerExists)
-//		{
-//			SpriteLayer newLayer;
-//			newLayer.SpriteDrawLayer = sprite.SpriteLayer;
-//			newLayer.StartInstanceIndex = currentInstanceIndex;
-//			newLayer.InstanceCount = 1;
-//			SpriteLayerList.push_back(newLayer);
-//		}
-//		currentInstanceIndex++;
-//	}
-//}
-
-const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId)
+const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId, bool alphaPass)
 {
-	Vector<MeshDrawMessage> meshDrawMessageList;
-
 	const Mesh& spriteMesh = meshSystem.FindMesh(instanceMeshId);
 	const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
 	const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer();
 	const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
 
+	Vector<MeshDrawMessage> meshDrawMessageList;
 	auto group = gameObjectSystem.EntityRegistry.group<Sprite, Transform2DComponent>();
-	meshDrawMessageList.emplace_back(MeshDrawMessage
-		{
-			.MeshId = spriteMesh.MeshId,
-			.Drawlayer = 0,
-			.VertexBufferBinding = 0,
-			.VertexCount = meshAsset.VertexCount,
-			.IndexCount = meshAsset.IndexCount,
-			.InstanceCount = static_cast<uint32>(group.size()),
-			.FirstIndex = 0,
-			.StartInstanceIndex = 0,
-			.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-			.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-			.VertexBuffer = instanceBuffer.Buffer(),
-			.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
-		});
+	for (auto [entity, sprite, transform] : group.each())
+	{
+		const SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
+		const SpriteVram& vram = spriteSystem.FindSpriteVram(sprite.SpriteVramId);
+		const Material& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
 
+		if ((material.FeatureMask & kMaterialFeature_UsingAlpha) != alphaPass) continue;
+		meshDrawMessageList.emplace_back(MeshDrawMessage
+			{
+				.MeshId = spriteMesh.MeshId,
+				.Drawlayer = 0,
+				.VertexBufferBinding = 0,
+				.VertexCount = meshAsset.VertexCount,
+				.IndexCount = meshAsset.IndexCount,
+				.InstanceCount = static_cast<uint32>(group.size()),
+				.FirstIndex = 0,
+				.StartInstanceIndex = 0,
+				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+				.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+				.VertexBuffer = instanceBuffer.Buffer(),
+				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
+			});
+	}
 	return meshDrawMessageList;
 }
 

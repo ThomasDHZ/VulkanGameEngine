@@ -62,6 +62,7 @@ VkGuid MaterialSystem::LoadMaterial(const nlohmann::json& json)
     gpuMaterial.IOR                                     = material.IOR;
     gpuMaterial.AlphaCutOff                             = material.AlphaCutOff;
     GuidToPoolIndex[materialGuid] = poolIndex;
+    PoolIndexToGuid[poolIndex] = materialGuid;
     return materialGuid;
 }
 
@@ -87,6 +88,12 @@ uint MaterialSystem::FindMaterialPoolIndex(const MaterialGuid& materialGuid)
 {
     auto it = GuidToPoolIndex.find(materialGuid);
     return it != GuidToPoolIndex.end() ? it->second : UINT32_MAX;
+}
+
+VkGuid MaterialSystem::FindMemoryPoolIndexByGuid(uint memoryPoolIndex) 
+{
+    auto It = PoolIndexToGuid.find(memoryPoolIndex);
+    return It != PoolIndexToGuid.end() ? It->second : VkGuid{};
 }
 
 void MaterialSystem::Destroy(const MaterialGuid& materialGuid)

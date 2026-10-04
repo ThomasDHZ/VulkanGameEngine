@@ -181,7 +181,7 @@ public:
 	 const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
 	 const Vector<MeshDrawMessage> DrawMesh(const String& meshKey);
 	 const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
-	 const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId);
+	 const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, bool alphaPass);
 
 	 void Update(const float& deltaTime);
 	 void Destroy(uint meshId);

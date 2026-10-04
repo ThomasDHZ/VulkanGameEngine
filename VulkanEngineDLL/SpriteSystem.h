@@ -72,15 +72,16 @@ private:
 private:
 
     Vector<uint32>				                      FreeSpriteIndicesList;
+    Vector<VulkanDrawMessage>                         SpriteDrawMessage;
     UnorderedMap<VramSpriteGuid, Vector<Animation2D>> SpriteAnimationMap;
 
     Vector<Animation2D>                               LoadSpriteAnimations(const nlohmann::json& json);
+
 
 public:
     uint32                                            SpriteMeshId;
     Vector<SpriteVram>                                SpriteVramList;
 
-    void                                              AddSpriteBatchLayer(uint32 spriteLayer);
      VramSpriteGuid                                   LoadSpriteVRAM(const nlohmann::json& json);
      void                                             CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId);
      void                                             Update(const float& deltaTime);

@@ -128,7 +128,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                         .PipelinePackageGuid = subPass.PipelinePackageId,
                         .PushConstant = subPass.ShaderPushConstant,
                         .PushConstantUpdateRules = subPass.PushConstantUpdates,
-                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId),
+                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, subPass.AlphaRenderPass),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
                         .OffScreenRenderPass = subPass.OffScreenFrameBuffer

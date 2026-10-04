@@ -100,14 +100,12 @@ void MemoryPoolSystem::StartUp()
     UpdateMemoryPoolHeader(MemoryPoolTypes::kMeshBuffer, MeshInitialCapacity);
 
     size_t totalGpuBufferSize = sizeof(MemoryPoolBufferHeader) + GpuDataBufferMemoryPoolSize;
-    GpuDataBufferIndex = bufferSystem.CreateDynamicBuffer(nullptr, totalGpuBufferSize,
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    GpuDataBufferIndex = bufferSystem.CreateDynamicBuffer(nullptr, totalGpuBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     VulkanBuffer& buffer = bufferSystem.FindVulkanBuffer(GpuDataBufferIndex);
     MappedBufferPtr = buffer.BufferMappedData();
 
     SceneDataBuffer sceneData = {};
-    SceneDataBufferIndex = bufferSystem.CreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer),
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    SceneDataBufferIndex = bufferSystem.CreateDynamicBuffer(&sceneData, sizeof(SceneDataBuffer), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     VulkanBuffer& sceneDataBuffer = bufferSystem.FindVulkanBuffer(SceneDataBufferIndex);
     SceneDataPtr = sceneDataBuffer.BufferMappedData();
 
@@ -257,6 +255,88 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
     vkUpdateDescriptorSets(vulkan.LogicalDevice(), static_cast<uint32>(writeDescriptorSetList.size()), writeDescriptorSetList.data(), 0, nullptr);
 }
 
+void MemoryPoolSystem::SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex)
+{
+    SwapMemoryPoolElement(MemoryPoolTypes::kSpriteInstanceBuffer, oldSlotIndex, newSlotIndex);
+
+    MemoryPoolSubBufferHeader& memoryPoolSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    auto UpdateFreeIndices = [&memoryPoolSubPool](uint index)
+        {
+            auto it = std::find(memoryPoolSubPool.FreeIndices.begin(), memoryPoolSubPool.FreeIndices.end(), index);
+            if (memoryPoolSubPool.IsSlotActive[index])
+            {
+                if (it != memoryPoolSubPool.FreeIndices.end()) memoryPoolSubPool.FreeIndices.erase(it);
+            }
+            else if (it == memoryPoolSubPool.FreeIndices.end()) memoryPoolSubPool.FreeIndices.emplace_back(index);
+        };
+
+    SpriteInstance& spriteInstance1 = UpdateSpriteInstance(oldSlotIndex);
+    SpriteInstance& spriteInstance2 = UpdateSpriteInstance(newSlotIndex);
+
+    std::swap(spriteInstance1.SpriteId, spriteInstance2.SpriteId);
+    std::swap(memoryPoolSubPool.IsSlotActive[oldSlotIndex], memoryPoolSubPool.IsSlotActive[newSlotIndex]);
+
+    UpdateFreeIndices(oldSlotIndex);
+    UpdateFreeIndices(newSlotIndex);
+}
+
+void MemoryPoolSystem::SortSpriteInstancePool()
+{
+    auto ListActiveSlots = [](const MemoryPoolSubBufferHeader& h) 
+        {
+            Vector<uint32> active;
+            const uint32 number = static_cast<uint32>(h.IsSlotActive.size());
+            active.reserve(h.ActiveCount != UINT32_MAX ? h.ActiveCount : number);
+            for (uint32 x = 0; x < number; ++x)
+            {
+                if (h.IsSlotActive[x]) active.push_back(x);
+            }
+            return active;
+        };
+
+    auto hasAlpha = [this](uint32 slot)
+        {
+            const SpriteInstance& sprite = UpdateSpriteInstance(slot);
+            const Material& material = materialSystem.FindMaterial(materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
+            return (material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0;
+        };
+
+    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    auto slots = ListActiveSlots(pool);
+    std::stable_sort(slots.begin(), slots.end(), [&](uint32 a, uint32 b)
+        {
+            return !hasAlpha(a) && hasAlpha(b);
+        });
+
+    for (uint32 x = 0; x < slots.size(); ++x)
+    {
+        if (slots[x] != x)
+        {
+            SwapSpriteInstanceMemoryPoolElement(x, slots[x]);
+            std::swap(slots[x], slots[std::find(slots.begin() + x, slots.end(), x) - slots.begin()]);
+        }
+    }
+}
+
+void MemoryPoolSystem::SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex)
+{
+    if (oldSlotIndex == newSlotIndex) return;
+
+    MemoryPoolSubBufferHeader& memoryPoolSubPool = MemorySubPoolHeader[memoryPoolType];
+    if (oldSlotIndex >= memoryPoolSubPool.Capacity || newSlotIndex >= memoryPoolSubPool.Capacity) throw std::out_of_range("slot out of range");
+
+    uint32 oldOffset = memoryPoolSubPool.Offset + (oldSlotIndex * memoryPoolSubPool.Size);
+    uint32 newOffset = memoryPoolSubPool.Offset + (newSlotIndex * memoryPoolSubPool.Size);
+
+    void* swapCopyPtr = memorySystem.AddPtrBuffer<void*>(memoryPoolSubPool.Size, __FILE__, __LINE__, __func__);
+    std::memcpy(swapCopyPtr, static_cast<byte*>(MappedBufferPtr) + newOffset, memoryPoolSubPool.Size);
+    std::memcpy(static_cast<byte*>(MappedBufferPtr) + newOffset, static_cast<byte*>(MappedBufferPtr) + oldOffset, memoryPoolSubPool.Size);
+    std::memcpy(static_cast<byte*>(MappedBufferPtr) + oldOffset, swapCopyPtr, memoryPoolSubPool.Size);
+    memorySystem.DeletePtr(swapCopyPtr);
+
+    memoryPoolSubPool.IsDirty = true;
+}
+
 uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
 {
     MemoryPoolSubBufferHeader& subPoolHeader = MemorySubPoolHeader[memoryPoolToUpdate];
@@ -289,9 +369,7 @@ void MemoryPoolSystem::UpdateMemoryPool()
 {
     if (IsSceneBufferDirty)
     {
-        vmaFlushAllocation(bufferSystem.VmaAllocatorHandle(),
-            bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).BufferAllocation(),
-            0, sizeof(SceneDataBuffer));
+        vmaFlushAllocation(bufferSystem.VmaAllocatorHandle(), bufferSystem.FindVulkanBuffer(SceneDataBufferIndex).BufferAllocation(), 0, sizeof(SceneDataBuffer));
         IsSceneBufferDirty = false;
     }
 
@@ -305,7 +383,6 @@ void MemoryPoolSystem::UpdateMemoryPool()
     {
         if (sub.IsDirty)
         {
-            // Offset is already from the start of the mapped buffer (includes header).
             size_t start = sub.Offset;
             size_t len = sub.ActiveCount * sub.Size;
             if (len > 0)

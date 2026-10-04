@@ -161,6 +161,7 @@ private:
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();
+	void													 SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex);
 
 public:
 
@@ -187,41 +188,43 @@ public:
 	bool													 IsHeaderDirty = true;
 	bool													 IsDescriptorSetDirty = true;
 
-	 void													 StartUp();
-	 uint32													 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
-	 void													 UpdateMemoryPool();
-	 void													 UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding);
-	 void													 UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding);
-	 MeshPropertiesStruct&									 UpdateMesh(uint32 index);
-	 GPUMaterial&											 UpdateMaterial(uint32 index);
-	 DirectionalLight&										 UpdateDirectionalLight(uint32 index);
-	 PointLight&											 UpdatePointLight(uint32 index);
-	 TextureMetadataHeader&									 UpdateTexture2DMetadataHeader(uint32 index);
-	 TextureMetadataHeader&									 UpdateTexture3DMetadataHeader(uint32 index);
-	 TextureMetadataHeader&									 UpdateTextureCubeMapMetadataHeader(uint32 index);
-	 SpriteInstance&										 UpdateSpriteInstance(uint32 index);
-	 SceneDataBuffer&										 UpdateSceneDataBuffer();
+	void													 StartUp();
+	uint32													 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
+	void													 UpdateMemoryPool();
+	void													 UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding);
+	void													 UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding);
+	void													 SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex);
+	void													 SortSpriteInstancePool();
+	void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
+	void													 ResetMemoryPool();
+	
+	MeshPropertiesStruct&									 UpdateMesh(uint32 index);
+	GPUMaterial&											 UpdateMaterial(uint32 index);
+	DirectionalLight&										 UpdateDirectionalLight(uint32 index);
+	PointLight&												 UpdatePointLight(uint32 index);
+	TextureMetadataHeader&									 UpdateTexture2DMetadataHeader(uint32 index);
+	TextureMetadataHeader&									 UpdateTexture3DMetadataHeader(uint32 index);
+	TextureMetadataHeader&									 UpdateTextureCubeMapMetadataHeader(uint32 index);
+	SpriteInstance&											 UpdateSpriteInstance(uint32 index);
+	SceneDataBuffer&										 UpdateSceneDataBuffer();
 
-	 uint FindDirectionalLightIndex(void* ptr);
-	 uint FindPointLightIndex(void* ptr);
+	uint													 FindDirectionalLightIndex(void* ptr);
+	uint													 FindPointLightIndex(void* ptr);
 
-	 uint32													 AddToMemoryPool(VulkanTexture& texture);
-	 Vector<SpriteInstance*>								 GetActiveSpriteInstancePointers();
+	uint32													 AddToMemoryPool(VulkanTexture& texture);
+	Vector<SpriteInstance*>									 GetActiveSpriteInstancePointers();
 
-	 Vector<MeshPropertiesStruct>							 MeshBufferList();
-	 Vector<GPUMaterial>									 MaterialBufferList();
-	 Vector<DirectionalLight>								 DirectionalLightBufferList();
-	 Vector<PointLight>										 PointLightBufferList();
-	 Vector<SpriteInstance>									 SpriteInstanceBufferList();
+	Vector<MeshPropertiesStruct>							 MeshBufferList();
+	Vector<GPUMaterial>										 MaterialBufferList();
+	Vector<DirectionalLight>								 DirectionalLightBufferList();
+	Vector<PointLight>										 PointLightBufferList();
+	Vector<SpriteInstance>									 SpriteInstanceBufferList();
 
-	 void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
-	 void													 ResetMemoryPool();
-
-	 const MemoryPoolSubBufferHeader						 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
-	 const Vector<VkDescriptorBufferInfo>					 GetSceneDataBufferDescriptor() const;
-	 const Vector<VkDescriptorBufferInfo>					 GetBindlessDataBufferDescriptor() const;
-	 const Vector<VkDescriptorImageInfo>					 GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const;
-	 const MemoryPoolLoader									 GetMemoryPoolInfo();
+	const MemoryPoolSubBufferHeader							 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
+	const Vector<VkDescriptorBufferInfo>					 GetSceneDataBufferDescriptor() const;
+	const Vector<VkDescriptorBufferInfo>					 GetBindlessDataBufferDescriptor() const;
+	const Vector<VkDescriptorImageInfo>						 GetSubPassInputTextureDescriptor(VkGuid& renderPassId) const;
+	const MemoryPoolLoader									 GetMemoryPoolInfo();
 };
 ENGINE_DLL_EXPORT extern  MemoryPoolSystem& memoryPoolSystem;
 inline MemoryPoolSystem& MemoryPoolSystem::Get()
