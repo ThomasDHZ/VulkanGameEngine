@@ -99,6 +99,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{CB
 	ProjectSection(SolutionItems) = preProject
 		Shaders\BindlessHelpers.glsl = Shaders\BindlessHelpers.glsl
 		Shaders\Constants.glsl = Shaders\Constants.glsl
+		Shaders\LightingEvaluation.glsl = Shaders\LightingEvaluation.glsl
 		Shaders\Lights.glsl = Shaders\Lights.glsl
 		Shaders\MaterialPropertiesBuffer.glsl = Shaders\MaterialPropertiesBuffer.glsl
 		Shaders\Includes\MemoryPoolBindings.glsl = Shaders\Includes\MemoryPoolBindings.glsl

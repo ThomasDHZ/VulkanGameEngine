@@ -77,7 +77,9 @@ void main()
     vec3 B = normalize((VS_InstanceTransform * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
     if (VS_FlipSprite.y == 1) B = -B;
     
-    vec3 N = normalize(cross(T, B));
+vec3 N = normalize(cross(T, B));
+if (VS_FlipSprite.x != VS_FlipSprite.y)
+    N = -N;
     
     PS_Position = world.xyz;
 	PS_UV = vertex.UV;
