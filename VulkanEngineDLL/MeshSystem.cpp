@@ -396,12 +396,19 @@ const Vector<Mesh> MeshSystem::FindMeshByMeshType(MeshTypeEnum meshType)
 	return result;
 }
 
-const Vector<MeshDrawMessage> MeshSystem::DrawMesh(const String& meshKey)
+const Vector<MeshDrawMessage> MeshSystem::DrawMesh(const String& meshKey, bool alphaPass)
 {
 	Vector<MeshDrawMessage> meshDrawMessageList;
 	const Vector<Mesh>& meshList = meshSystem.FindMeshByMeshKey(meshKey);
 	for (auto& mesh : meshList)
 	{
+		if (alphaPass)
+		{
+			if (mesh.MaterialId == VkGuid()) continue;
+			const Material material = materialSystem.FindMaterial(mesh.MaterialId);
+			if ((material.FeatureMask & kMaterialFeature_UsingAlpha) != alphaPass) continue;
+		}
+
 		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(mesh.SharedAssetId);
 		meshDrawMessageList.emplace_back(MeshDrawMessage
 			{
@@ -419,12 +426,19 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(const String& meshKey)
 	return meshDrawMessageList;
 }
 
-const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
+const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType, bool alphaPass)
 {
 	Vector<MeshDrawMessage> meshDrawMessageList;
 	const Vector<Mesh>& meshList = meshSystem.FindMeshByMeshType(meshType);
 	for (auto& mesh : meshList)
 	{
+		if (alphaPass)
+		{
+			if (mesh.MaterialId == VkGuid()) continue;
+			const Material material = materialSystem.FindMaterial(mesh.MaterialId);
+			if ((material.FeatureMask & kMaterialFeature_UsingAlpha) != alphaPass) continue;
+		}
+
 		const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(mesh.SharedAssetId);
 		meshDrawMessageList.emplace_back(MeshDrawMessage
 			{
@@ -444,36 +458,31 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType)
 
 const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId, bool alphaPass)
 {
+	memoryPoolSystem.SortSpriteInstancePool();
+	const uint32 firstAlpha = memoryPoolSystem.FindFirstAlphaSpriteIndex();
+	const uint32 start = alphaPass ? firstAlpha : 0;
+	const uint32 count = alphaPass ? memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).ActiveCount - firstAlpha : memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).ActiveCount;
+
 	const Mesh& spriteMesh = meshSystem.FindMesh(instanceMeshId);
 	const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
-	const VkBuffer& indexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer();
 	const VulkanBuffer& instanceBuffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex);
 
 	Vector<MeshDrawMessage> meshDrawMessageList;
-	auto group = gameObjectSystem.EntityRegistry.group<Sprite, Transform2DComponent>();
-	for (auto [entity, sprite, transform] : group.each())
-	{
-		const SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
-		const SpriteVram& vram = spriteSystem.FindSpriteVram(sprite.SpriteVramId);
-		const Material& material = materialSystem.FindMaterial(vram.SpriteMaterialID);
-
-		if ((material.FeatureMask & kMaterialFeature_UsingAlpha) != alphaPass) continue;
-		meshDrawMessageList.emplace_back(MeshDrawMessage
-			{
-				.MeshId = spriteMesh.MeshId,
-				.Drawlayer = 0,
-				.VertexBufferBinding = 0,
-				.VertexCount = meshAsset.VertexCount,
-				.IndexCount = meshAsset.IndexCount,
-				.InstanceCount = static_cast<uint32>(group.size()),
-				.FirstIndex = 0,
-				.StartInstanceIndex = 0,
-				.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-				.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
-				.VertexBuffer = instanceBuffer.Buffer(),
-				.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
-			});
-	}
+	meshDrawMessageList.emplace_back(MeshDrawMessage
+		{
+			.MeshId = spriteMesh.MeshId,
+			.Drawlayer = 0,
+			.VertexBufferBinding = 0,
+			.VertexCount = meshAsset.VertexCount,
+			.IndexCount = meshAsset.IndexCount,
+			.InstanceCount = count,
+			.FirstIndex = 0,
+			.StartInstanceIndex = start,
+			.VertexOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+			.InstanceOffset = memoryPoolSystem.GpuDataMemoryPoolHeader.SpriteInstanceOffset,
+			.VertexBuffer = instanceBuffer.Buffer(),
+			.IndexBuffer = bufferSystem.FindVulkanBuffer(meshAsset.IndexBufferId).Buffer(),
+		});
 	return meshDrawMessageList;
 }
 

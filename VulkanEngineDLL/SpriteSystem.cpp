@@ -91,7 +91,6 @@ Vector<Animation2D> SpriteSystem::LoadSpriteAnimations(const nlohmann::json& jso
 
 void SpriteSystem::Update(const float& deltaTime)
 {
-    memoryPoolSystem.SortSpriteInstancePool();
     auto view = gameObjectSystem.EntityRegistry.view<GameObject, Sprite, Transform2DComponent>();
     for (auto [entity, gameObject, sprite, transform] : view.each())
     {

@@ -162,6 +162,7 @@ private:
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();
 	void													 SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex);
+	void													 SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex);
 
 public:
 
@@ -193,7 +194,6 @@ public:
 	void													 UpdateMemoryPool();
 	void													 UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding);
 	void													 UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding);
-	void													 SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex);
 	void													 SortSpriteInstancePool();
 	void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
 	void													 ResetMemoryPool();
@@ -219,6 +219,7 @@ public:
 	Vector<DirectionalLight>								 DirectionalLightBufferList();
 	Vector<PointLight>										 PointLightBufferList();
 	Vector<SpriteInstance>									 SpriteInstanceBufferList();
+	uint32													 FindFirstAlphaSpriteIndex();
 
 	const MemoryPoolSubBufferHeader							 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
 	const Vector<VkDescriptorBufferInfo>					 GetSceneDataBufferDescriptor() const;

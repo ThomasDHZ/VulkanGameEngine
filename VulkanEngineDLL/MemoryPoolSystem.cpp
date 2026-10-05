@@ -282,40 +282,72 @@ void MemoryPoolSystem::SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, 
 
 void MemoryPoolSystem::SortSpriteInstancePool()
 {
-    auto ListActiveSlots = [](const MemoryPoolSubBufferHeader& h) 
-        {
-            Vector<uint32> active;
-            const uint32 number = static_cast<uint32>(h.IsSlotActive.size());
-            active.reserve(h.ActiveCount != UINT32_MAX ? h.ActiveCount : number);
-            for (uint32 x = 0; x < number; ++x)
-            {
-                if (h.IsSlotActive[x]) active.push_back(x);
-            }
-            return active;
-        };
+    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    if (!MappedBufferPtr || pool.ActiveCount == 0) return;
 
-    auto hasAlpha = [this](uint32 slot)
+    byte* base = static_cast<byte*>(MappedBufferPtr) + pool.Offset;
+    auto spriteAt = [&](uint32 slot) -> const SpriteInstance&
         {
-            const SpriteInstance& sprite = UpdateSpriteInstance(slot);
+            return *reinterpret_cast<const SpriteInstance*>(base + slot * pool.Size);
+        };
+    auto hasAlpha = [&](uint32 slot)
+        {
+            const SpriteInstance& sprite = spriteAt(slot);
             const Material& material = materialSystem.FindMaterial(materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
             return (material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0;
         };
 
-    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    auto slots = ListActiveSlots(pool);
+    Vector<uint32> slots;
+    slots.reserve(pool.ActiveCount);
+    for (uint32 x = 0; x < pool.IsSlotActive.size(); ++x)
+    {
+        if (pool.IsSlotActive[x]) slots.push_back(x);
+    }
+
     std::stable_sort(slots.begin(), slots.end(), [&](uint32 a, uint32 b)
         {
             return !hasAlpha(a) && hasAlpha(b);
         });
 
-    for (uint32 x = 0; x < slots.size(); ++x)
+    const uint32 slotSize = static_cast<uint32>(slots.size());
+    Vector<byte> packed(slotSize * pool.Size);
+    for (uint32 x = 0; x < slotSize; ++x)
     {
-        if (slots[x] != x)
-        {
-            SwapSpriteInstanceMemoryPoolElement(x, slots[x]);
-            std::swap(slots[x], slots[std::find(slots.begin() + x, slots.end(), x) - slots.begin()]);
-        }
+        std::memcpy(packed.data() + x * pool.Size, base + slots[x] * pool.Size, pool.Size);
     }
+    if (slotSize > 0) std::memcpy(base, packed.data(), slotSize * pool.Size);
+
+    std::fill(pool.IsSlotActive.begin(), pool.IsSlotActive.end(), byte{ 0x00 });
+    pool.FreeIndices.clear();
+    for (uint32 x = 0; x < slotSize; ++x)
+    {
+        pool.IsSlotActive[x] = 1;
+    }
+    for (uint32 x = slotSize; x < pool.Capacity; ++x)
+    {
+        pool.FreeIndices.push_back(pool.Capacity - 1 - x); 
+    }
+    pool.ActiveCount = slotSize;
+    pool.IsDirty = true;
+}
+
+uint32 MemoryPoolSystem::FindFirstAlphaSpriteIndex()
+{
+    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+    if (!MappedBufferPtr || pool.ActiveCount == 0) return pool.ActiveCount; 
+
+    const byte* base = static_cast<const byte*>(MappedBufferPtr) + pool.Offset;
+    const uint32 limit = std::min(pool.ActiveCount, static_cast<uint32>(pool.IsSlotActive.size()));
+
+    for (uint32 x = 0; x < limit; ++x)
+    {
+        if (!pool.IsSlotActive[x]) continue;
+
+        const SpriteInstance& sprite = *reinterpret_cast<const SpriteInstance*>(base + x * pool.Size);
+        const Material& material = materialSystem.FindMaterial( materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
+        if ((material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0) return x;
+    }
+    return pool.ActiveCount;
 }
 
 void MemoryPoolSystem::SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex)

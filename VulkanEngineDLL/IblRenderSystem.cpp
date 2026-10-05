@@ -43,7 +43,7 @@ Vector<RenderPassNode> IblRenderSystem::CreateDrawCommands(VkCommandBuffer& comm
                         .RenderPassGuid = renderPassGuid,
                         .PipelinePackageGuid = subPass.PipelinePackageId,
                         .PushConstant = subPass.ShaderPushConstant,
-                        .DrawMeshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.RenderAsCubemap() ? meshSystem.DrawMesh("__SkyBoxMesh__") : meshSystem.DrawMesh(subPass.MeshType),
+                        .DrawMeshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.RenderAsCubemap() ? meshSystem.DrawMesh("__SkyBoxMesh__", false) : meshSystem.DrawMesh(subPass.MeshType, false),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
                         .OffScreenRenderPass = subPass.OffScreenFrameBuffer

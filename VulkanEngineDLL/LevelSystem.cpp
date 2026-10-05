@@ -121,14 +121,13 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                 }
 
                 Vector<MeshDrawMessage> meshList;
-                meshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.RenderAsCubemap() ? meshSystem.DrawMesh("__SkyBoxMesh__") : meshSystem.DrawMesh(subPass.MeshType);
                 vulkanSubPassMessageList.emplace_back(VulkanDrawMessage
                     {
                         .RenderPassGuid = renderPassGuid,
                         .PipelinePackageGuid = subPass.PipelinePackageId,
                         .PushConstant = subPass.ShaderPushConstant,
                         .PushConstantUpdateRules = subPass.PushConstantUpdates,
-                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshList : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, subPass.AlphaRenderPass),
+                        .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshSystem.DrawMesh(subPass.MeshType, subPass.AlphaRenderPass) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, subPass.AlphaRenderPass),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
                         .OffScreenRenderPass = subPass.OffScreenFrameBuffer

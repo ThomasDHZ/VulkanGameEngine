@@ -125,17 +125,17 @@ struct MeshAssetData
 
 struct Mesh
 {
-	uint32 MeshId = UINT32_MAX;
-	uint32 ParentGameObjectId = UINT32_MAX;
-	uint64 SharedAssetId = UINT64_MAX;
-	uint32 ObjectDataIndex = UINT32_MAX;
+	uint32		 MeshId = UINT32_MAX;
+	uint32		 ParentGameObjectId = UINT32_MAX;
+	uint64		 SharedAssetId = UINT64_MAX;
+	uint32		 ObjectDataIndex = UINT32_MAX;
 	MeshTypeEnum Type = MeshTypeEnum::kMesh_Undefined;
-	vec3 Position = vec3(0.0f);
-	vec3 Rotation = vec3(0.0f);
-	vec3 Scale = vec3(1.0f);
-	VkGuid MaterialId;
-	bool IsTransformDirty = true;
-	bool IsMaterialDirty = true;
+	vec3		 Position = vec3(0.0f);
+	vec3		 Rotation = vec3(0.0f);
+	vec3		 Scale = vec3(1.0f);
+	VkGuid		 MaterialId;
+	bool		 IsTransformDirty = true;
+	bool		 IsMaterialDirty = true;
 };
 
 struct VertexLayout
@@ -157,7 +157,7 @@ private:
 	MeshSystem(MeshSystem&&) = delete;
 	MeshSystem& operator=(MeshSystem&&) = delete;
 
-	Vector<uint32> FreeMeshIds;
+	Vector<uint32> FreeMeshIds;	
 	UnorderedMap<uint64, uint32> MeshAssetLookup;
 	Vector<MeshAssetData> MeshAssetDataList;
 	uint32 GetNextMeshId();
@@ -166,29 +166,29 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	 uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
-	 uint CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
-	 uint CreateSpriteMesh();
-	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
-	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);
-	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor);
-	 uint CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor);
-	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color);
-	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
-	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
-	 uint CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
-	 const Vector<Mesh> FindMeshByMeshKey(const String& meshKey);
-	 const Vector<Mesh> FindMeshByMeshType(MeshTypeEnum meshType);
-	 const Vector<MeshDrawMessage> DrawMesh(const String& meshKey);
-	 const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType);
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	 uint						   CreateSpriteMesh();
+	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
+	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);
+	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor);
+	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor);
+	 uint						   CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color);
+	 uint						   CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color);
+	 uint						   CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor);
+	 uint						   CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor);
+	 const Vector<Mesh>			   FindMeshByMeshKey(const String& meshKey);
+	 const Vector<Mesh>			   FindMeshByMeshType(MeshTypeEnum meshType);
+	 const Vector<MeshDrawMessage> DrawMesh(const String& meshKey, bool alphaPass);
+	 const Vector<MeshDrawMessage> DrawMesh(MeshTypeEnum meshType, bool alphaPass);
 	 const Vector<MeshDrawMessage> DrawInstancedMesh(uint32 instanceMeshId, bool alphaPass);
 
-	 void Update(const float& deltaTime);
-	 void Destroy(uint meshId);
-	 void Destroy();
-	 const Mesh& FindMesh(const uint& meshId);
-	 MeshAssetData& FindMeshAssetData(const uint64& meshAssetId);
-	 Mesh& GetMesh(const uint& listIndex) { return MeshList[listIndex]; }
+	 void						   Update(const float& deltaTime);
+	 void						   Destroy(uint meshId);
+	 void						   Destroy();
+	 const Mesh&				   FindMesh(const uint& meshId);
+	 MeshAssetData&				   FindMeshAssetData(const uint64& meshAssetId);
+	 Mesh&						   GetMesh(const uint& listIndex) { return MeshList[listIndex]; }
 };
 ENGINE_DLL_EXPORT extern  MeshSystem& meshSystem;
 inline MeshSystem& MeshSystem::Get()
