@@ -141,33 +141,39 @@ void main()
     Material material = UnpackMaterial(m);
     material.Normal = normalize(TBN * tN);
 
+    vec2 uvSpan = max(maxUV - minUV, vec2(1e-5));
+    float worldPerUV = length(PS_SpriteSize / uvSpan);
+    float height = m.Height * sceneData.HeightScale * worldPerUV;
     vec3 Lts = normalize(transpose(TBN) * normalize(-GetDirectionalLight(0).LightDirection));
     material.SelfShadow = HeightSelfShadow(finalUV, Lts, packed.NormalTextureId, m.Height, minUV, maxUV);
+    material.Position = WorldPos - normalize(PS_N) * height;
 
-    vec3 N = material.Normal;
-    vec3 V = normalize(-sceneDataBuffer.PerspectiveViewDirection);
-    vec3 R = reflect(-V, N);
+    vec3  toCamera  = sceneDataBuffer.PerspectiveCameraPosition - material.Position;
+    vec3  N         = material.Normal;
+    vec3  V         = dot(toCamera, toCamera) > 1e-6 ? normalize(toCamera) : normalize(-sceneDataBuffer.PerspectiveViewDirection);
+    vec3  R         = reflect(-V, N);
 
-    float F0d = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
-    vec3  F0  = mix(vec3(F0d), material.Albedo, material.Metallic);
+    float F0d       = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
+    vec3  F0        = mix(vec3(F0d), material.Albedo, material.Metallic);
 
-    vec3 reflected = ImageBasedLighting(F0, V, N, R, material)
-                   + DirectionalLightFunc(F0, V, material)
-                   + material.Emission;
+    vec3 reflected  = ImageBasedLighting(F0, V, N, R, material)
+                    + DirectionalLightFunc(F0, V, material)
+                    + PointLightFunc(F0, V, material)
+                    + material.Emission;
 
-    float NdotV = max(dot(N, V), 0.0);
-    vec3  F     = fresnelSchlickRoughness(NdotV, vec3(F0d), material.Roughness);
-    float Ft    = clamp(1.0 - max(F.r, max(F.g, F.b)), 0.0, 1.0);
-    float T     = clamp(material.TransmissionWeight, 0.0, 1.0);
+    float NdotV     = max(dot(N, V), 0.0);
+    vec3  F         = fresnelSchlickRoughness(NdotV, vec3(F0d), material.Roughness);
+    float Ft        = clamp(1.0 - max(F.r, max(F.g, F.b)), 0.0, 1.0);
+    float T         = clamp(material.TransmissionWeight, 0.0, 1.0);
 
-    vec3 absorb = exp(-material.AttenuationColor * max(material.Thickness, 0.02) * 8.0);
-    vec3 color  = reflected * absorb;
+    vec3 absorb     = exp(-material.AttenuationColor * max(material.Thickness, 0.02) * 8.0);
+    vec3 color      = reflected * absorb;
 
-    float alpha = mix(m.Alpha, mix(0.55, 0.12, Ft), T);
-    alpha = clamp(alpha, 0.08, 0.75);
+    float alpha     = mix(m.Alpha, mix(0.55, 0.12, Ft), T);
+    alpha           = clamp(alpha, 0.08, 0.75);
 
-    outAlphaColor = vec4(color, alpha);
-    outAlphaBloom = vec4(max(color - vec3(1.0), 0.0) * alpha, alpha);
+    outAlphaColor   = vec4(color, alpha);
+    outAlphaBloom   = vec4(max(color - vec3(1.0), 0.0) * alpha, alpha);
 }
 
 const uint NO_MAP = 0xFFFFFFFFu;
@@ -316,9 +322,10 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         vec3 N = material.Normal;
         vec3 T, B;
 
-        float atten = 1.0 - clamp(distance / light.LightRadius, 0.0, 1.0);
-        atten *= atten;
-        vec3 radiance = vec3(1.0f) * light.LightIntensity * atten * material.SelfShadow;
+        float d = max(distance, 0.05);
+        float window = clamp(1.0 - pow(d / light.LightRadius, 4.0), 0.0, 1.0);
+        window *= window;
+        vec3 radiance = light.LightColor * light.LightIntensity * (window / (d * d)) * material.SelfShadow;
         float NdotL   = max(dot(N, L), 0.0);
 
         Lo += SubSurfaceScatteringData(material, N, L) * radiance;

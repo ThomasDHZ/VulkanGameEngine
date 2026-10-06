@@ -163,7 +163,17 @@ void main()
     vec3 Lts = normalize(transpose(TBN) * normalize(-GetDirectionalLight(0).LightDirection));
     float selfShadow = HeightSelfShadowTiled(finalUV, Lts, packedMaterial.NormalTextureId, m.Height);
 
-    outPosition   = vec4(WorldPos, 1.0);
+    vec3 perspectiveWorldPos = WorldPos;
+    if (sceneData.UseHeightMap != 0) {
+        vec2 uvDx = dFdx(TexCoords);
+        vec2 uvDy = dFdy(TexCoords);
+        float uvSpan = max(0.5 * (length(uvDx) + length(uvDy)), 1e-5);
+        float worldSpan = 0.5 * (length(dFdx(WorldPos)) + length(dFdy(WorldPos)));
+        float height = m.Height * sceneData.HeightScale * (worldSpan / uvSpan);
+        perspectiveWorldPos = WorldPos - normalize(PS_N) * height;
+    }
+
+    outPosition = vec4(perspectiveWorldPos, 1.0);
     outAlbedo     = vec4(m.Albedo, m.Alpha);
     outEmission   = vec4(m.Emission, 1.0);
     outNormalData = vec4(OctahedronEncode(normalWS) * 0.5 + 0.5, float(m.FeatureMask) / 65535.0, selfShadow);

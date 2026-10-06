@@ -48,6 +48,10 @@ uint32 LightSystem::LoadLight(const nlohmann::json& json)
     return UINT32_MAX;
 }
 
+void LightSystem::Update()
+{
+}
+
 uint LightSystem::AllocateLight(GameObjectTypeEnum lightType)
 {
     switch (lightType)

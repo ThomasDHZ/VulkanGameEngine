@@ -37,7 +37,7 @@
   ],
   "GameObjectSprite": {
     "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380",
-    "SpriteLayer": 0,
+    "SpriteLayer": 1,
     "SpriteScale": [ 2.0, 2.0 ],
     "SpritePixelSize": [
       128,

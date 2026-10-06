@@ -83,19 +83,30 @@ void LevelSystem::Update(const float& deltaTime)
     Camera_PerspectiveUpdate(*PerspectiveCamera);
 
     const Camera& ortho = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex];
-    const Camera& persp = *PerspectiveCamera;
+    Camera& persp = *PerspectiveCamera;
+
+    vec3 lookAt = ortho.Position + vec3(ortho.Width * 0.5f, ortho.Height * 0.5f, 0.0f);
+    float eyeDist = ortho.Height; // vertical match to the ortho frame
+
+    vec3 eye = lookAt + vec3(0.0f, 0.0f, eyeDist); // +Z toward the camera
+    float fovY = 2.0f * atan((ortho.Height * 0.5f) / eyeDist);
+
+    persp.Position = eye;
+    persp.Front = normalize(lookAt - eye);          // (0,0,-1)
+    persp.ViewMatrix = glm::lookAt(eye, lookAt, vec3(0.0f, 1.0f, 0.0f));
+    persp.ProjectionMatrix = glm::perspective(fovY, ortho.Width / ortho.Height, 0.1f, 10000.0f);
+    persp.ProjectionMatrix[1][1] *= -1.0f;
 
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
     sceneDataBuffer.OrthoProjection = ortho.ProjectionMatrix;
     sceneDataBuffer.OrthoView = ortho.ViewMatrix;
+    sceneDataBuffer.PerspectiveCameraPosition = eye;
+    sceneDataBuffer.PerspectiveViewDirection = persp.Front;
+    sceneDataBuffer.InversePerspectiveView = glm::inverse(persp.ViewMatrix);
+    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(persp.ProjectionMatrix);
     sceneDataBuffer.InverseOrthoProjection = glm::inverse(ortho.ProjectionMatrix);
     sceneDataBuffer.InverseOrthoView = glm::inverse(ortho.ViewMatrix);
-
-    sceneDataBuffer.InversePerspectiveProjection = glm::inverse(persp.ProjectionMatrix);
-    sceneDataBuffer.InversePerspectiveView = glm::inverse(persp.ViewMatrix);
-    sceneDataBuffer.PerspectiveCameraPosition = persp.Position;
-    sceneDataBuffer.PerspectiveViewDirection = persp.Front;
-
+    sceneDataBuffer.PerspectiveViewDirection = vec3(0.0f, 0.0f, -1.0f);
     sceneDataBuffer.InvertResolution = vec2(1.0f / (float)vulkan.RenderPassResolution().x, 1.0f / (float)vulkan.RenderPassResolution().y);
 }
 

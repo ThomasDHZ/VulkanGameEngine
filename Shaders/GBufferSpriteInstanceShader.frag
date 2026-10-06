@@ -171,7 +171,12 @@ void main()
     vec3 Lts = normalize(transpose(TBN) * normalize(-GetDirectionalLight(0).LightDirection));
     float selfShadow = HeightSelfShadow(finalUV, Lts, packedMaterial.NormalTextureId, m.Height, minUV, maxUV);
 
-    outPosition   = vec4(WorldPos, 1.0);
+    vec2 uvSpan = max(maxUV - minUV, vec2(1e-5));
+    float worldPerUV = length(PS_SpriteSize / uvSpan);
+    float height = m.Height * sceneData.HeightScale * worldPerUV;
+    vec3 perspectiveWorldPos = WorldPos - normalize(PS_N) * height;
+   
+    outPosition   = vec4(perspectiveWorldPos, 1.0);
     outAlbedo     = vec4(m.Albedo, m.Alpha);
     outEmission   = vec4(m.Emission, 1.0);
     outNormalData = vec4(OctahedronEncode(normalWS) * 0.5 + 0.5, float(m.FeatureMask) / 65535.0, selfShadow);

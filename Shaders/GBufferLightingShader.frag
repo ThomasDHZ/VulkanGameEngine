@@ -55,6 +55,7 @@ void main()
         outBloom = vec4(0.0);
         return;
     }
+
     if ((material.FeatureMask & FEAT_ALBEDO_ONLY) != 0u)
     {
         outColor = vec4(material.Albedo, 1.0);
@@ -62,18 +63,20 @@ void main()
         return;
     }
 
-    vec3 N = material.Normal;
-    vec3 V       = normalize(-sceneDataBuffer.PerspectiveViewDirection);
-    vec3 R       = reflect(-V, N);
-    float F0d = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
-    vec3  F0  = mix(vec3(F0d), material.Albedo, material.Metallic);
+    vec3  toCamera  = sceneDataBuffer.PerspectiveCameraPosition - material.Position;
+    vec3  N         = material.Normal;
+    vec3  V         = dot(toCamera, toCamera) > 1e-6 ? normalize(toCamera) : normalize(-sceneDataBuffer.PerspectiveViewDirection);
+    vec3  R         = reflect(-V, N);
+    float F0d       = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
+    vec3  F0        = mix(vec3(F0d), material.Albedo, material.Metallic);
 
-    vec3 Lo    = DirectionalLightFunc(F0, V, material);
-   // Lo     += PointLightFunc(F0, V, material);
-    vec3 color = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
+    //vec3 Lo         = DirectionalLightFunc(F0, V, material);
+    vec3 Lo           = PointLightFunc(F0, V, material);
+    vec3 color      = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
 
-    outColor = vec4(color, 1.0);
-    outBloom = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
+     const PointLightBuffer light = GetPointLight(0);
+    outColor = vec4(Lo, 1.0);
+    outBloom        = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
 
 Material UnpackMaterial()
@@ -175,31 +178,37 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
 
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
 {
+    const float kLayerSpacing = 64.0;
     vec3 Lo = vec3(0.0);
+
     for (uint x = 0; x < bindlessBuffer.PointLightCount; ++x)
     {
         const PointLightBuffer light = GetPointLight(x);
-        if(light.LightActive != 1u) continue;
+        if (light.LightActive != 1u) continue;
 
-        vec3  toLight  = light.LightPosition - material.Position;
-        float distance = length(toLight);
+        float spriteLayer = material.Position.z / kLayerSpacing;
+        float lightLayer  = 1; // uint/float layer index, not world Z
+        float layerDelta  = abs(spriteLayer - lightLayer);
+
+        vec2 toLightXY = light.LightPosition.xy - material.Position.xy;
+        float distance = length(toLightXY);
         if (distance > light.LightRadius) continue;
 
-        vec3 L = toLight / max(distance, 1e-4);
+        float atten = 1.0 - clamp(distance / light.LightRadius, 0.0, 1.0);
+        atten *= atten;
+        atten *= exp(-layerDelta * layerDelta); // 1 on the light's layer, ~0.37 one layer away, ~0.02 two away
+
+        vec3 L = normalize(vec3(toLightXY, (lightLayer - spriteLayer) * kLayerSpacing));
         vec3 H = normalize(V + L);
         vec3 N = material.Normal;
         vec3 T, B;
 
-        float atten = 1.0 - clamp(distance / light.LightRadius, 0.0, 1.0);
-        atten *= atten;
-        vec3 radiance = vec3(1.0f) * light.LightIntensity * atten * material.SelfShadow;
-        float NdotL   = max(dot(N, L), 0.0);
+        vec3 radiance = light.LightColor * light.LightIntensity * atten * material.SelfShadow;
+        float NdotL = max(dot(N, L), 0.25); // billboard facing camera; geometric NdotL is ~0 for a 2D light
 
         Lo += SubSurfaceScatteringData(material, N, L) * radiance;
         float back = max(-dot(N, L), 0.0);
-        Lo += material.Albedo * material.SSSColor * material.SSSWeight * back * material.Thickness * radiance *exp(-1.0 / max(material.Thickness, 0.05));
-
-        if (NdotL <= 0.0) continue;
+        Lo += material.Albedo * material.SSSColor * material.SSSWeight * back * material.Thickness * radiance * exp(-1.0 / max(material.Thickness, 0.05));
 
         AnisoFrame(N, material.AnisotropyRotation, T, B);
         float NDF = DistributionGGX_Aniso(N, T, B, H, material.Roughness, material.Anisotropy);
