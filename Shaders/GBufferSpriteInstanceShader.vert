@@ -68,7 +68,7 @@ void main()
         case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * 64.0, 1.0);
+    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * 32.0, 1.0);
     vec3 T = normalize((VS_InstanceTransform * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
     if (VS_FlipSprite.x == 1) T = -T;
 

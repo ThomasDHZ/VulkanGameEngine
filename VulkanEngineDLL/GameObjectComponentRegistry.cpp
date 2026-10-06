@@ -110,7 +110,8 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
                 .ShadowStrength = ctx.Json["ShadowStrength"],
                 .ShadowBias = ctx.Json["ShadowBias"],
                 .ShadowSoftness = ctx.Json["ShadowSoftness"],
-                 .LightActive = 1
+                .LightLayer = ctx.Json["LightLayer"],
+                .LightActive = 1
             };
         });
 

@@ -36,6 +36,7 @@ struct PointLight
 	float  ShadowStrength = 1.0f;
 	float  ShadowBias = 0.012f;
 	float  ShadowSoftness = 0.008f;
+	int    LightLayer = 0;
 	uint   LightActive = 1;
 };
 

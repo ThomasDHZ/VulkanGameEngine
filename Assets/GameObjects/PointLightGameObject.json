@@ -10,7 +10,8 @@
       "LightIntensity": 10.0,
       "ShadowStrength": 0.70,
       "ShadowBias": 0.015,
-      "ShadowSoftness": 0.30
+      "ShadowSoftness": 0.30,
+      "LightLayer": -1
     },
     {
       "GameObjectPosition": [
