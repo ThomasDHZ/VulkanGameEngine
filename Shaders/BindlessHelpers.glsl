@@ -4,12 +4,14 @@ MeshProperitiesBuffer GetMesh(uint index)
     if (index >= bindlessBuffer.MeshCount) 
     {
         mesh.MaterialIndex = 0u;
+        mesh.MeshLayerIndex = 0;
         mesh.MeshTransform = mat4(1.0);
         return mesh;
     }
 
     uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
     mesh.MaterialIndex = bindlessBuffer.Data[baseByteLocation++];
+    mesh.MeshLayerIndex = int(bindlessBuffer.Data[baseByteLocation++]);
     mesh.MeshTransform = mat4(
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),

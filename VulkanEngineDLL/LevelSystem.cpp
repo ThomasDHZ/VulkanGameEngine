@@ -110,6 +110,16 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InvertResolution = vec2(1.0f / (float)vulkan.RenderPassResolution().x, 1.0f / (float)vulkan.RenderPassResolution().y);
 }
 
+int LevelSystem::FindLevelLayer(uint meshId)
+{
+    auto it = std::find_if(LevelLayerList.begin(), LevelLayerList.end(), [meshId](const LevelLayer& levelLayer) 
+        {
+            return levelLayer.MeshId == meshId;
+        });
+    if (it != LevelLayerList.end())  return it->LevelLayerIndex;
+    else return 0;
+}
+
 Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime)
 {
     Vector<RenderPassNode> renderPassNodeList;
@@ -291,7 +301,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexDataSize = LevelLayerList[x].VertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = LevelLayerList[x].VertexList.data()
         };
-        meshSystem.CreateMesh("__LevelMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh("__LevelMesh__" + std::to_string(x), MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
 
     }
 }

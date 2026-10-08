@@ -5,6 +5,7 @@
 #include "EngineConfigSystem.h"
 #include "GameObjectSystem.h"
 #include "SpriteSystem.h"
+#include "LevelSystem.h"
 
 MeshSystem& meshSystem = MeshSystem::Get();
 
@@ -319,6 +320,7 @@ void MeshSystem::Update(const float& deltaTime)
 			model = glm::scale(model, mesh.Scale);
 
 			props.MeshTransform = model;
+			props.MeshLayerIndex = levelSystem.FindLevelLayer(mesh.MeshId);
 			mesh.IsTransformDirty = false;
 		}
 

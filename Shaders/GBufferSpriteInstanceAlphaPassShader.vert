@@ -49,6 +49,7 @@ layout(push_constant) uniform SceneDataBuffer
     float HeightScale;
 } sceneData;
 
+#include "Constants.glsl"
 #include "BindlessHelpers.glsl"
 
 struct Vertex2D
@@ -68,7 +69,7 @@ void main()
         case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer), 1.0);
+    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
     vec3 T = normalize((VS_InstanceTransform * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
     if (VS_FlipSprite.x == 1) T = -T;
 

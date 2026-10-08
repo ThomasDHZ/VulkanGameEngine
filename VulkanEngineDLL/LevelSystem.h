@@ -63,7 +63,7 @@ struct LevelTileSet
     ivec2			  TileSetBounds = ivec2();
     vec2			  TileScale = vec2(5.0f);
     vec2			  TileUVSize = vec2();
-    Tile* LevelTileListPtr = nullptr;
+    Tile*             LevelTileListPtr = nullptr;
     size_t            LevelTileCount = 0;
 };
 
@@ -118,6 +118,7 @@ public:
     void                                       LoadLevel(const char* levelPath);
     void                                       LevelEditorRenderPass(const char* levelPath);
     void                                       Update(const float& deltaTime);
+    int                                        FindLevelLayer(uint meshId);
 
     Vector<RenderPassNode>                     CreateDrawCommands(VkCommandBuffer& commandBuffer, const float& deltaTime);
     LevelLayout                                GetLevelLayout();

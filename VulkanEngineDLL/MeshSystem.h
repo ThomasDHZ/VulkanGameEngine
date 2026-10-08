@@ -111,6 +111,7 @@ struct alignas(4) MeshBufferHeader
 struct MeshPropertiesStruct
 {
 	uint   MaterialIndex;
+	uint   MeshLayerIndex;
 	mat4   MeshTransform;
 };
 

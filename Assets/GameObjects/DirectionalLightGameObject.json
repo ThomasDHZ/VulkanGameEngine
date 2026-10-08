@@ -6,7 +6,7 @@
     {
       "ComponentType": 5,
       "LightColor": [ 0.50, 0.55, 0.50 ],
-      "LightDirection": [ -0.441, 0.063, -0.22 ],
+      "LightDirection": [ -0.241, 1.0, -0.036 ],
       "LightIntensity": 3.2,
       "ShadowStrength": 0.70,
       "ShadowBias": 0.015,
