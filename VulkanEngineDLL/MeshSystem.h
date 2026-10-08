@@ -167,8 +167,8 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
-	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, int meshLayer, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, int meshLayer, VkGuid materialId = VkGuid());
 	 uint						   CreateSpriteMesh();
 	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
 	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);

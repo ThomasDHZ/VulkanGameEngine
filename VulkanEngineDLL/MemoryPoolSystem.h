@@ -159,6 +159,7 @@ private:
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
 
+	void													 RefreshGpuHeaderCounts();
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();

@@ -86,13 +86,13 @@ void LevelSystem::Update(const float& deltaTime)
     Camera& persp = *PerspectiveCamera;
 
     vec3 lookAt = ortho.Position + vec3(ortho.Width * 0.5f, ortho.Height * 0.5f, 0.0f);
-    float eyeDist = ortho.Height; // vertical match to the ortho frame
+    float eyeDist = ortho.Height; 
 
-    vec3 eye = lookAt + vec3(0.0f, 0.0f, eyeDist); // +Z toward the camera
+    vec3 eye = lookAt + vec3(0.0f, 0.0f, eyeDist); 
     float fovY = 2.0f * atan((ortho.Height * 0.5f) / eyeDist);
 
     persp.Position = eye;
-    persp.Front = normalize(lookAt - eye);          // (0,0,-1)
+    persp.Front = normalize(lookAt - eye);
     persp.ViewMatrix = glm::lookAt(eye, lookAt, vec3(0.0f, 1.0f, 0.0f));
     persp.ProjectionMatrix = glm::perspective(fovY, ortho.Width / ortho.Height, 0.1f, 10000.0f);
     persp.ProjectionMatrix[1][1] *= -1.0f;
@@ -108,6 +108,9 @@ void LevelSystem::Update(const float& deltaTime)
     sceneDataBuffer.InverseOrthoView = glm::inverse(ortho.ViewMatrix);
     sceneDataBuffer.PerspectiveViewDirection = vec3(0.0f, 0.0f, -1.0f);
     sceneDataBuffer.InvertResolution = vec2(1.0f / (float)vulkan.RenderPassResolution().x, 1.0f / (float)vulkan.RenderPassResolution().y);
+
+    Vector<MeshPropertiesStruct> meshList = memoryPoolSystem.MeshBufferList();
+    int a = 34;
 }
 
 int LevelSystem::FindLevelLayer(uint meshId)
@@ -179,8 +182,9 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
         for (uint y = 0; y < levelBounds.y; y++)
         {
             const uint& tileId = tileIdMapList[(y * levelBounds.x) + x];
-            const Tile& tile = tileSetList[tileId];
+            if (tileId == 0) continue;
 
+            const Tile& tile = tileSetList[tileId];
             const float LeftSideUV = tile.TileUVOffset.x;
             const float RightSideUV = tile.TileUVOffset.x + tileSet.TileUVSize.x;
             const float TopSideUV = tile.TileUVOffset.y;
@@ -188,26 +192,10 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
 
             const uint VertexCount = vertexList.size();
             const vec2 TilePixelSize = tileSet.TilePixelSize * tileSet.TileScale;
-            const Vertex2DLayout BottomLeftVertex =
-            {
-                { x * TilePixelSize.x, y * TilePixelSize.y },
-                { LeftSideUV, BottomSideUV }
-            };
-            const Vertex2DLayout BottomRightVertex =
-            {
-                { (x * TilePixelSize.x) + TilePixelSize.x, y * TilePixelSize.y },
-                { RightSideUV, BottomSideUV }
-            };
-            const Vertex2DLayout TopRightVertex =
-            {
-                { (x * TilePixelSize.x) + TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
-                { RightSideUV, TopSideUV }
-            };
-            const Vertex2DLayout TopLeftVertex =
-            {
-                { x * TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y },
-                { LeftSideUV, TopSideUV }
-            };
+            const Vertex2DLayout BottomLeftVertex =  { {  x * TilePixelSize.x,                     y * TilePixelSize.y },                    { LeftSideUV, BottomSideUV } };
+            const Vertex2DLayout BottomRightVertex = { { (x * TilePixelSize.x) + TilePixelSize.x,  y * TilePixelSize.y },                    { RightSideUV, BottomSideUV } };
+            const Vertex2DLayout TopRightVertex =    { { (x * TilePixelSize.x) + TilePixelSize.x, (y * TilePixelSize.y) + TilePixelSize.y }, { RightSideUV, TopSideUV } };
+            const Vertex2DLayout TopLeftVertex =     { {  x * TilePixelSize.x,                    (y * TilePixelSize.y) + TilePixelSize.y }, { LeftSideUV, TopSideUV } };
 
             vertexList.emplace_back(BottomLeftVertex);
             vertexList.emplace_back(BottomRightVertex);
@@ -217,9 +205,9 @@ LevelLayer LevelSystem::LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileS
             indexList.emplace_back(VertexCount + 0);
             indexList.emplace_back(VertexCount + 1);
             indexList.emplace_back(VertexCount + 2);
+            indexList.emplace_back(VertexCount + 0);
             indexList.emplace_back(VertexCount + 2);
             indexList.emplace_back(VertexCount + 3);
-            indexList.emplace_back(VertexCount + 0);
 
             tileMap.emplace_back(tile);
         }
@@ -301,7 +289,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexDataSize = LevelLayerList[x].VertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = LevelLayerList[x].VertexList.data()
         };
-        meshSystem.CreateMesh("__LevelMesh__" + std::to_string(x), MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh("__LevelMesh__" + std::to_string(x), MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, x, LevelLayerList[x].MaterialId);
 
     }
 }
@@ -336,7 +324,7 @@ void LevelSystem::LoadSkyBox()
         .VertexData = skyBoxVertices.data()
     };
 
-    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, indexList, VkGuid());
+    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, indexList, 0, VkGuid());
 }
 
 LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)
