@@ -9,11 +9,13 @@
 struct PointLightComponent
 {
     uint PointLightMemoryPoolIndex = UINT32_MAX;
+    uint PointLightCameraId = UINT32_MAX;
 };
 
 struct DirectionalLightComponent
 {
     uint DirectionalLightMemoryPoolIndex = UINT32_MAX;
+    uint DirectionalLightCameraId = UINT32_MAX;
 };
 
 class ENGINE_DLL_EXPORT  LightSystem

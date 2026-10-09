@@ -9,7 +9,7 @@
 #include "MaterialPropertiesBuffer.glsl"
 #include "MemoryPoolBindings.glsl"
 
-layout(push_constant) uniform Push
+layout(push_constant) uniform SceneDataBuffer
 {
     int   MeshBufferIndex;
     int   UseHeightMap;

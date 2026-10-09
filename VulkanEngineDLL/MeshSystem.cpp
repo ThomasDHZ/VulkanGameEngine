@@ -54,6 +54,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 			.Rotation = vec3(0.0f),
 			.Scale = vec3(1.0f),
 			.MaterialId = materialId,
+			.MeshLayer = meshLayer
 		});
 	return meshId;
 }
@@ -95,6 +96,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 			.Rotation = vec3(0.0f),
 			.Scale = vec3(1.0f),
 			.MaterialId = materialId,
+			.MeshLayer = meshLayer
 		});
 	return meshId;
 }
@@ -321,10 +323,9 @@ void MeshSystem::Update(const float& deltaTime)
 			model = glm::scale(model, mesh.Scale);
 
 			props.MeshTransform = model;
-			props.MeshLayerIndex = levelSystem.FindLevelLayer(mesh.MeshId);
 			mesh.IsTransformDirty = false;
 		}
-
+			props.MeshLayerIndex = mesh.MeshLayer;
 		if (mesh.IsMaterialDirty)
 		{
 			uint32 matIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterialPoolIndex(mesh.MaterialId) : 0u;

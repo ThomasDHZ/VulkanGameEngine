@@ -108,11 +108,10 @@ struct alignas(4) MeshBufferHeader
 	uint MeshSize;
 };
 
-struct MeshPropertiesStruct
-{
-	uint   MaterialIndex;
-	uint   MeshLayerIndex;
-	mat4   MeshTransform;
+struct MeshPropertiesStruct {
+	uint  MaterialIndex;
+	uint  MeshLayerIndex;
+	mat4  MeshTransform;
 };
 
 struct MeshAssetData
@@ -135,6 +134,7 @@ struct Mesh
 	vec3		 Rotation = vec3(0.0f);
 	vec3		 Scale = vec3(1.0f);
 	VkGuid		 MaterialId;
+	int			 MeshLayer;
 	bool		 IsTransformDirty = true;
 	bool		 IsMaterialDirty = true;
 };
