@@ -42,7 +42,7 @@ void main()
 {
     MeshProperitiesBuffer mesh = GetMesh(sceneData.MeshBufferIndex);
 
-    vec4 world = mesh.MeshTransform * vec4(VS_Position.xy, 0.0, 1.0);
+    vec4 world = mesh.MeshTransform * vec4(VS_Position.xy, float(mesh.MeshLayerIndex) * SpriteLayerSpacing, 1.0);
     vec3 T = normalize((mesh.MeshTransform * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
     vec3 B = normalize((mesh.MeshTransform * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
     vec3 N = normalize(cross(T, B));

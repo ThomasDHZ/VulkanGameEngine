@@ -19,13 +19,12 @@ layout(push_constant) uniform SceneDataBuffer
 layout(location = 0) in vec3 WorldPos;
 layout(location = 1) in vec2 TexCoords;
 
-layout(location = 0) out vec4 outColor;
-layout(location = 1) out vec4 outBloom;
-
 #include "BindlessHelpers.glsl"
 
 void main()
 {
-    outColor      = vec4(1.0f);
-    outBloom      = vec4(1.0f);
+    MeshProperitiesBuffer mesh           = GetMesh(sceneData.MeshBufferIndex);
+    PackedMaterial        packedMaterial = GetMaterial(mesh.MaterialIndex);
+    vec4 albedoTexture = texture(TextureMap[p.AlbedoTextureId], uv, -0.5);
+    if (albedoTexture.Alpha < packedMaterial.AlphaCutOff) discard;
 }

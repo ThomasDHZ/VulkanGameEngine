@@ -450,8 +450,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
 
     VkImageMemoryBarrier toOld = src;
     toOld.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-    toOld.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        | VK_ACCESS_SHADER_READ_BIT;
+    toOld.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
     toOld.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     toOld.newLayout = oldLayout;
 

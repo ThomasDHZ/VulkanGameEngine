@@ -10,7 +10,7 @@ Camera Camera_CreatePixelPerfectOrthographic(const glm::ivec2& renderResolution,
 	cam.Position = glm::vec3(worldPosition.x, worldPosition.y, 0.0f);
 	cam.ViewScreenSize = glm::vec2(renderResolution);
 
-	cam.ProjectionMatrix = glm::ortho(0.0f, cam.Width, cam.Height, 0.0f, -1000.0f, 1000.0f);
+	cam.ProjectionMatrix = glm::ortho(0.0f, cam.Width, cam.Height, 0.0f, -10000.0f, 10000.0f);
 	cam.ViewMatrix = glm::translate(glm::mat4(1.0f), -cam.Position);
 
 	return cam;
@@ -18,7 +18,7 @@ Camera Camera_CreatePixelPerfectOrthographic(const glm::ivec2& renderResolution,
 
 void Camera_UpdateOrthographicPixelPerfect(Camera& camera)
 {
-	camera.ProjectionMatrix = glm::ortho(0.0f, camera.Width, camera.Height, 0.0f, -1000.0f, 1000.0f);
+	camera.ProjectionMatrix = glm::ortho(0.0f, camera.Width, camera.Height, 0.0f, -10000.0f, 10000.0f);
 	camera.ViewMatrix = glm::translate(glm::mat4(1.0f), -camera.Position);
 }
 

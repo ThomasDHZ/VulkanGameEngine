@@ -65,5 +65,5 @@ void TextSystem::RenderText(String& text, vec2 textPosition, float scale, vec3 c
         .VertexData = textVertexList.data()
     };
 
-    meshSystem.CreateMesh("__Text__", MeshTypeEnum::kMesh_StaticMesh, vertexData);
+    meshSystem.CreateMesh("__Text__", MeshTypeEnum::kMesh_StaticMesh, vertexData,0);
 }

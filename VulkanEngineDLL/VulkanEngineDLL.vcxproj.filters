@@ -162,9 +162,6 @@
     <ClInclude Include="..\External\xxHash\xxh3.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.h">
-      <Filter>Header Files\External</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="from_json.cpp">

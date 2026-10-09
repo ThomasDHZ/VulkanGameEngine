@@ -108,10 +108,10 @@ struct alignas(4) MeshBufferHeader
 	uint MeshSize;
 };
 
-struct MeshPropertiesStruct
-{
-	uint   MaterialIndex;
-	mat4   MeshTransform;
+struct MeshPropertiesStruct {
+	uint  MaterialIndex;
+	uint  MeshLayerIndex;
+	mat4  MeshTransform;
 };
 
 struct MeshAssetData
@@ -134,6 +134,7 @@ struct Mesh
 	vec3		 Rotation = vec3(0.0f);
 	vec3		 Scale = vec3(1.0f);
 	VkGuid		 MaterialId;
+	int			 MeshLayer;
 	bool		 IsTransformDirty = true;
 	bool		 IsMaterialDirty = true;
 };
@@ -166,8 +167,8 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, VkGuid materialId = VkGuid());
-	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, int meshLayer, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, int meshLayer, VkGuid materialId = VkGuid());
 	 uint						   CreateSpriteMesh();
 	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
 	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);

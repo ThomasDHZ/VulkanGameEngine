@@ -36,6 +36,7 @@ struct PointLight
 	float  ShadowStrength = 1.0f;
 	float  ShadowBias = 0.012f;
 	float  ShadowSoftness = 0.008f;
+	int    LightLayer = 0;
 	uint   LightActive = 1;
 };
 
@@ -158,6 +159,7 @@ private:
 	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
 	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
 
+	void													 RefreshGpuHeaderCounts();
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();

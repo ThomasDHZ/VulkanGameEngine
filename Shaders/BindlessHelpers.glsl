@@ -4,12 +4,14 @@ MeshProperitiesBuffer GetMesh(uint index)
     if (index >= bindlessBuffer.MeshCount) 
     {
         mesh.MaterialIndex = 0u;
+        mesh.MeshLayerIndex = 0;
         mesh.MeshTransform = mat4(1.0);
         return mesh;
     }
 
     uint baseByteLocation = (uint(bindlessBuffer.MeshOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.MeshSize / 4));
     mesh.MaterialIndex = bindlessBuffer.Data[baseByteLocation++];
+    mesh.MeshLayerIndex = int(bindlessBuffer.Data[baseByteLocation++]);
     mesh.MeshTransform = mat4(
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
@@ -95,6 +97,7 @@ PointLightBuffer GetPointLight(uint index)
         light.ShadowStrength = 0.0;
         light.ShadowBias     = 0.0;
         light.ShadowSoftness = 0.0;
+        light.LightLayer     = 0;
         light.LightActive    = 0;
         return light;
     }
@@ -107,6 +110,7 @@ PointLightBuffer GetPointLight(uint index)
     light.ShadowStrength = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowBias     = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowSoftness = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightLayer     = int(bindlessBuffer.Data[baseByteLocation++]);
     light.LightActive    = bindlessBuffer.Data[baseByteLocation++];
     return light;
 }

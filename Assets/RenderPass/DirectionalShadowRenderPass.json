@@ -1,49 +1,105 @@
 {
-  "Name": "SDFShadowRenderPass",
-  "RenderPassId": "208621ed-7291-40c4-92dd-2e2646aff84c",
-  "RenderPipelineList": [
-    "Pipelines/SpriteInstanceDirectionalShadowPipeline.json",
-    "Pipelines/LevelDirectionalShadowPipeline.json"
-
-  ],
-  "RenderPassWidth": 2048,
-  "RenderPassHeight": 2048,
-  "SubPassCount": 1,
-  "UseDefaultRenderResolution": false,
-  "UseCubeMapMultiView": false,
-  "IsRenderedToSwapchain": false,
-  "InputTextureList": [],
-  "SampleCount": 1,
-  "RenderAttachmentList": [
+  "Name": "GBufferRenderPass",
+  "RenderPassId": "fd70c8fe-b846-41f6-9df7-5283b5ffc7d4",
+  "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true,
+    "UseFrameBufferResolution": false
+  },
+  "ShaderList": [
     {
-      "RenderedTextureId": "e114f0de-1b72-4e2d-b5a3-31ef3682d130",
+      "ShaderId": "61d337e4-e9c1-4479-8a84-af89b4207c84",
+      "ShaderFile": "Shaders/GBufferLevelShader2DDepthVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "7afc2c67-50c3-40fc-8cbb-4859394e9e99",
+      "ShaderFile": "Shaders/GBufferLevelShader2DDepthFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/GBufferLevelShader2DDepthPipeline.json",
+    "Pipelines/GBufferSpriteInstanceDepthPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "0494577d-e10f-4d02-8615-05fed5e978a5",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "c09e7dbf-96a1-410f-a24d-02d474fa30bb"
+        }
+      ]
+    },
+    {
+      "PipelinePackageId": "e9e4edcb-197a-4823-9324-9454f6d421ad",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "fc0f2e70-8328-448f-9563-ca62413617b0"
+        }
+      ]
+    }
+  ],
+  "SubPassList": [
+    [
+      {
+        "MeshType": 1,
+        "PipelinePackageId": "0494577d-e10f-4d02-8615-05fed5e978a5",
+        "ShaderPushConstant": "sceneData",
+        "InputAttachmentList": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": false
+      },
+      {
+        "MeshType": 2,
+        "PipelinePackageId": "e9e4edcb-197a-4823-9324-9454f6d421ad",
+        "ShaderPushConstant": null,
+        "InputAttachmentList": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": false,
+        "AlphaRenderPass": false
+      }
+    ]
+  ],
+  "SampleCount": 1,
+  "AttachmentList": [
+    {
+      "Name": "GBuffer Attachment 0: Depth",
+      "RenderedTextureId": "856a750c-cd05-44e6-a4f8-b7809e7b6bd2",
       "MipMapCount": 1,
-      "RenderTextureType": 1,
-      "RenderAttachmentTypes": [ 1 ],
+      "TextureType": 2,
+      "TextureUsageType": 3,
+      "RenderAttachmentTypes": [ 3 ],
       "Format": 124,
       "LoadOp": 1,
-      "StoreOp": 0,
-      "FinalLayout": 4,
+      "StoreOp": 1,
+      "FinalLayout": 3,
       "UseSampler": false,
       "UseMipMaps": false,
-      "IsCubeMapAttachment": false,
-      "IsTextureToExport": false,
       "SamplerCreateInfo": {
         "SType": 31,
-        "MagFilter": 0,
-        "MinFilter": 0,
+        "MagFilter": 1,
+        "MinFilter": 1,
         "MipmapMode": 1,
         "AddressModeU": 2,
         "AddressModeV": 2,
         "AddressModeW": 2,
         "MipLodBias": 0.0,
-        "AnisotropyEnable": true,
-        "MaxAnisotropy": 16.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
         "CompareEnable": false,
         "CompareOp": 7,
         "MinLod": 0.0,
-        "MaxLod": 1.0,
-        "BorderColor": 2,
+        "MaxLod": 1000.0,
+        "BorderColor": 0,
         "UnnormalizedCoordinates": false
       }
     }
@@ -52,11 +108,11 @@
     {
       "SrcSubpass": 4294967295,
       "DstSubpass": 0,
-      "SrcStageMask": 1024,
-      "DstStageMask": 1024,
+      "SrcStageMask": 1,
+      "DstStageMask": 1792,
       "SrcAccessMask": 0,
-      "DstAccessMask": 256,
-      "DependencyFlags": 0
+      "DstAccessMask": 1280,
+      "DependencyFlags": 1
     }
   ],
   "ClearValueList": [
