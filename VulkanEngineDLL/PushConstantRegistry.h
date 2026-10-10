@@ -7,6 +7,7 @@ struct PushConstantContext
 {
     VkGuid                          RenderPassGuid;
     uint32                          MeshId = UINT32_MAX;
+    uint32                          LightId = UINT32_MAX;
     uint32                          DrawIndex = 0;
     uint32                          MipLevel = 0;
     uint32                          MipCount = 0;

@@ -2,12 +2,13 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_KHR_vulkan_glsl : enable
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MaterialPropertiesBuffer.glsl"
 #include "MemoryPoolBindings.glsl"
+#include "MaterialPropertiesBuffer.glsl"
 
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput PositionInput;
 layout(set = 1, binding = 1, input_attachment_index = 1) uniform subpassInput AlbedoInput;
@@ -41,7 +42,7 @@ Material UnpackMaterial();
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material);
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material);
 vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material);
-
+float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos);
 void main()
 {
     Material material = UnpackMaterial();
@@ -143,7 +144,7 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
 
         float NdotL = dot(N, L);
         float NdotV = max(dot(N, V), 0.0);
-        vec3 radiance = light.LightColor * light.LightIntensity;
+        vec3 radiance = light.LightColor * light.LightIntensity * DirectionalShadow(light, material.Position);
         float sss = clamp(material.SSSWeight, 0.0, 1.0);
 
         if (NdotL <= 0.0)
@@ -180,6 +181,29 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
         Lo += ClearCoat(material, N, V, L, H, radiance, NdotL);
     }
     return Lo;
+}
+
+float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos)
+{
+    vec4 ls = light.LightSpaceMatrix * vec4(worldPos, 1.0);
+    vec3 p  = ls.xyz / max(ls.w, 1e-6);
+    vec2 uv = p.xy * 0.5 + 0.5;
+
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+
+    float bias = light.ShadowBias * max(1.0 - abs(p.z), 0.25);
+    float texel = light.ShadowSoftness / 1024.0;
+
+    float blocked = 0.0;
+    for (int y = -1; y <= 1; ++y)
+    {
+        for (int x = -1; x <= 1; ++x)
+        {
+            float d = texture(TextureMap[57], uv + vec2(x, y) * texel).r;
+            blocked += p.z - bias > d ? 1.0 : 0.0;
+        }
+    }
+    return 0.0f;//1.0 - blocked / 9.0 * light.ShadowStrength;
 }
 
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material)

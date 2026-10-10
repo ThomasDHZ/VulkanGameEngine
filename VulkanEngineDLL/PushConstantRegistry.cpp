@@ -72,6 +72,19 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
             shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 
+    RegisterPushConstantValue("directionalLightSceneDataDepthBuffer", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
+        {
+            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "MeshBufferIndex", context.MeshId);
+            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "DirectionalLightBufferIndex", context.LightId);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
+        });
+
+    pushConstantRegistry.RegisterPushConstantValue("materialBaker", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
+        {
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MaterialBakerSubPassIndex", context.DrawIndex);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
+        });
+
     pushConstantRegistry.RegisterPushConstantValue("materialBaker", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
         {
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MaterialBakerSubPassIndex", context.DrawIndex);

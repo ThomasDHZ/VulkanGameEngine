@@ -64,24 +64,32 @@ DirectionalLightBuffer GetDirectionalLight(uint index)
     DirectionalLightBuffer light;
     if (index >= bindlessBuffer.DirectionalLightCount) 
     {
-        light.LightColor     = vec3(0.0);
-        light.LightDirection = vec3(0.0);
-        light.LightIntensity = 0.0;
-        light.ShadowStrength = 0.0;
-        light.ShadowBias     = 0.0;
-        light.ShadowSoftness = 0.0;
-        light.LightActive    = 0;
+        light.LightColor       = vec3(0.0);
+        light.LightDirection   = vec3(0.0);
+        light.LightIntensity   = 0.0;
+        light.ShadowStrength   = 0.0;
+        light.ShadowBias       = 0.0;
+        light.ShadowSoftness   = 0.0;
+        light.LightActive      = 0;
+        light.LightSpaceMatrix = mat4(1.0f);
         return light;
     }
 
-    uint baseByteLocation = (uint(bindlessBuffer.DirectionalLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.DirectionalLightSize / 4));
-    light.LightColor     = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
-    light.LightDirection = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
-    light.LightIntensity = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.ShadowStrength = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.ShadowBias     = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.ShadowSoftness = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.LightActive    = bindlessBuffer.Data[baseByteLocation++];
+    uint baseByteLocation  = (uint(bindlessBuffer.DirectionalLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.DirectionalLightSize / 4));
+    light.LightColor       = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
+    baseByteLocation++;
+    light.LightDirection   = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
+    light.LightIntensity   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.ShadowStrength   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.ShadowBias       = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.ShadowSoftness   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightActive      = bindlessBuffer.Data[baseByteLocation++];
+    baseByteLocation += 4;
+    light.LightSpaceMatrix = mat4(
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
     return light;
 }
 
@@ -90,28 +98,36 @@ PointLightBuffer GetPointLight(uint index)
     PointLightBuffer light;
     if (index >= bindlessBuffer.PointLightCount) 
     {
-        light.LightPosition  = vec3(0.0);
-        light.LightColor     = vec3(0.0);
-        light.LightRadius    = 0.0;
-        light.LightIntensity = 0.0;
-        light.ShadowStrength = 0.0;
-        light.ShadowBias     = 0.0;
-        light.ShadowSoftness = 0.0;
-        light.LightLayer     = 0;
-        light.LightActive    = 0;
+        light.LightPosition    = vec3(0.0);
+        light.LightColor       = vec3(0.0);
+        light.LightRadius      = 0.0;
+        light.LightIntensity   = 0.0;
+        light.ShadowStrength   = 0.0;
+        light.ShadowBias       = 0.0;
+        light.ShadowSoftness   = 0.0;
+        light.LightLayer       = 0;
+        light.LightActive      = 0;
+        light.LightSpaceMatrix = mat4(1.0f);
         return light;
     }
 
-    uint baseByteLocation = (uint(bindlessBuffer.PointLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.PointLightSize / 4));
-    light.LightPosition  = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
-    light.LightColor     = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
-    light.LightRadius    = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.LightIntensity = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.ShadowStrength = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.ShadowBias     = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.ShadowSoftness = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
-    light.LightLayer     = int(bindlessBuffer.Data[baseByteLocation++]);
-    light.LightActive    = bindlessBuffer.Data[baseByteLocation++];
+    uint baseByteLocation  = (uint(bindlessBuffer.PointLightOffset - bindlessBuffer.MeshOffset) / 4) + (index * (bindlessBuffer.PointLightSize / 4));
+    light.LightPosition    = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
+    baseByteLocation++;
+    light.LightColor       = vec3(uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
+    light.LightRadius      = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightIntensity   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.ShadowStrength   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.ShadowBias       = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.ShadowSoftness   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightLayer       = int(bindlessBuffer.Data[baseByteLocation++]);
+    light.LightActive      = bindlessBuffer.Data[baseByteLocation++];
+    baseByteLocation += 2;
+    light.LightSpaceMatrix = mat4(
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
     return light;
 }
 

@@ -18,6 +18,18 @@
   "PresentingAttachmentTextureId": "de6ca646-874f-4986-9daf-912dbc3aa7d0",
   "MainRenderPassList": [
     {
+      "RenderPass": "RenderPass/DirectionalShadowRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
+      "RenderPass": "RenderPass/PointLightShadowRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
+      "RenderPass": "RenderPass/PointLightShadowRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
       "RenderPass": "RenderPass/GBufferRenderPass.json",
       "OneTimeDraw": false
     },

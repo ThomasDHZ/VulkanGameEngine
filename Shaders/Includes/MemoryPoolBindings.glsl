@@ -6,8 +6,8 @@ layout(std430, binding = 0) buffer SceneDataBuffer
     uint CubeMapId;
     uint IrradianceMapId;
     uint PrefilterMapId;
-    uint _padIds0;
-    uint _padIds1;
+    uint DirectionalLightDepthMapId;
+    uint PointLightDepthMapId;
 
     mat4 OrthoProjection;
     mat4 OrthoView;

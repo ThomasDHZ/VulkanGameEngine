@@ -68,6 +68,7 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     collisionSystem.Update();
     spriteSystem.Update(deltaTime);
     meshSystem.Update(deltaTime);
+    lightSystem.UpdateDirectionalLightViewProjection(0);
     memoryPoolSystem.UpdateMemoryPool();
     renderSystem.Update(windowHandle, deltaTime);
     inputSystem.Update(deltaTime);

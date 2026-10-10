@@ -1,11 +1,11 @@
 {
-  "Name": "GBufferLevelShader2DDepthPipeline",
-  "PipelineId": "776bd015-90ca-4063-b94c-179f4b899ba9",
+  "Name": "GBufferSpriteInstancePointLightDepthPipeline",
+  "PipelineId": "fc0f2e70-8328-448f-9563-ca62413617b0",
   "ShaderList": [
-    "5a9cf844-ab4d-4f35-8c22-4b974c3d5b89",
-    "dc3bd253-5ef6-47f2-972a-26dccfe7b6b3"
+    "3101a941-f1a2-4739-9160-37fbfd9134ca",
+    "7afc2c67-50c3-40fc-8cbb-4859394e9e99"
   ],
-  "VertexType": 0,
+  "VertexType": 1,
   "SubPassId": 0,
   "ViewportList": [],
   "ScissorList": [],

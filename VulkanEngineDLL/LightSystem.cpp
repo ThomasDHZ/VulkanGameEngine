@@ -4,8 +4,30 @@
 #include "ShaderSystem.h"
 #include "RenderSystem.h"
 #include "GameObjectSystem.h"
+#include "CameraSystem.h"
 
 LightSystem& lightSystem = LightSystem::Get();
+
+void LightSystem::UpdateDirectionalLightViewProjection(uint lightIndex)
+{
+    DirectionalLight& light = memoryPoolSystem.UpdateDirectionalLight(lightIndex);
+    vec3 L = glm::normalize(light.LightDirection);
+    vec3 up = abs(L.y) > 0.99f ? vec3(0.0f, 0.0f, 1.0f) : vec3(0.0f, 1.0f, 0.0f);
+
+    const Camera& ortho = cameraSystem.CameraList[cameraSystem.ActiveCameraIndex];
+    vec2 sceneSize = ortho.ViewScreenSize / ortho.Zoom;
+    vec3 sceneCenter = vec3(ortho.Position.x + sceneSize.x * 0.5f, ortho.Position.y + sceneSize.y * 0.5f, 0.0f);
+    float dist = glm::length(sceneSize) + LayerDistance;
+    vec3 eye = sceneCenter - L * dist;
+    mat4 view = glm::lookAt(eye, sceneCenter, up);
+
+    float halfW = sceneSize.x * 0.5f + LayerDistance;
+    float halfH = sceneSize.y * 0.5f + LayerDistance;
+    mat4 proj = glm::ortho(-halfW, halfW, -halfH, halfH, 0.0f, dist * 2.0f);
+    proj[1][1] *= -1.0f;
+
+    light.LightSpaceMatrix = proj * view;
+}
 
 uint32 LightSystem::LoadLight(const nlohmann::json& json)
 {

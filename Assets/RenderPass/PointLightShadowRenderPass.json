@@ -1,6 +1,6 @@
 {
-  "Name": "DirectionalShadowRenderPass",
-  "RenderPassId": "fd70c8fe-b846-41f6-9df7-5283b5ffc7d4",
+  "Name": "PointLightShadowRenderPass",
+  "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
   "RenderPassResolution": [ 1024, 1024 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
@@ -11,23 +11,23 @@
   },
   "ShaderList": [
     {
-      "ShaderId": "5a9cf844-ab4d-4f35-8c22-4b974c3d5b89",
-      "ShaderFile": "Shaders/GBufferLevelShader2DDepthVert.spv",
+      "ShaderId": "61d337e4-e9c1-4479-8a84-af89b4207c84",
+      "ShaderFile": "Shaders/GBufferLevelShader2DPointDepthVert.spv",
       "ShaderStage": 1
     },
     {
-      "ShaderId": "dc3bd253-5ef6-47f2-972a-26dccfe7b6b3",
-      "ShaderFile": "Shaders/GBufferLevelShader2DDepthFrag.spv",
+      "ShaderId": "92f30c71-5d13-4ff5-99cf-140879eda853",
+      "ShaderFile": "Shaders/GBufferLevelShader2DPointDepthFrag.spv",
       "ShaderStage": 16
     },
     {
-      "ShaderId": "39e0520d-1b1f-4bb4-8973-f5e4d2252f1a",
-      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthShaderVert.spv",
+      "ShaderId": "3101a941-f1a2-4739-9160-37fbfd9134ca",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthPointShaderVert.spv",
       "ShaderStage": 1
     },
     {
-      "ShaderId": "170f11da-3084-4c5f-a9ff-afbf01a7ae50",
-      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthShaderFrag.spv",
+      "ShaderId": "7afc2c67-50c3-40fc-8cbb-4859394e9e99",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthPointShaderFrag.spv",
       "ShaderStage": 16
     }
   ],
@@ -37,20 +37,20 @@
   ],
   "PipelinePackageList": [
     {
-      "PipelinePackageId": "0494577d-e10f-4d02-8615-05fed5e978a5",
+      "PipelinePackageId": "e4d22a68-bef0-4bd0-8c04-97d96fc36af1",
       "PipelineList": [
         {
           "PipelineType": 0,
-          "PipelineId": "c09e7dbf-96a1-410f-a24d-02d474fa30bb"
+          "PipelineId": "776bd015-90ca-4063-b94c-179f4b899ba9"
         }
       ]
     },
     {
-      "PipelinePackageId": "e9e4edcb-197a-4823-9324-9454f6d421ad",
+      "PipelinePackageId": "1412295f-f5f4-4e3c-802a-9ab77ec63485",
       "PipelineList": [
         {
           "PipelineType": 0,
-          "PipelineId": "fc0f2e70-8328-448f-9563-ca62413617b0"
+          "PipelineId": "3cc09cd6-e356-4b6e-bab3-a62f1fa36176"
         }
       ]
     }
@@ -59,7 +59,7 @@
     [
       {
         "MeshType": 1,
-        "PipelinePackageId": "0494577d-e10f-4d02-8615-05fed5e978a5",
+        "PipelinePackageId": "e4d22a68-bef0-4bd0-8c04-97d96fc36af1",
         "ShaderPushConstant": "directionalLightSceneDataDepthBuffer",
         "InputAttachmentList": [],
         "InputTextureList": [],
@@ -69,7 +69,7 @@
       },
       {
         "MeshType": 2,
-        "PipelinePackageId": "e9e4edcb-197a-4823-9324-9454f6d421ad",
+        "PipelinePackageId": "1412295f-f5f4-4e3c-802a-9ab77ec63485",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],
         "InputTextureList": [],
@@ -83,10 +83,10 @@
   "AttachmentList": [
     {
       "Name": "GBuffer Attachment 0: Depth",
-      "RenderedTextureId": "856a750c-cd05-44e6-a4f8-b7809e7b6bd2",
+      "RenderedTextureId": "7b311a3a-135a-4e45-9b4e-aadeb8f36006",
       "MipMapCount": 1,
       "TextureType": 1,
-      "TextureUsageType": 11,
+      "TextureUsageType": 12,
       "RenderAttachmentTypes": [ 3 ],
       "Format": 126,
       "LoadOp": 1,
