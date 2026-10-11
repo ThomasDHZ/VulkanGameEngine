@@ -42,6 +42,7 @@ void GameSystem::StartUp()
 {
     vulkan.VulkanSetUp(configSystem.WindowResolution, configSystem.RenderResolution);
     bufferSystem.SetUpVmaAllocation();
+    imGuiSystem.StartUp();
     textSystem.StartUp();
     textSystem.SetFont("fonts/arial.ttf");
     memoryPoolSystem.StartUp();
@@ -75,7 +76,9 @@ void GameSystem::Update(void* windowHandle, float deltaTime)
     networkSystem.Update(deltaTime);
 
     //cSharpScriptSystem.Update(deltaTime);
-    auto a = VkGuid("7047804f-d32e-4cb5-ba95-90783b28d1df");
+  //  Texture texture = renderSystem.FindRenderPassAttachment(VkGuid("856a750c-cd05-44e6-a4f8-b7809e7b6bd2"));
+   // imGuiSystem.Image(texture.imGuiDescriptorSet, ImVec2(256.0f, 256.0f));
+   // ImGui::Image(texture.imGuiDescriptorSet, ImVec2(256.0f, 254.0f));
   //  renderSystem.SampleRenderPassPixel(a, ivec2(mouse.X, mouse.Y));
    // renderSystem.Update(vulkanWindow->WindowHandle, levelSystem.levelLayout.LevelLayoutId, deltaTime);
 }
@@ -162,6 +165,10 @@ void GameSystem::DebugUpdate(float deltaTime)
     auto a = memoryPoolSystem.PointLightBufferList();
     int af = 234;
     ImGui::Separator();
+
+    Texture texture = renderSystem.FindRenderPassAttachment(VkGuid("856a750c-cd05-44e6-a4f8-b7809e7b6bd2"));
+    // imGuiSystem.Image(texture.imGuiDescriptorSet, ImVec2(256.0f, 256.0f));
+    ImGui::Image(texture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
 
     //for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
     //{

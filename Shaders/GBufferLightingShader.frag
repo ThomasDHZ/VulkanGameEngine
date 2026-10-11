@@ -75,7 +75,9 @@ void main()
          Lo        += PointLightFunc(F0, V, material);
     vec3 color      = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
 
-    outColor        = vec4(color, 1.0);
+            const DirectionalLightBuffer light = GetDirectionalLight(0);
+     float s = DirectionalShadow(light, material.Position);
+    outColor = vec4(vec3(s), 1.0);
     outBloom        = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
 
@@ -186,24 +188,20 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
 float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos)
 {
     vec4 ls = light.LightSpaceMatrix * vec4(worldPos, 1.0);
-    vec3 p  = ls.xyz / max(ls.w, 1e-6);
+    vec3 p  = ls.xyz / ls.w;
     vec2 uv = p.xy * 0.5 + 0.5;
-
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
 
-    float bias = light.ShadowBias * max(1.0 - abs(p.z), 0.25);
     float texel = light.ShadowSoftness / 1024.0;
-
-    float blocked = 0.0;
+    float bias  = light.ShadowBias * 0.001;
+    float sum = 0.0;
     for (int y = -1; y <= 1; ++y)
+    for (int x = -1; x <= 1; ++x)
     {
-        for (int x = -1; x <= 1; ++x)
-        {
-            float d = texture(TextureMap[57], uv + vec2(x, y) * texel).r;
-            blocked += p.z - bias > d ? 1.0 : 0.0;
-        }
+        float d = texture(TextureMap[57], uv + vec2(x, y) * texel).r;
+        sum += (p.z - bias > d) ? 0.0 : 1.0;
     }
-    return 0.0f;//1.0 - blocked / 9.0 * light.ShadowStrength;
+    return mix(1.0, sum / 9.0, light.ShadowStrength);
 }
 
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material)

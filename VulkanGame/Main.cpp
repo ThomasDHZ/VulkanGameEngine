@@ -48,7 +48,6 @@ int main(int argc, char** argv)
     {
 
         gameSystem.StartUp();
-        imGuiSystem.StartUp();
         while (!vulkanWindow.ShouldClose())
         {
             const float frameTime = deltaTime.GetFrameTime();

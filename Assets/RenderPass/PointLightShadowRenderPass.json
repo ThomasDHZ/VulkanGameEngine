@@ -1,7 +1,7 @@
 {
   "Name": "PointLightShadowRenderPass",
   "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
-  "RenderPassResolution": [ 1024, 1024 ],
+  "RenderPassResolution": [ 4096, 4096 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
@@ -41,7 +41,7 @@
       "PipelineList": [
         {
           "PipelineType": 0,
-          "PipelineId": "776bd015-90ca-4063-b94c-179f4b899ba9"
+          "PipelineId": "c09e7dbf-96a1-410f-a24d-02d474fa30bb"
         }
       ]
     },

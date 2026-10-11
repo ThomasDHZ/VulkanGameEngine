@@ -132,6 +132,19 @@ Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, con
     return spriteSystem.SpriteAnimationMap.at(vramId)[animationId];
 }
 
+SpriteInstance& SpriteSystem::FindPlayerSpriteInstance()
+{
+    auto view = gameObjectSystem.EntityRegistry.view<GameObject, Sprite, Transform2DComponent>();
+    for (auto [entity, gameObject, sprite, transform] : view.each())
+    {
+        if (gameObject.GameObjectType == kGameObjectMegaMan)
+        {
+            SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
+            return spriteInstance;
+        }
+    }
+}
+
 SpriteVram& SpriteSystem::FindSpriteVram(VramSpriteGuid vramSpriteId)
 {
     return *std::find_if(spriteSystem.SpriteVramList.begin(), spriteSystem.SpriteVramList.end(), [vramSpriteId](const SpriteVram& sprite) { return sprite.VramSpriteID == vramSpriteId; });

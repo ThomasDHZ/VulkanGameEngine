@@ -77,7 +77,6 @@ private:
 
     Vector<Animation2D>                               LoadSpriteAnimations(const nlohmann::json& json);
 
-
 public:
     uint32                                            SpriteMeshId;
     Vector<SpriteVram>                                SpriteVramList;
@@ -88,6 +87,7 @@ public:
      void                                             SetSpriteAnimation(Sprite* sprite, uint spriteAnimationEnum);
      SpriteVram&                                      FindSpriteVram(VramSpriteGuid vramSpriteId);
      Animation2D&                                     FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId);
+     SpriteInstance&                                  FindPlayerSpriteInstance();
      bool                                             SpriteVramExists(const VkGuid& vramId);
      void                                             Destroy(Sprite& sprite);
 };

@@ -70,7 +70,7 @@ void main()
         case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    const DirectionalLightBuffer light = GetDirectionalLight(directionalLightSceneDataDepthBuffer.DirectionalLightBufferIndex);
+    const DirectionalLightBuffer light = GetDirectionalLight(0);
     vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
 
     PS_Position = world.xyz;

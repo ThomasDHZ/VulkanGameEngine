@@ -82,5 +82,5 @@ void main()
 	PS_UVOffset = VS_UVOffset;
     PS_SpriteId = VS_SpriteId;
 
-    gl_Position = light.LightSpaceMatrix * world;
+ gl_Position = sceneDataBuffer.OrthoProjection * sceneDataBuffer.OrthoView * world;
 }

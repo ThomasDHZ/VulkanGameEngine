@@ -15,7 +15,7 @@
     "SType": 26,
     "LogicOpEnable": false,
     "LogicOp": 5,
-    "AttachmentCount": 1
+    "AttachmentCount": 0
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,

@@ -44,7 +44,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
            .textureGuid = renderPassLoader.AttachmentList[x].RenderedTextureId,
            .gpuTextureBufferIndex = memoryPoolSystem.AddToMemoryPool(attachment),
            .texture = attachment,
-           .imGuiDescriptorSet = VK_NULL_HANDLE
+           .imGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.texture.TextureSampler(), texture.texture.TextureViews().front(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         };
 
         SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
@@ -56,7 +56,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
             case kUsageType_BRDFTexture:               sceneData.BRDFMapId                  = texture.gpuTextureBufferIndex; break;
             case kUsageType_HdrTexture:                sceneData.HDRMapInputIndex           = texture.gpuTextureBufferIndex; break;
             case kUsageType_DirectionalLightShadowMap: sceneData.DirectionalLightDepthMapId = texture.gpuTextureBufferIndex; break;
-            case kUsageType_PointLightShadowMap:       sceneData.PointLightDepthMapId       = texture.gpuTextureBufferIndex; break;
+           // case kUsageType_PointLightShadowMap:       sceneData.PointLightDepthMapId       = texture.gpuTextureBufferIndex; break;
             default: break;
         }
         renderedTextureList.emplace_back(texture);

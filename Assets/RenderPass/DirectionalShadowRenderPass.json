@@ -1,7 +1,7 @@
 {
   "Name": "DirectionalShadowRenderPass",
   "RenderPassId": "fd70c8fe-b846-41f6-9df7-5283b5ffc7d4",
-  "RenderPassResolution": [ 1024, 1024 ],
+  "RenderPassResolution": [ 3840, 2160 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
@@ -41,16 +41,16 @@
       "PipelineList": [
         {
           "PipelineType": 0,
-          "PipelineId": "c09e7dbf-96a1-410f-a24d-02d474fa30bb"
+          "PipelineId": "776bd015-90ca-4063-b94c-179f4b899ba9"
         }
       ]
     },
     {
-      "PipelinePackageId": "e9e4edcb-197a-4823-9324-9454f6d421ad",
+      "PipelinePackageId": "7d2aaae5-a064-44c3-b8aa-6f459a7687a6",
       "PipelineList": [
         {
           "PipelineType": 0,
-          "PipelineId": "fc0f2e70-8328-448f-9563-ca62413617b0"
+          "PipelineId": "3cc09cd6-e356-4b6e-bab3-a62f1fa36176"
         }
       ]
     }
@@ -69,7 +69,7 @@
       },
       {
         "MeshType": 2,
-        "PipelinePackageId": "e9e4edcb-197a-4823-9324-9454f6d421ad",
+        "PipelinePackageId": "7d2aaae5-a064-44c3-b8aa-6f459a7687a6",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],
         "InputTextureList": [],

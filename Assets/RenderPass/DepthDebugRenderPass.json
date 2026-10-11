@@ -1,0 +1,122 @@
+{
+  "Name": "HdrRenderPass",
+  "RenderPassId": "77f8cbdc-5c59-4448-a378-9ac36e720b5b",
+  "RenderPassResolution": [ 0, 0 ],
+  "RenderFlags": {
+    "UseGlobalBindlessSet": true,
+    "UseVkMultiview": false,
+    "RenderAsCubemap": false,
+    "UseDefaultRenderResolution": true,
+    "UseFrameBufferResolution": false
+  },
+  "ShaderList": [
+    {
+      "ShaderId": "7d74d6d8-11bc-47f2-86c0-4247368b380e",
+      "ShaderFile": "Shaders/DepthDebugVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "30a9f24b-b89c-4d76-aa06-fc91515d7c7d",
+      "ShaderFile": "Shaders/DepthDebugFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
+  "PipelineList": [
+    "Pipelines/DepthDebugPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageId": "f3e04c31-ac16-4d3b-802c-991de1d94f8f",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "bc8d99c4-eaf0-4521-8f8a-b311f8e70481"
+        }
+      ]
+    }
+  ],
+  "SubPassList": [
+    [
+      {
+        "MeshType": 5,
+        "PipelinePackageId": "079a8980-28f7-4ef3-97e0-83129c556509",
+        "ShaderPushConstant": null,
+        "PushConstantUpdates": [],
+        "InputAttachmentList": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "OffScreenRenderPass": true,
+        "AlphaRenderPass": false
+      }
+    ]
+  ],
+  "SampleCount": 1,
+  "AttachmentList": [
+    {
+      "Name": "HDR Attachment",
+      "RenderedTextureId": "a00aa7d4-3606-4bff-87d1-0395817d0993",
+      "MipMapCount": 1,
+      "TextureType": 1,
+      "TextureUsageType": 1,
+      "RenderAttachmentTypes": [ 0 ],
+      "Format": 44,
+      "LoadOp": 1,
+      "StoreOp": 0,
+      "FinalLayout": 5,
+      "UseSampler": true,
+      "UseMipMaps": false,
+      "SamplerCreateInfo": {
+        "SType": 31,
+        "MagFilter": 1,
+        "MinFilter": 1,
+        "MipmapMode": 1,
+        "AddressModeU": 2,
+        "AddressModeV": 2,
+        "AddressModeW": 2,
+        "MipLodBias": 0.0,
+        "AnisotropyEnable": false,
+        "MaxAnisotropy": 1.0,
+        "CompareEnable": false,
+        "CompareOp": 7,
+        "MinLod": 0.0,
+        "MaxLod": 1.0,
+        "BorderColor": 2,
+        "UnnormalizedCoordinates": false
+      }
+    }
+  ],
+  "SubpassDependencyList": [
+    {
+      "SrcSubpass": 4294967295,
+      "DstSubpass": 0,
+      "SrcStageMask": 1,
+      "DstStageMask": 1024,
+      "SrcAccessMask": 0,
+      "DstAccessMask": 256,
+      "DependencyFlags": 1
+    },
+    {
+      "SrcSubpass": 0,
+      "DstSubpass": 4294967295,
+      "SrcStageMask": 1024,
+      "DstStageMask": 128,
+      "SrcAccessMask": 256,
+      "DstAccessMask": 32,
+      "DependencyFlags": 1
+    }
+  ],
+  "ClearValueList": [
+    {
+      "Color": {
+        "Float32_0": 0.0,
+        "Float32_1": 0.0,
+        "Float32_2": 0.0,
+        "Float32_3": 0.0
+      },
+      "DepthStencil": {
+        "depth": 1.0,
+        "stencil": 0
+      }
+    }
+  ]
+}

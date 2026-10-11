@@ -35,7 +35,7 @@ private:
 public:
      uint32                   LoadLight(const nlohmann::json& json);
      void                     Update();
-    void UpdateDirectionalLightViewProjection(uint lightIndex);
+     void                     UpdateDirectionalLightViewProjection(uint lightIndex);
      uint32                   AllocateLight(GameObjectTypeEnum lightType);
      DirectionalLight&        GetDirectionalLight(uint directionalLightId);
      PointLight&              GetPointLight(uint pointLightId);
