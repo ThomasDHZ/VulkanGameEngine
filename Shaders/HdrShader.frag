@@ -27,16 +27,6 @@ vec3 ACESFilm(vec3 x)
 
 void main()
 {
-    vec4 a = vec4(1.0f);
-        for(int x = 0; x < bindlessBuffer.Texture2DCount; x++)
-    {
-    a = texture(TextureMap[x], TexCoords).rgba;
-    }
-    for(int x = 0; x < 6; x++)
-    {
-    a =  texture(CubeMap[x], vec3(0.0f)).rgba;
-    }
-
     vec3 hdr = texture(TextureMap[sceneDataBuffer.HDRMapInputIndex], TexCoords).rgb;
     hdr *= Exposure;
 

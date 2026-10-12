@@ -56,7 +56,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
             case kUsageType_BRDFTexture:               sceneData.BRDFMapId                  = texture.gpuTextureBufferIndex; break;
             case kUsageType_HdrTexture:                sceneData.HDRMapInputIndex           = texture.gpuTextureBufferIndex; break;
             case kUsageType_DirectionalLightShadowMap: sceneData.DirectionalLightDepthMapId = texture.gpuTextureBufferIndex; break;
-           // case kUsageType_PointLightShadowMap:       sceneData.PointLightDepthMapId       = texture.gpuTextureBufferIndex; break;
+            case kUsageType_PointLightShadowMap:       sceneData.PointLightDepthMapId       = texture.gpuTextureBufferIndex; break;
             default: break;
         }
         renderedTextureList.emplace_back(texture);
@@ -461,9 +461,7 @@ uint32 RenderSystem::SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2
 
     vulkan.CommandBuffer().EndSingleUseCommand(cmd);
     vkDeviceWaitIdle(vulkan.LogicalDevice());
-
-    vmaInvalidateAllocation(bufferSystem.VmaAllocatorHandle(),
-        stagingAlloc, 0, VK_WHOLE_SIZE);
+    vmaInvalidateAllocation(bufferSystem.VmaAllocatorHandle(), stagingAlloc, 0, VK_WHOLE_SIZE);
 
     const uint32 pickedId = *static_cast<const uint32*>(allocOut.pMappedData);
     vmaDestroyBuffer(bufferSystem.VmaAllocatorHandle(), stagingBuffer, stagingAlloc);

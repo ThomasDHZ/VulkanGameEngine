@@ -21,8 +21,10 @@ layout(location = 8)  in vec3       PS_T;
 layout(location = 9)  in vec3       PS_B;
 layout(location = 10) in vec3       PS_N;
 
+layout(location = 0) out vec4 OutColor;
 #include "BindlessHelpers.glsl"
 
+const uint NO_MAP = 0xFFFFFFFFu;
 void main()
 {
     PackedMaterial packedMaterial = GetMaterial(PS_MaterialId);
@@ -35,5 +37,9 @@ void main()
     if (PS_FlipSprite.y == 1) UV.y = minUV.y + maxUV.y - UV.y;
 
     vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], UV, -0.5);
-    if (albedo.a < packedMaterial.AlphaCutOff) discard;
+    if (albedo.a >= packedMaterial.AlphaCutOff || albedo.a < 0.01) discard;
+
+    vec3 atten = (packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], UV, 0.0).rgb : vec3(1.0);
+    float T = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], UV, 0.0).r : 0.0;
+    OutColor = vec4(vec3(0.0f, 0.0f, 0.7f) * T, 1.0);
 }

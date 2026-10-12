@@ -85,8 +85,15 @@ namespace nlohmann
         j.at("DependencyFlags").get_to(dep.dependencyFlags);
     }
 
-    void from_json(const json& j, VkClearValue& clearValue) {
-        if (j.contains("Color")) 
+    void from_json(const json& j, VkClearValue& clearValue) 
+    {
+        if (j.contains("DepthStencil"))
+        {
+            auto& depthStencil = j.at("DepthStencil");
+            depthStencil.at("depth").get_to(clearValue.depthStencil.depth);
+            depthStencil.at("stencil").get_to(clearValue.depthStencil.stencil);
+        }
+        else if (j.contains("Color")) 
         {
             auto& color = j.at("Color");
             if (color.contains("Int32_0"))   color.at("Int32_0").get_to(clearValue.color.int32[0]);
@@ -101,12 +108,6 @@ namespace nlohmann
             if (color.contains("Uint32_1")) color.at("Uint32_1").get_to(clearValue.color.uint32[1]);
             if (color.contains("Uint32_2")) color.at("Uint32_2").get_to(clearValue.color.uint32[2]);
             if (color.contains("Uint32_3")) color.at("Uint32_3").get_to(clearValue.color.uint32[3]);
-        }
-        else if (j.contains("DepthStencil")) 
-        {
-            auto& depthStencil = j.at("DepthStencil");
-            depthStencil.at("depth").get_to(clearValue.depthStencil.depth);
-            depthStencil.at("stencil").get_to(clearValue.depthStencil.stencil);
         }
         else {
             throw std::runtime_error("Invalid VkClearValue: must contain 'color' or 'depthStencil'");

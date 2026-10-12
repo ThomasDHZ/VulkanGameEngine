@@ -1,67 +1,40 @@
 {
-  "Name": "SpriteInstancePipeline",
-  "PipelineId": "9217c608-426d-419e-873a-a6dfa8fc1500",
+  "Name": "GBufferSpriteInstanceDepthTintPipeline",
+  "PipelineId": "00cdf61b-66ed-4305-b6e4-731f4a46c2cf",
   "ShaderList": [
-    {
-      "ShaderId": "c44f38cc-ee3e-4053-9fef-ac9c6300e559",
-      "ShaderFile": "Shaders/SpriteInstanceWireFrameShaderVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "1f31d903-4b39-4782-9741-1354f507326b",
-      "ShaderFile": "Shaders/SpriteInstanceWireFrameShaderFrag.spv",
-      "ShaderStage": 16
-    }
+    "1a32c444-d358-4cb6-8f8b-1bd9a6ad1192",
+    "572aed16-13cd-4aef-8bce-0425374ed8a5"
   ],
   "VertexType": 1,
-  "SubPassId": 0,
-  "ViewportList": [
-    {
-      "x": 0.0,
-      "y": 0.0,
-      "width": 0.0,
-      "height": 0.0,
-      "minDepth": 0.0,
-      "maxDepth": 1.0
-    }
-  ],
-  "ScissorList": [
-    {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  ],
+  "SubPassId": 1,
+  "ViewportList": [],
+  "ScissorList": [],
   "PipelineColorBlendAttachmentStateList": [
     {
+      "TextureAttachment": "Attachment 1: OutColor",
       "BlendEnable": true,
       "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
       "ColorBlendOp": 0,
-      "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 0,
+      "SrcAlphaBlendFactor": 6,
+      "DstAlphaBlendFactor": 7,
       "AlphaBlendOp": 0,
       "ColorWriteMask": 15
     }
   ],
   "PipelineColorBlendStateCreateInfoModel": {
     "BlendConstants": { "FixedElementField": 0.0 },
-    "sType": 26,
+    "SType": 26,
     "LogicOpEnable": false,
-    "LogicOp": 0,
-    "AttachmentCount": 0
+    "LogicOp": 5,
+    "AttachmentCount": 1
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
-    "polygonMode": 1,
-    "cullMode": 2,
+    "polygonMode": 0,
+    "cullMode": 0,
     "frontFace": 0,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
@@ -81,9 +54,9 @@
   },
   "PipelineDepthStencilStateCreateInfo": {
     "sType": 25,
-    "depthTestEnable": true,
-    "depthWriteEnable": true,
-    "depthCompareOp": 1,
+    "depthTestEnable": false,
+    "depthWriteEnable": false,
+    "depthCompareOp": 3,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {
