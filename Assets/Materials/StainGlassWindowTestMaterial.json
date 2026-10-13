@@ -1,0 +1,353 @@
+{
+  "AlbedoTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 146,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_AlbedoTexture.ktx2"
+    ],
+    "TextureId": "{0070C1F5-06C0-4632-8F3A-DB8A6970A2C8}",
+    "TextureType": 1,
+    "TextureUsageType": 9
+  },
+  "AlphaCutOff": 0.10000000149011612,
+  "AnisotropyTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_AnisotropyTexture.ktx2"
+    ],
+    "TextureId": "{FE173E74-942B-4805-9AAE-6667339EFAC6}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "ClearCoatTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_ClearCoatTexture.ktx2"
+    ],
+    "TextureId": "{C69F6D8D-ECC1-4ABF-88C3-53227D861D94}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "ClearcoatTint": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "EmissionTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 143,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_EmissionTexture.ktx2"
+    ],
+    "TextureId": "{80CAA4E1-9505-4D92-AA28-EB7B298E94B5}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "FeatureMask": 521,
+  "IOR": 1.5,
+  "MROTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_MROTexture.ktx2"
+    ],
+    "TextureId": "{32454C91-F59B-4A00-BE6D-AE30EE978956}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "MaterialId": "{213CEFD1-0675-41C3-9A63-13D7806F3E7E}",
+  "NormalTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_NormalTexture.ktx2"
+    ],
+    "TextureId": "{2ABBA9E2-93EC-4C16-A13E-02363B9500F7}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "ShadingModel": 0,
+  "SheenTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_SheenTexture.ktx2"
+    ],
+    "TextureId": "{C35B9281-55F6-43A4-937C-9F93036BCA12}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "SubSurfaceScatteringPropertiesTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_SubSurfaceScatteringPropertiesTexture.ktx2"
+    ],
+    "TextureId": "{131A04ED-0C43-4DDC-919D-564F39CBEAA4}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "SubSurfaceScatteringTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_SubSurfaceScatteringTexture.ktx2"
+    ],
+    "TextureId": "{F647E5D6-1DCB-44FA-B509-0A12B890D7D5}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "TranslucentPropertiesTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_TranslucentPropertiesTexture.ktx2"
+    ],
+    "TextureId": "{57DEC3D7-CDF3-4CAF-AAB4-7C74F71F3842}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  },
+  "TranslucentTexture": {
+    "ImageType": 1,
+    "IsSkyBox": false,
+    "MipMapCount": 1,
+    "SampleCount": 1,
+    "SamplerCreateInfo": {
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "AnisotropyEnable": false,
+      "BorderColor": 2,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MagFilter": 0,
+      "MaxAnisotropy": 1.0,
+      "MaxLod": 0.0,
+      "MinFilter": 0,
+      "MinLod": 0.0,
+      "MipLodBias": 0.0,
+      "MipmapMode": 0,
+      "SType": 31,
+      "UnnormalizedCoordinates": false
+    },
+    "TextureByteFormat": 145,
+    "TextureFilePath": [
+      "Textures\\StainGlassWindowTestMaterial_TranslucentTexture.ktx2"
+    ],
+    "TextureId": "{280CC282-0BF1-4DDB-A7AF-4E839297B82F}",
+    "TextureType": 4,
+    "TextureUsageType": 9
+  }
+}

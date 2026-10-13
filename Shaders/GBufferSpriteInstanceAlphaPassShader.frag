@@ -278,7 +278,7 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
 
         vec3 tint;
         float shadow = DirectionalShadow(light, material.Position, tint);
-        vec3 radiance = light.LightColor * light.LightIntensity * mix(tint, vec3(shadow), shadow);
+        vec3 radiance = light.LightColor * light.LightIntensity * shadow * tint;
         if (NdotL <= 0.0)
         {
             float viewRim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 5.0);
