@@ -33,5 +33,6 @@ void main()
 
     vec3 atten = (packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], TexCoords, 0.0).rgb : vec3(1.0);
     float T = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], TexCoords, 0.0).r : 0.0;
-    OutColor = vec4(vec3(0.0f, 0.0f, 0.7f) * T, 1.0);
+    OutColor = vec4(atten * T, 1.0);
+    OutColor = vec4(vec3(T), 1.0);
 }

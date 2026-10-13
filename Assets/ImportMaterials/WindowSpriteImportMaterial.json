@@ -215,6 +215,7 @@
   },
   "IORTexture": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_IORTexture.png" ],
+    "TextureId": "a8ed6bbb-7db4-4b6f-ab57-b44b0a7b6716",
     "TextureByteFormat": 37,
     "SampleCount": 1,
     "ImageType": 1,
@@ -242,7 +243,37 @@
     }
   },
   "AttenuationColorMap": {
+    "TextureFilePath": [ "ImportTextures/WindowSpriteTest_AttenuationTexture.png" ],
+    "TextureId": "8858fafd-0010-43b7-8643-b3e345f93970",
+    "TextureByteFormat": 43,
+    "SampleCount": 1,
+    "ImageType": 1,
+    "TextureType": 5,
+    "TextureUsageType": 2,
+    "MipMapCount": 1,
+    "IsSkyBox": false,
+    "SamplerCreateInfo": {
+      "SType": 31,
+      "MagFilter": 0,
+      "MinFilter": 0,
+      "MipmapMode": 0,
+      "AddressModeU": 2,
+      "AddressModeV": 2,
+      "AddressModeW": 2,
+      "MipLodBias": 0.0,
+      "AnisotropyEnable": false,
+      "MaxAnisotropy": 1.0,
+      "CompareEnable": false,
+      "CompareOp": 7,
+      "MinLod": 0.0,
+      "MaxLod": 0.0,
+      "BorderColor": 1,
+      "UnnormalizedCoordinates": false
+    }
+  },
+  "AttenuationPropertiesTexture": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_AttenuationPropertyDataTexture.png" ],
+    "TextureId": "d63f88d2-5435-4431-b2c9-235f6facd962",
     "TextureByteFormat": 37,
     "SampleCount": 1,
     "ImageType": 1,
@@ -271,6 +302,7 @@
   },
   "ClearCoatPropertiesMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_ClearCoatPropertyDataTexture.png" ],
+    "TextureId": "6cc1675f-878f-43b2-b2f8-87329e1914f9",
     "TextureByteFormat": 37,
     "SampleCount": 1,
     "ImageType": 1,
@@ -296,13 +328,5 @@
       "BorderColor": 1,
       "UnnormalizedCoordinates": false
     }
-  },
-  "SubSurfaceScatteringColorMap": null,
-  "SubSurfaceScatteringPropertiesMap": null,
-  "AttenuationPropertiesTexture": null,
-  "AlphaMap": null,
-  "EmissionMap": null,
-  "SheenMap": null,
-  "SheenPropertiesMap": null,
-  "AnisotropyPropertiesMap": null
+  }
 }

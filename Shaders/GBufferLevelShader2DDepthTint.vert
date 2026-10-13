@@ -34,5 +34,6 @@ void main()
 
     PS_Position = world.xyz;
     PS_UV       = VS_UV;
-    gl_Position = light.LightSpaceMatrix * world;
+    gl_Position = light.LightSpaceMatrix *
+                  world;
 }

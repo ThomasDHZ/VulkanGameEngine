@@ -20,17 +20,10 @@ layout (location = 9)  in uint  VS_MaterialId;
 layout (location = 10) in uint  VS_SpriteId;
 layout (location = 11) in uint  VS_SpriteLayer;
 
-layout (location = 0) out vec3  PS_Position;
-layout (location = 1) out vec2  PS_UV;
-layout (location = 2) out vec2  PS_SpriteSize;
-layout (location = 3) out ivec2 PS_FlipSprite;
-layout (location = 4) out vec4  PS_Color;
-layout (location = 5) out uint  PS_MaterialId;
-layout (location = 6) out vec4  PS_UVOffset;
-layout (location = 7) out uint  PS_SpriteId;
-layout (location = 8) out vec3  PS_T;
-layout (location = 9) out vec3  PS_B;
-layout (location = 10) out vec3 PS_N;
+layout(location = 0)  out vec2  PS_UV;
+layout(location = 1)  out ivec2 PS_FlipSprite;
+layout(location = 2)  out uint  PS_MaterialId;
+layout(location = 3)  out vec4  PS_UVOffset;
 
 layout(constant_id = 1)  const uint VertexInputRate = 1;
 layout(constant_id = 0)  const uint VertexAttributeLocation0 = 0;
@@ -70,17 +63,21 @@ void main()
         case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    const DirectionalLightBuffer light = GetDirectionalLight(0);
-    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
+    vec3 T = normalize((VS_InstanceTransform * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
+    if (VS_FlipSprite.x == 1) T = -T;
 
-    PS_Position = world.xyz;
+    vec3 B = normalize((VS_InstanceTransform * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+    if (VS_FlipSprite.y == 1) B = -B;
+
+    vec3 N = normalize(cross(T, B));
+    if (VS_FlipSprite.x != VS_FlipSprite.y) N = -N;
+
 	PS_UV = vertex.UV;
-    PS_SpriteSize = VS_SpriteSize;
 	PS_FlipSprite = VS_FlipSprite;
-	PS_Color = VS_Color;
 	PS_MaterialId = VS_MaterialId;
 	PS_UVOffset = VS_UVOffset;
-    PS_SpriteId = VS_SpriteId;
 
+    const DirectionalLightBuffer light = GetDirectionalLight(0);
+    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
     gl_Position = light.LightSpaceMatrix * world;
 }

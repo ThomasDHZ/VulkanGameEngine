@@ -113,6 +113,7 @@ Material UnpackMaterial(BakedMaps m);
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material);
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material);
 vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material);
+float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos, out vec3 tint);
 
 void main()
 {
@@ -273,9 +274,11 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
 
         float NdotL = dot(N, L);
         float NdotV = max(dot(N, V), 0.0);
-        vec3 radiance = light.LightColor * light.LightIntensity;
         float sss = clamp(material.SSSWeight, 0.0, 1.0);
 
+        vec3 tint;
+        float shadow = DirectionalShadow(light, material.Position, tint);
+        vec3 radiance = light.LightColor * light.LightIntensity * mix(tint, vec3(shadow), shadow);
         if (NdotL <= 0.0)
         {
             float viewRim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 5.0);
@@ -310,6 +313,28 @@ vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material)
         Lo += ClearCoat(material, N, V, L, H, radiance, NdotL);
     }
     return Lo;
+}
+
+float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos, out vec3 tint)
+{
+    tint = vec3(0.0);
+    vec4 ls = light.LightSpaceMatrix * vec4(worldPos, 1.0);
+    vec3 p  = ls.xyz / ls.w;
+    vec2 uv = p.xy * 0.5 + 0.5;
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+
+    tint = texture(TextureMap[58], uv).rgb;
+
+    float texel = light.ShadowSoftness / 1024.0;
+    float bias  = light.ShadowBias * 0.001;
+    float sum = 0.0;
+    for (int y = -1; y <= 1; ++y)
+    for (int x = -1; x <= 1; ++x)
+    {
+        float d = texture(TextureMap[57], uv + vec2(x, y) * texel).r;
+        sum += (p.z - bias > d) ? 0.0 : 1.0;
+    }
+    return mix(1.0, sum / 9.0, light.ShadowStrength);
 }
 
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
