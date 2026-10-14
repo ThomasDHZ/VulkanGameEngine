@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Materials", "Materials", "{
 		Assets\Materials\LightIconMaterial.json = Assets\Materials\LightIconMaterial.json
 		Assets\Materials\MegaManShotMaterial.json = Assets\Materials\MegaManShotMaterial.json
 		Assets\Materials\SparkManTileSetMaterial.json = Assets\Materials\SparkManTileSetMaterial.json
+		Assets\Materials\StainGlassWindowTestMaterial.json = Assets\Materials\StainGlassWindowTestMaterial.json
 		Assets\Materials\WindowSpriteMaterial.json = Assets\Materials\WindowSpriteMaterial.json
 	EndProjectSection
 EndProject

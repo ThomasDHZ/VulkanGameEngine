@@ -72,10 +72,10 @@ void main()
     vec3  F0        = mix(vec3(F0d), material.Albedo, material.Metallic);
 
     vec3 Lo         = DirectionalLightFunc(F0, V, material);
-         Lo        += PointLightFunc(F0, V, material);
+        // Lo        += PointLightFunc(F0, V, material);
     vec3 color      = ImageBasedLighting(F0, V, N, R, material) + Lo + material.Emission;
 
-    outColor = vec4(color, 1.0);
+    outColor = vec4(Lo, 1.0);
     outBloom        = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
 

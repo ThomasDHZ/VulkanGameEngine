@@ -97,6 +97,7 @@ nlohmann::json FileSystem::LoadJsonFile(const String& filePath)
     AAsset_read(asset, buffer.data(), size);
     AAsset_close(asset);
 #else
+    auto a = std::filesystem::current_path() / filePath;
     std::ifstream file(std::filesystem::current_path() / filePath, std::ios::binary | std::ios::ate);
     size_t size = file.tellg();
     file.seekg(0);

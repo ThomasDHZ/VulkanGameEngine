@@ -10,7 +10,7 @@
     "Materials/MegaManShotMaterial.json",
     "Materials/LightIconMaterial.json",
     "Materials/SparkManTileSetMaterial.json",
-    "Materials/WindowSpriteMaterial.json"
+    "Materials/StainGlassWindowTestMaterial.json"
   ],
   "LoadTileSetVRAM": [
     "TileSets/SparkManTileSet.json"
