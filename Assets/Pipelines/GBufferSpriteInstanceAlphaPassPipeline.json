@@ -31,7 +31,6 @@
   ],
   "PipelineColorBlendAttachmentStateList": [
     {
-      "TextureAttachment": "Attachment 9: OutColor",
       "BlendEnable": true,
       "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 7,
@@ -42,7 +41,6 @@
       "ColorWriteMask": 15
     },
     {
-      "TextureAttachment": "Attachment 10: OutBloom",
       "BlendEnable": true,
       "SrcColorBlendFactor": 6,
       "DstColorBlendFactor": 1,

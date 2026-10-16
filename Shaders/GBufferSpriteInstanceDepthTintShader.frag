@@ -53,7 +53,16 @@ void main()
     vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], UV, -0.5);
     if (albedo.a >= packedMaterial.AlphaCutOff || albedo.a < 0.01) discard;
 
-    vec3 atten = (packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], UV, 0.0).rgb : vec3(1.0);
-    float T = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], UV, 0.0).r : 0.0;
-    OutColor = vec4(atten * T, 1.0);
+    vec4 sssPr  = textureLod(TextureMap[packedMaterial.SubSurfaceScatteringPropertiesTextureId], UV, 0.0);
+    vec4 sssCol = textureLod(TextureMap[packedMaterial.SubSurfaceScatteringOrTranslucentPropertiesTextureId], UV, 0.0);
+    vec4 trans = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], UV, 0.0) : vec4(0.0);
+
+    float thickness          = 1.0f;
+    float transmissionWeight = 1.0f;
+    vec3 attenuationColor    =  max((packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], UV, 0.0).rgb : vec3(1.0), vec3(1e-4));
+
+    vec3 sigmaA    = -log(attenuationColor) / thickness;
+    vec3 T         = exp(-sigmaA * thickness);
+    float coverage = clamp(transmissionWeight, 0.0, 1.0);
+    OutColor = vec4(T, coverage);
 }

@@ -5,10 +5,10 @@
   "GameObjectComponentList": [
     {
       "ComponentType": 5,
-      "LightColor": [ 0.50, 0.55, 0.50 ],
+      "LightColor": [ 1.0, 1.0, 1.0 ],
       "LightDirection": [ 0.2, 0.1, 1.0 ],
-      "LightIntensity": 3.2,
-      "ShadowStrength": 0.70,
+      "LightIntensity": 0.7,
+      "ShadowStrength": 1.00,
       "ShadowBias": 0.015,
       "ShadowSoftness": 0.30
     },

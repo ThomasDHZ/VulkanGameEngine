@@ -1,7 +1,7 @@
 {
   "Name": "DirectionalShadowRenderPass",
   "RenderPassId": "fd70c8fe-b846-41f6-9df7-5283b5ffc7d4",
-  "RenderPassResolution": [ 1024, 1024 ],
+  "RenderPassResolution": [ 4096, 4096 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
@@ -242,23 +242,13 @@
       "DepthStencil": {
         "depth": 1.0,
         "stencil": 0
-      },
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
       }
     },
     {
-      "DepthStencil": {
-        "depth": 1.0,
-        "stencil": 0
-      },
       "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
+        "Float32_0": 1.0,
+        "Float32_1": 1.0,
+        "Float32_2": 1.0,
         "Float32_3": 0.0
       }
     }

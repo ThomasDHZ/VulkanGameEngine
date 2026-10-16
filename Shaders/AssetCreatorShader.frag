@@ -231,7 +231,12 @@ void main()
     }
     else
     {
-        outClearCoatOrTranslucentTexture     = vec4(m.AttenuationColor, 1.0);
+        vec3 tint = m.AttenuationColor;
+        float luma = dot(tint, vec3(0.2126, 0.7152, 0.0722));
+        tint = clamp(mix(vec3(luma), tint, 1.6), 0.0, 1.0); 
+        tint = pow(max(tint, vec3(0.0)), vec3(0.75)); 
+        
+        outClearCoatOrTranslucentTexture     = vec4(tint, 1.0);
         outSssOrTranslucentPropertiesTexture = vec4(m.TransmissionWeight, m.Thickness, m.AttenuationDistance, 1.0);
         outSheenOrSssPropertiesTexture       = vec4(m.SSSWeight, m.SSSProfile, m.Thickness, m.SheenRoughness);
         outAnisotropyTexture                 = vec4(0.0);
