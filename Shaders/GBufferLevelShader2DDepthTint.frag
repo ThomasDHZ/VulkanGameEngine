@@ -89,19 +89,16 @@ void main()
     MeshProperitiesBuffer mesh           = GetMesh(directionalLightSceneDataDepthBuffer.MeshBufferIndex);
     PackedMaterial        packedMaterial = GetMaterial(mesh.MaterialIndex);
 
-   vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], TexCoords, -0.5);
+    vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], TexCoords, -0.5);
     if (albedo.a >= packedMaterial.AlphaCutOff || albedo.a < 0.01) discard;
 
-    vec4 sssPr  = textureLod(TextureMap[packedMaterial.SubSurfaceScatteringPropertiesTextureId], TexCoords, 0.0);
-    vec4 sssCol = textureLod(TextureMap[packedMaterial.SubSurfaceScatteringOrTranslucentPropertiesTextureId], TexCoords, 0.0);
-    vec4 trans = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], TexCoords, 0.0) : vec4(0.0);
+    vec3 attenuationColor             =  max((packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], TexCoords, 0.0).rgb : vec3(1.0), vec3(1e-4));
+    vec4 translucentPropertiesTexture = textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], TexCoords, 0.0);
+    float thickness                   = translucentPropertiesTexture.g;
+    float transmissionWeight          = translucentPropertiesTexture.r;
 
-    float thickness          = 1.0f;
-    float transmissionWeight = 1.0f;
-    vec3 attenuationColor    =  max((packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], TexCoords, 0.0).rgb : vec3(1.0), vec3(1e-4));
-
-    vec3 sigmaA              = -log(attenuationColor) / thickness;
-    vec3 T                   = exp(-sigmaA * thickness);
-    float coverage           = clamp(transmissionWeight, 0.0, 1.0);
+    vec3 sigmaA                       = -log(attenuationColor) / thickness;
+    vec3 T                            = exp(-sigmaA * thickness);
+    float coverage                    = clamp(transmissionWeight, 0.0, 1.0);
     OutColor = vec4(T, coverage);
 }
