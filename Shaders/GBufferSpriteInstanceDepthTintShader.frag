@@ -7,7 +7,7 @@
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
-#include "MemoryPoolBindings.glsl"
+
 
 layout(location = 0)  in vec2       PS_UV;
 layout(location = 1)  in flat ivec2 PS_FlipSprite;
@@ -24,6 +24,68 @@ layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
     float HeightScale;
 } directionalLightSceneDataDepthBuffer;
 
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+   uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+	uint DirectionalLightShadowMapId;
+	uint DirectionalLightShadowTintMapId;
+	uint PointLightShadowMapId;
+	uint PointLightShadowTintMapId;
+    uint _pad0;
+    uint _pad1;
+
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
+
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
+    vec2  InvertResolution;
+    vec2  _padEnd;
+} sceneDataBuffer2;
+
+layout(binding = 1) buffer BindlessBuffer
+{
+    uint64_t MeshOffset;
+    uint MeshCount;
+    uint MeshSize;
+    uint64_t MaterialOffset;
+    uint MaterialCount;
+    uint MaterialSize;
+    uint64_t DirectionalLightOffset;
+    uint DirectionalLightCount;
+    uint DirectionalLightSize;
+    uint64_t PointLightOffset;
+    uint PointLightCount;
+    uint PointLightSize;
+    uint64_t Texture2DOffset;
+    uint Texture2DCount;
+    uint Texture2DSize;
+    uint64_t Texture3DOffset;
+    uint Texture3DCount;
+    uint Texture3DSize;
+    uint64_t TextureCubeMapOffset;
+    uint TextureCubeMapCount;
+    uint TextureCubeMapSize;
+    uint64_t SpriteInstanceOffset;
+    uint SpriteInstanceCount;
+    uint SpriteInstanceSize;
+    uint Data[];
+} bindlessBuffer;
+
+layout(binding = 2) uniform samplerCube CubeMap[];
+layout(binding = 3) uniform sampler2D TextureMap[];
+layout(binding = 4) uniform sampler3D Texture3DMap[];
 #include "BindlessHelpers.glsl"
 
 const float IBL_EXPOSURE = 2.5;
@@ -61,8 +123,8 @@ void main()
     float transmissionWeight = 1.0f;
     vec3 attenuationColor    =  max((packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], UV, 0.0).rgb : vec3(1.0), vec3(1e-4));
 
-    vec3 sigmaA    = -log(attenuationColor) / thickness;
-    vec3 T         = exp(-sigmaA * thickness);
-    float coverage = clamp(transmissionWeight, 0.0, 1.0);
+    vec3 sigmaA              = -log(attenuationColor) / thickness;
+    vec3 T                   = exp(-sigmaA * thickness);
+    float coverage           = clamp(transmissionWeight, 0.0, 1.0);
     OutColor = vec4(T, coverage);
 }

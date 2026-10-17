@@ -92,28 +92,30 @@ struct TextureMetadataHeader
 
 struct SceneDataBuffer
 {
-	uint32 HDRMapInputIndex;
-	uint32 EnvironmentMapIndex;
-	uint32 BRDFMapId;
-	uint32 CubeMapId;
-	uint32 IrradianceMapId;
-	uint32 PrefilterMapId;
-	uint32 DirectionalLightDepthMapId;
-	uint32 PointLightDepthMapId;
+	alignas(4) uint32 HDRMapInputIndex;
+	alignas(4) uint32 EnvironmentMapIndex;
+	alignas(4) uint32 BRDFMapId;
+	alignas(4) uint32 CubeMapId;
+	alignas(4) uint32 IrradianceMapId;
+	alignas(4) uint32 PrefilterMapId;
+	alignas(4) uint32 DirectionalLightShadowMapId;
+	alignas(4) uint32 DirectionalLightShadowTintMapId;
+	alignas(4) uint32 PointLightShadowMapId;
+	alignas(4) uint32 PointLightShadowTintMapId;
 
-	mat4 OrthoProjection;
-	mat4 OrthoView;
-	mat4 InverseOrthoProjection;
-	mat4 InverseOrthoView;
-	mat4 InversePerspectiveProjection;
-	mat4 InversePerspectiveView;
+	alignas(16) mat4 OrthoProjection;
+	alignas(16) mat4 OrthoView;
+	alignas(16) mat4 InverseOrthoProjection;
+	alignas(16) mat4 InverseOrthoView;
+	alignas(16) mat4 InversePerspectiveProjection;
+	alignas(16) mat4 InversePerspectiveView;
 
-	vec3 PerspectiveCameraPosition;
-	float     Time;
-	vec3 PerspectiveViewDirection;
-	uint32  FrameIndex;
-	vec2 InvertResolution;
-	vec2 _padEnd;
+	alignas(16) vec3 PerspectiveCameraPosition;
+	alignas(4) float     Time;
+	alignas(16) vec3 PerspectiveViewDirection;
+	alignas(4) uint32  FrameIndex;
+	alignas(8) vec2 InvertResolution;
+	alignas(8) vec2 _padEnd;
 };
 
 struct MemoryPoolBufferHeader

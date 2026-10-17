@@ -7,7 +7,68 @@
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
-#include "MemoryPoolBindings.glsl"
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+   uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+	uint DirectionalLightShadowMapId;
+	uint DirectionalLightShadowTintMapId;
+	uint PointLightShadowMapId;
+	uint PointLightShadowTintMapId;
+    uint _pad0;
+    uint _pad1;
+
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
+
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
+    vec2  InvertResolution;
+    vec2  _padEnd;
+} sceneDataBuffer;
+
+layout(binding = 1) buffer BindlessBuffer
+{
+    uint64_t MeshOffset;
+    uint MeshCount;
+    uint MeshSize;
+    uint64_t MaterialOffset;
+    uint MaterialCount;
+    uint MaterialSize;
+    uint64_t DirectionalLightOffset;
+    uint DirectionalLightCount;
+    uint DirectionalLightSize;
+    uint64_t PointLightOffset;
+    uint PointLightCount;
+    uint PointLightSize;
+    uint64_t Texture2DOffset;
+    uint Texture2DCount;
+    uint Texture2DSize;
+    uint64_t Texture3DOffset;
+    uint Texture3DCount;
+    uint Texture3DSize;
+    uint64_t TextureCubeMapOffset;
+    uint TextureCubeMapCount;
+    uint TextureCubeMapSize;
+    uint64_t SpriteInstanceOffset;
+    uint SpriteInstanceCount;
+    uint SpriteInstanceSize;
+    uint Data[];
+} bindlessBuffer;
+
+layout(binding = 2) uniform samplerCube CubeMap[];
+layout(binding = 3) uniform sampler2D TextureMap[];
+layout(binding = 4) uniform sampler3D Texture3DMap[];
 
 layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
 {
@@ -28,11 +89,19 @@ void main()
     MeshProperitiesBuffer mesh           = GetMesh(directionalLightSceneDataDepthBuffer.MeshBufferIndex);
     PackedMaterial        packedMaterial = GetMaterial(mesh.MaterialIndex);
 
-    vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], TexCoords, -0.5);
+   vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], TexCoords, -0.5);
     if (albedo.a >= packedMaterial.AlphaCutOff || albedo.a < 0.01) discard;
 
-    vec3 atten = (packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], TexCoords, 0.0).rgb : vec3(1.0);
-    float T = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], TexCoords, 0.0).r : 0.0;
-    OutColor = vec4(atten * T, 1.0);
-    OutColor = vec4(vec3(T), 1.0);
+    vec4 sssPr  = textureLod(TextureMap[packedMaterial.SubSurfaceScatteringPropertiesTextureId], TexCoords, 0.0);
+    vec4 sssCol = textureLod(TextureMap[packedMaterial.SubSurfaceScatteringOrTranslucentPropertiesTextureId], TexCoords, 0.0);
+    vec4 trans = (packedMaterial.TranslucentPropertiesTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentPropertiesTextureId], TexCoords, 0.0) : vec4(0.0);
+
+    float thickness          = 1.0f;
+    float transmissionWeight = 1.0f;
+    vec3 attenuationColor    =  max((packedMaterial.TranslucentTextureId != NO_MAP) ? textureLod(TextureMap[packedMaterial.TranslucentTextureId], TexCoords, 0.0).rgb : vec3(1.0), vec3(1e-4));
+
+    vec3 sigmaA              = -log(attenuationColor) / thickness;
+    vec3 T                   = exp(-sigmaA * thickness);
+    float coverage           = clamp(transmissionWeight, 0.0, 1.0);
+    OutColor = vec4(T, coverage);
 }

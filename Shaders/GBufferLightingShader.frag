@@ -7,7 +7,68 @@
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
-#include "MemoryPoolBindings.glsl"
+layout(std430, binding = 0) buffer SceneDataBuffer
+{
+   uint HDRMapInputIndex;
+    uint EnvironmentMapIndex;
+    uint BRDFMapId;
+    uint CubeMapId;
+    uint IrradianceMapId;
+    uint PrefilterMapId;
+	uint DirectionalLightShadowMapId;
+	uint DirectionalLightShadowTintMapId;
+	uint PointLightShadowMapId;
+	uint PointLightShadowTintMapId;
+    uint _pad0;
+    uint _pad1;
+
+    mat4 OrthoProjection;
+    mat4 OrthoView;
+    mat4 InverseOrthoProjection;
+    mat4 InverseOrthoView;
+    mat4 InversePerspectiveProjection;
+    mat4 InversePerspectiveView;
+
+    vec3  PerspectiveCameraPosition;
+    float Time;
+    vec3  PerspectiveViewDirection;
+    uint  FrameIndex;
+    vec2  InvertResolution;
+    vec2  _padEnd;
+} sceneDataBuffer;
+
+layout(binding = 1) buffer BindlessBuffer
+{
+    uint64_t MeshOffset;
+    uint MeshCount;
+    uint MeshSize;
+    uint64_t MaterialOffset;
+    uint MaterialCount;
+    uint MaterialSize;
+    uint64_t DirectionalLightOffset;
+    uint DirectionalLightCount;
+    uint DirectionalLightSize;
+    uint64_t PointLightOffset;
+    uint PointLightCount;
+    uint PointLightSize;
+    uint64_t Texture2DOffset;
+    uint Texture2DCount;
+    uint Texture2DSize;
+    uint64_t Texture3DOffset;
+    uint Texture3DCount;
+    uint Texture3DSize;
+    uint64_t TextureCubeMapOffset;
+    uint TextureCubeMapCount;
+    uint TextureCubeMapSize;
+    uint64_t SpriteInstanceOffset;
+    uint SpriteInstanceCount;
+    uint SpriteInstanceSize;
+    uint Data[];
+} bindlessBuffer;
+
+layout(binding = 2) uniform samplerCube CubeMap[];
+layout(binding = 3) uniform sampler2D TextureMap[];
+layout(binding = 4) uniform sampler3D Texture3DMap[];
 #include "MaterialPropertiesBuffer.glsl"
 
 layout(set = 1, binding = 0, input_attachment_index = 0) uniform subpassInput PositionInput;
@@ -128,8 +189,8 @@ Material UnpackMaterial()
     m.AnisotropyRotation = aniso.y;
     m.ThinFilmWeight     = film.x;
     m.ThinFilmThickness  = film.y;
-    m.FeatureMask = uint(normalAttachment.b * 65535.0 + 0.5);
-    m.SelfShadow  = normalAttachment.a;
+    m.FeatureMask        = uint(normalAttachment.b * 65535.0 + 0.5);
+    m.SelfShadow         = normalAttachment.a;
     m.ShadingModel = 0u;
     return m;
 }
@@ -201,7 +262,7 @@ float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos, out vec3 ti
     if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0))))
         return 1.0;
 
-    vec4 tintSample = texture(TextureMap[58], uv);
+    vec4 tintSample = texture(TextureMap[sceneDataBuffer.DirectionalLightShadowTintMapId], uv);
     float texel = light.ShadowSoftness / 4096.0;
     float bias  = light.ShadowBias * 0.001;
     float sum = 0.0;
@@ -209,7 +270,7 @@ float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos, out vec3 ti
     {
         for (int x = -1; x <= 1; ++x)
         {
-            float d = texture(TextureMap[57], uv + vec2(x, y) * texel).r;
+            float d = texture(TextureMap[sceneDataBuffer.DirectionalLightShadowMapId], uv + vec2(x, y) * texel).r;
             sum += (p.z - bias > d) ? 0.0 : 1.0;
         }
     }

@@ -167,9 +167,11 @@ void GameSystem::DebugUpdate(float deltaTime)
     ImGui::Separator();
 
     Texture texture = renderSystem.FindRenderPassAttachment(VkGuid("856a750c-cd05-44e6-a4f8-b7809e7b6bd2"));
+    Texture texture2 = renderSystem.FindRenderPassAttachment(VkGuid("9bd298a4-9136-4bbb-b8dd-95e14e9d52d9"));
     // imGuiSystem.Image(texture.imGuiDescriptorSet, ImVec2(256.0f, 256.0f));
     ImGui::Image(texture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
-
+    ImGui::SameLine();
+    ImGui::Image(texture2.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
     //for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
     //{
     //    PointLightComponent& pointLight = memoryPoolSystem.UpdatePointLight(x);

@@ -13,6 +13,7 @@
 #include "MeshSystem.h"
 #include <lodepng.h>
 #include "RenderSystem.h"
+#include <imgui_impl_vulkan.h>
 
 TextureSystem& textureSystem = TextureSystem::Get();
 Texture TextureSystem::LoadTexture(const String& texturePath)
@@ -56,7 +57,7 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 	{
 		.textureGuid = textureLoader.TextureId,
 		.texture = VulkanTexture(vulkanLoader),
-		.imGuiDescriptorSet = nullptr
+		.imGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.texture.TextureSampler(), texture.texture.TextureViews().front(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	};
 
 	SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();
