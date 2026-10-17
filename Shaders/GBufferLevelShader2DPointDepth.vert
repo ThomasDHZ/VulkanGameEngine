@@ -70,13 +70,14 @@ layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
-layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
+layout(push_constant) uniform PointLightSceneDataDepthBuffer
 {
     int   MeshBufferIndex;
-    int   DirectionalLightBufferIndex;
+    int   PointLightBufferIndex;
+    int   PointLightViewIndex;
     int   UseHeightMap;
     float HeightScale;
-} directionalLightSceneDataDepthBuffer;
+} pointLightSceneDataDepthBuffer;
 
 layout (location = 0)  in vec2  VS_Position;
 layout (location = 1)  in vec2  VS_UV;
@@ -88,12 +89,12 @@ layout (location = 1) out vec2  PS_UV;
 
 void main()
 {
-    MeshProperitiesBuffer mesh = GetMesh(directionalLightSceneDataDepthBuffer.MeshBufferIndex);
-    const DirectionalLightBuffer light = GetDirectionalLight(0);
+    MeshProperitiesBuffer mesh = GetMesh(pointLightSceneDataDepthBuffer.MeshBufferIndex);
+    const PointLightBuffer light = GetPointLight(pointLightSceneDataDepthBuffer.PointLightBufferIndex);
 
     vec4 world = mesh.MeshTransform * vec4(VS_Position.xy, float(mesh.MeshLayerIndex) * SpriteLayerSpacing, 1.0);
 
     PS_Position = world.xyz;
     PS_UV       = VS_UV;
- gl_Position = sceneDataBuffer.OrthoProjection * sceneDataBuffer.OrthoView * world;
+    gl_Position = light.LightSpaceMatrix[pointLightSceneDataDepthBuffer.PointLightViewIndex] * world;
 }

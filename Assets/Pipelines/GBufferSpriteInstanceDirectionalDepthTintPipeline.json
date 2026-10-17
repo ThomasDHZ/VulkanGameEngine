@@ -1,21 +1,32 @@
 {
-  "Name": "GBufferSpriteInstancePointLightDepthPipeline",
-  "PipelineId": "fc0f2e70-8328-448f-9563-ca62413617b0",
+  "Name": "GBufferSpriteInstanceDirectionalDepthTintPipeline",
+  "PipelineId": "00cdf61b-66ed-4305-b6e4-731f4a46c2cf",
   "ShaderList": [
-    "3101a941-f1a2-4739-9160-37fbfd9134ca",
-    "7afc2c67-50c3-40fc-8cbb-4859394e9e99"
+    "1a32c444-d358-4cb6-8f8b-1bd9a6ad1192",
+    "572aed16-13cd-4aef-8bce-0425374ed8a5"
   ],
   "VertexType": 1,
-  "SubPassId": 0,
+  "SubPassId": 1,
   "ViewportList": [],
   "ScissorList": [],
-  "PipelineColorBlendAttachmentStateList": [],
+  "PipelineColorBlendAttachmentStateList": [
+    {
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 6,
+      "DstColorBlendFactor": 7,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 6,
+      "DstAlphaBlendFactor": 7,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    }
+  ],
   "PipelineColorBlendStateCreateInfoModel": {
     "BlendConstants": { "FixedElementField": 0.0 },
     "SType": 26,
     "LogicOpEnable": false,
     "LogicOp": 5,
-    "AttachmentCount": 0
+    "AttachmentCount": 1
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
@@ -42,8 +53,8 @@
   },
   "PipelineDepthStencilStateCreateInfo": {
     "sType": 25,
-    "depthTestEnable": true,
-    "depthWriteEnable": true,
+    "depthTestEnable": false,
+    "depthWriteEnable": false,
     "depthCompareOp": 3,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,

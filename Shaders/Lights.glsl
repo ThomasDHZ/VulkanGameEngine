@@ -7,11 +7,7 @@ struct DirectionalLightBuffer
     float ShadowStrength;        
     float ShadowBias;            
     float ShadowSoftness;       
-    uint  LightActive;           
-    uint  _pad1;                
-    uint  _pad2;                
-    uint  _pad3;                
-    uint  _pad4;                 
+    uint  LightActive;                          
     mat4  LightSpaceMatrix;      
 };
 
@@ -29,5 +25,5 @@ struct PointLightBuffer
     uint  LightActive;          
     uint  _pad1;               
     uint  _pad2;                
-    mat4  LightSpaceMatrix;  
+    mat4  LightSpaceMatrix[6];  
 };

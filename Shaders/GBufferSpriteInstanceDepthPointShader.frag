@@ -82,25 +82,28 @@ layout(location = 8)  in vec3       PS_T;
 layout(location = 9)  in vec3       PS_B;
 layout(location = 10) in vec3       PS_N;
 
-layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
+layout(push_constant) uniform PointLightSceneDataDepthBuffer
 {
     int   MeshBufferIndex;
-    int   DirectionalLightBufferIndex;
+    int   PointLightBufferIndex;
+    int   PointLightViewIndex;
     int   UseHeightMap;
     float HeightScale;
-} directionalLightSceneDataDepthBuffer;
+} pointLightSceneDataDepthBuffer;
 
 #include "BindlessHelpers.glsl"
 
 void main()
 {
     PackedMaterial packedMaterial = GetMaterial(PS_MaterialId);
+
     vec2 minUV = PS_UVOffset.xy;
     vec2 maxUV = PS_UVOffset.xy + PS_UVOffset.zw;
-    vec2 UV = PS_UV;
 
+    vec2 UV = PS_UV;
     if (PS_FlipSprite.x == 1) UV.x = minUV.x + maxUV.x - UV.x;
     if (PS_FlipSprite.y == 1) UV.y = minUV.y + maxUV.y - UV.y;
 
-    if (texture(TextureMap[packedMaterial.AlbedoTextureId], UV).a < packedMaterial.AlphaCutOff) discard;
+    vec4 albedo = texture(TextureMap[packedMaterial.AlbedoTextureId], UV, -0.5);
+    if (albedo.a < packedMaterial.AlphaCutOff) discard;
 }

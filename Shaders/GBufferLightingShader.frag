@@ -133,7 +133,7 @@ void main()
     vec3  F0        = mix(vec3(F0d), material.Albedo, material.Metallic);
 
     vec3 Lo         = DirectionalLightFunc(F0, V, material);
-        // Lo        += PointLightFunc(F0, V, material);
+         Lo        += PointLightFunc(F0, V, material);
     vec3 ambient    = ImageBasedLighting(F0, V, N, R, material);
     vec3 color      = ambient + Lo;
 

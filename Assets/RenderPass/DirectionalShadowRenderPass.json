@@ -12,50 +12,50 @@
   "ShaderList": [
     {
       "ShaderId": "5a9cf844-ab4d-4f35-8c22-4b974c3d5b89",
-      "ShaderFile": "Shaders/GBufferLevelShader2DDepthVert.spv",
+      "ShaderFile": "Shaders/GBufferLevelShader2DDirectionalDepthVert.spv",
       "ShaderStage": 1
     },
     {
       "ShaderId": "dc3bd253-5ef6-47f2-972a-26dccfe7b6b3",
-      "ShaderFile": "Shaders/GBufferLevelShader2DDepthFrag.spv",
+      "ShaderFile": "Shaders/GBufferLevelShader2DDirectionalDepthFrag.spv",
       "ShaderStage": 16
     },
     {
       "ShaderId": "39e0520d-1b1f-4bb4-8973-f5e4d2252f1a",
-      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthShaderVert.spv",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceDirectionalDepthShaderVert.spv",
       "ShaderStage": 1
     },
     {
       "ShaderId": "170f11da-3084-4c5f-a9ff-afbf01a7ae50",
-      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthShaderFrag.spv",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceDirectionalDepthShaderFrag.spv",
       "ShaderStage": 16
     },
     {
       "ShaderId": "5f789090-d4de-423d-9872-cadd101e4c84",
-      "ShaderFile": "Shaders/GBufferLevelShader2DDepthTintVert.spv",
+      "ShaderFile": "Shaders/GBufferLevelShader2DDirectionalDepthTintVert.spv",
       "ShaderStage": 1
     },
     {
       "ShaderId": "fbd476b7-8344-45f4-8e52-12c294a40ef4",
-      "ShaderFile": "Shaders/GBufferLevelShader2DDepthTintFrag.spv",
+      "ShaderFile": "Shaders/GBufferLevelShader2DDirectionalDepthTintFrag.spv",
       "ShaderStage": 16
     },
     {
       "ShaderId": "1a32c444-d358-4cb6-8f8b-1bd9a6ad1192",
-      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthTintShaderVert.spv",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceDirectionalDepthTintShaderVert.spv",
       "ShaderStage": 1
     },
     {
       "ShaderId": "572aed16-13cd-4aef-8bce-0425374ed8a5",
-      "ShaderFile": "Shaders/GBufferSpriteInstanceDepthTintShaderFrag.spv",
+      "ShaderFile": "Shaders/GBufferSpriteInstanceDirectionalDepthTintShaderFrag.spv",
       "ShaderStage": 16
     }
   ],
   "PipelineList": [
-    "Pipelines/GBufferLevelShader2DDepthPipeline.json",
-    "Pipelines/GBufferSpriteInstanceDepthPipeline.json",
-    "Pipelines/GBufferLevelShader2DDepthTintPipeline.json",
-    "Pipelines/GBufferSpriteInstanceDepthTintPipeline.json"
+    "Pipelines/GBufferLevelShader2DDirectionalDepthPipeline.json",
+    "Pipelines/GBufferSpriteInstanceDirectionalDepthPipeline.json",
+    "Pipelines/GBufferLevelShader2DDirectionalDepthTintPipeline.json",
+    "Pipelines/GBufferSpriteInstanceDirectionalDepthTintPipeline.json"
   ],
   "PipelinePackageList": [
     {

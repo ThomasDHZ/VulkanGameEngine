@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "MemoryPoolSystem.h"
 #include "RenderSystem.h"
+#include "LightSystem.h"
 
 PushConstantRegistry& pushConstantRegistry = PushConstantRegistry::Get();
 
@@ -76,6 +77,14 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
         {
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "MeshBufferIndex", context.MeshId);
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "DirectionalLightBufferIndex", context.LightId);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
+        });
+
+    RegisterPushConstantValue("pointLightSceneDataDepthBuffer", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
+        {
+            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "MeshBufferIndex", context.MeshId);
+            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightBufferIndex", context.LightId);
+            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightViewIndex", context.LightViewIndex);
             shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 

@@ -84,7 +84,6 @@ DirectionalLightBuffer GetDirectionalLight(uint index)
     light.ShadowBias       = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.ShadowSoftness   = uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]);
     light.LightActive      = bindlessBuffer.Data[baseByteLocation++];
-    baseByteLocation += 4;
     light.LightSpaceMatrix = mat4(
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
         uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
@@ -107,7 +106,10 @@ PointLightBuffer GetPointLight(uint index)
         light.ShadowSoftness   = 0.0;
         light.LightLayer       = 0;
         light.LightActive      = 0;
-        light.LightSpaceMatrix = mat4(1.0f);
+        for(int x = 0; x < 6; x++)
+        {
+            light.LightSpaceMatrix[x] = mat4(1.0f);
+        }
         return light;
     }
 
@@ -123,11 +125,14 @@ PointLightBuffer GetPointLight(uint index)
     light.LightLayer       = int(bindlessBuffer.Data[baseByteLocation++]);
     light.LightActive      = bindlessBuffer.Data[baseByteLocation++];
     baseByteLocation += 2;
-    light.LightSpaceMatrix = mat4(
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
-        uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
+    for(int x = 0; x < 6; x++)
+    {
+        light.LightSpaceMatrix[x] = mat4(
+            uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+            uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+            uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]),
+            uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]), uintBitsToFloat(bindlessBuffer.Data[baseByteLocation++]));
+    }
     return light;
 }
 

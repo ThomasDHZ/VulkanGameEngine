@@ -44,7 +44,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
            .textureGuid = renderPassLoader.AttachmentList[x].RenderedTextureId,
            .gpuTextureBufferIndex = memoryPoolSystem.AddToMemoryPool(attachment),
            .texture = attachment,
-           //.imGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.texture.TextureSampler(), texture.texture.TextureViews().front(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+           .imGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(texture.texture.TextureSampler(), texture.texture.TextureViews().front(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         };
 
         SceneDataBuffer& sceneData = memoryPoolSystem.UpdateSceneDataBuffer();

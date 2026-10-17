@@ -10,6 +10,7 @@ struct PointLightComponent
 {
     uint PointLightMemoryPoolIndex = UINT32_MAX;
     uint PointLightCameraId = UINT32_MAX;
+    std::array<mat4, 6> PointLightFaceViews;
 };
 
 struct DirectionalLightComponent
@@ -31,14 +32,16 @@ private:
     LightSystem(LightSystem&&) = delete;
     LightSystem& operator=(LightSystem&&) = delete;
 
+     void                     UpdateDirectionalLightViewProjection(DirectionalLightComponent& lightComponent);
+     void                     UpdatePointLightViewProjection(PointLightComponent& lightComponent);
 
 public:
      uint32                   LoadLight(const nlohmann::json& json);
      void                     Update();
-     void                     UpdateDirectionalLightViewProjection(uint lightIndex);
      uint32                   AllocateLight(GameObjectTypeEnum lightType);
      DirectionalLight&        GetDirectionalLight(uint directionalLightId);
      PointLight&              GetPointLight(uint pointLightId);
+     mat4                     GetPointLightProjectionMatrix(PointLightComponent& lightComponent, uint32 viewFace);
 
       uint                    FindDirectionalLightIndex(void* ptr);
       uint                    FindPointLightIndex(void* ptr);

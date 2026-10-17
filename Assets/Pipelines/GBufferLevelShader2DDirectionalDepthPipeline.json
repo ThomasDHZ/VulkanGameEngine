@@ -1,66 +1,28 @@
 {
-  "Name": "LevelShader2DPipeline",
-  "PipelineId": "8b679716-de53-4a2c-8853-f66eb7f47393",
+  "Name": "GBufferLevelShader2DDirectionalDepthPipeline",
+  "PipelineId": "776bd015-90ca-4063-b94c-179f4b899ba9",
   "ShaderList": [
-    {
-      "ShaderId": "f39bad67-1e6f-48a1-bac0-9105d29fcbbd",
-      "ShaderFile": "Shaders/LevelWireFrameShader2DVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "6c3dd8f9-fcb9-4869-8fb9-6f5ffc743bb9",
-      "ShaderFile": "Shaders/LevelWireFrameShader2DFrag.spv",
-      "ShaderStage": 16
-    }
+    "5a9cf844-ab4d-4f35-8c22-4b974c3d5b89",
+    "dc3bd253-5ef6-47f2-972a-26dccfe7b6b3"
   ],
-  "VertexType": 1,
+  "VertexType": 0,
   "SubPassId": 0,
-  "ViewportList": [
-    {
-      "x": 0.0,
-      "y": 0.0,
-      "width": 0.0,
-      "height": 0.0,
-      "minDepth": 0.0,
-      "maxDepth": 1.0
-    }
-  ],
-  "ScissorList": [
-    {
-      "offset": {
-        "x": 0,
-        "y": 0
-      },
-      "extent": {
-        "width": 0,
-        "height": 0
-      }
-    }
-  ],
-  "PipelineColorBlendAttachmentStateList": [
-    {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
-      "ColorBlendOp": 0,
-      "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 9,
-      "AlphaBlendOp": 0,
-      "ColorWriteMask": 15
-    }
-  ],
+  "ViewportList": [],
+  "ScissorList": [],
+  "PipelineColorBlendAttachmentStateList": [],
   "PipelineColorBlendStateCreateInfoModel": {
-    "sType": 26,
+    "BlendConstants": { "FixedElementField": 0.0 },
+    "SType": 26,
     "LogicOpEnable": false,
-    "LogicOp": 0,
+    "LogicOp": 5,
     "AttachmentCount": 0
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
     "depthClampEnable": 0,
     "rasterizerDiscardEnable": 0,
-    "polygonMode": 1,
-    "cullMode": 2,
+    "polygonMode": 0,
+    "cullMode": 0,
     "frontFace": 0,
     "depthBiasEnable": 0,
     "depthBiasConstantFactor": 0.0,
@@ -82,7 +44,7 @@
     "sType": 25,
     "depthTestEnable": true,
     "depthWriteEnable": true,
-    "depthCompareOp": 1,
+    "depthCompareOp": 3,
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {

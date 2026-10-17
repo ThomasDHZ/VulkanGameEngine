@@ -18,41 +18,29 @@ enum MemoryPoolTypes
 
 struct DirectionalLight
 {
-	vec3  LightColor = vec3(1.0f);
-	float _pad0 = 0.0f;
-	vec3  LightDirection = vec3(0.3f, 0.3f, 1.0f);
-	float LightIntensity = 1.5f;
-	float ShadowStrength = 1.0f;
-	float ShadowBias = 0.012f;
-	float ShadowSoftness = 0.008f;
-	uint  LightActive = 1;
-	uint  _pad1 = 0;
-	uint  _pad2 = 0;
-	uint  _pad3 = 0;
-	uint  _pad4 = 0;
-	mat4  LightSpaceMatrix = mat4(1.0f);
+	alignas(16) vec3  LightColor = vec3(1.0f);
+	alignas(16) vec3 LightDirection = vec3(0.3f, 0.3f, 1.0f);
+	alignas(4)  float LightIntensity = 1.5f;
+	alignas(4)  float ShadowStrength = 1.0f;
+	alignas(4)  float ShadowBias = 0.012f;
+	alignas(4)  float ShadowSoftness = 0.008f;
+	alignas(4)  uint  LightActive = 1;
+	alignas(16) mat4  LightSpaceMatrix = mat4(1.0f);
 };
-static_assert(sizeof(DirectionalLight) == 128);
-static_assert(offsetof(DirectionalLight, LightSpaceMatrix) == 64);
 
 struct PointLight
 {
-	vec3  LightPosition = vec3(0.0f);
-	float _pad0 = 0.0f;
-	vec3  LightColor = vec3(1.0f, 0.95f, 0.8f);
-	float LightRadius = 200.0f;
-	float LightIntensity = 2.0f;
-	float ShadowStrength = 1.0f;
-	float ShadowBias = 0.012f;
-	float ShadowSoftness = 0.008f;
-	int   LightLayer = 0;
-	uint  LightActive = 1;
-	uint  _pad1 = 0;
-	uint  _pad2 = 0;
-	mat4  LightSpaceMatrix = mat4(1.0f);
+	alignas(16) vec3  LightPosition = vec3(0.0f);
+	alignas(16) vec3  LightColor = vec3(1.0f, 0.95f, 0.8f);
+	alignas(4)  float LightRadius = 200.0f;
+	alignas(4)  float LightIntensity = 2.0f;
+	alignas(4)  float ShadowStrength = 1.0f;
+	alignas(4)  float ShadowBias = 0.012f;
+	alignas(4)  float ShadowSoftness = 0.008f;
+	alignas(4)  int   LightLayer = 0;
+	alignas(4)  uint  LightActive = 1;
+	alignas(16) mat4  LightSpaceMatrix[6] = { mat4(1.0f), mat4(1.0f), mat4(1.0f), mat4(1.0f), mat4(1.0f), mat4(1.0f) };
 };
-static_assert(sizeof(PointLight) == 128);
-static_assert(offsetof(PointLight, LightSpaceMatrix) == 64);
 
 struct SpriteInstance
 {

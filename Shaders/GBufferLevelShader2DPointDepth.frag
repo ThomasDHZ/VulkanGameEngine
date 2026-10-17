@@ -70,13 +70,14 @@ layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
-layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
+layout(push_constant) uniform PointLightSceneDataDepthBuffer
 {
     int   MeshBufferIndex;
-    int   DirectionalLightBufferIndex;
+    int   PointLightBufferIndex;
+    int   PointLightViewIndex;
     int   UseHeightMap;
     float HeightScale;
-} directionalLightSceneDataDepthBuffer;
+} pointLightSceneDataDepthBuffer;
 
 layout(location = 0) in vec3 WorldPos;
 layout(location = 1) in vec2 TexCoords;
@@ -85,7 +86,7 @@ layout(location = 1) in vec2 TexCoords;
 
 void main()
 {
-    MeshProperitiesBuffer mesh           = GetMesh(directionalLightSceneDataDepthBuffer.MeshBufferIndex);
+    MeshProperitiesBuffer mesh           = GetMesh(pointLightSceneDataDepthBuffer.MeshBufferIndex);
     PackedMaterial        packedMaterial = GetMaterial(mesh.MaterialIndex);
 
     vec4 albedoTexture = texture(TextureMap[packedMaterial.AlbedoTextureId], TexCoords, -0.5);

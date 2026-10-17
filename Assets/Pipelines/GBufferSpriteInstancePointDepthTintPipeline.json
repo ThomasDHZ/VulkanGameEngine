@@ -1,40 +1,21 @@
 {
-  "Name": "SDFShadowPipeline",
-  "PipelineId": "01fb19cb-b580-4e96-9fdc-b296c9b54011",
+  "Name": "GBufferSpriteInstancePointLightDepthTintPipeline",
+  "PipelineId": "d4b9ce28-9b9c-4815-9bdc-84129901c524",
   "ShaderList": [
-    {
-      "ShaderId": "e07a1d2e-f3ce-4cbd-9ced-7f8493a5edac",
-      "ShaderFile": "Shaders/LevelDirectionalShadowShaderVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "03467d42-c18b-452f-a03b-63a120e8244a",
-      "ShaderFile": "Shaders/LevelDirectionalShadowShaderFrag.spv",
-      "ShaderStage": 16
-    }
+    "acd40fe3-8633-4cea-9f9e-a135dc0fba8b",
+    "767d6d3c-6f76-4ca0-a8da-f93696dac5c7"
   ],
-  "VertexType": 0,
+  "VertexType": 1,
   "SubPassId": 0,
   "ViewportList": [],
   "ScissorList": [],
-  "PipelineColorBlendAttachmentStateList": [
-    {
-      "BlendEnable": true,
-      "SrcColorBlendFactor": 6,
-      "DstColorBlendFactor": 7,
-      "ColorBlendOp": 0,
-      "SrcAlphaBlendFactor": 1,
-      "DstAlphaBlendFactor": 0,
-      "AlphaBlendOp": 0,
-      "ColorWriteMask": 15
-    }
-  ],
+  "PipelineColorBlendAttachmentStateList": [],
   "PipelineColorBlendStateCreateInfoModel": {
     "BlendConstants": { "FixedElementField": 0.0 },
     "SType": 26,
     "LogicOpEnable": false,
     "LogicOp": 5,
-    "AttachmentCount": 1
+    "AttachmentCount": 0
   },
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,

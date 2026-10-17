@@ -9,17 +9,16 @@
 
 LightSystem& lightSystem = LightSystem::Get();
 
-void LightSystem::UpdateDirectionalLightViewProjection(uint lightIndex)
+void LightSystem::UpdateDirectionalLightViewProjection(DirectionalLightComponent& lightComponent)
 {
     SpriteInstance playerSprite = spriteSystem.FindPlayerSpriteInstance();
 
-    DirectionalLight& light = memoryPoolSystem.UpdateDirectionalLight(lightIndex);
+    DirectionalLight& light = memoryPoolSystem.UpdateDirectionalLight(lightComponent.DirectionalLightMemoryPoolIndex);
     vec3 L = glm::normalize(light.LightDirection);
     vec3 up = abs(L.y) > 0.99f ? vec3(0.0f, 0.0f, 1.0f) : vec3(0.0f, 1.0f, 0.0f);
 
     vec2 half = playerSprite.SpriteSize * 0.5f;
-    vec3 sceneCenter = vec3(playerSprite.SpritePosition.x + half.x,
-        playerSprite.SpritePosition.y + half.y, 0.0f);
+    vec3 sceneCenter = vec3(playerSprite.SpritePosition.x + half.x, playerSprite.SpritePosition.y + half.y, 0.0f);
     vec2 sceneSize   = vec2(4296.0f);
     float dist = glm::length(sceneSize) + LayerDistance;
 
@@ -32,6 +31,18 @@ void LightSystem::UpdateDirectionalLightViewProjection(uint lightIndex)
     proj[1][1] *= -1.0f;
 
     light.LightSpaceMatrix = proj * view;
+}
+
+void LightSystem::UpdatePointLightViewProjection(PointLightComponent& lightComponent)
+{
+    PointLight& light = memoryPoolSystem.UpdatePointLight(lightComponent.PointLightMemoryPoolIndex);
+    mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10000.0f);
+    light.LightSpaceMatrix[0] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    light.LightSpaceMatrix[1] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    light.LightSpaceMatrix[2] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    light.LightSpaceMatrix[3] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    light.LightSpaceMatrix[4] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    light.LightSpaceMatrix[5] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 uint32 LightSystem::LoadLight(const nlohmann::json& json)
@@ -77,6 +88,14 @@ uint32 LightSystem::LoadLight(const nlohmann::json& json)
 
 void LightSystem::Update()
 {
+    for (auto [entity, directionalLight] : gameObjectSystem.EntityRegistry.view<DirectionalLightComponent>().each())
+    {
+        lightSystem.UpdateDirectionalLightViewProjection(directionalLight);
+    }
+    for (auto [entityite, pointLight] : gameObjectSystem.EntityRegistry.view<PointLightComponent>().each())
+    {
+        lightSystem.UpdatePointLightViewProjection(pointLight);
+    }
 }
 
 uint LightSystem::AllocateLight(GameObjectTypeEnum lightType)
@@ -99,6 +118,11 @@ DirectionalLight& LightSystem::GetDirectionalLight(uint directionalLightId)
 PointLight& LightSystem::GetPointLight(uint pointLightId)
 {
     return memoryPoolSystem.UpdatePointLight(pointLightId);
+}
+
+mat4 LightSystem::GetPointLightProjectionMatrix(PointLightComponent& lightComponent, uint32 viewFaceIndex)
+{
+    return lightComponent.PointLightFaceViews[viewFaceIndex];
 }
 
 uint LightSystem::FindDirectionalLightIndex(void* ptr)

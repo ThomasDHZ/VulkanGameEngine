@@ -103,13 +103,14 @@ layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 
-layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
+layout(push_constant) uniform PointLightSceneDataDepthBuffer
 {
     int   MeshBufferIndex;
-    int   DirectionalLightBufferIndex;
+    int   PointLightBufferIndex;
+    int   PointLightViewIndex;
     int   UseHeightMap;
     float HeightScale;
-} directionalLightSceneDataDepthBuffer;
+} pointLightSceneDataDepthBuffer;
 
 #include "Constants.glsl"
 #include "BindlessHelpers.glsl"
@@ -131,7 +132,6 @@ void main()
         case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    const DirectionalLightBuffer light = GetDirectionalLight(directionalLightSceneDataDepthBuffer.DirectionalLightBufferIndex);
     vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
 
     PS_Position = world.xyz;
@@ -143,5 +143,6 @@ void main()
 	PS_UVOffset = VS_UVOffset;
     PS_SpriteId = VS_SpriteId;
 
- gl_Position = sceneDataBuffer.OrthoProjection * sceneDataBuffer.OrthoView * world;
+    const PointLightBuffer light = GetPointLight(pointLightSceneDataDepthBuffer.PointLightBufferIndex);
+    gl_Position = light.LightSpaceMatrix[pointLightSceneDataDepthBuffer.PointLightViewIndex] * world;
 }
