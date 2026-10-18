@@ -1,9 +1,9 @@
 {
   "Name": "GBufferSpriteInstancePointLightDepthTintPipeline",
-  "PipelineId": "d4b9ce28-9b9c-4815-9bdc-84129901c524",
+  "PipelineId": "621dad4b-ab5c-4a7a-a9ad-d23464b79950",
   "ShaderList": [
-    "acd40fe3-8633-4cea-9f9e-a135dc0fba8b",
-    "767d6d3c-6f76-4ca0-a8da-f93696dac5c7"
+    "d34cfa63-4b4f-4186-8bd5-a783fca9a325",
+    "2bdff05a-dfd2-4976-82e4-a3ee86c42273"
   ],
   "VertexType": 1,
   "SubPassId": 0,

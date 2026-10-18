@@ -1,9 +1,9 @@
 {
   "Name": "GBufferLevelShader2DPointLightDepthTintPipeline",
-  "PipelineId": "0351d7cd-9494-494d-96ce-4f0c9a353c56",
+  "PipelineId": "e0fcffc0-c6d3-4d11-9e1d-d56a5da5b773",
   "ShaderList": [
-    "4ff0d605-8481-4d14-809d-75f72bcc5344",
-    "7a9ff0df-1a48-4f09-a2a5-9c3c07add7cb"
+    "681731fb-4b18-4b27-b363-9d30d4a06838",
+    "c535f12f-99ef-4f7f-9e23-9d0f4cd1bd97"
   ],
   "VertexType": 0,
   "SubPassId": 0,
