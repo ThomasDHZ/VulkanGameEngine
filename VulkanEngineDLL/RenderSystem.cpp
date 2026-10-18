@@ -352,6 +352,8 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
     for (auto& renderPassNode : renderPassNodeList)
     {
         VulkanRenderPass renderPass = FindRenderPass(renderPassNode.RenderPassGuid);
+        String a = renderPassNode.RenderPassGuid.ToString();
+
 
         uint32 mipCount = std::max(1u, renderPassNode.MipCount);
         if (renderPassNode.PreRenderPassCmd) renderPassNode.PreRenderPassCmd(commandBuffer, renderPassNode);
@@ -368,6 +370,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                     Texture inputTexture;
                     VulkanPipelinePackage pipelinePackage = FindPipelinePackage(renderPassLayer.PipelinePackageGuid);
                     VulkanPipeline pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineTypeEnum::DefaultPipeline]);
+                    String a = pipeline.PipelineId().ToString();
                  /*   if (FindPipelinePackageByPipelineType(pipelinePackage.PipelinePackageId, PipelineType::WireFramePipeline))
                     {
                         pipeline = FindRenderPipeline(pipelinePackage.PipelineMap[PipelineType::WireFramePipeline]);

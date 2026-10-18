@@ -99,7 +99,7 @@
     [
       {
         "MeshType": 1,
-        "PipelinePackageId": "0494577d-e10f-4d02-8615-05fed5e978a5",
+        "PipelinePackageId": "7d1f24cc-10ed-4428-ad6b-c847e8491885",
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
         "InputAttachmentList": [],
         "InputTextureList": [],
@@ -109,7 +109,7 @@
       },
       {
         "MeshType": 2,
-        "PipelinePackageId": "7d2aaae5-a064-44c3-b8aa-6f459a7687a6",
+        "PipelinePackageId": "91a70076-5c4d-4628-9466-b33de4051fa7",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],
         "InputTextureList": [],
@@ -121,7 +121,7 @@
     [
       {
         "MeshType": 1,
-        "PipelinePackageId": "0781010b-771d-47f4-bf37-aac8c130d1f6",
+        "PipelinePackageId": "88b7fe0a-eb18-468b-afa2-b5bc7c1f8ea2",
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
         "InputAttachmentList": [],
         "InputTextureList": [],
@@ -131,7 +131,7 @@
       },
       {
         "MeshType": 2,
-        "PipelinePackageId": "885049dd-10bb-4dec-af37-53765240d3f6",
+        "PipelinePackageId": "27fcc49f-3c7e-470f-b2c3-9348b191de87",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],
         "InputTextureList": [],
