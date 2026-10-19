@@ -141,6 +141,6 @@ void main()
 	PS_MaterialId = VS_MaterialId;
 	PS_UVOffset = VS_UVOffset;
 
-    const PointLightBuffer light = GetPointLight(pointLightSceneDataDepthBuffer.PointLightBufferIndex);
-    gl_Position = light.LightSpaceMatrix[pointLightSceneDataDepthBuffer.PointLightViewIndex] * world;
+    const PointLightBuffer light = GetPointLight(0);
+    gl_Position = light.LightSpaceMatrix[4] * world;
 }

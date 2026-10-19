@@ -36,13 +36,15 @@ void LightSystem::UpdateDirectionalLightViewProjection(DirectionalLightComponent
 void LightSystem::UpdatePointLightViewProjection(PointLightComponent& lightComponent)
 {
     PointLight& light = memoryPoolSystem.UpdatePointLight(lightComponent.PointLightMemoryPoolIndex);
+
     mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10000.0f);
-    light.LightSpaceMatrix[0] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    light.LightSpaceMatrix[1] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    light.LightSpaceMatrix[2] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    light.LightSpaceMatrix[3] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-    light.LightSpaceMatrix[4] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    light.LightSpaceMatrix[5] = projectionMatrix * glm::lookAt(light.LightPosition, light.LightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    vec3 trueLightPosition = vec3(light.LightPosition.x, light.LightPosition.y, light.LightPosition.z + float(light.LightLayer) * LayerDistance);
+    light.LightSpaceMatrix[0] = projectionMatrix * glm::lookAt(trueLightPosition, trueLightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    light.LightSpaceMatrix[1] = projectionMatrix * glm::lookAt(trueLightPosition, trueLightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    light.LightSpaceMatrix[2] = projectionMatrix * glm::lookAt(trueLightPosition, trueLightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    light.LightSpaceMatrix[3] = projectionMatrix * glm::lookAt(trueLightPosition, trueLightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+    light.LightSpaceMatrix[4] = projectionMatrix * glm::lookAt(trueLightPosition, trueLightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    light.LightSpaceMatrix[5] = projectionMatrix * glm::lookAt(trueLightPosition, trueLightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 uint32 LightSystem::LoadLight(const nlohmann::json& json)

@@ -166,20 +166,26 @@ void GameSystem::DebugUpdate(float deltaTime)
     int af = 234;
     ImGui::Separator();
 
-    Texture texture = renderSystem.FindRenderPassAttachment(VkGuid("856a750c-cd05-44e6-a4f8-b7809e7b6bd2"));
-    Texture texture2 = renderSystem.FindRenderPassAttachment(VkGuid("9bd298a4-9136-4bbb-b8dd-95e14e9d52d9"));
+    Texture depthDirectionalTexture = renderSystem.FindRenderPassAttachment(VkGuid("856a750c-cd05-44e6-a4f8-b7809e7b6bd2"));
+    Texture tintDirectionalTexture = renderSystem.FindRenderPassAttachment(VkGuid("9bd298a4-9136-4bbb-b8dd-95e14e9d52d9"));
+    Texture depthPointTexture = renderSystem.FindRenderPassAttachment(VkGuid("167bb2c7-50b5-4efa-afa6-333f2461c0cf"));
+    Texture tintPointTexture = renderSystem.FindRenderPassAttachment(VkGuid("adafef66-6121-45b8-b1fe-745be31ede78"));
     // imGuiSystem.Image(texture.imGuiDescriptorSet, ImVec2(256.0f, 256.0f));
-    ImGui::Image(texture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
+    ImGui::Image(depthDirectionalTexture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
     ImGui::SameLine();
-    ImGui::Image(texture2.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
-    //for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kDirectionalLightBuffer).ActiveCount; x++)
-    //{
-    //    PointLightComponent& pointLight = memoryPoolSystem.UpdatePointLight(x);
-    //    if (ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -static_cast<float>(vulkan.SwapChainResolution().width), static_cast<float>(vulkan.SwapChainResolution().width))) memoryPoolSystem.dirty();
-    //    if (ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //    if (ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f)) memoryPoolSystem.MarkMemoryPoolBufferDirty();
-    //}
+    ImGui::Image(tintDirectionalTexture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
+    ImGui::Separator();
+    ImGui::Image(depthPointTexture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
+    ImGui::SameLine();
+    ImGui::Image(tintPointTexture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
+    for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kPointLightBuffer).ActiveCount; x++)
+    {
+        PointLight& pointLight = memoryPoolSystem.UpdatePointLight(x);
+        if (ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -static_cast<float>(vulkan.SwapChainResolution().width), static_cast<float>(vulkan.SwapChainResolution().width)));
+            if (ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f));
+                if (ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f));
+                    if (ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f));
+    }
 
 
  //   imGuiSystem.Separator();

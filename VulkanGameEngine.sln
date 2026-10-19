@@ -208,7 +208,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameRenderPipelines", "Game
 		Assets\Pipelines\BRDFPipeline.json = Assets\Pipelines\BRDFPipeline.json
 		Assets\Pipelines\DepthDebugPipeline.json = Assets\Pipelines\DepthDebugPipeline.json
 		Assets\Pipelines\EnvironmentToCubeMapPipeline.json = Assets\Pipelines\EnvironmentToCubeMapPipeline.json
-		Assets\Pipelines\FrameBufferPipeline.json = Assets\Pipelines\FrameBufferPipeline.json
 		Assets\Pipelines\GaussianBlurPipeline.json = Assets\Pipelines\GaussianBlurPipeline.json
 		Assets\Pipelines\GBufferLevelAlphaPassPipeline.json = Assets\Pipelines\GBufferLevelAlphaPassPipeline.json
 		Assets\Pipelines\GBufferLevelShader2DDirectionalDepthPipeline.json = Assets\Pipelines\GBufferLevelShader2DDirectionalDepthPipeline.json

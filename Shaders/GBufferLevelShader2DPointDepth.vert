@@ -90,11 +90,10 @@ layout (location = 1) out vec2  PS_UV;
 void main()
 {
     MeshProperitiesBuffer mesh = GetMesh(pointLightSceneDataDepthBuffer.MeshBufferIndex);
-    const PointLightBuffer light = GetPointLight(pointLightSceneDataDepthBuffer.PointLightBufferIndex);
-
     vec4 world = mesh.MeshTransform * vec4(VS_Position.xy, float(mesh.MeshLayerIndex) * SpriteLayerSpacing, 1.0);
 
     PS_Position = world.xyz;
     PS_UV       = VS_UV;
-    gl_Position = light.LightSpaceMatrix[pointLightSceneDataDepthBuffer.PointLightViewIndex] * world;
+    const PointLightBuffer light = GetPointLight(0);
+    gl_Position = light.LightSpaceMatrix[4] * world;
 }

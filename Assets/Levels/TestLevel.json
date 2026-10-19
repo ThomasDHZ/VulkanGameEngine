@@ -26,10 +26,6 @@
       "OneTimeDraw": false
     },
     {
-      "RenderPass": "RenderPass/PointLightShadowRenderPass.json",
-      "OneTimeDraw": false
-    },
-    {
       "RenderPass": "RenderPass/GBufferRenderPass.json",
       "OneTimeDraw": false
     },
@@ -74,35 +70,7 @@
       "GameObjectType": 4,
       "GameObjectPositionOverride": [
         569.6525,
-        592.9432
-      ]
-    },
-    {
-      "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        1169.6525,
-        592.9432
-      ]
-    },
-    {
-      "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        1769.6525,
-        592.9432
-      ]
-    },
-    {
-      "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        2369.6525,
-        592.9432
-      ]
-    },
-    {
-      "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        3069.6525,
-        592.9432
+        1592.9432
       ]
     },
     {
