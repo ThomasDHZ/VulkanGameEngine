@@ -137,9 +137,31 @@ void main()
     vec3 ambient    = ImageBasedLighting(F0, V, N, R, material);
     vec3 color      = ambient + Lo;
 
-    vec3 tint;
-    const DirectionalLightBuffer light = GetDirectionalLight(0);
-    float shadow = DirectionalShadow(light, material.Position, tint);
+
+        const PointLightBuffer light = GetPointLight(0);
+
+
+        float spriteLayer = material.Position.z;
+        vec2 toLightXY = light.LightPosition.xy - material.Position.xy;
+        float distance = length(toLightXY);
+
+        float d = max(distance, 1.0);
+        float window = clamp(1.0 - pow(d / light.LightRadius, 4.0), 0.0, 1.0);
+        float atten = (window * window) / (d * d);
+
+        vec3 lightPos = vec3(light.LightPosition.xy, light.LightLayer * SpriteLayerSpacing); // match how you built it in the depth shader
+        float currentDist = length(material.Position - lightPos);
+
+        vec4 lightClip = light.LightSpaceMatrix[5] * vec4(material.Position, 1.0); // use the face index you actually rendered
+        vec3 lightNDC  = lightClip.xyz / lightClip.w;
+        vec2 uv        = lightNDC.xy * 0.5 + 0.5;
+
+        float closest = 1.0;
+        if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0)   closest = texture(TextureMap[sceneDataBuffer.PointLightShadowMapId], uv).r;
+
+        float bias = light.ShadowBias;
+        float shadow = (currentDist / light.LightRadius - bias > closest) ? 0.0 : 1.0;
+        shadow = mix(1.0, shadow, light.ShadowStrength);
     outColor        = vec4(color, 1.0);
     outBloom        = vec4(material.Emission + max(color - vec3(1.0), vec3(0.0)), 1.0);
 }
@@ -296,6 +318,20 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         float window = clamp(1.0 - pow(d / light.LightRadius, 4.0), 0.0, 1.0);
         float atten = (window * window) / (d * d);
 
+        vec3 lightPos = vec3(light.LightPosition.xy, light.LightLayer * SpriteLayerSpacing);
+        float currentDist = length(material.Position - lightPos);
+
+        vec4 lightClip = light.LightSpaceMatrix[5] * vec4(material.Position, 1.0);
+        vec3 lightNDC  = lightClip.xyz / lightClip.w;
+        vec2 uv        = lightNDC.xy * 0.5 + 0.5;
+
+        float closest = 1.0;
+        if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0)   closest = texture(TextureMap[59], uv).r;
+
+        float bias = light.ShadowBias;
+        float shadow = (currentDist / light.LightRadius - bias > closest) ? 0.0 : 1.0;
+        shadow = mix(1.0, shadow, light.ShadowStrength);
+
         float z = (light.LightLayer - spriteLayer) * SpriteLayerSpacing;
         vec3 L = normalize(vec3(toLightXY, z));
         vec3 H = normalize(V + L);
@@ -304,7 +340,7 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         float NdotL = dot(N, L);
 
         float ref = 150.0; // distance where this light should match the old look
-        vec3 radiance = light.LightColor * light.LightIntensity * (ref * ref) * atten * material.SelfShadow;
+        vec3 radiance = light.LightColor * light.LightIntensity * (ref * ref) * atten * shadow * material.SelfShadow;
 
         float sss = clamp(material.SSSWeight, 0.0, 1.0);
         vec3 scatter = mix(vec3(1.0), material.SSSColor, sss);

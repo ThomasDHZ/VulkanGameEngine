@@ -58,16 +58,13 @@ private:
     UnorderedMap<VkGuid, Vector<Texture>>                   RenderAttachmentMap;
     UnorderedMap<VkGuid, VulkanShader>                      RenderShaderMap;
 
-#ifndef NDEBUG
-    UnorderedMap<VkGuid, String>                            RenderAttachmentNameMap;
-#endif
-
     VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);
     void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
 public:
     bool                                                    WireFrameFlag = false;
+    bool                                                    UsingImGui = false;
 
     RenderPassGuid                                          LoadRenderPass(const String& jsonPath, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);
     RenderPassGuid                                          LoadRenderPass(RenderPassLoader& renderPassLoader, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);

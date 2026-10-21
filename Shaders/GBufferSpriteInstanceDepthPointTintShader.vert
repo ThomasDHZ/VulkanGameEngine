@@ -142,5 +142,5 @@ void main()
 	PS_UVOffset = VS_UVOffset;
 
     const PointLightBuffer light = GetPointLight(0);
-    gl_Position = light.LightSpaceMatrix[4] * world;
+    gl_Position = light.LightSpaceMatrix[5] * world;
 }

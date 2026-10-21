@@ -26,6 +26,10 @@
       "OneTimeDraw": false
     },
     {
+      "RenderPass": "RenderPass/DepthDebugRenderPass.json",
+      "OneTimeDraw": false
+    },
+    {
       "RenderPass": "RenderPass/GBufferRenderPass.json",
       "OneTimeDraw": false
     },

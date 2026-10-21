@@ -91,4 +91,8 @@ void main()
 
     vec4 albedoTexture = texture(TextureMap[packedMaterial.AlbedoTextureId], TexCoords, -0.5);
     if (albedoTexture.a < packedMaterial.AlphaCutOff) discard;
+
+    const PointLightBuffer light = GetPointLight(0);
+    float dist = length(WorldPos - vec3(light.LightPosition.xy, light.LightLayer * SpriteLayerSpacing));
+    gl_FragDepth = clamp(dist / light.LightRadius, 0.0, 1.0);
 }

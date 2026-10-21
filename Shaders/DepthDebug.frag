@@ -85,6 +85,6 @@ float LinearizeDepth(float depth)
 
 void main()
 {             
-float d =  texture(TextureMap[57], TexCoords).r;
-outColor = vec4(fract(d * 128.0), fract(d * 32.0), fract(d * 8.0), 1.0);
+    float d =  texture(TextureMap[59], TexCoords).r;
+    outColor = vec4(fract(d * 128.0), fract(d * 32.0), fract(d * 8.0), 1.0);
 }
