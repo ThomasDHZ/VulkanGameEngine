@@ -11,16 +11,17 @@ typedef Vector<ivec2> AnimationFrames;
 
 struct SpriteVram
 {
-    VkGuid VramSpriteID = VkGuid();
-    VkGuid SpriteMaterialID = VkGuid();
-    uint SpriteLayer = 0;
-    vec4 SpriteColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    ivec2 SpritePixelSize = ivec2();
-    vec2 SpriteScale = vec2(1.0f, 1.0f);
-    ivec2 SpriteCells = ivec2(0, 0);
-    vec2 SpriteUVSize = vec2();
-    vec2 SpriteSize = vec2(50.0f);
-    uint AnimationListID = 0;
+    VkGuid       VramSpriteID = VkGuid();
+    VkGuid       SpriteMaterialID = VkGuid();
+    uint         SpriteLayer = 0;
+    vec4         SpriteColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    ivec2        SpritePixelSize = ivec2();
+    vec2         SpriteScale = vec2(1.0f, 1.0f);
+    DrawFlagBits SpriteDrawFlags = DrawFlagBits::kDrawFlag_DrawInstance;
+    ivec2        SpriteCells = ivec2(0, 0);
+    vec2         SpriteUVSize = vec2();
+    vec2         SpriteSize = vec2(50.0f);
+    uint         AnimationListID = 0;
 };
 
 //struct Animation2D
@@ -32,13 +33,13 @@ struct SpriteVram
 struct Sprite
 {
     entt::entity GameObjectId = entt::null;
-    uint32 SpriteInstanceId = 0;
-    uint32 CurrentAnimationId = 0;
-    uint32 CurrentFrame = 0;
-    uint32 SpriteLayer = 0;
-    ivec2  FlipSprite = ivec2(0);
-    VkGuid SpriteVramId = VkGuid();
-    float  CurrentFrameTime = 0.0f;
+    uint32       SpriteInstanceId = 0;
+    uint32       CurrentAnimationId = 0;
+    uint32       CurrentFrame = 0;
+    uint32       SpriteLayer = 0;
+    ivec2        FlipSprite = ivec2(0);
+    VkGuid       SpriteVramId = VkGuid();
+    float        CurrentFrameTime = 0.0f;
 };
 
 struct Animation2D

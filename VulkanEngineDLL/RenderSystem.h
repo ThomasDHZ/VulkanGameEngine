@@ -39,6 +39,17 @@ struct RenderPassNode
     uint32                                                        MipCount = 0;
 };
 
+enum DrawFlagBits : uint64
+{
+    kDrawFlag_DrawDefault = 1 << 0,
+    kDrawFlag_DrawMesh = 1 << 1,
+    kDrawFlag_DrawInstance = 1 << 2,
+    kDrawFlag_DrawLine = 1 << 3,
+    kDrawFlag_DrawCubeMap = 1 << 4,
+    kDrawFlag_DrawDebugObjects = 1 << 5,
+    kDrawFlag_CastShadow = 1 << 6
+};
+
 class ENGINE_DLL_EXPORT RenderSystem
 {
 public:

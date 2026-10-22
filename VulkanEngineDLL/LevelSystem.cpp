@@ -289,7 +289,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexDataSize = LevelLayerList[x].VertexList.size() * sizeof(Vertex2DLayout),
             .VertexData = LevelLayerList[x].VertexList.data()
         };
-        meshSystem.CreateMesh("__LevelMesh__" + std::to_string(x), MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, x, LevelLayerList[x].MaterialId);
+        meshSystem.CreateMesh("__LevelMesh__" + std::to_string(x), MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, x, DrawFlagBits::kDrawFlag_DrawMesh, LevelLayerList[x].MaterialId);
 
     }
 }
@@ -324,7 +324,7 @@ void LevelSystem::LoadSkyBox()
         .VertexData = skyBoxVertices.data()
     };
 
-    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, indexList, 0, VkGuid());
+    meshSystem.CreateMesh("__SkyBoxMesh__", MeshTypeEnum::kMesh_StaticMesh, vertexData, indexList, 0, DrawFlagBits::kDrawFlag_DrawCubeMap, VkGuid());
 }
 
 LevelTileSet LevelSystem::LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture)

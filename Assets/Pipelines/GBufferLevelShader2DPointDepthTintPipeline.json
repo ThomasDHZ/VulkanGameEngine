@@ -42,7 +42,7 @@
   },
   "PipelineDepthStencilStateCreateInfo": {
     "sType": 25,
-    "depthTestEnable": true,
+    "depthTestEnable": false,
     "depthWriteEnable": true,
     "depthCompareOp": 3,
     "depthBoundsTestEnable": false,

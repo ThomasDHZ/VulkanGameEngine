@@ -129,6 +129,7 @@ struct Mesh
 	uint32		 ParentGameObjectId = UINT32_MAX;
 	uint64		 SharedAssetId = UINT64_MAX;
 	uint32		 ObjectDataIndex = UINT32_MAX;
+	DrawFlagBits MeshDrawFlags = kDrawFlag_DrawDefault;
 	MeshTypeEnum Type = MeshTypeEnum::kMesh_Undefined;
 	vec3		 Position = vec3(0.0f);
 	vec3		 Rotation = vec3(0.0f);
@@ -167,8 +168,8 @@ private:
 public:
 	Vector<Mesh> MeshList;
 
-	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, int meshLayer, VkGuid materialId = VkGuid());
-	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, int meshLayer, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, int meshLayer, DrawFlagBits meshDrawFlags, VkGuid materialId = VkGuid());
+	 uint						   CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, int meshLayer, DrawFlagBits meshDrawFlags, VkGuid materialId = VkGuid());
 	 uint						   CreateSpriteMesh();
 	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color);
 	 uint						   CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color);

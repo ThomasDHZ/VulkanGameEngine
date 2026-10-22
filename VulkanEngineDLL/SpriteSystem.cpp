@@ -44,6 +44,7 @@ VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
         .SpriteColor = vec4{ gameObjectSpriteJson["SpriteColor"][0], gameObjectSpriteJson["SpriteColor"][1], gameObjectSpriteJson["SpriteColor"][2], gameObjectSpriteJson["SpriteColor"][3] },
         .SpritePixelSize = ivec2{ gameObjectSpriteJson["SpritePixelSize"][0], gameObjectSpriteJson["SpritePixelSize"][1] },
         .SpriteScale = ivec2{ gameObjectSpriteJson["SpriteScale"][0], gameObjectSpriteJson["SpriteScale"][1] },
+        .SpriteDrawFlags = static_cast<DrawFlagBits>(gameObjectSpriteJson.value("SpriteDrawFlags", static_cast<uint64>(kDrawFlag_DrawInstance))),
         .SpriteCells = ivec2(texture.texture.m_textureSize.x / spritePixelSize.x, texture.texture.m_textureSize.y / spritePixelSize.y),
         .SpriteUVSize = vec2(1.0f / (float)spriteCells.x, 1.0f / (float)spriteCells.y),
         .SpriteSize = vec2(spritePixelSize.x * spriteScale.x, spritePixelSize.y * spriteScale.y),

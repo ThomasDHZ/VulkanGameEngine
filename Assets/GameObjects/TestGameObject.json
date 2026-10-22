@@ -60,6 +60,7 @@
     "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
     "SpriteLayer": 3,
     "SpriteScale": [ 1.0, 1.0 ],
+    "SpriteDrawFlags": 68,
     "SpritePixelSize": [
       464,
       688

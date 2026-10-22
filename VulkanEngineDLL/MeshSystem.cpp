@@ -20,7 +20,7 @@ uint32 MeshSystem::GetNextMeshId()
 	return MeshList.size();
 }
 
-uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, int meshLayer, VkGuid materialId)
+uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, int meshLayer, DrawFlagBits meshDrawFlags, VkGuid materialId)
 {
 	uint meshId = meshSystem.GetNextMeshId();
 	uint64 meshHash = HashAssetKey(key);
@@ -49,6 +49,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 			.MeshId = meshId,
 			.SharedAssetId = meshHash,
 			.ObjectDataIndex = static_cast<uint32>(objectIndex),
+			.MeshDrawFlags = meshDrawFlags,
 			.Type = meshType,
 			.Position = vec3(0.0f),
 			.Rotation = vec3(0.0f),
@@ -59,7 +60,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 	return meshId;
 }
 
-uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, int meshLayer, VkGuid materialId)
+uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayout& vertexData, Vector<uint32>& indexList, int meshLayer, DrawFlagBits meshDrawFlags, VkGuid materialId)
 {
 	uint meshId = meshSystem.GetNextMeshId();
 	uint64 meshHash = HashAssetKey(key);
@@ -91,6 +92,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 			.MeshId = meshId,
 			.SharedAssetId = meshHash,
 			.ObjectDataIndex = static_cast<uint32>(objectIndex),
+			.MeshDrawFlags = meshDrawFlags,
 			.Type = meshType,
 			.Position = vec3(0.0f),
 			.Rotation = vec3(0.0f),
@@ -124,7 +126,7 @@ uint MeshSystem::CreateSpriteMesh()
 		.VertexData = spriteVertexList.data(),
 	};
 
-	return meshSystem.CreateMesh("__SpriteMesh__", kMesh_InstanceMesh, vertexData, spriteIndexList,0);
+	return meshSystem.CreateMesh("__SpriteMesh__", kMesh_InstanceMesh, vertexData, spriteIndexList, 0, DrawFlagBits::kDrawFlag_DrawInstance);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& color)
@@ -146,7 +148,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& color)
@@ -168,7 +170,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec3& startColor, const vec3& endColor)
@@ -190,7 +192,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, const vec4& startColor, const vec4& endColor)
@@ -212,7 +214,7 @@ uint MeshSystem::CreateLineMesh2D(const vec2& startPoint, const vec2& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh2D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& color)
@@ -234,7 +236,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& color)
@@ -256,7 +258,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec3& startColor, const vec3& endColor)
@@ -278,7 +280,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList,0);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, const vec4& startColor, const vec4& endColor)
@@ -300,7 +302,7 @@ uint MeshSystem::CreateLineMesh3D(const vec3& startPoint, const vec3& endPoint, 
 		.VertexData = lineVertexList.data(),
 	};
 
-	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList, 0);
+	return CreateMesh("__LineMesh3D__", kMesh_StaticMesh, vertexData, lineIndexList, 0, DrawFlagBits::kDrawFlag_DrawLine);
 }
 
 void MeshSystem::Update(const float& deltaTime)
