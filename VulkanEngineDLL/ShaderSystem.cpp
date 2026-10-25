@@ -80,10 +80,19 @@ bool ShaderSystem::CompileShaders(const String& fileDirectory, const String& out
      size_t offset = 0;
      for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
      {
-         offset = (offset + pushConstantVar.ByteAlignment - 1) & ~(pushConstantVar.ByteAlignment - 1);
+         size_t byteAlignment =GetSpivByteAlignment(pushConstantVar.Value);
+         size_t size = std::visit([](auto&& arg)->size_t
+                     {
+                         return sizeof(std::decay_t<decltype(arg)>);
+                     }, pushConstantVar.Value);
+
+         offset = (offset + byteAlignment - 1) & ~(byteAlignment - 1);
          void* dest = static_cast<byte*>(pushConstantStruct.PushConstantBuffer.data()) + offset;
-         memcpy(dest, pushConstantVar.Value.data(), pushConstantVar.Size);
-         offset += pushConstantVar.Size;
+         std::visit([&](auto&& arg) 
+             {
+                memcpy(dest, &arg, sizeof(std::decay_t<decltype(arg)>));
+             }, pushConstantVar.Value);
+         offset += byteAlignment;
      }
  }
   
@@ -176,6 +185,27 @@ bool ShaderSystem::CompileShaders(const String& fileDirectory, const String& out
  bool ShaderSystem::VulkanShaderExists(const VkGuid& vulkanShaderId)
  {
      return RenderShaderMap.contains(vulkanShaderId);
+ }
+
+ size_t ShaderSystem::GetSpivByteAlignment(const PushConstantVariable& pushConstantVariable)
+ {
+     return std::visit([](auto&& arg) -> size_t {
+         using T = std::decay_t<decltype(arg)>;
+         if      constexpr (std::is_same_v<T, int>)    return 4;
+         else if constexpr (std::is_same_v<T, uint32>) return 4;
+         else if constexpr (std::is_same_v<T, float>)  return 4;
+         else if constexpr (std::is_same_v<T, bool>)   return 4;
+         else if constexpr (std::is_same_v<T, ivec2>)  return 8;
+         else if constexpr (std::is_same_v<T, ivec3>)  return 16;
+         else if constexpr (std::is_same_v<T, ivec4>)  return 16;
+         else if constexpr (std::is_same_v<T, vec2>)   return 8;
+         else if constexpr (std::is_same_v<T, vec3>)   return 16;
+         else if constexpr (std::is_same_v<T, vec4>)   return 16;
+         else if constexpr (std::is_same_v<T, mat2>)   return 8;
+         else if constexpr (std::is_same_v<T, mat3>)   return 16;
+         else if constexpr (std::is_same_v<T, mat4>)   return 16;
+         else static_assert(false, "Unknown ShaderVariable type");
+         }, pushConstantVariable);
  }
 
  bool ShaderSystem::ShaderPushConstantExists(const String& pushConstantName)
