@@ -67,7 +67,7 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
 
     for (auto& shader : renderPassLoader.ShaderList)
     {
-        LoadShader(shader);
+        shaderSystem.LoadShader(shader);
     }
     for (auto& pipelinePackage : renderPassLoader.PipelinePackageList)
     {
@@ -80,20 +80,6 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
         LoadPipeline(renderPassLoader, pipelineLoader, memoryPoolLoader);
     }
     return renderPassLoader.RenderPassId;
-}
-
-VkGuid RenderSystem::LoadShader(ShaderLoader& shaderLoader)
-{
-    if (VulkanShaderExists(shaderLoader.ShaderId)) return shaderLoader.ShaderId;
-
-    Vector<byte> vertexShaderCode = fileSystem.LoadAssetFile(shaderLoader.ShaderFile.c_str());
-    VulkanShader shader = VulkanShader(shaderLoader.ShaderId, vertexShaderCode);
-    if (!shader.PushConstant().PushConstantName.empty() &&
-        !shaderSystem.ShaderPushConstantExists(shader.PushConstant().PushConstantName))
-    {
-        shaderSystem.ShaderPushConstantMap[shader.PushConstant().PushConstantName] = shader.PushConstant();
-    }
-    RenderShaderMap[shader.ShaderId()] = shader;
 }
 
 VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader, std::optional<MemoryPoolLoader> memoryPoolLoader)
@@ -121,7 +107,7 @@ VkGuid RenderSystem::LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipe
             Vector<VulkanShader> shaderList;
             for (auto& shaderId : pipelineLoader.ShaderIdList)
             {
-                shaderList.emplace_back(RenderShaderMap[shaderId]);
+                shaderList.emplace_back(shaderSystem.RenderShaderMap[shaderId]);
             }
             return shaderList;
         };
@@ -488,11 +474,6 @@ const VulkanPipeline& RenderSystem::FindRenderPipeline(const VkGuid& pipelineGui
     return RenderPipelineMap[pipelineGuid];
 }
 
-const VulkanShader& RenderSystem::FindVulkanShader(const VkGuid& shaderGuid)
-{
-    return RenderShaderMap[shaderGuid];
-}
-
 bool RenderSystem::FindPipelinePackageByPipelineType(const VkGuid& pipelinePackageGuid, PipelineTypeEnum pipelineType)
 {
     return RenderPipelinePackageMap[pipelinePackageGuid].PipelineMap.contains(pipelineType);
@@ -539,17 +520,9 @@ bool RenderSystem::RenderPipelineExists(const VkGuid& pipelineId)
     return RenderPipelineMap.contains(pipelineId);
 }
 
-bool RenderSystem::VulkanShaderExists(const VkGuid& vulkanShaderId)
-{
-    return RenderShaderMap.contains(vulkanShaderId);
-}
-
 void RenderSystem::Destroy()
 {
-    for (auto& shader : RenderShaderMap)
-    {
-        shader.second.Destroy();
-    }
+    shaderSystem.Destroy();
     for (auto& renderPipeline : RenderPipelineMap)
     {
         renderPipeline.second.Destroy();

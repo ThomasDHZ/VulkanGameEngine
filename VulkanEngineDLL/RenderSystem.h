@@ -57,9 +57,7 @@ private:
     UnorderedMap<VkGuid, VulkanPipelinePackage>             RenderPipelinePackageMap;
     UnorderedMap<VkGuid, VulkanPipeline>                    RenderPipelineMap;
     UnorderedMap<VkGuid, Vector<Texture>>                   RenderAttachmentMap;
-    UnorderedMap<VkGuid, VulkanShader>                      RenderShaderMap;
 
-    VkGuid                                                  LoadShader(ShaderLoader& shaderLoader);
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);
     void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -80,7 +78,6 @@ public:
     VulkanRenderPass&                                       FindRenderPass(const RenderPassGuid& renderPassGuid);
     const VulkanPipelinePackage&                            FindPipelinePackage(const VkGuid& pipelinePackageGuid);
     const VulkanPipeline&                                   FindRenderPipeline(const VkGuid& pipelineGuid);
-    const VulkanShader&                                     FindVulkanShader(const VkGuid& shaderGuid);
     Texture&                                                FindRenderPassAttachment(const TextureGuid& textureGuid);
     Vector<Texture>&                                        FindRenderPassAttachmentList(const RenderPassGuid& renderPassGuid);
 
@@ -88,8 +85,6 @@ public:
     bool                                                    RenderPassExists(const VkGuid& renderPassId);
     bool                                                    RenderPipelinePackageExists(const VkGuid& pipelinePackageId);
     bool                                                    RenderPipelineExists(const VkGuid& pipelineId);
-    bool                                                    VulkanShaderExists(const VkGuid& vulkanShaderId);
-
     void                                                    Destroy();
 };
 ENGINE_DLL_EXPORT extern RenderSystem& renderSystem;

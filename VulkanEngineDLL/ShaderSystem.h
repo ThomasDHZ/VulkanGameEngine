@@ -21,85 +21,62 @@ private:
     ShaderSystem(ShaderSystem&&) = delete;
     ShaderSystem& operator=(ShaderSystem&&) = delete;
 
-    //UnorderedMap<VkGuid, Shader>                            VulkanShaderMap;
-    //UnorderedMap<String, ShaderPipelineData>                ShaderModuleMap;
-	UnorderedMap<String, ShaderStruct>                      PipelineShaderStructPrototypeMap;
-
-    void                                                    LoadShaderVertexInputVariables(const SpvReflectShaderModule& module, Vector<VkVertexInputBindingDescription>& vertexInputBindingList, Vector<VkVertexInputAttributeDescription>& vertexInputAttributeList);
-    Vector<SpvReflectInterfaceVariable*>                    LoadShaderVertexOutputVariables(const SpvReflectShaderModule& module);
-    void                                                    LoadShaderConstantBufferData(const SpvReflectShaderModule& module, Vector<ShaderPushConstant>& shaderPushConstantList);
-    void                                                    LoadShaderDescriptorBindings(const SpvReflectShaderModule& module, Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList);
-    void                                                    LoadShaderDescriptorSets(const SpvReflectShaderModule& module, Vector<ShaderStruct>& shaderStructList);
-    void                                                    LoadShaderDescriptorSetInfo(const SpvReflectShaderModule& module, Vector<ShaderStruct>& shaderStructList);
-    ShaderStruct                                            LoadShaderPipelineStruct(const SpvReflectTypeDescription& shaderInfo);
-    Vector<ShaderVariable>                                  LoadShaderStructVariables(const SpvReflectTypeDescription& shaderInfo, size_t& returnBufferSize);
-    Vector<ShaderStruct>                                    LoadProtoTypeStructs(const Vector<String>& pipelineShaderList);
-
 public:
-	
-	UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
-    UnorderedMap<int, ShaderStruct>                         PipelineShaderStructMap;
-    
-    VulkanShader                                  LoadShader(VkGuid& shaderGuid, const String& fileName);
+    UnorderedMap<VkGuid, VulkanShader>                      RenderShaderMap;
+    UnorderedMap<String, ShaderPushConstant>                ShaderPushConstantMap;
 
-     VkPipelineShaderStageCreateInfo              LoadShader(const char* filename, VkShaderStageFlagBits shaderStages);
-     void                                         LoadShaderPipelineStructPrototypes(const Vector<String>& shaderPathList);
-     Vector<SpvReflectSpecializationConstant*>    LoadShaderSpecializationConstants(const SpvReflectShaderModule& module);
-     bool                                         CompileShaders(const String& fileDirectory, const String& outputDirectory);
-     void                                         UpdatePushConstantBuffer(const String& pushConstantName);
-     void                                         UpdatePushConstantBuffer(ShaderPushConstant& pushConstantStruct);
-     ShaderStruct                                 CopyShaderStructProtoType(const String& structName);
-     ShaderPushConstant&                          FindShaderPushConstant(const String& pushConstantName);
-     ShaderStruct                                 FindShaderProtoTypeStruct(const String& shaderKey);
-     ShaderStruct&                                FindShaderStruct(int vulkanBufferId);
-     ShaderVariable&                              FindShaderPipelineStructVariable(ShaderStruct& shaderStruct, const String& variableName);
-     ShaderVariable&                              FindShaderPushConstantStructVariable(ShaderPushConstant& shaderPushConstant, const String& variableName);
-     Vector<SpvReflectSpecializationConstant*>    FindShaderSpecializationConstant(const Vector<SpvReflectSpecializationConstant*>& specializationConstantList, const String& searchString);
-     bool                                         ShaderModuleExists(const String& shaderFile);
-     bool                                         ShaderPushConstantExists(const String& pushConstantName);
-     bool                                         ShaderStructPrototypeExists(const String& structKey);
-     bool                                         ShaderPipelineStructExists(uint vulkanBufferKey);
-     bool                                         SearchShaderConstantBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
-     bool                                         SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
-     bool                                         SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
-     bool                                         SearchPushConstantForVariableExists(const String& structKey, const String& variableName);
+    VkGuid                                       LoadShader(ShaderLoader& shaderLoader);
+    VulkanShader                                 LoadShader(VkGuid& shaderGuid, const String& fileName);
+    bool                                         CompileShaders(const String& fileDirectory, const String& outputDirectory);
+    void                                         UpdatePushConstantBuffer(const String& pushConstantName);
+    void                                         UpdatePushConstantBuffer(ShaderPushConstant& pushConstantStruct);
+    ShaderPushConstant&                          FindShaderPushConstant(const String& pushConstantName);
+    ShaderVariable&                              FindShaderPipelineStructVariable(ShaderStruct& shaderStruct, const String& variableName);
+    ShaderVariable&                              FindShaderPushConstantStructVariable(ShaderPushConstant& shaderPushConstant, const String& variableName);
+    const VulkanShader&                          FindVulkanShader(const VkGuid& shaderGuid);
+    bool                                         ShaderPushConstantExists(const String& pushConstantName);
+    bool                                         SearchShaderConstantBufferExists(const Vector<ShaderPushConstant>& shaderPushConstantList, const String& constBufferName);
+    bool                                         SearchShaderDescriptorBindingExists(const Vector<ShaderDescriptorBinding>& shaderDescriptorBindingList, const String& descriptorBindingName);
+    bool                                         SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
+    bool                                         SearchPushConstantForVariableExists(const String& structKey, const String& variableName);
+    bool                                         VulkanShaderExists(const VkGuid& vulkanShaderId);
+    void                                         Destroy();
 
+    void UpdatePushConstantValue(ShaderPushConstant& pushConst, const PushConstantUpdateRule& pushConstantVariable)
+    {
+        ShaderVariable& variable = FindShaderPushConstantStructVariable(pushConst, pushConstantVariable.Variable);
+        std::visit([&](auto&& value)
+            {
+                using T = std::decay_t<decltype(value)>;
+                static_assert(std::is_trivially_copyable_v<T>);
 
-     void UpdatePushConstantValue(ShaderPushConstant& pushConst, const PushConstantUpdateRule& pushConstantVariable)
-     {
-         ShaderVariable& variable = FindShaderPushConstantStructVariable(pushConst, pushConstantVariable.Variable);
-         std::visit([&](auto&& value)
-             {
-                 using T = std::decay_t<decltype(value)>;
-                 static_assert(std::is_trivially_copyable_v<T>);
+                if (variable.Value.size() != sizeof(T)) throw std::runtime_error("size mismatch");
 
-                 if (variable.Value.size() != sizeof(T)) throw std::runtime_error("size mismatch");
+                std::memcpy(variable.Value.data(), &value, sizeof(T));
+            }, pushConstantVariable.Value);
+        //ShaderVariable variable;
+        //if (pushConstantVariable.PushConstantVarType == PushConstantVarTypeEnum::kVar_PushConstant) variable = FindShaderPushConstantStructVariable(pushConst, pushConstantVariable.PushConstantVar.value().Variable);
+        //if (pushConstantVariable.PushConstantVarType == PushConstantVarTypeEnum::kVar_TextureRefrence)
+        //{
 
-                 std::memcpy(variable.Value.data(), &value, sizeof(T));
-             }, pushConstantVariable.Value);
-         //ShaderVariable variable;
-         //if (pushConstantVariable.PushConstantVarType == PushConstantVarTypeEnum::kVar_PushConstant) variable = FindShaderPushConstantStructVariable(pushConst, pushConstantVariable.PushConstantVar.value().Variable);
-         //if (pushConstantVariable.PushConstantVarType == PushConstantVarTypeEnum::kVar_TextureRefrence)
-         //{
+        //    const Texture& texture = renderSystem.FindRenderPassAttachment(pushConstantVariable.PushConstantRef.value().AssetId);
+        //    variable = ShaderVariable
+        //    {
+        //        .Name = pushConstantVariable.PushConstantRef.value().Variable,
+        //        .Size = sizeof(VulkanTexture::m_textureSize),
+        //        .Offset = offsetof(VulkanTexture, m_textureSize)
+        //    };
+        //}
+        //std::visit([&](auto&& value) 
+        //    {
+        //        using T = std::decay_t<decltype(value)>;
+        //        static_assert(std::is_trivially_copyable_v<T>);
 
-         //    const Texture& texture = renderSystem.FindRenderPassAttachment(pushConstantVariable.PushConstantRef.value().AssetId);
-         //    variable = ShaderVariable
-         //    {
-         //        .Name = pushConstantVariable.PushConstantRef.value().Variable,
-         //        .Size = sizeof(VulkanTexture::m_textureSize),
-         //        .Offset = offsetof(VulkanTexture, m_textureSize)
-         //    };
-         //}
-         //std::visit([&](auto&& value) 
-         //    {
-         //        using T = std::decay_t<decltype(value)>;
-         //        static_assert(std::is_trivially_copyable_v<T>);
+        //        if (variable.Value.size() != sizeof(T)) throw std::runtime_error("size mismatch");
 
-         //        if (variable.Value.size() != sizeof(T)) throw std::runtime_error("size mismatch");
-
-         //        std::memcpy(variable.Value.data(), &value, sizeof(T));
-         //    }, variable);
-     }
+        //        std::memcpy(variable.Value.data(), &value, sizeof(T));
+        //    }, variable);
+    }
 
     template<typename T>
     void UpdatePushConstantValue(ShaderPushConstant& pushConst, const String& valueName, const T& value)
