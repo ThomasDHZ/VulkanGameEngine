@@ -39,6 +39,7 @@
     [
       {
         "MeshType": 1,
+        "RenderPassDrawFlags": 22,
         "PipelinePackageId": "9f34ee82-4e8e-4512-816f-acfb8a7ca800",
         "ShaderPushConstant": "prefilterSamplerProperties",
         "InputAttachmentList": [],

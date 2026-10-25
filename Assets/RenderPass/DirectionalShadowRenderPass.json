@@ -99,6 +99,7 @@
     [
       {
         "MeshType": 1,
+        "RenderPassDrawFlags": 66,
         "PipelinePackageId": "0494577d-e10f-4d02-8615-05fed5e978a5",
         "ShaderPushConstant": "directionalLightSceneDataDepthBuffer",
         "InputAttachmentList": [],
@@ -109,6 +110,7 @@
       },
       {
         "MeshType": 2,
+        "RenderPassDrawFlags": 68,
         "PipelinePackageId": "7d2aaae5-a064-44c3-b8aa-6f459a7687a6",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],
@@ -121,6 +123,7 @@
     [
       {
         "MeshType": 1,
+        "RenderPassDrawFlags": 66,
         "PipelinePackageId": "0781010b-771d-47f4-bf37-aac8c130d1f6",
         "ShaderPushConstant": "directionalLightSceneDataDepthBuffer",
         "InputAttachmentList": [],
@@ -131,6 +134,7 @@
       },
       {
         "MeshType": 2,
+        "RenderPassDrawFlags": 68,
         "PipelinePackageId": "885049dd-10bb-4dec-af37-53765240d3f6",
         "ShaderPushConstant": null,
         "InputAttachmentList": [],

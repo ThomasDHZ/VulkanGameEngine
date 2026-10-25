@@ -25,7 +25,7 @@ namespace nlohmann
         j.at("z").get_to(offset.z);
     }
 
-    void from_json(const json& j, VkImageCreateInfo& info) 
+    void from_json(const json& j, VkImageCreateInfo& info)
     {
         info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         info.pNext = nullptr;
@@ -85,7 +85,7 @@ namespace nlohmann
         j.at("DependencyFlags").get_to(dep.dependencyFlags);
     }
 
-    void from_json(const json& j, VkClearValue& clearValue) 
+    void from_json(const json& j, VkClearValue& clearValue)
     {
         if (j.contains("DepthStencil"))
         {
@@ -93,8 +93,8 @@ namespace nlohmann
             depthStencil.at("depth").get_to(clearValue.depthStencil.depth);
             depthStencil.at("stencil").get_to(clearValue.depthStencil.stencil);
         }
-        
-        if (j.contains("Color")) 
+
+        if (j.contains("Color"))
         {
             auto& color = j.at("Color");
             if (color.contains("Int32_0"))   color.at("Int32_0").get_to(clearValue.color.int32[0]);
@@ -325,7 +325,7 @@ namespace nlohmann
         {
             for (const auto& value : j["Value"])
             {
-                model.Value.push_back(value.get<String>());
+                j.get_to<PushConstantVariable>(model.Value);
             }
         }
     }
@@ -333,6 +333,7 @@ namespace nlohmann
     void from_json(const json& j, VulkanSubPassLoader& model)
     {
         j.at("MeshType").get_to(model.MeshType);
+        j.at("RenderPassDrawFlags").get_to(model.RenderPassDrawFlags);
         j.at("PipelinePackageId").get_to(model.PipelinePackageId);
         j.at("ShaderPushConstant").get_to(model.ShaderPushConstant);
         j.at("InputAttachmentList").get_to(model.InputAttachmentList);
@@ -350,7 +351,7 @@ namespace nlohmann
             }
         }
     }
-    
+
     void from_json(const json& j, RenderPassLoader& model)
     {
         auto a = j.dump();
@@ -388,12 +389,12 @@ namespace nlohmann
                 model.PipelinePackageList.push_back(pipelinePackage.get<VulkanPipelinePackage>());
             }
         }
-        if (j.contains("SubPassList") && j["SubPassList"].is_array()) 
+        if (j.contains("SubPassList") && j["SubPassList"].is_array())
         {
-            for (const auto& subPass : j["SubPassList"]) 
+            for (const auto& subPass : j["SubPassList"])
             {
                 Vector<VulkanSubPassLoader> subPassLoader;
-                if (subPass.is_array()) 
+                if (subPass.is_array())
                 {
                     for (const auto& item : subPass)
                     {
@@ -447,7 +448,7 @@ namespace nlohmann
         j.at("IsSkyBox").get_to(model.IsSkyBox);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
     }
-    
+
     void from_json(const json& j, Collider2DComponent& model)
     {
         model.Size = ivec2(j.at("ColliderSize")[0], j.at("ColliderSize")[1]);
@@ -468,6 +469,95 @@ namespace nlohmann
         j.at("ShaderId").get_to(model.ShaderId);
         j.at("ShaderFile").get_to(model.ShaderFile);
         j.at("ShaderStage").get_to(model.ShaderStage);
+    }
+
+    void from_json(const json& j, ivec2& v) 
+    {
+        v.x = j.at(0);
+        v.y = j.at(1);
+    }
+
+    void from_json(const json& j, ivec3& v) 
+    {
+        v.x = j.at(0); 
+        v.y = j.at(1); 
+        v.z = j.at(2);
+    }
+
+    void from_json(const json& j, ivec4& v) 
+    {
+        v.x = j.at(0); 
+        v.y = j.at(1); 
+        v.z = j.at(2); 
+        v.w = j.at(3);
+    }
+
+    void from_json(const json& j, vec2& v) 
+    {
+        v.x = j.at(0); 
+        v.y = j.at(1);
+    }
+
+    void from_json(const json& j, vec3& v) 
+    {
+        v.x = j.at(0); 
+        v.y = j.at(1); 
+        v.z = j.at(2);
+    }
+
+    void from_json(const json& j, vec4& v) 
+    {
+        v.x = j.at(0); 
+        v.y = j.at(1); 
+        v.z = j.at(2); 
+        v.w = j.at(3);
+    }
+
+    void from_json(const json& j, mat2& m)
+    {
+        m[0][0] = j.at(0);
+        m[0][1] = j.at(1);
+
+        m[1][0] = j.at(2);
+        m[1][1] = j.at(3);
+    }
+
+    void from_json(const json& j, mat3& m)
+    {
+        m[0][0] = j.at(0); 
+        m[0][1] = j.at(1); 
+        m[0][2] = j.at(2);
+
+        m[1][0] = j.at(3); 
+        m[1][1] = j.at(4); 
+        m[1][2] = j.at(5);
+
+        m[2][0] = j.at(6); 
+        m[2][1] = j.at(7); 
+        m[2][2] = j.at(8);
+    }
+
+    void from_json(const json& j, mat4& m)
+    {
+        m[0][0] = j.at(0);
+        m[0][1] = j.at(1);
+        m[0][2] = j.at(2);
+        m[0][3] = j.at(3);
+
+        m[1][0] = j.at(4);
+        m[1][1] = j.at(5);
+        m[1][2] = j.at(6);
+        m[1][3] = j.at(7);
+
+        m[2][0] = j.at(8);
+        m[2][1] = j.at(9);
+        m[2][2] = j.at(10);
+        m[2][3] = j.at(11);
+
+        m[3][0] = j.at(12);
+        m[3][1] = j.at(13);
+        m[3][2] = j.at(14);
+        m[3][3] = j.at(15);
     }
 }
 

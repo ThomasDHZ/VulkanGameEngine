@@ -99,8 +99,16 @@
     [
       {
         "MeshType": 1,
+        "RenderPassDrawFlags": 66,
         "PipelinePackageId": "127a4e45-4cd1-4217-a4f6-bb4053e50ef2",
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
+        "PushConstantUpdates": [
+          {
+            "Value": [ 5 ],
+            "Variable": "PointLightViewIndex",
+            "VariableType": 2
+          }
+        ],
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
@@ -109,8 +117,16 @@
       },
       {
         "MeshType": 2,
+        "RenderPassDrawFlags": 68,
         "PipelinePackageId": "29e6e57a-1223-4233-a802-a5e074dd9d47",
-        "ShaderPushConstant": null,
+        "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
+        "PushConstantUpdates": [
+          {
+            "Value": [ 5 ],
+            "Variable": "PointLightViewIndex",
+            "VariableType": 2
+          }
+        ],
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
@@ -121,8 +137,16 @@
     [
       {
         "MeshType": 1,
+        "RenderPassDrawFlags": 66,
         "PipelinePackageId": "cd51a71d-72a5-4892-89aa-0ddff97c66b1",
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
+        "PushConstantUpdates": [
+          {
+            "Value": [ 5 ],
+            "Variable": "PointLightViewIndex",
+            "VariableType": 2
+          }
+        ],
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
@@ -131,8 +155,16 @@
       },
       {
         "MeshType": 2,
+        "RenderPassDrawFlags": 68,
         "PipelinePackageId": "38675f25-5739-4da2-884b-e41337ee5563",
-        "ShaderPushConstant": null,
+        "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
+        "PushConstantUpdates": [
+          {
+            "Value": [ 5 ],
+            "Variable": "PointLightViewIndex",
+            "VariableType": 2
+          }
+        ],
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],

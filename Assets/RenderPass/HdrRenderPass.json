@@ -39,6 +39,7 @@
     [
       {
         "MeshType": 5,
+        "RenderPassDrawFlags": 128,
         "PipelinePackageId": "1b048bb2-f49a-4f2b-b6d1-7a3e5dac5bb6",
         "ShaderPushConstant": null,
         "PushConstantUpdates": [],

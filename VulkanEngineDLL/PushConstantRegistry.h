@@ -8,7 +8,6 @@ struct PushConstantContext
     VkGuid                          RenderPassGuid;
     uint32                          MeshId = UINT32_MAX;
     uint32                          LightId = UINT32_MAX;
-    uint32                          LightViewIndex = UINT32_MAX;
     uint32                          DrawIndex = 0;
     uint32                          MipLevel = 0;
     uint32                          MipCount = 0;
@@ -31,8 +30,6 @@ private:
 
     using UpdateFunc = std::function<void(ShaderPushConstant& pushConstant, const PushConstantContext& context)>;
 	UnorderedMap<String, UpdateFunc> registry;
-
-
 
 public:
       void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);

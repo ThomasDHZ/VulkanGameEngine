@@ -14,7 +14,6 @@ void PushConstantRegistry::RegisterPushConstantValue(const String& sourceName, U
 
 void PushConstantRegistry::ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext)
 {
-
     auto it = registry.find(pushConstant.PushConstantName);
     if (it != registry.end())
     {
@@ -22,25 +21,7 @@ void PushConstantRegistry::ApplyPushConstantRules(ShaderPushConstant& pushConsta
     }
     for (auto& pushConstantVariable : pushConstantContext.PushConstantUpdateRules)
     {
-        if(shaderSystem.SearchPushConstantForVariableExists(pushConstant.PushConstantName, pushConstantVariable.Variable))
-        {
-            switch (pushConstantVariable.VariableType)
-            {
-                case kShaderMember_Int:   shaderSystem.UpdatePushConstantValue<int>(pushConstant,   pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<int>(pushConstantVariable));   break;
-                case kShaderMember_Uint:  shaderSystem.UpdatePushConstantValue<uint>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<uint>(pushConstantVariable));  break;
-                case kShaderMember_Float: shaderSystem.UpdatePushConstantValue<float>(pushConstant, pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<float>(pushConstantVariable)); break;
-                case kShaderMember_Ivec2: shaderSystem.UpdatePushConstantValue<ivec2>(pushConstant, pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<ivec2>(pushConstantVariable)); break;
-                case kShaderMember_Ivec3: shaderSystem.UpdatePushConstantValue<ivec3>(pushConstant, pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<ivec3>(pushConstantVariable)); break;
-                case kShaderMember_Ivec4: shaderSystem.UpdatePushConstantValue<ivec4>(pushConstant, pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<ivec4>(pushConstantVariable)); break;
-                case kShaderMember_Vec2:  shaderSystem.UpdatePushConstantValue<vec2>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<vec2>(pushConstantVariable));  break;
-                case kShaderMember_Vec3:  shaderSystem.UpdatePushConstantValue<vec3>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<vec3>(pushConstantVariable));  break;
-                case kShaderMember_Vec4:  shaderSystem.UpdatePushConstantValue<vec4>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<vec4>(pushConstantVariable));  break;
-                case kShaderMember_Mat2:  shaderSystem.UpdatePushConstantValue<mat2>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<mat2>(pushConstantVariable));  break;
-                case kShaderMember_Mat3:  shaderSystem.UpdatePushConstantValue<mat3>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<mat3>(pushConstantVariable));  break;
-                case kShaderMember_Mat4:  shaderSystem.UpdatePushConstantValue<mat4>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<mat4>(pushConstantVariable));  break;
-                case kShaderMember_bool:  shaderSystem.UpdatePushConstantValue<bool>(pushConstant,  pushConstantVariable.Variable, shaderSystem.GetPushConstantValue<bool>(pushConstantVariable));  break;
-            }
-        }
+        if(shaderSystem.SearchPushConstantForVariableExists(pushConstant.PushConstantName, pushConstantVariable.Variable)) shaderSystem.UpdatePushConstantValue(pushConstant, pushConstantVariable);
     }
     shaderSystem.UpdatePushConstantBuffer(pushConstant);
 }
@@ -84,15 +65,18 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
         {
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "MeshBufferIndex", context.MeshId);
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightBufferIndex", context.LightId);
-            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightViewIndex", context.LightViewIndex);
             shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 
-    pushConstantRegistry.RegisterPushConstantValue("materialBaker", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
-        {
-            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MaterialBakerSubPassIndex", context.DrawIndex);
-            shaderSystem.UpdatePushConstantBuffer(pushConstant);
-        });
+
+    //pushConstantRegistry.RegisterPushConstantValue("lightingPushConstant", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
+    //    {
+    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "DirectionalLightShadowMapSize", context.MeshId);
+    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightShadowMapSize", context.LightId);
+    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightShadowMapCellSize", context.LightViewIndex);
+    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightViewIndex", context.LightViewIndex);
+    //        shaderSystem.UpdatePushConstantBuffer(pushConstant);
+    //    });
 
     pushConstantRegistry.RegisterPushConstantValue("materialBaker", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
         {

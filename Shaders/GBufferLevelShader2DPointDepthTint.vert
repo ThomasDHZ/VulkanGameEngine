@@ -97,5 +97,5 @@ void main()
     PS_UV       = VS_UV;
 
     const PointLightBuffer light = GetPointLight(0);
- gl_Position = light.LightSpaceMatrix[5] * world;
+ gl_Position = light.LightSpaceMatrix[pointLightSceneDataDepthBuffer.PointLightViewIndex] * world;
 }
