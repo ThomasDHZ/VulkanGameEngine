@@ -71,6 +71,13 @@ layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
 
 layout(location = 0) out vec2 fragTexCoord;
+
+layout(push_constant) uniform LightingPushConstants
+{
+    float PointLightShadowMapCellSize;
+    int   PointLightViewIndex;
+} lightingPushConstant;
+
 void main() 
 {
     fragTexCoord = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
