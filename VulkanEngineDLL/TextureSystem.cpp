@@ -372,7 +372,10 @@ void TextureSystem::GenerateTexture(VkGuid& renderPassId, Vector<PushConstantUpd
 			.PushConstantUpdateRules = pushConstantUpdates == nullptr ? subPass.PushConstantUpdates : *pushConstantUpdates,
 			.RenderPassInputs = subPass.InputTextureList,
 			.RenderPassOutputs = subPass.OutputTextureList,
-			.OffScreenRenderPass = subPass.OffScreenFrameBuffer
+			.CustomDrawCommand = subPass.CustomDrawCommand,
+			.CustomDrawCommandContext = subPass.CustomDrawCommandContext,
+			.OffScreenRenderPass = subPass.OffScreenRenderPass,
+			.UseCustomDrawCommand = subPass.UseCustomDrawCommand,
 		});
 
 	Vector<RenderPassNode> node

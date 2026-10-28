@@ -145,7 +145,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false,
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       },
       {
@@ -156,7 +159,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false,
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       }
     ],
@@ -165,7 +171,21 @@
         "MeshType": 0,
         "RenderPassDrawFlags": 128,
         "PipelinePackageId": "385c8a12-ece1-4017-86e1-58a301930b3a",
-        "ShaderPushConstant": null,
+        "ShaderPushConstant": "lightingPushConstant",
+        "PushConstantUpdates": [
+          {
+            "PushConstantType": 0,
+            "Value": [ 5 ],
+            "Variable": "PointLightViewIndex",
+            "VariableType": 2
+          },
+          {
+            "PushConstantType": 0,
+            "Value": [ 5 ],
+            "Variable": "PointLightViewIndex",
+            "VariableType": 2
+          }
+        ],
         "InputAttachmentList": [
           "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
           "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
@@ -180,7 +200,10 @@
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       }
     ],
@@ -193,7 +216,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false,
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": true
       },
       {
@@ -204,7 +230,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false,
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": true
       }
     ],
@@ -221,7 +250,10 @@
         "InputTextureList": [],
         "ResolveTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       }
     ]

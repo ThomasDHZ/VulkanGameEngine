@@ -173,16 +173,18 @@ void GameSystem::DebugUpdate(float deltaTime)
     Texture depthPointTexture = renderSystem.FindRenderPassAttachment(VkGuid("a00aa7d4-3606-4bff-87d1-0395817d0993"));
     Texture tintPointTexture = renderSystem.FindRenderPassAttachment(VkGuid("adafef66-6121-45b8-b1fe-745be31ede78"));
 
-    for (int x = 0; x < memoryPoolSystem.MemoryPoolSubBufferInfo(kPointLightBuffer).ActiveCount; x++)
+    int x = 0;
+    for (auto [entity, light] : gameObjectSystem.EntityRegistry.view<PointLightComponent>().each())
     {
-        PointLight& pointLight = memoryPoolSystem.UpdatePointLight(x);
-        if (ImGui::SliderFloat3("PLightColor ", &pointLight.LightColor.x, 0.0f, 1.0f));
-        if (ImGui::SliderFloat3("PLightPosition", &pointLight.LightPosition.x, -3000.0f, 3000.0f));
-        if (ImGui::SliderFloat("PLightRadius ", &pointLight.LightRadius, 0.0f, 500.0f));
-        if (ImGui::SliderFloat("PLightIntensity ", &pointLight.LightIntensity, 0.0f, 50.0f));
-        if (ImGui::SliderFloat("PShadowStrength ", &pointLight.ShadowStrength, 0.0f, 50.0f));
-        if (ImGui::SliderFloat("PShadowBias ", &pointLight.ShadowBias, 0.0f, 1.0f));
-        if (ImGui::SliderFloat("PShadowSoftness ", &pointLight.ShadowSoftness, 0.0f, 1.0f));
+        PointLight& pointLight = lightSystem.GetPointLight(light.PointLightMemoryPoolIndex);
+        if (ImGui::SliderFloat3("PLightColor " + x, &pointLight.LightColor.x, 0.0f, 1.0f))  light.DirtyFlag = true;
+        if (ImGui::SliderFloat3("PLightPosition" + x, &pointLight.LightPosition.x, -3000.0f, 3000.0f))  light.DirtyFlag = true;
+        if (ImGui::SliderFloat("PLightRadius " + x, &pointLight.LightRadius, 0.0f, 500.0f))  light.DirtyFlag = true;
+        if (ImGui::SliderFloat("PLightIntensity " + x, &pointLight.LightIntensity, 0.0f, 50.0f))  light.DirtyFlag = true;
+        if (ImGui::SliderFloat("PShadowStrength " + x, &pointLight.ShadowStrength, 0.0f, 50.0f))  light.DirtyFlag = true;
+        if (ImGui::SliderFloat("PShadowBias " + x, &pointLight.ShadowBias, 0.0f, 1.0f))  light.DirtyFlag = true;
+        if (ImGui::SliderFloat("PShadowSoftness " + x, &pointLight.ShadowSoftness, 0.0f, 1.0f)) light.DirtyFlag = true;
+        x++;
     }
 
     ImGui::Image(depthDirectionalTexture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));

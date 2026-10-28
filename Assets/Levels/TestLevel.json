@@ -78,6 +78,34 @@
       ]
     },
     {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        1169.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        1769.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        2369.6525,
+        592.9432
+      ]
+    },
+    {
+      "GameObjectType": 4,
+      "GameObjectPositionOverride": [
+        3069.6525,
+        592.9432
+      ]
+    },
+    {
       "GameObjectType": 6,
       "GameObjectPositionOverride": [
         0.0,

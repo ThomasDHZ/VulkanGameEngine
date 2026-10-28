@@ -9,13 +9,13 @@ PushConstantRegistry& pushConstantRegistry = PushConstantRegistry::Get();
 
 void PushConstantRegistry::RegisterPushConstantValue(const String& sourceName, UpdateFunc func)
 {
-	registry[sourceName] = std::move(func);
+    _registry[sourceName] = std::move(func);
 }
 
 void PushConstantRegistry::ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext)
 {
-    auto it = registry.find(pushConstant.PushConstantName);
-    if (it != registry.end())
+    auto it = _registry.find(pushConstant.PushConstantName);
+    if (it != _registry.end())
     {
         it->second(pushConstant, pushConstantContext);
     }
@@ -69,14 +69,12 @@ void PushConstantRegistry::RegisterDefaultPushConstantRules()
         });
 
 
-    //pushConstantRegistry.RegisterPushConstantValue("lightingPushConstant", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
-    //    {
-    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "DirectionalLightShadowMapSize", context.MeshId);
-    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightShadowMapSize", context.LightId);
-    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightShadowMapCellSize", context.LightViewIndex);
-    //        shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightViewIndex", context.LightViewIndex);
-    //        shaderSystem.UpdatePushConstantBuffer(pushConstant);
-    //    });
+    pushConstantRegistry.RegisterPushConstantValue("lightingPushConstant", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
+        {
+           // shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightShadowMapCellSize", context.LightViewIndex);
+            shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightViewIndex", context.LightId);
+            shaderSystem.UpdatePushConstantBuffer(pushConstant);
+        });
 
     pushConstantRegistry.RegisterPushConstantValue("materialBaker", [&](ShaderPushConstant& pushConstant, const PushConstantContext& context)
         {

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "DLL.h"
 #include <Platform.h>
 #include "JsonStruct.h"
@@ -21,10 +20,6 @@ public:
     static GameObjectComponentRegistry& Get();
     using UpdateFunc = std::function<void(const ComponentInitContext&)>;
 
-    void RegisterGameObjectComponent(ComponentTypeEnum componentType, UpdateFunc func);
-    void ApplyGameObjectComponent(ComponentTypeEnum componentType, const ComponentInitContext& context);
-    void RegisterDefaultGameObjectComponents();
-
 private:
     GameObjectComponentRegistry() = default;
     GameObjectComponentRegistry(const GameObjectComponentRegistry&) = delete;
@@ -33,6 +28,11 @@ private:
     GameObjectComponentRegistry& operator=(GameObjectComponentRegistry&&) = delete;
 
     UnorderedMap<ComponentTypeEnum, UpdateFunc> _registry;
+
+public:
+    void RegisterGameObjectComponent(ComponentTypeEnum componentType, UpdateFunc func);
+    void ApplyGameObjectComponent(ComponentTypeEnum componentType, const ComponentInitContext& context);
+    void RegisterDefaultGameObjectComponents();
 };
 ENGINE_DLL_EXPORT extern GameObjectComponentRegistry& gameObjectComponentRegistry;
 inline GameObjectComponentRegistry& GameObjectComponentRegistry::Get()

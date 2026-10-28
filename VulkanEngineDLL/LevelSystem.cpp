@@ -10,6 +10,7 @@
 #include <algorithm>
 #include "InputSystem.h"
 #include "GameObjectComponentRegistry.h"
+#include "CustomDrawCommandRegistry.h"
 
 LevelSystem& levelSystem = LevelSystem::Get();
 
@@ -17,6 +18,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
 {
     cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec2(0.0f, 0.0f));
     PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec3(0.0f, 0.0f, 0.0f)));
+    customDrawCommandRegistry.RegisterDefaultCustomDrawCommand();
     pushConstantRegistry.RegisterDefaultPushConstantRules();
     gameObjectComponentRegistry.RegisterDefaultGameObjectComponents();
 
@@ -154,7 +156,10 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                         .DrawMeshList = subPass.MeshType != MeshTypeEnum::kMesh_InstanceMesh ? meshSystem.DrawMesh(subPass.MeshType, subPass.AlphaRenderPass) : meshSystem.DrawInstancedMesh(spriteSystem.SpriteMeshId, subPass.AlphaRenderPass),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
-                        .OffScreenRenderPass = subPass.OffScreenFrameBuffer
+                        .CustomDrawCommand = subPass.CustomDrawCommand,
+                        .CustomDrawCommandContext = subPass.CustomDrawCommandContext,
+                        .OffScreenRenderPass = subPass.OffScreenRenderPass,
+                        .UseCustomDrawCommand = subPass.UseCustomDrawCommand,
                     });
             }
             vulkanDrawMessageList.emplace_back(vulkanSubPassMessageList);
@@ -165,6 +170,7 @@ Vector<RenderPassNode> LevelSystem::CreateDrawCommands(VkCommandBuffer& commandB
                .SubPassDrawMessage = vulkanDrawMessageList,
                .MipCount = maxMipLevelCount
             });
+
     }
     return renderPassNodeList;
 }

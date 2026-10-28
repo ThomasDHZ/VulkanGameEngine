@@ -9,13 +9,14 @@ VulkanShaderDLL ShaderSystem_LoadShader(VkGuid& shaderGuid, const char* shaderFi
 	Vector<ShaderVariableDLL> pushConstantVariableListDLL;
 	for (auto& pushConstantVariable : pushConstant.PushConstantVariableList)
 	{
+		throw std::runtime_error("Uncomment code");
 		pushConstantVariableListDLL.emplace_back(ShaderVariableDLL
 			{
-				.Name = memorySystem.AddStringPtrBuffer(pushConstantVariable.Name, __FILE__, __LINE__, __func__),
-				.Size = pushConstantVariable.Size,
-				.ByteAlignment = pushConstantVariable.ByteAlignment,
-				.MemberTypeEnum = pushConstantVariable.MemberTypeEnum,
-				.ConstVariable = pushConstantVariable.ConstVariable
+				//.Name = memorySystem.AddStringPtrBuffer(pushConstantVariable.Name, __FILE__, __LINE__, __func__),
+				//.Size = pushConstantVariable.Size,
+				//.ByteAlignment = pushConstantVariable.ByteAlignment,
+				//.MemberTypeEnum = pushConstantVariable.MemberTypeEnum,
+				//.ConstVariable = pushConstantVariable.ConstVariable
 			});
 	}
 

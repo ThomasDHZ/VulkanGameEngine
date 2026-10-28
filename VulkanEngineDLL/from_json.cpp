@@ -320,13 +320,20 @@ namespace nlohmann
     void from_json(const json& j, PushConstantUpdateRule& model)
     {
         j.at("Variable").get_to(model.Variable);
-        j.at("VariableType").get_to(model.VariableType);
-        if (j.contains("Value") && j["Value"].is_array())
+        auto type = j["PushConstantType"].get<PushConstantVarTypeEnum>();
+
+        if (type == kPushConstantVarType_PushConstant)
         {
-            for (const auto& value : j["Value"])
-            {
-                j.get_to<PushConstantVariable>(model.Value);
-            }
+            PushConstantConstVariable c;
+            c.Value = j.get<PushConstantVariable>(); 
+            model.PushConstant = c;
+        }
+        else if (type == kPushConstantVarType_TextureRefrence)
+        {
+            model.PushConstant = PushConstantRef{
+                .AssetId = VkGuid(j["AssetId"].get<String>().c_str()),
+                .TextureVar = j["TextureVar"].get<TextureVarTypeEnum>()
+            };
         }
     }
 
@@ -341,7 +348,13 @@ namespace nlohmann
         j.at("OutputTextureList").get_to(model.OutputTextureList);
         j.at("OffScreenRenderPass").get_to(model.OffScreenRenderPass);
         j.at("AlphaRenderPass").get_to(model.AlphaRenderPass);
+        j.at("UseCustomDrawCommand").get_to(model.UseCustomDrawCommand);
 
+        if (j["UseCustomDrawCommand"].get<bool>())
+        {
+            j.at("CustomDrawCommand").get_to(model.CustomDrawCommand);
+            model.CustomDrawCommandContext = j["CustomDrawContext"].get<CustomDrawInitContext>();
+        }
         if (j.contains("PushConstantUpdates") &&
             j["PushConstantUpdates"].is_array())
         {
@@ -469,6 +482,24 @@ namespace nlohmann
         j.at("ShaderId").get_to(model.ShaderId);
         j.at("ShaderFile").get_to(model.ShaderFile);
         j.at("ShaderStage").get_to(model.ShaderStage);
+    }
+
+    void from_json(const json& j, PushConstantRef& model)
+    {
+        j.at("AssetId").get_to(model.AssetId);
+        j.at("TextureVarnameEnum").get_to(model.TextureVar);
+    }
+
+    void from_json(const json& j, PushConstantConstVariable& model)
+    {
+        j.at("Value").get_to(model.Value);
+    }
+
+    void from_json(const json& j, CustomDrawInitContext& model)
+    {
+        j.at("RenderPassId").get_to(model.RenderPassId);
+        j.at("TextureAttachmentId").get_to(model.TextureAttachmentId);
+        j.at("TileSize").get_to(model.TileSize);
     }
 
     void from_json(const json& j, ivec2& v) 

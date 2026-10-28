@@ -8,9 +8,10 @@
 
 struct PointLightComponent
 {
-    uint PointLightMemoryPoolIndex = UINT32_MAX;
-    uint PointLightCameraId = UINT32_MAX;
+    uint                PointLightMemoryPoolIndex = UINT32_MAX;
+    uint                PointLightCameraId = UINT32_MAX;
     std::array<mat4, 6> PointLightFaceViews;
+    bool                DirtyFlag = true;
 };
 
 struct DirectionalLightComponent

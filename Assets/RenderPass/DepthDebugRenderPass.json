@@ -46,7 +46,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       }
     ]

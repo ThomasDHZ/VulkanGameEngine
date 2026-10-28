@@ -105,7 +105,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       },
       {
@@ -116,7 +119,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       }
     ],
@@ -129,7 +135,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       },
       {
@@ -140,7 +149,10 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": false,
         "AlphaRenderPass": false
       }
     ]

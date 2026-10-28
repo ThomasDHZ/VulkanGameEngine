@@ -7,6 +7,7 @@
 #include "MemorySystem.h"
 #include "BufferSystem.h"
 #include <cstdlib>
+#include "RenderSystem.h"
 
 class ENGINE_DLL_EXPORT ShaderSystem
 {
@@ -43,10 +44,25 @@ public:
     size_t                                       GetSpivByteAlignment(const PushConstantVariable& pushConstantVariable);
     void                                         Destroy();
 
+    template<class... Ts>
+    struct overloaded : Ts... { using Ts::operator()...; };
+
+    template<class... Ts>
+    overloaded(Ts...) -> overloaded<Ts...>;
     void UpdatePushConstantValue(ShaderPushConstant& pushConst, const PushConstantUpdateRule& pushConstantVariable)
     {
         ShaderVariable& variable = FindShaderPushConstantStructVariable(pushConst, pushConstantVariable.Variable);
-        variable.Value = pushConstantVariable.Value;
+        std::visit(overloaded{
+            [&](const PushConstantConstVariable& c) 
+            {
+                   variable.Value = c.Value;
+            },
+            [&](const PushConstantRef& r)
+            {
+                const Texture& tex = renderSystem.FindRenderPassAttachment(r.AssetId);
+                if (r.TextureVar == TextureVarTypeEnum::kVar_TextureSize) variable.Value = tex.texture.m_textureSize.x;
+            }
+            }, pushConstantVariable.PushConstant);
     }
 
     template<typename T>

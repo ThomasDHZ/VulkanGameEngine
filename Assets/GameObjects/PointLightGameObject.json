@@ -7,11 +7,11 @@
       "LightPosition": [ 960, 540, 0.0 ],
       "LightColor": [ 0.8, 0.8, 0.8 ],
       "LightRadius": 1000.0,
-      "LightIntensity": 4.0,
+      "LightIntensity": 0.70,
       "ShadowStrength": 0.70,
       "ShadowBias": 0.015,
       "ShadowSoftness": 0.30,
-      "LightLayer": 5
+      "LightLayer": 7
     },
     {
       "GameObjectPosition": [

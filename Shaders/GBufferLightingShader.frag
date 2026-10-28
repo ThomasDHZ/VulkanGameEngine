@@ -99,11 +99,19 @@ const uint FEAT_TWO_SIDED    = 1u << 6;
 const uint FEAT_COAT_NORMAL  = 1u << 7;
 const uint FEAT_ALBEDO_ONLY  = 1u << 8;
 
+layout(push_constant) uniform LightingPushConstants
+{
+    float PointLightShadowMapCellSize;
+    int   PointLightViewIndex;
+} lightingPushConstant;
+
 Material UnpackMaterial();
 vec3 DirectionalLightFunc(vec3 F0, vec3 V, Material material);
 vec3 PointLightFunc(vec3 F0, vec3 V, Material material);
 vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material);
 float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos, out vec3 tint);
+vec2 PointLightAtlasUV(vec2 localUV, uint lightIndex, float cellSize);
+
 void main()
 {
     Material material = UnpackMaterial();
@@ -153,42 +161,42 @@ Material UnpackMaterial()
     vec4 emissionAttachment = subpassLoad(EmissionInput);
     vec4 depthAttachment    = subpassLoad(depthInput);
 
-    vec2 sssW_coatW    = Unpack8bitPair(featureAAttachment.a);
-    vec2 thick_coatR   = Unpack8bitPair(featureBAttachment.a);
-    vec2 aniso         = Unpack8bitPair(featureCAttachment.r);
-    vec2 film          = Unpack8bitPair(featureCAttachment.g);
-    vec2 coatD_prof    = Unpack8bitPair(featureCAttachment.b);
-    vec2 sheenR_sheenW = Unpack8bitPair(featureCAttachment.a);
+    vec2 sssW_coatW         = Unpack8bitPair(featureAAttachment.a);
+    vec2 thick_coatR        = Unpack8bitPair(featureBAttachment.a);
+    vec2 aniso              = Unpack8bitPair(featureCAttachment.r);
+    vec2 film               = Unpack8bitPair(featureCAttachment.g);
+    vec2 coatD_prof         = Unpack8bitPair(featureCAttachment.b);
+    vec2 sheenR_sheenW      = Unpack8bitPair(featureCAttachment.a);
 
     Material m;
-    m.Depth            = depthAttachment.r;
-    m.Position         = positionAttachment.xyz;
-    m.Albedo           = albedoAttachment.rgb;
-    m.Metallic         = mroAttachment.r;
-    m.Roughness        = mroAttachment.g;
-    m.AmbientOcclusion = mroAttachment.b;
-    m.IOR              = mroAttachment.a * 2.0 + 1.0;
-    m.Normal           = normalize(OctahedronDecode(normalAttachment.xy * 2.0 - 1.0));
-    m.Emission         = emissionAttachment.rgb;
+    m.Depth                 = depthAttachment.r;
+    m.Position              = positionAttachment.xyz;
+    m.Albedo                = albedoAttachment.rgb;
+    m.Metallic              = mroAttachment.r;
+    m.Roughness             = mroAttachment.g;
+    m.AmbientOcclusion      = mroAttachment.b;
+    m.IOR                   = mroAttachment.a * 2.0 + 1.0;
+    m.Normal                = normalize(OctahedronDecode(normalAttachment.xy * 2.0 - 1.0));
+    m.Emission              = emissionAttachment.rgb;
 
-    m.SheenColor     = featureAAttachment.rgb;
-    m.SheenRoughness = sheenR_sheenW.x;
-    m.SheenWeight    = sheenR_sheenW.y;
-    m.SSSColor       = featureBAttachment.rgb;
-    m.SSSWeight      = sssW_coatW.x;
-    m.SSSProfile     = coatD_prof.y;
-    m.Thickness      = thick_coatR.x;
-    m.CoatColor      = vec3(1.0);
-    m.CoatWeight     = sssW_coatW.y;
-    m.CoatRoughness  = thick_coatR.y;
-    m.CoatDarkening  = coatD_prof.x;
-    m.Anisotropy         = aniso.x;
-    m.AnisotropyRotation = aniso.y;
-    m.ThinFilmWeight     = film.x;
-    m.ThinFilmThickness  = film.y;
-    m.FeatureMask        = uint(normalAttachment.b * 65535.0 + 0.5);
-    m.SelfShadow         = normalAttachment.a;
-    m.ShadingModel = 0u;
+    m.SheenColor            = featureAAttachment.rgb;
+    m.SheenRoughness        = sheenR_sheenW.x;
+    m.SheenWeight           = sheenR_sheenW.y;
+    m.SSSColor              = featureBAttachment.rgb;
+    m.SSSWeight             = sssW_coatW.x;
+    m.SSSProfile            = coatD_prof.y;
+    m.Thickness             = thick_coatR.x;
+    m.CoatColor             = vec3(1.0);
+    m.CoatWeight            = sssW_coatW.y;
+    m.CoatRoughness         = thick_coatR.y;
+    m.CoatDarkening         = coatD_prof.x;
+    m.Anisotropy            = aniso.x;
+    m.AnisotropyRotation    = aniso.y;
+    m.ThinFilmWeight        = film.x;
+    m.ThinFilmThickness     = film.y;
+    m.FeatureMask           = uint(normalAttachment.b * 65535.0 + 0.5);
+    m.SelfShadow            = normalAttachment.a;
+    m.ShadingModel          = 0u;
     return m;
 }
 
@@ -260,7 +268,7 @@ float DirectionalShadow(DirectionalLightBuffer light, vec3 worldPos, out vec3 ti
         return 1.0;
 
     vec4 tintSample = texture(TextureMap[sceneDataBuffer.DirectionalLightShadowTintMapId], uv);
-    float texel = light.ShadowSoftness / 4096.0;
+    float texel = light.ShadowSoftness / textureSize(TextureMap[sceneDataBuffer.DirectionalLightShadowMapId], 0).x;
     float bias  = light.ShadowBias * 0.001;
     float sum = 0.0;
     for (int y = -1; y <= 1; ++y)
@@ -284,7 +292,7 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         const PointLightBuffer light = GetPointLight(x);
         if (light.LightActive != 1u) continue;
 
-        float spriteLayer = material.Position.z;
+        float spriteLayer = material.Position.z / SpriteLayerSpacing;
         vec2 toLightXY = light.LightPosition.xy - material.Position.xy;
         float distance = length(toLightXY);
         if (distance > light.LightRadius) continue;
@@ -296,39 +304,37 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         vec3 lightPos = vec3(light.LightPosition.xy, light.LightLayer * SpriteLayerSpacing);
         float currentDist = length(material.Position - lightPos);
 
-        vec4 lightClip = light.LightSpaceMatrix[5] * vec4(material.Position, 1.0);
+        vec4 lightClip = light.LightSpaceMatrix[lightingPushConstant.PointLightViewIndex] * vec4(material.Position, 1.0);
         vec3 lightNDC  = lightClip.xyz / lightClip.w;
-        vec2 uv        = lightNDC.xy * 0.5 + 0.5;
+
+        vec2 localUV = lightNDC.xy * 0.5 + 0.5;
+        vec2 atlasUV = PointLightAtlasUV(localUV, x, 0.125f);
 
         float closest = 1.0;
-        if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0)   closest = texture(TextureMap[sceneDataBuffer.PointLightShadowMapId], uv).r;
+        if (all(greaterThanEqual(atlasUV, vec2(0.0))) && all(lessThanEqual(atlasUV, vec2(1.0)))) closest = texture(TextureMap[sceneDataBuffer.PointLightShadowMapId], atlasUV).r;
 
         float bias = light.ShadowBias;
         float shadow = (currentDist / light.LightRadius - bias > closest) ? 0.0 : 1.0;
         shadow = mix(1.0, shadow, light.ShadowStrength);
 
         float z = (light.LightLayer - spriteLayer) * SpriteLayerSpacing;
+
         vec3 L = normalize(vec3(toLightXY, z));
         vec3 H = normalize(V + L);
         vec3 N = material.Normal;
         float NdotV = max(dot(N, V), 0.0);
         float NdotL = dot(N, L);
-
-        float ref = 150.0; // distance where this light should match the old look
-        
-        vec3 tint = vec3(1.0);
-        vec2 tintUV = uv;
-        vec4 ls = light.LightSpaceMatrix[5] * vec4(material.Position.xyz, 1.0);
-        vec3 p  = ls.xyz / ls.w;
     
-        if (any(lessThan(tintUV, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) shadow = 1.0;
-        if (tintUV.x >= 0.0 && tintUV.x <= 1.0 && tintUV.y >= 0.0 && tintUV.y <= 1.0)
+        vec3 tint = vec3(1.0);
+        if (all(greaterThanEqual(atlasUV, vec2(0.0))) && all(lessThanEqual(atlasUV, vec2(1.0))))
         {
-            vec4 tintSample = texture(TextureMap[sceneDataBuffer.PointLightShadowTintMapId], tintUV);
-            if (tintSample.a >= 0.1 && dot(tintSample.rgb, vec3(0.333)) <= 0.98) tint = tintSample.rgb;
+            vec4 tintSample = texture(TextureMap[sceneDataBuffer.PointLightShadowTintMapId], atlasUV);
+            if (tintSample.a >= 0.1 && dot(tintSample.rgb, vec3(0.333)) <= 0.98)
+                tint = tintSample.rgb;
         }
         tint = mix(vec3(1.0), pow(max(tint, vec3(1e-4)), vec3(1.6)), 1.0 - step(0.98, dot(tint, vec3(0.333))));
 
+        float ref = 150.0; // distance where this light should match the old look
         vec3 transmittance = tint * 4.0f; 
         vec3 radiance = light.LightColor * light.LightIntensity
                       * (ref * ref) * atten
@@ -340,12 +346,16 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         vec3 scatter = mix(vec3(1.0), material.SSSColor, sss);
         if (z < 0.0)
         {
+            float behindFade = smoothstep(-3.0 * SpriteLayerSpacing, -0.5 * SpriteLayerSpacing, z);
+            if (behindFade <= 0.0) continue;
+
             float viewRim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 5.0);
             float facing  = smoothstep(0.2, 0.6, dot(normalize(N.xy), normalize(-toLightXY)));
             float rim     = viewRim * facing;
 
             Lo += material.Albedo * rim * radiance * 0.4;
             Lo += material.SSSColor * rim * sss * radiance * 2.0;
+            Lo *= behindFade;
             continue;
         }
 
@@ -356,7 +366,7 @@ vec3 PointLightFunc(vec3 F0, vec3 V, Material material)
         vec3  F   = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, material.Roughness);
         vec3  kD  = (vec3(1.0) - F) * (1.0 - material.Metallic);
 
-        float NdL = max(NdotL, 0.0);
+        float NdL = max(NdotL, 0.3);
         vec3 spec = (NDF * G * F) / max(4.0 * NdotV * max(NdL, 1e-3), 1e-4);
         spec = ThinFilm(spec, material, max(dot(H, V), 0.0));
 
@@ -403,4 +413,13 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material)
     ambient += SheenData(material, N_ibl, V) * irradiance * IBL_EXPOSURE * 0.25;
     ambient += material.SSSColor * sss * irradiance * IBL_EXPOSURE * 0.08;
     return ambient;
+}
+
+vec2 PointLightAtlasUV(vec2 localUV, uint lightIndex, float cellSize)
+{
+    uint cellsPerRow = uint(1.0 / cellSize + 0.5);
+    uint col = lightIndex % cellsPerRow;
+    uint row = lightIndex / cellsPerRow;
+
+    return localUV * cellSize + vec2(col, row) * cellSize;
 }

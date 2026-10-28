@@ -29,7 +29,7 @@ private:
     PushConstantRegistry& operator=(PushConstantRegistry&&) = delete;
 
     using UpdateFunc = std::function<void(ShaderPushConstant& pushConstant, const PushConstantContext& context)>;
-	UnorderedMap<String, UpdateFunc> registry;
+	UnorderedMap<String, UpdateFunc> _registry;
 
 public:
       void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);

@@ -22,7 +22,10 @@ struct VulkanDrawMessage
     Vector<MeshDrawMessage>           DrawMeshList;
     Vector<VkGuid>                    RenderPassInputs;
     Vector<VkGuid>                    RenderPassOutputs;
+    String                            CustomDrawCommand;
+    CustomDrawInitContext             CustomDrawCommandContext;
     bool                              OffScreenRenderPass = false;
+    bool                              UseCustomDrawCommand;
 
     std::function<void(VkCommandBuffer, VulkanDrawMessage&, uint32, ivec2 baseRenderPassSize, uint32 mipLevel)> PushConstantsCmd;
     std::function<void(VkCommandBuffer, VulkanDrawMessage)> PreDrawCmd;
@@ -59,7 +62,6 @@ private:
     UnorderedMap<VkGuid, Vector<Texture>>                   RenderAttachmentMap;
 
     VkGuid                                                  LoadPipeline(RenderPassLoader& renderPassLoader, VulkanPipelineLoader& pipelineLoader, std::optional<MemoryPoolLoader> memoryPoolLoader = std::nullopt);
-    void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
 public:
     bool                                                    WireFrameFlag = false;
@@ -70,6 +72,7 @@ public:
     void                                                    Update(void* windowHandle, const float& deltaTime);
     uint32                                                  SampleRenderPassPixel(const TextureGuid& textureGuid, ivec2 mousePosition);
     void                                                    AddRenderedTexture(RenderPassGuid renderPassGuid, Vector<Texture>& renderedTextureList);
+    void                                                    BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, uint32 lightIndex, VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     void                                                    RecreateSwapchain(void* windowHandle, const float& deltaTime);
     void                                                    PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGuid& renderPassTextureGuid);

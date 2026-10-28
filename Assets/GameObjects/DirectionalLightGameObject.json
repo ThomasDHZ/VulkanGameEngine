@@ -6,8 +6,8 @@
     {
       "ComponentType": 5,
       "LightColor": [ 1.0, 1.0, 1.0 ],
-      "LightDirection": [ 0.2, 0.1, 1.0 ],
-      "LightIntensity": 0.7,
+      "LightDirection": [ 0.285, 0.337, -1.0 ],
+      "LightIntensity": 1.0,
       "ShadowStrength": 1.00,
       "ShadowBias": 0.015,
       "ShadowSoftness": 0.30
@@ -37,7 +37,7 @@
   ],
   "GameObjectSprite": {
     "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380",
-    "SpriteLayer": 5,
+    "SpriteLayer": 3,
     "SpriteScale": [ 2.0, 2.0 ],
     "SpriteDrawFlags": 32,
     "SpritePixelSize": [

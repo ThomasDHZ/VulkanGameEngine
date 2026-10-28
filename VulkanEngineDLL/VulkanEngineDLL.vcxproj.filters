@@ -37,6 +37,12 @@
     <Filter Include="Source Files\External">
       <UniqueIdentifier>{eac6be49-4a60-4b95-a885-e487303aaab7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Registries">
+      <UniqueIdentifier>{d4142e75-3074-4aa4-9cf7-8cff8c5f2a29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Registries">
+      <UniqueIdentifier>{f7386936-8620-4f49-a032-0e16426623d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DLL.h">
@@ -150,17 +156,20 @@
     <ClInclude Include="IblRenderSystem.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="PushConstantRegistry.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObjectComponentRegistry.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="..\External\xxHash\xxh_x86dispatch.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
     <ClInclude Include="..\External\xxHash\xxh3.h">
       <Filter>Header Files\External</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectComponentRegistry.h">
+      <Filter>Header Files\Registries</Filter>
+    </ClInclude>
+    <ClInclude Include="PushConstantRegistry.h">
+      <Filter>Header Files\Registries</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomDrawCommandRegistry.h">
+      <Filter>Header Files\Registries</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -254,12 +263,6 @@
     <ClCompile Include="DLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PushConstantRegistry.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObjectComponentRegistry.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="..\External\xxHash\xxhash.c">
       <Filter>Source Files\External</Filter>
     </ClCompile>
@@ -268,6 +271,15 @@
     </ClCompile>
     <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
       <Filter>Source Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectComponentRegistry.cpp">
+      <Filter>Source Files\Registries</Filter>
+    </ClCompile>
+    <ClCompile Include="PushConstantRegistry.cpp">
+      <Filter>Source Files\Registries</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomDrawCommandRegistry.cpp">
+      <Filter>Source Files\Registries</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

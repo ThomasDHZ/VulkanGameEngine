@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include "PushConstantRegistry.h"
+#include "CustomDrawCommandRegistry.h"
 #include <ImGuiSystem.h>
 #include <VulkanWindow.h>
 
@@ -305,7 +306,7 @@ void RenderSystem::PresentToSwapChain(VkCommandBuffer& commandBuffer, const VkGu
     vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
 }
 
-void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, VkShaderStageFlags stages)
+void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawMessage& drawMessage, uint32 drawIndex, uint32 mip, uint32 mipCount, uint32 lightIndex, VkShaderStageFlags stages)
 {
     if (drawMessage.PushConstant.has_value())
     {
@@ -320,6 +321,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
         {
             .RenderPassGuid = drawMessage.RenderPassGuid,
             .MeshId = drawMessage.DrawMeshList.empty() ? 0 : drawMessage.DrawMeshList[drawIndex].MeshId,
+            .LightId = lightIndex,
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
             .MipCount = mipCount,
@@ -367,15 +369,16 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                     if (renderPassLayer.PreDrawCmd) renderPassLayer.PreDrawCmd(commandBuffer, renderPassLayer);
                     if (renderPassLayer.OffScreenRenderPass && renderPassLayer.DrawMeshList.empty())
                     {
-                        BindPushConstants(commandBuffer, renderPassLayer, 0, mip, mipCount);
+                        BindPushConstants(commandBuffer, renderPassLayer, 0, mip, mipCount, 0);
                         vkCmdDraw(commandBuffer, 3, 1, 0, 0);
                     }
                     else
                     {
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
-                            BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount);
-                            renderPass.DrawMesh(commandBuffer, renderPassLayer.DrawMeshList[x]);
+                            BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount, 0);
+                            if (renderPassLayer.UseCustomDrawCommand) customDrawCommandRegistry.ApplyCustomDrawCommand(renderPassLayer.CustomDrawCommand, commandBuffer, renderPassLayer.DrawMeshList[x], renderPassLayer.CustomDrawCommandContext, renderPassLayer, x, mip, mipCount);
+                            else renderPass.DrawMesh(commandBuffer, renderPassLayer.DrawMeshList[x]);
                         }
                     }
                     if (renderPassLayer.PostDrawCmd) renderPassLayer.PostDrawCmd(commandBuffer, renderPassLayer);

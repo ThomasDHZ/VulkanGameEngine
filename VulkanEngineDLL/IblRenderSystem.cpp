@@ -46,7 +46,10 @@ Vector<RenderPassNode> IblRenderSystem::CreateDrawCommands(VkCommandBuffer& comm
                         .DrawMeshList = MeshTypeEnum::kMesh_StaticMesh && renderPass.RenderAsCubemap() ? meshSystem.DrawMesh("__SkyBoxMesh__", false) : meshSystem.DrawMesh(subPass.MeshType, false),
                         .RenderPassInputs = subPass.InputTextureList,
                         .RenderPassOutputs = subPass.OutputTextureList,
-                        .OffScreenRenderPass = subPass.OffScreenFrameBuffer
+                        .CustomDrawCommand = subPass.CustomDrawCommand,
+                        .CustomDrawCommandContext = subPass.CustomDrawCommandContext,
+                        .OffScreenRenderPass = subPass.OffScreenRenderPass,
+                        .UseCustomDrawCommand = subPass.UseCustomDrawCommand,
                     });
             }
             vulkanDrawMessageList.emplace_back(vulkanSubPassMessageList);

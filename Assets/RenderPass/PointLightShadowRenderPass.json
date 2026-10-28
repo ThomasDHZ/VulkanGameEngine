@@ -1,7 +1,7 @@
 {
   "Name": "PointLightShadowRenderPass",
   "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
-  "RenderPassResolution": [ 4096, 4096 ],
+  "RenderPassResolution": [ 8192, 8192 ],
   "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
@@ -104,6 +104,7 @@
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
         "PushConstantUpdates": [
           {
+            "PushConstantType": 0,
             "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
             "VariableType": 2
@@ -112,7 +113,14 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": "drawPointLightDepthViews",
+        "CustomDrawContext": {
+          "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
+          "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
+          "TileSize": 1024
+        },
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": true,
         "AlphaRenderPass": false
       },
       {
@@ -122,6 +130,7 @@
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
         "PushConstantUpdates": [
           {
+            "PushConstantType": 0,
             "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
             "VariableType": 2
@@ -130,7 +139,14 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": "drawPointLightDepthViews",
+        "CustomDrawContext": {
+          "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
+          "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
+          "TileSize": 1024
+        },
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": true,
         "AlphaRenderPass": false
       }
     ],
@@ -142,6 +158,7 @@
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
         "PushConstantUpdates": [
           {
+            "PushConstantType": 0,
             "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
             "VariableType": 2
@@ -150,7 +167,14 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": "drawPointLightDepthViews",
+        "CustomDrawContext": {
+          "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
+          "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
+          "TileSize": 1024
+        },
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": true,
         "AlphaRenderPass": false
       },
       {
@@ -160,6 +184,7 @@
         "ShaderPushConstant": "pointLightSceneDataDepthBuffer",
         "PushConstantUpdates": [
           {
+            "PushConstantType": 0,
             "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
             "VariableType": 2
@@ -168,7 +193,14 @@
         "InputAttachmentList": [],
         "InputTextureList": [],
         "OutputTextureList": [],
+        "CustomDrawCommand": "drawPointLightDepthViews",
+        "CustomDrawContext": {
+          "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
+          "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
+          "TileSize": 1024
+        },
         "OffScreenRenderPass": false,
+        "UseCustomDrawCommand": true,
         "AlphaRenderPass": false
       }
     ]
