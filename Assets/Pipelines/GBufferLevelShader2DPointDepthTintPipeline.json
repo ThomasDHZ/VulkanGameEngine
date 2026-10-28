@@ -6,17 +6,28 @@
     "c535f12f-99ef-4f7f-9e23-9d0f4cd1bd97"
   ],
   "VertexType": 0,
-  "SubPassId": 0,
+  "SubPassId": 1,
   "ViewportList": [],
   "ScissorList": [],
-  "PipelineColorBlendAttachmentStateList": [],
   "PipelineColorBlendStateCreateInfoModel": {
     "BlendConstants": { "FixedElementField": 0.0 },
     "SType": 26,
     "LogicOpEnable": false,
     "LogicOp": 5,
-    "AttachmentCount": 0
+    "AttachmentCount": 1
   },
+  "PipelineColorBlendAttachmentStateList": [
+    {
+      "BlendEnable": true,
+      "SrcColorBlendFactor": 6,
+      "DstColorBlendFactor": 7,
+      "ColorBlendOp": 0,
+      "SrcAlphaBlendFactor": 6,
+      "DstAlphaBlendFactor": 7,
+      "AlphaBlendOp": 0,
+      "ColorWriteMask": 15
+    }
+  ],
   "PipelineRasterizationStateCreateInfo": {
     "sType": 23,
     "depthClampEnable": 0,
