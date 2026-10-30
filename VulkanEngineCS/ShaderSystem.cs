@@ -28,15 +28,15 @@ namespace VulkanEngineCS
                 {
                     ref ShaderVariableDLL src = ref dll.PushConstant.PushConstantVariableList[x];
 
-                    pushConstantVariables.Add(new ShaderVariable
-                    {
-                        Name = Marshal.PtrToStringAnsi(src.Name).ToString(),
-                        Size = src.Size,
-                        ByteAlignment = src.ByteAlignment,
-                        MemberTypeEnum = src.MemberTypeEnum,
-                        ConstVariable = src.ConstVariable,
-                        Value = null
-                    });
+                    //pushConstantVariables.Add(new ShaderVariable
+                    //{
+                    //    Name = Marshal.PtrToStringAnsi(src.Name).ToString(),
+                    //    Size = src.Size,
+                    //    ByteAlignment = src.ByteAlignment,
+                    //    MemberTypeEnum = src.MemberTypeEnum,
+                    //    ConstVariable = src.ConstVariable,
+                    //    Value = null
+                    //});
 
                    // MemorySystem.DeletePtr(src.Name);
                 }

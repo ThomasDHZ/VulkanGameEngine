@@ -66,19 +66,22 @@ namespace nlohmann
 
             switch (pushConstantType)
             {
-                case kShaderMember_Int:   v = value[0].get<int>(); break;
-                case kShaderMember_Uint:  v = value[0].get<uint32>(); break;
-                case kShaderMember_Float: v = value[0].get<float>();  break;
-                case kShaderMember_Ivec2: v = value.get<ivec2>(); break;
-                case kShaderMember_Ivec3: v = value.get<ivec3>(); break;
-                case kShaderMember_Ivec4: v = value.get<ivec4>(); break;
-                case kShaderMember_Vec2:  v = value.get<vec2>(); break;
-                case kShaderMember_Vec3:  v = value.get<vec3>(); break;
-                case kShaderMember_Vec4:  v = value.get<vec4>(); break;
-                case kShaderMember_Mat2:  v = value.get<mat2>(); break;
-                case kShaderMember_Mat3:  v = value.get<mat3>(); break;
-                case kShaderMember_Mat4:  v = value.get<mat4>(); break;
-                case kShaderMember_bool:  v = value[0].get<bool>(); break;
+                case kShaderMember_Int:    v = value[0].get<int>(); break;
+                case kShaderMember_Int64:  v = value[0].get<int64>(); break;
+                case kShaderMember_Uint:   v = value[0].get<uint32>(); break;
+                case kShaderMember_Uint64: v = value[0].get<uint64>(); break;
+                case kShaderMember_Float:  v = value[0].get<float>();  break;
+                case kShaderMember_Double: v = value[0].get<double>(); break;
+                case kShaderMember_Ivec2:  v = value.get<ivec2>(); break;
+                case kShaderMember_Ivec3:  v = value.get<ivec3>(); break;
+                case kShaderMember_Ivec4:  v = value.get<ivec4>(); break;
+                case kShaderMember_Vec2:   v = value.get<vec2>(); break;
+                case kShaderMember_Vec3:   v = value.get<vec3>(); break;
+                case kShaderMember_Vec4:   v = value.get<vec4>(); break;
+                case kShaderMember_Mat2:   v = value.get<mat2>(); break;
+                case kShaderMember_Mat3:   v = value.get<mat3>(); break;
+                case kShaderMember_Mat4:   v = value.get<mat4>(); break;
+                case kShaderMember_bool:   v = value[0].get<bool>(); break;
                 default:  throw std::runtime_error("unknown ShaderVariable type: " + pushConstantType);
             }
         }

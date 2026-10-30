@@ -21,7 +21,7 @@ namespace GameScriptLibraryDLL.GameObjects
 
     public unsafe class WindowTest : GameObject, IGameObjectType
     {
-        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectWindowTest;
+        public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectWindowSprite;
 
         public override IntPtr Create()
         {

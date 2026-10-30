@@ -46,11 +46,10 @@ void RenderSystem_Draw(VkCommandBuffer& commandBuffer, RenderPassNodeDLL* render
                         .DrawMeshList = Vector<MeshDrawMessage>(drawArray[y].DrawMeshList, drawArray[y].DrawMeshList + drawArray[y].DrawMeshListCount),
                         .RenderPassInputs = Vector<VkGuid>(drawArray[y].RenderPassInputs, drawArray[y].RenderPassInputs + drawArray[y].RenderPassInputsCount),
                         .RenderPassOutputs = Vector<VkGuid>(drawArray[y].RenderPassOutputs, drawArray[y].RenderPassOutputs + drawArray[y].RenderPassOutputsCount),
+                        .CustomDrawCommand = drawArray[y].CustomDrawCommand ? std::optional<String>(drawArray[y].CustomDrawCommand) : std::nullopt,
+                        .CustomDrawCommandContext = drawArray[y].CustomDrawCommandContext,
                         .OffScreenRenderPass = drawArray[y].OffScreenRenderPass,
-      /*                .PushConstantsCmd = DllHelper::ExtractDllFunction<PushConstantsCmdFunction>(drawArray[y].PushConstantsCmd),
-                        .PreDrawCmd = DllHelper::ExtractDllFunction<PreDrawCmdFunction>(drawArray[y].PreDrawCmd),
-                        .CustomDrawCmd = DllHelper::ExtractDllFunction<CustomDrawCmdFunction>(drawArray[y].CustomDrawCmd),
-                        .PostDrawCmd = DllHelper::ExtractDllFunction<PostDrawCmdFunction>(drawArray[y].PostDrawCmd)*/
+                        .UseCustomDrawCommand = drawArray[y].UseCustomDrawCommand,
                     });
             }
         }

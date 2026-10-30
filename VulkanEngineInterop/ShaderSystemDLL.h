@@ -5,10 +5,8 @@
 struct ShaderVariableDLL
 {
     const char*                     Name;
-    size_t                          Size = 0;
-    size_t                          ByteAlignment = 0;
     ShaderMemberTypeEnum            MemberTypeEnum = kShaderMember_Undefined;
-    bool                            ConstVariable = false;
+    void*                           Variable;
 };
 
 struct ShaderStructDLL
@@ -66,6 +64,7 @@ struct VulkanShaderDLL
 extern "C" {
 #endif
 	DLL_EXPORT VulkanShaderDLL ShaderSystem_LoadShader(VkGuid& shaderGuid, const char* shaderFile);
+    DLL_EXPORT size_t          ShaderSystem_GetSpivByteAlignment(ShaderMemberTypeEnum shaderMemberEnum);
 #ifdef __cplusplus
 }
 #endif

@@ -377,7 +377,7 @@ void RenderSystem::Draw(VkCommandBuffer& commandBuffer, Vector<RenderPassNode>& 
                         for (int x = 0; x < renderPassLayer.DrawMeshList.size(); x++)
                         {
                             BindPushConstants(commandBuffer, renderPassLayer, x, mip, mipCount, 0);
-                            if (renderPassLayer.UseCustomDrawCommand) customDrawCommandRegistry.ApplyCustomDrawCommand(renderPassLayer.CustomDrawCommand, commandBuffer, renderPassLayer.DrawMeshList[x], renderPassLayer.CustomDrawCommandContext, renderPassLayer, x, mip, mipCount);
+                            if (renderPassLayer.UseCustomDrawCommand) customDrawCommandRegistry.ApplyCustomDrawCommand(renderPassLayer.CustomDrawCommand.value(), commandBuffer, renderPassLayer.DrawMeshList[x], renderPassLayer.CustomDrawCommandContext, renderPassLayer, x, mip, mipCount);
                             else renderPass.DrawMesh(commandBuffer, renderPassLayer.DrawMeshList[x]);
                         }
                     }

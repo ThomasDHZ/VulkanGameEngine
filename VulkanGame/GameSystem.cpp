@@ -195,6 +195,7 @@ void GameSystem::DebugUpdate(float deltaTime)
     ImGui::SameLine();
     ImGui::Image(tintPointTexture.imGuiDescriptorSet, ImVec2(512.0f, 512.0f));
 
+
  //   imGuiSystem.Separator();
  //   //ivec2 fb = vulkanWindow.GetFramebufferSize(); // or RenderBox size
  //   //ivec2 tex = renderSystem.FindRenderPassAttachment(VkGuid("7047804F-D32E-4CB5-BA95-90783B28D1DF")).texture.TextureSize();
@@ -227,11 +228,11 @@ void GameSystem::DebugUpdate(float deltaTime)
  //   imGuiSystem.Text("L3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_LEFT_THUMB) ? "Pressed" : "Released");
  //   imGuiSystem.Text("R3 button: %s", gameController.ButtonPressed(GLFW_JOYSTICK_1, GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) ? "Pressed" : "Released");
  //   imGuiSystem.Text("R2L2: (%.03f, %.03f)", r2L2.x, r2L2.y);
-
+    
   //  imGuiSystem.Separator();
 
     //ImGui::Image((ImTextureID)textureSystem.FindDepthTexture(levelSystem.ShaderRenderPassId).ImGuiDescriptorSet, ImVec2(400, 300));
-
+ 
   //  chatSystem.DrawChatWindow();
     imGuiSystem.EndFrame();
 }

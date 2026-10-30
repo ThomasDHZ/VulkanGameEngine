@@ -133,7 +133,6 @@ void main()
 
     const DirectionalLightBuffer light = GetDirectionalLight(0);
     vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
-
     PS_Position = world.xyz;
 	PS_UV = vertex.UV;
     PS_SpriteSize = VS_SpriteSize;

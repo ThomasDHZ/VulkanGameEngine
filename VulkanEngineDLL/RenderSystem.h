@@ -22,7 +22,7 @@ struct VulkanDrawMessage
     Vector<MeshDrawMessage>           DrawMeshList;
     Vector<VkGuid>                    RenderPassInputs;
     Vector<VkGuid>                    RenderPassOutputs;
-    String                            CustomDrawCommand;
+    std::optional<String>             CustomDrawCommand;
     CustomDrawInitContext             CustomDrawCommandContext;
     bool                              OffScreenRenderPass = false;
     bool                              UseCustomDrawCommand;

@@ -80,7 +80,7 @@ bool ShaderSystem::CompileShaders(const String& fileDirectory, const String& out
      size_t offset = 0;
      for (const auto& pushConstantVar : pushConstantStruct.PushConstantVariableList)
      {
-         size_t byteAlignment =GetSpivByteAlignment(pushConstantVar.Value);
+         size_t byteAlignment = GetSpivByteAlignment(pushConstantVar.Value);
          size_t size = std::visit([](auto&& arg)->size_t
                      {
                          return sizeof(std::decay_t<decltype(arg)>);
@@ -187,24 +187,55 @@ bool ShaderSystem::CompileShaders(const String& fileDirectory, const String& out
      return RenderShaderMap.contains(vulkanShaderId);
  }
 
+ size_t ShaderSystem::GetSpivByteAlignment(ShaderMemberTypeEnum shaderMemberEnum)
+ {
+     switch (shaderMemberEnum)
+     {
+         case kShaderMember_Int:     return 4;
+         case kShaderMember_Int64:   return 8;
+         case kShaderMember_Uint:    return 4;
+         case kShaderMember_Uint64:  return 8;
+         case kShaderMember_Float:   return 4;  
+         case kShaderMember_Double:  return 8;
+         case kShaderMember_bool:    return 4;
+         case kShaderMember_Ivec2:   return 8;
+         case kShaderMember_Ivec3:   return 16;
+         case kShaderMember_Ivec4:   return 16;
+         case kShaderMember_Vec2:    return 8;
+         case kShaderMember_Vec3:    return 16;
+         case kShaderMember_Vec4:    return 16;
+         case kShaderMember_Mat2:    return 8;
+         case kShaderMember_Mat3:    return 16;
+         case kShaderMember_Mat4:    return 16;
+         default: throw std::runtime_error("Unknown ShaderMemberTypeEnum in GetSpivByteAlignment");
+     }
+ }
+
  size_t ShaderSystem::GetSpivByteAlignment(const PushConstantVariable& pushConstantVariable)
  {
-     return std::visit([](auto&& arg) -> size_t {
+     return std::visit([this](auto&& arg) -> size_t {
          using T = std::decay_t<decltype(arg)>;
-         if      constexpr (std::is_same_v<T, int>)    return 4;
-         else if constexpr (std::is_same_v<T, uint32>) return 4;
-         else if constexpr (std::is_same_v<T, float>)  return 4;
-         else if constexpr (std::is_same_v<T, bool>)   return 4;
-         else if constexpr (std::is_same_v<T, ivec2>)  return 8;
-         else if constexpr (std::is_same_v<T, ivec3>)  return 16;
-         else if constexpr (std::is_same_v<T, ivec4>)  return 16;
-         else if constexpr (std::is_same_v<T, vec2>)   return 8;
-         else if constexpr (std::is_same_v<T, vec3>)   return 16;
-         else if constexpr (std::is_same_v<T, vec4>)   return 16;
-         else if constexpr (std::is_same_v<T, mat2>)   return 8;
-         else if constexpr (std::is_same_v<T, mat3>)   return 16;
-         else if constexpr (std::is_same_v<T, mat4>)   return 16;
-         else static_assert(false, "Unknown ShaderVariable type");
+
+         if      constexpr (std::is_same_v<T, int>)     return GetSpivByteAlignment(kShaderMember_Int);
+         else if constexpr (std::is_same_v<T, int64>)   return GetSpivByteAlignment(kShaderMember_Int64);
+         else if constexpr (std::is_same_v<T, uint32>)  return GetSpivByteAlignment(kShaderMember_Uint);
+         else if constexpr (std::is_same_v<T, uint64>)  return GetSpivByteAlignment(kShaderMember_Uint64);
+         else if constexpr (std::is_same_v<T, float>)   return GetSpivByteAlignment(kShaderMember_Float);
+         else if constexpr (std::is_same_v<T, double>)  return GetSpivByteAlignment(kShaderMember_Double);
+         else if constexpr (std::is_same_v<T, bool>)    return GetSpivByteAlignment(kShaderMember_bool);
+         else if constexpr (std::is_same_v<T, ivec2>)   return GetSpivByteAlignment(kShaderMember_Ivec2);
+         else if constexpr (std::is_same_v<T, ivec3>)   return GetSpivByteAlignment(kShaderMember_Ivec3);
+         else if constexpr (std::is_same_v<T, ivec4>)   return GetSpivByteAlignment(kShaderMember_Ivec4);
+         else if constexpr (std::is_same_v<T, vec2>)    return GetSpivByteAlignment(kShaderMember_Vec2);
+         else if constexpr (std::is_same_v<T, vec3>)    return GetSpivByteAlignment(kShaderMember_Vec3);
+         else if constexpr (std::is_same_v<T, vec4>)    return GetSpivByteAlignment(kShaderMember_Vec4);
+         else if constexpr (std::is_same_v<T, mat2>)    return GetSpivByteAlignment(kShaderMember_Mat2);
+         else if constexpr (std::is_same_v<T, mat3>)    return GetSpivByteAlignment(kShaderMember_Mat3);
+         else if constexpr (std::is_same_v<T, mat4>)    return GetSpivByteAlignment(kShaderMember_Mat4);
+         else {
+             static_assert(false, "Unknown PushConstantVariable type");
+             return 0;
+         }
          }, pushConstantVariable);
  }
 

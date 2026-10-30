@@ -39,11 +39,18 @@
     [
       {
         "MeshType": 2,
+        "RenderPassDrawFlags": 68,
         "PipelinePackageId": "e551d145-2e1b-426b-abbf-b0e7102e01bd",
         "ShaderPushConstant": null,
+        "InputAttachmentList": [],
         "InputTextureList": [],
+        "ResolveTextureList": [],
         "OutputTextureList": [],
-        "OffScreenRenderPass": false
+        "CustomDrawCommand": null,
+        "CustomDrawContext": null,
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
+        "AlphaRenderPass": false
       }
     ]
   ],

@@ -9,14 +9,22 @@ VulkanShaderDLL ShaderSystem_LoadShader(VkGuid& shaderGuid, const char* shaderFi
 	Vector<ShaderVariableDLL> pushConstantVariableListDLL;
 	for (auto& pushConstantVariable : pushConstant.PushConstantVariableList)
 	{
-		throw std::runtime_error("Uncomment code");
+		size_t size = std::visit([](auto&& arg) -> size_t 
+			{
+				return sizeof(std::decay_t<decltype(arg)>);
+			}, pushConstantVariable.Value);
+
+		void* buffer = memorySystem.AddPtrBuffer<void*>(size, __FILE__, __LINE__, __func__);
+		std::visit([&](auto&& arg) 
+			{
+				memcpy(buffer, &arg, sizeof(std::decay_t<decltype(arg)>));
+			}, pushConstantVariable.Value);
+
 		pushConstantVariableListDLL.emplace_back(ShaderVariableDLL
 			{
-				//.Name = memorySystem.AddStringPtrBuffer(pushConstantVariable.Name, __FILE__, __LINE__, __func__),
-				//.Size = pushConstantVariable.Size,
-				//.ByteAlignment = pushConstantVariable.ByteAlignment,
-				//.MemberTypeEnum = pushConstantVariable.MemberTypeEnum,
-				//.ConstVariable = pushConstantVariable.ConstVariable
+				.Name = memorySystem.AddStringPtrBuffer(pushConstantVariable.Name, __FILE__, __LINE__, __func__),
+				.MemberTypeEnum = static_cast<ShaderMemberTypeEnum>(pushConstantVariable.Value.index()),
+				.Variable = buffer
 			});
 	}
 
@@ -57,4 +65,9 @@ VulkanShaderDLL ShaderSystem_LoadShader(VkGuid& shaderGuid, const char* shaderFi
 		.VertexInputBindingCount = vulkanShader.VertexInputBindingList().size(),
 		.DescriptorBindingCount = shaderDescriptorBindingDLLList.size()
 	};
+}
+
+size_t ShaderSystem_GetSpivByteAlignment(ShaderMemberTypeEnum shaderMemberEnum)
+{
+	return shaderSystem.GetSpivByteAlignment(shaderMemberEnum);
 }

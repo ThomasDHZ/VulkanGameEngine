@@ -41,6 +41,7 @@ public:
     bool                                         SearchShaderPipelineStructExists(const Vector<ShaderStruct>& shaderStructList, const String& structName);
     bool                                         SearchPushConstantForVariableExists(const String& structKey, const String& variableName);
     bool                                         VulkanShaderExists(const VkGuid& vulkanShaderId);
+    size_t                                       GetSpivByteAlignment(ShaderMemberTypeEnum shaderMemberEnum);
     size_t                                       GetSpivByteAlignment(const PushConstantVariable& pushConstantVariable);
     void                                         Destroy();
 

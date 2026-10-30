@@ -5,7 +5,6 @@
 #include <VulkanPipeline.h>
 #include "TextureSystem.h"
 #include "enum.h"
-#include <ShaderEnums.h>
 
 enum PushConstantResolverEnum
 {
