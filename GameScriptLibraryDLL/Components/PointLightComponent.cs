@@ -2,28 +2,39 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace GameScriptLibraryDLL.Components
 {
-    public struct PointLight
+    [System.Runtime.CompilerServices.InlineArray(6)]
+    public struct PointLightShadowMat4Array
     {
-        public vec3 LightPosition { get; set; } = new vec3(0.0f);
-        public vec3 LightColor { get; set; } = new vec3(1.0f, 0.95f, 0.8f);
-        public float LightRadius { get; set; } = 200.0f;
-        public float LightIntensity { get; set; } = 2.0f;
-        public float ShadowStrength { get; set; } = 1.0f;
-        public float ShadowBias { get; set; } = 0.012f;
-        public float ShadowSoftness { get; set; } = 0.008f;
-        public PointLight()
-        {
-        }
-    };
+        private mat4 _element0;
+    }
 
+    [StructLayout(LayoutKind.Explicit, Size = 448)]
+    public unsafe struct PointLight
+    {
+        [FieldOffset(0)] public vec3 LightPosition;
+        [FieldOffset(16)] public vec3 LightColor;
+        [FieldOffset(32)] public float LightRadius;
+        [FieldOffset(36)] public float LightIntensity;
+        [FieldOffset(40)] public float ShadowStrength;
+        [FieldOffset(44)] public float ShadowBias;
+        [FieldOffset(48)] public float ShadowSoftness;
+        [FieldOffset(52)] public int LightLayer;
+        [FieldOffset(56)] public uint LightActive;
+        [FieldOffset(64)] public PointLightShadowMat4Array LightSpaceMatrix;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct PointLightComponent
     {
         public uint PointLightMemoryPoolIndex { get; set; } = uint.MaxValue;
+        public uint PointLightCameraId { get; set; } = uint.MaxValue;
+        public bool DirtyFlag { get; set; } = true;
         public PointLightComponent()
         {
         }

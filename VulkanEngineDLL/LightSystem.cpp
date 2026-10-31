@@ -122,11 +122,6 @@ PointLight& LightSystem::GetPointLight(uint pointLightId)
     return memoryPoolSystem.UpdatePointLight(pointLightId);
 }
 
-mat4 LightSystem::GetPointLightProjectionMatrix(PointLightComponent& lightComponent, uint32 viewFaceIndex)
-{
-    return lightComponent.PointLightFaceViews[viewFaceIndex];
-}
-
 uint LightSystem::FindDirectionalLightIndex(void* ptr)
 {
     return memoryPoolSystem.FindDirectionalLightIndex(ptr);

@@ -91,8 +91,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LevelEditorShaders", "Level
 	ProjectSection(SolutionItems) = preProject
 		Shaders\GameObjectPicker.frag = Shaders\GameObjectPicker.frag
 		Shaders\GameObjectPicker.vert = Shaders\GameObjectPicker.vert
-		Shaders\LightObjectPicker.frag = Shaders\LightObjectPicker.frag
-		Shaders\LightObjectPicker.vert = Shaders\LightObjectPicker.vert
 		Shaders\SelectedGameObjectPicker.frag = Shaders\SelectedGameObjectPicker.frag
 		Shaders\SelectedGameObjectPicker.vert = Shaders\SelectedGameObjectPicker.vert
 	EndProjectSection

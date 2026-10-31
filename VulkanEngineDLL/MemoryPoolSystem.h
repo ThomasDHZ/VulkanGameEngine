@@ -19,7 +19,7 @@ enum MemoryPoolTypes
 struct DirectionalLight
 {
 	alignas(16) vec3  LightColor = vec3(1.0f);
-	alignas(16) vec3 LightDirection = vec3(0.3f, 0.3f, 1.0f);
+	alignas(16) vec3  LightDirection = vec3(0.3f, 0.3f, 1.0f);
 	alignas(4)  float LightIntensity = 1.5f;
 	alignas(4)  float ShadowStrength = 1.0f;
 	alignas(4)  float ShadowBias = 0.012f;

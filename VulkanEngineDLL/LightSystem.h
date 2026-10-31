@@ -10,7 +10,6 @@ struct PointLightComponent
 {
     uint                PointLightMemoryPoolIndex = UINT32_MAX;
     uint                PointLightCameraId = UINT32_MAX;
-    std::array<mat4, 6> PointLightFaceViews;
     bool                DirtyFlag = true;
 };
 
@@ -42,7 +41,6 @@ public:
      uint32                   AllocateLight(GameObjectTypeEnum lightType);
      DirectionalLight&        GetDirectionalLight(uint directionalLightId);
      PointLight&              GetPointLight(uint pointLightId);
-     mat4                     GetPointLightProjectionMatrix(PointLightComponent& lightComponent, uint32 viewFace);
 
       uint                    FindDirectionalLightIndex(void* ptr);
       uint                    FindPointLightIndex(void* ptr);

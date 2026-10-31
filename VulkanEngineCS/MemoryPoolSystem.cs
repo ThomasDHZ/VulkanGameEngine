@@ -1,4 +1,5 @@
-﻿using GlmSharp;
+﻿using GameScriptLibraryDLL.Components;
+using GlmSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +43,6 @@ namespace VulkanEngineCS
 
         //    [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowSoftness = 0.008f;
-
         public DirectionalLight()
         {
         }
@@ -70,6 +70,7 @@ namespace VulkanEngineCS
 
         //    [NumericUpDownLimitsAttribute(0.01f, 0.0f)]
         public float ShadowSoftness = 0.008f;
+        public int LightLayer = 0;
 
         public PointLight()
         {
