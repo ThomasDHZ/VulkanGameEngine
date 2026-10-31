@@ -70,6 +70,7 @@ layout (location = 7) in flat uint  PS_SpriteId;
 layout(location = 0) out uint outGameObjectId; 
 
 #include "BindlessHelpers.glsl"
+
 #define UINT_MAX 4294967295u
 void main() 
 {
