@@ -136,17 +136,15 @@ private:
 
     UnorderedMap<GameObjectTypeEnum, GameObjectBehavior>    GameObjectBehaviorMap;
     UnorderedMap<GameObjectTypeEnum, GameObjectStruct>      GameObjectVarTemplateMap;
-    UnorderedMap<GameObjectTypeEnum, nlohmann::json>        GameObjectComponentTempleteMap;
+    UnorderedMap<GameObjectTypeEnum, nlohmann::json>        GameObjectPrefabTempleteMap;
 
 public:
     GameObjectRegistry                                      EntityRegistry;
 
      void                                         LoadGameObjectTemplete(const String& gameObjectJson);
      void                                         LoadGameObjectTemplete(const Vector<String>& gameObjectJsonList);
-     entt::entity                                 CreateGameObject(nlohmann::json& gameObjectJson, entt::entity parentGameObjectId = entt::null);
-     entt::entity                                 CreateGameObject(nlohmann::json& gameObjectJson, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
-     void                                         CreateGameObjects(nlohmann::json& gameObjectJson);
-     entt::entity                                 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
+     entt::entity                                 CreateGameObjectPrefab(GameObjectTypeEnum gameObjectPrefab, vec2 gameObjectPosition, entt::entity parentGameObjectId = entt::null);
+     entt::entity                                 CreateGameObject(nlohmann::json& gameObjectJson, std::optional<vec2> prefabObjectPosition, entt::entity parentGameObjectId = entt::null);
 
      void                                         Update(const float& deltaTime);
      void                                         DestroyGameObject(entt::entity gameObjectId);

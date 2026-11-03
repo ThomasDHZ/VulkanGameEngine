@@ -274,6 +274,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaterialBakerDLL", "..\Vulk
 		{D22B29FB-1F02-471C-81AC-A352862F6951} = {D22B29FB-1F02-471C-81AC-A352862F6951}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpriteVram", "SpriteVram", "{D66874E7-49B6-4B67-9451-B2423876282A}"
+	ProjectSection(SolutionItems) = preProject
+		AnimeGirlVram.json = AnimeGirlVram.json
+		LightDebugVram.json = LightDebugVram.json
+		MegaManShotVram.json = MegaManShotVram.json
+		MegaManVram.json = MegaManVram.json
+		WindowTestSpriteVram.json = WindowTestSpriteVram.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prefabs", "Prefabs", "{59C8FBD8-A786-46D1-8029-52A570E12837}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -432,6 +443,8 @@ Global
 		{010E9608-7CC2-4356-B282-1EFFC55398DD} = {0EDEA954-1D78-4E87-B6E9-6AD004194688}
 		{8D34E3E3-CDD0-4AA9-B679-2DFA572C9BC4} = {0EDEA954-1D78-4E87-B6E9-6AD004194688}
 		{27191F18-BAB4-4CE3-A96C-C56AE5D0C63A} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{D66874E7-49B6-4B67-9451-B2423876282A} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
+		{59C8FBD8-A786-46D1-8029-52A570E12837} = {E282A3D5-3DCC-485B-AA01-B66AB307DBE2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F492211-3E89-431E-83CC-E65D5E8EBE55}

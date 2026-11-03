@@ -12,37 +12,16 @@
 
 GameObjectSystem& gameObjectSystem = GameObjectSystem::Get();
 
-entt::entity GameObjectSystem::CreateGameObject(nlohmann::json& gameObjectJson, entt::entity parentGameObjectId)
+entt::entity GameObjectSystem::CreateGameObjectPrefab(GameObjectTypeEnum gameObjectPrefab, vec2 gameObjectPosition, entt::entity parentGameObjectId)
 {
-    vec2 positionOverride = vec2(0.0f);
-    if (gameObjectJson.contains("GameObjectPositionOverride"))
-    {
-        positionOverride = vec2(gameObjectJson["GameObjectPositionOverride"][0], gameObjectJson["GameObjectPositionOverride"][1]);
-    }
-    return CreateGameObject(gameObjectJson["GameObjectType"], positionOverride, parentGameObjectId);
+    if (GameObjectPrefabTempleteMap.contains(gameObjectPrefab)) CreateGameObject(GameObjectPrefabTempleteMap[gameObjectPrefab], gameObjectPosition, parentGameObjectId);
+    else throw std::runtime_error("Prefab not not found: " + gameObjectPrefab);
 }
 
-entt::entity GameObjectSystem::CreateGameObject(nlohmann::json& gameObjectJson, vec2 gameObjectPosition, entt::entity parentGameObjectId)
-{
-    return CreateGameObject(gameObjectJson["GameObjectType"].get<GameObjectTypeEnum>(), gameObjectPosition, parentGameObjectId);
-}
-
-void GameObjectSystem::CreateGameObjects(nlohmann::json& gameObjectJson)
-{
-    for (const auto& json : gameObjectJson)
-    {
-        vec2 positionOverride = vec2(0.0f);
-        if (json.contains("GameObjectPositionOverride"))
-        {
-            positionOverride = vec2(json["GameObjectPositionOverride"][0], json["GameObjectPositionOverride"][1]);
-        }
-        CreateGameObject(json["GameObjectType"], positionOverride);
-    }
-}
-
-entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, entt::entity parentGameObjectId)
+entt::entity GameObjectSystem::CreateGameObject(nlohmann::json& gameObjectJson, std::optional<vec2> prefabObjectPosition, entt::entity parentGameObjectId)
 {
     entt::entity gameObjectEntity = EntityRegistry.create();
+    GameObjectTypeEnum gameObjectType = gameObjectJson["GameObjectType"];
     GameObject& gameObject = EntityRegistry.emplace<GameObject>(gameObjectEntity, GameObject
         {
             .GameObjectId = static_cast<uint32>(gameObjectEntity),
@@ -50,7 +29,7 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
             .GameObjectType = gameObjectType,
             .GameObjectAlive = true
         });
-    void* aafaf = (void*)&EntityRegistry;
+
     auto it = GameObjectBehaviorMap.find(gameObjectType);
     if (it != GameObjectBehaviorMap.end() && it->second.CreateObject)
     {
@@ -65,18 +44,20 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
             });
     }
 
-    const nlohmann::json gameObjectComponentJson = GameObjectComponentTempleteMap[gameObjectType];
-    for (const auto& json : gameObjectComponentJson)
+    for (const auto& json : gameObjectJson["ComponentList"])
     {
+        vec2 position2dOverride = vec2(0.0f);
+        if (prefabObjectPosition.has_value()) position2dOverride = prefabObjectPosition.value();
+        else if (json.contains("GameObjectPosition")) position2dOverride = vec2(json["GameObjectPosition"][0], json["GameObjectPosition"][1]);
+
         const auto componentType = static_cast<ComponentTypeEnum>(json["ComponentType"].get<uint64>());
-        ComponentInitContext componentContext = ComponentInitContext
-        {
-            .Registry = EntityRegistry,
-            .Entity = gameObjectEntity,
-            .Json = json,
-            .Position2DOverride = gameObjectPosition
-        };
-        gameObjectComponentRegistry.ApplyGameObjectComponent(componentType, componentContext);
+        gameObjectComponentRegistry.ApplyGameObjectComponent(componentType, ComponentInitContext
+            {
+                .Registry = EntityRegistry,
+                .Entity = gameObjectEntity,
+                .Json = json,
+                .Position2d = position2dOverride
+            });
     }
 
     if (GameObjectBehaviorMap.contains(gameObject.GameObjectType) &&
@@ -92,6 +73,7 @@ entt::entity GameObjectSystem::CreateGameObject(GameObjectTypeEnum gameObjectTyp
 
     return gameObjectEntity;
 }
+
 
 void GameObjectSystem::LoadGameObjectTemplete(const Vector<String>& gameObjectJsonList)
 {
@@ -115,7 +97,7 @@ void GameObjectSystem::LoadGameObjectTemplete(const Vector<String>& gameObjectJs
 void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
 {
     nlohmann::json json = fileSystem.LoadJsonFile(gameObjectJson.c_str());
-    if (GameObjectComponentTempleteMap.contains(json["GameObjectType"])) return;
+    if (GameObjectPrefabTempleteMap.contains(json["GameObjectType"])) return;
 
     GameObject gameObject = GameObject
     {
@@ -145,7 +127,6 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     }
     GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
 
-    if (json.contains("GameObjectSprite"))   spriteSystem.LoadSpriteVRAM(json);
     if (json.contains("GameObjectDLLType"))
     {
         String dllType = json["GameObjectDLLType"].get<String>();
@@ -164,13 +145,13 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     const auto& componentList = json["GameObjectComponentList"];
     if (componentList.is_array())
     {
-        GameObjectComponentTempleteMap[gameObject.GameObjectType] = componentList;
+        GameObjectPrefabTempleteMap[gameObject.GameObjectType] = componentList;
     }
     else if (componentList.is_object())
     {
         nlohmann::json wrappedArray = nlohmann::json::array();
         wrappedArray.push_back(componentList);
-        GameObjectComponentTempleteMap[gameObject.GameObjectType] = wrappedArray;
+        GameObjectPrefabTempleteMap[gameObject.GameObjectType] = wrappedArray;
     }
 }
 
@@ -184,7 +165,7 @@ void GameObjectSystem::Update(const float& deltaTime)
     auto view = gameObjectSystem.EntityRegistry.view<GameObject>();
     for (auto [entity, gameObject] : view.each())
     {
-        if(gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update(gameObject.GameObjectPtr, deltaTime);
+        if (gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType].Update(gameObject.GameObjectPtr, deltaTime);
         //luaScriptingSystem.Update(deltaTime);
     }
 }

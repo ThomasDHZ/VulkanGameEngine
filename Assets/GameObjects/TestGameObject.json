@@ -2,6 +2,7 @@
   "GameObjectType": 1,
   "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": "GameScripts\\Player.lua",
+  "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
   "GameObjectVariableStruct": [
     {
       "VariableName": "PlayerSpeed",
@@ -17,74 +18,5 @@
       "VariableByteSize": 4,
       "MemberTypeEnum": 2
     }
-  ],
-  "GameObjectComponentList": [
-    {
-      "ComponentType": 0
-    },
-    {
-      "ComponentType": 1,
-      "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e"
-    },
-    {
-      "ComponentType": 2,
-      "GameObjectPosition": [
-        1450.0,
-        200.0
-      ],
-      "GameObjectRotation": [
-        0.0,
-        0.0
-      ],
-      "GameObjectScale": [
-        1.0,
-        1.0
-      ]
-    },
-    {
-      "ComponentType": 8,
-      "ColliderSize": [
-        464.0,
-        688.0
-      ],
-      "ColliderOffset": [
-        0.0,
-        0.0
-      ],
-      "ColliderEnabled": true,
-      "IsTrigger": false
-    }
-  ],
-  "MaterialId": "16C70CB9-B00E-4B61-93A4-DA74849EC96E",
-  "GameObjectSprite": {
-    "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
-    "SpriteLayer": 1,
-    "SpriteScale": [ 1.0, 1.0 ],
-    "SpriteDrawFlags": 68,
-    "SpritePixelSize": [
-      464,
-      688
-    ],
-    "SpriteColor": [
-      0.0,
-      0.0,
-      0.0,
-      1.0
-    ],
-    "AnimationList": [
-      {
-        "AnimationId": 0,
-        "FrameHoldTime": 0.2,
-        "FrameList": [
-          [ 0, 0 ],
-          [ 1, 0 ],
-          [ 2, 0 ],
-          [ 3, 0 ],
-          [ 4, 0 ],
-          [ 5, 0 ],
-          [ 6, 0 ]
-        ]
-      }
-    ]
-  }
+  ]
 }

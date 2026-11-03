@@ -1,39 +1,4 @@
 {
   "GameObjectType": 4,
-  "MaterialId": "0A3ECCCB-D54B-4DCA-B5F1-02F5849076A2",
-  "GameObjectComponentList": [
-    {
-      "ComponentType": 6,
-      "LightPosition": [ 960, 540, 0.0 ],
-      "LightColor": [ 0.8, 0.8, 0.8 ],
-      "LightRadius": 1000.0,
-      "LightIntensity": 0.70,
-      "ShadowStrength": 0.70,
-      "ShadowBias": 0.015,
-      "ShadowSoftness": 0.30,
-      "LightLayer": 7
-    },
-    {
-      "GameObjectPosition": [
-        0.0,
-        0.0
-      ],
-      "GameObjectRotation": [
-        0.0,
-        0.0
-      ],
-      "GameObjectScale": [
-        1.0,
-        1.0
-      ],
-      "ComponentType": 2
-    },
-    {
-      "ComponentType": 1,
-      "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
-    },
-    {
-      "ComponentType": 7
-    }
-  ]
+  "SpriteVramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
 }

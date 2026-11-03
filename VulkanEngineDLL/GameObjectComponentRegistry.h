@@ -7,11 +7,12 @@
 
 struct ComponentInitContext
 {
-    entt::registry& Registry;
+    entt::registry&       Registry;
     entt::entity          Entity;
     const nlohmann::json& Json;
-    vec2                  Position2DOverride;
-    vec3                  Position3DOverride;
+    vec2                  Position2d;
+    vec3                  Position3d;
+    bool                  IsPrefab = false;
 };
 
 class GameObjectComponentRegistry

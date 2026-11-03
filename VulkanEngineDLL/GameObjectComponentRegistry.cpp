@@ -39,7 +39,7 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
     RegisterGameObjectComponent(kTransform2DComponent, [](const ComponentInitContext& ctx)
         {
             ctx.Registry.emplace<Transform2DComponent>(ctx.Entity, Transform2DComponent{
-                .GameObjectPosition = ctx.Position2DOverride,
+                .GameObjectPosition = ctx.Position2d,
                 .GameObjectRotation = vec2{ ctx.Json["GameObjectRotation"][0], ctx.Json["GameObjectRotation"][1] },
                 .GameObjectScale = vec2{ ctx.Json["GameObjectScale"][0],    ctx.Json["GameObjectScale"][1] }
                 });
@@ -48,7 +48,7 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
     RegisterGameObjectComponent(kTransform3DComponent, [](const ComponentInitContext& ctx)
         {
             ctx.Registry.emplace<Transform3DComponent>(ctx.Entity, Transform3DComponent{
-                .GameObjectPosition = vec3{ ctx.Position2DOverride.x, ctx.Position2DOverride.y, 0.0f },
+                .GameObjectPosition = ctx.Position3d,
                 .GameObjectRotation = vec3{ ctx.Json["GameObjectRotation"][0], ctx.Json["GameObjectRotation"][1], 0.0f },
                 .GameObjectScale = vec3{ ctx.Json["GameObjectScale"][0],    ctx.Json["GameObjectScale"][1], 0.0f }
                 });
@@ -103,7 +103,7 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
             PointLight& pointLight = memoryPoolSystem.UpdatePointLight(pointLightComponent.PointLightMemoryPoolIndex);
             pointLight = PointLight
             {
-                .LightPosition = vec3(ctx.Position2DOverride.x, ctx.Position2DOverride.y, ctx.Json["LightPosition"][2]),
+                .LightPosition = vec3(ctx.Json["LightPosition"][0], ctx.Json["LightPosition"][1], ctx.Json["LightPosition"][2]),
                 .LightColor = vec3(ctx.Json["LightColor"][0], ctx.Json["LightColor"][1], ctx.Json["LightColor"][2]),
                 .LightRadius = ctx.Json["LightRadius"],
                 .LightIntensity = ctx.Json["LightIntensity"],

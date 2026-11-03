@@ -22,24 +22,14 @@ void LevelSystem::LoadLevel(const char* levelPath)
     pushConstantRegistry.RegisterDefaultPushConstantRules();
     gameObjectComponentRegistry.RegisterDefaultGameObjectComponents();
 
-    VkGuid tileSetId = VkGuid();
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
-    for (auto& texture     : json["LoadTextures"])    textureSystem.LoadTexture(texture);
-    for (auto& ktxTexture  : json["LoadKTXTextures"]) textureSystem.LoadTexture(ktxTexture);
-    for (auto& material    : json["LoadMaterials"])   materialSystem.LoadMaterial(material.get<String>());
-    for (auto& spriteVRAM  : json["LoadSpriteVRAM"])  spriteSystem.LoadSpriteVRAM(spriteVRAM);
-    for (auto& tileSetVRAM : json["LoadTileSetVRAM"]) tileSetId = LoadTileSetVRAM(tileSetVRAM.get<String>().c_str());
-
-    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
-    sceneDataBuffer.EnvironmentMapIndex = 0;
-
-    Vector<String> gameObjectTempleteList;
-    for (size_t x = 0; x < json["LoadGameObjects"].size(); x++)
-    {
-        gameObjectTempleteList.emplace_back(json["LoadGameObjects"][x]);
-    }
-    gameObjectSystem.LoadGameObjectTemplete(gameObjectTempleteList);
-    gameObjectSystem.CreateGameObjects(json["GameObjectList"]);
+    
+    LoadSkyBox(json["SkyBox"]);
+    LoadMaterials(json["Materials"]);
+    LoadSpriteVram(json["SpriteVram"]);
+    LoadGameObjectBehaviors(json["GameObjectBehaviors"]);
+    LoadGameObjects(json["GameObjectList"]);
+    VkGuid tileSetId = LoadTileSetVram(json["TileSetVRAM"]);
     meshSystem.CreateSpriteMesh();
 
     LoadSkyBox();
@@ -58,10 +48,63 @@ void LevelSystem::LoadLevel(const char* levelPath)
         }
     }
   //  LevelEditorRenderPass(levelPath);
+    SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
+    sceneDataBuffer.EnvironmentMapIndex = 0;
 
     std::string temp;
     json["PresentingAttachmentTextureId"].get_to(temp);
     PresentingAttachmentTextureId = VkGuid(temp.c_str());
+}
+
+void LevelSystem::LoadSkyBox(nlohmann::json& json)
+{
+    for (auto& texture : json)
+    {
+        textureSystem.LoadTexture(texture);
+    }
+}
+
+void LevelSystem::LoadMaterials(nlohmann::json& json)
+{
+    for (auto& material : json)
+    {
+        materialSystem.LoadMaterial(material.get<String>());
+    }
+}
+
+void LevelSystem::LoadSpriteVram(nlohmann::json& json)
+{
+    for (auto& spriteVRAM : json)
+    {
+        spriteSystem.LoadSpriteVRAM(spriteVRAM);
+    }
+}
+
+VkGuid LevelSystem::LoadTileSetVram(nlohmann::json& json)
+{
+    return LoadTileSetVRAM(json.get<String>().c_str());
+}
+
+void LevelSystem::LoadGameObjectBehaviors(nlohmann::json& json)
+{
+    Vector<String> gameObjectTempleteList;
+    for (size_t x = 0; x < json.size(); x++)
+    {
+        gameObjectTempleteList.emplace_back(json[x]);
+    }
+    gameObjectSystem.LoadGameObjectTemplete(gameObjectTempleteList);
+}
+
+void LevelSystem::LoadGameObjects(nlohmann::json& json)
+{
+    for (auto& gameObject : json)
+    {
+        gameObjectSystem.CreateGameObject(gameObject, std::nullopt);
+    }
+}
+
+void LevelSystem::LoadPrefabObject(nlohmann::json& json)
+{
 }
 
 void LevelSystem::LevelEditorRenderPass(const char* levelPath)
@@ -296,7 +339,6 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
             .VertexData = LevelLayerList[x].VertexList.data()
         };
         meshSystem.CreateMesh("__LevelMesh__" + std::to_string(x), MeshTypeEnum::kMesh_StaticMesh, vertexData, LevelLayerList[x].IndexList, x, DrawFlagBits::kDrawFlag_DrawMesh, LevelLayerList[x].MaterialId);
-
     }
 }
 

@@ -1,20 +1,28 @@
 {
   "LevelID": "a4ff0086-0069-4265-9a81-b38fb9e6b5be",
-  "LoadTextures": [
-  ],
-  "LoadKTXTextures": [
+  "SkyBox": [
     "TextureLoader/HDRITexture.json"
   ],
-  "LoadMaterials": [
+  "Materials": [
     "Materials/AnimeGirlMaterial.json",
     "Materials/MegaManShotMaterial.json",
     "Materials/LightIconMaterial.json",
     "Materials/SparkManTileSetMaterial.json"
   ],
-  "LoadTileSetVRAM": [
-    "TileSets/SparkManTileSet.json"
+  "SpriteVram": [
+    "SpriteVram/AnimeGirlVram.json",
+    "SpriteVram/MegaManShotVram.json",
+    "SpriteVram/LightDebugVram.json"
+  ],
+  "TileSetVRAM": "TileSets/SparkManTileSet.json",
+  "GameObjectBehaviors": [
+    "GameObjects/TestGameObject.json",
+    "GameObjects/MegaManShotObject.json",
+    "GameObjects/DirectionalLightGameObject.json",
+    "GameObjects/PointLightGameObject.json"
   ],
   "PresentingAttachmentTextureId": "de6ca646-874f-4986-9daf-912dbc3aa7d0",
+  "LoadLevelLayout": "LevelMapLevelLayout/TestMapLevelLayout.json",
   "MainRenderPassList": [
     {
       "RenderPass": "RenderPass/DirectionalShadowRenderPass.json",
@@ -47,62 +55,297 @@
       "OneTimeDraw": false
     }
   ],
-  "LoadGameObjects": [
-    "GameObjects/TestGameObject.json",
-    "GameObjects/MegaManShotObject.json",
-    "GameObjects/DirectionalLightGameObject.json",
-    "GameObjects/PointLightGameObject.json"
-  ],
   "GameObjectList": [
     {
       "GameObjectType": 3,
-      "GameObjectPositionOverride": [
-        0.0,
-        0.0
+      "GameObjectLightPath": "Lights/DirectionalLightScript.json",
+      "MaterialId": "0A3ECCCB-D54B-4DCA-B5F1-02F5849076A2",
+      "SpriteVramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380",
+      "ComponentList": [
+        {
+          "ComponentType": 5,
+          "LightColor": [ 1.0, 1.0, 1.0 ],
+          "LightDirection": [ 0.285, 0.337, -1.0 ],
+          "LightIntensity": 1.0,
+          "ShadowStrength": 1.00,
+          "ShadowBias": 0.015,
+          "ShadowSoftness": 0.30
+        },
+        {
+          "GameObjectPosition": [
+            0.0,
+            0.0
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "ComponentType": 2
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+        },
+        {
+          "ComponentType": 7
+        }
       ]
     },
     {
       "GameObjectType": 1,
-      "GameObjectPositionOverride": [
-        527.6328,
-        217.1766
+      "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerScript, GameScriptLibraryDLL",
+      "GameObjectLuaScript": "GameScripts\\Player.lua",
+      "ComponentList": [
+        {
+          "ComponentType": 0
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e"
+        },
+        {
+          "ComponentType": 2,
+          "GameObjectPosition": [
+            1527.6328,
+            217.1766
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "ComponentType": 8,
+          "ColliderSize": [
+            464.0,
+            688.0
+          ],
+          "ColliderOffset": [
+            0.0,
+            0.0
+          ],
+          "ColliderEnabled": true,
+          "IsTrigger": false
+        }
       ]
     },
     {
       "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        569.6525,
-        1592.9432
+      "ComponentList": [
+        {
+          "ComponentType": 6,
+          "LightPosition": [
+            569.6525,
+            1592.9432,
+            0.0
+          ],
+          "LightColor": [ 0.8, 0.8, 0.8 ],
+          "LightRadius": 1000.0,
+          "LightIntensity": 0.70,
+          "ShadowStrength": 0.70,
+          "ShadowBias": 0.015,
+          "ShadowSoftness": 0.30,
+          "LightLayer": 7
+        },
+        {
+          "GameObjectPosition": [
+            569.6525,
+            1592.9432
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "ComponentType": 2
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+        },
+        {
+          "ComponentType": 7
+        }
       ]
     },
     {
       "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        1169.6525,
-        592.9432
+      "ComponentList": [
+        {
+          "ComponentType": 6,
+          "LightPosition": [
+            1169.6525,
+            592.9432,
+            0.0
+          ],
+          "LightColor": [ 0.8, 0.8, 0.8 ],
+          "LightRadius": 1000.0,
+          "LightIntensity": 0.70,
+          "ShadowStrength": 0.70,
+          "ShadowBias": 0.015,
+          "ShadowSoftness": 0.30,
+          "LightLayer": 7
+        },
+        {
+          "GameObjectPosition": [
+            1169.6525,
+            592.9432
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "ComponentType": 2
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+        },
+        {
+          "ComponentType": 7
+        }
       ]
     },
     {
       "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        1769.6525,
-        592.9432
+      "ComponentList": [
+        {
+          "ComponentType": 6,
+          "LightPosition": [
+            1769.6525,
+            592.9432,
+            0.0
+          ],
+          "LightColor": [ 0.8, 0.8, 0.8 ],
+          "LightRadius": 1000.0,
+          "LightIntensity": 0.70,
+          "ShadowStrength": 0.70,
+          "ShadowBias": 0.015,
+          "ShadowSoftness": 0.30,
+          "LightLayer": 7
+        },
+        {
+          "GameObjectPosition": [
+            1769.6525,
+            592.9432
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "ComponentType": 2
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+        },
+        {
+          "ComponentType": 7
+        }
       ]
     },
     {
       "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        2369.6525,
-        592.9432
+      "ComponentList": [
+        {
+          "ComponentType": 6,
+          "LightPosition": [
+            2369.6525,
+            592.9432,
+            0.0
+          ],
+          "LightColor": [ 0.8, 0.8, 0.8 ],
+          "LightRadius": 1000.0,
+          "LightIntensity": 0.70,
+          "ShadowStrength": 0.70,
+          "ShadowBias": 0.015,
+          "ShadowSoftness": 0.30,
+          "LightLayer": 7
+        },
+        {
+          "GameObjectPosition": [
+            2369.6525,
+            592.9432
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "ComponentType": 2
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+        },
+        {
+          "ComponentType": 7
+        }
       ]
     },
     {
       "GameObjectType": 4,
-      "GameObjectPositionOverride": [
-        3069.6525,
-        592.9432
+      "ComponentList": [
+        {
+          "ComponentType": 6,
+          "LightPosition": [
+            3069.6525,
+            592.9432,
+            0.0
+          ],
+          "LightColor": [ 0.8, 0.8, 0.8 ],
+          "LightRadius": 1000.0,
+          "LightIntensity": 0.70,
+          "ShadowStrength": 0.70,
+          "ShadowBias": 0.015,
+          "ShadowSoftness": 0.30,
+          "LightLayer": 7
+        },
+        {
+          "GameObjectPosition": [
+            3069.6525,
+            592.9432
+          ],
+          "GameObjectRotation": [
+            0.0,
+            0.0
+          ],
+          "GameObjectScale": [
+            1.0,
+            1.0
+          ],
+          "ComponentType": 2
+        },
+        {
+          "ComponentType": 1,
+          "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+        },
+        {
+          "ComponentType": 7
+        }
       ]
     }
-  ],
-  "LoadLevelLayout": "LevelMapLevelLayout/TestMapLevelLayout.json"
+  ]
 }

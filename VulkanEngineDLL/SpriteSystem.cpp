@@ -20,8 +20,8 @@ void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
 
 VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
 {
-    VkGuid materialId = VkGuid(json["MaterialId"].get<String>());
-    nlohmann::json gameObjectSpriteJson = json["GameObjectSprite"];
+    nlohmann::json gameObjectSpriteJson = fileSystem.LoadJsonFile(json.get<String>());
+    VkGuid materialId = VkGuid(gameObjectSpriteJson["MaterialId"].get<String>());
     VramSpriteGuid vramId = VramSpriteGuid(gameObjectSpriteJson["VramSpriteId"].get<String>().c_str());
     if (SpriteVramExists(vramId))
     {

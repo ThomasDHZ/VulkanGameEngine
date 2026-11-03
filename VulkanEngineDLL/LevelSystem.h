@@ -116,6 +116,14 @@ public:
     vec3                                       ViewDirection = vec3(-0.037f, -0.062f, 1.0f);
 
     void                                       LoadLevel(const char* levelPath);
+    void                                       LoadSkyBox(nlohmann::json& json);
+    void                                       LoadMaterials(nlohmann::json& json);
+    void                                       LoadSpriteVram(nlohmann::json& json);
+    VkGuid                                     LoadTileSetVram(nlohmann::json& json);
+    void                                       LoadGameObjectBehaviors(nlohmann::json& json);
+    void                                       LoadGameObjects(nlohmann::json& json);
+    void                                       LoadPrefabObject(nlohmann::json& json);
+
     void                                       LevelEditorRenderPass(const char* levelPath);
     void                                       Update(const float& deltaTime);
     int                                        FindLevelLayer(uint meshId);

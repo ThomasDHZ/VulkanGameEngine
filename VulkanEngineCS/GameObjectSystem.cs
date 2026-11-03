@@ -3,6 +3,7 @@ using GameScriptLibraryDLL.GameObjects;
 using GlmSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -99,6 +100,27 @@ namespace VulkanEngineCS
                 System.Diagnostics.Debug.WriteLine($"Warning: Component {componentType} not found for GO {gameObjectId}");
             }
             return ptr;
+        }
+
+        public static object GetComponentForExport(uint gameObjectId, ComponentTypeEnum componentType)
+        {
+            IntPtr ptr = GetGameObjectComponentPtr(gameObjectId, componentType);
+            if (ptr == IntPtr.Zero) return null;
+
+            Type managedType = ComponentRegistry.GetTypeFor(componentType);
+            if (managedType == null)
+            {
+                Debug.WriteLine($"No managed type registered for {componentType}");
+                return null;
+            }
+
+            object data = Marshal.PtrToStructure(ptr, managedType);
+            if (data == null) return null;
+            return new
+            {
+                ComponentId = componentType,
+                ComponentProperties = data
+            };
         }
 
         public static unsafe List<GameObjecLevelEditor> GetGameObjectList()
