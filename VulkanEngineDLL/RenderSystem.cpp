@@ -80,6 +80,8 @@ RenderPassGuid RenderSystem::LoadRenderPass(RenderPassLoader& renderPassLoader, 
         VulkanPipelineLoader pipelineLoader = fileSystem.LoadJsonFile<VulkanPipelineLoader>(pipelineLoaderJsonPath);
         LoadPipeline(renderPassLoader, pipelineLoader, memoryPoolLoader);
     }
+
+    if(renderPassLoader.OneTimeDraw) textureSystem.GenerateTexture(renderPassLoader.RenderPassId);
     return renderPassLoader.RenderPassId;
 }
 

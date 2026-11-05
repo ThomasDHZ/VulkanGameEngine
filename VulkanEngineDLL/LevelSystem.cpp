@@ -32,7 +32,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     VkGuid tileSetId = LoadTileSetVram(json["TileSetVRAM"]);
     meshSystem.CreateSpriteMesh();
 
-    LoadSkyBox();
+    LoadSkyBoxMesh();
     LoadLevelLayout(json["LoadLevelLayout"].get<String>().c_str());
     LoadLevelMesh(tileSetId);
 
@@ -40,12 +40,7 @@ void LevelSystem::LoadLevel(const char* levelPath)
     iblRenderSystem.StartUp("TextureLoader/HDRITexture.json");
     for (auto& renderPass : json["MainRenderPassList"])
     {
-        if(!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));
-        else
-        {
-            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool);
-            textureSystem.GenerateTexture(renderPassId);
-        }
+        RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass, memoryPool));
     }
   //  LevelEditorRenderPass(levelPath);
     SceneDataBuffer& sceneDataBuffer = memoryPoolSystem.UpdateSceneDataBuffer();
@@ -58,10 +53,8 @@ void LevelSystem::LoadLevel(const char* levelPath)
 
 void LevelSystem::LoadSkyBox(nlohmann::json& json)
 {
-    for (auto& texture : json)
-    {
-        textureSystem.LoadTexture(texture);
-    }
+    auto a = json.dump();
+    textureSystem.LoadTexture(json);
 }
 
 void LevelSystem::LoadMaterials(nlohmann::json& json)
@@ -342,7 +335,7 @@ void LevelSystem::LoadLevelMesh(VkGuid& tileSetId)
     }
 }
 
-void LevelSystem::LoadSkyBox()
+void LevelSystem::LoadSkyBoxMesh()
 {
     Vector<SkyboxVertexLayout> skyBoxVertices =
     {

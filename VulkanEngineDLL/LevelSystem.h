@@ -93,12 +93,12 @@ private:
 
     LevelLayer                                 LoadLevelInfo(VkGuid& levelId, const LevelTileSet& tileSet, uint* tileIdMap, size_t tileIdMapCount, ivec2& levelBounds, int levelLayerIndex);
     VkGuid                                     LoadTileSetVRAM(const char* tileSetPath);
-    void                                       LoadLevelLayout(const char* levelLayoutPath);
     LevelTileSet                               LoadTileSetVRAM(const char* tileSetPath, const Material& material, const Texture& tileVramTexture);
+    void                                       LoadLevelLayout(const char* levelLayoutPath);
     void                                       LoadTileSets(const char* tileSetPath, LevelTileSet& levelTileSet);
     LevelLayout                                LoadLevelInfo(const char* levelLayoutPath);
     void                                       LoadLevelMesh(VkGuid& tileSetId);
-    void                                       LoadSkyBox();
+    void                                       LoadSkyBoxMesh();
 
 public:
     VkGuid                                     PresentingAttachmentTextureId;

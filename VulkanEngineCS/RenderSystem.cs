@@ -17,6 +17,7 @@ namespace VulkanEngineCS
         public Guid HdrRenderPassId { get; } = new Guid();
         public static Guid LoadRenderPass(string jsonPath)
         {
+
             return DLLSystem.CallDLLFunc(() => RenderSystem_LoadRenderPass(jsonPath));
         }
 

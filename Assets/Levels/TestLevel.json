@@ -1,8 +1,6 @@
 {
   "LevelID": "a4ff0086-0069-4265-9a81-b38fb9e6b5be",
-  "SkyBox": [
-    "TextureLoader/HDRITexture.json"
-  ],
+  "SkyBox": "TextureLoader/HDRITexture.json",
   "Materials": [
     "Materials/AnimeGirlMaterial.json",
     "Materials/MegaManShotMaterial.json",
@@ -24,36 +22,15 @@
   "PresentingAttachmentTextureId": "de6ca646-874f-4986-9daf-912dbc3aa7d0",
   "LoadLevelLayout": "LevelMapLevelLayout/TestMapLevelLayout.json",
   "MainRenderPassList": [
-    {
-      "RenderPass": "RenderPass/DirectionalShadowRenderPass.json",
-      "OneTimeDraw": false
-    },
-    {
-      "RenderPass": "RenderPass/PointLightShadowRenderPass.json",
-      "OneTimeDraw": false
-    },
-    {
-      "RenderPass": "RenderPass/DepthDebugRenderPass.json",
-      "OneTimeDraw": false
-    },
-    {
-      "RenderPass": "RenderPass/GBufferRenderPass.json",
-      "OneTimeDraw": false
-    },
-    {
-      "RenderPass": "RenderPass/HdrRenderPass.json",
-      "OneTimeDraw": false
-    }
+      "RenderPass/DirectionalShadowRenderPass.json",
+      "RenderPass/PointLightShadowRenderPass.json",
+      "RenderPass/DepthDebugRenderPass.json",
+      "RenderPass/GBufferRenderPass.json",
+      "RenderPass/HdrRenderPass.json"
   ],
   "LevelEditorRenderPass": [
-    {
-      "RenderPass": "RenderPass/ObjectPickerRenderPass.json",
-      "OneTimeDraw": false
-    },
-    {
-      "RenderPass": "RenderPass/SelectedGameObjectPickerRenderPass.json",
-      "OneTimeDraw": false
-    }
+      "RenderPass/ObjectPickerRenderPass.json",
+      "RenderPass/SelectedGameObjectPickerRenderPass.json"
   ],
   "GameObjectList": [
     {

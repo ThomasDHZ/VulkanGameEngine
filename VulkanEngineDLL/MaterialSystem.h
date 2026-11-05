@@ -39,7 +39,7 @@ struct Material
     vec4  ClearcoatTint;
     float IOR;
     float AlphaCutOff;
-
+     
     Material() = default;
     Material(const Material&) = default;
     Material& operator=(const Material&) = default;

@@ -375,6 +375,7 @@ namespace nlohmann
         j["RenderFlags"].at("UseVkMultiview").get_to(model.UseVkMultiview);
         j["RenderFlags"].at("RenderAsCubemap").get_to(model.RenderAsCubemap);
         j["RenderFlags"].at("UseFrameBufferResolution").get_to(model.UseFrameBufferResolution);
+        j["RenderFlags"].at("OneTimeDraw").get_to(model.OneTimeDraw);
         model.RenderPassResolution = model.UseDefaultRenderResolution ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         j.at("AttachmentList").get_to(model.AttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);
@@ -458,7 +459,6 @@ namespace nlohmann
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("MipMapCount").get_to(model.MipMapCount);
-        j.at("IsSkyBox").get_to(model.IsSkyBox);
         j.at("SamplerCreateInfo").get_to(model.SamplerCreateInfo);
     }
 

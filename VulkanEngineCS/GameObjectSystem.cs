@@ -13,7 +13,7 @@ using VulkanEngineCoreCS.Vulkan;
 
 namespace VulkanEngineCS
 {
-    enum GameObjectMemberType
+    public enum GameObjectMemberType
     {
         GameObjectVarUnknown,
         GameObjectVarInt,

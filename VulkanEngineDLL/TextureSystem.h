@@ -18,8 +18,7 @@ struct TextureLoader
     TextureUsageTypeEnum TextureUsageType;
     VkSamplerCreateInfo SamplerCreateInfo;
     uint32 MipMapCount;
-    bool UsingSRGBFormat;
-    bool IsSkyBox;
+   // bool IsSkyBox;
 };
 
 struct Texture

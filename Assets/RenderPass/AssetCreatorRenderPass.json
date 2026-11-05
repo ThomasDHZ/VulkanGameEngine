@@ -10,7 +10,8 @@
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false,
-    "UseFrameBufferResolution": false
+    "UseFrameBufferResolution": false,
+    "OneTimeDraw": false
   },
   "ShaderList": [
     {

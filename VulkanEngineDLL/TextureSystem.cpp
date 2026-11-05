@@ -85,10 +85,12 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 	{
 		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
 		Vector<Candidate> candidates;
-		if (textureLoader.UsingSRGBFormat)
+		if (textureLoader.TextureByteFormat == VK_FORMAT_BC7_SRGB_BLOCK ||
+			textureLoader.TextureByteFormat == VK_FORMAT_ASTC_4x4_SRGB_BLOCK ||
+			textureLoader.TextureByteFormat == VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK)
 		{
-			candidates.push_back({ VK_FORMAT_BC7_SRGB_BLOCK,    KTX_TTF_BC7_RGBA });
-			candidates.push_back({ VK_FORMAT_ASTC_4x4_SRGB_BLOCK, KTX_TTF_ASTC_4x4_RGBA });
+			candidates.push_back({ VK_FORMAT_BC7_SRGB_BLOCK,		   KTX_TTF_BC7_RGBA });
+			candidates.push_back({ VK_FORMAT_ASTC_4x4_SRGB_BLOCK,	   KTX_TTF_ASTC_4x4_RGBA });
 			candidates.push_back({ VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK, KTX_TTF_ETC2_RGBA });
 		}
 		else
