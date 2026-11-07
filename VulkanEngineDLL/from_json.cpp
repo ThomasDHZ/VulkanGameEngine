@@ -30,59 +30,60 @@ namespace nlohmann
         info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         info.pNext = nullptr;
         info.flags = 0;
-        j.at("ImageType").get_to(info.imageType);
-        j.at("Format").get_to(info.format);
-        j.at("MipLevels").get_to(info.mipLevels);
-        j.at("ArrayLayers").get_to(info.arrayLayers);
-        j.at("Samples").get_to(info.samples);
-        j.at("Tiling").get_to(info.tiling);
-        j.at("Usage").get_to(info.usage);
-        j.at("SharingMode").get_to(info.sharingMode);
-        j.at("InitialLayout").get_to(info.initialLayout);
+        j.at("imageType").get_to(info.imageType);
+        j.at("format").get_to(info.format);
+        j.at("mipLevels").get_to(info.mipLevels);
+        j.at("arrayLayers").get_to(info.arrayLayers);
+        j.at("samples").get_to(info.samples);
+        j.at("tiling").get_to(info.tiling);
+        j.at("usage").get_to(info.usage);
+        j.at("sharingMode").get_to(info.sharingMode);
+        j.at("initialLayout").get_to(info.initialLayout);
     }
 
     void from_json(const json& j, VkSamplerCreateInfo& info)
     {
+        auto a = j.dump();
         info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         info.pNext = nullptr;
         info.flags = 0;
-        j.at("MagFilter").get_to(info.magFilter);
-        j.at("MinFilter").get_to(info.minFilter);
-        j.at("MipmapMode").get_to(info.mipmapMode);
-        j.at("AddressModeU").get_to(info.addressModeU);
-        j.at("AddressModeV").get_to(info.addressModeV);
-        j.at("AddressModeW").get_to(info.addressModeW);
-        j.at("MipLodBias").get_to(info.mipLodBias);
-        j.at("AnisotropyEnable").get_to(info.anisotropyEnable);
-        j.at("MaxAnisotropy").get_to(info.maxAnisotropy);
-        j.at("CompareEnable").get_to(info.compareEnable);
-        j.at("CompareOp").get_to(info.compareOp);
-        j.at("MinLod").get_to(info.minLod);
-        j.at("MaxLod").get_to(info.maxLod);
-        j.at("BorderColor").get_to(info.borderColor);
-        j.at("UnnormalizedCoordinates").get_to(info.unnormalizedCoordinates);
+        j.at("magFilter").get_to(info.magFilter);
+        j.at("minFilter").get_to(info.minFilter);
+        j.at("mipmapMode").get_to(info.mipmapMode);
+        j.at("addressModeU").get_to(info.addressModeU);
+        j.at("addressModeV").get_to(info.addressModeV);
+        j.at("addressModeW").get_to(info.addressModeW);
+        j.at("mipLodBias").get_to(info.mipLodBias);
+        j.at("anisotropyEnable").get_to(info.anisotropyEnable);
+        j.at("maxAnisotropy").get_to(info.maxAnisotropy);
+        j.at("compareEnable").get_to(info.compareEnable);
+        j.at("compareOp").get_to(info.compareOp);
+        j.at("minLod").get_to(info.minLod);
+        j.at("maxLod").get_to(info.maxLod);
+        j.at("borderColor").get_to(info.borderColor);
+        j.at("unnormalizedCoordinates").get_to(info.unnormalizedCoordinates);
     }
 
     void from_json(const json& j, VkAttachmentDescription& desc) {
-        j.at("Flags").get_to(desc.flags);
-        j.at("Format").get_to(desc.format);
-        j.at("Samples").get_to(desc.samples);
-        j.at("LoadOp").get_to(desc.loadOp);
-        j.at("StoreOp").get_to(desc.storeOp);
-        j.at("StencilLoadOp").get_to(desc.stencilLoadOp);
-        j.at("StencilStoreOp").get_to(desc.stencilStoreOp);
-        j.at("InitialLayout").get_to(desc.initialLayout);
-        j.at("FinalLayout").get_to(desc.finalLayout);
+        j.at("flags").get_to(desc.flags);
+        j.at("format").get_to(desc.format);
+        j.at("samples").get_to(desc.samples);
+        j.at("loadOp").get_to(desc.loadOp);
+        j.at("storeOp").get_to(desc.storeOp);
+        j.at("stencilLoadOp").get_to(desc.stencilLoadOp);
+        j.at("stencilStoreOp").get_to(desc.stencilStoreOp);
+        j.at("initialLayout").get_to(desc.initialLayout);
+        j.at("finalLayout").get_to(desc.finalLayout);
     }
 
     void from_json(const json& j, VkSubpassDependency& dep) {
-        j.at("SrcSubpass").get_to(dep.srcSubpass);
-        j.at("DstSubpass").get_to(dep.dstSubpass);
-        j.at("SrcStageMask").get_to(dep.srcStageMask);
-        j.at("DstStageMask").get_to(dep.dstStageMask);
-        j.at("SrcAccessMask").get_to(dep.srcAccessMask);
-        j.at("DstAccessMask").get_to(dep.dstAccessMask);
-        j.at("DependencyFlags").get_to(dep.dependencyFlags);
+        j.at("srcSubpass").get_to(dep.srcSubpass);
+        j.at("dstSubpass").get_to(dep.dstSubpass);
+        j.at("srcStageMask").get_to(dep.srcStageMask);
+        j.at("dstStageMask").get_to(dep.dstStageMask);
+        j.at("srcAccessMask").get_to(dep.srcAccessMask);
+        j.at("dstAccessMask").get_to(dep.dstAccessMask);
+        j.at("dependencyFlags").get_to(dep.dependencyFlags);
     }
 
     void from_json(const json& j, VkClearValue& clearValue)
@@ -195,14 +196,14 @@ namespace nlohmann
 
     void from_json(const nlohmann::json& j, VkPipelineColorBlendAttachmentState& model)
     {
-        j.at("BlendEnable").get_to(model.blendEnable);
-        j.at("SrcColorBlendFactor").get_to(model.srcColorBlendFactor);
-        j.at("DstColorBlendFactor").get_to(model.dstColorBlendFactor);
-        j.at("ColorBlendOp").get_to(model.colorBlendOp);
-        j.at("SrcAlphaBlendFactor").get_to(model.srcAlphaBlendFactor);
-        j.at("DstAlphaBlendFactor").get_to(model.dstAlphaBlendFactor);
-        j.at("AlphaBlendOp").get_to(model.alphaBlendOp);
-        j.at("ColorWriteMask").get_to(model.colorWriteMask);
+        j.at("blendEnable").get_to(model.blendEnable);
+        j.at("srcColorBlendFactor").get_to(model.srcColorBlendFactor);
+        j.at("dstColorBlendFactor").get_to(model.dstColorBlendFactor);
+        j.at("colorBlendOp").get_to(model.colorBlendOp);
+        j.at("srcAlphaBlendFactor").get_to(model.srcAlphaBlendFactor);
+        j.at("dstAlphaBlendFactor").get_to(model.dstAlphaBlendFactor);
+        j.at("alphaBlendOp").get_to(model.alphaBlendOp);
+        j.at("colorWriteMask").get_to(model.colorWriteMask);
     }
 
     void from_json(const nlohmann::json& j, VkPipelineColorBlendStateCreateInfo& model)

@@ -17,36 +17,36 @@ namespace VulkanEngineCS
     {
         public static Guid LevelId { get; set; } = new Guid();
         public static string Skybox = string.Empty;
-        public static List<MaterialLoader> MaterialLoaderList { get; set; } = new List<MaterialLoader>();
-        public static List<RenderPassLoader> MainRenderPassList { get; set; } = new List<RenderPassLoader>();
-        public static List<RenderPassLoader> LevelRenderPassList { get; set; } = new List<RenderPassLoader>();
-        public static List<SpriteVram> SpriteVramList { get; set; } = new List<SpriteVram>();
-        public static List<GameObjectBehaviors> GameObjectBehaviorList { get; set; } = new List<GameObjectBehaviors>();
+        public static List<JsonAssetWriter<MaterialLoader>> MaterialLoaderList { get; set; } = new List<JsonAssetWriter<MaterialLoader>>();
+        public static List<JsonAssetWriter<RenderPassLoader>> MainRenderPassList { get; set; } = new List<JsonAssetWriter<RenderPassLoader>>();
+        public static List<JsonAssetWriter<RenderPassLoader>> LevelEditorRenderPassList { get; set; } = new List<JsonAssetWriter<RenderPassLoader>>();
+        public static List<JsonAssetWriter<SpriteVram>> SpriteVramList { get; set; } = new List<JsonAssetWriter<SpriteVram>>();
+        public static List<JsonAssetWriter<GameObjectBehaviors>> GameObjectBehaviorList { get; set; } = new List<JsonAssetWriter<GameObjectBehaviors>>();
         public static LevelTileSet levelTileSet { get; set; } = new LevelTileSet();
 
         public static void LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath)
         {
             string jsonContent = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{levelPath}");
             LevelLoader level = JsonConvert.DeserializeObject<LevelLoader>(jsonContent);
-            foreach (var renderPass in level.MainRenderPassList)
+            foreach (var filePath in level.MainRenderPassList)
             {
-                LoadRenderPass(renderPass);
+                LoadRenderPass(filePath);
             }
-            foreach (var renderPass in level.LevelEditorRenderPass)
+            foreach (var filePath in level.LevelEditorRenderPass)
             {
-                LoadLevelEditorRenderPass(renderPass);
+                LoadLevelEditorRenderPass(filePath);
             }
-            foreach (var material in level.Materials)
+            foreach (var filePath in level.Materials)
             {
-                LoadMaterial(material);
+                LoadMaterial(filePath);
             }
-            foreach (var spriteVram in level.SpriteVram)
+            foreach (var filePath in level.SpriteVram)
             {
-                LoadSpriteVram(spriteVram);
+                LoadSpriteVram(filePath);
             }
-            foreach (var grameObjectBehavior in level.GameObjectBehaviors)
+            foreach (var filePath in level.GameObjectBehaviors)
             {
-                LoadGameObjectBehavior(grameObjectBehavior);
+                LoadGameObjectBehavior(filePath);
             }
             LoadTileSet(level.TileSetVram);
             DLLSystem.CallDLLFunc(() => LevelSystem_LoadLevel(levelPath));
@@ -98,46 +98,92 @@ namespace VulkanEngineCS
         private static void LoadMaterial(string filePath)
         {
             string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            MaterialLoaderList.Add(JsonConvert.DeserializeObject<MaterialLoader>(json));
+            MaterialLoaderList.Add(new JsonAssetWriter<MaterialLoader>
+            {
+                JsonWriteLocation = filePath,
+                JsonWriteObject = JsonConvert.DeserializeObject<MaterialLoader>(json)
+            }); 
         }
 
         private static void LoadTileSet(string filePath)
         {
-            string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            levelTileSet = JsonConvert.DeserializeObject<LevelTileSet>(json);
+            //string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
+            //levelTileSet.Add(new JsonAssetWriter<LevelTileSet>
+            //{
+            //    JsonWriteLocation = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}"),
+            //    JsonWriteObject = JsonConvert.DeserializeObject<LevelTileSet>(json)
+            //});
         }
 
         private static void LoadRenderPass(string filePath)
         {
             string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            MainRenderPassList.Add(JsonConvert.DeserializeObject<RenderPassLoader>(json));
+            MainRenderPassList.Add(new JsonAssetWriter<RenderPassLoader>
+            {
+                JsonWriteLocation = filePath,
+                JsonWriteObject = JsonConvert.DeserializeObject<RenderPassLoader>(json)
+            });
         }
 
         private static void LoadLevelEditorRenderPass(string filePath)
         {
             string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            LevelRenderPassList.Add(JsonConvert.DeserializeObject<RenderPassLoader>(json));
+            LevelEditorRenderPassList.Add(new JsonAssetWriter<RenderPassLoader>
+            {
+                JsonWriteLocation = filePath,
+                JsonWriteObject = JsonConvert.DeserializeObject<RenderPassLoader>(json)
+            });
         }
 
         private static void LoadSpriteVram(string filePath)
         {
             string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            SpriteVramList.Add(JsonConvert.DeserializeObject<SpriteVram>(json));
+            SpriteVramList.Add(new JsonAssetWriter<SpriteVram>
+            {
+                JsonWriteLocation = filePath,
+                JsonWriteObject = JsonConvert.DeserializeObject<SpriteVram>(json)
+            });
         }
 
         private static void LoadGameObjectBehavior(string filePath)
         {
             string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            GameObjectBehaviorList.Add(JsonConvert.DeserializeObject<GameObjectBehaviors>(json));
+            GameObjectBehaviorList.Add(new JsonAssetWriter<GameObjectBehaviors>
+            {
+                JsonWriteLocation = filePath,
+                JsonWriteObject = JsonConvert.DeserializeObject<GameObjectBehaviors>(json)
+            });
         }
 
-        public static void SaveLevelData(string filePath)
+        public static void SaveLevelData(string levelFilePath)
         {
-            foreach(var material in MaterialLoaderList)
+            foreach (var material in MaterialLoaderList)
             {
-                string a = JsonConvert.SerializeObject(material);
-                int ad = 34;
+                string json = JsonConvert.SerializeObject(material.JsonWriteObject, Formatting.Indented);
+                File.WriteAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{material.JsonWriteLocation}", json);
             }
+            foreach (var renderPass in MainRenderPassList)
+            {
+                string json = JsonConvert.SerializeObject(renderPass.JsonWriteObject, Formatting.Indented);
+                File.WriteAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{renderPass.JsonWriteLocation}", json);
+            }
+            foreach (var renderPass in LevelEditorRenderPassList)
+            {
+                string json = JsonConvert.SerializeObject(renderPass.JsonWriteObject, Formatting.Indented);
+                File.WriteAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{renderPass.JsonWriteLocation}", json);
+            }
+            foreach (var renderPass in SpriteVramList)
+            {
+                string json = JsonConvert.SerializeObject(renderPass.JsonWriteObject, Formatting.Indented);
+                File.WriteAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{renderPass.JsonWriteLocation}", json);
+            }
+            foreach (var renderPass in GameObjectBehaviorList)
+            {
+                string json = JsonConvert.SerializeObject(renderPass.JsonWriteObject, Formatting.Indented);
+                File.WriteAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{renderPass.JsonWriteLocation}", json);
+            }
+            int a = 234;
+            //string a = JsonConvert.SerializeObject(renderPass);
         }
 
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.Cdecl)] private static extern void LevelSystem_LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath);
