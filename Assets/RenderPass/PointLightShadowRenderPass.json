@@ -236,7 +236,7 @@
         "compareOp": 7,
         "minLod": 0.0,
         "maxLod": 1.0,
-        "borderColor": 1,
+        "borderColor": 2,
         "unnormalizedCoordinates": false
       }
     },

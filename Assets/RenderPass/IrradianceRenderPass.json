@@ -78,13 +78,13 @@
         "addressModeV": 2,
         "addressModeW": 2,
         "mipLodBias": 0.0,
-        "anisotropyEnable": false,
-        "maxAnisotropy": 1.0,
+        "anisotropyEnable": true,
+        "maxAnisotropy": 16.0,
         "compareEnable": false,
         "compareOp": 7,
         "minLod": 0.0,
         "maxLod": 1000.0,
-        "borderColor": 1,
+        "borderColor": 2,
         "unnormalizedCoordinates": false
       }
     }

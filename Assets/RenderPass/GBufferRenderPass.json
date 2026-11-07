@@ -545,7 +545,7 @@
         "compareOp": 7,
         "minLod": 0.0,
         "maxLod": 1000.0,
-        "borderColor": 1,
+        "borderColor": 0,
         "unnormalizedCoordinates": false
       }
     },
@@ -596,8 +596,8 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "sType": 31,
-        "magFilter": 1,
-        "minFilter": 1,
+        "magFilter": 0,
+        "minFilter": 0,
         "mipmapMode": 1,
         "addressModeU": 2,
         "addressModeV": 2,
@@ -660,8 +660,8 @@
       "UseMipMaps": false,
       "SamplerCreateInfo": {
         "sType": 31,
-        "magFilter": 1,
-        "minFilter": 1,
+        "magFilter": 0,
+        "minFilter": 0,
         "mipmapMode": 1,
         "addressModeU": 2,
         "addressModeV": 2,

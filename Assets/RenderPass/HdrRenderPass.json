@@ -84,8 +84,8 @@
         "compareEnable": false,
         "compareOp": 7,
         "minLod": 0.0,
-        "maxLod": 1000.0,
-        "borderColor": 1,
+        "maxLod": 1.0,
+        "borderColor": 2,
         "unnormalizedCoordinates": false
       }
     }
