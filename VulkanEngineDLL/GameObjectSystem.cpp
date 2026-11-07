@@ -105,9 +105,9 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     };
 
     GameObjectStruct gameObjectStruct;
-    if (json.contains("GameObjectVariableStruct"))
+    if (json.contains("GameObjectVariableList"))
     {
-        for (auto& gameObjectVar : json["GameObjectVariableStruct"])
+        for (auto& gameObjectVar : json["GameObjectVariableList"])
         {
             gameObjectStruct.GameObjectVariableMap[gameObjectVar["VariableName"]] = GameObjectVariable
             {
