@@ -1,5 +1,5 @@
 {
   "GameObjectType": 3,
   "GameObjectLightPath": "Lights/DirectionalLightScript.json",
-  "VramSpriteId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+  "SpriteVramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
 }

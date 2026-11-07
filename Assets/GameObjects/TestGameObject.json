@@ -2,7 +2,7 @@
   "GameObjectType": 1,
   "GameObjectDllType": "GameScriptLibraryDLL.GameObjects.PlayerScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": "GameScripts\\Player.lua",
-  "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
+  "SpriteVramId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
   "GameObjectVariableList": [
     {
       "VariableName": "PlayerSpeed",
