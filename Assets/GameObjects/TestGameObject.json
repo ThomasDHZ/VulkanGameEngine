@@ -1,6 +1,6 @@
 {
   "GameObjectType": 1,
-  "GameObjectDLLType": "GameScriptLibraryDLL.GameObjects.PlayerScript, GameScriptLibraryDLL",
+  "GameObjectDllType": "GameScriptLibraryDLL.GameObjects.PlayerScript, GameScriptLibraryDLL",
   "GameObjectLuaScript": "GameScripts\\Player.lua",
   "VramSpriteId": "5c43ab5c-8dd9-493e-96ce-24fd4c45671e",
   "GameObjectVariableStruct": [

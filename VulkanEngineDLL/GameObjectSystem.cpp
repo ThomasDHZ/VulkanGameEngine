@@ -127,9 +127,9 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     }
     GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
 
-    if (json.contains("GameObjectDLLType"))
+    if (json.contains("GameObjectDllType"))
     {
-        String dllType = json["GameObjectDLLType"].get<String>();
+        String dllType = json["GameObjectDllType"].get<String>();
         if (!GameObjectBehaviorExists(gameObject.GameObjectType)) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(configSystem.GameScriptLibraryDLL, dllType);
 
     }
