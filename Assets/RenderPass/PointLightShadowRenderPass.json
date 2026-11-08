@@ -104,7 +104,7 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Variable": "PointLightViewIndex",
+            "VariableName": "PointLightViewIndex",
             "PushConstantVariable": {
               "Value": [ 5 ],
               "VariableType": 2
@@ -136,7 +136,7 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Variable": "PointLightViewIndex",
+            "VariableName": "PointLightViewIndex",
             "PushConstantVariable": {
               "Value": [ 5 ],
               "VariableType": 2
@@ -170,7 +170,7 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Variable": "PointLightViewIndex",
+            "VariableName": "PointLightViewIndex",
             "PushConstantVariable": {
               "Value": [ 5 ],
               "VariableType": 2
@@ -202,7 +202,7 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Variable": "PointLightViewIndex",
+            "VariableName": "PointLightViewIndex",
             "PushConstantVariable": {
               "Value": [ 5 ],
               "VariableType": 2

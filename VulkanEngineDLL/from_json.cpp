@@ -320,7 +320,7 @@ namespace nlohmann
 
     void from_json(const json& j, PushConstantUpdateRule& model)
     {
-        j.at("Variable").get_to(model.Variable);
+        j.at("VariableName").get_to(model.Variable);
         auto type = j["PushConstantType"].get<PushConstantVarTypeEnum>();
 
         if (type == kPushConstantVarType_PushConstant)
