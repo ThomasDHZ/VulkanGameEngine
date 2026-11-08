@@ -21,7 +21,7 @@ namespace VulkanEngineCS.Models
         public List<VulkanPipelinePackageLoader> PipelinePackageList { get; set; } = new List<VulkanPipelinePackageLoader>();
         public List<List<VulkanSubPassLoader>> SubPassList { get; set; } = new List<List<VulkanSubPassLoader>>();
         public List<ShaderLoader> ShaderList { get; set; } = new List<ShaderLoader>();
-        public List<VkClearValue> ClearValueList { get; set; } = new List<VkClearValue>();
+        public List<VulkanClearColor> ClearValueList { get; set; } = new List<VulkanClearColor>();
         public VkSampleCountFlagBits SampleCount { get; set; } = VkSampleCountFlagBits.VK_SAMPLE_COUNT_1_BIT;
         public bool UseDefaultRenderResolution { get; set; } = true;
         public bool UseGlobalBindlessSet { get; set; } = false;
