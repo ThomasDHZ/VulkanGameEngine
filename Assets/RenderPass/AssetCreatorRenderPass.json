@@ -355,74 +355,194 @@
   "ClearValueList": [
     {
       "TextureAttachment": 0,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 1,
-      "Color": {
-        "Float32_0": 0.5,
-        "Float32_1": 0.5,
-        "Float32_2": 1.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 2,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.5,
-        "Float32_2": 1.0,
-        "Float32_3": 0.225
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 3,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 1.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 4,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 5,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 6,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     },
     {
       "TextureAttachment": 7,
-      "Color": {
-        "Float32_0": 0.0,
-        "Float32_1": 0.0,
-        "Float32_2": 0.0,
-        "Float32_3": 0.0
+      "ClearColorType": 0,
+      "ClearValue": {
+        "Color": {
+          "Float32_0": 0.0,
+          "Float32_1": 0.0,
+          "Float32_2": 0.0,
+          "Float32_3": 1.0,
+          "Int32_0": 0,
+          "Int32_1": 0,
+          "Int32_2": 0,
+          "Int32_3": 0,
+          "Uint32_0": 0,
+          "Uint32_1": 0,
+          "Uint32_2": 0,
+          "Uint32_3": 0
+        },
+        "DepthStencil": {
+          "depth": 1.0,
+          "stencil": 0
+        }
       }
     }
   ]
