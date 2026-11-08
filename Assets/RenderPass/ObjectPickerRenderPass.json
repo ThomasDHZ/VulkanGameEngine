@@ -2,14 +2,12 @@
   "Name": "GameObjectPickerRenderPass",
   "RenderPassId": "40183518-063f-449b-8a0a-4cef7938958c",
   "RenderPassResolution": [ 0, 0 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": true,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "7ae0296e-0ea3-4235-90d4-3327bfd50300",
@@ -58,7 +56,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "GameObjectPickerRenderPassAttachment",
+      "AttachmentName": "GameObjectPickerRenderPassAttachment",
       "RenderedTextureId": "7047804f-d32e-4cb5-ba95-90783b28d1df",
       "MipMapCount": 1,
       "TextureType": 4,

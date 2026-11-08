@@ -2,14 +2,12 @@
   "Name": "EnvironmentToCubeMapRenderPass",
   "RenderPassId": "05b2b809-c7f9-4000-bf96-1ca970d88a45",
   "RenderPassResolution": [ 256, 256 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": true,
     "RenderAsCubemap": true,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": true
-  },
+    "OneTimeDraw": true,
   "ShaderList": [
     {
       "ShaderId": "de32705a-3a06-4ab5-820b-7389a533216f",
@@ -58,13 +56,13 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "Environment To CubeMap RenderPass Attachment",
+      "AttachmentName": "Environment To CubeMap RenderPass Attachment",
       "RenderedTextureId": "08e2c754-78d3-4066-b4f0-b6883dcbfec7",
       "MipMapCount": 1,
       "TextureType": 5,
       "TextureUsageType": 7,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 109,
+      "TextureByteFormat": 109,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,

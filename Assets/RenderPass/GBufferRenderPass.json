@@ -2,14 +2,12 @@
   "Name": "GBufferRenderPass",
   "RenderPassId": "d5b5ad49-d004-4d5e-8260-4ba9e248f863",
   "RenderPassResolution": [ 0, 0 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": true,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "724e6ed5-9b2a-42dc-8f5f-fc1ddaff4982",
@@ -262,7 +260,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "GBuffer Attachment 0: Position",
+      "AttachmentName": "GBuffer Attachment 0: Position",
       "RenderedTextureId": "b2914ff9-9014-4cea-8ad3-d32b81f5d127",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -294,7 +292,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 1: Albedo",
+      "AttachmentName": "GBuffer Attachment 1: Albedo",
       "RenderedTextureId": "f1b90702-52d1-425f-83e1-85b6dbd41fe6",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -326,7 +324,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 2: NormalData",
+      "AttachmentName": "GBuffer Attachment 2: NormalData",
       "RenderedTextureId": "f7084167-9c9f-47bf-b1f6-e6723c20c352",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -358,7 +356,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 3: PackedMRO",
+      "AttachmentName": "GBuffer Attachment 3: PackedMRO",
       "RenderedTextureId": "238a1bae-32af-4076-98aa-a4440bb09dff",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -390,7 +388,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 4: FeatureA",
+      "AttachmentName": "GBuffer Attachment 4: FeatureA",
       "RenderedTextureId": "9d6aa488-0dd5-4678-a2bd-2e4f93125a52",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -422,7 +420,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 5: FeatureB",
+      "AttachmentName": "GBuffer Attachment 5: FeatureB",
       "RenderedTextureId": "30994c6d-772e-4622-b4dd-7f5e6fa475ad",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -454,7 +452,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 6: FeatureC",
+      "AttachmentName": "GBuffer Attachment 6: FeatureC",
       "RenderedTextureId": "6452db9d-7601-48c4-9f89-9cba28804789",
       "MipMapCount": 1,
       "TextureType": 4,
@@ -486,7 +484,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 7: Emission",
+      "AttachmentName": "GBuffer Attachment 7: Emission",
       "RenderedTextureId": "f4fa0605-e15a-4d65-8337-869f108deeb3",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -518,7 +516,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 8: Depth",
+      "AttachmentName": "GBuffer Attachment 8: Depth",
       "RenderedTextureId": "d80e3a20-88fb-4a21-87bb-e38d2a214567",
       "MipMapCount": 1,
       "TextureType": 2,
@@ -550,7 +548,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 9: OutColor",
+      "AttachmentName": "GBuffer Attachment 9: OutColor",
       "RenderedTextureId": "c836201c-8413-4185-a37c-3a43d8c9bb67",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -582,7 +580,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 10: OutBloom",
+      "AttachmentName": "GBuffer Attachment 10: OutBloom",
       "RenderedTextureId": "f4e743d7-2dbc-4c34-ad54-0ee462e5dad2",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -614,7 +612,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 11: OutColor",
+      "AttachmentName": "GBuffer Attachment 11: OutColor",
       "RenderedTextureId": "49790b9c-8cc0-40c3-8909-0fa14adf669a",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -646,7 +644,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 12: OutBloom",
+      "AttachmentName": "GBuffer Attachment 12: OutBloom",
       "RenderedTextureId": "f359bfa9-6dfc-4fa2-b837-40c0de82fc16",
       "MipMapCount": 1,
       "TextureType": 1,

@@ -2,14 +2,12 @@
   "Name": "IrradianceRenderPass",
   "RenderPassId": "62504413-f55d-4a4f-9afe-71c915bf8e8b",
   "RenderPassResolution": [ 32, 32 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": true,
     "RenderAsCubemap": true,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "10df2925-5a94-421d-b30f-d329449be7fe",
@@ -57,13 +55,13 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "Irradiance Attachment",
+      "AttachmentName": "Irradiance Attachment",
       "RenderedTextureId": "ffc7c231-b3b8-4f47-98ad-147d45ca6dc0",
       "MipMapCount": 1,
       "TextureType": 5,
       "TextureUsageType": 5,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 109,
+      "TextureByteFormat": 109,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,

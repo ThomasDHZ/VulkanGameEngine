@@ -2,14 +2,12 @@
   "Name": "PointLightShadowRenderPass",
   "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
   "RenderPassResolution": [ 8192, 8192 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "600ce35a-de2c-4b94-ac29-95527cc3c0dd",
@@ -209,7 +207,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "GBuffer Attachment 0: Depth",
+      "AttachmentName": "GBuffer Attachment 0: Depth",
       "RenderedTextureId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -241,7 +239,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 1: Albedo",
+      "AttachmentName": "GBuffer Attachment 1: Albedo",
       "RenderedTextureId": "adafef66-6121-45b8-b1fe-745be31ede78",
       "MipMapCount": 1,
       "TextureType": 1,

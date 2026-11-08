@@ -2,13 +2,11 @@
   "Name": "TextRenderPass",
   "RenderPassId": "0132bbf5-621c-40f7-88de-2d2182e8a229",
   "RenderPassResolution": [ 0, 0 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": true,
-    "UseFrameBufferResolution": false
-  },
+    "UseFrameBufferResolution": false,
   "ShaderList": [
     {
       "ShaderId": "c3217f02-0e40-4702-b5f8-ae71ac5b5135",
@@ -56,13 +54,13 @@
   "SampleCount": 8,
   "AttachmentList": [
     {
-      "Name": "Text Attachment",
+      "AttachmentName": "Text Attachment",
       "RenderedTextureId": "c0235021-cd25-4c15-80d4-9541992b29e2",
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 2,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 44,
+      "TextureByteFormat": 44,
       "LoadOp": 1,
       "StoreOp": 1,
       "FinalLayout": 5,

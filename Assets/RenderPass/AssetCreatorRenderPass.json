@@ -5,14 +5,12 @@
     "Pipelines/AssetCreatorPipeline.json"
   ],
   "RenderPassResolution": [ 3248, 1376 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "253fb8e9-6e1c-47ed-b13b-2291c05e8e1e",
@@ -64,7 +62,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "Albedo",
+      "AttachmentName": "Albedo",
       "RenderedTextureId": "a1b9565e-2a3e-4605-91ae-c650b9a97c90",
       "MipMapCount": 1,
       "TextureType": 1,

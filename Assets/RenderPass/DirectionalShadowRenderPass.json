@@ -2,14 +2,12 @@
   "Name": "DirectionalShadowRenderPass",
   "RenderPassId": "fd70c8fe-b846-41f6-9df7-5283b5ffc7d4",
   "RenderPassResolution": [ 4096, 4096 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "5a9cf844-ab4d-4f35-8c22-4b974c3d5b89",
@@ -161,7 +159,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "GBuffer Attachment 0: Depth",
+      "AttachmentName": "GBuffer Attachment 0: Depth",
       "RenderedTextureId": "856a750c-cd05-44e6-a4f8-b7809e7b6bd2",
       "MipMapCount": 1,
       "TextureType": 1,
@@ -193,7 +191,7 @@
       }
     },
     {
-      "Name": "GBuffer Attachment 1: Albedo",
+      "AttachmentName": "GBuffer Attachment 1: Albedo",
       "RenderedTextureId": "9bd298a4-9136-4bbb-b8dd-95e14e9d52d9",
       "MipMapCount": 1,
       "TextureType": 1,

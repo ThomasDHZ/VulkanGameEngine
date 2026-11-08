@@ -2,14 +2,12 @@
   "Name": "BRDFRenderPass",
   "RenderPassId": "1c8acdab-f34f-41a1-977b-597ee9bd17ed",
   "RenderPassResolution": [ 256, 256 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": false,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": true
-  },
+    "OneTimeDraw": true,
   "ShaderList": [
     {
       "ShaderId": "d1fc81ce-b70b-487e-913c-54ab94e2c11b",
@@ -58,13 +56,13 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "BRDFAttachment",
+      "AttachmentName": "BRDFAttachment",
       "RenderedTextureId": "6958e3e9-4d24-408c-893a-bf53fbd53806",
       "MipMapCount": 1,
       "TextureType": 4,
       "TextureUsageType": 8,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 97,
+      "TextureByteFormat": 97,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,

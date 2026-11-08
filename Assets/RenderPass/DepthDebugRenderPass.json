@@ -2,14 +2,12 @@
   "Name": "HdrRenderPass",
   "RenderPassId": "77f8cbdc-5c59-4448-a378-9ac36e720b5b",
   "RenderPassResolution": [ 0, 0 ],
-  "RenderFlags": {
     "UseGlobalBindlessSet": true,
     "UseVkMultiview": false,
     "RenderAsCubemap": false,
     "UseDefaultRenderResolution": true,
     "UseFrameBufferResolution": false,
-    "OneTimeDraw": false
-  },
+    "OneTimeDraw": false,
   "ShaderList": [
     {
       "ShaderId": "7d74d6d8-11bc-47f2-86c0-4247368b380e",
@@ -58,7 +56,7 @@
   "SampleCount": 1,
   "AttachmentList": [
     {
-      "Name": "HDR Attachment",
+      "AttachmentName": "HDR Attachment",
       "RenderedTextureId": "a00aa7d4-3606-4bff-87d1-0395817d0993",
       "MipMapCount": 1,
       "TextureType": 1,
