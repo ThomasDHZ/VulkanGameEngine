@@ -115,7 +115,7 @@
         "InputTextureList": [],
         "OutputTextureList": [],
         "CustomDrawCommand": "drawPointLightDepthViews",
-        "CustomDrawContext": {
+        "CustomDrawCommandContext": {
           "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
           "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
           "TileSize": 1024
@@ -141,7 +141,7 @@
         "InputTextureList": [],
         "OutputTextureList": [],
         "CustomDrawCommand": "drawPointLightDepthViews",
-        "CustomDrawContext": {
+        "CustomDrawCommandContext": {
           "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
           "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
           "TileSize": 1024
@@ -169,7 +169,7 @@
         "InputTextureList": [],
         "OutputTextureList": [],
         "CustomDrawCommand": "drawPointLightDepthViews",
-        "CustomDrawContext": {
+        "CustomDrawCommandContext": {
           "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
           "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
           "TileSize": 1024
@@ -195,7 +195,7 @@
         "InputTextureList": [],
         "OutputTextureList": [],
         "CustomDrawCommand": "drawPointLightDepthViews",
-        "CustomDrawContext": {
+        "CustomDrawCommandContext": {
           "RenderPassId": "349025f5-392b-4fe4-808f-ec4fe99906e4",
           "TextureAttachmentId": "167bb2c7-50b5-4efa-afa6-333f2461c0cf",
           "TileSize": 1024
