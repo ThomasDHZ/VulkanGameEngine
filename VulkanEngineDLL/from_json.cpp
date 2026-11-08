@@ -332,8 +332,8 @@ namespace nlohmann
         else if (type == kPushConstantVarType_TextureRefrence)
         {
             model.PushConstant = PushConstantRef{
-                .AssetId = VkGuid(j["AssetId"].get<String>().c_str()),
-                .TextureVar = j["TextureVar"].get<TextureVarTypeEnum>()
+                .AssetId = VkGuid(j["PushConstantRef"]["AssetId"].get<String>().c_str()),
+                .TextureVar = j["PushConstantRef"]["TextureVar"].get<TextureVarTypeEnum>()
             };
         }
     }
