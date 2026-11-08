@@ -20,7 +20,7 @@ namespace VulkanEngineCS
         public static List<JsonAssetWriter<MaterialLoader>> MaterialLoaderList { get; set; } = new List<JsonAssetWriter<MaterialLoader>>();
         public static List<JsonAssetWriter<RenderPassLoader>> MainRenderPassList { get; set; } = new List<JsonAssetWriter<RenderPassLoader>>();
         public static List<JsonAssetWriter<RenderPassLoader>> LevelEditorRenderPassList { get; set; } = new List<JsonAssetWriter<RenderPassLoader>>();
-        public static List<JsonAssetWriter<SpriteVram>> SpriteVramList { get; set; } = new List<JsonAssetWriter<SpriteVram>>();
+        public static List<JsonAssetWriter<SpriteVramLoader>> SpriteVramList { get; set; } = new List<JsonAssetWriter<SpriteVramLoader>>();
         public static List<JsonAssetWriter<GameObjectBehaviors>> GameObjectBehaviorList { get; set; } = new List<JsonAssetWriter<GameObjectBehaviors>>();
         public static LevelTileSet levelTileSet { get; set; } = new LevelTileSet();
 
@@ -138,10 +138,10 @@ namespace VulkanEngineCS
         private static void LoadSpriteVram(string filePath)
         {
             string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
-            SpriteVramList.Add(new JsonAssetWriter<SpriteVram>
+            SpriteVramList.Add(new JsonAssetWriter<SpriteVramLoader>
             {
                 JsonWriteLocation = filePath,
-                JsonWriteObject = JsonConvert.DeserializeObject<SpriteVram>(json)
+                JsonWriteObject = JsonConvert.DeserializeObject<SpriteVramLoader>(json)
             });
         }
 

@@ -1,4 +1,7 @@
 {
   "GameObjectType": 4,
-  "SpriteVramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380"
+  "GameObjectDllType": null,
+  "GameObjectLuaScript": null,
+  "SpriteVramId": "3d2d93f5-1d59-4b0b-81fa-cf149d99e380",
+  "GameObjectVariableList": null
 }

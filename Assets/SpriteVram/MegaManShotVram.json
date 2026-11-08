@@ -1,8 +1,23 @@
 {
+  "AnimationList": [
+    {
+      "AnimationId": 0,
+      "FrameList": [
+        [
+          0,
+          0
+        ]
+      ],
+      "FrameHoldTime": 0.0
+    }
+  ],
   "VramSpriteId": "623e5b6b-b1f8-4e69-8dca-237069a373e2",
-  "MaterialId": "8B29C645-4E30-4DD7-AC1B-0735D4F86DFE",
+  "MaterialId": "8b29c645-4e30-4dd7-ac1b-0735d4f86dfe",
   "SpriteLayer": 0,
-  "SpriteScale": [ 5.0, 5.0 ],
+  "SpriteScale": [
+    5.0,
+    5.0
+  ],
   "SpriteDrawFlags": 68,
   "SpritePixelSize": [
     8,
@@ -13,12 +28,5 @@
     0.0,
     0.0,
     1.0
-  ],
-  "AnimationList": [
-    {
-      "AnimationId": 0,
-      "FrameHoldTime": 0.0,
-      "FrameList": [ [ 0, 0 ] ]
-    }
   ]
 }
