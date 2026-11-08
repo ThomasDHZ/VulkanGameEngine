@@ -64,7 +64,7 @@
       "TextureType": 1,
       "TextureUsageType": 1,
       "RenderAttachmentTypes": [ 0 ],
-      "Format": 44,
+      "TextureByteFormat": 44,
       "LoadOp": 1,
       "StoreOp": 0,
       "FinalLayout": 5,
