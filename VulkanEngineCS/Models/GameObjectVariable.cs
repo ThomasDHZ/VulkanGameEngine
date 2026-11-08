@@ -10,6 +10,7 @@ namespace VulkanEngineCS.Models
     {
         public string VariableName { get; set; } = string.Empty;
         public object Value { get; set; }
+        public bool ConstVariable { get; set; } = false;
         public uint VariableByteSize { get; set; } = uint.MaxValue;
         public GameObjectMemberType MemberTypeEnum { get; set; } = GameObjectMemberType.GameObjectVarUnknown;
         public GameObjectVariable()

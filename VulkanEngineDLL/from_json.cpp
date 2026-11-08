@@ -54,9 +54,9 @@ namespace nlohmann
         j.at("addressModeV").get_to(info.addressModeV);
         j.at("addressModeW").get_to(info.addressModeW);
         j.at("mipLodBias").get_to(info.mipLodBias);
-        j.at("anisotropyEnable").get_to(info.anisotropyEnable);
+        info.anisotropyEnable = j.at("anisotropyEnable").get<VkBool32>();
         j.at("maxAnisotropy").get_to(info.maxAnisotropy);
-        j.at("compareEnable").get_to(info.compareEnable);
+        info.compareEnable = j.at("compareEnable").get<VkBool32>();
         j.at("compareOp").get_to(info.compareOp);
         j.at("minLod").get_to(info.minLod);
         j.at("maxLod").get_to(info.maxLod);
@@ -137,12 +137,12 @@ namespace nlohmann
     }
 
     void from_json(const json& j, RenderPassAttachmentLoader& model) {
-        j.at("Name").get_to(model.Name);
+        j.at("AttachmentName").get_to(model.AttachmentName);
         j.at("RenderedTextureId").get_to(model.RenderedTextureId);
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
-        j.at("Format").get_to(model.TextureByteFormat);
+        j.at("TextureByteFormat").get_to(model.TextureByteFormat);
         j.at("LoadOp").get_to(model.LoadOp);
         j.at("StoreOp").get_to(model.StoreOp);
         j.at("FinalLayout").get_to(model.FinalLayout);
@@ -354,7 +354,7 @@ namespace nlohmann
         if (j["UseCustomDrawCommand"].get<bool>())
         {
             j.at("CustomDrawCommand").get_to(model.CustomDrawCommand);
-            model.CustomDrawCommandContext = j["CustomDrawContext"].get<CustomDrawInitContext>();
+            model.CustomDrawCommandContext = j["CustomDrawCommandContext"].get<CustomDrawInitContext>();
         }
         if (j.contains("PushConstantUpdates") &&
             j["PushConstantUpdates"].is_array())
@@ -371,12 +371,12 @@ namespace nlohmann
         auto a = j.dump();
         j.at("Name").get_to(model.Name);
         j.at("RenderPassId").get_to(model.RenderPassId);
-        j["RenderFlags"].at("UseDefaultRenderResolution").get_to(model.UseDefaultRenderResolution);
-        j["RenderFlags"].at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);
-        j["RenderFlags"].at("UseVkMultiview").get_to(model.UseVkMultiview);
-        j["RenderFlags"].at("RenderAsCubemap").get_to(model.RenderAsCubemap);
-        j["RenderFlags"].at("UseFrameBufferResolution").get_to(model.UseFrameBufferResolution);
-        j["RenderFlags"].at("OneTimeDraw").get_to(model.OneTimeDraw);
+        j.at("UseDefaultRenderResolution").get_to(model.UseDefaultRenderResolution);
+        j.at("UseGlobalBindlessSet").get_to(model.UseGlobalBindlessSet);
+        j.at("UseVkMultiview").get_to(model.UseVkMultiview);
+        j.at("RenderAsCubemap").get_to(model.RenderAsCubemap);
+        j.at("UseFrameBufferResolution").get_to(model.UseFrameBufferResolution);
+        j.at("OneTimeDraw").get_to(model.OneTimeDraw);
         model.RenderPassResolution = model.UseDefaultRenderResolution ? vulkan.RenderPassResolution() : ivec2(j.at("RenderPassResolution")[0], j.at("RenderPassResolution")[1]);
         j.at("AttachmentList").get_to(model.AttachmentList);
         j.at("SubpassDependencyList").get_to(model.SubpassDependencyList);

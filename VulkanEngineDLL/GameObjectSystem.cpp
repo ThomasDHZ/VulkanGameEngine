@@ -105,7 +105,7 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     };
 
     GameObjectStruct gameObjectStruct;
-    if (json.contains("GameObjectVariableList"))
+    if (!json["GameObjectVariableList"].is_null())
     {
         for (auto& gameObjectVar : json["GameObjectVariableList"])
         {
@@ -127,13 +127,13 @@ void GameObjectSystem::LoadGameObjectTemplete(const String& gameObjectJson)
     }
     GameObjectVarTemplateMap[gameObject.GameObjectType] = gameObjectStruct;
 
-    if (json.contains("GameObjectDllType"))
+    if (!json["GameObjectDllType"].is_null())
     {
         String dllType = json["GameObjectDllType"].get<String>();
         if (!GameObjectBehaviorExists(gameObject.GameObjectType)) gameObjectSystem.GameObjectBehaviorMap[gameObject.GameObjectType] = cSharpScriptSystem.LoadGameObjectScript(configSystem.GameScriptLibraryDLL, dllType);
 
     }
-    else if (json.contains("GameObjectLuaScript"))
+    else if (!json["GameObjectLuaScript"].is_null())
     {
         String luaPath = json["GameObjectLuaScript"].get<String>();
         if (fileSystem.GetFileExtention(luaPath.c_str()) == "lua")
