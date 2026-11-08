@@ -104,9 +104,15 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
-            "VariableType": 2
+            "PushConstantVariable": {
+              "Value": [ 5 ],
+              "VariableType": 2
+            },
+            "PushConstantRef": {
+              "AssetId": "000000000-0000-0000-0000-000000000000",
+              "TextureVar": 0
+            }
           }
         ],
         "InputAttachmentList": [],
@@ -130,9 +136,15 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
-            "VariableType": 2
+            "PushConstantVariable": {
+              "Value": [ 5 ],
+              "VariableType": 2
+            },
+            "PushConstantRef": {
+              "AssetId": "000000000-0000-0000-0000-000000000000",
+              "TextureVar": 0
+            }
           }
         ],
         "InputAttachmentList": [],
@@ -158,9 +170,15 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
-            "VariableType": 2
+            "PushConstantVariable": {
+              "Value": [ 5 ],
+              "VariableType": 2
+            },
+            "PushConstantRef": {
+              "AssetId": "000000000-0000-0000-0000-000000000000",
+              "TextureVar": 0
+            }
           }
         ],
         "InputAttachmentList": [],
@@ -184,9 +202,15 @@
         "PushConstantUpdates": [
           {
             "PushConstantType": 0,
-            "Value": [ 5 ],
             "Variable": "PointLightViewIndex",
-            "VariableType": 2
+            "PushConstantVariable": {
+              "Value": [ 5 ],
+              "VariableType": 2
+            },
+            "PushConstantRef": {
+              "AssetId": "000000000-0000-0000-0000-000000000000",
+              "TextureVar": 0
+            }
           }
         ],
         "InputAttachmentList": [],
