@@ -100,7 +100,7 @@ struct PackedMaterial
 {
     uint AlbedoTextureId;
     uint NormalTextureId;
-    uint MROTextureId;
+    uint MroTextureId;
     uint ClearCoatOrTranslucentTextureId;
     uint SubSurfaceScatteringOrTranslucentPropertiesTextureId;
     uint SubSurfaceScatteringPropertiesTextureId;

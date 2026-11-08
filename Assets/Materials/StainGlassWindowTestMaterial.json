@@ -131,7 +131,7 @@
   },
   "FeatureMask": 521,
   "IOR": 1.5,
-  "MROTexture": {
+  "MroTexture": {
     "ImageType": 1,
     "IsSkyBox": false,
     "MipMapCount": 1,

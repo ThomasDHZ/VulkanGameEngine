@@ -45,7 +45,7 @@
   },
   "EmissionTexture": null,
   "NormalTexture": null,
-  "MROTexture": null,
+  "MroTexture": null,
   "ClearCoatTexture": null,
   "SubSurfaceScatteringTexture": null,
   "SheenTexture": null,

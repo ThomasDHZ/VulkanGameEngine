@@ -25,7 +25,7 @@ PackedMaterial GetMaterial(uint index)
     PackedMaterial mat;
     mat.AlbedoTextureId                                      = ~0u;
     mat.NormalTextureId                                      = ~0u;
-    mat.MROTextureId                                         = ~0u;
+    mat.MroTextureId                                         = ~0u;
     mat.ClearCoatOrTranslucentTextureId                      = ~0u;
     mat.SubSurfaceScatteringOrTranslucentPropertiesTextureId = ~0u;
     mat.SubSurfaceScatteringPropertiesTextureId              = ~0u;
@@ -42,7 +42,7 @@ PackedMaterial GetMaterial(uint index)
     uint offset                                              = (uint(bindlessBuffer.MaterialOffset - bindlessBuffer.MeshOffset) / 4u) + index * (bindlessBuffer.MaterialSize / 4u);
     mat.AlbedoTextureId                                      = bindlessBuffer.Data[offset++];
     mat.NormalTextureId                                      = bindlessBuffer.Data[offset++];
-    mat.MROTextureId                                         = bindlessBuffer.Data[offset++];
+    mat.MroTextureId                                         = bindlessBuffer.Data[offset++];
     mat.ClearCoatOrTranslucentTextureId                      = bindlessBuffer.Data[offset++];
     mat.SubSurfaceScatteringOrTranslucentPropertiesTextureId = bindlessBuffer.Data[offset++];
     mat.SubSurfaceScatteringPropertiesTextureId              = bindlessBuffer.Data[offset++];

@@ -244,7 +244,7 @@ BakedMaps UnpackBakedMaterial(PackedMaterial p, vec2 uv)
 {
     vec4 albedo = texture(TextureMap[p.AlbedoTextureId], uv, -0.5);
     vec4 nrm    = textureLod(TextureMap[p.NormalTextureId], uv, 0.0);
-    vec4 mro    = textureLod(TextureMap[p.MROTextureId], uv, 0.0);
+    vec4 mro    = textureLod(TextureMap[p.MroTextureId], uv, 0.0);
     vec4 coat   = textureLod(TextureMap[p.ClearCoatOrTranslucentTextureId], uv, 0.0);
     vec4 sssCol = textureLod(TextureMap[p.SubSurfaceScatteringOrTranslucentPropertiesTextureId], uv, 0.0);
     vec4 sssPr  = textureLod(TextureMap[p.SubSurfaceScatteringPropertiesTextureId], uv, 0.0);

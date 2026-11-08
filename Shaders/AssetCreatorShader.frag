@@ -23,7 +23,7 @@ layout(location = 0) in vec2 UV;
 
 layout(location = 0) out vec4 outAlbedoTexture;
 layout(location = 1) out vec4 outNormalTexture;
-layout(location = 2) out vec4 outMROTexture;
+layout(location = 2) out vec4 outMroTexture;
 layout(location = 3) out vec4 outClearCoatOrTranslucentTexture;
 layout(location = 4) out vec4 outSssOrTranslucentPropertiesTexture;
 layout(location = 5) out vec4 outSheenOrSssPropertiesTexture;
@@ -220,7 +220,7 @@ void main()
 
     outAlbedoTexture   = vec4(m.Albedo, m.Alpha);
     outNormalTexture   = vec4(enc, clamp(m.NormalStrength, 0.0, 1.0), height);
-    outMROTexture      = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
+    outMroTexture      = vec4(m.Metallic, m.Roughness, m.AmbientOcclusion, m.IORNorm);
     outEmissionTexture = vec4(m.Emission, m.EmissionIntensity);
     if (materialBaker.MaterialBakerSubPassIndex == int(BAKE_CORE))
     {

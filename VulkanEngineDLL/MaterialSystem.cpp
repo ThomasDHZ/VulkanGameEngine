@@ -27,7 +27,7 @@ VkGuid MaterialSystem::LoadMaterial(const nlohmann::json& json)
     material.MaterialGuid                             = materialGuid;
     material.AlbedoTextureId                          = json.contains("AlbedoTexture") ? textureSystem.LoadTexture(json["AlbedoTexture"].get<TextureLoader>()).textureGuid : VkGuid();
     material.NormalTextureId                          = json.contains("NormalTexture") ? textureSystem.LoadTexture(json["NormalTexture"].get<TextureLoader>()).textureGuid : VkGuid();
-    material.MroTextureId                             = json.contains("MROTexture") ? textureSystem.LoadTexture(json["MROTexture"].get<TextureLoader>()).textureGuid : VkGuid();
+    material.MroTextureId                             = json.contains("MroTexture") ? textureSystem.LoadTexture(json["MroTexture"].get<TextureLoader>()).textureGuid : VkGuid();
     material.ClearCoatTextureId                       = json.contains("ClearCoatTexture") ? textureSystem.LoadTexture(json["ClearCoatTexture"].get<TextureLoader>()).textureGuid : VkGuid();
     material.SubSurfaceScatteringTextureId            = json.contains("SubSurfaceScatteringTexture") ? textureSystem.LoadTexture(json["SubSurfaceScatteringTexture"].get<TextureLoader>()).textureGuid : VkGuid();
     material.SubSurfaceScatteringPropertiesTextureId  = json.contains("SubSurfaceScatteringPropertiesTexture") ? textureSystem.LoadTexture(json["SubSurfaceScatteringPropertiesTexture"].get<TextureLoader>()).textureGuid : VkGuid();
