@@ -61,7 +61,6 @@ namespace nlohmann
     {
         static void from_json(const json& j, PushConstantVariable& v)
         {
-            auto a = j.dump();
             const auto pushConstantType = j["PushConstantVariable"].at("VariableType").get<ShaderMemberTypeEnum>();
             const auto& value = j["PushConstantVariable"].at("Value");
 
