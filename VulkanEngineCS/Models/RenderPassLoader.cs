@@ -17,7 +17,7 @@ namespace VulkanEngineCS.Models
         public ivec2 RenderPassResolution { get; set; } = new ivec2(0);
         public List<RenderPassAttachmentLoader> AttachmentList { get; set; } = new List<RenderPassAttachmentLoader>();
         public List<VkSubpassDependency> SubpassDependencyList { get; set; } = new List<VkSubpassDependency>();
-        List<string> PipelineList { get; set; } = new List<string>();
+        public List<string> PipelineList { get; set; } = new List<string>();
         public List<VulkanPipelinePackageLoader> PipelinePackageList { get; set; } = new List<VulkanPipelinePackageLoader>();
         public List<List<VulkanSubPassLoader>> SubPassList { get; set; } = new List<List<VulkanSubPassLoader>>();
         public List<ShaderLoader> ShaderList { get; set; } = new List<ShaderLoader>();
