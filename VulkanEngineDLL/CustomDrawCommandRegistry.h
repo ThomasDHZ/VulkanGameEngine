@@ -6,7 +6,7 @@
 #include <functional>
 #include "RenderSystem.h"
 
-class CustomDrawCommandRegistry
+class ENGINE_DLL_EXPORT CustomDrawCommandRegistry
 {
 public:
     static CustomDrawCommandRegistry& Get();
@@ -24,7 +24,6 @@ private:
 public:
     void RegisterCustomDrawCommand(const String& sourceName, UpdateFunc func);
     void ApplyCustomDrawCommand(const String& sourceName, VkCommandBuffer& commandBuffer, MeshDrawMessage& drawMeshMessage, const CustomDrawInitContext& context, VulkanDrawMessage& message, uint meshDrawIndex, uint mip, uint mipCount);
-    void RegisterDefaultCustomDrawCommand();
 };
     ENGINE_DLL_EXPORT extern CustomDrawCommandRegistry& customDrawCommandRegistry;
     inline CustomDrawCommandRegistry& CustomDrawCommandRegistry::Get()

@@ -27,6 +27,9 @@ GameSystem gameSystem = GameSystem();
 #include <VulkanSystem.h>
 #include <MemoryPoolSystem.h>
 #include <LightSystem.h>
+#include "RegisterCustomDrawCommands.h"
+#include "RegisterGameObjectComponents.h"
+#include "RegisterPushConstantCommands.h"
 
 GameSystem::GameSystem()
 {
@@ -54,6 +57,9 @@ void GameSystem::StartUp()
 #if defined(_WIN32)
     shaderSystem.CompileShaders(configSystem.ShaderSourceDirectory.c_str(), configSystem.CompiledShaderOutputDirectory.c_str());
 #endif
+    RegisterCustomDrawCommands();
+    RegisterGameObjectComponents();
+    RegisterPushConstantCommands();
     levelSystem.LoadLevel("Levels/TestLevel.json");
     //String text = String("asdfasdf");
    // textSystem.RenderText(text, vec2(200.0f), 32, vec3(1.0f));

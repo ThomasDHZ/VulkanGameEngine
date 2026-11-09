@@ -17,10 +17,10 @@ struct PushConstantContext
 
 class ENGINE_DLL_EXPORT PushConstantRegistry
 {
-public: 
+public:
     static PushConstantRegistry& Get();
 
-private: 
+private:
     PushConstantRegistry() = default;
     ~PushConstantRegistry() = default;
     PushConstantRegistry(const PushConstantRegistry&) = delete;
@@ -29,12 +29,11 @@ private:
     PushConstantRegistry& operator=(PushConstantRegistry&&) = delete;
 
     using UpdateFunc = std::function<void(ShaderPushConstant& pushConstant, const PushConstantContext& context)>;
-	UnorderedMap<String, UpdateFunc> _registry;
+    UnorderedMap<String, UpdateFunc> _registry;
 
 public:
-      void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);
-       void ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext);
-       void RegisterDefaultPushConstantRules();
+    void RegisterPushConstantValue(const String& sourceName, UpdateFunc func);
+    void ApplyPushConstantRules(ShaderPushConstant& pushConstant, const PushConstantContext& pushConstantContext);
 };
 ENGINE_DLL_EXPORT extern  PushConstantRegistry& pushConstantRegistry;
 inline PushConstantRegistry& PushConstantRegistry::Get()

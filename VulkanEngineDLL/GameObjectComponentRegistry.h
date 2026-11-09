@@ -15,7 +15,7 @@ struct ComponentInitContext
     bool                  IsPrefab = false;
 };
 
-class GameObjectComponentRegistry
+class ENGINE_DLL_EXPORT GameObjectComponentRegistry
 {
 public:
     static GameObjectComponentRegistry& Get();

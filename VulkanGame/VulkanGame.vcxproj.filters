@@ -19,6 +19,12 @@
     <Filter Include="Header Files\External\ImGui">
       <UniqueIdentifier>{b717f93b-6619-4eef-b477-fa2f030724a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Registery Commands">
+      <UniqueIdentifier>{1e25d048-180f-46df-a265-a3ce65c65e36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Registery Commands">
+      <UniqueIdentifier>{6f2b06b3-6f19-48b4-82c3-84255fe4b14a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeSystem.h">
@@ -57,6 +63,15 @@
     <ClInclude Include="..\External\imgui\imstb_truetype.h">
       <Filter>Header Files\External\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="RegisterCustomDrawCommands.h">
+      <Filter>Header Files\Registery Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="RegisterGameObjectComponents.h">
+      <Filter>Header Files\Registery Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="RegisterPushConstantCommands.h">
+      <Filter>Header Files\Registery Commands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AndroidMain.cpp">
@@ -78,7 +93,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\VulkanEngineCore\External\SPIRV-Reflect\spirv_reflect.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\External</Filter>
+    </ClCompile>
+    <ClCompile Include="RegisterPushConstantCommands.cpp">
+      <Filter>Source Files\Registery Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="RegisterCustomDrawCommands.cpp">
+      <Filter>Source Files\Registery Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="RegisterGameObjectComponents.cpp">
+      <Filter>Source Files\Registery Commands</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

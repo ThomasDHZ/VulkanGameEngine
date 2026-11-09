@@ -18,9 +18,6 @@ void LevelSystem::LoadLevel(const char* levelPath)
 {
     cameraSystem.CreateCamera(CameraTypeEnum::kPixelPerfectOrthographicCam, vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec2(0.0f, 0.0f));
     PerspectiveCamera = std::make_shared<Camera>(Camera_PerspectiveCamera(vec2((float)vulkan.RenderPassResolution().x, (float)vulkan.RenderPassResolution().y), vec3(0.0f, 0.0f, 0.0f)));
-    customDrawCommandRegistry.RegisterDefaultCustomDrawCommand();
-    pushConstantRegistry.RegisterDefaultPushConstantRules();
-    gameObjectComponentRegistry.RegisterDefaultGameObjectComponents();
 
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     

@@ -66,11 +66,6 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
             collisionSystem.AddListener(ctx.Entity, collider);
         });
 
-    RegisterGameObjectComponent(kCameraFollowComponent, [](const ComponentInitContext& ctx)
-        {
-            ctx.Registry.emplace<CameraFollowComponent>(ctx.Entity);
-        });
-
     RegisterGameObjectComponent(kDirectionalLightComponent, [](const ComponentInitContext& ctx)
         {
             DirectionalLightComponent directionalLightComponent = DirectionalLightComponent
@@ -113,10 +108,5 @@ void GameObjectComponentRegistry::RegisterDefaultGameObjectComponents()
                 .LightLayer = ctx.Json["LightLayer"],
                 .LightActive = 1
             };
-        });
-
-    RegisterGameObjectComponent(kDebugObjectComponent, [](const ComponentInitContext& ctx)
-        {
-            ctx.Registry.emplace<DebugObjectComponent>(ctx.Entity);
         });
 }
