@@ -23,6 +23,7 @@ namespace VulkanEngineCS
         public static List<JsonAssetWriter<SpriteVramLoader>> SpriteVramList { get; set; } = new List<JsonAssetWriter<SpriteVramLoader>>();
         public static List<JsonAssetWriter<GameObjectBehaviors>> GameObjectBehaviorList { get; set; } = new List<JsonAssetWriter<GameObjectBehaviors>>();
         public static LevelTileSet levelTileSet { get; set; } = new LevelTileSet();
+        public static JsonAssetWriter<LevelLayout> LevelLayoutJson { get; set; } = new JsonAssetWriter<LevelLayout>();
 
         public static void LoadLevel([MarshalAs(UnmanagedType.LPStr)] string levelPath)
         {
@@ -49,6 +50,7 @@ namespace VulkanEngineCS
                 LoadGameObjectBehavior(filePath);
             }
             LoadTileSet(level.TileSetVram);
+            LoadLevelLayout(level.LoadLevelLayout);
             DLLSystem.CallDLLFunc(() => LevelSystem_LoadLevel(levelPath));
         }
 
@@ -103,6 +105,16 @@ namespace VulkanEngineCS
                 JsonWriteLocation = filePath,
                 JsonWriteObject = JsonConvert.DeserializeObject<MaterialLoader>(json)
             }); 
+        }
+
+        private static void LoadLevelLayout(string filePath)
+        {
+            string json = File.ReadAllText($@"C:\Users\DHZ\Documents\GitHub\VulkanGameEngine\Assets\{filePath}");
+            LevelLayoutJson = new JsonAssetWriter<LevelLayout>
+            {
+                JsonWriteLocation = filePath,
+                JsonWriteObject = JsonConvert.DeserializeObject<LevelLayout>(json)
+            };
         }
 
         private static void LoadTileSet(string filePath)

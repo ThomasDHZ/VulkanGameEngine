@@ -327,7 +327,7 @@ void MeshSystem::Update(const float& deltaTime)
 			props.MeshTransform = model;
 			mesh.IsTransformDirty = false;
 		}
-			props.MeshLayerIndex = mesh.MeshLayer;
+		props.MeshLayerIndex = mesh.MeshLayer;
 		if (mesh.IsMaterialDirty)
 		{
 			uint32 matIndex = (mesh.MaterialId != VkGuid()) ? materialSystem.FindMaterialPoolIndex(mesh.MaterialId) : 0u;

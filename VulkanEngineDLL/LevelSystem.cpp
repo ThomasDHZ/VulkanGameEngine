@@ -105,13 +105,8 @@ void LevelSystem::LevelEditorRenderPass(const char* levelPath)
     nlohmann::json json = fileSystem.LoadJsonFile(levelPath);
     std::optional<MemoryPoolLoader> memoryPool = memoryPoolSystem.GetMemoryPoolInfo();
     for (auto& renderPass : json["LevelEditorRenderPass"])
-    { 
-        if (!renderPass["OneTimeDraw"])  RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool));
-        else
-        {
-            VkGuid renderPassId = renderSystem.LoadRenderPass(renderPass["RenderPass"], memoryPool);
-            textureSystem.GenerateTexture(renderPassId);
-        }
+    {
+        RenderPassDrawList.emplace_back(renderSystem.LoadRenderPass(renderPass, memoryPool));
     }
 }
 
@@ -149,6 +144,14 @@ void LevelSystem::Update(const float& deltaTime)
 
     Vector<MeshPropertiesStruct> meshList = memoryPoolSystem.MeshBufferList();
     int a = 34;
+
+    for (int x = 0; x < 2; x++)
+    {
+        for (int y = 0; y < 10; y++)
+        {
+            LevelTileMapList[x][y] += 1;
+        }
+    }
 }
 
 int LevelSystem::FindLevelLayer(uint meshId)
@@ -304,14 +307,14 @@ void LevelSystem::LoadLevelLayout(const char* levelLayoutPath)
 
     Vector<Vector<uint>> levelLayerList;
     nlohmann::json json = fileSystem.LoadJsonFile(levelLayoutPath);
-    for (int x = 0; x < json["LevelLayouts"].size(); x++)
+    for (int x = 0; x < json["LevelLayoutLayerList"].size(); x++)
     {
         Vector<uint> levelLayerMap;
-        for (int y = 0; y < json["LevelLayouts"][x].size(); y++)
+        for (int y = 0; y < json["LevelLayoutLayerList"][x].size(); y++)
         {
-            for (int z = 0; z < json["LevelLayouts"][x][y].size(); z++)
+            for (int z = 0; z < json["LevelLayoutLayerList"][x][y].size(); z++)
             {
-                levelLayerMap.push_back(json["LevelLayouts"][x][y][z]);
+                levelLayerMap.push_back(json["LevelLayoutLayerList"][x][y][z]);
             }
         }
         levelLayerList.push_back(levelLayerMap);
