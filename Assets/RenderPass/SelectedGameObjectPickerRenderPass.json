@@ -1,59 +1,11 @@
 {
   "Name": "GameObjectPickerRenderPass",
+  "OneTimeDraw": false,
   "RenderPassId": "2ae2f01d-bc00-43e8-9830-35c836ae9a6c",
-  "RenderPassResolution": [ 0, 0 ],
-    "UseGlobalBindlessSet": true,
-    "UseVkMultiview": false,
-    "RenderAsCubemap": false,
-    "UseDefaultRenderResolution": false,
-    "UseFrameBufferResolution": true,
-    "OneTimeDraw": false,
-  "ShaderList": [
-    {
-      "ShaderId": "e3324225-219b-4864-8146-a649e95ed37d",
-      "ShaderFile": "Shaders/SelectedGameObjectPickerVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "5ea3e499-320f-431c-9c94-0e534ca6099e",
-      "ShaderFile": "Shaders/SelectedGameObjectPickerFrag.spv",
-      "ShaderStage": 16
-    }
+  "RenderPassResolution": [
+    0,
+    0
   ],
-  "PipelineList": [
-    "Pipelines/SelectedObjectPickerPipeline.json"
-  ],
-  "PipelinePackageList": [
-    {
-      "PipelinePackageId": "e551d145-2e1b-426b-abbf-b0e7102e01bd",
-      "PipelineList": [
-        {
-          "PipelineType": 0,
-          "PipelineId": "3f7db895-9486-4259-93b3-cb0672f985ce"
-        }
-      ]
-    }
-  ],
-  "SubPassList": [
-    [
-      {
-        "MeshType": 2,
-        "RenderPassDrawFlags": 68,
-        "PipelinePackageId": "e551d145-2e1b-426b-abbf-b0e7102e01bd",
-        "ShaderPushConstant": null,
-        "InputAttachmentList": [],
-        "InputTextureList": [],
-        "ResolveTextureList": [],
-        "OutputTextureList": [],
-        "CustomDrawCommand": null,
-        "CustomDrawContext": null,
-        "OffScreenRenderPass": true,
-        "UseCustomDrawCommand": false,
-        "AlphaRenderPass": false
-      }
-    ]
-  ],
-  "SampleCount": 1,
   "AttachmentList": [
     {
       "AttachmentName": "GameObjectPickerRenderPassAttachment",
@@ -61,16 +13,16 @@
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 2,
-      "RenderAttachmentTypes": [ 0 ],
-      "Format": 109,
+      "RenderAttachmentTypes": [
+        0
+      ],
+      "TextureByteFormat": 0,
       "LoadOp": 1,
       "StoreOp": 0,
-      "FinalLayout": 5,
-      "UseSampler": true,
-      "UseMipMaps": false,
-      "UseDefaultSwapChainResolution": false,
       "SamplerCreateInfo": {
         "sType": 31,
+        "pNext": null,
+        "flags": 0,
         "magFilter": 1,
         "minFilter": 1,
         "mipmapMode": 1,
@@ -78,15 +30,19 @@
         "addressModeV": 2,
         "addressModeW": 2,
         "mipLodBias": 0.0,
-        "anisotropyEnable": false,
+        "anisotropyEnable": 0,
         "maxAnisotropy": 1.0,
-        "compareEnable": false,
+        "compareEnable": 0,
         "compareOp": 7,
         "minLod": 0.0,
         "maxLod": 1000.0,
         "borderColor": 1,
-        "unnormalizedCoordinates": false
-      }
+        "unnormalizedCoordinates": 0
+      },
+      "FinalLayout": 5,
+      "SampleCount": 0,
+      "UseMipMaps": false,
+      "IsSkyBox": false
     }
   ],
   "SubpassDependencyList": [
@@ -100,12 +56,62 @@
       "dependencyFlags": 0
     }
   ],
+  "PipelineList": [
+    "Pipelines/SelectedObjectPickerPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageName": null,
+      "PipelinePackageId": "e551d145-2e1b-426b-abbf-b0e7102e01bd",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "3f7db895-9486-4259-93b3-cb0672f985ce"
+        }
+      ]
+    }
+  ],
+  "SubPassList": [
+    [
+      {
+        "RenderPassDrawFlags": 68,
+        "PipelinePackageId": "e551d145-2e1b-426b-abbf-b0e7102e01bd",
+        "MeshType": 2,
+        "ShaderPushConstant": null,
+        "PushConstantUpdates": null,
+        "InputAttachmentList": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawCommandContext": {
+          "RenderPassId": "00000000-0000-0000-0000-000000000000",
+          "TextureAttachmentId": "00000000-0000-0000-0000-000000000000",
+          "TileSize": 0.0
+        },
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
+        "AlphaRenderPass": false
+      }
+    ]
+  ],
+  "ShaderList": [
+    {
+      "ShaderId": "e3324225-219b-4864-8146-a649e95ed37d",
+      "ShaderFile": "Shaders/SelectedGameObjectPickerVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "5ea3e499-320f-431c-9c94-0e534ca6099e",
+      "ShaderFile": "Shaders/SelectedGameObjectPickerFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
   "ClearValueList": [
     {
       "ClearColorType": 0,
       "ClearValue": {
         "Color": {
-          "Float32_0": 0.0,
+          "Float32_0": 1.0,
           "Float32_1": 0.0,
           "Float32_2": 0.0,
           "Float32_3": 1.0,
@@ -124,5 +130,11 @@
         }
       }
     }
-  ]
+  ],
+  "SampleCount": 1,
+  "UseDefaultRenderResolution": false,
+  "UseGlobalBindlessSet": true,
+  "UseVkMultiview": false,
+  "RenderAsCubemap": false,
+  "UseFrameBufferResolution": true
 }

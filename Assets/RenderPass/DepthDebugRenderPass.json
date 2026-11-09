@@ -1,59 +1,11 @@
 {
   "Name": "HdrRenderPass",
+  "OneTimeDraw": false,
   "RenderPassId": "77f8cbdc-5c59-4448-a378-9ac36e720b5b",
-  "RenderPassResolution": [ 0, 0 ],
-    "UseGlobalBindlessSet": true,
-    "UseVkMultiview": false,
-    "RenderAsCubemap": false,
-    "UseDefaultRenderResolution": true,
-    "UseFrameBufferResolution": false,
-    "OneTimeDraw": false,
-  "ShaderList": [
-    {
-      "ShaderId": "7d74d6d8-11bc-47f2-86c0-4247368b380e",
-      "ShaderFile": "Shaders/DepthDebugVert.spv",
-      "ShaderStage": 1
-    },
-    {
-      "ShaderId": "30a9f24b-b89c-4d76-aa06-fc91515d7c7d",
-      "ShaderFile": "Shaders/DepthDebugFrag.spv",
-      "ShaderStage": 16
-    }
+  "RenderPassResolution": [
+    0,
+    0
   ],
-  "PipelineList": [
-    "Pipelines/DepthDebugPipeline.json"
-  ],
-  "PipelinePackageList": [
-    {
-      "PipelinePackageId": "f3e04c31-ac16-4d3b-802c-991de1d94f8f",
-      "PipelineList": [
-        {
-          "PipelineType": 0,
-          "PipelineId": "bc8d99c4-eaf0-4521-8f8a-b311f8e70481"
-        }
-      ]
-    }
-  ],
-  "SubPassList": [
-    [
-      {
-        "MeshType": 5,
-        "RenderPassDrawFlags": 6,
-        "PipelinePackageId": "f3e04c31-ac16-4d3b-802c-991de1d94f8f",
-        "ShaderPushConstant": null,
-        "PushConstantUpdates": [],
-        "InputAttachmentList": [],
-        "InputTextureList": [],
-        "OutputTextureList": [],
-        "CustomDrawCommand": null,
-        "CustomDrawContext": null,
-        "OffScreenRenderPass": true,
-        "UseCustomDrawCommand": false,
-        "AlphaRenderPass": false
-      }
-    ]
-  ],
-  "SampleCount": 1,
   "AttachmentList": [
     {
       "AttachmentName": "HDR Attachment",
@@ -61,15 +13,16 @@
       "MipMapCount": 1,
       "TextureType": 1,
       "TextureUsageType": 1,
-      "RenderAttachmentTypes": [ 0 ],
+      "RenderAttachmentTypes": [
+        0
+      ],
       "TextureByteFormat": 44,
       "LoadOp": 1,
       "StoreOp": 0,
-      "FinalLayout": 5,
-      "UseSampler": true,
-      "UseMipMaps": false,
       "SamplerCreateInfo": {
         "sType": 31,
+        "pNext": null,
+        "flags": 0,
         "magFilter": 1,
         "minFilter": 1,
         "mipmapMode": 1,
@@ -77,15 +30,19 @@
         "addressModeV": 2,
         "addressModeW": 2,
         "mipLodBias": 0.0,
-        "anisotropyEnable": false,
+        "anisotropyEnable": 0,
         "maxAnisotropy": 1.0,
-        "compareEnable": false,
+        "compareEnable": 0,
         "compareOp": 7,
         "minLod": 0.0,
         "maxLod": 1.0,
         "borderColor": 2,
-        "unnormalizedCoordinates": false
-      }
+        "unnormalizedCoordinates": 0
+      },
+      "FinalLayout": 5,
+      "SampleCount": 0,
+      "UseMipMaps": false,
+      "IsSkyBox": false
     }
   ],
   "SubpassDependencyList": [
@@ -108,12 +65,62 @@
       "dependencyFlags": 1
     }
   ],
+  "PipelineList": [
+    "Pipelines/DepthDebugPipeline.json"
+  ],
+  "PipelinePackageList": [
+    {
+      "PipelinePackageName": null,
+      "PipelinePackageId": "f3e04c31-ac16-4d3b-802c-991de1d94f8f",
+      "PipelineList": [
+        {
+          "PipelineType": 0,
+          "PipelineId": "bc8d99c4-eaf0-4521-8f8a-b311f8e70481"
+        }
+      ]
+    }
+  ],
+  "SubPassList": [
+    [
+      {
+        "RenderPassDrawFlags": 6,
+        "PipelinePackageId": "f3e04c31-ac16-4d3b-802c-991de1d94f8f",
+        "MeshType": 5,
+        "ShaderPushConstant": null,
+        "PushConstantUpdates": [],
+        "InputAttachmentList": [],
+        "InputTextureList": [],
+        "OutputTextureList": [],
+        "CustomDrawCommand": null,
+        "CustomDrawCommandContext": {
+          "RenderPassId": "00000000-0000-0000-0000-000000000000",
+          "TextureAttachmentId": "00000000-0000-0000-0000-000000000000",
+          "TileSize": 0.0
+        },
+        "OffScreenRenderPass": true,
+        "UseCustomDrawCommand": false,
+        "AlphaRenderPass": false
+      }
+    ]
+  ],
+  "ShaderList": [
+    {
+      "ShaderId": "7d74d6d8-11bc-47f2-86c0-4247368b380e",
+      "ShaderFile": "Shaders/DepthDebugVert.spv",
+      "ShaderStage": 1
+    },
+    {
+      "ShaderId": "30a9f24b-b89c-4d76-aa06-fc91515d7c7d",
+      "ShaderFile": "Shaders/DepthDebugFrag.spv",
+      "ShaderStage": 16
+    }
+  ],
   "ClearValueList": [
     {
       "ClearColorType": 0,
       "ClearValue": {
         "Color": {
-          "Float32_0": 0.0,
+          "Float32_0": 1.0,
           "Float32_1": 0.0,
           "Float32_2": 0.0,
           "Float32_3": 1.0,
@@ -132,5 +139,11 @@
         }
       }
     }
-  ]
+  ],
+  "SampleCount": 1,
+  "UseDefaultRenderResolution": true,
+  "UseGlobalBindlessSet": true,
+  "UseVkMultiview": false,
+  "RenderAsCubemap": false,
+  "UseFrameBufferResolution": false
 }
