@@ -49,7 +49,7 @@
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/MegaManShot.png" ],
     "TextureId": "64c3d8f7-4489-4509-ba95-758f52ba2089",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,

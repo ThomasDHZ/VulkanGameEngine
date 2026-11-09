@@ -19,7 +19,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 109,
+      "TextureByteLayout": 109,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -59,7 +59,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 43,
+      "TextureByteLayout": 43,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -99,7 +99,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 91,
+      "TextureByteLayout": 91,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -139,7 +139,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 91,
+      "TextureByteLayout": 91,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -179,7 +179,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 97,
+      "TextureByteLayout": 97,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -219,7 +219,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 97,
+      "TextureByteLayout": 97,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -259,7 +259,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 91,
+      "TextureByteLayout": 91,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -299,7 +299,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 97,
+      "TextureByteLayout": 97,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -339,7 +339,7 @@
         4,
         4
       ],
-      "TextureByteFormat": 124,
+      "TextureByteLayout": 124,
       "LoadOp": 1,
       "StoreOp": 1,
       "SamplerCreateInfo": {
@@ -379,7 +379,7 @@
         0,
         1
       ],
-      "TextureByteFormat": 43,
+      "TextureByteLayout": 43,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -419,7 +419,7 @@
         0,
         1
       ],
-      "TextureByteFormat": 97,
+      "TextureByteLayout": 97,
       "LoadOp": 2,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -459,7 +459,7 @@
         4,
         0
       ],
-      "TextureByteFormat": 43,
+      "TextureByteLayout": 43,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -499,7 +499,7 @@
         4,
         0
       ],
-      "TextureByteFormat": 97,
+      "TextureByteLayout": 97,
       "LoadOp": 2,
       "StoreOp": 0,
       "SamplerCreateInfo": {

@@ -17,7 +17,7 @@ namespace VulkanEngineCS.Models
         public TextureTypeEnum TextureType { get; set; } = TextureTypeEnum.kTextureType_Undefined;
         public TextureUsageTypeEnum TextureUsageType { get; set; } = TextureUsageTypeEnum.kUsageType_Undefined;
         public List<RenderAttachmentTypeEnum> RenderAttachmentTypes { get; set; } = new List<RenderAttachmentTypeEnum>();
-        public VkFormat TextureByteFormat { get; set; } = VkFormat.VK_FORMAT_R8G8B8A8_UNORM;
+        public VkFormat TextureByteLayout { get; set; } = VkFormat.VK_FORMAT_R8G8B8A8_UNORM;
         public VkAttachmentLoadOp LoadOp { get; set; } = VkAttachmentLoadOp.VK_ATTACHMENT_LOAD_OP_CLEAR;
         public VkAttachmentStoreOp StoreOp { get; set; } = VkAttachmentStoreOp.VK_ATTACHMENT_STORE_OP_STORE;
         public VkSamplerCreateInfo SamplerCreateInfo { get; set; } = new VkSamplerCreateInfo();

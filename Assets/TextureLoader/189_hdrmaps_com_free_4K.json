@@ -1,7 +1,7 @@
 {
   "TextureFilePath": [ "Textures/189_hdrmaps_com_free_4K.ktx2" ],
   "TextureId": "1b152157-2f1d-47ed-b771-1b31c5aa357e",
-  "TextureByteFormat": 109,
+  "TextureByteLayout": 109,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,

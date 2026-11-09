@@ -13,7 +13,7 @@ struct TextureLoader
 {
     Vector<String> TextureFilePath;
     VkGuid TextureId;
-    VkFormat TextureByteFormat;
+    VkFormat TextureByteLayout;
     TextureTypeEnum TextureType;
     TextureUsageTypeEnum TextureUsageType;
     VkSamplerCreateInfo SamplerCreateInfo;
@@ -35,7 +35,7 @@ struct TextureReturnFileData
     uint32             ArrayLayers = 1;
     uint32             BytesPerChannel = 0;
     ivec3              TextureDimensions = { 0, 0, 0 };
-    VkFormat           TextureByteFormat = VK_FORMAT_UNDEFINED;
+    VkFormat           TextureByteLayout = VK_FORMAT_UNDEFINED;
     VkImageAspectFlags TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
     VkImageLayout      TextureImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     bool               IsCubeMap = false;

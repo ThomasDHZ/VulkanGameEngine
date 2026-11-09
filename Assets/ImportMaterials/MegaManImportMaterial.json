@@ -49,7 +49,7 @@
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/MegaMan_diffuse.bmp" ],
     "TextureId": "5904c4a1-5611-49e1-a6aa-9469b96c9844",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -78,7 +78,7 @@
   "MetallicMap": {
     "TextureFilePath": [ "ImportTextures/MegaMan_metallic.bmp" ],
     "TextureId": "bfaa7a16-8c8b-4dee-bb07-70e521249d54",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -112,7 +112,7 @@
   "AmbientOcclusionMap": {
     "TextureFilePath": [ "ImportTextures/MegaMan_AO.bmp" ],
     "TextureId": "a10aecbd-1b29-4965-ab5b-521cb5e5f0f4",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -141,7 +141,7 @@
   "NormalMap": {
     "TextureFilePath": [ "ImportTextures/MegaMan_NormalTexture.png" ],
     "TextureId": "fb05d690-713c-4361-be3c-da487e97929c",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,

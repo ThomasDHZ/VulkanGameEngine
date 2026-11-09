@@ -141,7 +141,7 @@ namespace nlohmann
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("RenderAttachmentTypes").get_to(model.RenderAttachmentTypes);
-        j.at("TextureByteFormat").get_to(model.TextureByteFormat);
+        j.at("TextureByteLayout").get_to(model.TextureByteLayout);
         j.at("LoadOp").get_to(model.LoadOp);
         j.at("StoreOp").get_to(model.StoreOp);
         j.at("FinalLayout").get_to(model.FinalLayout);
@@ -455,7 +455,7 @@ namespace nlohmann
         }
 
         j.at("TextureId").get_to(model.TextureId);
-        j.at("TextureByteFormat").get_to(model.TextureByteFormat);
+        j.at("TextureByteLayout").get_to(model.TextureByteLayout);
         j.at("TextureType").get_to(model.TextureType);
         j.at("TextureUsageType").get_to(model.TextureUsageType);
         j.at("MipMapCount").get_to(model.MipMapCount);

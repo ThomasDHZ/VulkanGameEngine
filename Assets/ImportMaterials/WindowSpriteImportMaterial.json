@@ -42,7 +42,7 @@
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_AlbedoTexture.png" ],
     "TextureId": "9d715465-8f15-4847-bccd-1ef4ae6fb787",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -71,7 +71,7 @@
   "MetallicMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_Metalic.png" ],
     "TextureId": "7422f366-9cee-45bf-a2e9-9dc0d0e320d3",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -100,7 +100,7 @@
   "RoughnessMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_Roughness.png" ],
     "TextureId": "8bedb3fe-616a-4c72-ad56-2d947067ba81",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -129,7 +129,7 @@
   "AmbientOcclusionMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_AOTexture.png" ],
     "TextureId": "71b1b273-e3df-4ee8-b092-f673307d3c00",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -158,7 +158,7 @@
   "NormalMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_NormalTexture.png" ],
     "TextureId": "87206e80-08c2-4a98-9313-a647cda01838",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -187,7 +187,7 @@
   "HeightMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_ParallaxTexture.png" ],
     "TextureId": "be946d3d-6339-4ff2-ae7e-3ccc5550c207",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -216,7 +216,7 @@
   "IORTexture": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_IORTexture.png" ],
     "TextureId": "a8ed6bbb-7db4-4b6f-ab57-b44b0a7b6716",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -245,7 +245,7 @@
   "AttenuationColorMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_AttenuationTexture.png" ],
     "TextureId": "8858fafd-0010-43b7-8643-b3e345f93970",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -274,7 +274,7 @@
   "AttenuationPropertiesTexture": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_AttenuationPropertyDataTexture.png" ],
     "TextureId": "d63f88d2-5435-4431-b2c9-235f6facd962",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -303,7 +303,7 @@
   "ClearCoatPropertiesMap": {
     "TextureFilePath": [ "ImportTextures/WindowSpriteTest_ClearCoatPropertyDataTexture.png" ],
     "TextureId": "6cc1675f-878f-43b2-b2f8-87329e1914f9",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,

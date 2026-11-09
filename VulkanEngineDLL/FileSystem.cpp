@@ -256,15 +256,15 @@ ktxVulkanTexture FileSystem::LoadKTX2File(const String& filePath)
 //
 //        size_t bytesPerPixel = 4;
 //        bool is16BitFormat = false;
-//        if (texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SFLOAT ||
-//            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_UINT ||
-//            texture.textureByteFormat == VK_FORMAT_R32G32B32A32_SINT) {
+//        if (texture.TextureByteLayout == VK_FORMAT_R32G32B32A32_SFLOAT ||
+//            texture.TextureByteLayout == VK_FORMAT_R32G32B32A32_UINT ||
+//            texture.TextureByteLayout == VK_FORMAT_R32G32B32A32_SINT) {
 //            bytesPerPixel = 16;
 //            std::cerr << "Warning: 32-bit float format not yet supported for PNG export\n";
 //            continue;
 //        }
-//        else if (texture.textureByteFormat >= VK_FORMAT_R16G16B16A16_UNORM &&
-//            texture.textureByteFormat <= VK_FORMAT_R16G16B16A16_SFLOAT)  // covers 91-97 inclusive
+//        else if (texture.TextureByteLayout >= VK_FORMAT_R16G16B16A16_UNORM &&
+//            texture.TextureByteLayout <= VK_FORMAT_R16G16B16A16_SFLOAT)  // covers 91-97 inclusive
 //        {
 //            bytesPerPixel = 8;
 //            is16BitFormat = true;

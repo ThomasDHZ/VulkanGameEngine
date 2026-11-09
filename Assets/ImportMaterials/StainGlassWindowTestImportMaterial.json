@@ -42,7 +42,7 @@
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_AlbedoTexture.png" ],
     "TextureId": "9c7a3a3a-7551-4e8c-abc3-32055ef9053b",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -71,7 +71,7 @@
   "MetallicMap": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_MetallicTexture.png" ],
     "TextureId": "97d9f794-f58c-41e0-84ed-d799fcb11af5",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -100,7 +100,7 @@
   "RoughnessMap": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_RoughnessTexture.png" ],
     "TextureId": "3adbe1f8-37af-44ee-834c-0ca8748958f8",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -129,7 +129,7 @@
   "AmbientOcclusionMap": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_AOTexture.png" ],
     "TextureId": "a036046d-90b5-47af-9872-e3c83058e3f9",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -158,7 +158,7 @@
   "NormalMap": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_NormalTexture.png" ],
     "TextureId": "b8f7f689-94f3-4708-930a-4696bc650c55",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -188,7 +188,7 @@
   "IORTexture": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_IORTexture.png" ],
     "TextureId": "08bbf3d6-ab6a-4009-9028-c2b62466c531",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -217,7 +217,7 @@
   "AttenuationColorMap": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_AttenuationTexture.png" ],
     "TextureId": "933b5e7b-18a1-43dc-b3bd-a3c8892e7bf6",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -246,7 +246,7 @@
   "AttenuationPropertiesTexture": {
     "TextureFilePath": [ "ImportTextures/StainGlassWindowTest_AttenuationPropertyDataTexture.png" ],
     "TextureId": "7c8b99be-837a-4be7-a44e-4aa0bfe3f284",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,

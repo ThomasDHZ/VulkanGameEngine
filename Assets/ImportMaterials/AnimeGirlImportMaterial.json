@@ -49,7 +49,7 @@
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_AlbedoTexture.png" ],
     "TextureId": "3390cc1f-e1f9-431f-a094-88c0490026a1",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -78,7 +78,7 @@
   "MetallicMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_MetallicTexture.png" ],
     "TextureId": "bfaa7a16-8c8b-4dee-bb07-70e521249d54",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -107,7 +107,7 @@
   "RoughnessMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_RoughnessTexture.png" ],
     "TextureId": "1f9d850d-d8af-4635-b57d-e57f74a8a8c6",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -136,7 +136,7 @@
   "AmbientOcclusionMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_AOTexture.png" ],
     "TextureId": "69cbf740-e41a-4c45-901b-58d209b12272",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -165,7 +165,7 @@
   "NormalMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_NormalTexture.png" ],
     "TextureId": "fb05d690-713c-4361-be3c-da487e97929c",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -194,7 +194,7 @@
   "HeightMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_ParallaxTexture.png" ],
     "TextureId": "c3c20969-920f-4359-a41a-d6f83992046b",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -224,7 +224,7 @@
   "EmissionMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_EmissionColorTexture.png" ],
     "TextureId": "ebb1efa6-5661-4f87-b690-95f6ddcb7ae8",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -253,7 +253,7 @@
   "SubSurfaceScatteringColorMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_SSSTexture.png" ],
     "TextureId": "236ea5bc-a06b-4132-b4bc-a4900411aaa4",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -282,7 +282,7 @@
   "SubSurfaceScatteringPropertiesMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_SSSPropertiesTexture.png" ],
     "TextureId": "10686473-ec94-46d9-b908-d00999e6325c",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -311,7 +311,7 @@
   "SheenMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_Sheen.png" ],
     "TextureId": "0a6e0709-2e6d-44f9-97f4-13efdf748a32",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -340,7 +340,7 @@
   "SheenPropertiesMap": {
     "TextureFilePath": [ "ImportTextures/AnimeGirl_SheenProperties.png" ],
     "TextureId": "7d199d9a-e6d0-4b68-8a08-bdb90d96c30a",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,

@@ -22,7 +22,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 146,
+    "TextureByteLayout": 146,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_AlbedoTexture.ktx2"
     ],
@@ -54,7 +54,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_AnisotropyTexture.ktx2"
     ],
@@ -85,7 +85,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_ClearCoatTexture.ktx2"
     ],
@@ -121,7 +121,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 143,
+    "TextureByteLayout": 143,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_EmissionTexture.ktx2"
     ],
@@ -154,7 +154,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_MROTexture.ktx2"
     ],
@@ -186,7 +186,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_NormalTexture.ktx2"
     ],
@@ -218,7 +218,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_SheenTexture.ktx2"
     ],
@@ -249,7 +249,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_SubSurfaceScatteringPropertiesTexture.ktx2"
     ],
@@ -280,7 +280,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_SubSurfaceScatteringTexture.ktx2"
     ],
@@ -311,7 +311,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_TranslucentPropertiesTexture.ktx2"
     ],
@@ -342,7 +342,7 @@
       "sType": 31,
       "unnormalizedCoordinates": false
     },
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureFilePath": [
       "Textures\\StainGlassWindowTestMaterial_TranslucentTexture.ktx2"
     ],

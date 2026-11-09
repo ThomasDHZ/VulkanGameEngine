@@ -8,7 +8,7 @@
     "Textures/hot_lf.png"
   ],
   "TextureId": "64782092-bab5-4133-a0c9-9b6f206b68f0",
-  "TextureByteFormat": 43,
+  "TextureByteLayout": 43,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,

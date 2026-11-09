@@ -12,7 +12,7 @@ namespace VulkanEngineCS.Models
     {
         public List<string> TextureFilePath { get; set; } = new List<string>();
         public Guid TextureId = Guid.Empty;
-        public VkFormat TextureByteFormat { get; set; }
+        public VkFormat TextureByteLayout { get; set; }
         public TextureTypeEnum TextureType { get; set; }
         public TextureUsageTypeEnum TextureUsageType { get; set; }
         public VkSamplerCreateInfo SamplerCreateInfo { get; set; }

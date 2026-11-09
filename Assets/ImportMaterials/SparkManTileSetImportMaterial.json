@@ -45,7 +45,7 @@
   "AlbedoMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_DiffuseTexture.png" ],
     "TextureId": "ddb7c6f8-9521-45a1-a0a7-acf15ee3d861",
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -74,7 +74,7 @@
   "MetallicMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_MetallicTexture.png" ],
     "TextureId": "1866bc4e-7ec6-4a46-aeb3-3e98c583203f",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -103,7 +103,7 @@
   "RoughnessMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_RoughnessTexture.png" ],
     "TextureId": "9c7c5228-aed5-452c-a3b0-68dc6cd9cd28",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -132,7 +132,7 @@
   "AmbientOcclusionMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_AOTexture.png" ],
     "TextureId": "69cbf740-e41a-4c45-901b-58d209b12272",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -161,7 +161,7 @@
   "NormalMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_NormalTexture.png" ],
     "TextureId": "63e79b40-257e-43a0-98f7-f88d659c059a",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -190,7 +190,7 @@
   "AlphaMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_AlphaTexture.png" ],
     "TextureId": "a4a4caca-5056-4aa6-972c-5fe87ea8072a",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,
@@ -219,7 +219,7 @@
   "HeightMap": {
     "TextureFilePath": [ "ImportTextures/SparkMan_HeightTexture.png" ],
     "TextureId": "eabc5d3d-4a6e-4c94-a850-642176d6b7ae",
-    "TextureByteFormat": 37,
+    "TextureByteLayout": 37,
     "SampleCount": 1,
     "ImageType": 1,
     "TextureType": 5,

@@ -1,7 +1,7 @@
 {
   "TextureFilePath": [ "3dpea.com_133_hdrmaps_com_free_4K.ktx2" ],
   "TextureId": "07ffbaa7-6b6f-49c4-9403-df076ef18938",
-  "TextureByteFormat": 109,
+  "TextureByteLayout": 109,
   "SampleCount": 1,
   "ImageType": 1,
   "TextureType": 5,

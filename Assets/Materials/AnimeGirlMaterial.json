@@ -5,7 +5,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_AlbedoTexture.ktx2"
     ],
-    "TextureByteFormat": 146,
+    "TextureByteLayout": 146,
     "TextureType": 1,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -35,7 +35,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_NormalTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -65,7 +65,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_MROTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -95,7 +95,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_ClearCoatTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -125,7 +125,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_SubSurfaceScatteringTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -155,7 +155,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_SubSurfaceScatteringPropertiesTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -185,7 +185,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_SheenTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -215,7 +215,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_AnisotropyTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -245,7 +245,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_EmissionTexture.ktx2"
     ],
-    "TextureByteFormat": 143,
+    "TextureByteLayout": 143,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -275,7 +275,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_TranslucentTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {
@@ -305,7 +305,7 @@
     "TextureFilePath": [
       "Textures\\AnimeGirlMaterial_TranslucentPropertiesTexture.ktx2"
     ],
-    "TextureByteFormat": 145,
+    "TextureByteLayout": 145,
     "TextureType": 4,
     "TextureUsageType": 9,
     "SamplerCreateInfo": {

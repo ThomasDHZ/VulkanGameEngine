@@ -47,7 +47,7 @@ Texture TextureSystem::LoadTexture(const TextureLoader& textureLoader)
 		.ColorChannels = ColorChannelEnum::ChannelRGBA,
 		.TextureImageLayout = texData.TextureImageLayout,
 		.SampleCount = VK_SAMPLE_COUNT_1_BIT,
-		.TextureByteFormat = texData.TextureByteFormat,
+		.TextureByteLayout = texData.TextureByteLayout,
 		.TextureType = textureLoader.TextureType,
 		.IsRenderPassAttachment = false,
 		.IsCubeMap = texData.IsCubeMap
@@ -85,9 +85,9 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 	{
 		struct Candidate { VkFormat vkFmt; ktx_transcode_fmt_e ktxFmt; };
 		Vector<Candidate> candidates;
-		if (textureLoader.TextureByteFormat == VK_FORMAT_BC7_SRGB_BLOCK ||
-			textureLoader.TextureByteFormat == VK_FORMAT_ASTC_4x4_SRGB_BLOCK ||
-			textureLoader.TextureByteFormat == VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK)
+		if (textureLoader.TextureByteLayout == VK_FORMAT_BC7_SRGB_BLOCK ||
+			textureLoader.TextureByteLayout == VK_FORMAT_ASTC_4x4_SRGB_BLOCK ||
+			textureLoader.TextureByteLayout == VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK)
 		{
 			candidates.push_back({ VK_FORMAT_BC7_SRGB_BLOCK,		   KTX_TTF_BC7_RGBA });
 			candidates.push_back({ VK_FORMAT_ASTC_4x4_SRGB_BLOCK,	   KTX_TTF_ASTC_4x4_RGBA });
@@ -121,9 +121,9 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 		}
 	}
 
-	VkFormat textureByteFormat = ktxTexture2_GetVkFormat(ktex2);
-	bool isDepthFormat = (textureByteFormat >= VK_FORMAT_D16_UNORM && textureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
-	bool hasStencil = (textureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
+	VkFormat TextureByteLayout = ktxTexture2_GetVkFormat(ktex2);
+	bool isDepthFormat = (TextureByteLayout >= VK_FORMAT_D16_UNORM && TextureByteLayout <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (TextureByteLayout == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (TextureByteLayout == VK_FORMAT_D32_SFLOAT_S8_UINT || TextureByteLayout == VK_FORMAT_D24_UNORM_S8_UINT);
 	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	
@@ -149,7 +149,7 @@ TextureReturnFileData TextureSystem::LoadKtxTexture(const TextureLoader& texture
 		.ArrayLayers = ktex2->numLayers,
 		.BytesPerChannel = componentByteLength,
 		.TextureDimensions = {ktex2->baseWidth, ktex2->baseHeight, ktex2->baseDepth},
-		.TextureByteFormat = ktxTexture2_GetVkFormat(ktex2),
+		.TextureByteLayout = ktxTexture2_GetVkFormat(ktex2),
 		.TextureAspectFlags = aspectMask,
 		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = ktex2->isCubemap && ktex2->numLayers == 6,
@@ -195,8 +195,8 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 		textureData.insert(textureData.end(), layerData.begin(), layerData.end());
 	}
 
-	bool isDepthFormat = (textureLoader.TextureByteFormat >= VK_FORMAT_D16_UNORM && textureLoader.TextureByteFormat <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureLoader.TextureByteFormat == VK_FORMAT_X8_D24_UNORM_PACK32);
-	bool hasStencil = (textureLoader.TextureByteFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || textureLoader.TextureByteFormat == VK_FORMAT_D24_UNORM_S8_UINT);
+	bool isDepthFormat = (textureLoader.TextureByteLayout >= VK_FORMAT_D16_UNORM && textureLoader.TextureByteLayout <= VK_FORMAT_D32_SFLOAT_S8_UINT) || (textureLoader.TextureByteLayout == VK_FORMAT_X8_D24_UNORM_PACK32);
+	bool hasStencil = (textureLoader.TextureByteLayout == VK_FORMAT_D32_SFLOAT_S8_UINT || textureLoader.TextureByteLayout == VK_FORMAT_D24_UNORM_S8_UINT);
 	VkImageAspectFlags	  aspectMask = isDepthFormat ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	if (hasStencil)		  aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
@@ -207,7 +207,7 @@ TextureReturnFileData TextureSystem::LoadGeneralTexture(const TextureLoader& tex
 		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
 		.BytesPerChannel = 1,
 		.TextureDimensions = ivec3(width, height, 0),
-		.TextureByteFormat = textureLoader.TextureByteFormat,
+		.TextureByteLayout = textureLoader.TextureByteLayout,
 		.TextureAspectFlags = aspectMask,
 		.TextureImageLayout = isDepthFormat ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = static_cast<uint32>(textureLoader.TextureFilePath.size()) == 6,
@@ -266,7 +266,7 @@ TextureReturnFileData TextureSystem::LoadPngTexture(const TextureLoader& texture
 		.ArrayLayers = static_cast<uint32>(textureLoader.TextureFilePath.size()),
 		.BytesPerChannel = 1,
 		.TextureDimensions = ivec3(width, height, 1),
-		.TextureByteFormat = textureLoader.TextureByteFormat,
+		.TextureByteLayout = textureLoader.TextureByteLayout,
 		.TextureAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
 		.TextureImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		.IsCubeMap = false

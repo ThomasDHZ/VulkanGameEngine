@@ -22,7 +22,7 @@
     "IsSkyBox": false,
     "MipMapCount": 1,
     "SampleCount": 1,
-    "TextureByteFormat": 43,
+    "TextureByteLayout": 43,
     "TextureFilePath": [ "LevelEditorIcons/Lightbulb.png" ],
     "TextureId": "{76F4A69E-20C5-407C-99BD-E4CE89FE494C}",
     "TextureType": 1,

@@ -16,7 +16,7 @@
       "RenderAttachmentTypes": [
         0
       ],
-      "TextureByteFormat": 44,
+      "TextureByteLayout": 44,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {

@@ -17,7 +17,7 @@
         3,
         3
       ],
-      "TextureByteFormat": 126,
+      "TextureByteLayout": 126,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
@@ -55,7 +55,7 @@
         4,
         0
       ],
-      "TextureByteFormat": 43,
+      "TextureByteLayout": 43,
       "LoadOp": 1,
       "StoreOp": 0,
       "SamplerCreateInfo": {
