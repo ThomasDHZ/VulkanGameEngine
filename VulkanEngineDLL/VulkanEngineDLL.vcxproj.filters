@@ -170,9 +170,6 @@
     <ClCompile Include="from_json.cpp">
       <Filter>Source Files\Json</Filter>
     </ClCompile>
-    <ClCompile Include="CHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>

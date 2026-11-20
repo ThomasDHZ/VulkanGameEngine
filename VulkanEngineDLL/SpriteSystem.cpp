@@ -127,6 +127,8 @@ void SpriteSystem::Update(const float& deltaTime)
         }
         const ivec2 frame = animation.FrameList[sprite.CurrentFrame];
         spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * frame.x, vram.SpriteUVSize.y * frame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
+
+        memoryPoolSystem.SpriteInstanceMemoryPool.UpdateMemoryPoolObject<SpriteInstance>(sprite.SpriteInstanceId, spriteInstance);
     }
 }
 

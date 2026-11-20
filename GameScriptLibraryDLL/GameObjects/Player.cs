@@ -87,7 +87,10 @@ namespace GameScriptLibraryDLL.GameObjects
             bool rightPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] == 1);
             bool upPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_UP] == 1);
             bool downPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_DPAD_DOWN] == 1);
-            bool shootPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_SQUARE] == 1);
+            bool shootPressed = input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_SQUARE] == 1) ||
+                                input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_TRIANGLE] == 1) ||
+                                input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_CROSS] == 1) ||
+                                input != null && (input->buttonsList[(int)GamePadButtonEnum.GLFW_GAMEPAD_BUTTON_CIRCLE] == 1);
 
             if (leftPressed)
             {
@@ -111,12 +114,9 @@ namespace GameScriptLibraryDLL.GameObjects
                 transform->Position = new(transform->Position.x, transform->Position.y - PlayerSpeed * deltaTime);
             }
 
-            if (shootPressed &&
-                PlayerShotMaximum > instance.PlayerShotCount &&
-                (instance.CoolDownTime += deltaTime) > CoolDownTimer)
-
+            if (shootPressed)
             {
-                GameObject.CreateGameObject(GameObjectTypeEnum.kGameObjectMegaManShot, transform->Position, instance.GameObjectId);
+                GameObject.CreateGameObjectJson("C:\\Users\\DHZ\\Documents\\GitHub\\VulkanGameEngine\\Assets\\Prefabs\\BulletObject.json", transform->Position, instance.GameObjectId);
                 instance.CoolDownTime = 0.0f;
             }
             transform->Dirty = true;

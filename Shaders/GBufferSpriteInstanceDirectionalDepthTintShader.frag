@@ -7,7 +7,7 @@
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
-
+#include "MemoryPool.glsl"
 
 layout(location = 0)  in vec2       PS_UV;
 layout(location = 1)  in flat ivec2 PS_FlipSprite;
@@ -86,6 +86,78 @@ layout(binding = 1) buffer BindlessBuffer
 layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];
+struct SpriteInstance
+{
+    vec2  SpritePosition;
+    vec4  UVOffset;
+    vec2  SpriteSize;
+    ivec2 FlipSprite;
+    vec4  Color;
+    mat4  InstanceTransform;
+    uint  MaterialId;
+    uint  SpriteId;
+    uint  SpriteLayer;
+};
+
+layout(std430, binding = 5) buffer SpriteInstanceMemoryPool
+{
+    MemoryPoolHeader Header;
+    uint Data[];
+} spriteInstanceMemoryPool;
+
+SpriteInstance GetSpriteInstance(uint index)
+{
+    SpriteInstance sprite;
+
+    if (index >= spriteInstanceMemoryPool.Header.ObjectCount)
+    {
+        sprite.SpritePosition = vec2(0.0);
+        sprite.UVOffset = vec4(0.0);
+        sprite.SpriteSize = vec2(0.0);
+        sprite.FlipSprite = ivec2(0);
+        sprite.Color = vec4(0.0);
+        sprite.InstanceTransform = mat4(1.0);
+        sprite.MaterialId = 0u;
+        sprite.SpriteId = 0u;
+        sprite.SpriteLayer = 0u;
+        return sprite;
+    }
+
+    uint offset = index * (spriteInstanceMemoryPool.Header.ObjectSize / 4u);
+
+    // Manual unpack (order must match your C++ struct layout)
+    sprite.SpritePosition.x = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.SpritePosition.y = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+
+    sprite.UVOffset.x = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.UVOffset.y = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.UVOffset.z = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.UVOffset.w = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+
+    sprite.SpriteSize.x = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.SpriteSize.y = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+
+    sprite.FlipSprite.x = int(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.FlipSprite.y = int(spriteInstanceMemoryPool.Data[offset++]);
+
+    sprite.Color.x = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.Color.y = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.Color.z = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+    sprite.Color.w = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+
+    // mat4 (column-major, 16 floats)
+    for (int col = 0; col < 4; ++col)
+        for (int row = 0; row < 4; ++row)
+            sprite.InstanceTransform[col][row] = uintBitsToFloat(spriteInstanceMemoryPool.Data[offset++]);
+
+    sprite.MaterialId = spriteInstanceMemoryPool.Data[offset++];
+    sprite.SpriteId = spriteInstanceMemoryPool.Data[offset++];
+    sprite.SpriteLayer = spriteInstanceMemoryPool.Data[offset++];
+
+    return sprite;
+}
+
+
 #include "BindlessHelpers.glsl"
 
 const float IBL_EXPOSURE = 2.5;

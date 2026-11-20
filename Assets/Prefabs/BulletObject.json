@@ -1,0 +1,49 @@
+{
+  "GameObjectType": 2,
+  "GameObjectDllType": "GameScriptLibraryDLL.GameObjects.PlayerShotScript, GameScriptLibraryDLL",
+  "GameObjectLuaScript": null,
+  "SpriteVramId": "623e5b6b-b1f8-4e69-8dca-237069a373e2",
+  "GameObjectVariableList": [
+    {
+      "VariableName": "ShotSpeed",
+      "Value": 600,
+      "ConstVariable": true,
+      "VariableByteSize": 4,
+      "MemberTypeEnum": 3
+    }
+  ],
+  "ComponentList": [
+    {
+      "GameObjectPosition": [
+        0.0,
+        0.0
+      ],
+      "GameObjectRotation": [
+        0.0,
+        0.0
+      ],
+      "GameObjectScale": [
+        1.0,
+        1.0
+      ],
+      "ComponentType": 2
+    },
+    {
+      "ComponentType": 1,
+      "VramSpriteId": "623e5b6b-b1f8-4e69-8dca-237069a373e2"
+    },
+    {
+      "ComponentType": 8,
+      "ColliderSize": [
+        464.0,
+        688.0
+      ],
+      "ColliderOffset": [
+        0.0,
+        0.0
+      ],
+      "ColliderEnabled": true,
+      "IsTrigger": false
+    }
+  ]
+}

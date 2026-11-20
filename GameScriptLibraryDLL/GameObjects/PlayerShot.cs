@@ -23,6 +23,7 @@ namespace GameScriptLibraryDLL.GameObjects
     public unsafe class PlayerShot : GameObject, IGameObjectType
     {
         public float Speed { get; } = 200.0f;
+        public uint Power { get; } = 32;
         public static GameObjectTypeEnum ObjectType => GameObjectTypeEnum.kGameObjectMegaManShot;
 
         public override IntPtr Create()

@@ -51,6 +51,7 @@ void GameSystem::StartUp()
     textSystem.StartUp();
     textSystem.SetFont("fonts/arial.ttf");
     memoryPoolSystem.StartUp();
+
     networkSystem.StartAsServer(7777);
     //luaScriptingSystem.StartUp();
     cSharpScriptSystem.Initialize();

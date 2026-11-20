@@ -8,6 +8,8 @@ MemoryPoolSystem& memoryPoolSystem = MemoryPoolSystem::Get();
 
 void MemoryPoolSystem::StartUp()
 {
+    SpriteInstanceMemoryPool = MemoryPool(nullptr, sizeof(SpriteInstance), 0, 512, 5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
     std::cout << "MemoryPoolSystem::StartUp() started\n";
     for (int x = 0; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
     {
@@ -154,106 +156,69 @@ void MemoryPoolSystem::ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint
 
 void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
 {
-    VkDescriptorBufferInfo  sceneDataBuffer = VkDescriptorBufferInfo
+    descripterPool = VulkanBoundDescriptorSet(16);
+    descripterPool.AddDescriptorSetBindings(Vector<VulkanDescriptorSet>
     {
-        .buffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.SceneDataBufferIndex).Buffer(),
-        .offset = 0,
-        .range = VK_WHOLE_SIZE
-    };
-
-    VkDescriptorBufferInfo  bindlessDataBuffer = VkDescriptorBufferInfo
-    {
-        .buffer = bufferSystem.FindVulkanBuffer(memoryPoolSystem.GpuDataBufferIndex).Buffer(),
-        .offset = 0,
-        .range = VK_WHOLE_SIZE
-    };
-
-    Vector<VkDescriptorPoolSize> poolSizes = {
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 512},
-        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture2DInitialCapacity + Texture3DInitialCapacity + TextureCubeMapInitialCapacity + 1024},
-        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 64}
-    };
-
-    Vector<VkDescriptorSetLayoutBinding> bindings =
-    {
-        { SceneDataDescriptorBinding   , VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1,                             VK_SHADER_STAGE_ALL},
-        { BindlessDataDescriptorBinding, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1,                             VK_SHADER_STAGE_ALL},
-        { CubeMapDescriptorBinding     , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureCubeMapInitialCapacity, VK_SHADER_STAGE_ALL},
-        { Texture2DBinding             , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture2DInitialCapacity,      VK_SHADER_STAGE_ALL},
-        { Texture3DBinding             , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Texture3DInitialCapacity,      VK_SHADER_STAGE_ALL},
-    };
-
-    Vector<VkDescriptorBindingFlags> flags =
-    {
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
-        VkDescriptorBindingFlags { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT }
-    };
-
-    VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-        .bindingCount = static_cast<uint32>(flags.size()),
-        .pBindingFlags = flags.data()
-    };
-
-    VkDescriptorPoolCreateInfo poolInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
-        .maxSets = 64,
-        .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-        .pPoolSizes = poolSizes.data()
-    };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorPool(vulkan.LogicalDevice(), &poolInfo, nullptr, &memoryPoolSystem.GlobalBindlessPool));
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = &flagsInfo,
-        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
-        .bindingCount = static_cast<uint32_t>(bindings.size()),
-        .pBindings = bindings.data()
-    };
-    VULKAN_THROW_IF_FAIL(vkCreateDescriptorSetLayout(vulkan.LogicalDevice(), &layoutInfo, nullptr, &memoryPoolSystem.GlobalBindlessDescriptorSetLayout));
-
-    VkDescriptorSetAllocateInfo allocInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = memoryPoolSystem.GlobalBindlessPool,
-        .descriptorSetCount = 1,
-        .pSetLayouts = &memoryPoolSystem.GlobalBindlessDescriptorSetLayout
-    };
-    VULKAN_THROW_IF_FAIL(vkAllocateDescriptorSets(vulkan.LogicalDevice(), &allocInfo, &memoryPoolSystem.GlobalBindlessDescriptorSet));
-
-    Vector<VkWriteDescriptorSet> writeDescriptorSetList = Vector<VkWriteDescriptorSet>
-    {
-        VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 0,
-                .dstArrayElement = 0,
-                .descriptorCount = 1,
-                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                .pBufferInfo = &sceneDataBuffer,
-            },
-
-        VkWriteDescriptorSet
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-                .dstBinding = 1,
-                .dstArrayElement = 0,
-                .descriptorCount = 1,
-                .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                .pBufferInfo = &bindlessDataBuffer,
-            }
-    };
-    vkUpdateDescriptorSets(vulkan.LogicalDevice(), static_cast<uint32>(writeDescriptorSetList.size()), writeDescriptorSetList.data(), 0, nullptr);
+        VulkanDescriptorSet
+        {
+            .Binding = SceneDataDescriptorBinding,
+            .DescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .DescriptorCount = 1,
+            .DescriptorPoolCount = 256,
+            .StageFlags = VK_SHADER_STAGE_ALL,
+            .DescriptorBindingFlags = VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+            .pBindings = nullptr,
+            .pImmutableSamplers = nullptr
+        },
+            VulkanDescriptorSet
+        {
+            .Binding = BindlessDataDescriptorBinding,
+            .DescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .DescriptorCount = 1,
+            .DescriptorPoolCount = 256,
+            .StageFlags = VK_SHADER_STAGE_ALL,
+            .DescriptorBindingFlags = VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+            .pBindings = nullptr,
+            .pImmutableSamplers = nullptr
+        },
+            VulkanDescriptorSet
+        {
+            .Binding = CubeMapDescriptorBinding,
+            .DescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .DescriptorCount = TextureCubeMapInitialCapacity,
+            .DescriptorPoolCount = TextureCubeMapInitialCapacity,
+            .StageFlags = VK_SHADER_STAGE_ALL,
+            .DescriptorBindingFlags = VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+            .pBindings = nullptr,
+            .pImmutableSamplers = nullptr
+        },
+            VulkanDescriptorSet
+        {
+            .Binding = Texture2DBinding,
+            .DescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .DescriptorCount = Texture2DInitialCapacity,
+            .DescriptorPoolCount = Texture2DInitialCapacity,
+            .StageFlags = VK_SHADER_STAGE_ALL,
+            .DescriptorBindingFlags = VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+            .pBindings = nullptr,
+            .pImmutableSamplers = nullptr
+        },
+            VulkanDescriptorSet
+        {
+            .Binding = Texture3DBinding,
+            .DescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .DescriptorCount = Texture3DInitialCapacity,
+            .DescriptorPoolCount = Texture3DInitialCapacity,
+            .StageFlags = VK_SHADER_STAGE_ALL,
+            .DescriptorBindingFlags = VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
+            .pBindings = nullptr,
+            .pImmutableSamplers = nullptr
+        },
+        SpriteInstanceMemoryPool.MemoryPoolDescriptorSet()
+    });
+    descripterPool.BuildDescriptorSets();
+    descripterPool.UpdateDataBufferDescriptorSet(memoryPoolSystem.SceneDataBufferIndex, SceneDataDescriptorBinding);
+    descripterPool.UpdateDataBufferDescriptorSet(memoryPoolSystem.GpuDataBufferIndex, BindlessDataDescriptorBinding);
 }
 
 void MemoryPoolSystem::SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex)
@@ -394,6 +359,7 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
     subPoolHeader.IsSlotActive[index] = 0x01;
     subPoolHeader.IsDirty = true;
     RefreshGpuHeaderCounts();
+    SpriteInstanceMemoryPool.AllocateObject();
     return index;
 }
 
@@ -439,52 +405,13 @@ void MemoryPoolSystem::UpdateMemoryPool()
 
     if (IsDescriptorSetDirty)
     {
-        UpdateDataBufferDescriptorSet(GpuDataBufferIndex, BindlessDataDescriptorBinding);
+        descripterPool.UpdateDataBufferDescriptorSet(GpuDataBufferIndex, BindlessDataDescriptorBinding);
         IsDescriptorSetDirty = false;
     }
-}
 
-void MemoryPoolSystem::UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding)
-{
-    VkDescriptorImageInfo textureUpdate = {
-          .sampler = texture.TextureSampler(),
-          .imageView = texture.TextureViews().front(),
-          .imageLayout = texture.m_colorChannels == ColorChannelEnum::ChannelR ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-    };
-
-    VkWriteDescriptorSet descriptorUpdate = VkWriteDescriptorSet
-    {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-        .dstBinding = binding,
-        .dstArrayElement = textureGpuBufferIndex,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .pImageInfo = &textureUpdate,
-    };
-    vkUpdateDescriptorSets(vulkan.LogicalDevice(), 1, &descriptorUpdate, 0, nullptr);
-}
-
-void MemoryPoolSystem::UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding)
-{
-    VkDescriptorBufferInfo bufferUpdate = VkDescriptorBufferInfo
-    {
-        .buffer = bufferSystem.FindVulkanBuffer(vulkanGpuBufferIndex).Buffer(),
-        .offset = 0,
-        .range = VK_WHOLE_SIZE
-    };
-
-    VkWriteDescriptorSet descriptorUpdate = VkWriteDescriptorSet
-    {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = memoryPoolSystem.GlobalBindlessDescriptorSet,
-        .dstBinding = binding,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        .pBufferInfo = &bufferUpdate,
-    };
-    vkUpdateDescriptorSets(vulkan.LogicalDevice(), 1, &descriptorUpdate, 0, nullptr);
+    SpriteInstanceMemoryPool.UpdateMemoryPool(descripterPool);
+    auto sprites = SpriteInstanceMemoryPool.ObjectList<SpriteInstance>();
+    uint32 a = 34;
 }
 
 void MemoryPoolSystem::RefreshGpuHeaderCounts()
@@ -692,7 +619,7 @@ uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)
         textureMetaDataHeader.LayerCount = texture.TextureArrayLayers();
         textureMetaDataHeader.Format = (uint32)texture.TextureImageLayout();
         textureMetaDataHeader.Type = 1;
-        memoryPoolSystem.UpdateTextureDescriptorSet(gpuTextureIndex, texture, memoryPoolSystem.CubeMapDescriptorBinding);
+        memoryPoolSystem.descripterPool.UpdateTextureDescriptorSet(gpuTextureIndex, texture, memoryPoolSystem.CubeMapDescriptorBinding);
         return gpuTextureIndex;
     }
     else
@@ -706,7 +633,7 @@ uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)
         textureMetaDataHeader.LayerCount = texture.TextureArrayLayers();
         textureMetaDataHeader.Format = (uint32)texture.TextureImageLayout();
         textureMetaDataHeader.Type = 0;
-        memoryPoolSystem.UpdateTextureDescriptorSet(gpuTextureIndex, texture, memoryPoolSystem.Texture2DBinding);
+        memoryPoolSystem.descripterPool.UpdateTextureDescriptorSet(gpuTextureIndex, texture, memoryPoolSystem.Texture2DBinding);
         return gpuTextureIndex;
     }
 }
@@ -877,8 +804,8 @@ const MemoryPoolLoader MemoryPoolSystem::GetMemoryPoolInfo()
 {
     return MemoryPoolLoader
     {
-        .GlobalBindlessPool = GlobalBindlessPool,
-        .GlobalBindlessDescriptorSet = GlobalBindlessDescriptorSet,
-        .GlobalBindlessDescriptorSetLayout = GlobalBindlessDescriptorSetLayout
+        .GlobalBindlessPool = descripterPool.DescriptorPool(),
+        .GlobalBindlessDescriptorSet = descripterPool.DescriptorSet(),
+        .GlobalBindlessDescriptorSetLayout = descripterPool.DescriptorSetLayout()
     };
 }

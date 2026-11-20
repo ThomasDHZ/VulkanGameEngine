@@ -2,6 +2,8 @@
 #include "DLL.h"
 #include <Platform.h>
 #include "ShaderSystem.h"
+#include <MemoryPool.h>
+#include <VulkanBoundDescriptorSet.h>
 
 enum MemoryPoolTypes
 {
@@ -64,18 +66,6 @@ struct MemoryPoolSubBufferHeader
 	Vector<byte>			IsSlotActive;         // 0 = inactive, 1 = active
 	Vector<uint32>			FreeIndices;
 	bool					IsDirty = true;
-};
-
-struct TextureMetadataHeader
-{
-	uint32 Width = 0;
-	uint32 Height = 0;
-	uint32 Depth = 0;
-	uint32 MipLevels = 1;
-	uint32 LayerCount = 1; // 1 = 2D, 6 = Cubemap
-	uint32 Format = 1;
-	uint32 Type = 0; // 0 = 2D, 1 = Cube
-	uint32 ArrayIndex = 0; // Index into the correct sampler array
 };
 
 struct SceneDataBuffer
@@ -159,9 +149,6 @@ private:
 	static constexpr size_t									 SpriteInstanceInitialCapacity = 1024;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
-	VkDescriptorPool										 GlobalBindlessPool = VK_NULL_HANDLE;
-	VkDescriptorSet											 GlobalBindlessDescriptorSet = VK_NULL_HANDLE;
-	VkDescriptorSetLayout									 GlobalBindlessDescriptorSetLayout = VK_NULL_HANDLE;
 
 	void													 RefreshGpuHeaderCounts();
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
@@ -182,6 +169,9 @@ public:
 	static constexpr uint32									 Texture3DInitialCapacity = 128; 
 	static constexpr uint32									 TextureCubeMapInitialCapacity = 128;
 
+	VulkanBoundDescriptorSet								 descripterPool;
+	MemoryPool												 SpriteInstanceMemoryPool;
+
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;
 	void*													 SceneDataPtr = nullptr;
@@ -198,8 +188,6 @@ public:
 	void													 StartUp();
 	uint32													 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
 	void													 UpdateMemoryPool();
-	void													 UpdateTextureDescriptorSet(uint32 textureGpuBufferIndex, VulkanTexture& texture, uint binding);
-	void													 UpdateDataBufferDescriptorSet(uint32 vulkanGpuBufferIndex, uint binding);
 	void													 SortSpriteInstancePool();
 	void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
 	void													 ResetMemoryPool();

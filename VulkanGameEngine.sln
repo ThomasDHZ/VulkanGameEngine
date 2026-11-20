@@ -60,7 +60,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameObjects", "GameObjects"
 	ProjectSection(SolutionItems) = preProject
 		Assets\GameObjects\DirectionalLightGameObject.json = Assets\GameObjects\DirectionalLightGameObject.json
 		Assets\GameObjects\MegaManObject.json = Assets\GameObjects\MegaManObject.json
-		Assets\GameObjects\MegaManShotObject.json = Assets\GameObjects\MegaManShotObject.json
 		Assets\GameObjects\PointLightGameObject.json = Assets\GameObjects\PointLightGameObject.json
 		Assets\GameObjects\TestGameObject.json = Assets\GameObjects\TestGameObject.json
 		Assets\GameObjects\WindowTestSpriteObject.json = Assets\GameObjects\WindowTestSpriteObject.json
@@ -101,8 +100,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{CB
 		Shaders\Constants.glsl = Shaders\Constants.glsl
 		Shaders\Lights.glsl = Shaders\Lights.glsl
 		Shaders\MaterialPropertiesBuffer.glsl = Shaders\MaterialPropertiesBuffer.glsl
+		Shaders\MemoryPool.glsl = Shaders\MemoryPool.glsl
 		Shaders\Includes\MemoryPoolBindings.glsl = Shaders\Includes\MemoryPoolBindings.glsl
 		Shaders\MeshPropertiesBuffer.glsl = Shaders\MeshPropertiesBuffer.glsl
+		Shaders\SprintInstance.glsl = Shaders\SprintInstance.glsl
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameShaders", "GameShaders", "{C8319AC3-B638-4E8F-8885-9C1B93547028}"
@@ -284,6 +285,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpriteVram", "SpriteVram", 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prefabs", "Prefabs", "{59C8FBD8-A786-46D1-8029-52A570E12837}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Prefabs\BulletObject.json = Assets\Prefabs\BulletObject.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

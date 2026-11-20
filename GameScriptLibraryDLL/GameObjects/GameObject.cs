@@ -36,9 +36,9 @@ namespace GameScriptLibraryDLL.GameObjects
 
         public GameObject() { }
 
-        public static UInt32 CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
+        public static UInt32 CreateGameObjectJson(string prefabJson, vec2 gameObjectPosition, uint parentGameObjectId = uint.MaxValue)
         {
-            return DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObject(gameObjectType, gameObjectPosition, parentGameObjectId));
+            return DLLSystem.CallDLLFunc(() => GameObjectSystem_CreateGameObjectJson(prefabJson, gameObjectPosition, parentGameObjectId));
         }
 
         //public static Dictionary<string, GameObjectVariable<T>> GetGameObjectVariables<T>(uint gameObjectId)
@@ -126,7 +126,7 @@ namespace GameScriptLibraryDLL.GameObjects
             return GetFromPtr<T>(ptr);
         }
 
-        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObject(GameObjectTypeEnum gameObjectType, vec2 gameObjectPosition, uint parentGameObjectId);
+        [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern UInt32 GameObjectSystem_CreateGameObjectJson([MarshalAs(UnmanagedType.LPStr)] string prefabJson, vec2 gameObjectPosition, uint parentGameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern IntPtr GameObjectSystem_GetGameObjectPtr(uint gameObjectId);
         [DllImport("VulkanEngineInterop.dll", CallingConvention = CallingConvention.StdCall)] private static extern void GameObjectSystem_DestroyGameObject(uint gameObjectId);
     }

@@ -412,13 +412,13 @@ String FileSystem::File_GetFileExtention(const char* fileName)
     const char* dot = strrchr(fileName, '.');
     if (!dot || dot == fileName)
     {
-        return NULL;
+        return String();
     }
 
     char* extension = (char*)malloc(strlen(dot));
     if (extension == NULL)
     {
-        return NULL;
+        return String();
     }
 
     strcpy(extension, dot + 1);
@@ -610,13 +610,13 @@ String FileSystem::GetFileExtention(const char* fileName)
     const char* dot = strrchr(fileName, '.');
     if (!dot || dot == fileName)
     {
-        return NULL;
+        return String();
     }
 
     char* extension = (char*)malloc(strlen(dot));
-    if (extension == NULL)
+    if (extension == nullptr)
     {
-        return NULL;
+        return String();
     }
 
     strcpy(extension, dot + 1);

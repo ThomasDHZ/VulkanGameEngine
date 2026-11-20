@@ -183,7 +183,7 @@ void RenderSystem::RecreateSwapchain(void* windowHandle, const float& deltaTime)
         {
             renderedTextures[x].texture = renderPass.AttachmentList()[x];
             const uint32 binding = renderedTextures[x].texture.m_textureType == TextureTypeEnum::kTextureType_CubeMap ? memoryPoolSystem.CubeMapDescriptorBinding: memoryPoolSystem.Texture2DBinding;
-            memoryPoolSystem.UpdateTextureDescriptorSet(renderedTextures[x].gpuTextureBufferIndex, renderedTextures[x].texture, binding);
+            memoryPoolSystem.descripterPool.UpdateTextureDescriptorSet(renderedTextures[x].gpuTextureBufferIndex, renderedTextures[x].texture, binding);
         }
         x++;
     }
