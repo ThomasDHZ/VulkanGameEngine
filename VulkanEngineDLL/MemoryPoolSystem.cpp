@@ -84,16 +84,6 @@ void MemoryPoolSystem::StartUp()
                 .IsDirty = true
             };
             break;
-        case MemoryPoolTypes::kSpriteInstanceBuffer:
-            MemorySubPoolHeader[type] = MemoryPoolSubBufferHeader{
-                .ActiveCount = 0,
-                .Capacity = SpriteInstanceInitialCapacity,
-                .Size = sizeof(SpriteInstance),
-                .IsSlotActive = Vector<byte>(SpriteInstanceInitialCapacity, 0x00),
-                .FreeIndices = Vector<uint32>(),
-                .IsDirty = true
-            };
-            break;
         }
     }
 
@@ -218,120 +208,120 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
     descripterPool.UpdateDataBufferDescriptorSet(memoryPoolSystem.GpuDataBufferIndex, BindlessDataDescriptorBinding);
 }
 
-void MemoryPoolSystem::SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex)
-{
-    SwapMemoryPoolElement(MemoryPoolTypes::kSpriteInstanceBuffer, oldSlotIndex, newSlotIndex);
-
-    MemoryPoolSubBufferHeader& memoryPoolSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    auto UpdateFreeIndices = [&memoryPoolSubPool](uint index)
-        {
-            auto it = std::find(memoryPoolSubPool.FreeIndices.begin(), memoryPoolSubPool.FreeIndices.end(), index);
-            if (memoryPoolSubPool.IsSlotActive[index])
-            {
-                if (it != memoryPoolSubPool.FreeIndices.end()) memoryPoolSubPool.FreeIndices.erase(it);
-            }
-            else if (it == memoryPoolSubPool.FreeIndices.end()) memoryPoolSubPool.FreeIndices.emplace_back(index);
-        };
-
-    SpriteInstance& spriteInstance1 = UpdateSpriteInstance(oldSlotIndex);
-    SpriteInstance& spriteInstance2 = UpdateSpriteInstance(newSlotIndex);
-
-    std::swap(spriteInstance1.SpriteId, spriteInstance2.SpriteId);
-    std::swap(memoryPoolSubPool.IsSlotActive[oldSlotIndex], memoryPoolSubPool.IsSlotActive[newSlotIndex]);
-
-    UpdateFreeIndices(oldSlotIndex);
-    UpdateFreeIndices(newSlotIndex);
-}
-
-void MemoryPoolSystem::SortSpriteInstancePool()
-{
-    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    if (!MappedBufferPtr || pool.ActiveCount == 0) return;
-
-    byte* base = static_cast<byte*>(MappedBufferPtr) + pool.Offset;
-    auto spriteAt = [&](uint32 slot) -> const SpriteInstance&
-        {
-            return *reinterpret_cast<const SpriteInstance*>(base + slot * pool.Size);
-        };
-    auto hasAlpha = [&](uint32 slot)
-        {
-            const SpriteInstance& sprite = spriteAt(slot);
-            const Material& material = materialSystem.FindMaterial(materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
-            return (material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0;
-        };
-
-    Vector<uint32> slots;
-    slots.reserve(pool.ActiveCount);
-    for (uint32 x = 0; x < pool.IsSlotActive.size(); ++x)
-    {
-        if (pool.IsSlotActive[x]) slots.push_back(x);
-    }
-
-    std::stable_sort(slots.begin(), slots.end(), [&](uint32 a, uint32 b)
-        {
-            return !hasAlpha(a) && hasAlpha(b);
-        });
-
-    const uint32 slotSize = static_cast<uint32>(slots.size());
-    Vector<byte> packed(slotSize * pool.Size);
-    for (uint32 x = 0; x < slotSize; ++x)
-    {
-        std::memcpy(packed.data() + x * pool.Size, base + slots[x] * pool.Size, pool.Size);
-    }
-    if (slotSize > 0) std::memcpy(base, packed.data(), slotSize * pool.Size);
-
-    std::fill(pool.IsSlotActive.begin(), pool.IsSlotActive.end(), byte{ 0x00 });
-    pool.FreeIndices.clear();
-    for (uint32 x = 0; x < slotSize; ++x)
-    {
-        pool.IsSlotActive[x] = 1;
-    }
-    for (uint32 x = slotSize; x < pool.Capacity; ++x)
-    {
-        pool.FreeIndices.push_back(pool.Capacity - 1 - x); 
-    }
-    pool.ActiveCount = slotSize;
-    pool.IsDirty = true;
-    RefreshGpuHeaderCounts();
-}
-
-uint32 MemoryPoolSystem::FindFirstAlphaSpriteIndex()
-{
-    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    if (!MappedBufferPtr || pool.ActiveCount == 0) return pool.ActiveCount; 
-
-    const byte* base = static_cast<const byte*>(MappedBufferPtr) + pool.Offset;
-    const uint32 limit = std::min(pool.ActiveCount, static_cast<uint32>(pool.IsSlotActive.size()));
-
-    for (uint32 x = 0; x < limit; ++x)
-    {
-        if (!pool.IsSlotActive[x]) continue;
-
-        const SpriteInstance& sprite = *reinterpret_cast<const SpriteInstance*>(base + x * pool.Size);
-        const Material& material = materialSystem.FindMaterial( materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
-        if ((material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0) return x;
-    }
-    return pool.ActiveCount;
-}
-
-void MemoryPoolSystem::SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex)
-{
-    if (oldSlotIndex == newSlotIndex) return;
-
-    MemoryPoolSubBufferHeader& memoryPoolSubPool = MemorySubPoolHeader[memoryPoolType];
-    if (oldSlotIndex >= memoryPoolSubPool.Capacity || newSlotIndex >= memoryPoolSubPool.Capacity) throw std::out_of_range("slot out of range");
-
-    uint32 oldOffset = memoryPoolSubPool.Offset + (oldSlotIndex * memoryPoolSubPool.Size);
-    uint32 newOffset = memoryPoolSubPool.Offset + (newSlotIndex * memoryPoolSubPool.Size);
-
-    void* swapCopyPtr = memorySystem.AddPtrBuffer<void*>(memoryPoolSubPool.Size, __FILE__, __LINE__, __func__);
-    std::memcpy(swapCopyPtr, static_cast<byte*>(MappedBufferPtr) + newOffset, memoryPoolSubPool.Size);
-    std::memcpy(static_cast<byte*>(MappedBufferPtr) + newOffset, static_cast<byte*>(MappedBufferPtr) + oldOffset, memoryPoolSubPool.Size);
-    std::memcpy(static_cast<byte*>(MappedBufferPtr) + oldOffset, swapCopyPtr, memoryPoolSubPool.Size);
-    memorySystem.DeletePtr(swapCopyPtr);
-
-    memoryPoolSubPool.IsDirty = true;
-}
+//void MemoryPoolSystem::SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex)
+//{
+//    SwapMemoryPoolElement(MemoryPoolTypes::kSpriteInstanceBuffer, oldSlotIndex, newSlotIndex);
+//
+//    MemoryPoolSubBufferHeader& memoryPoolSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+//    auto UpdateFreeIndices = [&memoryPoolSubPool](uint index)
+//        {
+//            auto it = std::find(memoryPoolSubPool.FreeIndices.begin(), memoryPoolSubPool.FreeIndices.end(), index);
+//            if (memoryPoolSubPool.IsSlotActive[index])
+//            {
+//                if (it != memoryPoolSubPool.FreeIndices.end()) memoryPoolSubPool.FreeIndices.erase(it);
+//            }
+//            else if (it == memoryPoolSubPool.FreeIndices.end()) memoryPoolSubPool.FreeIndices.emplace_back(index);
+//        };
+//
+//    SpriteInstance& spriteInstance1 = UpdateSpriteInstance(oldSlotIndex);
+//    SpriteInstance& spriteInstance2 = UpdateSpriteInstance(newSlotIndex);
+//
+//    std::swap(spriteInstance1.SpriteId, spriteInstance2.SpriteId);
+//    std::swap(memoryPoolSubPool.IsSlotActive[oldSlotIndex], memoryPoolSubPool.IsSlotActive[newSlotIndex]);
+//
+//    UpdateFreeIndices(oldSlotIndex);
+//    UpdateFreeIndices(newSlotIndex);
+//}
+//
+//void MemoryPoolSystem::SortSpriteInstancePool()
+//{
+//    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+//    if (!MappedBufferPtr || pool.ActiveCount == 0) return;
+//
+//    byte* base = static_cast<byte*>(MappedBufferPtr) + pool.Offset;
+//    auto spriteAt = [&](uint32 slot) -> const SpriteInstance&
+//        {
+//            return *reinterpret_cast<const SpriteInstance*>(base + slot * pool.Size);
+//        };
+//    auto hasAlpha = [&](uint32 slot)
+//        {
+//            const SpriteInstance& sprite = spriteAt(slot);
+//            const Material& material = materialSystem.FindMaterial(materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
+//            return (material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0;
+//        };
+//
+//    Vector<uint32> slots;
+//    slots.reserve(pool.ActiveCount);
+//    for (uint32 x = 0; x < pool.IsSlotActive.size(); ++x)
+//    {
+//        if (pool.IsSlotActive[x]) slots.push_back(x);
+//    }
+//
+//    std::stable_sort(slots.begin(), slots.end(), [&](uint32 a, uint32 b)
+//        {
+//            return !hasAlpha(a) && hasAlpha(b);
+//        });
+//
+//    const uint32 slotSize = static_cast<uint32>(slots.size());
+//    Vector<byte> packed(slotSize * pool.Size);
+//    for (uint32 x = 0; x < slotSize; ++x)
+//    {
+//        std::memcpy(packed.data() + x * pool.Size, base + slots[x] * pool.Size, pool.Size);
+//    }
+//    if (slotSize > 0) std::memcpy(base, packed.data(), slotSize * pool.Size);
+//
+//    std::fill(pool.IsSlotActive.begin(), pool.IsSlotActive.end(), byte{ 0x00 });
+//    pool.FreeIndices.clear();
+//    for (uint32 x = 0; x < slotSize; ++x)
+//    {
+//        pool.IsSlotActive[x] = 1;
+//    }
+//    for (uint32 x = slotSize; x < pool.Capacity; ++x)
+//    {
+//        pool.FreeIndices.push_back(pool.Capacity - 1 - x); 
+//    }
+//    pool.ActiveCount = slotSize;
+//    pool.IsDirty = true;
+//    RefreshGpuHeaderCounts();
+//}
+//
+//uint32 MemoryPoolSystem::FindFirstAlphaSpriteIndex()
+//{
+//    auto& pool = MemorySubPoolHeader[kSpriteInstanceBuffer];
+//    if (!MappedBufferPtr || pool.ActiveCount == 0) return pool.ActiveCount; 
+//
+//    const byte* base = static_cast<const byte*>(MappedBufferPtr) + pool.Offset;
+//    const uint32 limit = std::min(pool.ActiveCount, static_cast<uint32>(pool.IsSlotActive.size()));
+//
+//    for (uint32 x = 0; x < limit; ++x)
+//    {
+//        if (!pool.IsSlotActive[x]) continue;
+//
+//        const SpriteInstance& sprite = *reinterpret_cast<const SpriteInstance*>(base + x * pool.Size);
+//        const Material& material = materialSystem.FindMaterial( materialSystem.FindMemoryPoolIndexByGuid(sprite.MaterialId));
+//        if ((material.FeatureMask & MaterialPropertiesEnum::kMaterialFeature_UsingAlpha) != 0) return x;
+//    }
+//    return pool.ActiveCount;
+//}
+//
+//void MemoryPoolSystem::SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex)
+//{
+//    if (oldSlotIndex == newSlotIndex) return;
+//
+//    MemoryPoolSubBufferHeader& memoryPoolSubPool = MemorySubPoolHeader[memoryPoolType];
+//    if (oldSlotIndex >= memoryPoolSubPool.Capacity || newSlotIndex >= memoryPoolSubPool.Capacity) throw std::out_of_range("slot out of range");
+//
+//    uint32 oldOffset = memoryPoolSubPool.Offset + (oldSlotIndex * memoryPoolSubPool.Size);
+//    uint32 newOffset = memoryPoolSubPool.Offset + (newSlotIndex * memoryPoolSubPool.Size);
+//
+//    void* swapCopyPtr = memorySystem.AddPtrBuffer<void*>(memoryPoolSubPool.Size, __FILE__, __LINE__, __func__);
+//    std::memcpy(swapCopyPtr, static_cast<byte*>(MappedBufferPtr) + newOffset, memoryPoolSubPool.Size);
+//    std::memcpy(static_cast<byte*>(MappedBufferPtr) + newOffset, static_cast<byte*>(MappedBufferPtr) + oldOffset, memoryPoolSubPool.Size);
+//    std::memcpy(static_cast<byte*>(MappedBufferPtr) + oldOffset, swapCopyPtr, memoryPoolSubPool.Size);
+//    memorySystem.DeletePtr(swapCopyPtr);
+//
+//    memoryPoolSubPool.IsDirty = true;
+//}
 
 uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
 {
@@ -415,7 +405,6 @@ void MemoryPoolSystem::RefreshGpuHeaderCounts()
     GpuDataMemoryPoolHeader.Texture2DCount        = MemorySubPoolHeader[kTexture2DMetadataBuffer].ActiveCount;
     GpuDataMemoryPoolHeader.Texture3DCount        = MemorySubPoolHeader[kTexture3DMetadataBuffer].ActiveCount;
     GpuDataMemoryPoolHeader.TextureCubeMapCount   = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].ActiveCount;
-    GpuDataMemoryPoolHeader.SpriteInstanceCount   = MemorySubPoolHeader[kSpriteInstanceBuffer].ActiveCount;
     IsHeaderDirty = true;
 }
 
@@ -474,11 +463,7 @@ void MemoryPoolSystem::UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolTypeToUp
 
         .TextureCubeMapOffset = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Offset,
         .TextureCubeMapCount = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].ActiveCount,
-        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size,
-
-        .SpriteInstanceOffset = MemorySubPoolHeader[kSpriteInstanceBuffer].Offset,
-        .SpriteInstanceCount = MemorySubPoolHeader[kSpriteInstanceBuffer].ActiveCount,
-        .SpriteInstanceSize = MemorySubPoolHeader[kSpriteInstanceBuffer].Size
+        .TextureCubeMapSize = MemorySubPoolHeader[kTextureCubeMapMetadataBuffer].Size
     };
 }
 
@@ -557,17 +542,6 @@ TextureMetadataHeader& MemoryPoolSystem::UpdateTextureCubeMapMetadataHeader(uint
     return *reinterpret_cast<TextureMetadataHeader*>(static_cast<byte*>(MappedBufferPtr) + offset);
 }
 
-SpriteInstance& MemoryPoolSystem::UpdateSpriteInstance(uint32 index)
-{
-    MemoryPoolSubBufferHeader& spriteInstanceSubPool = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    if (index >= spriteInstanceSubPool.Capacity) throw std::out_of_range("Sprite Instance index out of range: " + std::to_string(index) + " >= " + std::to_string(spriteInstanceSubPool.Capacity));
-    if (index >= spriteInstanceSubPool.IsSlotActive.size() || !spriteInstanceSubPool.IsSlotActive[index]) throw std::runtime_error("Sprite Instance slot inactive at index " + std::to_string(index));
-
-    uint32 offset = spriteInstanceSubPool.Offset + (index * sizeof(SpriteInstance));
-    spriteInstanceSubPool.IsDirty = true;
-    return *reinterpret_cast<SpriteInstance*>(static_cast<byte*>(MappedBufferPtr) + offset);
-}
-
 SceneDataBuffer& MemoryPoolSystem::UpdateSceneDataBuffer()
 {
     IsSceneBufferDirty = true;
@@ -630,24 +604,24 @@ uint32 MemoryPoolSystem::AddToMemoryPool(VulkanTexture& texture)
     }
 }
 
-Vector<SpriteInstance*> MemoryPoolSystem::GetActiveSpriteInstancePointers()
-{
-    auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    if (sub.ActiveCount == 0 || !MappedBufferPtr) return {};
-
-    Vector<SpriteInstance*> pointers;
-    pointers.reserve(sub.ActiveCount);
-    byte* base = static_cast<byte*>(MappedBufferPtr) + sub.Offset;
-    for (uint32 x = 0; x < sub.Capacity; ++x)
-    {
-        if (sub.IsSlotActive[x])
-        {
-            pointers.push_back(reinterpret_cast<SpriteInstance*>(base + x * sub.Size));
-        }
-    }
-    sub.IsDirty = true;
-    return pointers;
-}
+//Vector<SpriteInstance*> MemoryPoolSystem::GetActiveSpriteInstancePointers()
+//{
+//    auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
+//    if (sub.ActiveCount == 0 || !MappedBufferPtr) return {};
+//
+//    Vector<SpriteInstance*> pointers;
+//    pointers.reserve(sub.ActiveCount);
+//    byte* base = static_cast<byte*>(MappedBufferPtr) + sub.Offset;
+//    for (uint32 x = 0; x < sub.Capacity; ++x)
+//    {
+//        if (sub.IsSlotActive[x])
+//        {
+//            pointers.push_back(reinterpret_cast<SpriteInstance*>(base + x * sub.Size));
+//        }
+//    }
+//    sub.IsDirty = true;
+//    return pointers;
+//}
 
 Vector<MeshPropertiesStruct> MemoryPoolSystem::MeshBufferList()
 {
@@ -702,20 +676,6 @@ Vector<PointLight> MemoryPoolSystem::PointLightBufferList()
     Vector<PointLight> result(sub.ActiveCount);
     const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
     std::memcpy(result.data(), src, sub.ActiveCount * sizeof(PointLight));
-    return result;
-}
-
-Vector<SpriteInstance> MemoryPoolSystem::SpriteInstanceBufferList()
-{
-    const auto& sub = MemorySubPoolHeader[kSpriteInstanceBuffer];
-    if (sub.ActiveCount == 0 || !MappedBufferPtr)
-    {
-        return {};
-    }
-
-    Vector<SpriteInstance> result(sub.ActiveCount);
-    const byte* src = static_cast<const byte*>(MappedBufferPtr) + sub.Offset;
-    std::memcpy(result.data(), src, sub.ActiveCount * sizeof(SpriteInstance));
     return result;
 }
 

@@ -60,9 +60,6 @@ layout(binding = 1) buffer BindlessBuffer
     uint64_t TextureCubeMapOffset;
     uint TextureCubeMapCount;
     uint TextureCubeMapSize;
-    uint64_t SpriteInstanceOffset;
-    uint SpriteInstanceCount;
-    uint SpriteInstanceSize;
     uint Data[];
 } bindlessBuffer;
 

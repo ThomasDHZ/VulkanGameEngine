@@ -25,34 +25,33 @@ layout(std430, binding = 0)  buffer SceneDataBuffer
 	float Time;
 	uint  FrameIndex;
 }sceneDataBuffer;
-layout(binding = 1)  buffer BindlessBuffer 
-{ 
-    uint64_t MeshOffset;     
+
+layout(binding = 1) buffer BindlessBuffer
+{
+    uint64_t MeshOffset;
     uint MeshCount;
-    uint MeshSize;   
-    uint64_t MaterialOffset; 
+    uint MeshSize;
+    uint64_t MaterialOffset;
     uint MaterialCount;
-    uint MaterialSize;  
-    uint64_t DirectionalLightOffset; 
+    uint MaterialSize;
+    uint64_t DirectionalLightOffset;
     uint DirectionalLightCount;
-    uint DirectionalLightSize;   
-    uint64_t PointLightOffset; 
+    uint DirectionalLightSize;
+    uint64_t PointLightOffset;
     uint PointLightCount;
-    uint PointLightSize;     
+    uint PointLightSize;
     uint64_t Texture2DOffset;
-	uint Texture2DCount;
-	uint Texture2DSize;
-	uint64_t Texture3DOffset;
-	uint Texture3DCount;
-	uint Texture3DSize;
-	uint64_t TextureCubeMapOffset;
-	uint TextureCubeMapCount;
-	uint TextureCubeMapSize;
-    uint64_t SpriteInstanceOffset;
-	uint SpriteInstanceCount;
-    uint SpriteInstanceSize;
-    uint Data[]; 
+    uint Texture2DCount;
+    uint Texture2DSize;
+    uint64_t Texture3DOffset;
+    uint Texture3DCount;
+    uint Texture3DSize;
+    uint64_t TextureCubeMapOffset;
+    uint TextureCubeMapCount;
+    uint TextureCubeMapSize;
+    uint Data[];
 } bindlessBuffer;
+
 layout(binding = 2) uniform samplerCube CubeMap[];
 layout(binding = 3) uniform sampler2D TextureMap[];
 layout(binding = 4) uniform sampler3D Texture3DMap[];

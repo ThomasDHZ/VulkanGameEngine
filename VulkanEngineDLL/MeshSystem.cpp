@@ -464,10 +464,10 @@ const Vector<MeshDrawMessage> MeshSystem::DrawMesh(MeshTypeEnum meshType, bool a
 
 const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshId, bool alphaPass)
 {
-	memoryPoolSystem.SortSpriteInstancePool();
-	const uint32 firstAlpha = memoryPoolSystem.FindFirstAlphaSpriteIndex();
-	const uint32 start = alphaPass ? firstAlpha : 0;
-	const uint32 count = alphaPass ? memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).ActiveCount - firstAlpha : memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).ActiveCount;
+	//memoryPoolSystem.SortSpriteInstancePool();
+	//const uint32 firstAlpha = memoryPoolSystem.FindFirstAlphaSpriteIndex();
+	//const uint32 start = alphaPass ? firstAlpha : 0;
+	//const uint32 count = alphaPass ? memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).ActiveCount - firstAlpha : memoryPoolSystem.MemoryPoolSubBufferInfo(kSpriteInstanceBuffer).ActiveCount;
 
 	const Mesh& spriteMesh = meshSystem.FindMesh(instanceMeshId);
 	const MeshAssetData& meshAsset = meshSystem.FindMeshAssetData(spriteMesh.SharedAssetId);
@@ -483,7 +483,7 @@ const Vector<MeshDrawMessage> MeshSystem::DrawInstancedMesh(uint32 instanceMeshI
 			.IndexCount = meshAsset.IndexCount,
 			.InstanceCount = spriteSystem.SpriteInstanceMemoryPool.ActiveCount(),
 			.FirstIndex = 0,
-			.StartInstanceIndex = start,
+			.StartInstanceIndex = 0,
 			.VertexOffset = spriteSystem.SpriteInstanceMemoryPool.MemoryPoolDataStartOffset(),
 			.InstanceOffset = spriteSystem.SpriteInstanceMemoryPool.MemoryPoolDataStartOffset(),
 			.VertexBuffer = instanceBuffer.Buffer(),

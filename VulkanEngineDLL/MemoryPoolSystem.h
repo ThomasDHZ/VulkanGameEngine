@@ -14,7 +14,6 @@ enum MemoryPoolTypes
 	kTexture2DMetadataBuffer,
 	kTexture3DMetadataBuffer,
 	kTextureCubeMapMetadataBuffer,
-	kSpriteInstanceBuffer,
 	kEndofPool
 };
 
@@ -122,9 +121,6 @@ struct MemoryPoolBufferHeader
 	uint64 TextureCubeMapOffset = UINT64_MAX;
 	uint32 TextureCubeMapCount = UINT32_MAX;
 	uint32 TextureCubeMapSize = UINT32_MAX;
-	uint64 SpriteInstanceOffset = UINT64_MAX;
-	uint32 SpriteInstanceCount = UINT32_MAX;
-	uint32 SpriteInstanceSize = UINT32_MAX;
 };
 
 struct MeshPropertiesStruct;
@@ -146,7 +142,6 @@ private:
 	static constexpr size_t									 MaterialInitialCapacity = 4;
 	static constexpr size_t									 DirectionalLightInitialCapacity = 4;
 	static constexpr size_t									 PointLightInitialCapacity = 4;
-	static constexpr size_t									 SpriteInstanceInitialCapacity = 1024;
 
 	UnorderedMap<MemoryPoolTypes, MemoryPoolSubBufferHeader> MemorySubPoolHeader;
 
@@ -154,8 +149,8 @@ private:
 	void													 UpdateMemoryPoolHeader(MemoryPoolTypes memoryPoolType, uint32 newPoolSize);
 	void													 ResizeMemoryPool(MemoryPoolTypes memoryPoolToUpdate, uint32 resizeCount);
 	void													 CreateGlobalBindlessDescriptorSet();
-	void													 SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex);
-	void													 SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex);
+	//void													 SwapMemoryPoolElement(MemoryPoolTypes memoryPoolType, uint32 oldSlotIndex, uint32 newSlotIndex);
+	//void													 SwapSpriteInstanceMemoryPoolElement(uint32 oldSlotIndex, uint32 newSlotIndex);
 
 public:
 
@@ -170,8 +165,6 @@ public:
 	static constexpr uint32									 TextureCubeMapInitialCapacity = 128;
 
 	VulkanBoundDescriptorSet								 descripterPool;
-	//MemoryPool												 SpriteInstanceMemoryPool;
-
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;
 	void*													 SceneDataPtr = nullptr;
@@ -188,7 +181,7 @@ public:
 	void													 StartUp();
 	uint32													 AllocateObject(MemoryPoolTypes memoryPoolToUpdate);
 	void													 UpdateMemoryPool();
-	void													 SortSpriteInstancePool();
+	//void													 SortSpriteInstancePool();
 	void													 FreeObject(MemoryPoolTypes memoryPoolToUpdate, uint32 index);
 	void													 ResetMemoryPool();
 	
@@ -199,21 +192,21 @@ public:
 	TextureMetadataHeader&									 UpdateTexture2DMetadataHeader(uint32 index);
 	TextureMetadataHeader&									 UpdateTexture3DMetadataHeader(uint32 index);
 	TextureMetadataHeader&									 UpdateTextureCubeMapMetadataHeader(uint32 index);
-	SpriteInstance&											 UpdateSpriteInstance(uint32 index);
+	//SpriteInstance&											 UpdateSpriteInstance(uint32 index);
 	SceneDataBuffer&										 UpdateSceneDataBuffer();
 
 	uint													 FindDirectionalLightIndex(void* ptr);
 	uint													 FindPointLightIndex(void* ptr);
 
 	uint32													 AddToMemoryPool(VulkanTexture& texture);
-	Vector<SpriteInstance*>									 GetActiveSpriteInstancePointers();
+	//Vector<SpriteInstance*>									 GetActiveSpriteInstancePointers();
 
 	Vector<MeshPropertiesStruct>							 MeshBufferList();
 	Vector<GPUMaterial>										 MaterialBufferList();
 	Vector<DirectionalLight>								 DirectionalLightBufferList();
 	Vector<PointLight>										 PointLightBufferList();
-	Vector<SpriteInstance>									 SpriteInstanceBufferList();
-	uint32													 FindFirstAlphaSpriteIndex();
+	//Vector<SpriteInstance>									 SpriteInstanceBufferList();
+	//uint32													 FindFirstAlphaSpriteIndex();
 
 	const MemoryPoolSubBufferHeader							 MemoryPoolSubBufferInfo(MemoryPoolTypes memoryPoolType);
 	const Vector<VkDescriptorBufferInfo>					 GetSceneDataBufferDescriptor() const;
