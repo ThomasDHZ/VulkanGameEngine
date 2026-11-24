@@ -8,7 +8,7 @@ void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
     Sprite sprite = gameObjectSystem.EntityRegistry.emplace<Sprite>(gameObjectId, Sprite
         {
             .GameObjectId = gameObjectId,
-            .SpriteInstanceId = memoryPoolSystem.AllocateObject(kSpriteInstanceBuffer),
+            .SpriteInstanceId = SpriteInstanceMemoryPool.AllocateObject(),
             .CurrentAnimationId = 0,
             .CurrentFrame = 0,
             .SpriteLayer = FindSpriteVram(spriteVramId).SpriteLayer,
@@ -16,6 +16,11 @@ void SpriteSystem::CreateSprite(entt::entity gameObjectId, VkGuid& spriteVramId)
             .SpriteVramId = spriteVramId,
             .CurrentFrameTime = 0.0f
         });
+}
+
+void SpriteSystem::Startup()
+{
+    SpriteInstanceMemoryPool = MemoryPool(nullptr, sizeof(SpriteInstance), 0, 512u, true);
 }
 
 VramSpriteGuid SpriteSystem::LoadSpriteVRAM(const nlohmann::json& json)
@@ -105,7 +110,7 @@ void SpriteSystem::Update(const float& deltaTime)
         spriteMatrix = glm::scale(spriteMatrix, vec3(transform.GameObjectScale.x, transform.GameObjectScale.y, 1.0f));
 
         const auto& vram = FindSpriteVram(sprite.SpriteVramId);
-        SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
+        SpriteInstance& spriteInstance = SpriteInstanceMemoryPool.UpdateMemoryPoolObject<SpriteInstance>(sprite.SpriteInstanceId);
         spriteInstance.SpritePosition = transform.GameObjectPosition;
         spriteInstance.InstanceTransform = spriteMatrix;
         spriteInstance.MaterialId = materialSystem.FindMaterialPoolIndex(vram.SpriteMaterialID);
@@ -128,8 +133,9 @@ void SpriteSystem::Update(const float& deltaTime)
         const ivec2 frame = animation.FrameList[sprite.CurrentFrame];
         spriteInstance.UVOffset = vec4(vram.SpriteUVSize.x * frame.x, vram.SpriteUVSize.y * frame.y, vram.SpriteUVSize.x, vram.SpriteUVSize.y);
 
-        memoryPoolSystem.SpriteInstanceMemoryPool.UpdateMemoryPoolObject<SpriteInstance>(sprite.SpriteInstanceId, spriteInstance);
+        SpriteInstanceMemoryPool.UpdateMemoryPoolObject<SpriteInstance>(sprite.SpriteInstanceId, spriteInstance);
     }
+    SpriteInstanceMemoryPool.UpdateMemoryPool(memoryPoolSystem.descripterPool);
 }
 
 Animation2D& SpriteSystem::FindSpriteAnimation(const VramSpriteGuid& vramId, const AnimationListId& animationId)
@@ -144,7 +150,7 @@ SpriteInstance& SpriteSystem::FindPlayerSpriteInstance()
     {
         if (gameObject.GameObjectType == kGameObjectMegaMan)
         {
-            SpriteInstance& spriteInstance = memoryPoolSystem.UpdateSpriteInstance(sprite.SpriteInstanceId);
+            SpriteInstance& spriteInstance = SpriteInstanceMemoryPool.UpdateMemoryPoolObject<SpriteInstance>(sprite.SpriteInstanceId);
             return spriteInstance;
         }
     }

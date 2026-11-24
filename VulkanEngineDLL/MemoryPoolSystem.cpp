@@ -8,8 +8,6 @@ MemoryPoolSystem& memoryPoolSystem = MemoryPoolSystem::Get();
 
 void MemoryPoolSystem::StartUp()
 {
-    SpriteInstanceMemoryPool = MemoryPool(nullptr, sizeof(SpriteInstance), 0, 512, 5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-
     std::cout << "MemoryPoolSystem::StartUp() started\n";
     for (int x = 0; x < static_cast<int>(MemoryPoolTypes::kEndofPool); x++)
     {
@@ -213,8 +211,7 @@ void MemoryPoolSystem::CreateGlobalBindlessDescriptorSet()
             .DescriptorBindingFlags = VkDescriptorBindingFlags{ VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT },
             .pBindings = nullptr,
             .pImmutableSamplers = nullptr
-        },
-        SpriteInstanceMemoryPool.MemoryPoolDescriptorSet()
+        }
     });
     descripterPool.BuildDescriptorSets();
     descripterPool.UpdateDataBufferDescriptorSet(memoryPoolSystem.SceneDataBufferIndex, SceneDataDescriptorBinding);
@@ -359,7 +356,6 @@ uint32 MemoryPoolSystem::AllocateObject(MemoryPoolTypes memoryPoolToUpdate)
     subPoolHeader.IsSlotActive[index] = 0x01;
     subPoolHeader.IsDirty = true;
     RefreshGpuHeaderCounts();
-    SpriteInstanceMemoryPool.AllocateObject();
     return index;
 }
 
@@ -408,10 +404,6 @@ void MemoryPoolSystem::UpdateMemoryPool()
         descripterPool.UpdateDataBufferDescriptorSet(GpuDataBufferIndex, BindlessDataDescriptorBinding);
         IsDescriptorSetDirty = false;
     }
-
-    SpriteInstanceMemoryPool.UpdateMemoryPool(descripterPool);
-    auto sprites = SpriteInstanceMemoryPool.ObjectList<SpriteInstance>();
-    uint32 a = 34;
 }
 
 void MemoryPoolSystem::RefreshGpuHeaderCounts()

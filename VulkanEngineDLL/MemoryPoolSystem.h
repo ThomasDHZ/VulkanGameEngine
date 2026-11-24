@@ -170,7 +170,7 @@ public:
 	static constexpr uint32									 TextureCubeMapInitialCapacity = 128;
 
 	VulkanBoundDescriptorSet								 descripterPool;
-	MemoryPool												 SpriteInstanceMemoryPool;
+	//MemoryPool												 SpriteInstanceMemoryPool;
 
 
 	uint32													 SceneDataBufferIndex = UINT32_MAX;

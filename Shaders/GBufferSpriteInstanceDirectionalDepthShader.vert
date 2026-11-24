@@ -195,39 +195,25 @@ struct Vertex2D
 
 void main() 
 {
-    SpriteInstance sprite = GetSpriteInstance(gl_InstanceIndex);
-
     Vertex2D vertex = Vertex2D(vec2(0.0f), vec2(0.0f));
     switch(gl_VertexIndex) 
 	{
-        case 0: vertex = Vertex2D(vec2(0.0f               , sprite.SpriteSize.y), vec2(sprite.UVOffset.x                    , sprite.UVOffset.y                    )); break; 
-        case 1: vertex = Vertex2D(vec2(sprite.SpriteSize.x, sprite.SpriteSize.y), vec2(sprite.UVOffset.x + sprite.UVOffset.z, sprite.UVOffset.y                    )); break;
-        case 2: vertex = Vertex2D(vec2(sprite.SpriteSize.x, 0.0f           ),     vec2(sprite.UVOffset.x + sprite.UVOffset.z, sprite.UVOffset.y + sprite.UVOffset.w)); break;
-        case 3: vertex = Vertex2D(vec2(0.0f               , 0.0f           ),     vec2(sprite.UVOffset.x			        , sprite.UVOffset.y + sprite.UVOffset.w)); break;
+        case 0: vertex = Vertex2D(vec2(0.0f           , VS_SpriteSize.y), vec2(VS_UVOffset.x                , VS_UVOffset.y                )); break; 
+        case 1: vertex = Vertex2D(vec2(VS_SpriteSize.x, VS_SpriteSize.y), vec2(VS_UVOffset.x + VS_UVOffset.z, VS_UVOffset.y                )); break;
+        case 2: vertex = Vertex2D(vec2(VS_SpriteSize.x, 0.0f           ), vec2(VS_UVOffset.x + VS_UVOffset.z, VS_UVOffset.y + VS_UVOffset.w)); break;
+        case 3: vertex = Vertex2D(vec2(0.0f           , 0.0f           ), vec2(VS_UVOffset.x			    , VS_UVOffset.y + VS_UVOffset.w)); break;
     }
 
-    vec4 world = sprite.InstanceTransform * vec4(vertex.Position.xy, float(sprite.SpriteLayer) * SpriteLayerSpacing, 1.0);
-    vec3 T = normalize((sprite.InstanceTransform * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
-    if (sprite.FlipSprite.x == 1) T = -T;
-
-    vec3 B = normalize((sprite.InstanceTransform * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
-    if (sprite.FlipSprite.y == 1) B = -B;
-
-    vec3 N = normalize(cross(T, B));
-    if (sprite.FlipSprite.x != sprite.FlipSprite.y) N = -N;
-
+    const DirectionalLightBuffer light = GetDirectionalLight(0);
+    vec4 world = VS_InstanceTransform * vec4(vertex.Position.xy, float(VS_SpriteLayer) * SpriteLayerSpacing, 1.0);
     PS_Position = world.xyz;
 	PS_UV = vertex.UV;
-    PS_SpriteSize = sprite.SpriteSize;
-	PS_FlipSprite = sprite.FlipSprite;
-	PS_Color = sprite.Color;
-	PS_MaterialId = sprite.MaterialId;
-	PS_UVOffset = sprite.UVOffset;
-    PS_SpriteId = sprite.SpriteId;
-    PS_T = T;
-    PS_B = B;
-    PS_N = N;
+    PS_SpriteSize = VS_SpriteSize;
+	PS_FlipSprite = VS_FlipSprite;
+	PS_Color = VS_Color;
+	PS_MaterialId = VS_MaterialId;
+	PS_UVOffset = VS_UVOffset;
+    PS_SpriteId = VS_SpriteId;
 
-    const DirectionalLightBuffer light = GetDirectionalLight(0);
     gl_Position = light.LightSpaceMatrix * world;
 }
