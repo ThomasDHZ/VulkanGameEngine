@@ -34,7 +34,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 	{
 		MeshAssetDataList.emplace_back(MeshAssetData
 			{
-				.VertexBufferId = bufferSystem.CreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+				.VertexBufferId = bufferSystem.CreateStaticBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
 			});
 		MeshAssetLookup[meshHash] = MeshAssetDataList.size() - 1;
 	}
@@ -74,7 +74,7 @@ uint MeshSystem::CreateMesh(const String& key, MeshTypeEnum meshType, VertexLayo
 	{
 		MeshAssetDataList.emplace_back(MeshAssetData
 			{
-				.VertexBufferId = bufferSystem.CreateStaticVulkanBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
+				.VertexBufferId = bufferSystem.CreateStaticBuffer(vertexData.VertexData, vertexData.VertexDataSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
 				.IndexBufferId = bufferSystem.CreateVulkanBuffer<uint32>(indexList, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, true),
 				.IndexCount = static_cast<uint>(indexList.size()),
 			});
