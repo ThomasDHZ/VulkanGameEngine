@@ -3,42 +3,27 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_buffer_reference2 : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl" 
 #include "MemoryPool.glsl"
-
-layout(std430, binding = 0) buffer SceneDataBuffer
+#include "SceneDataBuffer.glsl"
+layout(push_constant) uniform SceneDataPushConstant
 {
-   uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-	uint DirectionalLightShadowMapId;
-	uint DirectionalLightShadowTintMapId;
-	uint PointLightShadowMapId;
-	uint PointLightShadowTintMapId;
-    uint _pad0;
-    uint _pad1;
+    int      MeshBufferIndex;
+    float    LevelHeightScale;
+    uint64_t SceneDataBufferPtr;
+    uint64_t MeshPropertiesBufferPtr;
+    uint64_t LightPropertiesBufferPtr;
+    uint64_t TextureHeaderBufferPtr;
+} sceneDataPushConstant;
 
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer;
+SceneDataBuffer sceneData = GetSceneDataBuffer(sceneDataPushConstant.SceneDataBufferPtr);
 
 layout(binding = 1) buffer BindlessBuffer
 {
@@ -169,13 +154,6 @@ layout(constant_id = 10) const uint VertexAttributeLocation5 = 0;
 layout(constant_id = 12) const uint VertexAttributeLocation9 = 0;
 layout(constant_id = 14) const uint VertexAttributeLocation10 = 0;
 
-layout(push_constant) uniform SceneDataBuffer
-{
-    int   MeshBufferIndex;
-    int   UseHeightMap;
-    float HeightScale;
-} sceneData;
-
 #include "BindlessHelpers.glsl"
 
 struct Vertex2D
@@ -204,8 +182,8 @@ void main()
 	PS_UVOffset = VS_UVOffset;
     PS_SpriteId = VS_SpriteId;
 
-    gl_Position = sceneDataBuffer.OrthoProjection * 
-                  sceneDataBuffer.OrthoView *  
+    gl_Position = sceneData.OrthoProjection * 
+                  sceneData.OrthoView *  
                   VS_InstanceTransform *
                   vec4(vertex.Position.xy, 0.0f, 1.0f);
 }

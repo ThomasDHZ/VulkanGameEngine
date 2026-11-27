@@ -103,6 +103,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{CB
 		Shaders\MemoryPool.glsl = Shaders\MemoryPool.glsl
 		Shaders\Includes\MemoryPoolBindings.glsl = Shaders\Includes\MemoryPoolBindings.glsl
 		Shaders\MeshPropertiesBuffer.glsl = Shaders\MeshPropertiesBuffer.glsl
+		Shaders\SceneDataBuffer.glsl = Shaders\SceneDataBuffer.glsl
 		Shaders\SprintInstance.glsl = Shaders\SprintInstance.glsl
 	EndProjectSection
 EndProject

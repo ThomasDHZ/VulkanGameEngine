@@ -327,6 +327,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
             .MipCount = mipCount,
+            .SceneDataBufferPtr = bufferSystem.FindVulkanBuffer(memoryPoolSystem.SceneDataBufferIndex).GpuBufferPtr(),
             .RenderPassResolution = renderPass.RenderPassResolution(),
             .PushConstantUpdateRules = drawMessage.PushConstantUpdateRules
         };

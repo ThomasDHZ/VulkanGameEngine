@@ -2,42 +2,27 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_buffer_reference2 : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
 #include "MemoryPool.glsl"
-
-layout(std430, binding = 0) buffer SceneDataBuffer
+#include "SceneDataBuffer.glsl"
+layout(push_constant) uniform SceneDataPushConstant
 {
-   uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-	uint DirectionalLightShadowMapId;
-	uint DirectionalLightShadowTintMapId;
-	uint PointLightShadowMapId;
-	uint PointLightShadowTintMapId;
-    uint _pad0;
-    uint _pad1;
+    int      MeshBufferIndex;
+    float    LevelHeightScale;
+    uint64_t SceneDataBufferPtr;
+    uint64_t MeshPropertiesBufferPtr;
+    uint64_t LightPropertiesBufferPtr;
+    uint64_t TextureHeaderBufferPtr;
+} sceneDataPushConstant;
 
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer;
+SceneDataBuffer sceneData = GetSceneDataBuffer(sceneDataPushConstant.SceneDataBufferPtr);
 
 layout(binding = 1) buffer BindlessBuffer
 {
@@ -155,13 +140,6 @@ layout(location = 10) in vec3       PS_N;
 layout(location = 0) out vec4 outAlphaColor;
 layout(location = 1) out vec4 outAlphaBloom;
 
-layout(push_constant) uniform SceneDataBuffer
-{
-    int   MeshBufferIndex;
-    int   UseHeightMap;
-    float HeightScale;
-} sceneData;
-
 #include "BindlessHelpers.glsl"
 
 const float IBL_EXPOSURE = 2.5;
@@ -183,12 +161,10 @@ float SampleHeight(uint heightIdx, vec2 uv)
 
 vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx, vec2 minUV, vec2 maxUV)
 {
-    if (sceneData.UseHeightMap == 0) return uv;
-
     const float minLayers = 16.0;
     const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-    vec2  deltaUV   = (viewDirTS.xy * sceneData.HeightScale * -1.0) / numLayers;
+    vec2  deltaUV   = (viewDirTS.xy * sceneDataPushConstant.LevelHeightScale * -1.0) / numLayers;
 
     vec2  currentUV    = uv;
     float currentDepth = 0.0;
@@ -221,7 +197,7 @@ float HeightSelfShadow(vec2 uv, vec3 Lts, uint heightIdx, float startH, vec2 min
     if (Lts.z <= 0.0) return 1.0;
 
     const int steps = 20;
-    float step = max(sceneData.HeightScale, 0.05) * 0.02;
+    float step = max(sceneDataPushConstant.LevelHeightScale, 0.05) * 0.02;
     vec2  dUV  = Lts.xy * step;
     float rayH = startH;
     vec2  p    = uv;
@@ -259,7 +235,7 @@ void main()
 
     mat3 TBN = mat3(normalize(PS_T), normalize(PS_B), normalize(PS_N));
 
-    vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
+    vec3 viewDirWS = normalize(sceneData.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV   = ParallaxOcclusionMapping(UV, viewDirTS, packed.NormalTextureId, minUV, maxUV);
 
@@ -275,14 +251,14 @@ void main()
 
     vec2 uvSpan = max(maxUV - minUV, vec2(1e-5));
     float worldPerUV = length(PS_SpriteSize / uvSpan);
-    float height = m.Height * sceneData.HeightScale * worldPerUV;
+    float height = m.Height * sceneDataPushConstant.LevelHeightScale * worldPerUV;
     vec3 Lts = normalize(transpose(TBN) * normalize(-GetDirectionalLight(0).LightDirection));
     material.SelfShadow = HeightSelfShadow(finalUV, Lts, packed.NormalTextureId, m.Height, minUV, maxUV);
     material.Position = WorldPos - normalize(PS_N) * height;
 
-    vec3  toCamera  = sceneDataBuffer.PerspectiveCameraPosition - material.Position;
+    vec3  toCamera  = sceneData.PerspectiveCameraPosition - material.Position;
     vec3  N         = material.Normal;
-    vec3  V         = dot(toCamera, toCamera) > 1e-6 ? normalize(toCamera) : normalize(-sceneDataBuffer.PerspectiveViewDirection);
+    vec3  V         = dot(toCamera, toCamera) > 1e-6 ? normalize(toCamera) : normalize(-sceneData.PerspectiveViewDirection);
     vec3  R         = reflect(-V, N);
 
     float F0d       = pow((material.IOR - 1.0) / (material.IOR + 1.0), 2.0);
@@ -540,21 +516,21 @@ vec3 ImageBasedLighting(vec3 F0, vec3 V, vec3 N_ibl, vec3 R, Material material)
     vec3 F  = fresnelSchlickRoughness(max(dot(N_ibl, V), 0.0), F0, material.Roughness);
     vec3 kD = (vec3(1.0) - F) * (1.0 - material.Metallic);
 
-    vec3 irradiance = texture(CubeMap[sceneDataBuffer.IrradianceMapId], N_ibl).rgb;
+    vec3 irradiance = texture(CubeMap[sceneData.IrradianceMapId], N_ibl).rgb;
     vec3 diffuseIBL = material.Albedo * irradiance * IBL_EXPOSURE;
 
-    float maxLod = float(textureQueryLevels(CubeMap[sceneDataBuffer.PrefilterMapId]) - 1);
+    float maxLod = float(textureQueryLevels(CubeMap[sceneData.PrefilterMapId]) - 1);
     float lod    = clamp(material.Roughness * maxLod, 0.0, maxLod);
-    vec3  prefiltered = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], R, lod).rgb;
+    vec3  prefiltered = textureLod(CubeMap[sceneData.PrefilterMapId], R, lod).rgb;
 
-    vec2 brdf = texture(TextureMap[sceneDataBuffer.BRDFMapId], vec2(max(dot(N_ibl, V), 0.0), material.Roughness)).rg;
+    vec2 brdf = texture(TextureMap[sceneData.BRDFMapId], vec2(max(dot(N_ibl, V), 0.0), material.Roughness)).rg;
     vec3 specularIBL = prefiltered * (F * brdf.x + brdf.y) * IBL_EXPOSURE;
     vec3 ambient = (kD * diffuseIBL + specularIBL) * material.AmbientOcclusion;
     if (material.CoatWeight > 0.0 && material.Metallic < 0.5)
     {
         float coatF    = CoatFresnel(N_ibl, V, material.CoatWeight);
         float coatLod  = clamp(material.CoatRoughness * maxLod, 0.0, maxLod);
-        vec3  coatPref = textureLod(CubeMap[sceneDataBuffer.PrefilterMapId], R, coatLod).rgb;
+        vec3  coatPref = textureLod(CubeMap[sceneData.PrefilterMapId], R, coatLod).rgb;
         ambient *= mix(1.0, material.CoatDarkening, material.CoatWeight);
         ambient *= (1.0 - coatF);
         ambient += coatPref * coatF * IBL_EXPOSURE * material.CoatColor;

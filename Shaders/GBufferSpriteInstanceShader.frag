@@ -2,42 +2,27 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_buffer_reference2 : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
 #include "MemoryPool.glsl"
-
-layout(std430, binding = 0) buffer SceneDataBuffer
+#include "SceneDataBuffer.glsl"
+layout(push_constant) uniform SceneDataPushConstant
 {
-   uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-	uint DirectionalLightShadowMapId;
-	uint DirectionalLightShadowTintMapId;
-	uint PointLightShadowMapId;
-	uint PointLightShadowTintMapId;
-    uint _pad0;
-    uint _pad1;
+    int      MeshBufferIndex;
+    float    LevelHeightScale;
+    uint64_t SceneDataBufferPtr;
+    uint64_t MeshPropertiesBufferPtr;
+    uint64_t LightPropertiesBufferPtr;
+    uint64_t TextureHeaderBufferPtr;
+} sceneDataPushConstant;
 
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer;
+SceneDataBuffer sceneData = GetSceneDataBuffer(sceneDataPushConstant.SceneDataBufferPtr);
 
 layout(binding = 1) buffer BindlessBuffer
 {
@@ -161,13 +146,6 @@ layout(location = 5) out vec4 outFeatureB;
 layout(location = 6) out vec4 outFeatureC;
 layout(location = 7) out vec4 outEmission;
 
-layout(push_constant) uniform SceneDataBuffer
-{
-    int   MeshBufferIndex;
-    int   UseHeightMap;
-    float HeightScale;
-} sceneData;
-
 #include "BindlessHelpers.glsl"
 
 float SampleHeight(uint heightIdx, vec2 uv)
@@ -177,12 +155,10 @@ float SampleHeight(uint heightIdx, vec2 uv)
 
 vec2 ParallaxOcclusionMapping(vec2 uv, vec3 viewDirTS, uint heightIdx, vec2 minUV, vec2 maxUV)
 {
-    if (sceneData.UseHeightMap == 0) return uv;
-
     const float minLayers = 16.0;
     const float maxLayers = 64.0;
     float numLayers = mix(maxLayers, minLayers, abs(viewDirTS.z));
-    vec2  deltaUV   = (viewDirTS.xy * sceneData.HeightScale * -1.0) / numLayers;
+    vec2  deltaUV   = (viewDirTS.xy * sceneDataPushConstant.LevelHeightScale * -1.0) / numLayers;
 
     vec2  currentUV    = uv;
     float currentDepth = 0.0;
@@ -215,7 +191,7 @@ float HeightSelfShadow(vec2 uv, vec3 Lts, uint heightIdx, float startH, vec2 min
     if (Lts.z <= 0.0) return 1.0;
 
     const int steps = 20;
-    float step = max(sceneData.HeightScale, 0.05) * 0.02;
+    float step = max(sceneDataPushConstant.LevelHeightScale, 0.05) * 0.02;
     vec2  dUV  = Lts.xy * step;
     float rayH = startH;
     vec2  p    = uv;
@@ -287,7 +263,7 @@ void main()
 
     mat3 TBN = mat3(normalize(PS_T), normalize(PS_B), normalize(PS_N));
 
-    vec3 viewDirWS = normalize(sceneDataBuffer.PerspectiveCameraPosition - WorldPos);
+    vec3 viewDirWS = normalize(sceneData.PerspectiveCameraPosition - WorldPos);
     vec3 viewDirTS = normalize(transpose(TBN) * viewDirWS);
     vec2 finalUV   = ParallaxOcclusionMapping(UV, viewDirTS, packedMaterial.NormalTextureId, minUV, maxUV);
 
@@ -304,7 +280,7 @@ void main()
 
     vec2 uvSpan = max(maxUV - minUV, vec2(1e-5));
     float worldPerUV = length(PS_SpriteSize / uvSpan);
-    float height = m.Height * sceneData.HeightScale * worldPerUV;
+    float height = m.Height * sceneDataPushConstant.LevelHeightScale * worldPerUV;
     vec3 perspectiveWorldPos = WorldPos - normalize(PS_N) * height;
    
     outPosition   = vec4(perspectiveWorldPos, 1.0);
