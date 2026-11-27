@@ -112,7 +112,7 @@ public:
     uint                                       SelectedGameObject = UINT32_MAX;
 
     int                                        UseHeightMap = 1;
-    float                                      HeightScale = 0.079f;
+    float                                      HeightScale = 0.0f;// 0.079f;
     vec3                                       ViewDirection = vec3(-0.037f, -0.062f, 1.0f);
 
     void                                       LoadLevel(const char* levelPath);

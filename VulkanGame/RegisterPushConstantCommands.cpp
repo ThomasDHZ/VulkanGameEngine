@@ -10,7 +10,7 @@ void RegisterPushConstantCommands()
             sceneDataBuffer.InvertResolution = vec2(1.0f / static_cast<float>(renderPass.RenderPassResolution().x), 1.0f / static_cast<float>(renderPass.RenderPassResolution().y));
 
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshBufferIndex", context.MeshId);
-            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "LevelHeightScale", context.LevelHeightScale);
+            shaderSystem.UpdatePushConstantValue<float>(pushConstant, "LevelHeightScale", context.LevelHeightScale);
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "SceneDataBufferPtr", context.SceneDataBufferPtr);
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshPropertiesBufferPtr", context.MeshPropertiesBufferPtr);
             shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "LightPropertiesBufferPtr", context.LightPropertiesBufferPtr);
@@ -38,6 +38,11 @@ void RegisterPushConstantCommands()
         {
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "MeshBufferIndex", context.MeshId);
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "DirectionalLightBufferIndex", context.LightId);
+            shaderSystem.UpdatePushConstantValue<float>(pushConstant, "LevelHeightScale", context.LevelHeightScale);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "SceneDataBufferPtr", context.SceneDataBufferPtr);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshPropertiesBufferPtr", context.MeshPropertiesBufferPtr);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "LightPropertiesBufferPtr", context.LightPropertiesBufferPtr);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "TextureHeaderBufferPtr", context.TextureHeaderBufferPtr);
             shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 

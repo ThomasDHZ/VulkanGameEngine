@@ -13,6 +13,7 @@
 #include "CustomDrawCommandRegistry.h"
 #include <ImGuiSystem.h>
 #include <VulkanWindow.h>
+#include "LevelSystem.h"
 
 RenderSystem& renderSystem = RenderSystem::Get();
 
@@ -327,6 +328,7 @@ void RenderSystem::BindPushConstants(VkCommandBuffer& commandBuffer, VulkanDrawM
             .DrawIndex = static_cast<uint32>(drawIndex),
             .MipLevel = mip,
             .MipCount = mipCount,
+            .LevelHeightScale = levelSystem.HeightScale,
             .SceneDataBufferPtr = bufferSystem.FindVulkanBuffer(memoryPoolSystem.SceneDataBufferIndex).GpuBufferPtr(),
             .RenderPassResolution = renderPass.RenderPassResolution(),
             .PushConstantUpdateRules = drawMessage.PushConstantUpdateRules

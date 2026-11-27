@@ -2,12 +2,29 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_buffer_reference2 : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
 #include "MemoryPool.glsl"
+#include "SceneDataBuffer.glsl"
+
+layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
+{
+    int   MeshBufferIndex;
+    int   DirectionalLightBufferIndex;
+    float LevelHeightScale;
+    uint64_t SceneDataBufferPtr;
+    uint64_t MeshPropertiesBufferPtr;
+    uint64_t LightPropertiesBufferPtr;
+    uint64_t TextureHeaderBufferPtr;
+} directionalLightSceneDataDepthBuffer;
+
+SceneDataBuffer sceneData = GetSceneDataBuffer(directionalLightSceneDataDepthBuffer.SceneDataBufferPtr);
 
 layout(location = 0)  in vec2       PS_UV;
 layout(location = 1)  in flat ivec2 PS_FlipSprite;
@@ -16,43 +33,6 @@ layout(location = 3)  in flat vec4  PS_UVOffset;
 
 layout(location = 0) out vec4 OutColor;
 
-layout(push_constant) uniform DirectionalLightSceneDataDepthBuffer
-{
-    int   MeshBufferIndex;
-    int   DirectionalLightBufferIndex;
-    int   UseHeightMap;
-    float HeightScale;
-} directionalLightSceneDataDepthBuffer;
-
-layout(std430, binding = 0) buffer SceneDataBuffer
-{
-   uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-	uint DirectionalLightShadowMapId;
-	uint DirectionalLightShadowTintMapId;
-	uint PointLightShadowMapId;
-	uint PointLightShadowTintMapId;
-    uint _pad0;
-    uint _pad1;
-
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer2;
 
 layout(binding = 1) buffer BindlessBuffer
 {

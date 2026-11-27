@@ -11,7 +11,7 @@ struct PushConstantContext
     uint32                          DrawIndex = 0;
     uint32                          MipLevel = 0;
     uint32                          MipCount = 0;
-    float                           LevelHeightScale = 0.4f;
+    float                           LevelHeightScale = 0.079f;
     VkDeviceAddress                 SceneDataBufferPtr = 0;
     VkDeviceAddress                 MeshPropertiesBufferPtr = 0;
     VkDeviceAddress                 LightPropertiesBufferPtr = 0;
