@@ -2,42 +2,30 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_ARB_gpu_shader_int64 : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_buffer_reference2 : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 
 #include "Lights.glsl"
 #include "Constants.glsl"
 #include "MeshPropertiesBuffer.glsl"
 #include "MaterialPropertiesBuffer.glsl"
 #include "MemoryPool.glsl"
+#include "SceneDataBuffer.glsl"
 
-layout(std430, binding = 0) buffer SceneDataBuffer
+layout(push_constant) uniform PointLightSceneDataDepthBuffer
 {
-   uint HDRMapInputIndex;
-    uint EnvironmentMapIndex;
-    uint BRDFMapId;
-    uint CubeMapId;
-    uint IrradianceMapId;
-    uint PrefilterMapId;
-	uint DirectionalLightShadowMapId;
-	uint DirectionalLightShadowTintMapId;
-	uint PointLightShadowMapId;
-	uint PointLightShadowTintMapId;
-    uint _pad0;
-    uint _pad1;
+    int      MeshBufferIndex;
+    int      PointLightBufferIndex;
+    int      PointLightViewIndex;
+    float    LevelHeightScale;
+    uint64_t SceneDataBufferPtr;
+    uint64_t MeshPropertiesBufferPtr;
+    uint64_t LightPropertiesBufferPtr;
+    uint64_t TextureHeaderBufferPtr;
+} pointLightSceneDataDepthBuffer;
 
-    mat4 OrthoProjection;
-    mat4 OrthoView;
-    mat4 InverseOrthoProjection;
-    mat4 InverseOrthoView;
-    mat4 InversePerspectiveProjection;
-    mat4 InversePerspectiveView;
-
-    vec3  PerspectiveCameraPosition;
-    float Time;
-    vec3  PerspectiveViewDirection;
-    uint  FrameIndex;
-    vec2  InvertResolution;
-    vec2  _padEnd;
-} sceneDataBuffer;
+SceneDataBuffer sceneData = GetSceneDataBuffer(pointLightSceneDataDepthBuffer.SceneDataBufferPtr);
 
 layout(binding = 1) buffer BindlessBuffer
 {
@@ -151,15 +139,6 @@ layout(location = 7)  in flat uint  PS_SpriteId;
 layout(location = 8)  in vec3       PS_T;
 layout(location = 9)  in vec3       PS_B;
 layout(location = 10) in vec3       PS_N;
-
-layout(push_constant) uniform PointLightSceneDataDepthBuffer
-{
-    int   MeshBufferIndex;
-    int   PointLightBufferIndex;
-    int   PointLightViewIndex;
-    int   UseHeightMap;
-    float HeightScale;
-} pointLightSceneDataDepthBuffer;
 
 #include "BindlessHelpers.glsl"
 

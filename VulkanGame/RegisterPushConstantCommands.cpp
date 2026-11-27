@@ -50,6 +50,11 @@ void RegisterPushConstantCommands()
         {
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "MeshBufferIndex", context.MeshId);
             shaderSystem.UpdatePushConstantValue<int>(pushConstant, "PointLightBufferIndex", context.LightId);
+            shaderSystem.UpdatePushConstantValue<float>(pushConstant, "LevelHeightScale", context.LevelHeightScale);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "SceneDataBufferPtr", context.SceneDataBufferPtr);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "MeshPropertiesBufferPtr", context.MeshPropertiesBufferPtr);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "LightPropertiesBufferPtr", context.LightPropertiesBufferPtr);
+            shaderSystem.UpdatePushConstantValue<uint>(pushConstant, "TextureHeaderBufferPtr", context.TextureHeaderBufferPtr);
             shaderSystem.UpdatePushConstantBuffer(pushConstant);
         });
 
